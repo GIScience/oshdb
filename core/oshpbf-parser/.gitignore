@@ -1,0 +1,7 @@
+# maven generated target folder
+/target/
+
+# eclipse stuff
+.project
+.classpath
+.settings

@@ -1,0 +1,17 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.heigit.bigspatialdata</groupId>
+		<artifactId>bigspatialdata-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../</relativePath>
+	</parent>
+	<artifactId>bigspatialdata-core-parent</artifactId>
+	<name>HeiGIT Big Spatial Data Core Parent POM</name>
+	<description>The set of base functionality provided for all configurations of BigSpatialData</description>	
+	<packaging>pom</packaging>
+	<modules>
+		<module>oshpbf-parser</module>
+		<module>hosmdb</module>
+	</modules>
+</project>
