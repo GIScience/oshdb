@@ -99,8 +99,8 @@ public class TransformWayMapper extends TransformMapper2 {
 
   public Result map(InputStream in) {
     try (//
-        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./keytables", "sa", "");
-        Connection connRelations = DriverManager.getConnection("jdbc:h2:./relations", "sa", "")) {
+        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./hosmdb_keytables", "sa", "");
+        Connection connRelations = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
 
       initKeyTables(connKeyTables);
 

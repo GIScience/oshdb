@@ -72,15 +72,15 @@ public class HOSMDbTransform {
 
 
       final int maxZoom = 12;
-      final String n2wRelationFile = "nodesForWays.ser";
-      final String n2rRelationFile = "nodesForRelation.ser";
-      final String w2rRelationFile = "waysForRelation.ser";
+      final String n2wRelationFile = "temp_nodesForWays.ser";
+      final String n2rRelationFile = "temp_nodesForRelation.ser";
+      final String w2rRelationFile = "temp_waysForRelation.ser";
       final XYGrid grid = new XYGrid(12);
 
       Class.forName("org.h2.Driver");
 
       // nodes
-      if (false) {
+      if (true) {
         try (//
             final FileInputStream in = new FileInputStream(pbfFile) //
         ) {
@@ -123,11 +123,11 @@ public class HOSMDbTransform {
         }
       }
       
-      if(false){
+      if(true){
         try(//
             final FileInputStream in = new FileInputStream(pbfFile) //
             ){
-          System.out.println("Start Node Mapper");
+          System.out.println("Start Relation Mapper");
           TransformRelationMapper mapper = new TransformRelationMapper(maxZoom, n2rRelationFile, n2wRelationFile);
           TransformRelationMapper.Result result = mapper.map(in);
           System.out.println("Saving Relation Grid");
@@ -144,10 +144,49 @@ public class HOSMDbTransform {
   }
 
 
+  private static void saveGrid(Result result, XYGrid grid) {
+	    try (
+	        Connection conn =
+	            DriverManager.getConnection("jdbc:h2:./hosmdb_node;COMPRESS=TRUE", "sa", "");
+	        Statement stmt = conn.createStatement()) {
+
+	      stmt.executeUpdate(
+	          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
+
+	      PreparedStatement insert =
+	          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
+
+	      for (CellNode cell : result.getNodeCells()) {
+	        insert.setInt(1, cell.info().getZoomLevel());
+	        insert.setLong(2, cell.info().getId());
+
+
+
+	        CellInfo cellInfo = cell.info();
+	        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
+	        double[] minValues = cellDimensions.getMinValuesPerDimension();
+	        HOSMCellNodes hosmCell = HOSMCellNodes.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
+	            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
+	            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
+
+	        ByteArrayOutputStream out = new ByteArrayOutputStream();
+	        ObjectOutputStream oos = new ObjectOutputStream(out);
+	        oos.writeObject(hosmCell);
+	        oos.flush();
+	        oos.close();
+	        byte[] buf = out.toByteArray();
+	        ByteArrayInputStream in = new ByteArrayInputStream(buf);
+	        insert.setBinaryStream(3, in);
+	        insert.executeUpdate();
+	      }
+	    } catch (SQLException | IOException e) {
+	      e.printStackTrace();
+	    }
+	  }
 
   private static void saveGrid(TransformWayMapper.Result wayResults) {
     try (
-        Connection conn = DriverManager.getConnection("jdbc:h2:./hosm_way;COMPRESS=TRUE", "sa", "");
+        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_way;COMPRESS=TRUE", "sa", "");
         Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
@@ -194,7 +233,7 @@ public class HOSMDbTransform {
   
   private static void saveGrid(TransformRelationMapper.Result result){
     try (
-        Connection conn = DriverManager.getConnection("jdbc:h2:./hosm_relation;COMPRESS=TRUE", "sa", "");
+        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_relation;COMPRESS=TRUE", "sa", "");
         Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
@@ -278,45 +317,7 @@ public class HOSMDbTransform {
   
   
   
-  private static void saveGrid(Result result, XYGrid grid) {
-    try (
-        Connection conn =
-            DriverManager.getConnection("jdbc:h2:./hosm_node;COMPRESS=TRUE", "sa", "");
-        Statement stmt = conn.createStatement()) {
-
-      stmt.executeUpdate(
-          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
-
-      PreparedStatement insert =
-          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
-
-      for (CellNode cell : result.getNodeCells()) {
-        insert.setInt(1, cell.info().getZoomLevel());
-        insert.setLong(2, cell.info().getId());
-
-
-
-        CellInfo cellInfo = cell.info();
-        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        double[] minValues = cellDimensions.getMinValuesPerDimension();
-        HOSMCellNodes hosmCell = HOSMCellNodes.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
-            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(out);
-        oos.writeObject(hosmCell);
-        oos.flush();
-        oos.close();
-        byte[] buf = out.toByteArray();
-        ByteArrayInputStream in = new ByteArrayInputStream(buf);
-        insert.setBinaryStream(3, in);
-        insert.executeUpdate();
-      }
-    } catch (SQLException | IOException e) {
-      e.printStackTrace();
-    }
-  }
+  
 
   private static Options buildCLIOptions() {
     final Options opts = new Options();

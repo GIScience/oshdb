@@ -97,16 +97,16 @@ public class HOSMDbExtract {
   private static void storePBFMetaData(ExtractMapperResult mapResult)
       throws SQLException, IOException {
     Properties props = new Properties();
-    props.put("countNodes", mapResult.getCountNodes());
-    props.put("countWay", mapResult.getCountWays());
-    props.put("countRelations", mapResult.getCountRelations());
-    props.put("startPosNode", mapResult.getPbfTypeBlockFirstPosition().get(Type.NODE).longValue());
-    props.put("startPosWay", mapResult.getPbfTypeBlockFirstPosition().get(Type.WAY).longValue());
-    props.put("startPosRelation", mapResult.getPbfTypeBlockFirstPosition().get(Type.RELATION).longValue());
+    props.put("countNodes", ""+mapResult.getCountNodes());
+    props.put("countWay", ""+mapResult.getCountWays());
+    props.put("countRelations",""+ mapResult.getCountRelations());
+    props.put("startPosNode", ""+mapResult.getPbfTypeBlockFirstPosition().get(Type.NODE).longValue());
+    props.put("startPosWay", ""+mapResult.getPbfTypeBlockFirstPosition().get(Type.WAY).longValue());
+    props.put("startPosRelation", ""+ mapResult.getPbfTypeBlockFirstPosition().get(Type.RELATION).longValue());
 
     HeaderInfo info = mapResult.getHeaderInfo();
 
-    try (FileOutputStream out = new FileOutputStream("meta.properties")) {
+    try (FileOutputStream out = new FileOutputStream("temp_meta.properties")) {
      props.store(out, String.format("created at %1$tF %1$tT", new Date()));
      out.flush();
     }
@@ -115,7 +115,7 @@ public class HOSMDbExtract {
 
 
   private static void storeRelationMapping(ExtractMapperResult mapResult) throws SQLException {
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:./relations", "sa", "")) {
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
       Statement stmt = conn.createStatement();
       stmt.executeUpdate(
           "drop table if exists node2way; create table if not exists node2way(node bigint primary key, ways array)");
@@ -174,7 +174,7 @@ public class HOSMDbExtract {
 
 
   private static void storeKeyTables(ExtractMapperResult mapResult) throws SQLException {
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:./keytables", "sa", "")) {
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_keytables;COMPRESS=TRUE", "sa", "")) {
       Statement stmt = conn.createStatement();
       stmt.executeUpdate(
           "drop table if exists key; create table if not exists key(id int primary key, txt varchar)");
