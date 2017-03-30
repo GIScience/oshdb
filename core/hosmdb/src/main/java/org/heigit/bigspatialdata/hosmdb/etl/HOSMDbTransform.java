@@ -128,7 +128,7 @@ public class HOSMDbTransform {
             final FileInputStream in = new FileInputStream(pbfFile) //
             ){
           System.out.println("Start Relation Mapper");
-          TransformRelationMapper mapper = new TransformRelationMapper(maxZoom, n2rRelationFile, n2wRelationFile);
+          TransformRelationMapper mapper = new TransformRelationMapper(maxZoom, n2rRelationFile, w2rRelationFile);
           TransformRelationMapper.Result result = mapper.map(in);
           System.out.println("Saving Relation Grid");
           saveGrid(result);

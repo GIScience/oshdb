@@ -29,10 +29,10 @@ public class TestReadFromDB {
   public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
     Class.forName("org.h2.Driver");
 
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosm_way", "sa", "");
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_relation", "sa", "");
         Statement stmt = conn.createStatement()) {
 
-      ResultSet rst = stmt.executeQuery("select data from grid where level = 4 and  id = 234");
+      ResultSet rst = stmt.executeQuery("select data from grid");
 
       while (rst.next()) {
 
@@ -41,15 +41,14 @@ public class TestReadFromDB {
         // System.out.println(ois.readObject());
 
 
-        HOSMCellWays hosmCell = (HOSMCellWays) ois.readObject();
+        HOSMCellRelations hosmCell = (HOSMCellRelations) ois.readObject();
 
 
-        Stream<HOSMWay> stream = StreamSupport.stream(hosmCell.spliterator(), false);
-        System.out.printf("\nLevel:%d, Id:%d, CountRelations:%d\n", hosmCell.getLevel(),
-            hosmCell.getId(), stream.count());
+        Stream<HOSMRelation> stream = StreamSupport.stream(hosmCell.spliterator(), false);
+        System.out.printf("\nLevel:%d, Id:%d, CountRelations:%d\n", hosmCell.getLevel(),hosmCell.getId(), stream.count());
 
 
-
+/*
         stream = StreamSupport.stream(hosmCell.spliterator(), false);
         stream.forEach(hway -> {
           System.out.printf("%d (%s),", hway.getId(), hway.getBoundingBox());
@@ -61,6 +60,7 @@ public class TestReadFromDB {
           }
 
         });
+*/
 
 
         /*

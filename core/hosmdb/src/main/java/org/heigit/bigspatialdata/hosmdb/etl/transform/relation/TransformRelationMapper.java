@@ -281,7 +281,7 @@ public class TransformRelationMapper extends TransformMapper2 {
       } else {
         // node is not in cache, read it from inputstream
         NodeRelation nr = (NodeRelation) relationStream.readObject();
-        while (nr.node().getId() < refId.longValue()) {
+        while (nr.node().getId() < refId.longValue() && relationStream.available() > 0) {
           // cache the noderelations
           nodeCache.put(nr.node().getId(), nr);
           nr = (NodeRelation) relationStream.readObject();
@@ -317,7 +317,7 @@ public class TransformRelationMapper extends TransformMapper2 {
       } else {
         // node is not in cache, read it from inputstream
         WayRelation nr = (WayRelation) relationStream.readObject();
-        while (nr.way().getId() < refId.longValue()) {
+        while (nr.way().getId() < refId.longValue() && relationStream.available() > 0) {
           // cache the noderelations
           wayCache.put(nr.way().getId(), nr);
           nr = (WayRelation) relationStream.readObject();
