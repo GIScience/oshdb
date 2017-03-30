@@ -36,7 +36,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
@@ -69,5 +68,19 @@
 			</dependency>
 		
 	</dependencies>
+	
+	<repositories>
+		<repository>
+			<id>geowave-maven-snapshot</id>
+			<name>GeoWave AWS Snapshot Repository</name>
+			<url>http://geowave-maven.s3-website-us-east-1.amazonaws.com/snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 </project>
