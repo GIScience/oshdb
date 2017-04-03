@@ -251,7 +251,7 @@ public class HOSMWay extends HOSMEntity implements Iterable<OSMWay>, Serializabl
 			}
 		}
 
-		Builder builder = new Builder(output, baseId, baseTimestamp, baseLongitude, baseLatitude);
+		Builder builder = new Builder(output, baseTimestamp);
 
 		for (int i = 0; i < versions.size(); i++) {
 			OSMWay way = versions.get(i);

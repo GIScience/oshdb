@@ -2,25 +2,19 @@ package org.heigit.bigspatialdata.hosmdb.osh.builder;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.hosmdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.hosmdb.osm.OSMWay;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 
 public class Builder {
   
   private static final int CHANGED_USER_ID = 1 << 0;
   private static final int CHANGED_TAGS = 1 << 1;
-  private static final int CHANGED_MEMBERS = 1 << 3;
   
   private final ByteArrayOutputWrapper output;
-  private final long baseId;
   private final long baseTimestamp;
-  private final long baseLongitude;
-  private final long baseLatitude;
   
   
   int lastVersion = 0;
@@ -34,13 +28,9 @@ public class Builder {
   boolean firstVersion = true;
   boolean timestampsNotInOrder = false;
   
-  public Builder(final ByteArrayOutputWrapper output,final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude){
+  public Builder(final ByteArrayOutputWrapper output, final long baseTimestamp){
     this.output = output;
-    this.baseId = baseId;
     this.baseTimestamp = baseTimestamp;
-    this.baseLongitude = baseLongitude;
-    this.baseLatitude = baseLatitude;
   }
   
   public boolean getTimestampsNotInOrder(){

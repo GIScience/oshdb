@@ -171,7 +171,7 @@ public class HOSMNode extends HOSMEntity
     long maxLat = Long.MIN_VALUE;
     
 
-    Builder builder = new Builder(output, baseId, baseTimestamp, baseLongitude, baseLatitude);
+    Builder builder = new Builder(output, baseTimestamp);
     
     for (int i = 0; i < versions.size(); i++) {
       OSMNode node = versions.get(i);

@@ -14,13 +14,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
 import org.heigit.bigspatialdata.hosmdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMMember;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMRelation;
-
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayWrapper;
@@ -356,7 +354,7 @@ public class HOSMRelation extends HOSMEntity implements Iterable<OSMRelation>, S
       way.writeTo(wayData);
     }
 
-    Builder builder = new Builder(output, baseId, baseTimestamp, baseLongitude, baseLatitude);
+    Builder builder = new Builder(output, baseTimestamp);
     for (int i = 0; i < versions.size(); i++) {
       OSMRelation relation = versions.get(i);
       OSMEntity version = relation;

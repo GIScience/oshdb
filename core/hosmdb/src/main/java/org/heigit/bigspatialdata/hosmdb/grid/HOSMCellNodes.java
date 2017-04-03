@@ -14,7 +14,7 @@ public class HOSMCellNodes extends HOSMCell implements Iterable<HOSMNode>, Seria
 
   private static final long serialVersionUID = 1L;
 
-  public static HOSMCellNodes compact(final long id, final int level, final long baseId,
+  public static HOSMCellNodes rebase(final long id, final int level, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
       final List<HOSMNode> list) throws IOException {
 
