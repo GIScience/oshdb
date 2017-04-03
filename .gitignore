@@ -5,3 +5,9 @@
 .project
 .classpath
 .settings
+
+# netbeans stuff
+nbactions.xml
+
+# gedit stuff
+*~
