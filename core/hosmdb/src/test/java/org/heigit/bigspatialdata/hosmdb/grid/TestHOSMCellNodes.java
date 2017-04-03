@@ -1,13 +1,9 @@
 package org.heigit.bigspatialdata.hosmdb.grid;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellNodes;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
 import org.junit.Test;
@@ -31,7 +27,7 @@ public class TestHOSMCellNodes {
       }
 
 
-      HOSMCellNodes cell =HOSMCellNodes.compact(123, 2,100, 100000l, 86000000, 490000000, hosmNodes);
+      HOSMCellNodes cell =HOSMCellNodes.rebase(123, 2,100, 100000l, 86000000, 490000000, hosmNodes);
 
       System.out.println("Hallo");
 

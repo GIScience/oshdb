@@ -17,7 +17,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -39,8 +39,6 @@ import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellWays;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
 import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
-
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
 /**
  * HOSMDbTransform
@@ -165,7 +163,7 @@ public class HOSMDbTransform {
 	        CellInfo cellInfo = cell.info();
 	        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
 	        double[] minValues = cellDimensions.getMinValuesPerDimension();
-	        HOSMCellNodes hosmCell = HOSMCellNodes.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
+	        HOSMCellNodes hosmCell = HOSMCellNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
 	            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
 	            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
 
