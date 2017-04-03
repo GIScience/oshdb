@@ -24,11 +24,10 @@ import org.heigit.bigspatialdata.hosmdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayWrapper;
-import org.heigit.bigspatialdata.hosmdb.util.Compactable;
 
 
 
-public class HOSMRelation extends HOSMEntity implements Compactable<HOSMRelation>, Iterable<OSMRelation>, Serializable {
+public class HOSMRelation extends HOSMEntity implements Iterable<OSMRelation>, Serializable {
   
   private static final long serialVersionUID = 1L;
   
@@ -324,7 +323,7 @@ public class HOSMRelation extends HOSMEntity implements Compactable<HOSMRelation
     int idx = 0;
     int offset = 0;
     for (HOSMNode node : nodes) {
-      node = node.compact(0, 0, baseLongitude, baseLatitude);
+      node = node.rebase(0, 0, baseLongitude, baseLatitude);
       nodeOffsets.put(node.getId(), idx);
       nodeByteArrayIndex[idx++] = offset;
       offset = node.getLength();
@@ -350,7 +349,7 @@ public class HOSMRelation extends HOSMEntity implements Compactable<HOSMRelation
     idx = 0;
     offset = 0;
     for (HOSMWay way : ways) {
-      way = way.compact(0, 0, baseLongitude, baseLatitude);
+      way = way.rebase(0, 0, baseLongitude, baseLatitude);
       wayOffsets.put(way.getId(), idx);
       wayByteArrayIndex[idx++] = offset;
       offset = way.getLength();
@@ -480,7 +479,7 @@ public class HOSMRelation extends HOSMEntity implements Compactable<HOSMRelation
   }
 
   @Override
-  public HOSMRelation compact(long baseId, long baseTimestamp, long baseLongitude,
+  public HOSMRelation rebase(long baseId, long baseTimestamp, long baseLongitude,
       long baseLatitude) throws IOException {
 
     List<OSMRelation> versions = getVersions();

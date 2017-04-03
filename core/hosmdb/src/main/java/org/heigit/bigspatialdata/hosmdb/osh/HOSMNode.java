@@ -16,10 +16,9 @@ import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayWrapper;
-import org.heigit.bigspatialdata.hosmdb.util.Compactable;
 
 public class HOSMNode extends HOSMEntity
-    implements Compactable<HOSMNode>, Iterable<OSMNode>, Serializable {
+    implements Iterable<OSMNode>, Serializable {
 
   private static final long serialVersionUID = 1L;
   
@@ -236,7 +235,7 @@ public class HOSMNode extends HOSMEntity
   }
 
   @Override
-  public HOSMNode compact(long baseNodeId, long baseTimestamp2, long baseLongitude2,
+  public HOSMNode rebase(long baseNodeId, long baseTimestamp2, long baseLongitude2,
       long baseLatitude2) throws IOException {
     List<OSMNode> nodes = getNodes();
     return HOSMNode.build(nodes, baseNodeId, baseTimestamp2, baseLongitude2, baseLatitude2);

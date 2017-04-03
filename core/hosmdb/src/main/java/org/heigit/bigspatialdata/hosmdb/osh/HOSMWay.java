@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,10 +23,9 @@ import org.heigit.bigspatialdata.hosmdb.osm.OSMWay;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayWrapper;
-import org.heigit.bigspatialdata.hosmdb.util.Compactable;
 
 public class HOSMWay extends HOSMEntity
-    implements Compactable<HOSMWay>, Iterable<OSMWay>, Serializable {
+    implements Iterable<OSMWay>, Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -214,7 +212,7 @@ public class HOSMWay extends HOSMEntity
   }
 
   @Override
-  public HOSMWay compact(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude)
+  public HOSMWay rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude)
       throws IOException {
     List<OSMWay> versions = getVersions();
     List<HOSMNode> nodes = getNodes();
@@ -251,7 +249,7 @@ public class HOSMWay extends HOSMEntity
     int offset = 0;
     int idx = 0;
     for (HOSMNode node : nodes) {
-      node = node.compact(0, 0, baseLongitude, baseLatitude);
+      node = node.rebase(0, 0, baseLongitude, baseLatitude);
       nodeOffsets.put(node.getId(), idx);
       ibIndex.put(idx++, offset);
       offset += node.getLength();

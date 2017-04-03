@@ -23,7 +23,7 @@ public class  HOSMCellRelations extends HOSMCell implements Iterable<HOSMRelatio
     final int[] index = new int[list.size()];
     // TODO user iterator!!
     for (int i = 0; i < index.length; i++) {
-      final HOSMRelation c = list.get(i).compact(baseId, baseTimestamp, baseLongitude, baseLatitude);
+      final HOSMRelation c = list.get(i).rebase(baseId, baseTimestamp, baseLongitude, baseLatitude);
       final byte[] buffer = c.getData();
       index[i] = offset;
       out.write(buffer);
