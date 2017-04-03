@@ -1,10 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.grid;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +14,7 @@ public class HOSMCellNodes extends HOSMCell implements Iterable<HOSMNode>, Seria
 
   private static final long serialVersionUID = 1L;
 
-  public static HOSMCellNodes compact(final long id, final int level, final long baseId,
+  public static HOSMCellNodes rebase(final long id, final int level, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
       final List<HOSMNode> list) throws IOException {
 
@@ -27,7 +24,7 @@ public class HOSMCellNodes extends HOSMCell implements Iterable<HOSMNode>, Seria
     final int[] index = new int[list.size()];
     // TODO user iterator!!
     for (int i = 0; i < index.length; i++) {
-      final HOSMNode c = list.get(i).compact(baseId, baseTimestamp, baseLongitude, baseLatitude);
+      final HOSMNode c = list.get(i).rebase(baseId, baseTimestamp, baseLongitude, baseLatitude);
       final byte[] buffer = c.getData();
       index[i] = offset;
       out.write(buffer);

@@ -7,7 +7,7 @@ import java.io.ObjectOutput;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 
-public class HOSMEntity implements Comparable<HOSMEntity> {
+public abstract class HOSMEntity implements Comparable<HOSMEntity> {
   
   public static final int NODE = 0;
   public static final int WAY = 1;
@@ -78,6 +78,9 @@ public class HOSMEntity implements Comparable<HOSMEntity> {
     }
     return false;
   }
+  
+  public abstract HOSMEntity rebase(long baseId, long baseTimestamp, long baseLongitude,
+	      long baseLatitude) throws IOException;
 
   @Override
   public int compareTo(HOSMEntity o) {

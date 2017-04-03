@@ -19,7 +19,7 @@ public class HOSMCellWays extends HOSMCell implements Iterable<HOSMWay>, Seriali
     final int[] index = new int[list.size()];
     int offset = 0;
     for (int i = 0; i < index.length; i++) {
-      final HOSMWay c = list.get(i).compact(baseId, baseTimestamp, baseLongitude, baseLatitude);
+      final HOSMWay c = list.get(i).rebase(baseId, baseTimestamp, baseLongitude, baseLatitude);
       final byte[] buffer = c.getData();
       index[i] = offset;
       out.write(buffer);
