@@ -12,7 +12,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   public OSMWay(final long id, final int version, final long timestamp, final long changeset,
       final int userId, final int[] tags, final OSMMember[] refs) {
     super(id, version, timestamp, changeset, userId, tags);
-    this.refs = refs;
+    this.refs = refs ;
   }
 
 
