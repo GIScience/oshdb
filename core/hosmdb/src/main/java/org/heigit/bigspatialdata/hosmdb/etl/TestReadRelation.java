@@ -7,11 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Paths;
-
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.WayRelation;
 
 public class TestReadRelation {
+  //test to read data form .ser file (for controller :-)
 
   public static void main(String[] args) {
 
