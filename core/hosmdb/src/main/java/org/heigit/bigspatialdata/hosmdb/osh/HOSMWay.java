@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -226,30 +224,29 @@ public class HOSMWay extends HOSMEntity implements Iterable<OSMWay>, Serializabl
 		long maxLat = Long.MIN_VALUE;
 
 		Map<Long, Integer> nodeOffsets = new HashMap<>();
-		ByteBuffer bbIndex = ByteBuffer.allocate(nodes.size() * 4);
-		IntBuffer ibIndex = bbIndex.asIntBuffer();
+	    int[] nodeByteArrayIndex = new int[nodes.size()];
+	    ByteArrayOutputWrapper nodeData = new ByteArrayOutputWrapper();
+	    int idx = 0;
+	    int offset = 0;
+	    for (HOSMNode node : nodes) {
+	      node = node.rebase(0, 0, baseLongitude, baseLatitude);
+	      nodeOffsets.put(node.getId(), idx);
+	      nodeByteArrayIndex[idx++] = offset;
+	      offset = node.getLength();
+	      node.writeTo(nodeData);
 
-		ByteArrayOutputWrapper nodeData = new ByteArrayOutputWrapper();
-		int offset = 0;
-		int idx = 0;
-		for (HOSMNode node : nodes) {
-			node = node.rebase(0, 0, baseLongitude, baseLatitude);
-			nodeOffsets.put(node.getId(), idx);
-			ibIndex.put(idx++, offset);
-			offset += node.getLength();
-			node.writeTo(nodeData);
-			Iterator<OSMNode> osmItr = node.iterator();
-			while (osmItr.hasNext()) {
-				OSMNode osm = osmItr.next();
-				if (osm.isVisible()) {
-					minLon = Math.min(minLon, osm.getLon());
-					maxLon = Math.max(maxLon, osm.getLon());
+	      Iterator<OSMNode> osmItr = node.iterator();
+	      while (osmItr.hasNext()) {
+	        OSMNode osm = osmItr.next();
+	        if (osm.isVisible()) {
+	          minLon = Math.min(minLon, osm.getLon());
+	          maxLon = Math.max(maxLon, osm.getLon());
 
-					minLat = Math.min(minLat, osm.getLat());
-					maxLat = Math.max(maxLat, osm.getLat());
-				}
-			}
-		}
+	          minLat = Math.min(minLat, osm.getLat());
+	          maxLat = Math.max(maxLat, osm.getLat());
+	        }
+	      }
+	    }
 
 		Builder builder = new Builder(output, baseTimestamp);
 
@@ -312,10 +309,10 @@ public class HOSMWay extends HOSMEntity implements Iterable<OSMWay>, Serializabl
 		record.writeUInt64(id - baseId);
 
 		if ((header & HEADER_HAS_NO_NODES) == 0) {
-			byte[] nodeIndexOutput = bbIndex.array();
-			record.writeUInt32(nodeIndexOutput.length);
-			record.writeByteArray(nodeIndexOutput);
-
+			record.writeUInt32(nodeByteArrayIndex.length);
+			for (int i = 0; i < nodeByteArrayIndex.length; i++) {
+				record.writeUInt32(nodeByteArrayIndex[i]);
+			}
 			byte[] nodesOutput = nodeData.toByteArray();
 			record.writeUInt32(nodesOutput.length);
 			record.writeByteArray(nodesOutput);
