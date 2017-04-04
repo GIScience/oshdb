@@ -82,10 +82,10 @@ public class HOSMNode extends HOSMEntity
   }
   
 
-  public List<OSMNode> getNodes() {
-    List<OSMNode> nodes = new ArrayList<>();
-    this.forEach(nodes::add);
-    return nodes;
+  public List<OSMNode> getVersions() {
+    List<OSMNode> versions = new ArrayList<>();
+    this.forEach(versions::add);
+    return versions;
   }
   
   @Override
@@ -237,7 +237,7 @@ public class HOSMNode extends HOSMEntity
   @Override
   public HOSMNode rebase(long baseNodeId, long baseTimestamp2, long baseLongitude2,
       long baseLatitude2) throws IOException {
-    List<OSMNode> nodes = getNodes();
+    List<OSMNode> nodes = getVersions();
     return HOSMNode.build(nodes, baseNodeId, baseTimestamp2, baseLongitude2, baseLatitude2);
   }
 
