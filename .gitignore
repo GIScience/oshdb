@@ -6,6 +6,10 @@
 .classpath
 .settings
 
+# intellij stuff
+*.iml
+.idea
+
 # netbeans stuff
 nb-configuration.xml
 nbactions*.xml
