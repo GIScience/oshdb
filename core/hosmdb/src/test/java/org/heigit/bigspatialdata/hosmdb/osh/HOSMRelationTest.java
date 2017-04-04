@@ -112,15 +112,15 @@ public class HOSMRelationTest {
       HOSMNode node;
       node = nodes.get(0);
       assertEquals(node.getId(), 100);
-      assertEquals(node.getNodes().get(0).getLon(), node100.getNodes().get(0).getLon());
+      assertEquals(node.getVersions().get(0).getLon(), node100.getVersions().get(0).getLon());
       
       node = nodes.get(1);
       assertEquals(node.getId(), 102);
-      assertEquals(node.getNodes().get(0).getLon(), node100.getNodes().get(0).getLon());
+      assertEquals(node.getVersions().get(0).getLon(), node100.getVersions().get(0).getLon());
       
       node = nodes.get(2);
       assertEquals(node.getId(), 104);
-      assertEquals(node.getNodes().get(0).getLon(), node100.getNodes().get(0).getLon());
+      assertEquals(node.getVersions().get(0).getLon(), node100.getVersions().get(0).getLon());
       
       List<HOSMWay> ways = hrelation.getWays();
       assertTrue(ways.size() == 2);
@@ -128,7 +128,7 @@ public class HOSMRelationTest {
       HOSMWay way;
       way = ways.get(0);
       assertEquals(way.getId(),200);
-      assertEquals(way.getNodes().get(0).getNodes().get(0).getLon(), way200.getNodes().get(0).getNodes().get(0).getLon());
+      assertEquals(way.getNodes().get(0).getVersions().get(0).getLon(), way200.getNodes().get(0).getVersions().get(0).getLon());
      
       
       

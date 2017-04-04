@@ -15,13 +15,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.hosmdb.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellInfo;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellWay;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.WayRelation;
@@ -34,8 +31,8 @@ import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfWay;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
+import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfWay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,7 +138,7 @@ public class TransformWayMapper extends TransformMapper2 {
 
           clearKeyValueCache();
 
-          long minTimestamp = 0;
+          long minTimestamp = Long.MAX_VALUE;
           SortedSet<Long> refs = new TreeSet<>();
           List<OSMWay> ways = new ArrayList<>(versions.size());
           for (OSMPbfEntity entity : versions) {

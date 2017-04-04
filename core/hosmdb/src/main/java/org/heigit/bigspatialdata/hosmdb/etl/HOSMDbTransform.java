@@ -42,21 +42,24 @@ import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
 
 /**
  * HOSMDbTransform
- *
- * inputs from HOSMDbExtract - KeyTables (KeyValues, Roles, User) - Relation
- * Mappings node2Way, node2Relation, way2Relation, relation2Relation
- *
- * output - transformed pbffile nodes with Strings replaced by references -
- * transformed pbffile ways with Strings replaced by references - transformed
- * pbffile relations with Strings replaced by references
- *
- *
+ * 
+ * inputs from HOSMDbExtract - KeyTables (KeyValues, Roles, User) - Relation Mappings node2Way,
+ * node2Relation, way2Relation, relation2Relation
+ * 
+ * output - transformed pbffile nodes with Strings replaced by references - transformed pbffile ways
+ * with Strings replaced by references - transformed pbffile relations with Strings replaced by
+ * references
+ * 
+ * 
  * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
  */
+
 public class HOSMDbTransform {
 
+
+
   public static void extract(String[] args)
-          throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
+      throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
     final CommandLineParser parser = new DefaultParser();
     final Options opts = buildCLIOptions();
     try {
@@ -93,13 +96,11 @@ public class HOSMDbTransform {
 
             //delete previous files
             Path pN2W = Paths.get(tmpDir, n2wRelationFile);
-            if (pN2W.toFile().exists()) {
+            if (pN2W.toFile().exists())
               Files.delete(pN2W);
-            }
             Path pN2R = Paths.get(tmpDir, n2rRelationFile);
-            if (pN2R.toFile().exists()) {
+            if (pN2R.toFile().exists())
               Files.delete(pN2R);
-            }
             System.out.println("Saving NodesForRelation");
             //temp_store serialized nodes so they can be read when creating a way or relation
             saveNodesForRelations(nodeResult, pN2W.toFile(), pN2R.toFile());
@@ -111,20 +112,19 @@ public class HOSMDbTransform {
       // do same for ways and relations (see nodes)
       if (true) {
         try (//
-                final FileInputStream in = new FileInputStream(pbfFile) //
-                ) {
+            final FileInputStream in = new FileInputStream(pbfFile) //
+        ) {
 
           System.out.println("Start Way Mapper");
           TransformWayMapper wayMapper = new TransformWayMapper(maxZoom, n2wRelationFile);
           TransformWayMapper.Result wayResults = wayMapper.map(in);
           System.out.println("Saving Way Grid");
           saveGrid(wayResults);
-
+          
           Path pW2R = Paths.get(tmpDir, w2rRelationFile);
-          if (pW2R.toFile().exists()) {
+          if (pW2R.toFile().exists())
             Files.delete(pW2R);
-          }
-
+          
           saveWaysForRelations(wayResults, pW2R.toFile());
         }
       }
@@ -139,68 +139,74 @@ public class HOSMDbTransform {
           TransformRelationMapper.Result result = mapper.map(in);
           System.out.println("Saving Relation Grid");
           saveGrid(result);
-
+          
         }
-
+            
       }
-
+      
+      
     } catch (ParseException exp) {
       System.err.println("Parsing failed.  Reason: " + exp.getMessage());
     }
   }
 
+
   private static void saveGrid(Result result, XYGrid grid) {
-    try (
-            Connection conn
-            = DriverManager.getConnection("jdbc:h2:./hosmdb_node;COMPRESS=TRUE", "sa", "");
-            Statement stmt = conn.createStatement()) {
+	    try (
+	        Connection conn =
+	            DriverManager.getConnection("jdbc:h2:./hosmdb_node;COMPRESS=TRUE", "sa", "");
+	        Statement stmt = conn.createStatement()) {
 
-      stmt.executeUpdate(
-              "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
+	      stmt.executeUpdate(
+	          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
 
-      PreparedStatement insert
-              = conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
+	      PreparedStatement insert =
+	          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
 
-      for (CellNode cell : result.getNodeCells()) {
-        insert.setInt(1, cell.info().getZoomLevel());
-        insert.setLong(2, cell.info().getId());
+	      for (CellNode cell : result.getNodeCells()) {
+	        insert.setInt(1, cell.info().getZoomLevel());
+	        insert.setLong(2, cell.info().getId());
 
-        CellInfo cellInfo = cell.info();
-        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        double[] minValues = cellDimensions.getMinValuesPerDimension();
-        HOSMCellNodes hosmCell = HOSMCellNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
-                (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(out);
-        oos.writeObject(hosmCell);
-        oos.flush();
-        oos.close();
-        byte[] buf = out.toByteArray();
-        ByteArrayInputStream in = new ByteArrayInputStream(buf);
-        insert.setBinaryStream(3, in);
-        insert.executeUpdate();
-      }
-    } catch (SQLException | IOException e) {
-      e.printStackTrace();
-    }
-  }
+
+	        CellInfo cellInfo = cell.info();
+	        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
+	        double[] minValues = cellDimensions.getMinValuesPerDimension();
+	        HOSMCellNodes hosmCell = HOSMCellNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
+	            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
+	            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
+
+	        ByteArrayOutputStream out = new ByteArrayOutputStream();
+	        ObjectOutputStream oos = new ObjectOutputStream(out);
+	        oos.writeObject(hosmCell);
+	        oos.flush();
+	        oos.close();
+	        byte[] buf = out.toByteArray();
+	        ByteArrayInputStream in = new ByteArrayInputStream(buf);
+	        insert.setBinaryStream(3, in);
+	        insert.executeUpdate();
+	      }
+	    } catch (SQLException | IOException e) {
+	      e.printStackTrace();
+	    }
+	  }
 
   private static void saveGrid(TransformWayMapper.Result wayResults) {
     try (
-            Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_way;COMPRESS=TRUE", "sa", "");
-            Statement stmt = conn.createStatement()) {
+        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_way;COMPRESS=TRUE", "sa", "");
+        Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
-              "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
+          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
 
-      PreparedStatement insert
-              = conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
+      PreparedStatement insert =
+          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
 
       for (CellWay cell : wayResults.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());
         insert.setLong(2, cell.info().getId());
+
+
 
         CellInfo cellInfo = cell.info();
 
@@ -208,8 +214,8 @@ public class HOSMDbTransform {
         MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
         double[] minValues = cellDimensions.getMinValuesPerDimension();
         HOSMCellWays hosmCell = HOSMCellWays.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
-                (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getWays());
+            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
+            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getWays());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(out);
@@ -222,6 +228,7 @@ public class HOSMDbTransform {
         insert.executeUpdate();
       }
 
+
     } catch (SQLException | IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -229,20 +236,24 @@ public class HOSMDbTransform {
 
   }
 
-  private static void saveGrid(TransformRelationMapper.Result result) {
+
+  
+  private static void saveGrid(TransformRelationMapper.Result result){
     try (
-            Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_relation;COMPRESS=TRUE", "sa", "");
-            Statement stmt = conn.createStatement()) {
+        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_relation;COMPRESS=TRUE", "sa", "");
+        Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
-              "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
+          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
 
-      PreparedStatement insert
-              = conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
+      PreparedStatement insert =
+          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
 
       for (CellRelation cell : result.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());
         insert.setLong(2, cell.info().getId());
+
+
 
         CellInfo cellInfo = cell.info();
 
@@ -250,8 +261,8 @@ public class HOSMDbTransform {
         MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
         double[] minValues = cellDimensions.getMinValuesPerDimension();
         HOSMCellRelations hosmCell = HOSMCellRelations.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
-                (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getRelations());
+            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
+            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getRelations());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(out);
@@ -264,29 +275,32 @@ public class HOSMDbTransform {
         insert.executeUpdate();
       }
 
+
     } catch (SQLException | IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
+  
+  
 
   private static void saveNodesForRelations(TransformNodeMapper.Result nodeResult, File n2wRelationFile, File n2rRelationFile)
-          throws FileNotFoundException, IOException {
-
+      throws FileNotFoundException, IOException {
+    
     try (//
-            FileOutputStream fileOutput = new FileOutputStream(n2wRelationFile);
-            BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
-            ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
+        FileOutputStream fileOutput = new FileOutputStream(n2wRelationFile);
+        BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
+        ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
       for (NodeRelation nr : nodeResult.getNodesForWays()) {
         objectOutput.writeObject(nr);
       }
       objectOutput.flush();
     }
-
+    
     try (//
-            FileOutputStream fileOutput = new FileOutputStream(n2rRelationFile);
-            BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
-            ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
+        FileOutputStream fileOutput = new FileOutputStream(n2rRelationFile);
+        BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
+        ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
       for (NodeRelation nr : nodeResult.getNodesForRelations()) {
         objectOutput.writeObject(nr);
       }
@@ -296,9 +310,9 @@ public class HOSMDbTransform {
 
   private static void saveWaysForRelations(TransformWayMapper.Result result, File w2rRelationFile) throws FileNotFoundException, IOException {
     try (//
-            FileOutputStream fileOutput = new FileOutputStream(w2rRelationFile);
-            BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
-            ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
+        FileOutputStream fileOutput = new FileOutputStream(w2rRelationFile);
+        BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
+        ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
       for (WayRelation nr : result.getWaysForRelations()) {
         objectOutput.writeObject(nr);
       }
@@ -306,28 +320,34 @@ public class HOSMDbTransform {
     }
   }
 
+
+  
+  
+  
+  
+
   private static Options buildCLIOptions() {
     final Options opts = new Options();
 
     opts.addOption(Option.builder("p") //
-            .longOpt("pbf") //
-            .argName("pbf") //
-            .desc("pbf file to import") //
-            // .numberOfArgs(Option.UNLIMITED_VALUES).hasArgs() //
-            .hasArg().required() //
-            .build());
+        .longOpt("pbf") //
+        .argName("pbf") //
+        .desc("pbf file to import") //
+        // .numberOfArgs(Option.UNLIMITED_VALUES).hasArgs() //
+        .hasArg().required() //
+        .build());
 
     opts.addOption(Option.builder().longOpt("tmpDir") //
-            .desc("Directory to store temporary files. DEFAULT ./") //
-            .hasArg() //
-            .required(false) //
-            .build());
+        .desc("Directory to store temporary files. DEFAULT ./") //
+        .hasArg() //
+        .required(false) //
+        .build());
 
     return opts;
   }
 
   public static void main(String[] args)
-          throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
+      throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
     HOSMDbTransform.extract(args);
   }
 }

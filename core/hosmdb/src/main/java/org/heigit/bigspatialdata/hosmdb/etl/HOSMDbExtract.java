@@ -35,18 +35,22 @@ public class HOSMDbExtract {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HOSMDbExtract.class);
 
+
   private final String tmpDir;
 
   public HOSMDbExtract(final String tmpDir) {
     this.tmpDir = tmpDir;
   }
 
+
   public ExtractMapper createMapper() {
     return new ExtractMapper();
   }
 
+
+
   public static void extract(String[] args)
-          throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
+      throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
     final CommandLineParser parser = new DefaultParser();
     final Options opts = buildCLIOptions();
     try {
@@ -77,7 +81,7 @@ public class HOSMDbExtract {
 
         //friendly output
         System.out.printf("Found N/W/R(%d,%d,%d)\n", mapResult.getCountNodes(),
-                mapResult.getCountWays(), mapResult.getCountRelations());
+            mapResult.getCountWays(), mapResult.getCountRelations());
 
       }
     } catch (ParseException exp) {
@@ -85,34 +89,37 @@ public class HOSMDbExtract {
     }
   }
 
+
+
   private static void storePBFMetaData(ExtractMapperResult mapResult)
-          throws SQLException, IOException {
+      throws SQLException, IOException {
     Properties props = new Properties();
-    props.put("countNodes", "" + mapResult.getCountNodes());
-    props.put("countWay", "" + mapResult.getCountWays());
-    props.put("countRelations", "" + mapResult.getCountRelations());
-    props.put("startPosNode", "" + mapResult.getPbfTypeBlockFirstPosition().get(Type.NODE).longValue());
-    props.put("startPosWay", "" + mapResult.getPbfTypeBlockFirstPosition().get(Type.WAY).longValue());
-    props.put("startPosRelation", "" + mapResult.getPbfTypeBlockFirstPosition().get(Type.RELATION).longValue());
+    props.put("countNodes", ""+mapResult.getCountNodes());
+    props.put("countWay", ""+mapResult.getCountWays());
+    props.put("countRelations",""+ mapResult.getCountRelations());
+    props.put("startPosNode", ""+mapResult.getPbfTypeBlockFirstPosition().get(Type.NODE).longValue());
+    props.put("startPosWay", ""+mapResult.getPbfTypeBlockFirstPosition().get(Type.WAY).longValue());
+    props.put("startPosRelation", ""+ mapResult.getPbfTypeBlockFirstPosition().get(Type.RELATION).longValue());
 
     HeaderInfo info = mapResult.getHeaderInfo();
 
     try (FileOutputStream out = new FileOutputStream("temp_meta.properties")) {
-      props.store(out, String.format("created at %1$tF %1$tT", new Date()));
-      out.flush();
+     props.store(out, String.format("created at %1$tF %1$tT", new Date()));
+     out.flush();
     }
 
   }
+
 
   private static void storeRelationMapping(ExtractMapperResult mapResult) throws SQLException {
     try (Connection conn = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
       Statement stmt = conn.createStatement();
       stmt.executeUpdate(
-              "drop table if exists node2way; create table if not exists node2way(node bigint primary key, ways array)");
-      try (PreparedStatement insert
-              = conn.prepareStatement("insert into node2way (node,ways) values(?,?)")) {
+          "drop table if exists node2way; create table if not exists node2way(node bigint primary key, ways array)");
+      try (PreparedStatement insert =
+          conn.prepareStatement("insert into node2way (node,ways) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().nodeToWay()
-                .entrySet()) {
+            .entrySet()) {
           insert.setLong(1, relation.getKey());
           insert.setObject(2, relation.getValue().toArray(new Long[0]));
           insert.addBatch();
@@ -121,11 +128,11 @@ public class HOSMDbExtract {
       }
 
       stmt.executeUpdate(
-              "drop table if exists node2relation; create table if not exists node2relation(node bigint primary key, relations array)");
-      try (PreparedStatement insert
-              = conn.prepareStatement("insert into node2relation (node,relations) values(?,?)")) {
+          "drop table if exists node2relation; create table if not exists node2relation(node bigint primary key, relations array)");
+      try (PreparedStatement insert =
+          conn.prepareStatement("insert into node2relation (node,relations) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().nodeToRelation()
-                .entrySet()) {
+            .entrySet()) {
           insert.setLong(1, relation.getKey());
           insert.setObject(2, relation.getValue().toArray(new Long[0]));
           insert.addBatch();
@@ -134,11 +141,11 @@ public class HOSMDbExtract {
       }
 
       stmt.executeUpdate(
-              "drop table if exists way2relation; create table if not exists way2relation(way bigint primary key, relations array)");
-      try (PreparedStatement insert
-              = conn.prepareStatement("insert into way2relation (way,relations) values(?,?)")) {
+          "drop table if exists way2relation; create table if not exists way2relation(way bigint primary key, relations array)");
+      try (PreparedStatement insert =
+          conn.prepareStatement("insert into way2relation (way,relations) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().wayToRelation()
-                .entrySet()) {
+            .entrySet()) {
           insert.setLong(1, relation.getKey());
           insert.setObject(2, relation.getValue().toArray(new Long[0]));
           insert.addBatch();
@@ -147,11 +154,11 @@ public class HOSMDbExtract {
       }
 
       stmt.executeUpdate(
-              "drop table if exists relation2relation; create table if not exists relation2relation(relation bigint primary key, relations array)");
-      try (PreparedStatement insert
-              = conn.prepareStatement("insert into relation2relation (relation,relations) values(?,?)")) {
+          "drop table if exists relation2relation; create table if not exists relation2relation(relation bigint primary key, relations array)");
+      try (PreparedStatement insert =
+          conn.prepareStatement("insert into relation2relation (relation,relations) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().relationToRelation()
-                .entrySet()) {
+            .entrySet()) {
           insert.setLong(1, relation.getKey());
           insert.setObject(2, relation.getValue().toArray(new Long[0]));
           insert.addBatch();
@@ -162,25 +169,26 @@ public class HOSMDbExtract {
 
   }
 
+
   private static void storeKeyTables(ExtractMapperResult mapResult) throws SQLException {
     try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_keytables;COMPRESS=TRUE", "sa", "")) {
       Statement stmt = conn.createStatement();
       stmt.executeUpdate(
-              "drop table if exists key; create table if not exists key(id int primary key, txt varchar)");
+          "drop table if exists key; create table if not exists key(id int primary key, txt varchar)");
       stmt.executeUpdate(
-              "drop table if exists keyvalue; create table if not exists keyvalue(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
+          "drop table if exists keyvalue; create table if not exists keyvalue(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
       try (//
-              PreparedStatement insertKey
-              = conn.prepareStatement("insert into key (id,txt) values (?,?)");
-              PreparedStatement insertValue
-              = conn.prepareStatement("insert into keyvalue ( keyId, valueId, txt ) values(?,?,?)")) {
+          PreparedStatement insertKey =
+              conn.prepareStatement("insert into key (id,txt) values (?,?)");
+          PreparedStatement insertValue =
+              conn.prepareStatement("insert into keyvalue ( keyId, valueId, txt ) values(?,?,?)")) {
 
         Map<String, KeyValuesFrequency> keyValuesFrequency = mapResult.getTagToKeyValuesFrequency();
 
-        List<Map.Entry<String, KeyValuesFrequency>> sortedKeys
-                = new ArrayList<>(keyValuesFrequency.entrySet());
-        Comparator<Map.Entry<String, KeyValuesFrequency>> keyFrequencComparator
-                = (e1, e2) -> Integer.compare(e1.getValue().freq(), e2.getValue().freq());
+        List<Map.Entry<String, KeyValuesFrequency>> sortedKeys =
+            new ArrayList<>(keyValuesFrequency.entrySet());
+        Comparator<Map.Entry<String, KeyValuesFrequency>> keyFrequencComparator =
+            (e1, e2) -> Integer.compare(e1.getValue().freq(), e2.getValue().freq());
         sortedKeys.sort(keyFrequencComparator.reversed());
 
         for (int i = 0; i < sortedKeys.size(); i++) {
@@ -189,10 +197,10 @@ public class HOSMDbExtract {
           insertKey.setString(2, entry.getKey());
           insertKey.addBatch();
 
-          List<Map.Entry<String, Integer>> sortedValues
-                  = new ArrayList<>(entry.getValue().values().entrySet());
-          Comparator<Map.Entry<String, Integer>> valueFrequencComparator
-                  = (e1, e2) -> Integer.compare(e1.getValue(), e2.getValue());
+          List<Map.Entry<String, Integer>> sortedValues =
+              new ArrayList<>(entry.getValue().values().entrySet());
+          Comparator<Map.Entry<String, Integer>> valueFrequencComparator =
+              (e1, e2) -> Integer.compare(e1.getValue(), e2.getValue());
           sortedValues.sort(valueFrequencComparator.reversed());
           for (int j = 0; j < sortedValues.size(); j++) {
             insertValue.setInt(1, i);
@@ -206,9 +214,9 @@ public class HOSMDbExtract {
       }
 
       stmt.executeUpdate(
-              "drop table if exists user; create table if not exists user(id int primary key, name varchar)");
-      try (PreparedStatement insertUser
-              = conn.prepareStatement("insert into user (id, name) values (?,?)")) {
+          "drop table if exists user; create table if not exists user(id int primary key, name varchar)");
+      try (PreparedStatement insertUser =
+          conn.prepareStatement("insert into user (id, name) values (?,?)")) {
         for (OSMPbfUser user : mapResult.getUniqueUser()) {
           insertUser.setInt(1, user.getId());
           insertUser.setString(2, user.getName());
@@ -217,13 +225,13 @@ public class HOSMDbExtract {
         insertUser.executeBatch();
       }
       stmt.executeUpdate(
-              "drop table if exists role; create table if not exists role(id int primary key, txt varchar)");
-      try (PreparedStatement insertRole
-              = conn.prepareStatement("insert into role (id,txt) values(?,?)")) {
-        List<Map.Entry<String, Integer>> sortedRoles
-                = new ArrayList<>(mapResult.getRoleToFrequency().entrySet());
-        Comparator<Map.Entry<String, Integer>> roleFrequencComparator
-                = (e1, e2) -> Integer.compare(e1.getValue(), e2.getValue());
+          "drop table if exists role; create table if not exists role(id int primary key, txt varchar)");
+      try (PreparedStatement insertRole =
+          conn.prepareStatement("insert into role (id,txt) values(?,?)")) {
+        List<Map.Entry<String, Integer>> sortedRoles =
+            new ArrayList<>(mapResult.getRoleToFrequency().entrySet());
+        Comparator<Map.Entry<String, Integer>> roleFrequencComparator =
+            (e1, e2) -> Integer.compare(e1.getValue(), e2.getValue());
         sortedRoles.sort(roleFrequencComparator.reversed());
 
         for (int i = 0; i < sortedRoles.size(); i++) {
@@ -236,28 +244,30 @@ public class HOSMDbExtract {
     }
   }
 
+
   private static Options buildCLIOptions() {
     final Options opts = new Options();
 
     opts.addOption(Option.builder("p") //
-            .longOpt("pbf") //
-            .argName("pbf") //
-            .desc("pbf file to import") //
-            // .numberOfArgs(Option.UNLIMITED_VALUES).hasArgs() //
-            .hasArg().required() //
-            .build());
+        .longOpt("pbf") //
+        .argName("pbf") //
+        .desc("pbf file to import") //
+        // .numberOfArgs(Option.UNLIMITED_VALUES).hasArgs() //
+        .hasArg().required() //
+        .build());
 
     opts.addOption(Option.builder().longOpt("tmpDir") //
-            .desc("Directory to store temporary files. DEFAULT ./") //
-            .hasArg() //
-            .required(false) //
-            .build());
+        .desc("Directory to store temporary files. DEFAULT ./") //
+        .hasArg() //
+        .required(false) //
+        .build());
 
     return opts;
   }
 
+
   public static void main(String[] args)
-          throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
+      throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
     HOSMDbExtract.extract(args);
   }
 

@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.hosmdb.etl.transform.relation;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -16,31 +15,24 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.hosmdb.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellInfo;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellRelation;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellWay;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.WayRelation;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMRelation;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMWay;
-import org.heigit.bigspatialdata.hosmdb.osm.OSMMember;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.hosmdb.osm.OSMWay;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfWay;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfRelation;
 import org.slf4j.Logger;
@@ -147,7 +139,7 @@ public class TransformRelationMapper extends TransformMapper2 {
           if (type != Type.RELATION)
             continue;
 
-          long minTimestamp = 0;
+          long minTimestamp = Long.MAX_VALUE;
           SortedSet<Long> nodes = new TreeSet<>();
           SortedSet<Long> ways = new TreeSet<>();
           List<OSMRelation> relations = new ArrayList<>(versions.size());

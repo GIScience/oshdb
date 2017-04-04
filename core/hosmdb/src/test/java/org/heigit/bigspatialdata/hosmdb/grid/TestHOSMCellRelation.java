@@ -1,9 +1,9 @@
 package org.heigit.bigspatialdata.hosmdb.grid;
 
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMEntity;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMRelation;
