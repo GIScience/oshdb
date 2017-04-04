@@ -90,7 +90,7 @@ public class HOSMDbTransform {
             // header; node1v1, node1v2,...,noder2v1,...nodeNvN (deltaencaoded and serialized as you know it)
             //THIS is the MAGIC!!!
             saveGrid(nodeResult, grid);
-            
+
             //delete previous files
             Path pN2W = Paths.get(tmpDir, n2wRelationFile);
             if (pN2W.toFile().exists()) {
@@ -128,7 +128,7 @@ public class HOSMDbTransform {
           saveWaysForRelations(wayResults, pW2R.toFile());
         }
       }
-      
+
       //relations
       if (true) {
         try (//

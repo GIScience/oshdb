@@ -44,7 +44,7 @@ public class HOSMDbExtract {
   public ExtractMapper createMapper() {
     return new ExtractMapper();
   }
-  
+
   public static void extract(String[] args)
           throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
     final CommandLineParser parser = new DefaultParser();
