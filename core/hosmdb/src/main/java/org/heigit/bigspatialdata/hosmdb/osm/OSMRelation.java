@@ -24,7 +24,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   public int compareTo(OSMRelation o) {
     int c = Long.compare(id, o.id);
     if (c == 0) {
-      c = Integer.compare(version, o.version);
+      c = Integer.compare(Math.abs(version), Math.abs(o.version));
       if (c == 0) {
         c = Long.compare(timestamp, o.timestamp);
       }

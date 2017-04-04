@@ -30,7 +30,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   public int compareTo(OSMWay o) {
     int c = Long.compare(id, o.id);
     if (c == 0)
-      c = Integer.compare(version, o.version);
+      c = Integer.compare(Math.abs(version), Math.abs(o.version));
     if (c == 0)
       c = Long.compare(timestamp, o.timestamp);
     return c;
