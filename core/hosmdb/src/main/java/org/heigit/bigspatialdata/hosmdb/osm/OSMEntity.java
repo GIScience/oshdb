@@ -54,7 +54,7 @@ public abstract class OSMEntity {
   public int[] getTags() {
     return tags;
   }
-
+ 
   public boolean equalsTo(OSMEntity o) {
     return id == o.id && version == o.version && timestamp == o.timestamp
         && changeset == o.changeset && userId == o.userId && Arrays.equals(tags, o.tags);

@@ -165,7 +165,7 @@ public class HOSMDbTransform {
 	        CellInfo cellInfo = cell.info();
 	        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
 	        double[] minValues = cellDimensions.getMinValuesPerDimension();
-	        HOSMCellNodes hosmCell = HOSMCellNodes.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
+	        HOSMCellNodes hosmCell = HOSMCellNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
 	            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
 	            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
 

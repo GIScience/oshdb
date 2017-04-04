@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.hosmdb.osh;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +38,33 @@ public class HOSMWayTest {
     List<HOSMNode> nodes = hway.getNodes();
     assertEquals(3, nodes.size());
         
+  }
+  
+  
+  @Test
+  public void testCreateGeometrey() throws IOException {
+	  List<OSMWay> versions = new ArrayList<>();
+	    versions.add(
+	        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, 0, 0),new OSMMember(104,0,0)}));
+	    versions.add(
+	        new OSMWay(123, 3, 3333l, 4444l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(100, 0, 0),new OSMMember(104,0,0)}));
+	    
+	    HOSMWay hway = HOSMWay.build(versions, Arrays.asList(node100,node102,node104));
+	    assertNotNull(hway);
+	    
+	    
+	    Iterator<OSMWay> ways = hway.iterator();
+	   
+	    OSMWay w = ways.next();
+	    
+	    
+	    OSMMember[] members = w.getRefs();
+	    members[0].getData();
+	  
+	    
+	    
+	    List<HOSMNode> nodes = hway.getNodes();
+	  
   }
 
   @Test

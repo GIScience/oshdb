@@ -7,21 +7,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.LongBinaryOperator;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellNodes;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
-import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellWays;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMRelation;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMWay;
-import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
-
 
 
 public class TestReadFromDB {

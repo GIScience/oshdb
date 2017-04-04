@@ -31,7 +31,7 @@ public class TestHOSMCellNodes {
       }
 
 
-      HOSMCellNodes cell =HOSMCellNodes.compact(123, 2,100, 100000l, 86000000, 490000000, hosmNodes);
+      HOSMCellNodes cell =HOSMCellNodes.rebase(123, 2,100, 100000l, 86000000, 490000000, hosmNodes);
 
       System.out.println("Hallo");
 
