@@ -16,3 +16,4 @@ nbactions*.xml
 # DB stuff
 temp_*
 *.mv.db
+*.trace.db
