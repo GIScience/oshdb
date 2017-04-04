@@ -60,31 +60,38 @@ public class HOSMDbTransform {
     final CommandLineParser parser = new DefaultParser();
     final Options opts = buildCLIOptions();
     try {
+      //parse input
       CommandLine cli = parser.parse(opts, args);
 
       final String pbfFile = cli.getOptionValue("pbf");
       final String tmpDir = cli.getOptionValue("tmpDir", "./");
 
+      //set some basic variables
       final int maxZoom = 12;
-      final String n2wRelationFile = "temp_nodesForWays.ser";
-      final String n2rRelationFile = "temp_nodesForRelation.ser";
-      final String w2rRelationFile = "temp_waysForRelation.ser";
+      final String n2wRelationFile = tmpDir + "temp_nodesForWays.ser";
+      final String n2rRelationFile = tmpDir + "temp_nodesForRelation.ser";
+      final String w2rRelationFile = tmpDir + "temp_waysForRelation.ser";
       final XYGrid grid = new XYGrid(12);
 
       Class.forName("org.h2.Driver");
 
-      // nodes
+      // serialise nodes and write to .ser-file
       if (true) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile) //
                 ) {
+          //define parts of file so it can be devided between threads
           TransformNodeMapper nodeMapper = new TransformNodeMapper(maxZoom);
           TransformNodeMapper.Result nodeResult = nodeMapper.map(in);
 
           if (true) {
             System.out.println("Saving Node Grid");
+            //create grid cells containing all nodes in that cell:
+            // header; node1v1, node1v2,...,noder2v1,...nodeNvN (deltaencaoded and serialized as you know it)
+            //THIS is the MAGIC!!!
             saveGrid(nodeResult, grid);
-
+            
+            //delete previous files
             Path pN2W = Paths.get(tmpDir, n2wRelationFile);
             if (pN2W.toFile().exists()) {
               Files.delete(pN2W);
@@ -94,12 +101,14 @@ public class HOSMDbTransform {
               Files.delete(pN2R);
             }
             System.out.println("Saving NodesForRelation");
+            //temp_store serialized nodes so they can be read when creating a way or relation
             saveNodesForRelations(nodeResult, pN2W.toFile(), pN2R.toFile());
           }
         }
       }
 
       // ways
+      // do same for ways and relations (see nodes)
       if (true) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile) //
@@ -119,7 +128,8 @@ public class HOSMDbTransform {
           saveWaysForRelations(wayResults, pW2R.toFile());
         }
       }
-
+      
+      //relations
       if (true) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile) //

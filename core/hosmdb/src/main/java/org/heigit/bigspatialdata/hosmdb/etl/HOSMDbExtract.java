@@ -44,15 +44,17 @@ public class HOSMDbExtract {
   public ExtractMapper createMapper() {
     return new ExtractMapper();
   }
-
+  
   public static void extract(String[] args)
           throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
     final CommandLineParser parser = new DefaultParser();
     final Options opts = buildCLIOptions();
     try {
+      //read command-line input
       CommandLine cli = parser.parse(opts, args);
 
       final String pbfFile = cli.getOptionValue("pbf");
+      //TODO: this input is ignored as lines 100 and 108 do not use it
       final String tmpDir = cli.getOptionValue("tmpDir", "./");
 
       Class.forName("org.h2.Driver");
@@ -62,14 +64,18 @@ public class HOSMDbExtract {
       try (//
               final FileInputStream in = new FileInputStream(pbfFile) //
               ) {
-
+        //define parts of file so it can be devided between threads
         ExtractMapper mapper = hosmDbExtract.createMapper();
         ExtractMapperResult mapResult = mapper.map(in);
 
+        //create a h2 containing a collection of all keys and they corresponding values in this dataset
         storeKeyTables(mapResult);
+        //create a temp_h2 containing storing all nodes, ways and relations that will are part of other ways or relations
         storeRelationMapping(mapResult);
+        //collect and temp_write some baisc statistics about the imported data
         storePBFMetaData(mapResult);
 
+        //friendly output
         System.out.printf("Found N/W/R(%d,%d,%d)\n", mapResult.getCountNodes(),
                 mapResult.getCountWays(), mapResult.getCountRelations());
 
