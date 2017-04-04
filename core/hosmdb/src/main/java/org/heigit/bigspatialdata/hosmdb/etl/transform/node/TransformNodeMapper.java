@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +17,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.hosmdb.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellInfo;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellNode;
 import org.heigit.bigspatialdata.hosmdb.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
@@ -28,9 +26,8 @@ import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfNode;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfTag;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
+import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +119,7 @@ public class TransformNodeMapper extends TransformMapper2 {
 
           clearKeyValueCache();
           
-          long minTimestamp = 0;
+          long minTimestamp = Long.MAX_VALUE;
           Set<CellNode> cells = new HashSet<>();
           List<OSMNode> nodes = new ArrayList<>(versions.size());
           for (OSMPbfEntity entity : versions) {
