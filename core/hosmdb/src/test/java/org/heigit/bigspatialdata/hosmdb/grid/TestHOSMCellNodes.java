@@ -1,13 +1,9 @@
 package org.heigit.bigspatialdata.hosmdb.grid;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellNodes;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
 import org.junit.Test;
