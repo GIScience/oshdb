@@ -79,7 +79,7 @@ public class HOSMDbTransform {
       Class.forName("org.h2.Driver");
 
       // serialise nodes and write to .ser-file
-      if (false) {
+      if (true) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile) //
                 ) {
@@ -110,7 +110,7 @@ public class HOSMDbTransform {
 
       // ways
       // do same for ways and relations (see nodes)
-      if (false) {
+      if (true) {
         try (//
             final FileInputStream in = new FileInputStream(pbfFile) //
         ) {
@@ -153,6 +153,7 @@ public class HOSMDbTransform {
 
   private static void saveGrid(Result result, XYGrid grid) {
 	    try (
+                    //get connection and set up h2-DB
 	        Connection conn =
 	            DriverManager.getConnection("jdbc:h2:./hosmdb_node;COMPRESS=TRUE", "sa", "");
 	        Statement stmt = conn.createStatement()) {
@@ -162,8 +163,10 @@ public class HOSMDbTransform {
 
 	      PreparedStatement insert =
 	          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
-
+              
+              //iterate over cells parsed from PBF-File
 	      for (CellNode cell : result.getNodeCells()) {
+                //write zoomlevel and id to h2
 	        insert.setInt(1, cell.info().getZoomLevel());
 	        insert.setLong(2, cell.info().getId());
 
@@ -172,10 +175,12 @@ public class HOSMDbTransform {
 	        CellInfo cellInfo = cell.info();
 	        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
 	        double[] minValues = cellDimensions.getMinValuesPerDimension();
+                //create hosmCell of nodes from a "cellNode", a collection of nodes. First part is header, followed by cell.getNodes(), the actual nodes. At this point, delta encoding is already done within the HOSMNode
 	        HOSMCellNodes hosmCell = HOSMCellNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
 	            cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
 	            (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
-
+                
+                //convert hosmCell of nodes to a byteArray of objects to the database
 	        ByteArrayOutputStream out = new ByteArrayOutputStream();
 	        ObjectOutputStream oos = new ObjectOutputStream(out);
 	        oos.writeObject(hosmCell);

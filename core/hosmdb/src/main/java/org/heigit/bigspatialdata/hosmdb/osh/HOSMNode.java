@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import org.heigit.bigspatialdata.hosmdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
@@ -40,6 +39,7 @@ public class HOSMNode extends HOSMEntity
       final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException{
     
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
+    //header holds data on bitlevel and can then be compared to stereotypical bitcombinations (e.g. this.HEADER_HAS_TAGS)
     final byte header = wrapper.readRawByte();
     final BoundingBox bbox;
     if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
