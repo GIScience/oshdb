@@ -42,8 +42,8 @@ public class Builder {
   }
  
    public void build(OSMEntity version, byte changed) throws IOException{
-    int v = (version.getVersion()* (!version.isVisible() ? -1 : 1)) - lastVersion; 
-    output.writeSInt32(v);
+    int v = (version.getVersion()* (!version.isVisible() ? -1 : 1)) ; 
+    output.writeSInt32(v- lastVersion);
     lastVersion = v;
     
     output.writeSInt64((version.getTimestamp() - lastTimestamp) - baseTimestamp);
