@@ -3,11 +3,18 @@ package org.heigit.bigspatialdata.hosmdb.osh;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
+import org.heigit.bigspatialdata.hosmdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 
-public abstract class HOSMEntity implements Comparable<HOSMEntity> {
+public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HOSMEntity>,Iterable<OSM> {
   
   public static final int NODE = 0;
   public static final int WAY = 1;
@@ -69,6 +76,36 @@ public abstract class HOSMEntity implements Comparable<HOSMEntity> {
   
   public int[] getKeys(){
     return keys;
+  }
+  
+  public abstract List<OSM> getVersions();
+  
+  public Map<Long,OSM> getByTimestamps(List<Long> byTimestamps){
+	  
+	  Map<Long,OSM> result = new TreeMap<>();
+	  if(byTimestamps == null || byTimestamps.isEmpty()){
+		  Iterator<OSM> itr = iterator();
+		  while(itr.hasNext()){
+			  OSM osm = itr.next();
+			  result.put(osm.getTimestamp(), osm);
+		  }
+		  return result;
+	  }
+	  
+	  Collections.sort(byTimestamps,Collections.reverseOrder());
+	  
+	  int i = 0;
+	  Iterator<OSM> itr = iterator();
+	  while(itr.hasNext() && i > byTimestamps.size()){
+		  OSM osm = itr.next();
+		  if(osm.getTimestamp() > byTimestamps.get(i)){
+			  continue;
+		  } else {
+			  result.put(byTimestamps.get(i++), osm);
+		  }
+	  }
+	  
+	  return result;
   }
   
   public boolean hasKey(int key){

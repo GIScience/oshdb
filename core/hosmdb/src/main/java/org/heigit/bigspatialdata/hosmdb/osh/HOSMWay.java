@@ -22,7 +22,7 @@ import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayWrapper;
 
-public class HOSMWay extends HOSMEntity implements Iterable<OSMWay>, Serializable {
+public class HOSMWay extends HOSMEntity<OSMWay> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

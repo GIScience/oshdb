@@ -17,271 +17,286 @@ import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.hosmdb.util.ByteArrayWrapper;
 
-public class HOSMNode extends HOSMEntity
-    implements Iterable<OSMNode>, Serializable {
+public class HOSMNode extends HOSMEntity<OSMNode> implements Iterable<OSMNode>, Serializable {
 
-  private static final long serialVersionUID = 1L;
-  
-  private static final int CHANGED_USER_ID = 1 << 0;
-  private static final int CHANGED_TAGS = 1 << 1;
-  private static final int CHANGED_LOCATION = 1 << 2;
+	private static final long serialVersionUID = 1L;
 
-  private static final int HEADER_MULTIVERSION = 1 << 0;
-  private static final int HEADER_TIMESTAMPS_NOT_IN_ORDER = 1 << 1;
-  private static final int HEADER_HAS_TAGS = 1 << 2;
-  private static final int HEADER_HAS_BOUNDINGBOX = 1 << 3;
-  
-  
-  public static HOSMNode instance(final byte[] data, final int offset, final int length) throws IOException{
-    return instance(data, offset, length, 0, 0, 0, 0);
-  }
-  
-  public static HOSMNode instance(final byte[] data, final int offset, final int length, final long baseNodeId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException{
-    
-    ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
-    final byte header = wrapper.readRawByte();
-    final BoundingBox bbox;
-    if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
-      final long minLon = baseLongitude + wrapper.readSInt64();
-      final long maxLon = minLon + wrapper.readUInt64();
-      final long minLat = baseLatitude + wrapper.readSInt64();
-      final long maxLat = minLat + wrapper.readUInt64();
+	private static final int CHANGED_USER_ID = 1 << 0;
+	private static final int CHANGED_TAGS = 1 << 1;
+	private static final int CHANGED_LOCATION = 1 << 2;
 
-      bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-          minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+	private static final int HEADER_MULTIVERSION = 1 << 0;
+	private static final int HEADER_TIMESTAMPS_NOT_IN_ORDER = 1 << 1;
+	private static final int HEADER_HAS_TAGS = 1 << 2;
+	private static final int HEADER_HAS_BOUNDINGBOX = 1 << 3;
 
-    } else {
-      bbox = null;
-    }
-    final int[] keys;
-    if((header & HEADER_HAS_TAGS) != 0){
-      final int size = wrapper.readUInt32();
-      keys = new int[size];
-      for(int i=0; i<size;i++){
-        keys[i] = wrapper.readUInt32();
-      }
-    }else{
-      keys = new int[0];
-    }
-    final long id = wrapper.readUInt64() + baseNodeId;
-    final int dataOffset = wrapper.getPos();
-    
-    //TODO do we need dataLength?
-    //TODO maybe better to store number of versions instead
-    final int dataLength = length - (dataOffset - offset);
-    
-    return new HOSMNode(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys, dataOffset, dataLength);
-  }
-  
-  private HOSMNode(final byte[] data, final int offset, final int length, 
-      final long baseNodeId,final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, final BoundingBox bbox, final int[] keys,
-      final int dataOffset, final int dataLength){
-    super(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys, dataOffset, dataLength);
-  }
-  
+	public static HOSMNode instance(final byte[] data, final int offset, final int length) throws IOException {
+		return instance(data, offset, length, 0, 0, 0, 0);
+	}
 
-  public List<OSMNode> getVersions() {
-    List<OSMNode> versions = new ArrayList<>();
-    this.forEach(versions::add);
-    return versions;
-  }
-  
-  @Override
-  public Iterator<OSMNode> iterator() {
-    return new Iterator<OSMNode>() {
-      ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
+	public static HOSMNode instance(final byte[] data, final int offset, final int length, final long baseNodeId,
+			final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
 
-      int version = 0;
-      long timestamp = 0;
-      long changeset = 0;
-      int userId = 0;
-      int[] keyValues = new int[0];
+		ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
+		final byte header = wrapper.readRawByte();
+		final BoundingBox bbox;
+		if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
+			final long minLon = baseLongitude + wrapper.readSInt64();
+			final long maxLon = minLon + wrapper.readUInt64();
+			final long minLat = baseLatitude + wrapper.readSInt64();
+			final long maxLat = minLat + wrapper.readUInt64();
 
-      private long longitude = 0;
-      private long latitude = 0;
+			bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
+					minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
 
-      @Override
-      public boolean hasNext() {
-        return wrapper.hasLeft() > 0;
-      }
+		} else {
+			bbox = null;
+		}
+		final int[] keys;
+		if ((header & HEADER_HAS_TAGS) != 0) {
+			final int size = wrapper.readUInt32();
+			keys = new int[size];
+			for (int i = 0; i < size; i++) {
+				keys[i] = wrapper.readUInt32();
+			}
+		} else {
+			keys = new int[0];
+		}
+		final long id = wrapper.readUInt64() + baseNodeId;
+		final int dataOffset = wrapper.getPos();
 
-      @Override
-      public OSMNode next() {
-        try {
-          version = wrapper.readSInt32() + version;
-          timestamp = wrapper.readSInt64() + timestamp;
-          changeset = wrapper.readSInt64() + changeset;
+		// TODO do we need dataLength?
+		// TODO maybe better to store number of versions instead
+		final int dataLength = length - (dataOffset - offset);
 
-          byte changed = wrapper.readRawByte();
+		return new HOSMNode(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+				bbox, keys, dataOffset, dataLength);
+	}
 
-          if ((changed & CHANGED_USER_ID) != 0) {
-            userId = wrapper.readSInt32() + userId;
-          }
+	private HOSMNode(final byte[] data, final int offset, final int length, final long baseNodeId,
+			final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
+			final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength) {
+		super(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
+				dataOffset, dataLength);
+	}
 
-          if ((changed & CHANGED_TAGS) != 0) {
-            int size = wrapper.readUInt32();
-            if (size < 0) {
-              System.out.println("Something went wrong!");
-            }
-            keyValues = new int[size];
-            for (int i = 0; i < size; i++) {
-              keyValues[i] = wrapper.readUInt32();
-            }
-          }
+	public List<OSMNode> getVersions() {
+		List<OSMNode> versions = new ArrayList<>();
+		this.forEach(versions::add);
+		return versions;
+	}
 
-          if ((changed & CHANGED_LOCATION) != 0) {
-            longitude = wrapper.readSInt64() + longitude;
-            latitude = wrapper.readSInt64() + latitude;
-          }
+	@Override
+	public BoundingBox getBoundingBox() {
+		if (bbox != null) {
+			return bbox;
+		}
 
-          return new OSMNode(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
-              (version > 0) ? baseLongitude + longitude : 0,
-              (version > 0) ? baseLatitude + latitude : 0);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+		long minLon = Long.MAX_VALUE;
+		long maxLon = Long.MIN_VALUE;
+		long minLat = Long.MAX_VALUE;
+		long maxLat = Long.MIN_VALUE;
+		for (OSMNode osm : this) {
+			if (osm.isVisible()) {
+				minLon = Math.min(minLon, osm.getLon());
+				maxLon = Math.max(maxLon, osm.getLon());
 
-        return null;
-      }
-    };
-  }
+				minLat = Math.min(minLat, osm.getLat());
+				maxLat = Math.max(maxLat, osm.getLat());
+			}
+		}
+		return new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
+				minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+	}
 
-  public static HOSMNode build(List<OSMNode> versions) throws IOException {
-    return build(versions, 0, 0, 0, 0);
-  }
+	@Override
+	public Iterator<OSMNode> iterator() {
+		return new Iterator<OSMNode>() {
+			ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
+			int version = 0;
+			long timestamp = 0;
+			long changeset = 0;
+			int userId = 0;
+			int[] keyValues = new int[0];
 
-  public static HOSMNode build(List<OSMNode> versions, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude)
-      throws IOException {
-    Collections.sort(versions, Collections.reverseOrder());
-    ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
+			private long longitude = 0;
+			private long latitude = 0;
 
-    long lastLongitude = 0;
-    long lastLatitude = 0;
+			@Override
+			public boolean hasNext() {
+				return wrapper.hasLeft() > 0;
+			}
 
+			@Override
+			public OSMNode next() {
+				try {
+					version = wrapper.readSInt32() + version;
+					timestamp = wrapper.readSInt64() + timestamp;
+					changeset = wrapper.readSInt64() + changeset;
 
-    long id = versions.get(0).getId();
+					byte changed = wrapper.readRawByte();
 
-    long minLon = Long.MAX_VALUE;
-    long maxLon = Long.MIN_VALUE;
-    long minLat = Long.MAX_VALUE;
-    long maxLat = Long.MIN_VALUE;
-    
+					if ((changed & CHANGED_USER_ID) != 0) {
+						userId = wrapper.readSInt32() + userId;
+					}
 
-    Builder builder = new Builder(output, baseTimestamp);
-    
-    for (int i = 0; i < versions.size(); i++) {
-      OSMNode node = versions.get(i);
-      OSMEntity version = node;
+					if ((changed & CHANGED_TAGS) != 0) {
+						int size = wrapper.readUInt32();
+						if (size < 0) {
+							System.out.println("Something went wrong!");
+						}
+						keyValues = new int[size];
+						for (int i = 0; i < size; i++) {
+							keyValues[i] = wrapper.readUInt32();
+						}
+					}
 
-      byte changed = 0;
-      
-      if (version.isVisible()
-          && (node.getLon() != lastLongitude || node.getLat() != lastLatitude)) {
-        changed |= CHANGED_LOCATION;
-      }
-      builder.build(version, changed);
-      if ((changed & CHANGED_LOCATION) != 0) {
-        output.writeSInt64(node.getLon() - lastLongitude - baseLongitude);
-        lastLongitude = node.getLon();
-        output.writeSInt64(node.getLat() - lastLatitude - baseLatitude);
-        lastLatitude = node.getLat();
+					if ((changed & CHANGED_LOCATION) != 0) {
+						longitude = wrapper.readSInt64() + longitude;
+						latitude = wrapper.readSInt64() + latitude;
+					}
 
-        minLon = Math.min(minLon, lastLongitude);
-        maxLon = Math.max(maxLon, lastLongitude);
+					return new OSMNode(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+							(version > 0) ? baseLongitude + longitude : 0, (version > 0) ? baseLatitude + latitude : 0);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
-        minLat = Math.min(minLat, lastLatitude);
-        maxLat = Math.max(maxLat, lastLatitude);
-      }
-    } // for versions
+				return null;
+			}
+		};
+	}
 
-    ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
+	public static HOSMNode build(List<OSMNode> versions) throws IOException {
+		return build(versions, 0, 0, 0, 0);
+	}
 
-    byte header = 0;
-    if (versions.size() > 1)
-      header |= HEADER_MULTIVERSION;
-    if (builder.getTimestampsNotInOrder())
-      header |= HEADER_TIMESTAMPS_NOT_IN_ORDER;
-    if (builder.getKeySet().size() > 0)
-      header |= HEADER_HAS_TAGS;
+	public static HOSMNode build(List<OSMNode> versions, final long baseId, final long baseTimestamp,
+			final long baseLongitude, final long baseLatitude) throws IOException {
+		Collections.sort(versions, Collections.reverseOrder());
+		ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
-    if (minLon != maxLon || minLat != maxLat) {
-      header |= HEADER_HAS_BOUNDINGBOX;
-    }
+		long lastLongitude = 0;
+		long lastLatitude = 0;
 
-    record.writeByte(header);
-    if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
-      record.writeSInt64(minLon - baseLongitude);
-      record.writeUInt64(maxLon - minLon);
-      record.writeSInt64(minLat - baseLatitude);
-      record.writeUInt64(maxLat - minLat);
-    }
-    
-    if ((header & HEADER_HAS_TAGS) != 0) {
-      record.writeUInt32(builder.getKeySet().size());
-      for (Integer key : builder.getKeySet()) {
-        record.writeUInt32(key.intValue());
-      }
-    }
+		long id = versions.get(0).getId();
 
-    record.writeUInt64(id - baseId);
-    record.writeByteArray(output.toByteArray());
+		long minLon = Long.MAX_VALUE;
+		long maxLon = Long.MIN_VALUE;
+		long minLat = Long.MAX_VALUE;
+		long maxLat = Long.MIN_VALUE;
 
-    byte[] data = record.toByteArray();
-    return HOSMNode.instance(data, 0, data.length,baseId, baseTimestamp, baseLongitude, baseLatitude);
-  }
+		Builder builder = new Builder(output, baseTimestamp);
 
-  @Override
-  public HOSMNode rebase(long baseNodeId, long baseTimestamp2, long baseLongitude2,
-      long baseLatitude2) throws IOException {
-    List<OSMNode> nodes = getVersions();
-    return HOSMNode.build(nodes, baseNodeId, baseTimestamp2, baseLongitude2, baseLatitude2);
-  }
+		for (int i = 0; i < versions.size(); i++) {
+			OSMNode node = versions.get(i);
+			OSMEntity version = node;
 
-  public boolean hasTags() {
-    return (header & HEADER_HAS_TAGS) != 0;
-  }
+			byte changed = 0;
 
-  private Object writeReplace() {
-    return new SerializationProxy(this);
-  }
+			if (version.isVisible() && (node.getLon() != lastLongitude || node.getLat() != lastLatitude)) {
+				changed |= CHANGED_LOCATION;
+			}
+			builder.build(version, changed);
+			if ((changed & CHANGED_LOCATION) != 0) {
+				output.writeSInt64(node.getLon() - lastLongitude - baseLongitude);
+				lastLongitude = node.getLon();
+				output.writeSInt64(node.getLat() - lastLatitude - baseLatitude);
+				lastLatitude = node.getLat();
 
-  private static class SerializationProxy implements Externalizable {
+				minLon = Math.min(minLon, lastLongitude);
+				maxLon = Math.max(maxLon, lastLongitude);
 
-    private final HOSMNode node;
-    private byte[] data;
+				minLat = Math.min(minLat, lastLatitude);
+				maxLat = Math.max(maxLat, lastLatitude);
+			}
+		} // for versions
 
-    public SerializationProxy(HOSMNode node) {
-      this.node = node;
-    }
+		ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
 
-    public SerializationProxy() {
-      this.node = null;
-    }
+		byte header = 0;
+		if (versions.size() > 1)
+			header |= HEADER_MULTIVERSION;
+		if (builder.getTimestampsNotInOrder())
+			header |= HEADER_TIMESTAMPS_NOT_IN_ORDER;
+		if (builder.getKeySet().size() > 0)
+			header |= HEADER_HAS_TAGS;
 
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-      out.writeInt(node.getLength());
-      node.writeTo(out);
-    }
+		if (minLon != maxLon || minLat != maxLat) {
+			header |= HEADER_HAS_BOUNDINGBOX;
+		}
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-      int length = in.readInt();
-      data = new byte[length];
-      in.readFully(data);
-    }
+		record.writeByte(header);
+		if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
+			record.writeSInt64(minLon - baseLongitude);
+			record.writeUInt64(maxLon - minLon);
+			record.writeSInt64(minLat - baseLatitude);
+			record.writeUInt64(maxLat - minLat);
+		}
 
-    private Object readResolve() {
-      try {
-        return HOSMNode.instance(data, 0, data.length);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-      return null;
-    }
-  }
+		if ((header & HEADER_HAS_TAGS) != 0) {
+			record.writeUInt32(builder.getKeySet().size());
+			for (Integer key : builder.getKeySet()) {
+				record.writeUInt32(key.intValue());
+			}
+		}
+
+		record.writeUInt64(id - baseId);
+		record.writeByteArray(output.toByteArray());
+
+		byte[] data = record.toByteArray();
+		return HOSMNode.instance(data, 0, data.length, baseId, baseTimestamp, baseLongitude, baseLatitude);
+	}
+
+	@Override
+	public HOSMNode rebase(long baseNodeId, long baseTimestamp2, long baseLongitude2, long baseLatitude2)
+			throws IOException {
+		List<OSMNode> nodes = getVersions();
+		return HOSMNode.build(nodes, baseNodeId, baseTimestamp2, baseLongitude2, baseLatitude2);
+	}
+
+	public boolean hasTags() {
+		return (header & HEADER_HAS_TAGS) != 0;
+	}
+
+	private Object writeReplace() {
+		return new SerializationProxy(this);
+	}
+
+	private static class SerializationProxy implements Externalizable {
+
+		private final HOSMNode node;
+		private byte[] data;
+
+		public SerializationProxy(HOSMNode node) {
+			this.node = node;
+		}
+
+		public SerializationProxy() {
+			this.node = null;
+		}
+
+		@Override
+		public void writeExternal(ObjectOutput out) throws IOException {
+			out.writeInt(node.getLength());
+			node.writeTo(out);
+		}
+
+		@Override
+		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+			int length = in.readInt();
+			data = new byte[length];
+			in.readFully(data);
+		}
+
+		private Object readResolve() {
+			try {
+				return HOSMNode.instance(data, 0, data.length);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+	}
 }
