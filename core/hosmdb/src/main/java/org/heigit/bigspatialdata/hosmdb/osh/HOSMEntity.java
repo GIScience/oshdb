@@ -105,7 +105,10 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
 		  if(osm.getTimestamp() > byTimestamps.get(i)){
 			  continue;
 		  } else {
-			  result.put(byTimestamps.get(i++), osm);
+			  while (i < byTimestamps.size() && osm.getTimestamp() <= byTimestamps.get(i)) {
+				  result.put(byTimestamps.get(i), osm);
+				  i++;
+			  }
 		  }
 	  }
 	  return result;
