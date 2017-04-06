@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 public abstract class OSMEntity {
   protected final long id;
@@ -53,6 +54,33 @@ public abstract class OSMEntity {
 
   public int[] getTags() {
     return tags;
+  }
+
+  public boolean hasTagKey(int key) {
+    for (int i=0; i<tags.length; i+=2) {
+      if (tags[i] == key)
+        return true;
+    }
+    return false;
+  }
+
+  /* useful when looking for example "tagkey" != "no" */
+  public boolean hasTagKey(int key, int[] uninterestingValues) {
+    for (int i=0; i<tags.length; i+=2) {
+      if (tags[i] == key) {
+        final int value = tags[i+1];
+        return IntStream.of(uninterestingValues).anyMatch(x -> x == value);
+      }
+    }
+    return false;
+  }
+
+  public boolean hasTagValue(int key, int value) {
+    for (int i=0; i<tags.length; i+=2) {
+      if (tags[i] == key)
+        return tags[i+1] == value;
+    }
+    return false;
   }
  
   public boolean equalsTo(OSMEntity o) {
