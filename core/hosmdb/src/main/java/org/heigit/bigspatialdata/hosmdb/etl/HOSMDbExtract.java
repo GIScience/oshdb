@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -171,7 +172,7 @@ public class HOSMDbExtract {
 
 
   private static void storeKeyTables(ExtractMapperResult mapResult) throws SQLException {
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_keytables;COMPRESS=TRUE", "sa", "")) {
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "")) {
       Statement stmt = conn.createStatement();
       stmt.executeUpdate(
           "drop table if exists key; create table if not exists key(id int primary key, txt varchar)");

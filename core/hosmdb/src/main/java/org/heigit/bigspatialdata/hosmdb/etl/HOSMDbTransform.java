@@ -17,7 +17,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -39,6 +39,8 @@ import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellWays;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
 import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
+
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
 /**
  * HOSMDbTransform
@@ -79,7 +81,7 @@ public class HOSMDbTransform {
       Class.forName("org.h2.Driver");
 
       // serialise nodes and write to .ser-file
-      if (false) {
+      if (true) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile) //
                 ) {
@@ -110,7 +112,7 @@ public class HOSMDbTransform {
 
       // ways
       // do same for ways and relations (see nodes)
-      if (false) {
+      if (true) {
         try (//
             final FileInputStream in = new FileInputStream(pbfFile) //
         ) {
@@ -154,14 +156,14 @@ public class HOSMDbTransform {
   private static void saveGrid(Result result, XYGrid grid) {
 	    try (
 	        Connection conn =
-	            DriverManager.getConnection("jdbc:h2:./hosmdb_node;COMPRESS=TRUE", "sa", "");
+	            DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "");
 	        Statement stmt = conn.createStatement()) {
 
 	      stmt.executeUpdate(
-	          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
+	          "drop table if exists grid_node; create table if not exists grid_node(level int, id bigint, data blob,  primary key(level,id))");
 
 	      PreparedStatement insert =
-	          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
+	          conn.prepareStatement("insert into grid_node (level,id,data) values(?,?,?)");
 
 	      for (CellNode cell : result.getNodeCells()) {
 	        insert.setInt(1, cell.info().getZoomLevel());
@@ -193,14 +195,14 @@ public class HOSMDbTransform {
 
   private static void saveGrid(TransformWayMapper.Result wayResults) {
     try (
-        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_way;COMPRESS=TRUE", "sa", "");
+        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "");
         Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
-          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
+          "drop table if exists grid_way; create table if not exists grid_way(level int, id bigint, data blob,  primary key(level,id))");
 
       PreparedStatement insert =
-          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
+          conn.prepareStatement("insert into grid_way (level,id,data) values(?,?,?)");
 
       for (CellWay cell : wayResults.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());
@@ -240,14 +242,14 @@ public class HOSMDbTransform {
   
   private static void saveGrid(TransformRelationMapper.Result result){
     try (
-        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb_relation;COMPRESS=TRUE", "sa", "");
+        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "");
         Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
-          "drop table if exists grid; create table if not exists grid(level int, id bigint, data blob,  primary key(level,id))");
+          "drop table if exists grid_relation; create table if not exists grid_relation(level int, id bigint, data blob,  primary key(level,id))");
 
       PreparedStatement insert =
-          conn.prepareStatement("insert into grid (level,id,data) values(?,?,?)");
+          conn.prepareStatement("insert into grid_relation (level,id,data) values(?,?,?)");
 
       for (CellRelation cell : result.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());
