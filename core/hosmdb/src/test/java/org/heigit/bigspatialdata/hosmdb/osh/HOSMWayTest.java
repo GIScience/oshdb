@@ -42,7 +42,7 @@ public class HOSMWayTest {
   
   
   @Test
-  public void testCreateGeometry() throws IOException {
+  public void testCreateGeometrey() throws IOException {
 	  List<OSMWay> versions = new ArrayList<>();
 	    versions.add(
 	        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, 0, 0),new OSMMember(104,0,0)}));
