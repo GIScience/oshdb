@@ -3,8 +3,8 @@ package org.heigit.bigspatialdata.hosmdb.osh;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +104,24 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
 			  result.put(byTimestamps.get(i++), osm);
 		  }
 	  }
+	  return result;
+  }
+  
+  public List<OSM> getBetweenTimestamps(final long t1, final long t2){
+	  final long maxTimestamp = Math.max(t1, t2);
+	  final long minTimestamp = Math.min(t1, t2);
 	  
+	  List<OSM> result = new ArrayList<>();
+	  
+	  Iterator<OSM> itr = iterator();
+	  while(itr.hasNext()){
+		  OSM osm = itr.next();
+		  if(osm.getTimestamp() > maxTimestamp)
+			  continue;
+		  result.add(osm);
+		  if(osm.getTimestamp() < minTimestamp)
+			  break;
+	  }  
 	  return result;
   }
   
@@ -116,7 +133,7 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
     return false;
   }
   
-  public abstract HOSMEntity rebase(long baseId, long baseTimestamp, long baseLongitude,
+  public abstract HOSMEntity<OSM> rebase(long baseId, long baseTimestamp, long baseLongitude,
 	      long baseLatitude) throws IOException;
 
   @Override
