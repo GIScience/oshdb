@@ -16,7 +16,8 @@ public class TestReadRelation {
 
     File nodeRelationFile = Paths.get("./", "temp_waysForRelation.ser").toFile();
 
-    try (final FileInputStream fileStream = new FileInputStream(nodeRelationFile);
+    try (//get ObjectInputStream form file
+            final FileInputStream fileStream = new FileInputStream(nodeRelationFile);
         final BufferedInputStream bufferedStream = new BufferedInputStream(fileStream);
         final ObjectInputStream relationStream = new ObjectInputStream(bufferedStream)) {
 

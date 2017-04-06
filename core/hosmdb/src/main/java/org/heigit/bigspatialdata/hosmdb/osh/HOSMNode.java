@@ -38,6 +38,7 @@ public class HOSMNode extends HOSMEntity<OSMNode> implements Iterable<OSMNode>, 
 			final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
 
 		ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
+    //header holds data on bitlevel and can then be compared to stereotypical bitcombinations (e.g. this.HEADER_HAS_TAGS)
 		final byte header = wrapper.readRawByte();
 		final BoundingBox bbox;
 		if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
