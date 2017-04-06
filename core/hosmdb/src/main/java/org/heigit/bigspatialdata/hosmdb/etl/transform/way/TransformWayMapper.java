@@ -70,7 +70,6 @@ public class TransformWayMapper extends TransformMapper2 {
 
   private static final Result EMPTY_RESULT = new Result();
 
-  private ObjectInputStream relationStream;
   private PreparedStatement pstmtRelationForWay;
 
   private Map<Integer, Map<Long, CellWay>> mapCellWays;
@@ -96,7 +95,7 @@ public class TransformWayMapper extends TransformMapper2 {
 
   public Result map(InputStream in) {
     try (//
-        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./hosmdb_keytables", "sa", "");
+        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./hosmdb", "sa", "");
         Connection connRelations = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
 
       initKeyTables(connKeyTables);
@@ -117,7 +116,6 @@ public class TransformWayMapper extends TransformMapper2 {
         final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
 
         this.mapCellWays = new HashMap<>();
-        this.relationStream = relationStream;
 
         while (oshIterator.hasNext()) {
           final List<OSMPbfEntity> versions = oshIterator.next();

@@ -91,7 +91,7 @@ public class TransformRelationMapper extends TransformMapper2 {
 
 	public Result map(InputStream in) {
 		try (//
-				Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./hosmdb_keytables", "sa", "");
+				Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./hosmdb", "sa", "");
 				Connection connRelations = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
 
 			initKeyTables(connKeyTables);
