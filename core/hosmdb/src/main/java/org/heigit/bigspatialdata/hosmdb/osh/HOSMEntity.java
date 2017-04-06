@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Set;
+
 
 import org.heigit.bigspatialdata.hosmdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
@@ -80,7 +82,9 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
   
   public abstract List<OSM> getVersions();
   
-  public Map<Long,OSM> getByTimestamps(List<Long> byTimestamps){
+  public Map<Long,OSM> getByTimestamps(List<Long> _byTimestamps){
+	  List<Long> byTimestamps = new ArrayList<Long>(_byTimestamps.size());
+	  byTimestamps.addAll(_byTimestamps); // todo: better way to copy the array??
 	  
 	  Map<Long,OSM> result = new TreeMap<>();
 	  if(byTimestamps == null || byTimestamps.isEmpty()){
@@ -90,13 +94,13 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
 			  result.put(osm.getTimestamp(), osm);
 		  }
 		  return result;
-	  }
+	  } // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity)
 	  
 	  Collections.sort(byTimestamps,Collections.reverseOrder());
 	  
 	  int i = 0;
 	  Iterator<OSM> itr = iterator();
-	  while(itr.hasNext() && i > byTimestamps.size()){
+	  while(itr.hasNext() && i < byTimestamps.size()){
 		  OSM osm = itr.next();
 		  if(osm.getTimestamp() > byTimestamps.get(i)){
 			  continue;
