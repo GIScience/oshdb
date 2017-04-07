@@ -178,8 +178,8 @@ public class HOSMNode extends HOSMEntity<OSMNode> implements Iterable<OSMNode>, 
 		Collections.sort(versions, Collections.reverseOrder());
 		ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
-		long lastLongitude = 0;
-		long lastLatitude = 0;
+		long lastLongitude = baseLongitude;
+		long lastLatitude = baseLatitude;
 
 		long id = versions.get(0).getId();
 
