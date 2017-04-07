@@ -141,12 +141,12 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
   }
   
   public boolean hasKey(int key){
+  	// todo: replace with binary search (keys are sorted)
     for(int i=0; i<keys.length; i++){
-      if(keys[i] < key)
-    	  continue;
-      if(keys[i] == key)
-        return true;
-      break;
+		if(keys[i] == key)
+			return true;
+      if(keys[i] > key)
+    	  break;
     }
     return false;
   }

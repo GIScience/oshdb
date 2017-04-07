@@ -51,6 +51,7 @@ public abstract class OSMEntity {
 	}
 
 	public boolean hasTagKey(int key) {
+        // todo: replace this with binary search (keys are sorted)
 		for (int i = 0; i < tags.length; i += 2) {
 			if (tags[i] < key)
 				continue;
@@ -63,6 +64,7 @@ public abstract class OSMEntity {
 
 	/* useful when looking for example "tagkey" != "no" */
 	public boolean hasTagKey(int key, int[] uninterestingValues) {
+        // todo: replace this with binary search (keys are sorted)
 		for (int i = 0; i < tags.length; i += 2) {
 			if (tags[i] < key)
 				continue;
@@ -76,9 +78,10 @@ public abstract class OSMEntity {
 	}
 
 	public boolean hasTagValue(int key, int value) {
+        // todo: replace this with binary search (keys are sorted)
 		for (int i = 0; i < tags.length; i += 2) {
-			if (tags[i] < key)
-				continue;
+			if (tags[i] > key)
+				return false;
 			if (tags[i] == key)
 				return tags[i + 1] == value;
 			break;
