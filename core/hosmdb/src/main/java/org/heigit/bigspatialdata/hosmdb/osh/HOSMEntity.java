@@ -79,37 +79,37 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
   }
   
   public abstract List<OSM> getVersions();
-  
-  public Map<Long,OSM> getByTimestamps(List<Long> _byTimestamps){
-	  List<Long> byTimestamps = new ArrayList<Long>(_byTimestamps.size());
-	  byTimestamps.addAll(_byTimestamps); // todo: better way to copy the array??
-	  
+
+  /* byTimestamps is assumed to be presorted, otherwise output is undetermined */
+  public Map<Long,OSM> getByTimestamps(List<Long> byTimestamps){
 	  Map<Long,OSM> result = new TreeMap<>();
-	  if(byTimestamps == null || byTimestamps.isEmpty()){
-		  Iterator<OSM> itr = iterator();
-		  while(itr.hasNext()){
-			  OSM osm = itr.next();
-			  result.put(osm.getTimestamp(), osm);
-		  }
-		  return result;
-	  } // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity)
 	  
-	  Collections.sort(byTimestamps,Collections.reverseOrder());
-	  
-	  int i = 0;
+	  int i = byTimestamps.size()-1;
 	  Iterator<OSM> itr = iterator();
-	  while(itr.hasNext() && i < byTimestamps.size()){
+	  while(itr.hasNext() && i >= 0){
 		  OSM osm = itr.next();
 		  if(osm.getTimestamp() > byTimestamps.get(i)){
 			  continue;
 		  } else {
-			  while (i < byTimestamps.size() && osm.getTimestamp() <= byTimestamps.get(i)) {
+			  while (i >= 0 && osm.getTimestamp() <= byTimestamps.get(i)) {
 				  result.put(byTimestamps.get(i), osm);
-				  i++;
+				  i--;
 			  }
 		  }
 	  }
 	  return result;
+  }
+
+  public Map<Long,OSM> getByTimestamps(){ // todo: name of method?
+	  Map<Long,OSM> result = new TreeMap<>();
+	  Iterator<OSM> itr = iterator();
+	  while(itr.hasNext()){
+		  OSM osm = itr.next();
+		  result.put(osm.getTimestamp(), osm);
+	  }
+	  return result;
+	  // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity):
+  	  //return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
   }
   
   public List<OSM> getBetweenTimestamps(final long t1, final long t2){
