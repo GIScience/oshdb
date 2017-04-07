@@ -201,9 +201,9 @@ public class HOSMNode extends HOSMEntity<OSMNode> implements Iterable<OSMNode>, 
 			}
 			builder.build(version, changed);
 			if ((changed & CHANGED_LOCATION) != 0) {
-				output.writeSInt64(node.getLon() - lastLongitude - baseLongitude);
+				output.writeSInt64((node.getLon()- baseLongitude) - (lastLongitude - baseLongitude));
 				lastLongitude = node.getLon();
-				output.writeSInt64(node.getLat() - lastLatitude - baseLatitude);
+				output.writeSInt64((node.getLat()- baseLatitude) - (lastLatitude - baseLatitude));
 				lastLatitude = node.getLat();
 
 				minLon = Math.min(minLon, lastLongitude);
