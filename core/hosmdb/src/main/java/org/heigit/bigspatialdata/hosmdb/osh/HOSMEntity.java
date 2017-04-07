@@ -111,6 +111,16 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
 	  // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity):
   	  //return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
   }
+
+  public OSM getByTimestamp(long timestamp){
+	  Iterator<OSM> itr = iterator();
+	  while(itr.hasNext()){
+		  OSM osm = itr.next();
+		  if (osm.getTimestamp() <= timestamp)
+		  	  return osm;
+	  }
+	  return null;
+  }
   
   public List<OSM> getBetweenTimestamps(final long t1, final long t2){
 	  final long maxTimestamp = Math.max(t1, t2);
