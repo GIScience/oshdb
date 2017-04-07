@@ -56,7 +56,7 @@ public class XYGrid {
               "Zoom is too big, maximum number of tiles exeeds biggest possible Long. The maximum zoom of 30 is used instead.");
       this.zoom = 30;
     } else if (zoom < 0) {
-      LOGGER.warn("Zoom is too small. The maximum zoom of 0 (equals 1 tile) is used instead.");
+      LOGGER.warn("Zoom is too small. The minimum zoom of 0 (equals 1 tile) is used instead.");
       this.zoom = 0;
     } else {
       this.zoom = zoom;
