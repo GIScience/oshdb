@@ -13,7 +13,7 @@
 # netbeans stuff
 nb-configuration.xml
 nbactions*.xml
-/nbproject/
+**/nbproject/
 
 # gedit stuff
 *~
