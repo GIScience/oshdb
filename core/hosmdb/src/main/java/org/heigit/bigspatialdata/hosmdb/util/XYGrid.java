@@ -1,11 +1,10 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
+import java.util.TreeSet;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * XYGrid spans an equal degree grid over the world.
@@ -30,7 +29,8 @@ import org.slf4j.LoggerFactory;
  * </tr>
  * </table>
  * <br>
- * Longitude 180 will be wrapped around to -180
+ * Longitude +180 will be wrapped around to -180. Coordinates lying on
+ * grid-borders will be assigned to the north-eastern cell.
  *
  * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class XYGrid {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(XYGrid.class);
+  private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(XYGrid.class.getName());
 
   private final int zoom;
   private final long zoompow;
@@ -52,11 +52,11 @@ public class XYGrid {
    */
   public XYGrid(final int zoom) {
     if (zoom > 30) {
-      LOGGER.warn(
+      LOG.warning(
               "Zoom is too big, maximum number of tiles exeeds biggest possible Long. The maximum zoom of 30 is used instead.");
       this.zoom = 30;
     } else if (zoom < 0) {
-      LOGGER.warn("Zoom is too small. The minimum zoom of 0 (equals 1 tile) is used instead.");
+      LOG.warning("Zoom is too small. The minimum zoom of 0 (equals 1 tile) is used instead.");
       this.zoom = 0;
     } else {
       this.zoom = zoom;
@@ -124,10 +124,11 @@ public class XYGrid {
   }
 
   /**
-   * Calculates BBOX of given Cell
+   * Calculates BBOX of given Cell. TODO: create logic for cells lying on the
+   * borders of the grid (see Unittests)
    *
    * @param cellId ID of a cell calculated by getID
-   * @return a BBOX for that cell
+   * @return a BBOX for that cell (minlong, maxlong; minlat, maxlat)
    */
   public MultiDimensionalNumericData getCellDimensions(final long cellId) {
 
@@ -138,8 +139,8 @@ public class XYGrid {
     double lon = (x * cellWidth) - 180.0;
     double lat = (y * cellWidth) - 90.0;
 
-    final NumericRange longitude = new NumericRange(lon, lon + cellWidth);
-    final NumericRange latitude = new NumericRange(lat, lat + cellWidth);
+    final NumericRange longitude = new NumericRange(lon, (lon + cellWidth) - EPSILON);
+    final NumericRange latitude = new NumericRange(lat, (lat + cellWidth) - EPSILON);
     final NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
     return new BasicNumericDataset(dataPerDimension);
   }
@@ -159,24 +160,115 @@ public class XYGrid {
     return Math.abs(a - b) <= EPSILON;
   }
 
-  /**Returns number of Cells within given BBOX.
+  /**
+   * Returns number of Cells within given BBOX.
    *
    * @param data BBOX to estimate number of cells for
    * @return estimated number of Cells
    */
   public long getEstimatedIdCount(final MultiDimensionalNumericData data) {
+    //asserts fails if estimation fault exeeds zoom
     final double[] mins = data.getMinValuesPerDimension();
     final double[] maxes = data.getMaxValuesPerDimension();
     //number of Cells in x * number of cells in y
     return (long) ((maxes[0] - mins[0]) / cellWidth * (maxes[1] - mins[1]) / cellWidth);
   }
 
-  /** getter for zoomlevel.
+  /**
+   * getter for zoomlevel.
    *
    * @return zoomlevel
    */
   public int getLevel() {
     return zoom;
+  }
+
+  /**
+   * Calculates all tiles, that lie within a bounding-box. TODO but priority
+   * 999: Add possibility to snap the BBX to the tile-grid. TODO: is an
+   * exception needed?
+   *
+   * @param BBOX The BBOX. First dimension is longitude, second is latitude.
+   *
+   * @return Returns a set of Tile-IDs that lie within the given BBX.
+   */
+  public TreeSet<Long> bbox2Ids(MultiDimensionalNumericData BBOX) {
+    //initalise basic variables
+    TreeSet<Long> result = new TreeSet<>();
+    double minlong = BBOX.getMinValuesPerDimension()[0];
+    double minlat = BBOX.getMinValuesPerDimension()[1];
+    double maxlong = BBOX.getMaxValuesPerDimension()[0];
+    double maxlat = BBOX.getMaxValuesPerDimension()[1];
+
+    if (minlat > maxlat) {
+      LOG.warning("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
+      return null;
+    }
+
+    //test if bbx is on earth or extends further
+    if (minlong < -180.0) {
+      result.add(-1L);
+      minlong = -180.0;
+    }
+    if (minlat < -90.0) {
+      result.add(-1L);
+      minlat = -90.0;
+    }
+    if (maxlong > 180.0) {
+      result.add(-1L);
+      maxlong = 180.0;
+    }
+    if (maxlat > 90.0) {
+      result.add(-1L);
+      maxlat = 90.0;
+    }
+
+    if (equalsEpsilon(minlong, 180.0)) {
+      minlong = -180.0;
+    }
+    if (equalsEpsilon(maxlat, 90.0)) {
+      maxlat -= EPSILON;
+    }
+    if (equalsEpsilon(minlat, 90.0)) {
+      minlat -= EPSILON;
+    }
+    if (equalsEpsilon(maxlong, 180.0)) {
+      maxlong = -180.0;
+    }
+
+    //cope with BBOX extending over the date-line
+    if (minlong > maxlong) {
+      NumericRange longitude = new NumericRange(minlong, 180.0 - EPSILON);
+      NumericRange latitude = new NumericRange(minlat, maxlat);
+      NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
+      result.addAll(bbox2Ids(new BasicNumericDataset(dataPerDimension)));
+
+      minlong = -180.0;
+    }
+
+    //At this point the following should be true
+    //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
+    //minlat[0:90<=maxlat[0:89.99999]
+    //
+    //refuse to calculate results, that would retun an object > 100mb
+    if (getEstimatedIdCount(BBOX) > 104857600 / 4) {
+      LOG.warning("The resulting collection would be bigger than 100mb. I refuse to calculate it! Think of something else e.g. a smaller area!");
+      return null;
+    }
+
+    //calculate column and row range
+    int columnmin = (int) ((minlong + 180.0) / cellWidth);
+    int columnmax = (int) ((maxlong + 180.0) / cellWidth);
+    int rowmin = (int) ((minlat + 90.0) / cellWidth);
+    int rowmax = (int) ((maxlat + 90.0) / cellWidth);
+
+    //add the regular values
+    for (int r = rowmin; r <= rowmax; r++) {
+      for (int c = columnmin; c <= columnmax; c++) {
+        result.add(r * zoompow + c);
+      }
+    }
+    return result;
   }
 
 }
