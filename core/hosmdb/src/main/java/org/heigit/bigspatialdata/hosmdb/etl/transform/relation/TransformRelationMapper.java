@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.etl.transform.relation;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -259,21 +260,26 @@ public class TransformRelationMapper extends TransformMapper2 {
 				}
 			} else {
 				// node is not in cache, read it from inputstream
-				NodeRelation nr = (NodeRelation) relationStream.readObject();
-				while (nr.node().getId() < refId.longValue()) {
-					// cache the noderelations
-					nodeCache.put(nr.node().getId(), nr);
-					nr = (NodeRelation) relationStream.readObject();
-				}
-				lastNode = nr.node().getId();
-
-				if (nr.node().getId() == refId.longValue()) {
-					nodes.add(nr.node());
-					// has the noderelation further relation than
-					// cache it
-					if (nr.getMaxRelationId() > id) {
-						nodeCache.put(refId, nr);
+				try {
+					NodeRelation nr = (NodeRelation) relationStream.readObject();
+					while (nr.node().getId() < refId.longValue()) {
+						// cache the noderelations
+						nodeCache.put(nr.node().getId(), nr);
+						nr = (NodeRelation) relationStream.readObject();
 					}
+					lastNode = nr.node().getId();
+
+					if (nr.node().getId() == refId.longValue()) {
+						nodes.add(nr.node());
+						// has the noderelation further relation than
+						// cache it
+						if (nr.getMaxRelationId() > id) {
+							nodeCache.put(refId, nr);
+						}
+					}
+				} catch (EOFException e) {
+					System.err.printf("missing RefId %d, lastRelation: %d\n", refId.longValue(), lastNode);
+					break;
 				}
 			}
 		}
@@ -294,22 +300,30 @@ public class TransformRelationMapper extends TransformMapper2 {
 					}
 				}
 			} else {
-				// node is not in cache, read it from inputstream
-				WayRelation nr = (WayRelation) relationStream.readObject();
-				while (nr.way().getId() < refId.longValue()) {
-					// cache the noderelations
-					wayCache.put(nr.way().getId(), nr);
-					nr = (WayRelation) relationStream.readObject();
-				}
-				lastWay = nr.way().getId();
+				try {
+					// node is not in cache, read it from inputstream
+					WayRelation nr = (WayRelation) relationStream.readObject();
+					while (nr.way().getId() < refId.longValue()) {
+						// cache the noderelations
+						wayCache.put(nr.way().getId(), nr);
 
-				if (nr.way().getId() == refId.longValue()) {
-					ways.add(nr.way());
-					// has the noderelation further relation than
-					// cache it
-					if (nr.getMaxRelationId() > id) {
-						wayCache.put(refId, nr);
+						nr = (WayRelation) relationStream.readObject();
+
 					}
+					lastWay = nr.way().getId();
+
+					if (nr.way().getId() == refId.longValue()) {
+						ways.add(nr.way());
+						// has the noderelation further relation than
+						// cache it
+						if (nr.getMaxRelationId() > id) {
+							wayCache.put(refId, nr);
+						}
+					}
+
+				} catch (EOFException e) {
+					System.err.printf("missing RefId %d, lastRelation: %d\n", refId.longValue(), lastWay);
+					break;
 				}
 			}
 		}
