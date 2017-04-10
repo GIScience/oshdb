@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.Serializable;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
@@ -56,6 +58,29 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
       c = Long.compare(timestamp, o.timestamp);
     }
     return c;
+  }
+
+
+  @Override
+  public boolean isAuxiliary() {
+    throw new NotImplementedException();
+  }
+  @Override
+  public boolean isPoint() {
+    return true;
+    // ?? only if has tags and not: return !this.isAuxiliary();
+  }
+  @Override
+  public boolean isPointLike() {
+    return this.isPoint();
+  }
+  @Override
+  public boolean isArea() {
+    return false;
+  }
+  @Override
+  public boolean isLine() {
+    return false;
   }
 
 }

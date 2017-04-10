@@ -100,4 +100,13 @@ public abstract class OSMEntity {
 				getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
 	}
 
+	// helpers to determine underlying structure of osm objects
+	// returns true if object is only used to define another object (e.g. nodes of a way without own tags)
+	public abstract boolean isAuxiliary();
+	// geometry: does it represent a point/line/polygon feature?
+	public abstract boolean isPoint();
+	public abstract boolean isPointLike();
+	public abstract boolean isArea();
+	public abstract boolean isLine();
+
 }

@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -36,4 +38,31 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     return c;
   }
 
+
+  @Override
+  public boolean isAuxiliary() {
+    throw new NotImplementedException();
+    // todo: return true if no own tags and member of a relation (e.g. multipolygon)
+  }
+  @Override
+  public boolean isPoint() {
+    return false;
+  }
+  @Override
+  public boolean isPointLike() {
+    return this.isArea();
+  }
+  @Override
+  public boolean isArea() {
+    throw new NotImplementedException();
+    // todo: get polygon_features.json + key/value table -> hashmap of areatags -> …
+  }
+  @Override
+  public boolean isLine() {
+    OSMMember[] nds = this.getRefs();
+    if (nds[0].getId() != nds[nds.length-1].getId())
+      return true;
+    throw new NotImplementedException();
+    // todo: return !this.isArea();
+  }
 }

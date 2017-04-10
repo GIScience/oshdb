@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.Serializable;
 
 
@@ -30,6 +32,30 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
       }
     }
     return c;
+  }
+
+  @Override
+  public boolean isAuxiliary() {
+    return false;
+  }
+  @Override
+  public boolean isPoint() {
+    return false;
+  }
+  @Override
+  public boolean isPointLike() {
+    return this.isArea();
+    // todo: also return true if relation type is site, restriction, etc.?
+  }
+  @Override
+  public boolean isArea() {
+    throw new NotImplementedException();
+    // todo: return true if type=multipolygon in tags
+  }
+  @Override
+  public boolean isLine() {
+    throw new NotImplementedException();
+    // todo: return true if type=route in tags
   }
 
 }
