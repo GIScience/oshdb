@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
@@ -108,5 +110,8 @@ public abstract class OSMEntity {
 	public abstract boolean isPointLike();
 	public abstract boolean isArea();
 	public abstract boolean isLine();
+
+	// helper to get geometry of object for a specific timestamp
+	public abstract Geometry getGeometry(long timestamp);
 
 }

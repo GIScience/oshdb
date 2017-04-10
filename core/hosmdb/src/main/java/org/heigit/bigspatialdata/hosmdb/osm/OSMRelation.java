@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import com.vividsolutions.jts.geom.Geometry;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
@@ -56,6 +57,11 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   public boolean isLine() {
     throw new NotImplementedException();
     // todo: return true if type=route in tags
+  }
+
+  @Override
+  public Geometry getGeometry(long timestamp) {
+    throw new NotImplementedException();
   }
 
 }

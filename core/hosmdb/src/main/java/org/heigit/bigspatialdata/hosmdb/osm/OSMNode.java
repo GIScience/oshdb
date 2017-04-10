@@ -1,5 +1,9 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
@@ -81,6 +85,12 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   @Override
   public boolean isLine() {
     return false;
+  }
+
+  @Override
+  public Geometry getGeometry(long timestamp) {
+    GeometryFactory geometryFactory = new GeometryFactory();
+    return geometryFactory.createPoint(new Coordinate(this.getLongitude(), this.getLatitude()));
   }
 
 }

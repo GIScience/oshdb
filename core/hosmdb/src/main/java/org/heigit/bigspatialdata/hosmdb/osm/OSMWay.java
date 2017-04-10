@@ -1,5 +1,9 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
@@ -64,5 +68,24 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
       return true;
     throw new NotImplementedException();
     // todo: return !this.isArea();
+  }
+
+  @Override
+  public Geometry getGeometry(long timestamp) {
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = Arrays.stream(this.getRefs())
+    .map(d -> (HOSMNode)d.getData())
+    .map(hosm -> hosm.getByTimestamp(timestamp))
+    .map(osm -> (OSMNode)osm)
+    .filter(node -> node != null && node.isVisible())
+    .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
+    .toArray(Coordinate[]::new);
+    if (this.isLine()) {
+      if (coords.length <= 1)
+        return null;
+      return geometryFactory.createLineString(coords);
+    } else {
+      return geometryFactory.createPolygon(coords);
+    }
   }
 }

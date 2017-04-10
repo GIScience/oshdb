@@ -71,7 +71,12 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
-		
+
+    <dependency>
+      <groupId>org.locationtech.jts</groupId>
+      <artifactId>jts-core</artifactId>
+      <version>1.14</version>
+    </dependency>
   </dependencies>
 	
   <repositories>
@@ -84,6 +89,14 @@
       </releases>
       <snapshots>
         <enabled>true</enabled>
+      </snapshots>
+    </repository>
+
+    <repository>
+      <id>locationtech-releases</id>
+      <url>https://repo.locationtech.org/content/groups/releases</url>
+      <snapshots>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
   </repositories>
