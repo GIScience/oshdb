@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.etl;
 
 import java.awt.geom.Area;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.Connection;
@@ -9,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 import com.vividsolutions.jts.geom.*;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.hosmdb.osh.*;
 import org.heigit.bigspatialdata.hosmdb.osm.*;
@@ -24,6 +25,7 @@ import org.heigit.bigspatialdata.hosmdb.osm.*;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellWays;
 import org.heigit.bigspatialdata.hosmdb.util.Geo;
 import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
+import org.heigit.bigspatialdata.hosmdb.util.areaDecider.DefaultWayAreaDecider;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TestMultithreadDBProcessingAndGeometryCalculations {
@@ -61,7 +63,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 	
 	
 
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, org.json.simple.parser.ParseException {
 		Class.forName("org.h2.Driver");
 
 	    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb", "sa", "");
@@ -69,20 +71,27 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 
 			System.out.println("Select tag key/value ids from DB");
 			ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
-			//Map<Integer, Pair<String, HashMap<Integer, String>>> keyvalueIds = new HashMap();
 			Map<Integer, Set<Integer>> areaKeyValues = new HashMap<>();
+			Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
 			int areaNoTagKey = -1;
 			int areaNoTagValue = -1;
 			while(rstTags.next()){
-				int keyId = rstTags.getInt(1);
+				int keyId   = rstTags.getInt(1);
 				int valueId = rstTags.getInt(2);
+				String keyStr   = rstTags.getString(3);
+				String valueStr = rstTags.getString(4);
+				if (!allKeyValues.containsKey(keyStr)) allKeyValues.put(keyStr, new HashMap<>());
+				allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
 				if (rstTags.getString(3) == "area" &&
-					rstTags.getString(4) != "no") {
+					rstTags.getString(4) == "no") {
 					areaNoTagKey = keyId;
 					areaNoTagValue = valueId;
 				}
+				if (rstTags.getString(3) != "area" ||
+					rstTags.getString(3) != "highway")
+					continue;
 				if (rstTags.getString(3) == "area" &&
-					rstTags.getString(4) != "yes")
+						rstTags.getString(4) != "yes")
 					continue;
 				if (rstTags.getString(3) == "highway" && (
 						rstTags.getString(4) != "services" &&
@@ -95,7 +104,8 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 			}
 			rstTags.close();
 
-			AreaDecider areaDecider = new AreaDecider(areaNoTagKey, areaNoTagValue, areaKeyValues);
+			//final AreaDecider areaDecider = new AreaDecider(areaNoTagKey, areaNoTagValue, areaKeyValues);
+			final AreaDecider areaDecider = new DefaultWayAreaDecider(allKeyValues);
 
 
 	    	List<ZoomId> zoomIds = new ArrayList<>();
@@ -115,7 +125,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 				for(int month = 1; month <= 12; month++){
 					try {
 						timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime());
-					} catch(ParseException e) {
+					} catch(java.text.ParseException e) {
 						System.err.println("basdoawrd");
 					};
 				}
