@@ -4,10 +4,12 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
+import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Set;
 
 
 public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializable {
@@ -44,34 +46,32 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
 
 
   @Override
-  public boolean isAuxiliary() {
+  public boolean isAuxiliary(Set<Integer> uninterestingTagKeys) {
     throw new NotImplementedException();
-    // todo: return true if no own tags and member of a relation (e.g. multipolygon)
+    // todo: return true if no own (except uninteresting) tags and member of a relation (e.g. multipolygon)
   }
   @Override
   public boolean isPoint() {
     return false;
   }
   @Override
-  public boolean isPointLike() {
-    return this.isArea();
+  public boolean isPointLike(AreaDecider areaDecider) {
+    return this.isArea(areaDecider);
   }
   @Override
-  public boolean isArea() {
-    throw new NotImplementedException();
-    // todo: get polygon_features.json + key/value table -> hashmap of areatags -> …
-  }
-  @Override
-  public boolean isLine() {
+  public boolean isArea(AreaDecider areaDecider) {
     OSMMember[] nds = this.getRefs();
     if (nds[0].getId() != nds[nds.length-1].getId())
-      return true;
-    throw new NotImplementedException();
-    // todo: return !this.isArea();
+      return false;
+    return areaDecider.evaluate(this.getTags());
+  }
+  @Override
+  public boolean isLine(AreaDecider areaDecider) {
+    return !this.isArea(areaDecider);
   }
 
   @Override
-  public Geometry getGeometry(long timestamp) {
+  public Geometry getGeometry(long timestamp, AreaDecider areaDecider) {
     GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = Arrays.stream(this.getRefs())
     .map(d -> (HOSMNode)d.getData())
@@ -80,11 +80,13 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     .filter(node -> node != null && node.isVisible())
     .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
     .toArray(Coordinate[]::new);
-    if (this.isLine()) {
-      if (coords.length <= 1)
+    if (this.isLine(areaDecider)) {
+      if (coords.length < 2)
         return null;
       return geometryFactory.createLineString(coords);
     } else {
+      if (coords.length < 4)
+        return null;
       return geometryFactory.createPolygon(coords);
     }
   }

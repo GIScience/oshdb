@@ -3,10 +3,11 @@ package org.heigit.bigspatialdata.hosmdb.osm;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
+import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
+import java.util.Set;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
@@ -66,7 +67,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
 
 
   @Override
-  public boolean isAuxiliary() {
+  public boolean isAuxiliary(Set<Integer> uninterestingTagKeys) {
     throw new NotImplementedException();
   }
   @Override
@@ -75,20 +76,20 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
     // ?? only if has tags and not: return !this.isAuxiliary();
   }
   @Override
-  public boolean isPointLike() {
+  public boolean isPointLike(AreaDecider _) {
     return this.isPoint();
   }
   @Override
-  public boolean isArea() {
+  public boolean isArea(AreaDecider _) {
     return false;
   }
   @Override
-  public boolean isLine() {
+  public boolean isLine(AreaDecider _) {
     return false;
   }
 
   @Override
-  public Geometry getGeometry(long timestamp) {
+  public Geometry getGeometry(long timestamp, AreaDecider _) {
     GeometryFactory geometryFactory = new GeometryFactory();
     return geometryFactory.createPoint(new Coordinate(this.getLongitude(), this.getLatitude()));
   }

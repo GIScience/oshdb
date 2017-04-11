@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.hosmdb.etl;
 
+import java.awt.geom.Area;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.Connection;
@@ -15,15 +16,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.hosmdb.osh.*;
 import org.heigit.bigspatialdata.hosmdb.osm.*;
 
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellWays;
 import org.heigit.bigspatialdata.hosmdb.util.Geo;
+import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TestMultithreadDBProcessingAndGeometryCalculations {
@@ -66,7 +66,38 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 
 	    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb", "sa", "");
 	            final Statement stmt = conn.createStatement()) {
-	    			    	
+
+			System.out.println("Select tag key/value ids from DB");
+			ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
+			//Map<Integer, Pair<String, HashMap<Integer, String>>> keyvalueIds = new HashMap();
+			Map<Integer, Set<Integer>> areaKeyValues = new HashMap<>();
+			int areaNoTagKey = -1;
+			int areaNoTagValue = -1;
+			while(rstTags.next()){
+				int keyId = rstTags.getInt(1);
+				int valueId = rstTags.getInt(2);
+				if (rstTags.getString(3) == "area" &&
+					rstTags.getString(4) != "no") {
+					areaNoTagKey = keyId;
+					areaNoTagValue = valueId;
+				}
+				if (rstTags.getString(3) == "area" &&
+					rstTags.getString(4) != "yes")
+					continue;
+				if (rstTags.getString(3) == "highway" && (
+						rstTags.getString(4) != "services" &&
+						rstTags.getString(4) != "rest_area" &&
+						rstTags.getString(4) != "escape" &&
+						rstTags.getString(4) != "elevator"))
+					continue;
+				if (!areaKeyValues.containsKey(keyId)) areaKeyValues.put(keyId, new HashSet<>());
+				areaKeyValues.get(keyId).add(valueId);
+			}
+			rstTags.close();
+
+			AreaDecider areaDecider = new AreaDecider(areaNoTagKey, areaNoTagValue, areaKeyValues);
+
+
 	    	List<ZoomId> zoomIds = new ArrayList<>();
 	    	
 	    	System.out.println("Select ids from DB");
@@ -130,8 +161,10 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 
 							double dist = 0.;
 							try {
-								LineString line = (LineString) osmWay.getGeometry(timestamp);
-								if (line == null) throw new NotImplementedException(); // hack!
+								Geometry geom = osmWay.getGeometry(timestamp, areaDecider);
+								if (geom == null) throw new NotImplementedException(); // hack!
+								if (geom.getGeometryType() != "LineString") throw new NotImplementedException(); // hack!
+								LineString line = (LineString) geom;
 
 								Coordinate[] coords = line.getCoordinates();
 
