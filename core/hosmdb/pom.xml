@@ -73,9 +73,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.locationtech.jts</groupId>
+      <groupId>com.vividsolutions</groupId>
       <artifactId>jts-core</artifactId>
-      <version>1.14</version>
+      <version>1.14.0</version>
     </dependency>
   </dependencies>
 	
@@ -89,14 +89,6 @@
       </releases>
       <snapshots>
         <enabled>true</enabled>
-      </snapshots>
-    </repository>
-
-    <repository>
-      <id>locationtech-releases</id>
-      <url>https://repo.locationtech.org/content/groups/releases</url>
-      <snapshots>
-        <enabled>false</enabled>
       </snapshots>
     </repository>
   </repositories>
