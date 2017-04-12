@@ -52,7 +52,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
   @Override
   public boolean isArea(TagInterpreter areaDecider) {
-    return areaDecider.evaluateForArea(this.getTags());
+    return areaDecider.evaluateForArea(this);
   }
   @Override
   public boolean isLine(TagInterpreter areaDecider) {
