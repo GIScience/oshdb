@@ -23,16 +23,21 @@ public class DefaultTagInterpreter extends TagInterpreter {
 	private int typeRouteValue = -1;
 
 	public DefaultTagInterpreter(Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues) throws IOException, ParseException {
-		this(Thread.currentThread().getContextClassLoader().getResource("json/polygon-features.json").getPath(), allKeyValues); // todo: does this work=??? path?
+		this(
+			Thread.currentThread().getContextClassLoader().getResource("json/polygon-features.json").getPath(),
+			Thread.currentThread().getContextClassLoader().getResource("json/uninterestingTags.json").getPath(),
+			allKeyValues
+		);
 	}
 
-	public DefaultTagInterpreter(String jsonDefinitionFile, Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues) throws FileNotFoundException, IOException, ParseException {
-		super(0,0, null, null); // initialize with dummy parameters for now
+	public DefaultTagInterpreter(String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile, Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues) throws FileNotFoundException, IOException, ParseException {
+		super(0,0, null, null, null); // initialize with dummy parameters for now
 
+		// construct list of area tags for ways
 		Map<Integer, Set<Integer>> wayAreaTags = new HashMap<>();
 
 		JSONParser parser = new JSONParser();
-		JSONArray tagList = (JSONArray)parser.parse(new FileReader(jsonDefinitionFile));
+		JSONArray tagList = (JSONArray)parser.parse(new FileReader(areaTagsDefinitionFile));
 		Iterator<JSONObject> tagIt = tagList.iterator();
 		while (tagIt.hasNext()) {
 			JSONObject tag = tagIt.next();
@@ -124,13 +129,33 @@ public class DefaultTagInterpreter extends TagInterpreter {
 			this.typeKey = keyValuesIt.next().getLeft();
 			if (allKeyValues.get("type").containsKey("multipolygon"))
 				this.typeMultipolygonValue = allKeyValues.get("type").get("multipolygon").getRight();
+			else
+				System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "multipolygon");
 			if (allKeyValues.get("type").containsKey("route"))
 				this.typeRouteValue = allKeyValues.get("type").get("route").getRight();
+			else
+				System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "route");
+		} else {
+			System.err.printf("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", "type");
+		}
+
+		// list of uninteresting tags
+		Set<Integer> uninterestingTagKeys = new HashSet<>();
+		JSONArray uninterestingTagsList = (JSONArray)parser.parse(new FileReader(uninterestingTagsDefinitionFile));
+		Iterator<String> uninterestingTagsIt = uninterestingTagsList.iterator();
+		while (uninterestingTagsIt.hasNext()) {
+			String tagKey = uninterestingTagsIt.next();
+			if (!allKeyValues.containsKey(tagKey)) continue; // silent here, as some of these tags are actually quite exotic
+			Iterator<Pair<Integer,Integer>> keyIt = allKeyValues.get(tagKey).values().iterator();
+			if (keyIt.hasNext()) {
+				uninterestingTagKeys.add(keyIt.next().getLeft());
+			}
 		}
 
 		this.areaNoTagKey   = allKeyValues.get("area").get("no").getLeft();
 		this.areaNoTagValue = allKeyValues.get("area").get("no").getRight();
 		this.wayAreaTags = wayAreaTags;
+		this.uninterestingTagKeys = uninterestingTagKeys;
 	}
 
 	@Override

@@ -67,7 +67,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   }
   @Override
   public boolean isLine(TagInterpreter areaDecider) {
-    return areaDecider.evaluateForLine(this);
+    return !this.isArea(areaDecider);
   }
 
   @Override
@@ -82,11 +82,11 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     .toArray(Coordinate[]::new);
     if (this.isLine(areaDecider)) {
       if (coords.length < 2)
-        return null;
+        return null; // better: "invalid line geometry" exception?
       return geometryFactory.createLineString(coords);
     } else {
       if (coords.length < 4)
-        return null;
+        return null; // better: "invalid polygon geometry" exception?
       return geometryFactory.createPolygon(coords);
     }
   }

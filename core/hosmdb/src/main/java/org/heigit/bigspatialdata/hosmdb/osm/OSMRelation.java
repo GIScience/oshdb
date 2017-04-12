@@ -61,8 +61,20 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
   @Override
   public Geometry getGeometry(long timestamp, TagInterpreter areaDecider) {
-    // bla
+    if (this.isArea(areaDecider)) {
+      return getMultiPolygonGeometry(timestamp, areaDecider);
+    }
+    if (this.isLine(areaDecider)) {
+      return getMultiLineStringGeometry(timestamp);
+    }
+    return null; // better: exception?
+  }
 
+  private Geometry getMultiPolygonGeometry(long timestamp, TagInterpreter tagInterpreter) {
+    throw new NotImplementedException();
+    //return null;
+  }
+  private Geometry getMultiLineStringGeometry(long timestamp) {
     throw new NotImplementedException();
   }
 
