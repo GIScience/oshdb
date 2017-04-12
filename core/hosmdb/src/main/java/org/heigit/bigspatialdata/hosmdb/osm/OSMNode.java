@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
@@ -39,7 +40,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
 
   @Override
   public String toString() {
-    return String.format("NODE: %s %d:%d", super.toString(), getLon(), getLat());
+    return String.format(Locale.ENGLISH,"NODE: %s %f:%f", super.toString(), getLongitude(), getLatitude());
   }
 
   public boolean equalsTo(OSMNode o){
