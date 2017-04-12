@@ -131,7 +131,6 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		this.areaNoTagKey   = allKeyValues.get("area").get("no").getLeft();
 		this.areaNoTagValue = allKeyValues.get("area").get("no").getRight();
 		this.wayAreaTags = wayAreaTags;
-		this.wayAreaTags = relationAreaTags;
 	}
 
 	@Override
