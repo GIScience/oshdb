@@ -91,6 +91,8 @@ public class DefaultTagInterpreter extends TagInterpreter {
 						continue;
 					}
 					keyId = keyValuesIt.next().getLeft();
+					if (keyValues.containsKey("no"))
+						valueIds.add(keyValues.get("no").getRight());
 					wayAreaTags.put(keyId, valueIds);
 					break;
 				case "blacklist":
@@ -115,6 +117,8 @@ public class DefaultTagInterpreter extends TagInterpreter {
 						valueIds.add(keyValues.get(value).getRight());
 						keyId = keyValues.get(value).getLeft();
 					}
+					if (keyValues.containsKey("no"))
+						valueIds.add(keyValues.get("no").getRight());
 					if (!keyValues.isEmpty())
 						wayAreaTags.put(keyId, valueIds);
 					break;
