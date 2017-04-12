@@ -1,5 +1,9 @@
 [
     {
+        "key": "building",
+        "polygon": "all"
+    },
+    {
         "key": "highway",
         "polygon": "whitelist",
         "values": [
