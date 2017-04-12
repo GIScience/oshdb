@@ -66,10 +66,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 
 			System.out.println("Select tag key/value ids from DB");
 			ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
-			Map<Integer, Set<Integer>> areaKeyValues = new HashMap<>();
 			Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
-			int areaNoTagKey = -1;
-			int areaNoTagValue = -1;
 			while(rstTags.next()){
 				int keyId   = rstTags.getInt(1);
 				int valueId = rstTags.getInt(2);
@@ -77,29 +74,8 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 				String valueStr = rstTags.getString(4);
 				if (!allKeyValues.containsKey(keyStr)) allKeyValues.put(keyStr, new HashMap<>());
 				allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
-				if (rstTags.getString(3) == "area" &&
-					rstTags.getString(4) == "no") {
-					areaNoTagKey = keyId;
-					areaNoTagValue = valueId;
-				}
-				if (rstTags.getString(3) != "area" ||
-					rstTags.getString(3) != "highway")
-					continue;
-				if (rstTags.getString(3) == "area" &&
-						rstTags.getString(4) != "yes")
-					continue;
-				if (rstTags.getString(3) == "highway" && (
-						rstTags.getString(4) != "services" &&
-						rstTags.getString(4) != "rest_area" &&
-						rstTags.getString(4) != "escape" &&
-						rstTags.getString(4) != "elevator"))
-					continue;
-				if (!areaKeyValues.containsKey(keyId)) areaKeyValues.put(keyId, new HashSet<>());
-				areaKeyValues.get(keyId).add(valueId);
 			}
 			rstTags.close();
-
-			//final TagInterpreter areaDecider = new TagInterpreter(areaNoTagKey, areaNoTagValue, areaKeyValues, null);
 			final TagInterpreter areaDecider = new DefaultTagInterpreter(allKeyValues);
 
 
