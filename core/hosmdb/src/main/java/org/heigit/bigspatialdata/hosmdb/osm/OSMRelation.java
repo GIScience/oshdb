@@ -1,7 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
+import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
@@ -46,23 +46,24 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     return false;
   }
   @Override
-  public boolean isPointLike(AreaDecider areaDecider) {
+  public boolean isPointLike(TagInterpreter areaDecider) {
     return this.isArea(areaDecider);
     // todo: also return true if relation type is site, restriction, etc.?
   }
   @Override
-  public boolean isArea(AreaDecider areaDecider) {
-    throw new NotImplementedException();
-    // todo: return true if type=multipolygon in tags
+  public boolean isArea(TagInterpreter areaDecider) {
+    return areaDecider.evaluateForArea(this.getTags());
   }
   @Override
-  public boolean isLine(AreaDecider areaDecider) {
+  public boolean isLine(TagInterpreter areaDecider) {
     throw new NotImplementedException();
-    // todo: return true if type=route in tags
+    // todo: return true if type=route in tags -> reuse areaDecider???
   }
 
   @Override
-  public Geometry getGeometry(long timestamp, AreaDecider areaDecider) {
+  public Geometry getGeometry(long timestamp, TagInterpreter areaDecider) {
+    // bla
+
     throw new NotImplementedException();
   }
 

@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.hosmdb.etl;
 
-import java.awt.geom.Area;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.Connection;
@@ -12,9 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
 
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -24,8 +19,8 @@ import org.heigit.bigspatialdata.hosmdb.osm.*;
 
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellWays;
 import org.heigit.bigspatialdata.hosmdb.util.Geo;
-import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
-import org.heigit.bigspatialdata.hosmdb.util.areaDecider.DefaultWayAreaDecider;
+import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TestMultithreadDBProcessingAndGeometryCalculations {
@@ -104,8 +99,8 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 			}
 			rstTags.close();
 
-			//final AreaDecider areaDecider = new AreaDecider(areaNoTagKey, areaNoTagValue, areaKeyValues);
-			final AreaDecider areaDecider = new DefaultWayAreaDecider(allKeyValues);
+			//final TagInterpreter areaDecider = new TagInterpreter(areaNoTagKey, areaNoTagValue, areaKeyValues, null);
+			final TagInterpreter areaDecider = new DefaultTagInterpreter(allKeyValues);
 
 
 	    	List<ZoomId> zoomIds = new ArrayList<>();

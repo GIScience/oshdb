@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.hosmdb.util.areaDecider;
+package org.heigit.bigspatialdata.hosmdb.util.tagInterpreter;
 
 import java.util.HashSet;
 import java.util.Set;

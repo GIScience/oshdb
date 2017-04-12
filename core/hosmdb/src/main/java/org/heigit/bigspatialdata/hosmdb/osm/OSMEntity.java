@@ -1,7 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
+import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -109,11 +109,11 @@ public abstract class OSMEntity {
 	public abstract boolean isAuxiliary(Set<Integer> uninterestingTagKeys);
 	// geometry: does it represent a point/line/polygon feature?
 	public abstract boolean isPoint();
-	public abstract boolean isPointLike(AreaDecider areaDecider);
-	public abstract boolean isArea(AreaDecider areaDecider);
-	public abstract boolean isLine(AreaDecider areaDecider);
+	public abstract boolean isPointLike(TagInterpreter areaDecider);
+	public abstract boolean isArea(TagInterpreter areaDecider);
+	public abstract boolean isLine(TagInterpreter areaDecider);
 
 	// helper to get geometry of object for a specific timestamp
-	public abstract Geometry getGeometry(long timestamp, AreaDecider areaDecider);
+	public abstract Geometry getGeometry(long timestamp, TagInterpreter areaDecider);
 
 }

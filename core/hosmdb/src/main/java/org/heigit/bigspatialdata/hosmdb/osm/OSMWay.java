@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
-import org.heigit.bigspatialdata.hosmdb.util.areaDecider.AreaDecider;
+import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.Serializable;
@@ -55,23 +55,23 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     return false;
   }
   @Override
-  public boolean isPointLike(AreaDecider areaDecider) {
+  public boolean isPointLike(TagInterpreter areaDecider) {
     return this.isArea(areaDecider);
   }
   @Override
-  public boolean isArea(AreaDecider areaDecider) {
+  public boolean isArea(TagInterpreter areaDecider) {
     OSMMember[] nds = this.getRefs();
     if (nds[0].getId() != nds[nds.length-1].getId())
       return false;
-    return areaDecider.evaluate(this.getTags());
+    return areaDecider.evaluateForArea(this.getTags());
   }
   @Override
-  public boolean isLine(AreaDecider areaDecider) {
+  public boolean isLine(TagInterpreter areaDecider) {
     return !this.isArea(areaDecider);
   }
 
   @Override
-  public Geometry getGeometry(long timestamp, AreaDecider areaDecider) {
+  public Geometry getGeometry(long timestamp, TagInterpreter areaDecider) {
     GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = Arrays.stream(this.getRefs())
     .map(d -> (HOSMNode)d.getData())
