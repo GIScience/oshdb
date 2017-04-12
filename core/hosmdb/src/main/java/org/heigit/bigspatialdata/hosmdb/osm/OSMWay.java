@@ -67,7 +67,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   }
   @Override
   public boolean isLine(TagInterpreter areaDecider) {
-    return !this.isArea(areaDecider);
+    return areaDecider.evaluateForLine(this);
   }
 
   @Override

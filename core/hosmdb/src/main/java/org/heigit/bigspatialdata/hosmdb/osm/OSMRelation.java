@@ -56,6 +56,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
   @Override
   public boolean isLine(TagInterpreter areaDecider) {
+
     throw new NotImplementedException();
     // todo: return true if type=route in tags -> reuse areaDecider???
   }
