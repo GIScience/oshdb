@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
+import java.util.Locale;
+
 public class BoundingBox {
 
   public final double minLon;
@@ -16,8 +18,8 @@ public class BoundingBox {
 
   @Override
   public String toString() {
-   
-    return String.format("(%f,%f) (%f,%f)", minLon,minLat, maxLon, maxLat);
+
+    return String.format(Locale.ENGLISH,"(%f,%f) (%f,%f)", minLon, minLat, maxLon, maxLat);
   }
 
 }
