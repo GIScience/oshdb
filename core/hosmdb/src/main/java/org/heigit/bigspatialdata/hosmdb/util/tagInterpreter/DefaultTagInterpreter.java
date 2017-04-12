@@ -20,6 +20,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 
 	private int typeKey = -1;
 	private int typeMultipolygonValue = -1;
+	private int typeBoundaryValue = -1;
 	private int typeRouteValue = -1;
 
 	public DefaultTagInterpreter(Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues) throws IOException, ParseException {
@@ -135,6 +136,10 @@ public class DefaultTagInterpreter extends TagInterpreter {
 				this.typeMultipolygonValue = allKeyValues.get("type").get("multipolygon").getRight();
 			else
 				System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "multipolygon");
+			if (allKeyValues.get("type").containsKey("boundary"))
+				this.typeBoundaryValue = allKeyValues.get("type").get("boundary").getRight();
+			else
+				System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "boundary");
 			if (allKeyValues.get("type").containsKey("route"))
 				this.typeRouteValue = allKeyValues.get("type").get("route").getRight();
 			else
@@ -185,8 +190,8 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		// skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
 		// todo: replace with quicker binary search (tag keys are sorted)
 		for (int i = 0; i < tags.length; i += 2) {
-			if (tags[i] == typeKey && tags[i + 1] == typeMultipolygonValue)
-				return true;
+			if (tags[i] == typeKey)
+				return tags[i + 1] == typeMultipolygonValue || tags[i + 1] == typeBoundaryValue;
 		}
 		return false;
 	}
@@ -195,8 +200,8 @@ public class DefaultTagInterpreter extends TagInterpreter {
 	private boolean evaluateRelationForLine(int[] tags) {
 		// todo: replace with quicker binary search (tag keys are sorted)
 		for (int i = 0; i < tags.length; i += 2) {
-			if (tags[i] == typeKey && tags[i + 1] == typeRouteValue)
-				return true;
+			if (tags[i] == typeKey)
+				return tags[i + 1] == typeRouteValue;
 		}
 		return false;
 	}

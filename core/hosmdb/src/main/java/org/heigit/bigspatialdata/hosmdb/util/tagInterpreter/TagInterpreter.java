@@ -29,8 +29,11 @@ public class TagInterpreter {
 	private boolean evaluateWayForArea(int[] tags) {
 		// todo: replace with quicker binary search (tag keys are sorted)
 		for (int i = 0; i < tags.length; i += 2) {
-			if (tags[i] == areaNoTagKey && tags[i + 1] == areaNoTagValue)
-				return false;
+			if (tags[i] == areaNoTagKey)
+				if (tags[i + 1] == areaNoTagValue)
+					return false;
+				else
+					break;
 		}
 		for (int i = 0; i < tags.length; i += 2) {
 			if (wayAreaTags.containsKey(tags[i]) &&
