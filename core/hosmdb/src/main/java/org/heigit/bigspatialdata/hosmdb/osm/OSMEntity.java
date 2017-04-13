@@ -1,6 +1,10 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import com.vividsolutions.jts.geom.Geometry;
+import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
+
 import java.util.Arrays;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public abstract class OSMEntity {
@@ -106,5 +110,17 @@ public abstract class OSMEntity {
 		return String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s USER:%d TAGS:%S", id, getVersion(), getTimestamp(),
 				getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
 	}
+
+	// helpers to determine underlying structure of osm objects
+	// returns true if object is only used to define another object (e.g. nodes of a way without own tags)
+	public abstract boolean isAuxiliary(Set<Integer> uninterestingTagKeys);
+	// geometry: does it represent a point/line/polygon feature?
+	public abstract boolean isPoint();
+	public abstract boolean isPointLike(TagInterpreter areaDecider);
+	public abstract boolean isArea(TagInterpreter areaDecider);
+	public abstract boolean isLine(TagInterpreter areaDecider);
+
+	// helper to get geometry of object for a specific timestamp
+	public abstract Geometry getGeometry(long timestamp, TagInterpreter areaDecider);
 
 }
