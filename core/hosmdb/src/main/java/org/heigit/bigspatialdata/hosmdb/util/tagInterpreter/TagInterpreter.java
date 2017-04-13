@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * instances of this class are used to determine wether a OSM way represents a polygon or linestring geometry.
+ * instances of this class are used to determine whether a OSM way represents a polygon or linestring geometry.
  */
 public class TagInterpreter {
 	int areaNoTagKeyId, areaNoTagValueId;
