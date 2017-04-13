@@ -204,9 +204,26 @@ public class XYGrid {
    *
    * @param BBOX The BBOX. First dimension is longitude, second is latitude.
    *
-   * @return Returns a set of Tile-IDs that lie within the given BBX.
+   * @return Returns a set of Tile-IDs that exactly lie within the given BBOX.
    */
   public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData BBOX) {
+    return this.bbox2Ids(BBOX, false);
+  }
+
+  /**
+   * Calculates all tiles, that lie within a bounding-box. TODO but priority
+   * 999: Add possibility to snap the BBX to the tile-grid. TODO: is an
+   * exception needed?
+   *
+   * @param BBOX The BBOX. First dimension is longitude, second is latitude.
+   * @param enlarge if true, the BBOX is enlarged by one tile to the south-west
+   * to include tiles that possibly hold way or relation information, if false
+   * only holds tiles that intersect with the given BBOX. For queries: false is
+   * for nodes while true is for ways and relations.
+   *
+   * @return Returns a set of Tile-IDs that lie within the given BBOX.
+   */
+  public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData BBOX, boolean enlarge) {
     //initalise basic variables
     TreeSet<Long> result = new TreeSet<>();
     double minlong = BBOX.getMinValuesPerDimension()[0];
@@ -255,14 +272,14 @@ public class XYGrid {
       NumericRange longitude = new NumericRange(minlong, 180.0 - EPSILON);
       NumericRange latitude = new NumericRange(minlat, maxlat);
       NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
-      result.addAll(bbox2Ids(new BasicNumericDataset(dataPerDimension)));
+      result.addAll(bbox2Ids(new BasicNumericDataset(dataPerDimension), enlarge));
 
       minlong = -180.0;
     }
 
     //At this point the following should be true
     //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
-    //minlat[0:90]<=maxlat[0:89.99999]
+    //minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
     //
     //refuse to calculate results, that would retun an object > 100mb
     if (getEstimatedIdCount(BBOX) > 104857600 / 4) {
@@ -270,16 +287,43 @@ public class XYGrid {
       return null;
     }
 
-    //calculate column and row range
-    int columnmin = (int) ((minlong + 180.0) / cellWidth);
-    int columnmax = (int) ((maxlong + 180.0) / cellWidth);
-    int rowmin = (int) ((minlat + 90.0) / cellWidth);
-    int rowmax = (int) ((maxlat + 90.0) / cellWidth);
+    int columnmin;
+    int columnmax;
+    int rowmin;
+    int rowmax;
+    boolean passdate = false;
+
+    if (enlarge) {
+      //calculate column and row range
+      columnmin = (int) ((minlong + 180.0) / cellWidth);
+      columnmax = (int) ((maxlong + 180.0) / cellWidth);
+      rowmin = (int) ((minlat + 90.0) / cellWidth);
+      rowmax = (int) ((maxlat + 90.0) / cellWidth);
+      if (columnmin == 0) {
+        passdate = true;
+      }
+      if (columnmin > 0) {
+        columnmin -= 1;
+      }
+      if (rowmin > 0) {
+        rowmin -= 1;
+      }
+    } else {
+      //calculate column and row range
+      columnmin = (int) ((minlong + 180.0) / cellWidth);
+      columnmax = (int) ((maxlong + 180.0) / cellWidth);
+      rowmin = (int) ((minlat + 90.0) / cellWidth);
+      rowmax = (int) ((maxlat + 90.0) / cellWidth);
+    }
 
     //add the regular values
     for (int r = rowmin; r <= rowmax; r++) {
       for (int c = columnmin; c <= columnmax; c++) {
         result.add(r * zoompow + c);
+      }
+      if (passdate) {
+        int maxcol = (int) ((180 - EPSILON + 180.0) / cellWidth);
+        result.add(r * zoompow + maxcol);
       }
     }
     return result;

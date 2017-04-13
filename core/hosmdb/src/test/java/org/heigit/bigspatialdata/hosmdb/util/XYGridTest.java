@@ -410,5 +410,96 @@ public class XYGridTest {
     SortedSet<Long> result = two.bbox2Ids(two.getCellDimensions(0));
     assertEquals(expResult, result);
   }
+  
+   @Test
+  public void testBbox2Ids2() {
+    System.out.println("bbox2Ids");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+
+    TreeSet<Long> expResult = new TreeSet<>();
+    expResult.add(0L);
+    SortedSet<Long> result = zero.bbox2Ids(BBOX,true);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testBbox2IdsI2() {
+    System.out.println("bbox2Ids");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
+
+    TreeSet<Long> expResult = new TreeSet<>();
+    expResult.add(0L);
+    SortedSet<Long> result = zero.bbox2Ids(BBOX,true);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testBbox2IdsII2() {
+    System.out.println("bbox2Ids");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(179, 89), new NumericRange(0, 5)});
+
+    TreeSet<Long> expResult = new TreeSet<>();
+    expResult.add(0L);
+    SortedSet<Long> result = zero.bbox2Ids(BBOX,true);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testBbox2IdsIII2() {
+    System.out.println("bbox2Ids");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
+
+    TreeSet<Long> expResult = new TreeSet<>();
+    expResult.add(0L);
+    expResult.add(1L);
+    expResult.add(2L);
+    expResult.add(4L);
+    expResult.add(5L);
+    expResult.add(6L);
+    SortedSet<Long> result = two.bbox2Ids(BBOX,true);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testBbox2IdsIV2() {
+    System.out.println("bbox2Ids");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(180, 89), new NumericRange(0, 5)});
+
+    TreeSet<Long> expResult = new TreeSet<>();
+    expResult.add(0L);
+    expResult.add(1L);
+    expResult.add(2L);
+    expResult.add(3L);
+    expResult.add(4L);
+    expResult.add(5L);
+    expResult.add(6L);
+    expResult.add(7L);
+    SortedSet<Long> result = two.bbox2Ids(BBOX,true);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testBbox2IdsV2() {
+    System.out.println("bbox2Ids");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(90, 89), new NumericRange(-90, -1)});
+
+    TreeSet<Long> expResult = new TreeSet<>();
+    expResult.add(0L);
+    expResult.add(1L);
+    expResult.add(2L);
+    expResult.add(3L);
+    SortedSet<Long> result = two.bbox2Ids(BBOX,true);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testBbox2IdsVI2() {
+    System.out.println("bbox2Ids");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+
+    TreeSet<Long> expResult = null;
+    SortedSet<Long> result = thirty.bbox2Ids(BBOX,true);
+    assertEquals(expResult, result);
+  }
 
 }
