@@ -76,7 +76,15 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 				allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
 			}
 			rstTags.close();
-			final TagInterpreter areaDecider = new DefaultTagInterpreter(allKeyValues);
+			ResultSet rstRoles = stmt.executeQuery("select ID as ROLEID, txt as ROLE from ROLE;");
+			Map<String, Integer> allRoles = new HashMap<>();
+			while(rstRoles.next()){
+				int roleId = rstRoles.getInt(1);
+				String roleStr = rstTags.getString(2);
+				allRoles.put(roleStr, roleId);
+			}
+			rstRoles.close();
+			final TagInterpreter areaDecider = new DefaultTagInterpreter(allKeyValues, allRoles);
 
 
 	    	List<ZoomId> zoomIds = new ArrayList<>();

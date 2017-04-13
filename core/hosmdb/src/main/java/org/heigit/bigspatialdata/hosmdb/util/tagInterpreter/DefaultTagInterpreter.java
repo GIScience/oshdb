@@ -23,16 +23,17 @@ public class DefaultTagInterpreter extends TagInterpreter {
 	private int typeBoundaryValue = -1;
 	private int typeRouteValue = -1;
 
-	public DefaultTagInterpreter(Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues) throws IOException, ParseException {
+	public DefaultTagInterpreter(Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues, Map<String, Integer> allRoles) throws IOException, ParseException {
 		this(
 			Thread.currentThread().getContextClassLoader().getResource("json/polygon-features.json").getPath(),
 			Thread.currentThread().getContextClassLoader().getResource("json/uninterestingTags.json").getPath(),
-			allKeyValues
+			allKeyValues,
+			allRoles
 		);
 	}
 
-	public DefaultTagInterpreter(String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile, Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues) throws FileNotFoundException, IOException, ParseException {
-		super(0,0, null, null, null); // initialize with dummy parameters for now
+	public DefaultTagInterpreter(String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile, Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues, Map<String, Integer> allRoles) throws FileNotFoundException, IOException, ParseException {
+		super(-1,-1, null, null, null, -1, -1, -1); // initialize with dummy parameters for now
 
 		// construct list of area tags for ways
 		Map<Integer, Set<Integer>> wayAreaTags = new HashMap<>();
@@ -161,10 +162,17 @@ public class DefaultTagInterpreter extends TagInterpreter {
 			}
 		}
 
-		this.areaNoTagKey   = allKeyValues.get("area").get("no").getLeft();
-		this.areaNoTagValue = allKeyValues.get("area").get("no").getRight();
 		this.wayAreaTags = wayAreaTags;
 		this.uninterestingTagKeys = uninterestingTagKeys;
+
+		if (allKeyValues.containsKey("area") && allKeyValues.get("area").containsKey("no")) {
+			this.areaNoTagKeyId = allKeyValues.get("area").get("no").getLeft();
+			this.areaNoTagValueId = allKeyValues.get("area").get("no").getRight();
+		}
+
+		if (allRoles.containsKey("outer")) this.outerRoleId = allRoles.get("outer");
+		if (allRoles.containsKey("inner")) this.innerRoleId = allRoles.get("inner");
+		if (allRoles.containsKey(""))      this.emptyRoleId = allRoles.get("");
 	}
 
 	@Override
