@@ -80,7 +80,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 			Map<String, Integer> allRoles = new HashMap<>();
 			while(rstRoles.next()){
 				int roleId = rstRoles.getInt(1);
-				String roleStr = rstTags.getString(2);
+				String roleStr = rstRoles.getString(2);
 				allRoles.put(roleStr, roleId);
 			}
 			rstRoles.close();

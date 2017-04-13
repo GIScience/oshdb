@@ -72,6 +72,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
 
   @Override
   public Geometry getGeometry(long timestamp, TagInterpreter areaDecider) {
+    // todo: handle old-style multipolygons here???
     GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = Arrays.stream(this.getRefs())
     .map(d -> (HOSMNode)d.getData())
