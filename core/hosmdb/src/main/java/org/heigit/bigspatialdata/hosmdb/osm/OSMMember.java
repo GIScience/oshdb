@@ -1,5 +1,9 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+/** Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
+ *
+ * @author Rafael Troilo <r.troilo@uni-heidelberg.de>
+ */
 public class OSMMember {
 	private final long id;
 	private final int type;

@@ -1,11 +1,10 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
-
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.IntStream;
+import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class OSMEntity {
 	protected final long id;
@@ -66,7 +65,14 @@ public abstract class OSMEntity {
 		return false;
 	}
 
-	/* useful when looking for example "tagkey" != "no" */
+        /** Tests if any a given key is present but ignores certain values. 
+         *  Useful when looking for example "TagKey" != "no"
+         *
+         * @param key the key to search for
+         * @param uninterestingValues list of values, that should return false although the key is actually present
+         * @return true if the key is present and is NOT in a combination with the given values, false otherwise 
+         */
+
 	public boolean hasTagKey(int key, int[] uninterestingValues) {
         // todo: replace this with binary search (keys are sorted)
 		for (int i = 0; i < tags.length; i += 2) {
@@ -74,7 +80,7 @@ public abstract class OSMEntity {
 				continue;
 			if (tags[i] == key) {
 				final int value = tags[i + 1];
-				return IntStream.of(uninterestingValues).anyMatch(x -> x == value);
+                                return !IntStream.of(uninterestingValues).anyMatch(x -> x == value);
 			}
 			break;
 		}

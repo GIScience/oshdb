@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
+import java.util.SortedSet;
 import java.util.TreeSet;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
@@ -124,8 +125,7 @@ public class XYGrid {
   }
 
   /**
-   * Calculates BBOX of given Cell. TODO: create logic for cells lying on the
-   * borders of the grid (see Unittests)
+   * Calculates BBOX of given Cell.
    *
    * @param cellId ID of a cell calculated by getID
    * @return a BBOX for that cell (minlong, maxlong; minlat, maxlat)
@@ -139,8 +139,22 @@ public class XYGrid {
     double lon = (x * cellWidth) - 180.0;
     double lat = (y * cellWidth) - 90.0;
 
-    final NumericRange longitude = new NumericRange(lon, (lon + cellWidth) - EPSILON);
-    final NumericRange latitude = new NumericRange(lat, (lat + cellWidth) - EPSILON);
+    final NumericRange longitude;
+    if (equalsEpsilon(lon, -180.0)) {
+      longitude = new NumericRange(180.0, (lon + cellWidth) - EPSILON);
+    } else {
+      longitude = new NumericRange(lon, (lon + cellWidth) - EPSILON);
+    }
+
+    final NumericRange latitude;
+    if (zoom == 0) {
+      latitude = new NumericRange(-90.0, 90.0);
+    } else if (equalsEpsilon(lat, 90.0 - cellWidth)) {
+      latitude = new NumericRange(lat, 90.0);
+    } else {
+      latitude = new NumericRange(lat, (lat + cellWidth) - EPSILON);
+    }
+
     final NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
     return new BasicNumericDataset(dataPerDimension);
   }
@@ -192,7 +206,7 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that lie within the given BBX.
    */
-  public TreeSet<Long> bbox2Ids(MultiDimensionalNumericData BBOX) {
+  public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData BBOX) {
     //initalise basic variables
     TreeSet<Long> result = new TreeSet<>();
     double minlong = BBOX.getMinValuesPerDimension()[0];
@@ -206,19 +220,19 @@ public class XYGrid {
     }
 
     //test if bbx is on earth or extends further
-    if (minlong < -180.0) {
+    if (minlong < -180.0 || minlong > 180.0) {
       result.add(-1L);
       minlong = -180.0;
     }
-    if (minlat < -90.0) {
+    if (minlat < -90.0 || minlat > 90.0) {
       result.add(-1L);
       minlat = -90.0;
     }
-    if (maxlong > 180.0) {
+    if (maxlong > 180.0 || maxlong < -180.0) {
       result.add(-1L);
       maxlong = 180.0;
     }
-    if (maxlat > 90.0) {
+    if (maxlat > 90.0 || maxlat < -90.0) {
       result.add(-1L);
       maxlat = 90.0;
     }
@@ -248,7 +262,7 @@ public class XYGrid {
 
     //At this point the following should be true
     //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
-    //minlat[0:90<=maxlat[0:89.99999]
+    //minlat[0:90]<=maxlat[0:89.99999]
     //
     //refuse to calculate results, that would retun an object > 100mb
     if (getEstimatedIdCount(BBOX) > 104857600 / 4) {
