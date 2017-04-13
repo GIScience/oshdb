@@ -469,11 +469,9 @@ public class XYGridTest {
     expResult.add(0L);
     expResult.add(1L);
     expResult.add(2L);
-    expResult.add(3L);
     expResult.add(4L);
     expResult.add(5L);
     expResult.add(6L);
-    expResult.add(7L);
     SortedSet<Long> result = two.bbox2Ids(BBOX,true);
     assertEquals(expResult, result);
   }

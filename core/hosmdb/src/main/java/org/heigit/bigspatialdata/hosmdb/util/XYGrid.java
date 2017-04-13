@@ -291,7 +291,6 @@ public class XYGrid {
     int columnmax;
     int rowmin;
     int rowmax;
-    boolean passdate = false;
 
     if (enlarge) {
       //calculate column and row range
@@ -299,9 +298,7 @@ public class XYGrid {
       columnmax = (int) ((maxlong + 180.0) / cellWidth);
       rowmin = (int) ((minlat + 90.0) / cellWidth);
       rowmax = (int) ((maxlat + 90.0) / cellWidth);
-      if (columnmin == 0) {
-        passdate = true;
-      }
+      //it is impossible vor features to span over the datelimit, so the enlargement stops at column 0
       if (columnmin > 0) {
         columnmin -= 1;
       }
@@ -320,10 +317,6 @@ public class XYGrid {
     for (int r = rowmin; r <= rowmax; r++) {
       for (int c = columnmin; c <= columnmax; c++) {
         result.add(r * zoompow + c);
-      }
-      if (passdate) {
-        int maxcol = (int) ((180 - EPSILON + 180.0) / cellWidth);
-        result.add(r * zoompow + maxcol);
       }
     }
     return result;
