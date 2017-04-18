@@ -61,9 +61,9 @@ public class Geo {
 		double area = 0.0;
 		Coordinate[] coords = poly.getCoordinates();
 
-		area += ringArea((LinearRing)(poly.getExteriorRing()));
+		area += Math.abs(ringArea((LinearRing)(poly.getExteriorRing())));
 		for (int i = 1; i < poly.getNumInteriorRing(); i++) {
-			area -= ringArea((LinearRing)(poly.getInteriorRingN(i)));
+			area -= Math.abs(ringArea((LinearRing)(poly.getInteriorRingN(i))));
 		}
 
 		return area;
