@@ -153,16 +153,12 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 								Geometry geom = osmWay.getGeometry(timestamp, areaDecider);
 								if (geom == null) throw new NotImplementedException(); // hack!
 								if (geom.getGeometryType() != "LineString") throw new NotImplementedException(); // hack!
+
 								LineString line = (LineString) geom;
 
-								Coordinate[] coords = line.getCoordinates();
+								dist += Geo.distanceOf(line);
 
-								for (int i = 1; i < coords.length; i++) {
-									dist += Geo.distanceBetweenInM(
-											coords[i - 1].y, coords[i - 1].x,
-											coords[i].y, coords[i].x
-									);
-								}
+
 							} catch(NotImplementedException err) {}
 
 							//dist = dist/(nds.length-1);
