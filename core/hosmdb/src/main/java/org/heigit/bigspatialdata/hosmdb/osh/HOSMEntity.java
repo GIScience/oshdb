@@ -198,10 +198,8 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
    */
 	public boolean insideBbox(BoundingBox bbox) {
 		return
-			this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat &&
-			this.bbox.maxLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
-			this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon &&
-			this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon;
+			this.bbox.minLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
+			this.bbox.minLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon;
 	}
 
 }
