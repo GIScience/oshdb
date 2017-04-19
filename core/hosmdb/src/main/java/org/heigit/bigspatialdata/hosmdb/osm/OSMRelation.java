@@ -2,10 +2,6 @@ package org.heigit.bigspatialdata.hosmdb.osm;
 
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.*;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMEntity;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMWay;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -15,9 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 
 public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, Serializable {
@@ -87,7 +81,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
     OSMWay[] outerMembers = Arrays.stream(this.getMembers())
     .filter(tagInterpreter::isMultipolygonOuterMember)
-    .map(outerMember -> (HOSMEntity)outerMember.getData())
+    .map(outerMember -> outerMember.getEntity())
     .filter(hosm -> hosm instanceof HOSMWay)
     .map(hosm -> (HOSMWay)hosm)
     .map(hosm -> hosm.getByTimestamp(timestamp))
@@ -96,7 +90,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
     OSMWay[] innerMembers = Arrays.stream(this.getMembers())
     .filter(tagInterpreter::isMultipolygonInnerMember)
-    .map(outerMember -> (HOSMEntity)outerMember.getData())
+    .map(outerMember -> outerMember.getEntity())
     .filter(hosm -> hosm instanceof HOSMWay)
     .map(hosm -> (HOSMWay)hosm)
     .map(hosm -> hosm.getByTimestamp(timestamp))
@@ -105,16 +99,14 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
     OSMNode[][] outerLines = Arrays.stream(outerMembers)
     .map(way -> Arrays.stream(way.getRefs())
-      .map(nd -> (HOSMNode)nd.getData())
-      .map(hosm -> hosm.getByTimestamp(timestamp))
+      .map(nd -> nd.getEntity().getByTimestamp(timestamp))
       .map(osm -> (OSMNode)osm)
       .filter(node -> node != null && node.isVisible())
       .toArray(OSMNode[]::new)
     ).toArray(OSMNode[][]::new);
     OSMNode[][] innerLines = Arrays.stream(innerMembers)
     .map(way -> Arrays.stream(way.getRefs())
-      .map(nd -> (HOSMNode)nd.getData())
-      .map(hosm -> hosm.getByTimestamp(timestamp))
+      .map(nd -> nd.getEntity().getByTimestamp(timestamp))
       .map(osm -> (OSMNode)osm)
       .filter(node -> node != null && node.isVisible())
       .toArray(OSMNode[]::new)

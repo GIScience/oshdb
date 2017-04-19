@@ -7,6 +7,7 @@ package org.heigit.bigspatialdata.hosmdb.osm;
 
 import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 /**
@@ -48,19 +49,19 @@ public class OSMMemberTest {
 
   @Test
   public void testGetData() {
-    System.out.println("getData");
-    OSMMember instance = new OSMMember(1L,1,1,1);
-    Object expResult = 1;
-    Object result = instance.getData();
+    System.out.println("getEntity (explicit null)");
+    OSMMember instance = new OSMMember(1L,1,1,null);
+    Object expResult = null;
+    Object result = instance.getEntity();
     assertEquals(expResult, result);
   }
-  
-    @Test
+
+  @Test
   public void testGetDataII() {
-    System.out.println("getData");
+    System.out.println("getEntity (implicit null)");
     OSMMember instance = new OSMMember(1L,1,1);
     Object expResult = null;
-    Object result = instance.getData();
+    Object result = instance.getEntity();
     assertEquals(expResult, result);
   }
 

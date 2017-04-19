@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.hosmdb.osm;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -75,8 +74,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     // todo: handle old-style multipolygons here???
     GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = Arrays.stream(this.getRefs())
-    .map(d -> (HOSMNode)d.getData())
-    .map(hosm -> hosm.getByTimestamp(timestamp))
+    .map(d -> d.getEntity().getByTimestamp(timestamp))
     .map(osm -> (OSMNode)osm)
     .filter(node -> node != null && node.isVisible())
     .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))

@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.osm;
 
+import org.heigit.bigspatialdata.hosmdb.osh.HOSMEntity;
+
 /** Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
  *
  * @author Rafael Troilo <r.troilo@uni-heidelberg.de>
@@ -8,18 +10,18 @@ public class OSMMember {
 	private final long id;
 	private final int type;
 	private final int roleId;
-	private final Object data;
-	
+	private final HOSMEntity entity;
+
 	
 	public OSMMember(final long id, final int type, final int roleId){
 	  this(id,type, roleId, null);
 	}
 	
-	public OSMMember(final long id, final int type, final int roleId, Object data){
+	public OSMMember(final long id, final int type, final int roleId, HOSMEntity entity){
 		this.id = id;
 		this.type = type;
 		this.roleId = roleId;
-		this.data = data;
+		this.entity = entity;
 	}
 	
 
@@ -35,8 +37,8 @@ public class OSMMember {
 		return roleId;
 	}
 	
-	public Object getData(){
-	  return data;
+	public HOSMEntity getEntity(){
+	  return entity;
 	}
 	
 	@Override
