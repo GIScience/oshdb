@@ -1,8 +1,10 @@
 package org.heigit.bigspatialdata.hosmdb.grid;
 
+import org.heigit.bigspatialdata.hosmdb.osh.HOSMEntity;
+
 import java.io.Serializable;
 
-public class HOSMCell implements Serializable{
+public abstract class HOSMCell<HOSM extends HOSMEntity> implements Iterable<HOSM>, Serializable{
   private static final long serialVersionUID = 1L;
   protected final long id;
   protected final int level;

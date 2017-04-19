@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.hosmdb.grid;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,7 +9,7 @@ import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
 
 
 
-public class HOSMCellNodes extends HOSMCell implements Iterable<HOSMNode>, Serializable {
+public class HOSMCellNodes extends HOSMCell {
 
   private static final long serialVersionUID = 1L;
 

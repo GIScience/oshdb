@@ -14,6 +14,7 @@ import java.util.*;
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.hosmdb.grid.HOSMCell;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
 import org.heigit.bigspatialdata.hosmdb.osh.*;
 import org.heigit.bigspatialdata.hosmdb.osm.*;
@@ -121,7 +122,7 @@ public class TestMultipolygonGeometry {
 							try(final ResultSet rst2 = pstmt.executeQuery()){
 								if(rst2.next()){
 									final ObjectInputStream ois = new ObjectInputStream(rst2.getBinaryStream(1));
-									final HOSMCellRelations hosmCell = (HOSMCellRelations) ois.readObject();
+									final HOSMCell hosmCell = (HOSMCell) ois.readObject();
 									return hosmCell;
 								} else {
 									System.err.printf("ERROR: no result for level:%d and id:%d\n",zoomId.zoom,zoomId.id);
@@ -139,21 +140,22 @@ public class TestMultipolygonGeometry {
 						final long id = hosmCell.getId();
 
 						Map<Long, Double> counts = new HashMap<>(timestamps.size());
-						Iterator<HOSMRelation> oshRelIt = hosmCell.iterator();
-						while(oshRelIt.hasNext()) {
-							HOSMRelation oshRel = oshRelIt.next();
+						Iterator<HOSMEntity> oshEntitylIt = hosmCell.iterator();
+						while(oshEntitylIt.hasNext()) {
+							HOSMEntity oshEntity = oshEntitylIt.next();
 
-							Map<Long,OSMRelation> osmRels = oshRel.getByTimestamps(timestamps);
-							for (Map.Entry<Long,OSMRelation> rel : osmRels.entrySet()) {
-								Long timestamp = rel.getKey();
-								OSMRelation osmRel = rel.getValue();
-								//if (osmRel.isVisible() && osmRel.hasTagKey(403) && osmRel.hasTagValue(403,4)) {
-								if (osmRel.isVisible() && osmRel.getId()==3188431) {
-									//for (int i=0; i<osmRel.getTags().length; i+=2)
-									//	System.out.println(osmRel.getTags()[i] + "=" + osmRel.getTags()[i+1]);
+							Map<Long,OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(timestamps);
+							for (Map.Entry<Long,OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+								Long timestamp = entity.getKey();
+								OSMEntity osmEntity = entity.getValue();
+								//if (osmEntity.isVisible() && osmEntity.hasTagKey(403) && osmEntity.hasTagValue(403,4)) {
+								//if (osmEntity.isVisible() && osmEntity.getId()==3188431) {
+								if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft(), new int[]{allKeyValues.get("building").get("no").getRight()})) {
+									//for (int i=0; i<osmEntity.getTags().length; i+=2)
+									//	System.out.println(osmEntity.getTags()[i] + "=" + osmEntity.getTags()[i+1]);
 									double dist = 0.;
 									try {
-										Geometry geom = osmRel.getGeometry(timestamp, areaDecider);
+										Geometry geom = osmEntity.getGeometry(timestamp, areaDecider);
 
 										if (geom == null) throw new NotImplementedException(); // hack!
 										if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack!
@@ -168,13 +170,16 @@ public class TestMultipolygonGeometry {
 											default:
 												System.err.println("Unknown geometry type found: " + geom.getGeometryType());
 										}
-									} catch(NotImplementedException err) {}
+									} catch(NotImplementedException err) {
+									} catch(IllegalArgumentException err) {
+										System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
+									}
 
 									Double prevCnt = counts.get(timestamp);
 									//counts.put(timestamp, prevCnt != null ? 0.5*(prevCnt.doubleValue() + dist) : dist);
 									counts.put(timestamp, prevCnt != null ? prevCnt.doubleValue() + dist : dist);
 								} else {
-									//System.out.println(osmRel.getTags()[0]);
+									//System.out.println(osmEntity.getTags()[0]);
 								}
 							}
 						}

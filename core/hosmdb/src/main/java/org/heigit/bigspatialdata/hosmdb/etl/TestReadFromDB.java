@@ -10,7 +10,10 @@ import java.sql.Statement;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.heigit.bigspatialdata.hosmdb.grid.HOSMCell;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
+import org.heigit.bigspatialdata.hosmdb.osh.HOSMEntity;
 import org.heigit.bigspatialdata.hosmdb.osh.HOSMRelation;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMRelation;
 
@@ -34,18 +37,19 @@ public class TestReadFromDB {
         //get one object (Cell) from the stream
         HOSMCellRelations hosmCell = (HOSMCellRelations) ois.readObject();
 
-        //three possibilites to get Data from this Cell:
+        //three possibilities to get Data from this Cell:
         //1. use a Java8 Stream:
-        Stream<HOSMRelation> stream = StreamSupport.stream(hosmCell.spliterator(), false);
+        Stream<HOSMEntity> stream = StreamSupport.stream(hosmCell.spliterator(), false);
         //count relations in cell
         System.out.println("Stream: " + stream.count());
         //System.out.printf("\nLevel:%d, Id:%d, CountRelations:%d\n", hosmCell.getLevel(),hosmCell.getId(), stream.count());
 
         //2. use foreach loop
         //HOSMRealtion in cell
-        for (HOSMRelation hosmr : hosmCell) {
+        for (Object hosmr : hosmCell) {
           //OSMRelation in HOSMRelation
-          for (OSMRelation osmr : hosmr) {
+          HOSMRelation hosmrel = (HOSMRelation)hosmr;
+          for (OSMRelation osmr : hosmrel) {
             System.out.println("For: " + osmr.getVersion());
           }
         }

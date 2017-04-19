@@ -65,13 +65,13 @@ public class HOSMRelationTest {
       assertEquals(members.length, 3);
       
       assertEquals(100,members[0].getId());
-      assertNotNull(members[0].getData());
+      assertNotNull(members[0].getEntity());
       
       assertEquals(102,members[1].getId());
-      assertNull(members[1].getData());
+      assertNull(members[1].getEntity());
       
       assertEquals(104,members[2].getId());
-      assertNotNull(members[2].getData());
+      assertNotNull(members[2].getEntity());
       
       
     } catch (IOException e) {

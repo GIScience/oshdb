@@ -140,7 +140,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 				Map<Long, Double> counts = new HashMap<>(timestamps.size());
 				Iterator<HOSMWay> oshWayIt = hosmCell.iterator();
 				while(oshWayIt.hasNext()) {
-					HOSMWay oshWay = oshWayIt.next();
+					HOSMWay oshWay = (HOSMWay)oshWayIt.next();
 
 					Map<Long,OSMWay> osmWays = oshWay.getByTimestamps(timestamps);
 					for (Map.Entry<Long,OSMWay> way : osmWays.entrySet()) {

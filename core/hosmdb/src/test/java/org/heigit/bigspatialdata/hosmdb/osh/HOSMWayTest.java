@@ -59,7 +59,7 @@ public class HOSMWayTest {
 	    
 	    
 	    OSMMember[] members = w.getRefs();
-	    members[0].getData();
+	    members[0].getEntity();
 	  
 	    
 	    
