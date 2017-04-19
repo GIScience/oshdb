@@ -169,4 +169,39 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
     return length;
   }
 
+  /*
+   * returns true if the bbox of this HOSM entity intersects (or is fully inside) the given bbox.
+   * Used to roughly pre-filter objects against a bbox.
+   * See https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/11
+   */
+  public boolean intersectsBbox(BoundingBox bbox) {
+	  if (this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat &&
+		  this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon)
+		  return true;
+	  if (this.bbox.maxLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
+		  this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon)
+		  return true;
+	  if (this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat &&
+		  this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon)
+		  return true;
+	  if (this.bbox.maxLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
+		  this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon)
+		  return true;
+	  return false;
+  }
+
+  /*
+   * returns true if the bbox of this HOSM entity is fully inside the given bbox.
+   * Can be used as an optimization to find not-to-be-clipped entity Geometries
+   * (see https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/13)
+   * todo: extend funtionality for non-bbox case: insidePolygon(poly)
+   */
+	public boolean insideBbox(BoundingBox bbox) {
+		return
+			this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat &&
+			this.bbox.maxLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
+			this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon &&
+			this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon;
+	}
+
 }
