@@ -175,6 +175,8 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
    * See https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/11
    */
   public boolean intersectsBbox(BoundingBox bbox) {
+  	  if (this.insideBbox(bbox))
+  	  	  return true;
 	  if (this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat &&
 		  this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon)
 		  return true;
