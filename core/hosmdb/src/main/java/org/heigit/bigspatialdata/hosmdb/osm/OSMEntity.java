@@ -4,6 +4,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.IntStream;
+
+import com.vividsolutions.jts.geom.Polygon;
+import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
+import org.heigit.bigspatialdata.hosmdb.util.Geo;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class OSMEntity {
@@ -119,7 +123,15 @@ public abstract class OSMEntity {
 	public abstract boolean isArea(TagInterpreter areaDecider);
 	public abstract boolean isLine(TagInterpreter areaDecider);
 
-	// helper to get geometry of object for a specific timestamp
+	// gets the geometry of this object at a specific timestamp
 	public abstract Geometry getGeometry(long timestamp, TagInterpreter areaDecider);
+	public Geometry getGeometryClipped(long timestamp, TagInterpreter areaDecider, BoundingBox clipBbox) {
+		Geometry geom = this.getGeometry(timestamp, areaDecider);
+		return Geo.clip(geom, clipBbox);
+	}
+	public Geometry getGeometryClipped(long timestamp, TagInterpreter areaDecider, Polygon clipPoly) {
+		Geometry geom = this.getGeometry(timestamp, areaDecider);
+		return Geo.clip(geom, clipPoly);
+	}
 
 }

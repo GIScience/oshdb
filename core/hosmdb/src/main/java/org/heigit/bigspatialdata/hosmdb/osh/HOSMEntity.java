@@ -175,17 +175,17 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
    * See https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/11
    */
   public boolean intersectsBbox(BoundingBox bbox) {
-  	  if (this.insideBbox(bbox))
-  	  	  return true;
-	  if (this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat && (
-		  this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon ||
-		  this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon))
-		  return true;
-	  if (this.bbox.maxLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat && (
-		  this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon ||
-		  this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon))
-		  return true;
-	  return false;
+  	if (this.insideBbox(bbox))
+      return true;
+    if (this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat && (
+      this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon ||
+      this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon))
+      return true;
+    if (this.bbox.maxLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat && (
+      this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon ||
+      this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon))
+      return true;
+    return false;
   }
 
   /*
@@ -194,10 +194,10 @@ public abstract class HOSMEntity<OSM extends OSMEntity> implements Comparable<HO
    * (see https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/13)
    * todo: extend funtionality for non-bbox case: insidePolygon(poly)
    */
-	public boolean insideBbox(BoundingBox bbox) {
-		return
-			this.bbox.minLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
-			this.bbox.minLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon;
-	}
+  public boolean insideBbox(BoundingBox bbox) {
+  	return
+      this.bbox.minLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
+      this.bbox.minLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon;
+  }
 
 }
