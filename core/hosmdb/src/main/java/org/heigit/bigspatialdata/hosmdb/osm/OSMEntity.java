@@ -127,10 +127,12 @@ public abstract class OSMEntity {
 	public abstract Geometry getGeometry(long timestamp, TagInterpreter areaDecider);
 	public Geometry getGeometryClipped(long timestamp, TagInterpreter areaDecider, BoundingBox clipBbox) {
 		Geometry geom = this.getGeometry(timestamp, areaDecider);
+		if (geom == null) return null;
 		return Geo.clip(geom, clipBbox);
 	}
 	public Geometry getGeometryClipped(long timestamp, TagInterpreter areaDecider, Polygon clipPoly) {
 		Geometry geom = this.getGeometry(timestamp, areaDecider);
+		if (geom == null) return null;
 		return Geo.clip(geom, clipPoly);
 	}
 
