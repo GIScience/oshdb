@@ -146,7 +146,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 					for (Map.Entry<Long,OSMWay> way : osmWays.entrySet()) {
 						Long timestamp = way.getKey();
 						OSMWay osmWay = way.getValue();
-						if (osmWay.isVisible() && osmWay.hasTagKey(1) && osmWay.hasTagValue(1,0)) {
+						if (osmWay.isVisible() && osmWay.hasTagKey(1) /*&& osmWay.hasTagValue(1,0)*/) {
 
 							double dist = 0.;
 							try {

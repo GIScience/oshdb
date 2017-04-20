@@ -19,6 +19,7 @@ import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
 import org.heigit.bigspatialdata.hosmdb.osh.*;
 import org.heigit.bigspatialdata.hosmdb.osm.*;
 
+import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.Geo;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
@@ -91,7 +92,7 @@ public class TestMultipolygonGeometry {
 			List<ZoomId> zoomIds = new ArrayList<>();
 
 			System.out.println("Select ids from DB");
-			ResultSet rst = stmt.executeQuery("select level,id from grid_relation");
+			ResultSet rst = stmt.executeQuery("select level,id from grid_way");
 			while(rst.next()){
 				zoomIds.add(new ZoomId(rst.getInt(1),rst.getLong(2)));
 			}
@@ -115,7 +116,7 @@ public class TestMultipolygonGeometry {
 			System.out.println("Process in parallel");
 			Optional<Map<Long, Double>> totals = zoomIds.parallelStream()
 					.map(zoomId -> {
-						try(final PreparedStatement pstmt = conn.prepareStatement("select data from grid_relation where level = ? and id = ?")){
+						try(final PreparedStatement pstmt = conn.prepareStatement("select data from grid_way where level = ? and id = ?")){
 							pstmt.setInt(1,zoomId.zoom);
 							pstmt.setLong(2, zoomId.id);
 
@@ -139,33 +140,45 @@ public class TestMultipolygonGeometry {
 						final int zoom = hosmCell.getLevel();
 						final long id = hosmCell.getId();
 
+						BoundingBox bboxFilter = new BoundingBox(85.31242, 85.31785, 27.71187, 27.71615);
+
 						Map<Long, Double> counts = new HashMap<>(timestamps.size());
 						Iterator<HOSMEntity> oshEntitylIt = hosmCell.iterator();
 						while(oshEntitylIt.hasNext()) {
 							HOSMEntity oshEntity = oshEntitylIt.next();
+
+							if (!oshEntity.intersectsBbox(bboxFilter))
+								continue;
+							boolean fullyInside = oshEntity.insideBbox(bboxFilter);
+
 
 							Map<Long,OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(timestamps);
 							for (Map.Entry<Long,OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
 								Long timestamp = entity.getKey();
 								OSMEntity osmEntity = entity.getValue();
 								//if (osmEntity.isVisible() && osmEntity.hasTagKey(403) && osmEntity.hasTagValue(403,4)) {
-								//if (osmEntity.isVisible() && osmEntity.getId()==3188431) {
-								if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft(), new int[]{allKeyValues.get("building").get("no").getRight()})) {
+								//if (osmEntity.isVisible() && osmEntity.getId()==169443997) {
+								if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft())) {//, new int[]{allKeyValues.get("building").get("no").getRight()})) {
 									//for (int i=0; i<osmEntity.getTags().length; i+=2)
 									//	System.out.println(osmEntity.getTags()[i] + "=" + osmEntity.getTags()[i+1]);
+									OSMWay foo = (OSMWay)osmEntity;
 									double dist = 0.;
 									try {
-										Geometry geom = osmEntity.getGeometry(timestamp, areaDecider);
+										Geometry geom = fullyInside ?
+											osmEntity.getGeometry(timestamp, areaDecider) :
+											osmEntity.getGeometryClipped(timestamp, areaDecider, bboxFilter);
 
 										if (geom == null) throw new NotImplementedException(); // hack!
+										if (geom.isEmpty()) throw new NotImplementedException(); // hack!
 										if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack!
 
+										//if (formatter.format(new Date(timestamp)).compareTo("20170101") == 0) System.out.println(geom.getGeometryType()+"--"+osmEntity.getId());
 										switch (geom.getGeometryType()) {
 											case "Polygon":
-												dist += Geo.areaOf((Polygon) geom);
+												dist += 1;//Geo.areaOf((Polygon) geom);
 												break;
 											case "MultiPolygon":
-												dist += Geo.areaOf((MultiPolygon) geom);
+												dist += 1;//Geo.areaOf((MultiPolygon) geom);
 												break;
 											default:
 												System.err.println("Unknown geometry type found: " + geom.getGeometryType());
@@ -173,6 +186,8 @@ public class TestMultipolygonGeometry {
 									} catch(NotImplementedException err) {
 									} catch(IllegalArgumentException err) {
 										System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
+									} catch(TopologyException err) {
+										System.err.printf("Topology error at object %d at timestamp %d: %s\n", osmEntity.getId(), timestamp, err.toString());
 									}
 
 									Double prevCnt = counts.get(timestamp);

@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
 import com.vividsolutions.jts.geom.*;
+import org.geotools.geometry.jts.JTS;
 
 /**
  * Geometry utility functions
@@ -123,5 +124,18 @@ public class Geo {
 		}
 
 		return area;
+	}
+
+	// =====================
+	// = geometry clipping =
+	// =====================
+
+	public static Geometry clip(Geometry obj, BoundingBox bbox) {
+		Envelope envelope = new Envelope(bbox.minLon, bbox.maxLon, bbox.minLat, bbox.maxLat);
+		return obj.intersection(JTS.toGeometry(envelope));
+	}
+
+	public static Geometry clip(Geometry obj, Polygon poly) {
+		return obj.intersection(poly);
 	}
 }
