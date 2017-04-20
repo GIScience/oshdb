@@ -63,6 +63,8 @@
       <groupId>mil.nga.giat</groupId>
       <artifactId>geowave-core-index</artifactId>
       <version>0.9.4-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/geowave-core-index-0.9.4-SNAPSHOT.jar</systemPath>
     </dependency>
 		
     <dependency>
