@@ -198,16 +198,19 @@ public class XYGrid {
   }
 
   /**
-   * Calculates all tiles, that lie within a bounding-box. TODO but priority
-   * 999: Add possibility to snap the BBX to the tile-grid. TODO: is an
-   * exception needed?
+   * Calculates all tiles, that lie within a bounding-box.
    *
-   * @param BBOX The BBOX. First dimension is longitude, second is latitude.
+   * @param bbox The bounding box.
+   * @param enlarge if true, the BBOX is enlarged by one tile to the south-west
+   * to include tiles that possibly hold way or relation information, if false
+   * only holds tiles that intersect with the given BBOX. For queries: false is
+   * for nodes while true is for ways and relations.
    *
    * @return Returns a set of Tile-IDs that exactly lie within the given BBOX.
    */
-  public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData BBOX) {
-    return this.bbox2Ids(BBOX, false);
+  public SortedSet<Long> bbox2Ids(BoundingBox bbox, boolean enlarge) {
+    MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
+    return this.bbox2Ids(mdBbox, enlarge);
   }
 
   /**
@@ -215,7 +218,7 @@ public class XYGrid {
    * 999: Add possibility to snap the BBX to the tile-grid. TODO: is an
    * exception needed?
    *
-   * @param BBOX The BBOX. First dimension is longitude, second is latitude.
+   * @param bbox The bounding box. First dimension is longitude, second is latitude.
    * @param enlarge if true, the BBOX is enlarged by one tile to the south-west
    * to include tiles that possibly hold way or relation information, if false
    * only holds tiles that intersect with the given BBOX. For queries: false is
@@ -223,13 +226,13 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
-  public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData BBOX, boolean enlarge) {
+  public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData bbox, boolean enlarge) {
     //initalise basic variables
     TreeSet<Long> result = new TreeSet<>();
-    double minlong = BBOX.getMinValuesPerDimension()[0];
-    double minlat = BBOX.getMinValuesPerDimension()[1];
-    double maxlong = BBOX.getMaxValuesPerDimension()[0];
-    double maxlat = BBOX.getMaxValuesPerDimension()[1];
+    double minlong = bbox.getMinValuesPerDimension()[0];
+    double minlat = bbox.getMinValuesPerDimension()[1];
+    double maxlong = bbox.getMaxValuesPerDimension()[0];
+    double maxlat = bbox.getMaxValuesPerDimension()[1];
 
     if (minlat > maxlat) {
       LOG.warning("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
@@ -282,7 +285,7 @@ public class XYGrid {
     //minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
     //
     //refuse to calculate results, that would retun an object > 100mb
-    if (getEstimatedIdCount(BBOX) > 104857600 / 4) {
+    if (getEstimatedIdCount(bbox) > 104857600 / 4) {
       LOG.warning("The resulting collection would be bigger than 100mb. I refuse to calculate it! Think of something else e.g. a smaller area!");
       return null;
     }

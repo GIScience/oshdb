@@ -325,7 +325,7 @@ public class XYGridTest {
 
     TreeSet<Long> expResult = new TreeSet<>();
     expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX);
+    SortedSet<Long> result = zero.bbox2Ids(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -336,7 +336,7 @@ public class XYGridTest {
 
     TreeSet<Long> expResult = new TreeSet<>();
     expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX);
+    SortedSet<Long> result = zero.bbox2Ids(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -347,7 +347,7 @@ public class XYGridTest {
 
     TreeSet<Long> expResult = new TreeSet<>();
     expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX);
+    SortedSet<Long> result = zero.bbox2Ids(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -361,7 +361,7 @@ public class XYGridTest {
     expResult.add(2L);
     expResult.add(5L);
     expResult.add(6L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX);
+    SortedSet<Long> result = two.bbox2Ids(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -374,7 +374,7 @@ public class XYGridTest {
     expResult.add(4L);
     expResult.add(5L);
     expResult.add(6L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX);
+    SortedSet<Long> result = two.bbox2Ids(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -388,7 +388,7 @@ public class XYGridTest {
     expResult.add(1L);
     expResult.add(2L);
     expResult.add(3L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX);
+    SortedSet<Long> result = two.bbox2Ids(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -398,7 +398,7 @@ public class XYGridTest {
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
 
     TreeSet<Long> expResult = null;
-    SortedSet<Long> result = thirty.bbox2Ids(BBOX);
+    SortedSet<Long> result = thirty.bbox2Ids(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -407,7 +407,7 @@ public class XYGridTest {
     System.out.println("bbox2Ids");
     TreeSet<Long> expResult = new TreeSet<>();
     expResult.add(0L);
-    SortedSet<Long> result = two.bbox2Ids(two.getCellDimensions(0));
+    SortedSet<Long> result = two.bbox2Ids(two.getCellDimensions(0), false);
     assertEquals(expResult, result);
   }
   
