@@ -14,6 +14,7 @@ import java.util.*;
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.hosmdb.db.HOSMDb;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCell;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
 import org.heigit.bigspatialdata.hosmdb.osh.*;
@@ -101,7 +102,7 @@ public class TestMultipolygonGeometry {
 			rst.close();*/
 
 			final BoundingBox bboxFilter = new BoundingBox(85.31242, 85.31785, 27.71187, 27.71615);
-			for (int zoom=0; zoom<=12; zoom++) {
+			for (int zoom = 0; zoom<= HOSMDb.MAXZOOM; zoom++) {
 				XYGrid grid = new XYGrid(zoom);
 				Set<Long> cellIds = grid.bbox2Ids(bboxFilter, true);
 				for (Long cellId : cellIds) {
