@@ -54,7 +54,7 @@ public class XYGrid {
   public XYGrid(final int zoom) {
     if (zoom > 30) {
       LOG.warning(
-              "Zoom is too big, maximum number of tiles exeeds biggest possible Long. The maximum zoom of 30 is used instead.");
+              "Zoom is too big, maximum number of tiles exceeds biggest possible Long. The maximum zoom of 30 is used instead.");
       this.zoom = 30;
     } else if (zoom < 0) {
       LOG.warning("Zoom is too small. The minimum zoom of 0 (equals 1 tile) is used instead.");
@@ -170,7 +170,7 @@ public class XYGrid {
    * @return {@code true} if {@code abs(a - b) <= 1e-11}, {@code false}
    * otherwise
    */
-  public static boolean equalsEpsilon(double a, double b) {
+  static boolean equalsEpsilon(double a, double b) {
     return Math.abs(a - b) <= EPSILON;
   }
 
@@ -227,7 +227,7 @@ public class XYGrid {
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
   public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData bbox, boolean enlarge) {
-    //initalise basic variables
+    //initialise basic variables
     TreeSet<Long> result = new TreeSet<>();
     double minlong = bbox.getMinValuesPerDimension()[0];
     double minlat = bbox.getMinValuesPerDimension()[1];
@@ -290,17 +290,13 @@ public class XYGrid {
       return null;
     }
 
-    int columnmin;
-    int columnmax;
-    int rowmin;
-    int rowmax;
+    //calculate column and row range
+    int columnmin = (int) ((minlong + 180.0) / cellWidth);
+    int columnmax = (int) ((maxlong + 180.0) / cellWidth);
+    int rowmin = (int) ((minlat + 90.0) / cellWidth);
+    int rowmax = (int) ((maxlat + 90.0) / cellWidth);
 
     if (enlarge) {
-      //calculate column and row range
-      columnmin = (int) ((minlong + 180.0) / cellWidth);
-      columnmax = (int) ((maxlong + 180.0) / cellWidth);
-      rowmin = (int) ((minlat + 90.0) / cellWidth);
-      rowmax = (int) ((maxlat + 90.0) / cellWidth);
       //it is impossible vor features to span over the datelimit, so the enlargement stops at column 0
       if (columnmin > 0) {
         columnmin -= 1;
@@ -308,12 +304,6 @@ public class XYGrid {
       if (rowmin > 0) {
         rowmin -= 1;
       }
-    } else {
-      //calculate column and row range
-      columnmin = (int) ((minlong + 180.0) / cellWidth);
-      columnmax = (int) ((maxlong + 180.0) / cellWidth);
-      rowmin = (int) ((minlat + 90.0) / cellWidth);
-      rowmax = (int) ((maxlat + 90.0) / cellWidth);
     }
 
     //add the regular values
