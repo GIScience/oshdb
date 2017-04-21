@@ -1,7 +1,7 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
 import java.util.Arrays;
-import java.util.SortedSet;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,6 +10,8 @@ import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import static org.junit.Assert.assertEquals;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -320,184 +322,118 @@ public class XYGridTest {
 
   @Test
   public void testBbox2Ids() {
-    System.out.println("bbox2Ids");
+    System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
 
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX, false);
-    assertEquals(expResult, result);
+    Set<Pair<Long,Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+    assertEquals(1, result.size());
+    Pair<Long,Long> interval = result.iterator().next();
+    assertEquals(0, interval.getLeft().longValue());
+    assertEquals(0, interval.getRight().longValue());
   }
 
   @Test
   public void testBbox2IdsI() {
-    System.out.println("bbox2Ids");
+    System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
 
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX, false);
-    assertEquals(expResult, result);
+    Set<Pair<Long,Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+    assertEquals(1, result.size());
+    Pair<Long,Long> interval = result.iterator().next();
+    assertEquals(0, interval.getLeft().longValue());
+    assertEquals(0, interval.getRight().longValue());
   }
 
   @Test
   public void testBbox2IdsII() {
-    System.out.println("bbox2Ids");
+    System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(179, 89), new NumericRange(0, 5)});
 
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX, false);
-    assertEquals(expResult, result);
+    Set<Pair<Long,Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+    assertEquals(1, result.size());
+    Pair<Long,Long> interval = result.iterator().next();
+    assertEquals(0, interval.getLeft().longValue());
+    assertEquals(0, interval.getRight().longValue());
   }
 
   @Test
   public void testBbox2IdsIII() {
-    System.out.println("bbox2Ids");
+    System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
 
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(1L);
-    expResult.add(2L);
-    expResult.add(5L);
-    expResult.add(6L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX, false);
-    assertEquals(expResult, result);
+    TreeSet<Long> expectedCellIds = new TreeSet<>();
+    expectedCellIds.add(1L);
+    expectedCellIds.add(2L);
+    expectedCellIds.add(5L);
+    expectedCellIds.add(6L);
+
+    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(BBOX, false);
+    assertEquals(1, result.size());
+    for (Pair<Long,Long> interval : result) {
+      for (long cellId=interval.getLeft(); cellId<interval.getRight(); cellId++)
+        assertEquals(true, expectedCellIds.remove(cellId));
+    }
+    assertEquals(0, expectedCellIds.size());
   }
 
   @Test
   public void testBbox2IdsIV() {
-    System.out.println("bbox2Ids");
+    System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(180, 89), new NumericRange(0, 5)});
 
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(4L);
-    expResult.add(5L);
-    expResult.add(6L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX, false);
-    assertEquals(expResult, result);
+    TreeSet<Long> expectedCellIds = new TreeSet<>();
+    expectedCellIds.add(4L);
+    expectedCellIds.add(5L);
+    expectedCellIds.add(6L);
+
+    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(BBOX, false);
+    assertEquals(1, result.size());
+    for (Pair<Long,Long> interval : result) {
+      for (long cellId=interval.getLeft(); cellId<interval.getRight(); cellId++)
+        assertEquals(true, expectedCellIds.remove(cellId));
+    }
+    assertEquals(0, expectedCellIds.size());
   }
 
   @Test
   public void testBbox2IdsV() {
-    System.out.println("bbox2Ids");
+    System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(90, 89), new NumericRange(-90, -1)});
 
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    expResult.add(1L);
-    expResult.add(2L);
-    expResult.add(3L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX, false);
-    assertEquals(expResult, result);
+    TreeSet<Long> expectedCellIds = new TreeSet<>();
+    expectedCellIds.add(0L);
+    expectedCellIds.add(1L);
+    expectedCellIds.add(2L);
+    expectedCellIds.add(3L);
+
+    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(BBOX, false);
+    assertEquals(1, result.size());
+    for (Pair<Long,Long> interval : result) {
+      for (long cellId=interval.getLeft(); cellId<interval.getRight(); cellId++)
+        assertEquals(true, expectedCellIds.remove(cellId));
+    }
+    assertEquals(0, expectedCellIds.size());
   }
 
   @Test
   public void testBbox2IdsVI() {
-    System.out.println("bbox2Ids");
+    System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
 
-    TreeSet<Long> expResult = null;
-    SortedSet<Long> result = thirty.bbox2Ids(BBOX, false);
+    TreeSet<Pair<Long,Long>> expResult = null;
+    Set<Pair<Long,Long>> result = thirty.bbox2CellIdRanges(BBOX, false);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testBbox2IdsVII() {
-    System.out.println("bbox2Ids");
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    SortedSet<Long> result = two.bbox2Ids(two.getCellDimensions(0), false);
-    assertEquals(expResult, result);
-  }
-  
-   @Test
-  public void testBbox2Ids2() {
-    System.out.println("bbox2Ids");
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+    System.out.println("bbox2CellIdRanges");
 
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX,true);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testBbox2IdsI2() {
-    System.out.println("bbox2Ids");
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
-
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX,true);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testBbox2IdsII2() {
-    System.out.println("bbox2Ids");
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(179, 89), new NumericRange(0, 5)});
-
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    SortedSet<Long> result = zero.bbox2Ids(BBOX,true);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testBbox2IdsIII2() {
-    System.out.println("bbox2Ids");
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
-
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    expResult.add(1L);
-    expResult.add(2L);
-    expResult.add(4L);
-    expResult.add(5L);
-    expResult.add(6L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX,true);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testBbox2IdsIV2() {
-    System.out.println("bbox2Ids");
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(180, 89), new NumericRange(0, 5)});
-
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    expResult.add(1L);
-    expResult.add(2L);
-    expResult.add(4L);
-    expResult.add(5L);
-    expResult.add(6L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX,true);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testBbox2IdsV2() {
-    System.out.println("bbox2Ids");
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(90, 89), new NumericRange(-90, -1)});
-
-    TreeSet<Long> expResult = new TreeSet<>();
-    expResult.add(0L);
-    expResult.add(1L);
-    expResult.add(2L);
-    expResult.add(3L);
-    SortedSet<Long> result = two.bbox2Ids(BBOX,true);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testBbox2IdsVI2() {
-    System.out.println("bbox2Ids");
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
-
-    TreeSet<Long> expResult = null;
-    SortedSet<Long> result = thirty.bbox2Ids(BBOX,true);
-    assertEquals(expResult, result);
+    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(two.getCellDimensions(0), false);
+    assertEquals(1, result.size());
+    Pair<Long,Long> interval = result.iterator().next();
+    assertEquals(0, interval.getLeft().longValue());
+    assertEquals(0, interval.getRight().longValue());
   }
 
 }

@@ -16,12 +16,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.hosmdb.db.HOSMDb;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCell;
-import org.heigit.bigspatialdata.hosmdb.grid.HOSMCellRelations;
 import org.heigit.bigspatialdata.hosmdb.osh.*;
 import org.heigit.bigspatialdata.hosmdb.osm.*;
 
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
-import org.heigit.bigspatialdata.hosmdb.util.Geo;
 import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
@@ -104,10 +102,12 @@ public class TestMultipolygonGeometry {
 			final BoundingBox bboxFilter = new BoundingBox(85.31242, 85.31785, 27.71187, 27.71615);
 			for (int zoom = 0; zoom<= HOSMDb.MAXZOOM; zoom++) {
 				XYGrid grid = new XYGrid(zoom);
-				Set<Long> cellIds = grid.bbox2Ids(bboxFilter, true);
-				for (Long cellId : cellIds) {
-					//System.out.println("-- "+zoom+"/"+cellId);
-					zoomIds.add(new ZoomId(zoom, cellId));
+				Set<Pair<Long,Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);
+				for (Pair<Long,Long> cellsInterval : cellIds) {
+					for (long cellId=cellsInterval.getLeft(); cellId<=cellsInterval.getRight(); cellId++) {
+						System.out.println("-- "+zoom+"/"+cellId);
+						zoomIds.add(new ZoomId(zoom, cellId));
+					}
 				}
 			}
 

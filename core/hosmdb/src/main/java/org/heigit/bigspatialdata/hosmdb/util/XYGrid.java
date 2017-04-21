@@ -1,11 +1,14 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
-import java.util.SortedSet;
+import java.util.Set;
 import java.util.TreeSet;
+
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * XYGrid spans an equal degree grid over the world.
@@ -208,9 +211,9 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that exactly lie within the given BBOX.
    */
-  public SortedSet<Long> bbox2Ids(BoundingBox bbox, boolean enlarge) {
+  public Set<Pair<Long,Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
     MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
-    return this.bbox2Ids(mdBbox, enlarge);
+    return this.bbox2CellIdRanges(mdBbox, enlarge);
   }
 
   /**
@@ -226,9 +229,9 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
-  public SortedSet<Long> bbox2Ids(MultiDimensionalNumericData bbox, boolean enlarge) {
+  public Set<Pair<Long,Long>> bbox2CellIdRanges(MultiDimensionalNumericData bbox, boolean enlarge) {
     //initialise basic variables
-    TreeSet<Long> result = new TreeSet<>();
+    Set<Pair<Long,Long>> result = new TreeSet<>();
     double minlong = bbox.getMinValuesPerDimension()[0];
     double minlat = bbox.getMinValuesPerDimension()[1];
     double maxlong = bbox.getMaxValuesPerDimension()[0];
@@ -239,21 +242,22 @@ public class XYGrid {
       return null;
     }
 
-    //test if bbx is on earth or extends further
+    Pair<Long,Long> outofboundsCell = new ImmutablePair<>(-1L, -1L);
+    //test if bbox is on earth or extends further
     if (minlong < -180.0 || minlong > 180.0) {
-      result.add(-1L);
+      result.add(outofboundsCell);
       minlong = -180.0;
     }
     if (minlat < -90.0 || minlat > 90.0) {
-      result.add(-1L);
+      result.add(outofboundsCell);
       minlat = -90.0;
     }
     if (maxlong > 180.0 || maxlong < -180.0) {
-      result.add(-1L);
+      result.add(outofboundsCell);
       maxlong = 180.0;
     }
     if (maxlat > 90.0 || maxlat < -90.0) {
-      result.add(-1L);
+      result.add(outofboundsCell);
       maxlat = 90.0;
     }
 
@@ -275,7 +279,7 @@ public class XYGrid {
       NumericRange longitude = new NumericRange(minlong, 180.0 - EPSILON);
       NumericRange latitude = new NumericRange(minlat, maxlat);
       NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
-      result.addAll(bbox2Ids(new BasicNumericDataset(dataPerDimension), enlarge));
+      result.addAll(bbox2CellIdRanges(new BasicNumericDataset(dataPerDimension), enlarge));
 
       minlong = -180.0;
     }
@@ -283,12 +287,6 @@ public class XYGrid {
     //At this point the following should be true
     //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
     //minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
-    //
-    //refuse to calculate results, that would retun an object > 100mb
-    if (getEstimatedIdCount(bbox) > 104857600 / 4) {
-      LOG.warning("The resulting collection would be bigger than 100mb. I refuse to calculate it! Think of something else e.g. a smaller area!");
-      return null;
-    }
 
     //calculate column and row range
     int columnmin = (int) ((minlong + 180.0) / cellWidth);
@@ -306,11 +304,9 @@ public class XYGrid {
       }
     }
 
-    //add the regular values
-    for (int r = rowmin; r <= rowmax; r++) {
-      for (int c = columnmin; c <= columnmax; c++) {
-        result.add(r * zoompow + c);
-      }
+    //add the regular cell ranges
+    for (int row = rowmin; row <= rowmax; row++) {
+      result.add(new ImmutablePair<>(row * zoompow + columnmin, row * zoompow + columnmax));
     }
     return result;
   }
