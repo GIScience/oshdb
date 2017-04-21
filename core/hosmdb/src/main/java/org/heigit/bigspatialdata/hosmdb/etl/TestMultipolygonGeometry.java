@@ -21,6 +21,7 @@ import org.heigit.bigspatialdata.hosmdb.osm.*;
 
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.Geo;
+import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -91,12 +92,23 @@ public class TestMultipolygonGeometry {
 
 			List<ZoomId> zoomIds = new ArrayList<>();
 
-			System.out.println("Select ids from DB");
+			/*System.out.println("Select ids from DB");
 			ResultSet rst = stmt.executeQuery("select level,id from grid_way");
 			while(rst.next()){
+				//System.out.println("-- "+rst.getInt(1)+"/"+rst.getInt(2));
 				zoomIds.add(new ZoomId(rst.getInt(1),rst.getLong(2)));
 			}
-			rst.close();
+			rst.close();*/
+
+			final BoundingBox bboxFilter = new BoundingBox(85.31242, 85.31785, 27.71187, 27.71615);
+			for (int zoom=0; zoom<=12; zoom++) {
+				XYGrid grid = new XYGrid(zoom);
+				Set<Long> cellIds = grid.bbox2Ids(bboxFilter, true);
+				for (Long cellId : cellIds) {
+					//System.out.println("-- "+zoom+"/"+cellId);
+					zoomIds.add(new ZoomId(zoom, cellId));
+				}
+			}
 
 
 			List<Long> timestamps;
@@ -126,7 +138,7 @@ public class TestMultipolygonGeometry {
 									final HOSMCell hosmCell = (HOSMCell) ois.readObject();
 									return hosmCell;
 								} else {
-									System.err.printf("ERROR: no result for level:%d and id:%d\n",zoomId.zoom,zoomId.id);
+									// cell we don't have any data for (e.g. outside of imported area, or simply nodata)
 									return null;
 								}
 							}
@@ -135,12 +147,10 @@ public class TestMultipolygonGeometry {
 							return null;
 						}
 					})
-					.filter(cell -> cell != null)
+					.filter(cell -> cell != null) // skip empty cells
 					.map(hosmCell -> {
 						final int zoom = hosmCell.getLevel();
 						final long id = hosmCell.getId();
-
-						BoundingBox bboxFilter = new BoundingBox(85.31242, 85.31785, 27.71187, 27.71615);
 
 						Map<Long, Double> counts = new HashMap<>(timestamps.size());
 						Iterator<HOSMEntity> oshEntitylIt = hosmCell.iterator();
