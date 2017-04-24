@@ -9,9 +9,8 @@ import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import static org.junit.Assert.assertEquals;
-
 import org.apache.commons.lang3.tuple.Pair;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -325,9 +324,9 @@ public class XYGridTest {
     System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
 
-    Set<Pair<Long,Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+    Set<Pair<Long, Long>> result = zero.bbox2CellIdRanges(BBOX, false);
     assertEquals(1, result.size());
-    Pair<Long,Long> interval = result.iterator().next();
+    Pair<Long, Long> interval = result.iterator().next();
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
   }
@@ -337,9 +336,9 @@ public class XYGridTest {
     System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
 
-    Set<Pair<Long,Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+    Set<Pair<Long, Long>> result = zero.bbox2CellIdRanges(BBOX, false);
     assertEquals(1, result.size());
-    Pair<Long,Long> interval = result.iterator().next();
+    Pair<Long, Long> interval = result.iterator().next();
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
   }
@@ -349,9 +348,9 @@ public class XYGridTest {
     System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(179, 89), new NumericRange(0, 5)});
 
-    Set<Pair<Long,Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+    Set<Pair<Long, Long>> result = zero.bbox2CellIdRanges(BBOX, false);
     assertEquals(1, result.size());
-    Pair<Long,Long> interval = result.iterator().next();
+    Pair<Long, Long> interval = result.iterator().next();
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
   }
@@ -367,11 +366,12 @@ public class XYGridTest {
     expectedCellIds.add(5L);
     expectedCellIds.add(6L);
 
-    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(BBOX, false);
-    assertEquals(1, result.size());
-    for (Pair<Long,Long> interval : result) {
-      for (long cellId=interval.getLeft(); cellId<interval.getRight(); cellId++)
+    Set<Pair<Long, Long>> result = two.bbox2CellIdRanges(BBOX, false);
+    assertEquals(2, result.size());
+    for (Pair<Long, Long> interval : result) {
+      for (long cellId = interval.getLeft(); cellId <= interval.getRight(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
+      }
     }
     assertEquals(0, expectedCellIds.size());
   }
@@ -386,11 +386,12 @@ public class XYGridTest {
     expectedCellIds.add(5L);
     expectedCellIds.add(6L);
 
-    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(BBOX, false);
+    Set<Pair<Long, Long>> result = two.bbox2CellIdRanges(BBOX, false);
     assertEquals(1, result.size());
-    for (Pair<Long,Long> interval : result) {
-      for (long cellId=interval.getLeft(); cellId<interval.getRight(); cellId++)
+    for (Pair<Long, Long> interval : result) {
+      for (long cellId = interval.getLeft(); cellId <= interval.getRight(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
+      }
     }
     assertEquals(0, expectedCellIds.size());
   }
@@ -406,11 +407,12 @@ public class XYGridTest {
     expectedCellIds.add(2L);
     expectedCellIds.add(3L);
 
-    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(BBOX, false);
-    assertEquals(1, result.size());
-    for (Pair<Long,Long> interval : result) {
-      for (long cellId=interval.getLeft(); cellId<interval.getRight(); cellId++)
+    Set<Pair<Long, Long>> result = two.bbox2CellIdRanges(BBOX, false);
+    assertEquals(2, result.size());
+    for (Pair<Long, Long> interval : result) {
+      for (long cellId = interval.getLeft(); cellId <= interval.getRight(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
+      }
     }
     assertEquals(0, expectedCellIds.size());
   }
@@ -420,8 +422,8 @@ public class XYGridTest {
     System.out.println("bbox2CellIdRanges");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
 
-    TreeSet<Pair<Long,Long>> expResult = null;
-    Set<Pair<Long,Long>> result = thirty.bbox2CellIdRanges(BBOX, false);
+    TreeSet<Pair<Long, Long>> expResult = null;
+    Set<Pair<Long, Long>> result = thirty.bbox2CellIdRanges(BBOX, false);
     assertEquals(expResult, result);
   }
 
@@ -429,9 +431,9 @@ public class XYGridTest {
   public void testBbox2IdsVII() {
     System.out.println("bbox2CellIdRanges");
 
-    Set<Pair<Long,Long>> result = two.bbox2CellIdRanges(two.getCellDimensions(0), false);
+    Set<Pair<Long, Long>> result = two.bbox2CellIdRanges(two.getCellDimensions(0), false);
     assertEquals(1, result.size());
-    Pair<Long,Long> interval = result.iterator().next();
+    Pair<Long, Long> interval = result.iterator().next();
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
   }

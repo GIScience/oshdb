@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.hosmdb.util;
 
 import java.util.Set;
 import java.util.TreeSet;
-
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
@@ -303,7 +302,11 @@ public class XYGrid {
         rowmin -= 1;
       }
     }
-
+    
+    //refuse to return too big ranges
+    if ((rowmax-rowmin)>(104857600 / 4)){
+      return null;
+    }
     //add the regular cell ranges
     for (int row = rowmin; row <= rowmax; row++) {
       result.add(new ImmutablePair<>(row * zoompow + columnmin, row * zoompow + columnmax));
