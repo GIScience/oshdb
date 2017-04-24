@@ -210,7 +210,7 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that exactly lie within the given BBOX.
    */
-  public Set<Pair<Long,Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
+  public Set<Pair<Long, Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
     MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
     return this.bbox2CellIdRanges(mdBbox, enlarge);
   }
@@ -220,7 +220,8 @@ public class XYGrid {
    * 999: Add possibility to snap the BBX to the tile-grid. TODO: is an
    * exception needed?
    *
-   * @param bbox The bounding box. First dimension is longitude, second is latitude.
+   * @param bbox The bounding box. First dimension is longitude, second is
+   * latitude.
    * @param enlarge if true, the BBOX is enlarged by one tile to the south-west
    * to include tiles that possibly hold way or relation information, if false
    * only holds tiles that intersect with the given BBOX. For queries: false is
@@ -228,9 +229,9 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
-  public Set<Pair<Long,Long>> bbox2CellIdRanges(MultiDimensionalNumericData bbox, boolean enlarge) {
+  public Set<Pair<Long, Long>> bbox2CellIdRanges(MultiDimensionalNumericData bbox, boolean enlarge) {
     //initialise basic variables
-    Set<Pair<Long,Long>> result = new TreeSet<>();
+    Set<Pair<Long, Long>> result = new TreeSet<>();
     double minlong = bbox.getMinValuesPerDimension()[0];
     double minlat = bbox.getMinValuesPerDimension()[1];
     double maxlong = bbox.getMaxValuesPerDimension()[0];
@@ -241,7 +242,7 @@ public class XYGrid {
       return null;
     }
 
-    Pair<Long,Long> outofboundsCell = new ImmutablePair<>(-1L, -1L);
+    Pair<Long, Long> outofboundsCell = new ImmutablePair<>(-1L, -1L);
     //test if bbox is on earth or extends further
     if (minlong < -180.0 || minlong > 180.0) {
       result.add(outofboundsCell);
@@ -286,7 +287,6 @@ public class XYGrid {
     //At this point the following should be true
     //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
     //minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
-
     //calculate column and row range
     int columnmin = (int) ((minlong + 180.0) / cellWidth);
     int columnmax = (int) ((maxlong + 180.0) / cellWidth);
@@ -302,9 +302,10 @@ public class XYGrid {
         rowmin -= 1;
       }
     }
-    
+
     //refuse to return too big ranges
-    if ((rowmax-rowmin)>(104857600 / 4)){
+    if ((rowmax - rowmin) > (104857600 / 4)) {
+      LOG.warning("The resulting collection would be bigger than 100mb. I refuse to calculate it! Think of something else e.g. a smaller area!");
       return null;
     }
     //add the regular cell ranges
