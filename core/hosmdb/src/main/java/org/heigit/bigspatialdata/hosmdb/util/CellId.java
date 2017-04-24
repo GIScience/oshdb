@@ -21,7 +21,7 @@ public class CellId {
    * @throws org.heigit.bigspatialdata.hosmdb.util.CellId.cellIdExeption
    */
   public CellId(int zoomlevel, long id) throws cellIdExeption {
-    if (id < 0 || zoomlevel < 0 || zoomlevel > 30) {
+    if (id < -1 || zoomlevel < 0 || zoomlevel > 30) {
       throw new cellIdExeption("zoomlevel or id out of range");
     }
     //reasonable to check, if ID fits to zoomlevel?

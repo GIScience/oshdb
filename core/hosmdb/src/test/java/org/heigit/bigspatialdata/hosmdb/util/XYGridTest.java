@@ -9,6 +9,7 @@ import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -423,6 +424,18 @@ public class XYGridTest {
     Pair<Long, Long> interval = result.iterator().next();
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
+  }
+
+  @Test
+  public void testGetNeighbours() throws CellId.cellIdExeption {
+    System.out.println("getNeighbours");
+    CellId center = new CellId(2, 6L);
+    Set<Pair<Long, Long>> expResult = new TreeSet<>();
+    expResult.add(new ImmutablePair<>(1L, 3L));
+    expResult.add(new ImmutablePair<>(5L, 7L));
+    expResult.add(new ImmutablePair<>(-1L, -1L));
+    Set<Pair<Long, Long>> result = two.getNeighbours(center);
+    assertEquals(expResult, result);
   }
 
 }

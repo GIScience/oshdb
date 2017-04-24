@@ -62,8 +62,6 @@ public class XYGridTreeTest {
 
     while (result.hasNext()) {
       CellId now = result.next();
-      System.out.println(now.getId());
-      System.out.println(now.getZoomLevel());
       assertEquals(true, expectedCellIds.remove(now));
     }
     assertEquals(0, expectedCellIds.size());
@@ -97,8 +95,48 @@ public class XYGridTreeTest {
 
     while (result.hasNext()) {
       CellId now = result.next();
-      System.out.println(now.getId());
-      System.out.println(now.getZoomLevel());
+      assertEquals(true, expectedCellIds.remove(now));
+    }
+    assertEquals(0, expectedCellIds.size());
+  }
+
+  @Test
+  public void testGetMultiZoomNeighbours() throws CellId.cellIdExeption {
+    System.out.println("getMultiZoomNeighbours");
+    CellId center = new CellId(2, 6L);
+    XYGridTree instance = new XYGridTree(3);
+    Iterator<CellId> result = instance.getMultiZoomNeighbours(center);
+
+    HashSet<CellId> expectedCellIds = new HashSet<>(25);
+    expectedCellIds.add(new CellId(3, -1L));
+    expectedCellIds.add(new CellId(3, 11L));
+    expectedCellIds.add(new CellId(3, 12L));
+    expectedCellIds.add(new CellId(3, 13L));
+    expectedCellIds.add(new CellId(3, 14L));
+    expectedCellIds.add(new CellId(3, 19L));
+    expectedCellIds.add(new CellId(3, 20L));
+    expectedCellIds.add(new CellId(3, 21L));
+    expectedCellIds.add(new CellId(3, 22L));
+    expectedCellIds.add(new CellId(3, 27L));
+    expectedCellIds.add(new CellId(3, 28L));
+    expectedCellIds.add(new CellId(3, 29L));
+    expectedCellIds.add(new CellId(3, 30L));
+    expectedCellIds.add(new CellId(2, -1L));
+    expectedCellIds.add(new CellId(2, 1L));
+    expectedCellIds.add(new CellId(2, 2L));
+    expectedCellIds.add(new CellId(2, 3L));
+    expectedCellIds.add(new CellId(2, 5L));
+    expectedCellIds.add(new CellId(2, 6L));
+    expectedCellIds.add(new CellId(2, 7L));
+    expectedCellIds.add(new CellId(1, -1L));
+    expectedCellIds.add(new CellId(1, 0L));
+    expectedCellIds.add(new CellId(1, 1L));
+    expectedCellIds.add(new CellId(0, -1L));
+    expectedCellIds.add(new CellId(0, 0L));
+
+    while (result.hasNext()) {
+      CellId now = result.next();
+      System.out.println(now);
       assertEquals(true, expectedCellIds.remove(now));
     }
     assertEquals(0, expectedCellIds.size());

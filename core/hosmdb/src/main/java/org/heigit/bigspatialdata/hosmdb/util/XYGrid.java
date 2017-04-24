@@ -302,17 +302,35 @@ public class XYGrid {
         rowmin -= 1;
       }
     }
-
-    //refuse to return too big ranges
-    if ((rowmax - rowmin) > (104857600 / 4)) {
-      LOG.warning("The resulting collection would be bigger than 100mb. I refuse to calculate it! Think of something else e.g. a smaller area!");
-      return null;
-    }
     //add the regular cell ranges
     for (int row = rowmin; row <= rowmax; row++) {
       result.add(new ImmutablePair<>(row * zoompow + columnmin, row * zoompow + columnmax));
     }
     return result;
+  }
+
+  /**
+   * Get 2D neighbours of given cellId.
+   *
+   * @param center
+   * @return a set of ID-ranges containing the neighbours of the given cell and
+   * the cell itself. -1L,-1L will be added, if this cell lies on the edge of
+   * the XYGrid
+   */
+  public Set<Pair<Long, Long>> getNeighbours(CellId center) {
+    if (center.getZoomLevel() != this.zoom) {
+      //might return neighbours in current zoomlevel given the bbox of the provided CellId one day
+      return null;
+    }
+
+    MultiDimensionalNumericData bbox = this.getCellDimensions(center.getId());
+    double minlong = bbox.getMinValuesPerDimension()[0] - EPSILON;
+    double minlat = bbox.getMinValuesPerDimension()[1] - EPSILON;
+    double maxlong = bbox.getMaxValuesPerDimension()[0] + EPSILON;
+    double maxlat = bbox.getMaxValuesPerDimension()[1] + EPSILON;
+    BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
+
+    return this.bbox2CellIdRanges(newbbox, false);
   }
 
 }

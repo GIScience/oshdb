@@ -19,6 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class XYGridTree {
 
   private static final Logger LOG = Logger.getLogger(XYGridTree.class.getName());
+  private static final double EPSILON = 1e-11;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
 
   /**
@@ -163,6 +164,22 @@ public class XYGridTree {
   public Iterator<CellId> bbox2CellIds(BoundingBox bbox, boolean enlarge) {
     MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
     return this.bbox2CellIds(mdBbox, enlarge);
+  }
+
+  /**
+   * Get 2D neighbours of given cell in its zoomlevel and all other zoomlevel.
+   *
+   * @param center
+   * @return
+   */
+  public Iterator<CellId> getMultiZoomNeighbours(CellId center) {
+    MultiDimensionalNumericData bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
+    double minlong = bbox.getMinValuesPerDimension()[0] - EPSILON;
+    double minlat = bbox.getMinValuesPerDimension()[1] - EPSILON;
+    double maxlong = bbox.getMaxValuesPerDimension()[0] + EPSILON;
+    double maxlat = bbox.getMaxValuesPerDimension()[1] + EPSILON;
+    BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
+    return this.bbox2CellIds(newbbox, false);
   }
 
 }
