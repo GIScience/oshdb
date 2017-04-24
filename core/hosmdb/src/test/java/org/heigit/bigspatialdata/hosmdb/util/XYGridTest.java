@@ -427,6 +427,15 @@ public class XYGridTest {
   }
 
   @Test
+  public void testBbox2IdsVII() {
+    System.out.println("test performance for maximum sized BBOX");
+    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+    int expResult = 2048;
+    Set<Pair<Long, Long>> result = new XYGrid(12).bbox2CellIdRanges(BBOX, true);
+    assertEquals(expResult, result.size());
+  }
+
+  @Test
   public void testGetNeighbours() throws CellId.cellIdExeption {
     System.out.println("getNeighbours");
     CellId center = new CellId(2, 6L);
