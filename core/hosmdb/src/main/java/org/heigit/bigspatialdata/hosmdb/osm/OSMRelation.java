@@ -125,7 +125,8 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     // construct multipolygon from rings
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the effort? see below for a possibly much easier implementation.
     List<Polygon> polys = outerRings.stream().map(outer -> {
-      List<LinearRing> matchingInners = innerRings.stream().filter(ring -> ring.within(outer)).collect(Collectors.toList());
+      Polygon outerPolygon = new Polygon(outer, null, geometryFactory);
+      List<LinearRing> matchingInners = innerRings.stream().filter(ring -> ring.within(outerPolygon)).collect(Collectors.toList());
       // todo: check for inners containing other inners -> inner-in-outer-in-inner-in-outer case
       return new Polygon(outer, matchingInners.toArray(new LinearRing[matchingInners.size()]), geometryFactory);
     }).collect(Collectors.toList());
