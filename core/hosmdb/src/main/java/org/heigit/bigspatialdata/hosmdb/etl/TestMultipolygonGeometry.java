@@ -20,6 +20,7 @@ import org.heigit.bigspatialdata.hosmdb.osh.*;
 import org.heigit.bigspatialdata.hosmdb.osm.*;
 
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
+import org.heigit.bigspatialdata.hosmdb.util.Geo;
 import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
@@ -86,7 +87,7 @@ public class TestMultipolygonGeometry {
 				allRoles.put(roleStr, roleId);
 			}
 			rstRoles.close();
-			final TagInterpreter areaDecider = new DefaultTagInterpreter(allKeyValues, allRoles);
+			final TagInterpreter tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
 
 
 			List<ZoomId> zoomIds = new ArrayList<>();
@@ -99,13 +100,13 @@ public class TestMultipolygonGeometry {
 			}
 			rst.close();*/
 
-			final BoundingBox bboxFilter = new BoundingBox(85.31242, 85.31785, 27.71187, 27.71615);
+			final BoundingBox bboxFilter = new BoundingBox(85, 86, 27, 28);
 			for (int zoom = 0; zoom<= HOSMDb.MAXZOOM; zoom++) {
 				XYGrid grid = new XYGrid(zoom);
 				Set<Pair<Long,Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);
 				for (Pair<Long,Long> cellsInterval : cellIds) {
 					for (long cellId=cellsInterval.getLeft(); cellId<=cellsInterval.getRight(); cellId++) {
-						System.out.println("-- "+zoom+"/"+cellId);
+						//System.out.println("-- "+zoom+"/"+cellId);
 						zoomIds.add(new ZoomId(zoom, cellId));
 					}
 				}
@@ -129,7 +130,7 @@ public class TestMultipolygonGeometry {
 			System.out.println("Process in parallel");
 			Optional<Map<Long, Double>> totals = zoomIds.parallelStream()
 					.map(zoomId -> {
-						try(final PreparedStatement pstmt = conn.prepareStatement("select data from grid_way where level = ? and id = ?")){
+						try(final PreparedStatement pstmt = conn.prepareStatement("select data from grid_relation where level = ?1 and id = ?2")){// union select data from grid_way where level = ?1 and id = ?2")){
 							pstmt.setInt(1,zoomId.zoom);
 							pstmt.setLong(2, zoomId.id);
 
@@ -164,20 +165,39 @@ public class TestMultipolygonGeometry {
 
 
 							Map<Long,OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(timestamps);
+							int outerId = allRoles.get("outer");
 							for (Map.Entry<Long,OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
 								Long timestamp = entity.getKey();
 								OSMEntity osmEntity = entity.getValue();
 								//if (osmEntity.isVisible() && osmEntity.hasTagKey(403) && osmEntity.hasTagValue(403,4)) {
-								//if (osmEntity.isVisible() && osmEntity.getId()==169443997) {
-								if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft())) {//, new int[]{allKeyValues.get("building").get("no").getRight()})) {
+								if (osmEntity.isVisible() && (osmEntity.getId()==3188431 || osmEntity.getId()==236978113)) {
+								//if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft())) {//, new int[]{allKeyValues.get("building").get("no").getRight()})) {
+								//if (osmEntity.isVisible() && osmEntity.hasTagValue(allKeyValues.get("type").get("multipolygon").getLeft(), allKeyValues.get("type").get("multipolygon").getRight())) {
+									boolean isOldstyleMultipolygon = false;
+									OSMWay oldstyleMultipolygonOuterWay = null;
+									if (osmEntity instanceof OSMRelation && tagInterpreter.isOldStyleMultipolygon((OSMRelation)osmEntity)) {
+										OSMRelation rel = (OSMRelation) osmEntity;
+										for (int i=0; i<rel.getMembers().length; i++) {
+											if (rel.getMembers()[i].getType() == HOSMEntity.WAY && rel.getMembers()[i].getRoleId() == outerId) {
+												oldstyleMultipolygonOuterWay = (OSMWay)rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
+												break;
+											}
+										}
+										if (!oldstyleMultipolygonOuterWay.hasTagValue(allKeyValues.get("aeroway").get("runway").getLeft(), allKeyValues.get("aeroway").get("runway").getRight()))
+											continue;
+										isOldstyleMultipolygon = true;
+									} else {
+										if (!osmEntity.hasTagValue(allKeyValues.get("aeroway").get("runway").getLeft(), allKeyValues.get("aeroway").get("runway").getRight()))
+											continue;
+									}
 									//for (int i=0; i<osmEntity.getTags().length; i+=2)
 									//	System.out.println(osmEntity.getTags()[i] + "=" + osmEntity.getTags()[i+1]);
-									OSMWay foo = (OSMWay)osmEntity;
+									//OSMWay foo = (OSMWay)osmEntity;
 									double dist = 0.;
 									try {
 										Geometry geom = fullyInside ?
-											osmEntity.getGeometry(timestamp, areaDecider) :
-											osmEntity.getGeometryClipped(timestamp, areaDecider, bboxFilter);
+											osmEntity.getGeometry(timestamp, tagInterpreter) :
+											osmEntity.getGeometryClipped(timestamp, tagInterpreter, bboxFilter);
 
 										if (geom == null) throw new NotImplementedException(); // hack!
 										if (geom.isEmpty()) throw new NotImplementedException(); // hack!
@@ -186,13 +206,19 @@ public class TestMultipolygonGeometry {
 										//if (formatter.format(new Date(timestamp)).compareTo("20170101") == 0) System.out.println(geom.getGeometryType()+"--"+osmEntity.getId());
 										switch (geom.getGeometryType()) {
 											case "Polygon":
-												dist += 1;//Geo.areaOf((Polygon) geom);
+												dist += Geo.areaOf((Polygon) geom);
 												break;
 											case "MultiPolygon":
-												dist += 1;//Geo.areaOf((MultiPolygon) geom);
+												dist += Geo.areaOf((MultiPolygon) geom);
 												break;
 											default:
 												System.err.println("Unknown geometry type found: " + geom.getGeometryType());
+										}
+										if (isOldstyleMultipolygon) {
+											Geometry adjustGeom = oldstyleMultipolygonOuterWay.getGeometry(timestamp, tagInterpreter);
+											// oldstyleMultipolygonOuterWay.getGeometry(timestamp, new TagInterpreter()); /// todo -> custom taginterpreter for this case?!
+											System.out.println("subtract: "+Geo.areaOf((Polygon) adjustGeom)+" (from "+dist+")");
+											dist -= Geo.areaOf((Polygon) adjustGeom);
 										}
 									} catch(NotImplementedException err) {
 									} catch(IllegalArgumentException err) {

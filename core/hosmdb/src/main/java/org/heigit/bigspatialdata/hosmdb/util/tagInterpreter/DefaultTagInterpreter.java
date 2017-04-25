@@ -148,6 +148,12 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		} else {
 			System.err.printf("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", "type");
 		}
+		// we still need to also store relation area tags for isOldStyleMultipolygon() functionality!
+		Map<Integer, Set<Integer>> relAreaTags = new TreeMap<>();
+		Set<Integer> relAreaTagValues = new TreeSet<>();
+		relAreaTagValues.add(this.typeMultipolygonValue);
+		relAreaTagValues.add(this.typeBoundaryValue);
+		relAreaTags.put(this.typeKey, relAreaTagValues);
 
 		// list of uninteresting tags
 		Set<Integer> uninterestingTagKeys = new HashSet<>();
@@ -155,14 +161,16 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		Iterator<String> uninterestingTagsIt = uninterestingTagsList.iterator();
 		while (uninterestingTagsIt.hasNext()) {
 			String tagKey = uninterestingTagsIt.next();
-			if (!allKeyValues.containsKey(tagKey)) continue; // silent here, as some of these tags are actually quite exotic
-			Iterator<Pair<Integer,Integer>> keyIt = allKeyValues.get(tagKey).values().iterator();
+			if (!allKeyValues.containsKey(tagKey))
+				continue; // silent here, as some of these tags are actually quite exotic
+			Iterator<Pair<Integer, Integer>> keyIt = allKeyValues.get(tagKey).values().iterator();
 			if (keyIt.hasNext()) {
 				uninterestingTagKeys.add(keyIt.next().getLeft());
 			}
 		}
 
 		this.wayAreaTags = wayAreaTags;
+		this.relationAreaTags = relAreaTags;
 		this.uninterestingTagKeys = uninterestingTagKeys;
 
 		if (allKeyValues.containsKey("area") && allKeyValues.get("area").containsKey("no")) {

@@ -60,8 +60,6 @@ public class Geo {
 
 	public static double areaOf(Polygon poly) {
 		double area = 0.0;
-		Coordinate[] coords = poly.getCoordinates();
-
 		area += Math.abs(ringArea((LinearRing)(poly.getExteriorRing())));
 		for (int i = 1; i < poly.getNumInteriorRing(); i++) {
 			area -= Math.abs(ringArea((LinearRing)(poly.getInteriorRingN(i))));

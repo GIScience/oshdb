@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.hosmdb.util.tagInterpreter;
 
+import org.heigit.bigspatialdata.hosmdb.osh.HOSMEntity;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMMember;
 import org.heigit.bigspatialdata.hosmdb.osm.OSMWay;
@@ -12,16 +13,17 @@ import java.util.Set;
  * instances of this class are used to determine whether a OSM way represents a polygon or linestring geometry.
  */
 public class TagInterpreter {
-	int areaNoTagKeyId, areaNoTagValueId;
-	Map<Integer, Set<Integer>> wayAreaTags;
-	Map<Integer, Set<Integer>> relationAreaTags;
-	Set<Integer> uninterestingTagKeys;
-	int outerRoleId, innerRoleId, emptyRoleId;
+	protected int areaNoTagKeyId, areaNoTagValueId;
+	protected Map<Integer, Set<Integer>> wayAreaTags;
+	protected Map<Integer, Set<Integer>> relationAreaTags;
+	protected Set<Integer> uninterestingTagKeys;
+	protected int outerRoleId, innerRoleId, emptyRoleId;
 
 	public TagInterpreter(
 			int areaNoTagKeyId,
 			int areaNoTagValueId,
-			Map<Integer, Set<Integer>> wayAreaTags, Map<Integer, Set<Integer>> relationAreaTags,
+			Map<Integer, Set<Integer>> wayAreaTags,
+			Map<Integer, Set<Integer>> relationAreaTags,
 			Set<Integer> uninterestingTagKeys,
 			int outerRoleId,
 			int innerRoleId,
@@ -80,12 +82,31 @@ public class TagInterpreter {
 		return !evaluateForArea(osm);
 	}
 
-	public boolean hasInterestingTagKey(int[] tags) {
+	public boolean hasInterestingTagKey(OSMEntity osm) {
+		int[] tags = osm.getTags();
 		for (int i=0; i<tags.length; i+=2) {
 			if (!uninterestingTagKeys.contains(tags[i]))
 				return true;
 		}
 		return false;
+	}
+
+	public boolean isOldStyleMultipolygon(OSMRelation osmRelation) {
+		int outerWayCount = 0;
+		OSMMember[] members = osmRelation.getMembers();
+		for (int i=0; i<members.length; i++) {
+			if (members[i].getType() == HOSMEntity.WAY && members[i].getRoleId() == outerRoleId)
+				if (++outerWayCount > 1) return false; // exit early if two outer ways were already found
+		}
+		if (outerWayCount != 1) return false;
+		int[] tags = osmRelation.getTags();
+		for (int i=0; i<tags.length; i+=2) {
+			if (relationAreaTags.containsKey(tags[i]) && relationAreaTags.get(tags[i]).contains(tags[i+1]))
+				continue;
+			if (!uninterestingTagKeys.contains(tags[i]))
+				return false;
+		}
+		return true;
 	}
 
 	public boolean isMultipolygonOuterMember(OSMMember osmMember) {
