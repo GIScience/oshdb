@@ -129,27 +129,24 @@ public class TestMultipolygonGeometry {
 
 			System.out.println("Process in parallel");
 			Optional<Map<Long, Double>> totals = zoomIds.parallelStream()
-					.map(zoomId -> {
-						try(final PreparedStatement pstmt = conn.prepareStatement("select data from grid_relation where level = ?1 and id = ?2")){// union select data from grid_way where level = ?1 and id = ?2")){
+					.flatMap(zoomId -> {
+						try(final PreparedStatement pstmt = conn.prepareStatement("(select data from grid_relation where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2)")){
 							pstmt.setInt(1,zoomId.zoom);
 							pstmt.setLong(2, zoomId.id);
 
 							try(final ResultSet rst2 = pstmt.executeQuery()){
-								if(rst2.next()){
+								List<HOSMCell> cells = new LinkedList<>();
+								while(rst2.next()){
 									final ObjectInputStream ois = new ObjectInputStream(rst2.getBinaryStream(1));
-									final HOSMCell hosmCell = (HOSMCell) ois.readObject();
-									return hosmCell;
-								} else {
-									// cell we don't have any data for (e.g. outside of imported area, or simply nodata)
-									return null;
+									cells.add((HOSMCell) ois.readObject());
 								}
+								return cells.stream();
 							}
 						} catch (IOException | SQLException | ClassNotFoundException e) {
 							e.printStackTrace();
 							return null;
 						}
 					})
-					.filter(cell -> cell != null) // skip empty cells
 					.map(hosmCell -> {
 						final int zoom = hosmCell.getLevel();
 						final long id = hosmCell.getId();
@@ -159,10 +156,10 @@ public class TestMultipolygonGeometry {
 						while(oshEntitylIt.hasNext()) {
 							HOSMEntity oshEntity = oshEntitylIt.next();
 
-							if (!oshEntity.intersectsBbox(bboxFilter))
+							if (!oshEntity.intersectsBbox(bboxFilter)) {
 								continue;
+							}
 							boolean fullyInside = oshEntity.insideBbox(bboxFilter);
-
 
 							Map<Long,OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(timestamps);
 							int outerId = allRoles.get("outer");
@@ -174,6 +171,7 @@ public class TestMultipolygonGeometry {
 								//if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft())) {//, new int[]{allKeyValues.get("building").get("no").getRight()})) {
 								//if (osmEntity.isVisible() && osmEntity.hasTagValue(allKeyValues.get("type").get("multipolygon").getLeft(), allKeyValues.get("type").get("multipolygon").getRight())) {
 									boolean isOldstyleMultipolygon = false;
+									//System.err.println(osmEntity.getClass().toString());
 									OSMWay oldstyleMultipolygonOuterWay = null;
 									if (osmEntity instanceof OSMRelation && tagInterpreter.isOldStyleMultipolygon((OSMRelation)osmEntity)) {
 										OSMRelation rel = (OSMRelation) osmEntity;
