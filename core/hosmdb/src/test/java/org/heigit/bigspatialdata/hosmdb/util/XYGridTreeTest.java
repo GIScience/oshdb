@@ -6,6 +6,7 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +37,14 @@ public class XYGridTreeTest {
     CellId compare = result.next();
     assertEquals(expResult.getId(), compare.getId());
     assertEquals(expResult.getZoomLevel(), compare.getZoomLevel());
+    
+    result = instance.getIds(longitude, latitude);
+    for(int z=4; z > 0; z--){
+    	assertTrue(result.hasNext());
+    	assertEquals(z, result.next().getZoomLevel());	
+    }
+    
+    
   }
 
   @Test
@@ -60,7 +69,7 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(2, 6L));
     expectedCellIds.add(new CellId(1, 1L));
 
-    Iterator<CellId> result = instance.bbox2CellIds(BBOX, enlarge);
+    Iterator<CellId> result = instance.bbox2CellIds(BBOX, enlarge).iterator();
 
     while (result.hasNext()) {
       CellId now = result.next();
@@ -68,6 +77,8 @@ public class XYGridTreeTest {
     }
     assertEquals(0, expectedCellIds.size());
   }
+  
+
 
   @Test
   public void testBbox2CellIds_BoundingBox_boolean() throws CellId.cellIdExeption {
@@ -92,7 +103,7 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(1, 1L));
     expectedCellIds.add(new CellId(1, 0L));
 
-    Iterator<CellId> result = instance.bbox2CellIds(bbox, enlarge);
+    Iterator<CellId> result = instance.bbox2CellIds(bbox, enlarge).iterator();
 
     while (result.hasNext()) {
       CellId now = result.next();
@@ -106,7 +117,7 @@ public class XYGridTreeTest {
     System.out.println("getMultiZoomNeighbours");
     CellId center = new CellId(2, 6L);
     XYGridTree instance = new XYGridTree(3);
-    Iterator<CellId> result = instance.getMultiZoomNeighbours(center);
+    Iterator<CellId> result = instance.getMultiZoomNeighbours(center).iterator();
 
     HashSet<CellId> expectedCellIds = new HashSet<>(25);
     expectedCellIds.add(new CellId(3, -1L));

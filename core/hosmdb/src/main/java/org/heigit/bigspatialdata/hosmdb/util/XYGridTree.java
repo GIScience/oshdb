@@ -95,7 +95,7 @@ public class XYGridTree {
   }
   
   
-  public Iterator<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX) {
+  public Iterable<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX) {
 	  return bbox2CellIds(BBOX,true);
   }
 
@@ -107,56 +107,60 @@ public class XYGridTree {
    * @param enlarge
    * @return
    */
-  public Iterator<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX, final boolean enlarge) {
+  public Iterable<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX, final boolean enlarge) {
 
-    @SuppressWarnings("unchecked")
-    Iterator<CellId> result = new Iterator() {
-      private int level = maxLevel;
-      private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-      private Pair<Long, Long> row = rows.next();
-      private Long maxID = row.getRight();
-      private Long currID = row.getLeft() - 1;
+	 return new Iterable<CellId>() {
+		@Override
+		public Iterator<CellId> iterator() {
+			Iterator<CellId> result = new Iterator<CellId>() {
+			      private int level = maxLevel;
+			      private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+			      private Pair<Long, Long> row = rows.next();
+			      private Long maxID = row.getRight();
+			      private Long currID = row.getLeft() - 1;
 
-      @Override
-      public boolean hasNext() {
-        if (level > 1) {
-          return true;
-        }
-        if (rows.hasNext()) {
-          return true;
-        }
-        return currID < maxID;
-      }
+			      @Override
+			      public boolean hasNext() {
+			        if (level > 1) {
+			          return true;
+			        }
+			        if (rows.hasNext()) {
+			          return true;
+			        }
+			        return currID < maxID;
+			      }
 
-      @Override
-      public Object next() {
-        try {
-          if (currID < maxID) {
-            currID++;
-            return new CellId(level, currID);
-          }
-          if (rows.hasNext()) {
-            row = rows.next();
-            currID = row.getLeft();
-            maxID = row.getRight();
-            return new CellId(level, currID);
-          }
-          level--;
-          rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-          row = rows.next();
-          currID = row.getLeft();
-          maxID = row.getRight();
-          return new CellId(level, currID);
-        } catch (CellId.cellIdExeption ex) {
-          LOG.log(Level.SEVERE, ex.getMessage());
-          return null;
-        }
-      }
+			      @Override
+			      public CellId next() {
+			        try {
+			          if (currID < maxID) {
+			            currID++;
+			            return new CellId(level, currID);
+			          }
+			          if (rows.hasNext()) {
+			            row = rows.next();
+			            currID = row.getLeft();
+			            maxID = row.getRight();
+			            return new CellId(level, currID);
+			          }
+			          level--;
+			          rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+			          row = rows.next();
+			          currID = row.getLeft();
+			          maxID = row.getRight();
+			          return new CellId(level, currID);
+			        } catch (CellId.cellIdExeption ex) {
+			          LOG.log(Level.SEVERE, ex.getMessage());
+			          return null;
+			        }
+			      }
 
-    };
+			    };
 
-    return result;
-
+			    return result;
+		}
+	}; 
+	  
   }
 
   /**
@@ -166,7 +170,7 @@ public class XYGridTree {
    * @param enlarge
    * @return
    */
-  public Iterator<CellId> bbox2CellIds(BoundingBox bbox, boolean enlarge) {
+  public Iterable<CellId> bbox2CellIds(BoundingBox bbox, boolean enlarge) {
     MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
     return this.bbox2CellIds(mdBbox, enlarge);
   }
@@ -177,7 +181,7 @@ public class XYGridTree {
    * @param center
    * @return
    */
-  public Iterator<CellId> getMultiZoomNeighbours(CellId center) {
+  public Iterable<CellId> getMultiZoomNeighbours(CellId center) {
     MultiDimensionalNumericData bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
     double minlong = bbox.getMinValuesPerDimension()[0] - EPSILON;
     double minlat = bbox.getMinValuesPerDimension()[1] - EPSILON;
