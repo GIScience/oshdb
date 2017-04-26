@@ -5,14 +5,17 @@
  */
 package org.heigit.bigspatialdata.hosmdb.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashSet;
 import java.util.Iterator;
+
+import org.junit.Test;
+
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 /**
  *
@@ -56,7 +59,6 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(3, 20L));
     expectedCellIds.add(new CellId(2, 6L));
     expectedCellIds.add(new CellId(1, 1L));
-    expectedCellIds.add(new CellId(0, 0L));
 
     Iterator<CellId> result = instance.bbox2CellIds(BBOX, enlarge);
 
@@ -89,7 +91,6 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(2, 6L));
     expectedCellIds.add(new CellId(1, 1L));
     expectedCellIds.add(new CellId(1, 0L));
-    expectedCellIds.add(new CellId(0, 0L));
 
     Iterator<CellId> result = instance.bbox2CellIds(bbox, enlarge);
 
@@ -131,8 +132,6 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(1, -1L));
     expectedCellIds.add(new CellId(1, 0L));
     expectedCellIds.add(new CellId(1, 1L));
-    expectedCellIds.add(new CellId(0, -1L));
-    expectedCellIds.add(new CellId(0, 0L));
 
     while (result.hasNext()) {
       CellId now = result.next();

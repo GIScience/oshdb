@@ -5,11 +5,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.
@@ -20,6 +22,7 @@ public class XYGridTree {
 
   private static final Logger LOG = Logger.getLogger(XYGridTree.class.getName());
   private static final double EPSILON = 1e-11;
+  private final int maxLevel;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
 
   /**
@@ -28,7 +31,8 @@ public class XYGridTree {
    * @param maxzoom the maximum zoom to be used
    */
   public XYGridTree(int maxzoom) {
-    for (int i = maxzoom; i >= 0; i--) {
+	maxLevel = maxzoom;
+    for (int i = maxzoom; i > 0; i--) {
       gridMap.put(i, new XYGrid(i));
     }
 
@@ -45,12 +49,11 @@ public class XYGridTree {
 
     @SuppressWarnings("unchecked")
     Iterator<CellId> result = new Iterator() {
-      private final int maxLevel = gridMap.size();
       private int level = maxLevel;
 
       @Override
       public boolean hasNext() {
-        return level > 0;
+        return level > 1;
       }
 
       @Override
@@ -58,7 +61,6 @@ public class XYGridTree {
         try {
           level--;
           return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
-
         } catch (CellId.cellIdExeption ex) {
           LOG.log(Level.SEVERE, ex.getMessage());
           return null;
@@ -75,10 +77,10 @@ public class XYGridTree {
    * @param bbox
    * @return
    */
-  protected CellId getInsertId(BoundingBox bbox) {
+  public CellId getInsertId(BoundingBox bbox) {
     int maxLevel = gridMap.size();
     MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
-    for (int i = maxLevel - 1; i >= 0; i--) {
+    for (int i = maxLevel - 1; i > 0; i--) {
       try {
         if (gridMap.get(i).getEstimatedIdCount(mdBbox) > 4) {
           continue;
@@ -90,6 +92,11 @@ public class XYGridTree {
       }
     }
     return null;
+  }
+  
+  
+  public Iterator<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX) {
+	  return bbox2CellIds(BBOX,true);
   }
 
   /**
@@ -104,8 +111,6 @@ public class XYGridTree {
 
     @SuppressWarnings("unchecked")
     Iterator<CellId> result = new Iterator() {
-
-      private final int maxLevel = gridMap.size() - 1;
       private int level = maxLevel;
       private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
       private Pair<Long, Long> row = rows.next();
@@ -114,7 +119,7 @@ public class XYGridTree {
 
       @Override
       public boolean hasNext() {
-        if (level > 0) {
+        if (level > 1) {
           return true;
         }
         if (rows.hasNext()) {
