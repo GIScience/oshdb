@@ -80,7 +80,7 @@ public class HOSMDbTransform {
       Class.forName("org.h2.Driver");
 
       // serialise nodes and write to .ser-file
-      if (true) {
+      if (false) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile) //
                 ) {
@@ -111,7 +111,7 @@ public class HOSMDbTransform {
 
       // ways
       // do same for ways and relations (see nodes)
-      if (true) {
+      if (false) {
         try (//
             final FileInputStream in = new FileInputStream(pbfFile) //
         ) {
