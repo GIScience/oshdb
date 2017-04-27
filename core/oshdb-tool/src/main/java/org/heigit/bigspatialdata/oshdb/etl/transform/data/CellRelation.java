@@ -1,15 +1,15 @@
-package org.heigit.bigspatialdata.hosmdb.etl.transform.data;
+package org.heigit.bigspatialdata.oshdb.etl.transform.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMRelation;
+import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 
 
 public class CellRelation implements Comparable<CellRelation> {
 
   private final CellInfo info;
-private final List<HOSMRelation> relations = new ArrayList<>();
+private final List<OSHRelation> relations = new ArrayList<>();
   
   private long minTimestamp;
   private long minId;
@@ -23,13 +23,13 @@ private final List<HOSMRelation> relations = new ArrayList<>();
     return info;
   }
  
-  public void add(HOSMRelation r, long minTimestamp){
+  public void add(OSHRelation r, long minTimestamp){
     this.relations.add(r);
     minId = Math.min(minId, r.getId());
     minTimestamp = Math.min(this.minTimestamp,minTimestamp);
   }
   
-  public List<HOSMRelation> getRelations(){
+  public List<OSHRelation> getRelations(){
     return relations;
   }
   

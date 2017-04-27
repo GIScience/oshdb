@@ -1,16 +1,15 @@
-package org.heigit.bigspatialdata.hosmdb.etl.transform.data;
+package org.heigit.bigspatialdata.oshdb.etl.transform.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMWay;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 
 public class CellWay implements Comparable<CellWay> {
 
   private final CellInfo info;
   
-private final List<HOSMWay> ways = new ArrayList<>();
+private final List<OSHWay> ways = new ArrayList<>();
   
   private long minTimestamp;
   private long minId;
@@ -24,13 +23,13 @@ private final List<HOSMWay> ways = new ArrayList<>();
     return info;
   }
  
-  public void add(HOSMWay way, long minTimestamp){
+  public void add(OSHWay way, long minTimestamp){
     this.ways.add(way);
     minId = Math.min(minId, way.getId());
     minTimestamp = Math.min(this.minTimestamp,minTimestamp);
   }
   
-  public List<HOSMWay> getWays(){
+  public List<OSHWay> getWays(){
     return ways;
   }
   

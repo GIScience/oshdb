@@ -1,8 +1,8 @@
-package org.heigit.bigspatialdata.hosmdb.etl.transform.data;
+package org.heigit.bigspatialdata.oshdb.etl.transform.data;
 
 import java.io.Serializable;
 
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMWay;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 
 public class WayRelation implements Serializable{
 
@@ -11,15 +11,15 @@ public class WayRelation implements Serializable{
    */
   private static final long serialVersionUID = 1L;
   private final long maxRelationId;
-  private final HOSMWay hosmWay;
+  private final OSHWay oshWay;
   
-  public WayRelation(final long maxRelationId, final HOSMWay hosmWay){
+  public WayRelation(final long maxRelationId, final OSHWay oshWay){
     this.maxRelationId = maxRelationId;
-    this.hosmWay = hosmWay;
+    this.oshWay = oshWay;
   }
   
-  public HOSMWay way(){
-    return hosmWay;
+  public OSHWay way(){
+    return oshWay;
   }
   
   public long getMaxRelationId(){

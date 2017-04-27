@@ -1,9 +1,8 @@
-package org.heigit.bigspatialdata.hosmdb.etl.transform.data;
+package org.heigit.bigspatialdata.oshdb.etl.transform.data;
 
 import java.io.Serializable;
-import java.util.List;
 
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 
 public class NodeRelation implements Serializable, Comparable<NodeRelation> {
   
@@ -13,14 +12,14 @@ public class NodeRelation implements Serializable, Comparable<NodeRelation> {
   private static final long serialVersionUID = 1L;
   private final long maxRelationId;
   
-  private final HOSMNode hnode;
+  private final OSHNode hnode;
   
-  public NodeRelation(final long maxRelationId,final HOSMNode hnode){
+  public NodeRelation(final long maxRelationId,final OSHNode hnode){
     this.maxRelationId = maxRelationId;
     this.hnode = hnode;
   }
   
-  public HOSMNode node(){
+  public OSHNode node(){
     return hnode;
   }
   

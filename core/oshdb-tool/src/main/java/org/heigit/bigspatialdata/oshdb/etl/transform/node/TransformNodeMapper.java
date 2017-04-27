@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.hosmdb.etl.transform.node;
+package org.heigit.bigspatialdata.oshdb.etl.transform.node;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,12 +16,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.heigit.bigspatialdata.hosmdb.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellNode;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.NodeRelation;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
-import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
-import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
+import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
+import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellNode;
+import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -82,7 +82,7 @@ public class TransformNodeMapper extends TransformMapper2 {
 
   public Result map(InputStream in) {
     try (//
-        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./hosmdb", "sa", "");
+        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./oshdb", "sa", "");
         Connection connRelations = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
 
       initKeyTables(connKeyTables);
@@ -130,7 +130,7 @@ public class TransformNodeMapper extends TransformMapper2 {
             if(pbfNode.getVisible())
               cells.add(getCell(pbfNode.getLongitude(), pbfNode.getLatitude()));
           }
-          HOSMNode hnode = HOSMNode.build(nodes);
+          OSHNode hnode = OSHNode.build(nodes);
 
           for (CellNode cell : cells) {
             if (hnode.hasTags()) {

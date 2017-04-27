@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.hosmdb.etl.transform.way;
+package org.heigit.bigspatialdata.oshdb.etl.transform.way;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -18,15 +18,15 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.heigit.bigspatialdata.hosmdb.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.CellWay;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.NodeRelation;
-import org.heigit.bigspatialdata.hosmdb.etl.transform.data.WayRelation;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMNode;
-import org.heigit.bigspatialdata.hosmdb.osh.HOSMWay;
-import org.heigit.bigspatialdata.hosmdb.osm.OSMNode;
-import org.heigit.bigspatialdata.hosmdb.osm.OSMWay;
-import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
+import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
+import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellWay;
+import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;
+import org.heigit.bigspatialdata.oshdb.etl.transform.data.WayRelation;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
+import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -95,7 +95,7 @@ public class TransformWayMapper extends TransformMapper2 {
 
   public Result map(InputStream in) {
     try (//
-        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./hosmdb", "sa", "");
+        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./oshdb", "sa", "");
         Connection connRelations = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
 
       initKeyTables(connKeyTables);
@@ -149,9 +149,9 @@ public class TransformWayMapper extends TransformMapper2 {
           }
 
 
-          List<HOSMNode> nodes = getNodes(relationStream, id, refs);
+          List<OSHNode> nodes = getNodes(relationStream, id, refs);
 
-          HOSMWay hway = HOSMWay.build(ways, nodes);
+          OSHWay hway = OSHWay.build(ways, nodes);
 
           // Finde according cell!
           CellWay cell = getCell(nodes);
@@ -188,9 +188,9 @@ public class TransformWayMapper extends TransformMapper2 {
     return EMPTY_RESULT;
   }
 
-  private List<HOSMNode> getNodes(final ObjectInputStream relationStream, final long id,
+  private List<OSHNode> getNodes(final ObjectInputStream relationStream, final long id,
       SortedSet<Long> refs) throws IOException, ClassNotFoundException {
-    List<HOSMNode> nodes = new ArrayList<>(refs.size());
+    List<OSHNode> nodes = new ArrayList<>(refs.size());
 
     for (Long refId : refs) {
       if (Long.compare(refId.longValue(), lastNode) <= 0) {
@@ -227,13 +227,13 @@ public class TransformWayMapper extends TransformMapper2 {
     return nodes;
   }
 
-  private CellWay getCell(List<HOSMNode> nodes) {
+  private CellWay getCell(List<OSHNode> nodes) {
     long minLon = Long.MAX_VALUE;
     long maxLon = Long.MIN_VALUE;
     long minLat = Long.MAX_VALUE;
     long maxLat = Long.MIN_VALUE;
 
-    for (HOSMNode osh : nodes) {
+    for (OSHNode osh : nodes) {
       Iterator<OSMNode> osmItr = osh.iterator();
       while (osmItr.hasNext()) {
         OSMNode osm = osmItr.next();
