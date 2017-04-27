@@ -31,14 +31,14 @@ public class XYGridTreeTest {
     double latitude = 0.0;
     XYGridTree instance = new XYGridTree(4);
     CellId expResult = new CellId(2, 6L);
-    Iterator<CellId> result = instance.getIds(longitude, latitude);
+    Iterator<CellId> result = instance.getIds(longitude, latitude).iterator();
     result.next();
     result.next();
     CellId compare = result.next();
     assertEquals(expResult.getId(), compare.getId());
     assertEquals(expResult.getZoomLevel(), compare.getZoomLevel());
     
-    result = instance.getIds(longitude, latitude);
+    result = instance.getIds(longitude, latitude).iterator();
     for(int z=4; z > 0; z--){
     	assertTrue(result.hasNext());
     	assertEquals(z, result.next().getZoomLevel());	

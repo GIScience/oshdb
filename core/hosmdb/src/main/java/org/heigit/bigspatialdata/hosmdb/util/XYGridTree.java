@@ -45,30 +45,39 @@ public class XYGridTree {
    * @param latitude
    * @return An iterator over the cellIds in all zoomlevel
    */
-  public Iterator<CellId> getIds(double longitude, double latitude) {
+  public Iterable<CellId> getIds(double longitude, double latitude) {
 
-    @SuppressWarnings("unchecked")
-    Iterator<CellId> result = new Iterator() {
-      private int level = maxLevel;
+	  return new Iterable<CellId>() {
+		
+		@Override
+		public Iterator<CellId> iterator() {
+			@SuppressWarnings("unchecked")
+		    Iterator<CellId> result = new Iterator() {
+		      private int level = maxLevel;
 
-      @Override
-      public boolean hasNext() {
-        return level > 1;
-      }
+		      @Override
+		      public boolean hasNext() {
+		        return level > 1;
+		      }
 
-      @Override
-      public Object next() {
-        try {
-          level--;
-          return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
-        } catch (CellId.cellIdExeption ex) {
-          LOG.log(Level.SEVERE, ex.getMessage());
-          return null;
-        }
-      }
-    };
+		      @Override
+		      public Object next() {
+		        try {
+		          level--;
+		          return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
+		        } catch (CellId.cellIdExeption ex) {
+		          LOG.log(Level.SEVERE, ex.getMessage());
+		          return null;
+		        }
+		      }
+		    };
 
-    return result;
+		    return result;
+		}
+	};
+	  
+	  
+    
   }
 
   /**

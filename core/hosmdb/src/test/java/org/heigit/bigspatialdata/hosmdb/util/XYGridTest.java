@@ -1,21 +1,22 @@
 package org.heigit.bigspatialdata.hosmdb.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Before;
+import org.junit.Test;
+
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import static org.junit.Assert.assertEquals;
-
-import org.heigit.bigspatialdata.hosmdb.db.HOSMDb;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -24,6 +25,7 @@ import org.junit.Test;
 public class XYGridTest {
 
   private static final Logger LOG = Logger.getLogger(XYGridTest.class.getName());
+  private static final int MAXZOOM = 12;
   private XYGrid zero;
   private XYGrid two;
   private XYGrid thirty;
@@ -433,7 +435,7 @@ public class XYGridTest {
     System.out.println("test performance for maximum sized BBOX");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
     int expResult = 2048;
-    Set<Pair<Long, Long>> result = new XYGrid(HOSMDb.MAXZOOM).bbox2CellIdRanges(BBOX, true);
+    Set<Pair<Long, Long>> result = new XYGrid(MAXZOOM).bbox2CellIdRanges(BBOX, true);
     assertEquals(expResult, result.size());
   }
 
