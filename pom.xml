@@ -93,6 +93,8 @@
         <skipTests>true</skipTests>
         <!-- This param should be removed at a later phase, as it supresses actual errors in the javadoc (see https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/3)-->
         <additionalparam>-Xdoclint:none</additionalparam>
+        <downloadSources>true</downloadSources>
+        <downloadJavadocs>true</downloadJavadocs>
       </properties>
       <build>
         <plugins>
