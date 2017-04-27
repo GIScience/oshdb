@@ -7,7 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.hosmdb.etl.extract.data.KeyValuesFrequency;
@@ -17,12 +19,12 @@ import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
+import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfRelation;
+import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfRelation.OSMMember;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfTag;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfUser;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfWay;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfRelation.OSMMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +44,7 @@ public class ExtractMapper {
       final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
 
       
-      final Map<String, KeyValuesFrequency> tagToKeyValuesFrequency = new HashMap<>();
+      final SortedMap<String, KeyValuesFrequency> tagToKeyValuesFrequency = new TreeMap<>();
       final Map<String, Integer> roleToFrequency = new HashMap<>();
       final SortedSet<OSMPbfUser> uniqueUser = new TreeSet<>();
       final RelationMapping mapping = new RelationMapping();
@@ -107,7 +109,7 @@ public class ExtractMapper {
 
   
 
-  private void tagKeyValues(long id, Type type, List<OSMPbfEntity> versions, Map<String, KeyValuesFrequency> tagToKeyValuesFrequency) {
+  private void tagKeyValues(long id, Type type, List<OSMPbfEntity> versions, SortedMap<String, KeyValuesFrequency> tagToKeyValuesFrequency) {
     Set<OSMPbfTag> uniqueTags = new HashSet<>();
     for (OSMPbfEntity entity : versions) {
       for (OSMPbfTag tag : entity.getTags()) {
@@ -147,7 +149,6 @@ public class ExtractMapper {
       OSMPbfRelation relation = (OSMPbfRelation) entity;
       for (OSMMember member : relation.getMembers()) {
         String role = member.getRole().trim();
-//        if (!role.isEmpty())
           uniqueRoles.add(role);
       }
     }

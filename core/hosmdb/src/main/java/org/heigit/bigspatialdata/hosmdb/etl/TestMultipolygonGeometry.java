@@ -9,21 +9,36 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
 
-import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.hosmdb.db.HOSMDb;
 import org.heigit.bigspatialdata.hosmdb.grid.HOSMCell;
-import org.heigit.bigspatialdata.hosmdb.osh.*;
-import org.heigit.bigspatialdata.hosmdb.osm.*;
-
+import org.heigit.bigspatialdata.hosmdb.osh.HOSMEntity;
+import org.heigit.bigspatialdata.hosmdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.hosmdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.hosmdb.osm.OSMWay;
 import org.heigit.bigspatialdata.hosmdb.util.BoundingBox;
 import org.heigit.bigspatialdata.hosmdb.util.Geo;
 import org.heigit.bigspatialdata.hosmdb.util.XYGrid;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.TopologyException;
+
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TestMultipolygonGeometry {
@@ -58,6 +73,10 @@ public class TestMultipolygonGeometry {
 			return String.format("zoom:%d id:%d -> %d", zoom,id,count);
 		}
 	}
+
+
+
+	private static final int MAXZOOM = 12;
 
 
 
@@ -101,7 +120,7 @@ public class TestMultipolygonGeometry {
 			rst.close();*/
 
 			final BoundingBox bboxFilter = new BoundingBox(85, 86, 27, 28);
-			for (int zoom = 0; zoom<= HOSMDb.MAXZOOM; zoom++) {
+			for (int zoom = 0; zoom<= MAXZOOM; zoom++) {
 				XYGrid grid = new XYGrid(zoom);
 				Set<Pair<Long,Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);
 				for (Pair<Long,Long> cellsInterval : cellIds) {

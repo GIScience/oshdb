@@ -16,12 +16,12 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import crosby.binary.Fileformat;
-import crosby.binary.Osmformat;
 import crosby.binary.Fileformat.BlobHeader;
+import crosby.binary.Osmformat;
 import crosby.binary.Osmformat.HeaderBlock;
 import crosby.binary.Osmformat.PrimitiveBlock;
 
-public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBlock>, Closeable{
+public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBlock>, Closeable {
 
 	private final long start;
 	private final long end;
@@ -31,24 +31,22 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 
 	private HeaderInfo currentHeaderInfo;
 	private PrimitiveBlock currentPrimitiveBlock;
-	
+
 	private long blockPos = -1;
 	private long nextBlockPos = -1;
-	
 
 	public OsmPrimitiveBlockIterator(String filename) throws FileNotFoundException, IOException {
 		this(new File(filename));
 	}
 
 	public OsmPrimitiveBlockIterator(File file) throws FileNotFoundException, IOException {
-		this(new FileInputStream(file),file.length());
+		this(new FileInputStream(file), file.length());
 	}
 
-	public OsmPrimitiveBlockIterator(InputStream is) throws IOException{
-		this(is,-1);
+	public OsmPrimitiveBlockIterator(InputStream is) throws IOException {
+		this(is, -1);
 	}
-	
-	
+
 	public OsmPrimitiveBlockIterator(InputStream is, final long end) throws IOException {
 		this.input = new DataInputStream(is);
 		this.start = -1;
@@ -64,9 +62,10 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 	}
 
 	private long readBlock() throws IOException {
-	  long blockPos = -1;
-		if (input.available() > 0) {
-		    blockPos = pos;
+		long blockPos = -1;
+
+		try {
+			blockPos = pos;
 			Fileformat.BlobHeader header = readBlobHeader();
 			ByteString data = readData(header);
 			try {
@@ -79,8 +78,10 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 				e.printStackTrace();
 				throw new Error("ParseError", e);
 			}
+		} catch (EOFException e) {
+			return -1;
 		}
-		
+
 		return blockPos;
 	}
 
@@ -189,13 +190,13 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 		return currentHeaderInfo;
 	}
 
-  public long getBlockPos() {
-    return blockPos;
-  }
+	public long getBlockPos() {
+		return blockPos;
+	}
 
-  @Override
-  public void close() throws IOException {
-    input.close();
-  }
+	@Override
+	public void close() throws IOException {
+		input.close();
+	}
 
 }

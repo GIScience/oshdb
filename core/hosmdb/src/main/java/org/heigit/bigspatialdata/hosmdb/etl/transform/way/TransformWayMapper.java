@@ -117,6 +117,9 @@ public class TransformWayMapper extends TransformMapper2 {
 
         this.mapCellWays = new HashMap<>();
 
+        clearKeyValueCache();
+
+        
         while (oshIterator.hasNext()) {
           final List<OSMPbfEntity> versions = oshIterator.next();
           if (versions.isEmpty()) {
@@ -134,8 +137,7 @@ public class TransformWayMapper extends TransformMapper2 {
 
 
 
-          clearKeyValueCache();
-
+          
           long minTimestamp = Long.MAX_VALUE;
           SortedSet<Long> refs = new TreeSet<>();
           List<OSMWay> ways = new ArrayList<>(versions.size());

@@ -1,9 +1,6 @@
 package org.heigit.bigspatialdata.hosmdb.etl.extract;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -11,8 +8,8 @@ import java.util.TreeSet;
 import org.heigit.bigspatialdata.hosmdb.etl.extract.data.KeyValuesFrequency;
 import org.heigit.bigspatialdata.hosmdb.etl.extract.data.RelationMapping;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfUser;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
+import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfUser;
 
 public class ExtractReducer {
 

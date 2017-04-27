@@ -273,10 +273,13 @@ public class TransformRelationMapper extends TransformMapper2 {
 						nodes.add(nr.node());
 						// has the noderelation further relation than
 						// cache it
-						if (nr.getMaxRelationId() > id) {
-							nodeCache.put(refId, nr);
-						}
+						
 					}
+					
+					if (nr.getMaxRelationId() > id) {
+						nodeCache.put(nr.node().getId(), nr);
+					}
+					
 				} catch (EOFException e) {
 					System.err.printf("missing RefId %d, lastRelation: %d\n", refId.longValue(), lastNode);
 					break;
@@ -306,19 +309,18 @@ public class TransformRelationMapper extends TransformMapper2 {
 					while (nr.way().getId() < refId.longValue()) {
 						// cache the noderelations
 						wayCache.put(nr.way().getId(), nr);
-
 						nr = (WayRelation) relationStream.readObject();
-
 					}
 					lastWay = nr.way().getId();
 
 					if (nr.way().getId() == refId.longValue()) {
 						ways.add(nr.way());
-						// has the noderelation further relation than
-						// cache it
-						if (nr.getMaxRelationId() > id) {
-							wayCache.put(refId, nr);
-						}
+					}
+					
+					// has the noderelation further relation than
+					// cache it
+					if (nr.getMaxRelationId() > id) {
+						wayCache.put(nr.way().getId(), nr);
 					}
 
 				} catch (EOFException e) {
