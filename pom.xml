@@ -1,91 +1,169 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.heigit.bigspatialdata</groupId>
-	<artifactId>bigspatialdata-parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.heigit.bigspatialdata</groupId>
+  <artifactId>bigspatialdata-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-	<name>HeiGIT Big Spatial Data Parent POM</name>
-	<url>http://www.geog.uni-heidelberg.de/gis/heigit_bigspatialdata.html</url>
-	<description></description>
+  <name>HeiGIT Big Spatial Data Parent POM</name>
+  <url>http://www.geog.uni-heidelberg.de/gis/heigit_bigspatialdata.html</url>
+  <description></description>
 
-	<licenses>
-		<!-- <license> <name>The Apache Software License, Version 2.0</name> <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url> 
-			</license> -->
-	</licenses>
+  <licenses>
+    <!-- <license> <name>The Apache Software License, Version 2.0</name> <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url> 
+    </license> -->
+  </licenses>
 
-	<developers>
-		<!-- https://maven.apache.org/pom.html#Developers -->
-		<developer>
-			<id>rtroilo</id>
-			<name>Rafael Troilo</name>
-			<email>rafael.troilo@uni-heidelberg.de</email>
-		</developer>
-		<developer>
-			<id>mraifer</id>
-			<name>Martin Raifer</name>
-			<email>martin.raifer@uni-heidelberg.de</email>
-		</developer>
-		<developer>
-			<id>mr.moehritz</id>
-			<name>Moriz Schott</name>
-			<email>m.schott@stud.uni-heidelberg.de</email>
-		</developer>
-	</developers>
+  <developers>
+    <!-- https://maven.apache.org/pom.html#Developers -->
+    <developer>
+      <id>rtroilo</id>
+      <name>Rafael Troilo</name>
+      <email>rafael.troilo@uni-heidelberg.de</email>
+    </developer>
+    <developer>
+      <id>mraifer</id>
+      <name>Martin Raifer</name>
+      <email>martin.raifer@uni-heidelberg.de</email>
+    </developer>
+    <developer>
+      <id>mr.moehritz</id>
+      <name>Moriz Schott</name>
+      <email>m.schott@stud.uni-heidelberg.de</email>
+    </developer>
+  </developers>
 
-	<distributionManagement>
-	</distributionManagement>
+  <distributionManagement>
+  </distributionManagement>
 
-	<scm>
-		<!-- https://maven.apache.org/pom.html#SCM -->
-		<connection>scm:git:git@gitlab.com:giscience/osh-bigdb/OSH-BigDB.git</connection>
-		<developerConnection>scm:git:git@gitlab.com:giscience/osh-bigdb/OSH-BigDB.git</developerConnection>
-		<url>https://gitlab.com/giscience/osh-bigdb/OSH-BigDB</url>
-	</scm>
+  <scm>
+    <!-- https://maven.apache.org/pom.html#SCM -->
+    <connection>scm:git:git@gitlab.com:giscience/osh-bigdb/OSH-BigDB.git</connection>
+    <developerConnection>scm:git:git@gitlab.com:giscience/osh-bigdb/OSH-BigDB.git</developerConnection>
+    <url>https://gitlab.com/giscience/osh-bigdb/OSH-BigDB</url>
+  </scm>
 
-	<properties>
-		<hadoop.version>2.4.1</hadoop.version>
-		<spark.version>1.5.2</spark.version>
-		<ignite-version>1.7.0</ignite-version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+  <properties>
+    <hadoop.version>2.4.1</hadoop.version>
+    <spark.version>1.5.2</spark.version>
+    <ignite-version>1.7.0</ignite-version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.6.1</version>
-			</dependency>
+  <dependencyManagement>
+    <dependencies>			
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.6.1</version>
+      </dependency>
 			
-		</dependencies>
-	</dependencyManagement>
+    </dependencies>
+  </dependencyManagement>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
+  <build>
+    <pluginManagement>
+      <plugins>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
 
-		</plugins>
-	</build>
+    </plugins>
+  </build>
 
-	<modules>
-		<module>core</module>
-	</modules>
+  <modules>
+    <module>core</module>
+  </modules>
 
-	<profiles>
-	</profiles>
+  <profiles>
+    <profile>
+      <id>complete</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <!-- This param should be removed at a later phase, as it supresses actual errors in the javadoc (see https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/3)-->
+        <additionalparam>-Xdoclint:none</additionalparam>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.4</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <id>withDep</id>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- NOTE: We don't need a groupId specification because the group is
+                org.apache.maven.plugins ...which is assumed by default.
+            -->
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>
+                    <!--put main class if there will be one available one day-->
+                  </mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <outputDirectory>${project.basedir}</outputDirectory>
+            </configuration>
+            <executions>
+              <execution>
+                <id>make-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
