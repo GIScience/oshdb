@@ -12,6 +12,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>oshpbf-parser</module>
-    <module>hosmdb</module>
+    <module>oshdb</module>
+    <module>oshdb-tool</module>
   </modules>
 </project>
