@@ -5,13 +5,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.
@@ -31,7 +29,7 @@ public class XYGridTree {
    * @param maxzoom the maximum zoom to be used
    */
   public XYGridTree(int maxzoom) {
-	maxLevel = maxzoom;
+    maxLevel = maxzoom;
     for (int i = maxzoom; i > 0; i--) {
       gridMap.put(i, new XYGrid(i));
     }
@@ -47,37 +45,34 @@ public class XYGridTree {
    */
   public Iterable<CellId> getIds(double longitude, double latitude) {
 
-	  return new Iterable<CellId>() {
-		
-		@Override
-		public Iterator<CellId> iterator() {
-			@SuppressWarnings("unchecked")
-		    Iterator<CellId> result = new Iterator() {
-		      private int level = maxLevel;
+    return new Iterable<CellId>() {
 
-		      @Override
-		      public boolean hasNext() {
-		        return level > 1;
-		      }
+      @Override
+      public Iterator<CellId> iterator() {
+        Iterator<CellId> result = new Iterator<CellId>() {
+          private int level = maxLevel+1;
 
-		      @Override
-		      public Object next() {
-		        try {
-		          level--;
-		          return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
-		        } catch (CellId.cellIdExeption ex) {
-		          LOG.log(Level.SEVERE, ex.getMessage());
-		          return null;
-		        }
-		      }
-		    };
+          @Override
+          public boolean hasNext() {
+            return level > 1;
+          }
 
-		    return result;
-		}
-	};
-	  
-	  
-    
+          @Override
+          public CellId next() {
+            try {
+              level--;
+              return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
+            } catch (CellId.cellIdExeption ex) {
+              LOG.log(Level.SEVERE, ex.getMessage());
+              return null;
+            }
+          }
+        };
+
+        return result;
+      }
+    };
+
   }
 
   /**
@@ -87,7 +82,6 @@ public class XYGridTree {
    * @return
    */
   public CellId getInsertId(BoundingBox bbox) {
-    int maxLevel = gridMap.size();
     MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
     for (int i = maxLevel - 1; i > 0; i--) {
       try {
@@ -102,10 +96,16 @@ public class XYGridTree {
     }
     return null;
   }
-  
-  
+
+  /**
+   * Query cells for given BBOX. The boundingbox is automatically enlarged, so
+   * lines and relations are included.
+   *
+   * @param BBOX
+   * @return
+   */
   public Iterable<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX) {
-	  return bbox2CellIds(BBOX,true);
+    return bbox2CellIds(BBOX, true);
   }
 
   /**
@@ -118,58 +118,58 @@ public class XYGridTree {
    */
   public Iterable<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX, final boolean enlarge) {
 
-	 return new Iterable<CellId>() {
-		@Override
-		public Iterator<CellId> iterator() {
-			Iterator<CellId> result = new Iterator<CellId>() {
-			      private int level = maxLevel;
-			      private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-			      private Pair<Long, Long> row = rows.next();
-			      private Long maxID = row.getRight();
-			      private Long currID = row.getLeft() - 1;
+    return new Iterable<CellId>() {
+      @Override
+      public Iterator<CellId> iterator() {
+        Iterator<CellId> result = new Iterator<CellId>() {
+          private int level = maxLevel;
+          private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+          private Pair<Long, Long> row = rows.next();
+          private Long maxID = row.getRight();
+          private Long currID = row.getLeft() - 1;
 
-			      @Override
-			      public boolean hasNext() {
-			        if (level > 1) {
-			          return true;
-			        }
-			        if (rows.hasNext()) {
-			          return true;
-			        }
-			        return currID < maxID;
-			      }
+          @Override
+          public boolean hasNext() {
+            if (level > 1) {
+              return true;
+            }
+            if (rows.hasNext()) {
+              return true;
+            }
+            return currID < maxID;
+          }
 
-			      @Override
-			      public CellId next() {
-			        try {
-			          if (currID < maxID) {
-			            currID++;
-			            return new CellId(level, currID);
-			          }
-			          if (rows.hasNext()) {
-			            row = rows.next();
-			            currID = row.getLeft();
-			            maxID = row.getRight();
-			            return new CellId(level, currID);
-			          }
-			          level--;
-			          rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-			          row = rows.next();
-			          currID = row.getLeft();
-			          maxID = row.getRight();
-			          return new CellId(level, currID);
-			        } catch (CellId.cellIdExeption ex) {
-			          LOG.log(Level.SEVERE, ex.getMessage());
-			          return null;
-			        }
-			      }
+          @Override
+          public CellId next() {
+            try {
+              if (currID < maxID) {
+                currID++;
+                return new CellId(level, currID);
+              }
+              if (rows.hasNext()) {
+                row = rows.next();
+                currID = row.getLeft();
+                maxID = row.getRight();
+                return new CellId(level, currID);
+              }
+              level--;
+              rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+              row = rows.next();
+              currID = row.getLeft();
+              maxID = row.getRight();
+              return new CellId(level, currID);
+            } catch (CellId.cellIdExeption ex) {
+              LOG.log(Level.SEVERE, ex.getMessage());
+              return null;
+            }
+          }
 
-			    };
+        };
 
-			    return result;
-		}
-	}; 
-	  
+        return result;
+      }
+    };
+
   }
 
   /**
