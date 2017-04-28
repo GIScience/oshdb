@@ -1,9 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.util.logging.Logger;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.OSMCommonProperties;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
-import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfNode;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -257,31 +255,6 @@ public class OSMNodeTest {
   }
 
   //--------------------
-  @Test
-  public void testIsVisibleIII() {
-    OSMCommonProperties props = new OSMCommonProperties();
-    props.id = 27176251;
-    props.version = 5;
-    props.timestamp = 1342467946000l;
-    props.changeset = 12250605;
-    props.visible = false;
-
-    OSMPbfNode pbfNode = new OSMPbfNode(props, 214748364700l, 214748364700l);
-    OSMNode node = getNode(pbfNode);
-
-    assertFalse(node.isVisible());
-
-  }
-
-  private OSMNode getNode(OSMPbfNode entity) {
-    return new OSMNode(entity.getId(), //
-            entity.getVersion() * (entity.getVisible() ? 1 : -1), //
-            entity.getTimestamp(), //
-            entity.getChangeset(), //
-            0, //
-            new int[0], //
-            entity.getLongitude(), entity.getLatitude());
-  }
 
   @Test
   public void testEqualsToOSMNode() {
