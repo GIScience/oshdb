@@ -14,5 +14,6 @@
     <module>oshpbf-parser</module>
     <module>oshdb</module>
     <module>oshdb-tool</module>
+    <module>oshdb-examples</module>
   </modules>
 </project>
