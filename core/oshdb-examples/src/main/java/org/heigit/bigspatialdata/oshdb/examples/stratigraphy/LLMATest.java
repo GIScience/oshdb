@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -27,6 +30,8 @@ import java.util.Date;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 //import org.heigit.bigspatialdata.hosmdb.grid.HOSMCell;
@@ -40,8 +45,8 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter
 //import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.DefaultTagInterpreter;
 //import org.heigit.bigspatialdata.hosmdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.*;
-
+//import org.heigit.bigspatialdata.oshdb.*;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 
 import com.google.common.collect.Multiset.Entry;
 import com.vividsolutions.jts.geom.Geometry;
@@ -94,7 +99,7 @@ public class LLMATest {
 		// DriverManager.getConnection("jdbc:h2:./hosmdb/src/main/resources/oshdb/kathmandu.oshdb",
 		// "sa", "");
 		try (Connection conn = DriverManager.getConnection(
-				"jdbc:h2:tcp://localhost/~/Development/hosm_v2_workspace/OSH-BigDB/core/hosmdb/src/main/resources/oshdb/kathmandu.oshdb",
+				"jdbc:h2:tcp://localhost:9092/d:/eclipseNeon2Workspace/OSH-BigDB/core/hosmdb/resources/oshdb/heidelberg-ccbysa",
 				"sa", ""); final Statement stmt = conn.createStatement()) {
 
 			System.out.println("Select tag key/value ids from DB");
@@ -144,15 +149,17 @@ public class LLMATest {
 			 */
 
 //			final BoundingBox bboxFilter = new BoundingBox(85, 86, 27.71, 27.75);
-			final BoundingBox bboxFilter = new BoundingBox(84, 87, 26, 29);
+			final BoundingBox bboxFilter = new BoundingBox(8.61, 6.76, 49.35,  49.46);
+		
+			
 			for (int zoom = 0; zoom <= MAXZOOM; zoom++) {
 				XYGrid grid = new XYGrid(zoom);
 				
 				System.out.println("ZoomLevel: " + zoom + " CellWidth: " + grid.getCellWidth() + " linke untere Ecke: " + grid.getCellDimensions(grid.getId(85, 27)).getMaxValuesPerDimension()[1]);
-				System.out.println(grid.bbox2CellIdRanges(bboxFilter, true));
+				System.out.println(grid.bbox2CellIdRanges(bboxFilter, false));
 				// Set<Pair<Long,Long>> cellIds =
 				// grid.bbox2CellIdRanges(bboxFilter, true);
-				Set<Pair<Long, Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);
+				Set<Pair<Long, Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, false);
 				// Pair<Long,Long> llma = cellId.iterator().next();
 				// System.out.println("oooo "+llma.toString());
 
@@ -168,8 +175,9 @@ public class LLMATest {
 			List<Long> timestamps;
 			timestamps = new ArrayList<>();
 			final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-			for (int year = 2017; year <= 2017; year++) {
-				for (int month = 5; month <= 5; month++) {
+			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			for (int year = 2016; year <= 2016; year++) {
+				for (int month = 5; month <= 6; month++) {
 					try {
 						timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime());
 					} catch (java.text.ParseException e) {
@@ -177,11 +185,11 @@ public class LLMATest {
 					};
 				}
 			}
-			
-			System.out.println("Process in parallel");
+			Collections.sort(timestamps,Collections.reverseOrder());
+		
 			Optional<Map<Long, Integer>> totals = zoomIds.parallelStream().flatMap(zoomId -> {
 				try (final PreparedStatement pstmt = conn.prepareStatement(
-						"(select data from grid_node where level = ?1 and id = ?2)")) {
+						"(select data from grid_node where level = ? and id = ?)")) {
 					pstmt.setInt(1, zoomId.zoom);
 					pstmt.setLong(2, zoomId.id);
 //					System.out.println("adsfasdf");
@@ -189,10 +197,10 @@ public class LLMATest {
 					try (final ResultSet rst2 = pstmt.executeQuery()) {
 //						System.out.println("exec query");
 
-						List<> cells = new LinkedList<>();
+						List<GridOSHEntity> cells = new LinkedList<GridOSHEntity>();
 						while (rst2.next()) {
 							final ObjectInputStream ois = new ObjectInputStream(rst2.getBinaryStream(1));
-							cells.add(() ois.readObject());
+							cells.add( (GridOSHEntity) ois.readObject() );
 //							System.out.println("is da der Fehler");
 //HOSMCell
 						}
@@ -202,12 +210,13 @@ public class LLMATest {
 					e.printStackTrace();
 					return null;
 				}
-			}).map(hosmCell -> {
-				final int zoom = hosmCell.getLevel();
-				final long id = hosmCell.getId();
+			}).map(gridOshCell -> {
+				final int zoom = gridOshCell.getLevel();
+				final long id = gridOshCell.getId();
 
+			
 				Map<Long, Integer> counts = new HashMap<>(timestamps.size());
-				Iterator<OSHEntity> oshEntitylIt = hosmCell.iterator();
+				Iterator<OSHEntity> oshEntitylIt = gridOshCell.iterator();
 				
 				while (oshEntitylIt.hasNext()) {
 					OSHEntity oshEntity = oshEntitylIt.next();
@@ -220,6 +229,9 @@ public class LLMATest {
 					for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
 						Long timestamp = entity.getKey();
 						OSMEntity osmEntity = entity.getValue();
+						
+						
+//						System.out.printf("%d %s \n",timestamp,osmEntity);
 						
 //						if (osmEntity.isVisible() && osmEntity.hasTagKey(0) && osmEntity.hasTagValue(0,0)) {
 						
@@ -235,19 +247,19 @@ public class LLMATest {
 						if(!counts.containsKey(timestamp)){
 							counts.put(timestamp, 0);
 						}
-							counts.put(timestamp, counts.get(timestamp)+1);
+						counts.put(timestamp, counts.get(timestamp)+1);
 							
 							
 							
 							
-//						int[] osmEntityTags = osmEntity.getTags(); 
-//							for (int i = 0; i < osmEntityTags.length; i=i+2) {
-//								int key = osmEntityTags[i];
-//								int val = osmEntityTags[i+1];
-//								
-////								System.out.println("tagints: " + key + " " + val + " tag: " + tagIntToString.get(key).get(val).getLeft() + " "+  tagIntToString.get(key).get(val).getRight());
+						int[] osmEntityTags = osmEntity.getTags(); 
+							for (int i = 0; i < osmEntityTags.length; i=i+2) {
+								int key = osmEntityTags[i];
+								int val = osmEntityTags[i+1];
+								
+								System.out.println("tagints: " + key + " " + val + " tag: " + tagIntToString.get(key).get(val).getLeft() + " "+  tagIntToString.get(key).get(val).getRight());
 //								System.out.println("TimeStamp: " + timestamp);
-//							}
+							}
 							
 						}
 						else {
