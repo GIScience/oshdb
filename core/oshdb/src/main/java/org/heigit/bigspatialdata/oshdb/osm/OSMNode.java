@@ -4,11 +4,13 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
 
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
@@ -44,6 +46,13 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   public long getLat() {
     return latitude;
   }
+  
+  public Point toJTSGeometry() {
+	GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+	Coordinate coord = new Coordinate(getLongitude(), getLatitude());
+	Point point = geometryFactory.createPoint(coord);
+	return point;
+	}
 
   @Override
   public String toString() {
