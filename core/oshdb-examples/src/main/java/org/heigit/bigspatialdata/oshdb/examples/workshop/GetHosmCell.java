@@ -28,6 +28,7 @@ public class GetHosmCell {
         Iterator<CellId> cellIds = grid.bbox2CellIds(bbox, true).iterator();
 
         //connect to the "Big"DB
+		// set path to DB
         try (Connection conn = DriverManager.getConnection("jdbc:h2:D:/heidelberg-ccbysa", "sa", "");
                 Statement stmt = conn.createStatement()) {
             //iterate over cellIds

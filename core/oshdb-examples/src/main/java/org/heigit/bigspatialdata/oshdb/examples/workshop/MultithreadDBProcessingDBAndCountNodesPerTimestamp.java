@@ -43,6 +43,7 @@ public class MultithreadDBProcessingDBAndCountNodesPerTimestamp {
 			throws ClassNotFoundException, SQLException, IOException, org.json.simple.parser.ParseException {
 		Class.forName("org.h2.Driver");
 
+		// set path to DB
 		try (Connection conn = DriverManager.getConnection("jdbc:h2:D:/heidelberg-ccbysa", "sa", "");
 				final Statement stmt = conn.createStatement()) {
 

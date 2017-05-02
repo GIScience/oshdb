@@ -25,6 +25,7 @@ public class GetOshObject {
 		Class.forName("org.h2.Driver");
 
 		// connect to the "Big"DB
+		// set path to DB
 		try (Connection conn = DriverManager.getConnection("jdbc:h2:D:/heidelberg-ccbysa", "sa", "");
 				Statement stmt = conn.createStatement()) {
 
