@@ -9,7 +9,9 @@ import java.io.ObjectInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,6 +118,23 @@ public class TransformRelationMapper extends TransformMapper2 {
 
 				this.mapCellRelations = new HashMap<>();
 
+				
+				clearKeyValueCache();
+		        
+		        Statement stmt = connKeyTables.createStatement();
+		        try(ResultSet rst = stmt.executeQuery("" + //
+						"select key.txt, keyvalue.txt, keyid, valueid " + //
+						"from key join keyvalue on key.id = keyvalue.keyid ")){
+		      	  while(rst.next()){
+		      		  Map<String, int[]> a = keyValueCache.get(rst.getString(1));
+		      		  if(a == null){
+		      			  a = new HashMap<>();
+		      			  keyValueCache.put(rst.getString(1), a);
+		      		  }
+		      		  a.put(rst.getString(2), new int[]{rst.getInt(3),rst.getInt(4)});
+		      	  }
+		        }
+				
 				while (oshIterator.hasNext()) {
 					final List<OSMPbfEntity> versions = oshIterator.next();
 					if (versions.isEmpty()) {

@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.etl.transform.way;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +9,9 @@ import java.io.ObjectInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,253 +44,258 @@ import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 
 public class TransformWayMapper extends TransformMapper2 {
-  private static final Logger LOGGER = LoggerFactory.getLogger(TransformWayMapper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(TransformWayMapper.class);
 
-  public static class Result {
-    private final SortedSet<CellWay> cells;
-    private final List<WayRelation> waysForRelations;
+	public static class Result {
+		private final SortedSet<CellWay> cells;
+		private final List<WayRelation> waysForRelations;
 
-    public Result(final SortedSet<CellWay> cells, final List<WayRelation> waysForRelations) {
-      this.cells = cells;
-      this.waysForRelations = waysForRelations;
-    }
+		public Result(final SortedSet<CellWay> cells, final List<WayRelation> waysForRelations) {
+			this.cells = cells;
+			this.waysForRelations = waysForRelations;
+		}
 
-    public Result() {
-      cells = Collections.emptySortedSet();
-      waysForRelations = Collections.emptyList();
-    }
+		public Result() {
+			cells = Collections.emptySortedSet();
+			waysForRelations = Collections.emptyList();
+		}
 
-    public SortedSet<CellWay> getCells() {
-      return cells;
-    }
+		public SortedSet<CellWay> getCells() {
+			return cells;
+		}
 
+		public List<WayRelation> getWaysForRelations() {
+			return waysForRelations;
+		}
+	}
 
-    public List<WayRelation> getWaysForRelations() {
-      return waysForRelations;
-    }
-  }
+	private static final Result EMPTY_RESULT = new Result();
 
+	private PreparedStatement pstmtRelationForWay;
 
-  private static final Result EMPTY_RESULT = new Result();
+	private Map<Integer, Map<Long, CellWay>> mapCellWays;
+	private final Map<Integer, XYGrid> gridHierarchy = new HashMap<>();
 
-  private PreparedStatement pstmtRelationForWay;
+	private Map<Long, NodeRelation> nodeCache = new HashMap<>();
+	private long lastNode = 0;
 
-  private Map<Integer, Map<Long, CellWay>> mapCellWays;
-  private final Map<Integer, XYGrid> gridHierarchy = new HashMap<>();
+	private final int maxZoom;
+	private final String nodeRelationFile;
 
+	public TransformWayMapper(final int maxZoom, final String nodeRelationFile) {
+		this.maxZoom = maxZoom;
+		this.nodeRelationFile = nodeRelationFile;
+		for (int i = 1; i <= maxZoom; i++) {
+			gridHierarchy.put(i, new XYGrid(i));
+		}
 
+	}
 
-  private Map<Long, NodeRelation> nodeCache = new HashMap<>();
-  private long lastNode = 0;
+	public Result map(InputStream in) {
+		try (//
+				Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./oshdb", "sa", "");
+				Connection connRelations = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
 
+			initKeyTables(connKeyTables);
 
-  private final int maxZoom;
-  private final String nodeRelationFile;
+			pstmtRelationForWay = connRelations.prepareStatement("select relations from way2relation where way = ?");
 
-  public TransformWayMapper(final int maxZoom, final String nodeRelationFile) {
-    this.maxZoom = maxZoom;
-    this.nodeRelationFile = nodeRelationFile;
-    for (int i = 1; i <= maxZoom; i++) {
-      gridHierarchy.put(i, new XYGrid(i));
-    }
+			final List<WayRelation> waysForRelations = new ArrayList<>();
 
-  }
+			try ( //
+					final FileInputStream fileStream = new FileInputStream(nodeRelationFile);
+					final BufferedInputStream bufferedStream = new BufferedInputStream(fileStream);
+					final ObjectInputStream relationStream = new ObjectInputStream(bufferedStream);
+					final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
 
-  public Result map(InputStream in) {
-    try (//
-        Connection connKeyTables = DriverManager.getConnection("jdbc:h2:./oshdb", "sa", "");
-        Connection connRelations = DriverManager.getConnection("jdbc:h2:./temp_relations", "sa", "")) {
+				final OsmPbfIterator osmIterator = new OsmPbfIterator(blockItr);
+				final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
 
-      initKeyTables(connKeyTables);
+				this.mapCellWays = new HashMap<>();
 
-      pstmtRelationForWay =
-          connRelations.prepareStatement("select relations from way2relation where way = ?");
+				clearKeyValueCache();
 
-      final List<WayRelation> waysForRelations = new ArrayList<>();
+				Statement stmt = connKeyTables.createStatement();
+				try (ResultSet rst = stmt.executeQuery("" + //
+						"select key.txt, keyvalue.txt, keyid, valueid " + //
+						"from key join keyvalue on key.id = keyvalue.keyid ")) {
+					while (rst.next()) {
+						Map<String, int[]> a = keyValueCache.get(rst.getString(1));
+						if (a == null) {
+							a = new HashMap<>();
+							keyValueCache.put(rst.getString(1), a);
+						}
+						a.put(rst.getString(2), new int[] { rst.getInt(3), rst.getInt(4) });
+					}
+				}
 
+				while (oshIterator.hasNext()) {
+					final List<OSMPbfEntity> versions = oshIterator.next();
+					if (versions.isEmpty()) {
+						LOGGER.warn("emyty list of versions!");
+						continue;
+					}
+					final long id = versions.get(0).getId();
+					final Type type = versions.get(0).getType();
 
-      try ( //
-          final FileInputStream fileStream = new FileInputStream(nodeRelationFile);
-          final BufferedInputStream bufferedStream = new BufferedInputStream(fileStream);
-          final ObjectInputStream relationStream = new ObjectInputStream(bufferedStream);
-          final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
+					if (type == Type.RELATION)
+						break;
 
-        final OsmPbfIterator osmIterator = new OsmPbfIterator(blockItr);
-        final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
+					if (type != Type.WAY)
+						continue;
 
-        this.mapCellWays = new HashMap<>();
+					long minTimestamp = Long.MAX_VALUE;
+					SortedSet<Long> refs = new TreeSet<>();
+					List<OSMWay> ways = new ArrayList<>(versions.size());
+					for (OSMPbfEntity entity : versions) {
+						OSMPbfWay pbfWay = (OSMPbfWay) entity;
+						ways.add(getWay(pbfWay));
+						minTimestamp = Math.min(minTimestamp, pbfWay.getTimestamp());
+						refs.addAll(pbfWay.getRefs());
+					}
 
-        clearKeyValueCache();
+					List<OSHNode> nodes = getNodes(relationStream, id, refs);
 
-        
-        while (oshIterator.hasNext()) {
-          final List<OSMPbfEntity> versions = oshIterator.next();
-          if (versions.isEmpty()) {
-            LOGGER.warn("emyty list of versions!");
-            continue;
-          }
-          final long id = versions.get(0).getId();
-          final Type type = versions.get(0).getType();
+					OSHWay hway = OSHWay.build(ways, nodes);
 
-          if (type == Type.RELATION)
-            break;
+					// Finde according cell!
+					CellWay cell = getCell(nodes);
 
-          if (type != Type.WAY)
-            continue;
+					cell.add(hway, minTimestamp);
 
+					Object[] relation = getRelation(pstmtRelationForWay, hway.getId());
 
+					if (relation.length != 0) {
+						WayRelation r = new WayRelation(((Long) relation[relation.length - 1]).longValue(), hway);
+						waysForRelations.add(r);
+					}
+				} // while blockItr.hasNext();
 
-          
-          long minTimestamp = Long.MAX_VALUE;
-          SortedSet<Long> refs = new TreeSet<>();
-          List<OSMWay> ways = new ArrayList<>(versions.size());
-          for (OSMPbfEntity entity : versions) {
-            OSMPbfWay pbfWay = (OSMPbfWay) entity;
-            ways.add(getWay(pbfWay));
-            minTimestamp = Math.min(minTimestamp, pbfWay.getTimestamp());
-            refs.addAll(pbfWay.getRefs());
-          }
+				final SortedSet<CellWay> cellOutput = new TreeSet<>();
+				for (Map<Long, CellWay> level : mapCellWays.values())
+					for (CellWay cell : level.values()) {
+						if (!cell.getWays().isEmpty()) {
+							cellOutput.add(cell);
+						}
+					}
+				return new Result(cellOutput, waysForRelations);
 
+			} catch (IOException | ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		} catch (
 
-          List<OSHNode> nodes = getNodes(relationStream, id, refs);
+		SQLException e) {
+			e.printStackTrace();
+		}
 
-          OSHWay hway = OSHWay.build(ways, nodes);
+		return EMPTY_RESULT;
+	}
 
-          // Finde according cell!
-          CellWay cell = getCell(nodes);
+	private List<OSHNode> getNodes(final ObjectInputStream relationStream, final long id, SortedSet<Long> refs)
+			throws IOException, ClassNotFoundException {
+		List<OSHNode> nodes = new ArrayList<>(refs.size());
 
-          cell.add(hway, minTimestamp);
+		for (Long refId : refs) {
+			if (Long.compare(refId.longValue(), lastNode) <= 0) {
+				NodeRelation nr = nodeCache.get(refId);
+				if (nr != null) {
+					nodes.add(nr.node());
+					if (nr.getMaxRelationId() <= id) {
+						nodeCache.remove(refId);
+					}
+				}
+			} else {
+				// node is not in cache, read it from inputstream
+				try {
+					NodeRelation nr = (NodeRelation) relationStream.readObject();
+					while (nr.node().getId() < refId.longValue()) {
+						// cache the noderelations
+						nodeCache.put(nr.node().getId(), nr);
+						nr = (NodeRelation) relationStream.readObject();
+					}
+					lastNode = nr.node().getId();
 
-          Object[] relation = getRelation(pstmtRelationForWay, hway.getId());
+					if (nr.node().getId() == refId.longValue()) {
+						nodes.add(nr.node());
+						// has the noderelation further relation than
+						// cache it
+						
+					}
+					
+					if (nr.getMaxRelationId() > id) {
+						nodeCache.put(nr.node().getId(), nr);
+					}
+					
+				} catch (EOFException e) {
+					System.err.printf("missing RefId %d, lastRelation: %d\n", refId.longValue(), lastNode);
+					break;
+				}
+			}
+		}
+		return nodes;
+	}
 
-          if (relation.length != 0) {
-            WayRelation r = new WayRelation(((Long) relation[relation.length - 1]).longValue(), hway);
-            waysForRelations.add(r);
-          }
-        } // while blockItr.hasNext();
+	private CellWay getCell(List<OSHNode> nodes) {
+		long minLon = Long.MAX_VALUE;
+		long maxLon = Long.MIN_VALUE;
+		long minLat = Long.MAX_VALUE;
+		long maxLat = Long.MIN_VALUE;
 
+		for (OSHNode osh : nodes) {
+			Iterator<OSMNode> osmItr = osh.iterator();
+			while (osmItr.hasNext()) {
+				OSMNode osm = osmItr.next();
+				if (osm.isVisible()) {
+					minLon = Math.min(minLon, osm.getLon());
+					maxLon = Math.max(maxLon, osm.getLon());
 
-        final SortedSet<CellWay> cellOutput = new TreeSet<>();
-        for (Map<Long, CellWay> level : mapCellWays.values())
-          for (CellWay cell : level.values()) {
-            if (!cell.getWays().isEmpty()) {
-              cellOutput.add(cell);
-            }
-          }
-        return new Result(cellOutput, waysForRelations);
+					minLat = Math.min(minLat, osm.getLat());
+					maxLat = Math.max(maxLat, osm.getLat());
+				}
+			}
+		}
 
-      } catch (IOException | ClassNotFoundException e) {
-        e.printStackTrace();
-      }
-    } catch (
+		final NumericRange lonRange = new NumericRange(minLon * OSMNode.GEOM_PRECISION,
+				maxLon * OSMNode.GEOM_PRECISION);
+		final NumericRange latRange = new NumericRange(minLat * OSMNode.GEOM_PRECISION,
+				maxLat * OSMNode.GEOM_PRECISION);
+		final BasicNumericDataset boundingBox = new BasicNumericDataset(new NumericData[] { lonRange, latRange });
 
-    SQLException e) {
-      e.printStackTrace();
-    }
+		long ids;
+		int l = maxZoom;
+		XYGrid grid = null;
+		for (; l > 0; l--) {
+			grid = gridHierarchy.get(l);
+			ids = grid.getEstimatedIdCount(boundingBox);
+			if (ids <= 4)
+				break;
+		}
 
-    return EMPTY_RESULT;
-  }
+		long cellId = grid.getId(lonRange, latRange);
 
-  private List<OSHNode> getNodes(final ObjectInputStream relationStream, final long id,
-      SortedSet<Long> refs) throws IOException, ClassNotFoundException {
-    List<OSHNode> nodes = new ArrayList<>(refs.size());
+		Map<Long, CellWay> level = mapCellWays.get(l);
+		if (level == null) {
+			level = new HashMap<>();
+			mapCellWays.put(l, level);
+		}
 
-    for (Long refId : refs) {
-      if (Long.compare(refId.longValue(), lastNode) <= 0) {
-        NodeRelation nr = nodeCache.get(refId);
-        if (nr == null) {
-          System.out.printf("why is this null %d\n", refId);
-        }
-        nodes.add(nr.node());
+		CellWay cell = level.get(cellId);
+		if (cell == null) {
+			cell = new CellWay(cellId, grid.getLevel());
+			level.put(cellId, cell);
+		}
 
-        if (nr.getMaxRelationId() <= id) {
-          nodeCache.remove(refId);
-        }
-      } else {
-        // node is not in cache, read it from inputstream
-        NodeRelation nr = (NodeRelation) relationStream.readObject();
-        while (nr.node().getId() < refId.longValue()) {
-          // cache the noderelations
-          nodeCache.put(nr.node().getId(), nr);
-          nr = (NodeRelation) relationStream.readObject();
-        }
-        lastNode = nr.node().getId();
+		return cell;
+	}
 
-        if (nr.node().getId() == refId.longValue()) {
-          nodes.add(nr.node());
-
-          // has the noderelation further relation than
-          // cache it
-          if (nr.getMaxRelationId() > id) {
-            nodeCache.put(refId, nr);
-          }
-        }
-      }
-    }
-    return nodes;
-  }
-
-  private CellWay getCell(List<OSHNode> nodes) {
-    long minLon = Long.MAX_VALUE;
-    long maxLon = Long.MIN_VALUE;
-    long minLat = Long.MAX_VALUE;
-    long maxLat = Long.MIN_VALUE;
-
-    for (OSHNode osh : nodes) {
-      Iterator<OSMNode> osmItr = osh.iterator();
-      while (osmItr.hasNext()) {
-        OSMNode osm = osmItr.next();
-        if (osm.isVisible()) {
-          minLon = Math.min(minLon, osm.getLon());
-          maxLon = Math.max(maxLon, osm.getLon());
-
-          minLat = Math.min(minLat, osm.getLat());
-          maxLat = Math.max(maxLat, osm.getLat());
-        }
-      }
-    }
-
-    final NumericRange lonRange =
-        new NumericRange(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION);
-    final NumericRange latRange =
-        new NumericRange(minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
-    final BasicNumericDataset boundingBox =
-        new BasicNumericDataset(new NumericData[] {lonRange, latRange});
-
-    long ids;
-    int l = maxZoom;
-    XYGrid grid = null;
-    for (; l > 0; l--) {
-      grid = gridHierarchy.get(l);
-      ids = grid.getEstimatedIdCount(boundingBox);
-      if (ids <= 4)
-        break;
-    }
-
-    long cellId = grid.getId(lonRange, latRange);
-
-    Map<Long, CellWay> level = mapCellWays.get(l);
-    if (level == null) {
-      level = new HashMap<>();
-      mapCellWays.put(l, level);
-    }
-
-    CellWay cell = level.get(cellId);
-    if (cell == null) {
-      cell = new CellWay(cellId, grid.getLevel());
-      level.put(cellId, cell);
-    }
-
-    return cell;
-  }
-
-  private OSMWay getWay(OSMPbfWay entity) {
-    return new OSMWay(entity.getId(), //
-        entity.getVersion()* (entity.getVisible()?1:-1), //
-        entity.getTimestamp(), //
-        entity.getChangeset(), //
-        entity.getUser().getId(), //
-        getKeyValue(entity.getTags()), //
-        convertLongs(entity.getRefs()));
-  }
+	private OSMWay getWay(OSMPbfWay entity) {
+		return new OSMWay(entity.getId(), //
+				entity.getVersion() * (entity.getVisible() ? 1 : -1), //
+				entity.getTimestamp(), //
+				entity.getChangeset(), //
+				entity.getUser().getId(), //
+				getKeyValue(entity.getTags()), //
+				convertLongs(entity.getRefs()));
+	}
 }

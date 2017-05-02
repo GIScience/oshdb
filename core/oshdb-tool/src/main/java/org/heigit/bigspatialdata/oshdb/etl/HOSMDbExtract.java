@@ -172,7 +172,7 @@ public class HOSMDbExtract {
 
 
   private static void storeKeyTables(ExtractMapperResult mapResult) throws SQLException {
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "")) {
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:./oshdb;COMPRESS=TRUE", "sa", "")) {
       Statement stmt = conn.createStatement();
       stmt.executeUpdate(
           "drop table if exists key; create table if not exists key(id int primary key, txt varchar)");
@@ -214,17 +214,17 @@ public class HOSMDbExtract {
         insertKey.executeBatch();
       }
 
-      stmt.executeUpdate(
-          "drop table if exists user; create table if not exists user(id int primary key, name varchar)");
-      try (PreparedStatement insertUser =
-          conn.prepareStatement("insert into user (id, name) values (?,?)")) {
-        for (OSMPbfUser user : mapResult.getUniqueUser()) {
-          insertUser.setInt(1, user.getId());
-          insertUser.setString(2, user.getName());
-          insertUser.addBatch();
-        }
-        insertUser.executeBatch();
-      }
+//      stmt.executeUpdate(
+//          "drop table if exists user; create table if not exists user(id int primary key, name varchar)");
+//      try (PreparedStatement insertUser =
+//          conn.prepareStatement("insert into user (id, name) values (?,?)")) {
+//        for (OSMPbfUser user : mapResult.getUniqueUser()) {
+//          insertUser.setInt(1, user.getId());
+//          insertUser.setString(2, user.getName());
+//          insertUser.addBatch();
+//        }
+//        insertUser.executeBatch();
+//      }
       stmt.executeUpdate(
           "drop table if exists role; create table if not exists role(id int primary key, txt varchar)");
       try (PreparedStatement insertRole =

@@ -89,7 +89,7 @@ public class ExtractMapper {
         }
 
         tagKeyValues(id, type, versions, tagToKeyValuesFrequency);
-        users(id, type, versions,uniqueUser);
+      //  users(id, type, versions,uniqueUser);
         roles(id, type, versions,roleToFrequency);
         relationMapping(id, type, versions,mapping);
       } // while(oshIterator.hasNext()

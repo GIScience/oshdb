@@ -79,7 +79,7 @@ public class HOSMDbTransform {
       Class.forName("org.h2.Driver");
 
       // serialise nodes and write to .ser-file
-      if (false) {
+      if (true) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile) //
                 ) {
@@ -110,7 +110,7 @@ public class HOSMDbTransform {
 
       // ways
       // do same for ways and relations (see nodes)
-      if (false) {
+      if (true) {
         try (//
             final FileInputStream in = new FileInputStream(pbfFile) //
         ) {
@@ -155,7 +155,7 @@ public class HOSMDbTransform {
 	    try (
                     //get connection and set up h2-DB
 	        Connection conn =
-	            DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "");
+	            DriverManager.getConnection("jdbc:h2:./oshdb;COMPRESS=TRUE", "sa", "");
 	        Statement stmt = conn.createStatement()) {
 
 	      stmt.executeUpdate(
@@ -198,7 +198,7 @@ public class HOSMDbTransform {
 
   private static void saveGrid(TransformWayMapper.Result wayResults) {
     try (
-        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "");
+        Connection conn = DriverManager.getConnection("jdbc:h2:./oshdb;COMPRESS=TRUE", "sa", "");
         Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
@@ -245,7 +245,7 @@ public class HOSMDbTransform {
   
   private static void saveGrid(TransformRelationMapper.Result result){
     try (
-        Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb;COMPRESS=TRUE", "sa", "");
+        Connection conn = DriverManager.getConnection("jdbc:h2:./oshdb;COMPRESS=TRUE", "sa", "");
         Statement stmt = conn.createStatement()) {
 
       stmt.executeUpdate(
