@@ -90,7 +90,7 @@ public class TestMultithreadDBMain {
 		//	.filter(hosm -> hosm.getId() == 5352989l)
 			
 			//.limit(10)
-			.flatMap(hosm -> StreamSupport.stream(hosm.spliterator(),false))
+			.flatMap(hosm -> StreamSupport.stream(((OSHEntity)hosm).spliterator(),false))
 			
 			.mapToInt(osm -> {
 				
