@@ -3,7 +3,7 @@ package org.heigit.bigspatialdata.oshpbf.osm;
 
 public class OSMPbfNode extends OSMPbfEntity {
 	
-	public static final double presision = .000000001; 
+	//public static final double presision = .000000001; 
 
 	private final long longitude;
 	private final long latitude;

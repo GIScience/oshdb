@@ -121,10 +121,10 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 
 		List<Integer> keyvals = nodes.getKeysValsList();
 
-		int granularity = block.getGranularity();
-		long lat_offset = block.getLatOffset();
-		long lon_offset = block.getLonOffset();
-		int date_granularity = block.getDateGranularity();
+		final int granularity = 1; // fix granularity to 1 but reduce precission to 7 decimal  digit instead to 9; block.getGranularity();
+		final long lat_offset = block.getLatOffset();
+		final long lon_offset = block.getLonOffset();
+		final int date_granularity = 1; // fix timestamp to 1, osm only is second precision, block.getDateGranularity();
 
 		long id = 0;
 		long lat = 0;

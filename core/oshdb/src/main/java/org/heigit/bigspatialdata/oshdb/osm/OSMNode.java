@@ -12,7 +12,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
-  public static final double GEOM_PRECISION = .000000001;
+  public static final double GEOM_PRECISION = .0000001; // osm only support 7 decimals
 
   private static final long serialVersionUID = 1L;
 
