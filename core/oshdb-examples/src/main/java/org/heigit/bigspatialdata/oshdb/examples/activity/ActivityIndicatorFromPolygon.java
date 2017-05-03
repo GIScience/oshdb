@@ -59,7 +59,7 @@ public class ActivityIndicatorFromPolygon {
 		
 		BoundingBox inputBbox = new BoundingBox(minLon, maxLon, minLat, maxLat);
 		
-		System.out.println(JTS.toEnvelope(inputPolygon));
+		//System.out.println(JTS.toEnvelope(inputPolygon));
 		
 		List<Long> timestamps = new ArrayList<>();
 		final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
@@ -88,7 +88,7 @@ public class ActivityIndicatorFromPolygon {
 		});
 
 		// connect to the "Big"DB
-		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost:9092/d:/eclipseNeon2Workspace/OSH-BigDB/core/hosmdb/resources/oshdb/heidelberg-ccbysa",
+		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/git/OSH-BigDB/core/oshdb-examples/src/main/resources/heidelberg-ccbysa",
 				"sa", "")) {
 
 			cellIds.parallelStream().flatMap(cellId -> {
@@ -126,8 +126,8 @@ public class ActivityIndicatorFromPolygon {
 				Iterator<OSHNode> itr = cell.iterator();
 				while (itr.hasNext()) {
 					OSHNode osh = itr.next();
- System.out.println(osh.getBoundingBox().toJTSGeometry());
- //TODO osh.getBoundingBox delivers wrong precision
+					//System.out.println(osh.getBoundingBox().toJTSGeometry());
+					//	TODO osh.getBoundingBox delivers wrong precision
  
 					if (!  osh.getBoundingBox().toJTSGeometry().intersects(inputPolygon)) { 
 						continue; 
@@ -135,16 +135,17 @@ public class ActivityIndicatorFromPolygon {
  
 					List<OSMNode> versions = new ArrayList<>();
 					for (OSMNode osm : osh) {
-						System.out.println(osm);
+//						System.out.println(osm);
 						if (osm.toJTSGeometry().intersects(inputPolygon))
 						{
 							versions.add(osm);
 						}
 					}
 					//osh.forEach(osm -> 	versions.add(osm));
-
-					System.out.println(versions.size());
-					
+					List <OSMNode> numberOfAllVersions = osh.getVersions();
+					if(numberOfAllVersions.size()!=versions.size()){
+					System.out.println("Number of all Versions in OSH object: " + numberOfAllVersions.size() + " number of versions in polygon: " + versions.size());
+					}
 					int v = 0;
 					for (int i = 0; i < timestamps.size(); i++) {
 						long ts = timestamps.get(i);
@@ -190,7 +191,7 @@ public class ActivityIndicatorFromPolygon {
 				}
 				
 				
-				System.out.printf("%s;%s\n",p.toText(),sb.toString());
+				//System.out.printf("%s;%s\n",p.toText(),sb.toString());
 				
 				//System.out.println(result);
 				return result;
