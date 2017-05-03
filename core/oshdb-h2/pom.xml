@@ -10,7 +10,7 @@
     <relativePath>../</relativePath>
   </parent>
 
-  <artifactId>oshdb-examples</artifactId>
+  <artifactId>oshdb-h2</artifactId>
 
   <properties>
 
@@ -18,13 +18,18 @@
 
 
   <dependencies>
-
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.193</version>
+    </dependency>
     <dependency>
     	<groupId>org.heigit.bigspatialdata</groupId>
-    	<artifactId>oshdb-h2</artifactId>
+    	<artifactId>oshdb</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 	
+
 
 </project>

@@ -121,4 +121,14 @@
 		</repository>
 	</repositories>
 
+
+    <profiles>
+    <profile>
+      <id>tool</id>
+
+      <build>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
