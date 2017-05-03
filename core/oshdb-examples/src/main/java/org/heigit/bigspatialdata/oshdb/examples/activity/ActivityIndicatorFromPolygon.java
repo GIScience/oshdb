@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,10 +65,10 @@ public class ActivityIndicatorFromPolygon {
 		List<Long> timestamps = new ArrayList<>();
 		final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		for (int year = 2016; year <= 2016; year++) {
+		for (int year = 2006; year <= 2016; year++) {
 			for (int month = 1; month <= 12; month++) {
 				try {
-					timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime());
+					timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime()/1000);
 				} catch (java.text.ParseException e) {
 					System.err.println("basdoawrd");
 				}
@@ -91,7 +92,7 @@ public class ActivityIndicatorFromPolygon {
 		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/git/OSH-BigDB/core/oshdb-examples/src/main/resources/heidelberg-ccbysa",
 				"sa", "")) {
 
-			cellIds.parallelStream().flatMap(cellId -> {
+			Map <Long,Long> superresult = cellIds.parallelStream().flatMap(cellId -> {
 				try (final PreparedStatement pstmt = conn
 						.prepareStatement("(select data from grid_node where level = ? and id = ?)")) {
 					pstmt.setInt(1, 12);
@@ -118,16 +119,13 @@ public class ActivityIndicatorFromPolygon {
 				Map<Long, Long> timestampActivity = new TreeMap<>();
 
 				result.put(cell.getId(), timestampActivity);
-
-				
-				
-				
-				
+		
 				Iterator<OSHNode> itr = cell.iterator();
+				int counter = 0;
 				while (itr.hasNext()) {
 					OSHNode osh = itr.next();
 					//System.out.println(osh.getBoundingBox().toJTSGeometry());
-					//	TODO osh.getBoundingBox delivers wrong precision
+					
  
 					if (!  osh.getBoundingBox().toJTSGeometry().intersects(inputPolygon)) { 
 						continue; 
@@ -136,16 +134,21 @@ public class ActivityIndicatorFromPolygon {
 					List<OSMNode> versions = new ArrayList<>();
 					for (OSMNode osm : osh) {
 //						System.out.println(osm);
-						if (osm.toJTSGeometry().intersects(inputPolygon))
+						
+						if (osm.isVisible() && osm.toJTSGeometry().intersects(inputPolygon))
 						{
 							versions.add(osm);
 						}
 					}
 					//osh.forEach(osm -> 	versions.add(osm));
 					List <OSMNode> numberOfAllVersions = osh.getVersions();
-					if(numberOfAllVersions.size()!=versions.size()){
-					System.out.println("Number of all Versions in OSH object: " + numberOfAllVersions.size() + " number of versions in polygon: " + versions.size());
+					
+					if(numberOfAllVersions.size()!=versions.size() && versions.size()> 0){
+						
+					System.out.println("Number of all Versions in OSH object vs number of all versions in Polygon: " + numberOfAllVersions.size() + " " + versions.size() + " VersionNummer: http://www.openstreetmap.org/node/" + osh.getId() + " isVisible: " + osh.getVersions().get(0).isVisible());
 					}
+//					
+					
 					int v = 0;
 					for (int i = 0; i < timestamps.size(); i++) {
 						long ts = timestamps.get(i);
@@ -154,7 +157,9 @@ public class ActivityIndicatorFromPolygon {
 							count++;
 							v++;
 						}
-
+						if (i==0){
+							continue;
+						}
 						if (timestampActivity.containsKey(ts)) {
 							timestampActivity.put(ts, timestampActivity.get(ts) + count);
 						} else {
@@ -164,9 +169,13 @@ public class ActivityIndicatorFromPolygon {
 						if (v >= versions.size())
 							break;
 
+						
 					}
+			
+					++counter;
 
 				}
+				//System.out.println(counter);
 				
 				
 				XYGrid xy = new XYGrid(12);
@@ -194,9 +203,34 @@ public class ActivityIndicatorFromPolygon {
 				//System.out.printf("%s;%s\n",p.toText(),sb.toString());
 				
 				//System.out.println(result);
-				return result;
-			}).count();
-
+				return timestampActivity;
+			}).reduce(Collections.emptyMap(),(partial, b) -> 
+			{
+				Map<Long, Long> sum = new TreeMap<>();
+				sum.putAll(partial);
+				for(Map.Entry<Long, Long> entry : b.entrySet()){
+				
+					Long activity = partial.get(entry.getKey());
+					if(activity==null){
+						activity = entry.getValue();
+					}
+					else{
+						activity= Long.valueOf((activity.longValue()+entry.getValue().longValue()));
+					
+					}
+					sum.put(entry.getKey(), activity);
+				}
+				
+				
+				//				
+				return sum;
+			}
+			);
+			
+			
+			System.out.println(superresult);
+			
+			superresult.entrySet().forEach(entry -> {System.out.println(formatter.format(new Date(entry.getKey()*1000))+ ";" + entry.getValue());});
 			
 
 		} catch (
