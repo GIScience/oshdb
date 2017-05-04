@@ -31,6 +31,7 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -44,14 +45,16 @@ public class ActivityIndicatorFromPolygon {
 																			// Timestamp,
 																			// Indicator
 
-	public static void main(String[] args) throws ClassNotFoundException, ParseException {
+	public Map<Long,Long> execute(Connection conn, Geometry polygon) throws ClassNotFoundException, ParseException {
 		Class.forName("org.h2.Driver");
 
-		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
-		WKTReader wktReader = new WKTReader(geometryFactory);
-		String polygonString = "POLYGON ((8.69282133333848961 49.41176730111411075, 8.69436717935256631 49.40753302724946394, 8.70713721164276855 49.40934771604860032, 8.71271569943269952 49.41089356206267524, 8.71842860861515767 49.41459015035720626, 8.71069937854477239 49.41351477921698176, 8.70081940619393279 49.41284267225433524, 8.69282133333848961 49.41176730111411075))";
-		Polygon inputPolygon = (Polygon) wktReader.read(polygonString);
+//		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+//		WKTReader wktReader = new WKTReader(geometryFactory);
+//		String polygonString = "POLYGON ((8.69282133333848961 49.41176730111411075, 8.69436717935256631 49.40753302724946394, 8.70713721164276855 49.40934771604860032, 8.71271569943269952 49.41089356206267524, 8.71842860861515767 49.41459015035720626, 8.71069937854477239 49.41351477921698176, 8.70081940619393279 49.41284267225433524, 8.69282133333848961 49.41176730111411075))";
+//		Polygon inputPolygon = (Polygon) wktReader.read(polygonString);
 		//Polygon inputEnvelope = (Polygon) inputPolygon.getEnvelope();
+		
+		MultiPolygon inputPolygon = (MultiPolygon) polygon;
 		
 		Double minLon = JTS.toEnvelope(inputPolygon).getMinX();
 		Double maxLon = JTS.toEnvelope(inputPolygon).getMaxX();
@@ -65,8 +68,8 @@ public class ActivityIndicatorFromPolygon {
 		List<Long> timestamps = new ArrayList<>();
 		final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		for (int year = 2006; year <= 2016; year++) {
-			for (int month = 1; month <= 12; month++) {
+		for (int year = 2016; year <= 2016; year++) {
+			for (int month = 1; month <= 2; month++) {
 				try {
 					timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime()/1000);
 				} catch (java.text.ParseException e) {
@@ -89,8 +92,9 @@ public class ActivityIndicatorFromPolygon {
 		});
 
 		// connect to the "Big"DB
-		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/git/OSH-BigDB/core/oshdb-examples/src/main/resources/heidelberg-ccbysa",
-				"sa", "")) {
+//		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/git/OSH-BigDB/core/oshdb-examples/src/main/resources/heidelberg-ccbysa",
+//		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost/d:/eclipseNeon2Workspace/OSH-BigDB/core/hosmdb/resources/oshdb/heidelberg-ccbysa",
+//				"sa", "")) {
 
 			Map <Long,Long> superresult = cellIds.parallelStream().flatMap(cellId -> {
 				try (final PreparedStatement pstmt = conn
@@ -145,7 +149,7 @@ public class ActivityIndicatorFromPolygon {
 					
 					if(numberOfAllVersions.size()!=versions.size() && versions.size()> 0){
 						
-					System.out.println("Number of all Versions in OSH object vs number of all versions in Polygon: " + numberOfAllVersions.size() + " " + versions.size() + " VersionNummer: http://www.openstreetmap.org/node/" + osh.getId() + " isVisible: " + osh.getVersions().get(0).isVisible());
+//					System.out.println("Number of all Versions in OSH object vs number of all versions in Polygon: " + numberOfAllVersions.size() + " " + versions.size() + " VersionNummer: http://www.openstreetmap.org/node/" + osh.getId() + " isVisible: " + osh.getVersions().get(0).isVisible());
 					}
 //					
 					
@@ -178,26 +182,25 @@ public class ActivityIndicatorFromPolygon {
 				//System.out.println(counter);
 				
 				
-				XYGrid xy = new XYGrid(12);
-				MultiDimensionalNumericData dimensions = xy.getCellDimensions(cell.getId());
-				dimensions.getMinValuesPerDimension();
-				dimensions.getMaxValuesPerDimension();
+//				XYGrid xy = new XYGrid(12);
+//				MultiDimensionalNumericData dimensions = xy.getCellDimensions(cell.getId());
 				
-				Envelope e = new Envelope(
-						dimensions.getMinValuesPerDimension()[0],
-						dimensions.getMaxValuesPerDimension()[0],
-						dimensions.getMinValuesPerDimension()[1],
-						dimensions.getMaxValuesPerDimension()[1]);
+				
+//				Envelope e = new Envelope(
+//						dimensions.getMinValuesPerDimension()[0],
+//						dimensions.getMaxValuesPerDimension()[0],
+//						dimensions.getMinValuesPerDimension()[1],
+//						dimensions.getMaxValuesPerDimension()[1]);
 //				System.out.println(e);
 				
-				Polygon p = JTS.toGeometry(e);
+				//Polygon p = JTS.toGeometry(e);
 				
 //				System.out.println(p.toText());
 				
-				StringBuilder sb = new StringBuilder();
-				for(Map.Entry<Long,Long> entry : timestampActivity.entrySet()){
-					sb.append(entry.getValue()).append(";");
-				}
+//				StringBuilder sb = new StringBuilder();
+//				for(Map.Entry<Long,Long> entry : timestampActivity.entrySet()){
+//					sb.append(entry.getValue()).append(";");
+//				}
 				
 				
 				//System.out.printf("%s;%s\n",p.toText(),sb.toString());
@@ -228,16 +231,16 @@ public class ActivityIndicatorFromPolygon {
 			);
 			
 			
-			System.out.println(superresult);
+//			System.out.println(superresult);
 			
-			superresult.entrySet().forEach(entry -> {System.out.println(formatter.format(new Date(entry.getKey()*1000))+ ";" + entry.getValue());});
-			
+//			superresult.entrySet().forEach(entry -> {System.out.println(formatter.format(new Date(entry.getKey()*1000))+ ";" + entry.getValue());});
+		return superresult;	
 
-		} catch (
-
-		SQLException e) { // TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		} catch (
+//
+//		SQLException e) { // TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 	}
 

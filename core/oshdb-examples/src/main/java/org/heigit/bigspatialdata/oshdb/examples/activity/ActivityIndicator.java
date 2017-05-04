@@ -54,7 +54,7 @@ public class ActivityIndicator {
 		}
 		Collections.sort(timestamps, Collections.reverseOrder());
 
-		BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.35, 49.46);
+		BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
 
 		XYGridTree grid = new XYGridTree(12);
 
@@ -66,7 +66,7 @@ public class ActivityIndicator {
 		});
 
 		// connect to the "Big"DB
-		try (Connection conn = DriverManager.getConnection("jdbc:h2:/home/rtroilo/git/OSH-BigDB/core/oshdb-tool/oshdb",
+		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost:9092/d:/eclipseNeon2Workspace/OSH-BigDB/core/hosmdb/resources/oshdb/heidelberg-ccbysa",
 				"sa", "")) {
 
 			cellIds.parallelStream().flatMap(cellId -> {
@@ -138,20 +138,22 @@ public class ActivityIndicator {
 				
 				Envelope e = new Envelope(
 						dimensions.getMinValuesPerDimension()[0],
-						dimensions.getMinValuesPerDimension()[1],
 						dimensions.getMaxValuesPerDimension()[0],
+						dimensions.getMinValuesPerDimension()[1],
 						dimensions.getMaxValuesPerDimension()[1]);
-				
+//				System.out.println(e);
 				
 				Polygon p = JTS.toGeometry(e);
 				
+//				System.out.println(p.toText());
+				
 				StringBuilder sb = new StringBuilder();
 				for(Map.Entry<Long,Long> entry : timestampActivity.entrySet()){
-					sb.append(entry.getValue()).append(",");
+					sb.append(entry.getValue()).append(";");
 				}
 				
 				
-				System.out.printf("%s,%s\n",p.toText(),sb.toString());
+				System.out.printf("%s;%s\n",p.toText(),sb.toString());
 				
 				//System.out.println(result);
 				return result;

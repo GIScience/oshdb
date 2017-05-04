@@ -31,6 +31,12 @@
 			<artifactId>gt-grid</artifactId>
 			<version>15.1</version>
 		</dependency>
+		
+		<dependency>
+   <groupId>org.geotools</groupId>
+   <artifactId>gt-shapefile</artifactId>
+   <version>15.1</version>
+ </dependency>
 	</dependencies>
 	
 	

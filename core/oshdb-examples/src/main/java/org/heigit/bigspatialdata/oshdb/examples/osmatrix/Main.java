@@ -89,6 +89,7 @@ public class Main {
 		}
 		*/
 		
+		
 		SpatialIndexFeatureCollection gridIndex  = new SpatialIndexFeatureCollection(grid.getFeatures());
 		
 
@@ -108,8 +109,9 @@ public class Main {
 		
 		
 
-
-		try (Connection conn = DriverManager.getConnection("jdbc:h2:/home/rtroilo/heigit_git/data/heidelberg-ccbysa",
+		
+		//try (Connection conn = DriverManager.getConnection("jdbc:h2:/home/rtroilo/heigit_git/data/heidelberg-ccbysa",
+		try (Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost/d:/eclipseNeon2Workspace/OSH-BigDB/core/hosmdb/resources/oshdb/heidelberg-ccbysa",
 				"sa", "")) {
 			Statement stmt = conn.createStatement();
 
@@ -187,7 +189,7 @@ public class Main {
 				
 				Polygon bbox = JTS.toGeometry(e);
 				
-				System.out.println(bbox);
+//				System.out.println(bbox);
 				
 				Filter filter = ff.intersects( ff.property( "element"), ff.literal( bbox ) );
 				SimpleFeatureCollection features;
