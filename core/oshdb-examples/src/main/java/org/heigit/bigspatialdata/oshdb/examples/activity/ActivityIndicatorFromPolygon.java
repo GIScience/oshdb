@@ -3,14 +3,12 @@ package org.heigit.bigspatialdata.oshdb.examples.activity;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,24 +17,15 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
-import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
-
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
 public class ActivityIndicatorFromPolygon {
 	
@@ -128,10 +117,10 @@ public class ActivityIndicatorFromPolygon {
 				int counter = 0;
 				while (itr.hasNext()) {
 					OSHNode osh = itr.next();
-					//System.out.println(osh.getBoundingBox().toJTSGeometry());
+					//System.out.println(osh.getBoundingBox().getGeometry());
 					
  
-					if (!  osh.getBoundingBox().toJTSGeometry().intersects(inputPolygon)) { 
+					if (!  osh.getBoundingBox().getGeometry().intersects(inputPolygon)) {
 						continue; 
 						}
  
@@ -139,7 +128,7 @@ public class ActivityIndicatorFromPolygon {
 					for (OSMNode osm : osh) {
 //						System.out.println(osm);
 						
-						if (osm.isVisible() && osm.toJTSGeometry().intersects(inputPolygon))
+						if (osm.isVisible() && osm.getGeometry().intersects(inputPolygon))
 						{
 							versions.add(osm);
 						}

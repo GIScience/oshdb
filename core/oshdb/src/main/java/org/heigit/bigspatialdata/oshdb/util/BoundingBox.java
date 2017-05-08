@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.util;
 
 import java.util.Locale;
 
+import com.vividsolutions.jts.geom.Polygon;
 import org.geotools.geometry.jts.JTS;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -23,16 +24,15 @@ public class BoundingBox {
 
   @Override
   public String toString() {
-
     return String.format(Locale.ENGLISH,"(%f,%f) (%f,%f)", minLon, minLat, maxLon, maxLat);
   }
   
   /**
-   * LLMA: added to provide geometry for JTS intersecion test
+   * returns JTS geometry object for convenience
    * @return com.vividsolutions.jts.geom.Geometry
    */
-  public Geometry toJTSGeometry() {
-	return JTS.toGeometry(new Envelope(minLon, maxLon, minLat, maxLon));
-}
+  public Polygon getGeometry() {
+    return JTS.toGeometry(new Envelope(minLon, maxLon, minLat, maxLon));
+  }
 
 }

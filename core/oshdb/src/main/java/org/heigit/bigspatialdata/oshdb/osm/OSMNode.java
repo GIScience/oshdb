@@ -46,13 +46,6 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   public long getLat() {
     return latitude;
   }
-  
-  public Point toJTSGeometry() {
-	GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-	Coordinate coord = new Coordinate(getLongitude(), getLatitude());
-	Point point = geometryFactory.createPoint(coord);
-	return point;
-	}
 
   @Override
   public String toString() {
@@ -102,6 +95,9 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   public Geometry getGeometry(long timestamp, TagInterpreter ti) {
     GeometryFactory geometryFactory = new GeometryFactory();
     return geometryFactory.createPoint(new Coordinate(this.getLongitude(), this.getLatitude()));
+  }
+  public Point getGeometry() {
+    return (Point) this.getGeometry(-1,null);
   }
 
 }
