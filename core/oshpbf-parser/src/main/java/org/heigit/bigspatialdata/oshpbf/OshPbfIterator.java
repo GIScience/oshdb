@@ -13,8 +13,15 @@ public class OshPbfIterator implements Iterator<List<OSMPbfEntity>> {
   private List<OSMPbfEntity> versions = new ArrayList<>();
   private OSMPbfEntity last = null;
 
-  public OshPbfIterator(Iterator<OSMPbfEntity> source) {
+  private final boolean removeDuplicatedVersions;
+  
+  public OshPbfIterator(Iterator<OSMPbfEntity> source){
+	  this(source,true);
+  }
+  
+  public OshPbfIterator(Iterator<OSMPbfEntity> source, boolean removeDuplicatedVersions) {
     this.source = source;
+    this.removeDuplicatedVersions = removeDuplicatedVersions;
   }
 
   @Override
@@ -31,7 +38,15 @@ public class OshPbfIterator implements Iterator<List<OSMPbfEntity>> {
         ret = versions;
         versions = new ArrayList<>();
       }
-      versions.add(entity);
+      
+      //TODO remove duplicated Versions, should we do this in the OsmIterator instead?
+      if(removeDuplicatedVersions && last != null){
+    	  if(last.getVersion() != entity.getVersion())
+    		  versions.add(entity);
+    	  // else skip
+      }else{      
+    	  versions.add(entity);
+      }
       last = entity;
       if(ret != null)
         return ret;
