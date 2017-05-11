@@ -40,6 +40,7 @@ public class OshPbfIterator implements Iterator<List<OSMPbfEntity>> {
       }
       
       //TODO remove duplicated Versions, should we do this in the OsmIterator instead?
+
       if(removeDuplicatedVersions && versions.size() >  0){
     	  if(last.getVersion() != entity.getVersion())
     		  versions.add(entity);
