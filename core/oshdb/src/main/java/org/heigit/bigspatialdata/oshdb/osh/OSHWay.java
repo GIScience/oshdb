@@ -5,13 +5,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -379,5 +375,39 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 			}
 			return null;
 		}
+	}
+
+	@Override
+	public List<Long> getModificationTimestamps(boolean recurse) {
+		List<OSMWay> ways = this.getVersions();
+		Set<Long> wayTimestamps = ways.stream()
+		.map(OSMEntity::getTimestamp)
+		.collect(Collectors.toSet());
+
+		if (!recurse) return new ArrayList<>(wayTimestamps);
+
+		Set<Long> ndTimestamps = IntStream.range(0, ways.size())
+		.mapToObj((Integer::new))
+		.flatMap(osmWayIndex -> {
+			OSMWay osmWay = ways.get(osmWayIndex);
+			OSMWay nextOsmWay = osmWayIndex > 0 ? ways.get(osmWayIndex - 1) : null;
+			return Arrays.stream(osmWay.getRefs())
+			.map(osmNd -> ((OSHNode)osmNd.getEntity()))
+			.flatMap(oshNode ->
+				oshNode.getVersions().stream()
+				.filter(osmNode ->
+					osmNode.getTimestamp() > osmWay.getTimestamp() && (nextOsmWay == null ||
+					osmNode.getTimestamp() < nextOsmWay.getTimestamp())
+				)
+				.map(OSMEntity::getTimestamp)
+			);
+		})
+		.collect(Collectors.toSet());
+
+		wayTimestamps.addAll(ndTimestamps);
+
+		List<Long> result = new ArrayList<>(wayTimestamps);
+		Collections.sort(result);
+		return result;
 	}
 }

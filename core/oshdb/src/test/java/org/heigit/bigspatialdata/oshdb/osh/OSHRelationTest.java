@@ -140,6 +140,56 @@ public class OSHRelationTest {
       fail("HOSMRelation.build Exception: "+e.getMessage());
     }
   }
+
+  @Test
+  public void testGetModificationTimestamps() throws IOException{
+    List<OSMNode> n1versions = new ArrayList<>();
+    n1versions.add(new OSMNode(123l,2,2l,12l,0,new int[] {},0, 0));
+    n1versions.add(new OSMNode(123l,1,1l,11l,0,new int[] {},0, 0));
+    OSHNode hnode1 = OSHNode.build(n1versions);
+    List<OSMNode> n2versions = new ArrayList<>();
+    n2versions.add(new OSMNode(124l,4,12l,24l,0,new int[] {},0, 0));
+    n2versions.add(new OSMNode(124l,3,8l,23l,0,new int[] {},0, 0));
+    n2versions.add(new OSMNode(124l,2,4l,22l,0,new int[] {},0, 0));
+    n2versions.add(new OSMNode(124l,1,3l,21l,0,new int[] {},0, 0));
+    OSHNode hnode2 = OSHNode.build(n2versions);
+    List<OSMNode> n3versions = new ArrayList<>();
+    n3versions.add(new OSMNode(125l,4,11l,34l,0,new int[] {},0, 0));
+    n3versions.add(new OSMNode(125l,3,9l,33l,0,new int[] {},0, 0));
+    n3versions.add(new OSMNode(125l,2,6l,32l,0,new int[] {},0, 0));
+    n3versions.add(new OSMNode(125l,1,1l,31l,0,new int[] {},0, 0));
+    OSHNode hnode3 = OSHNode.build(n3versions);
+
+    List<OSMWay> w1versions = new ArrayList<>();
+    w1versions.add(new OSMWay(1, 2, 7l, 4445l, 23, new int[] {}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
+    w1versions.add(new OSMWay(1, 1, 5l, 4444l, 23, new int[] {}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0),new OSMMember(125,0,0)}));
+    OSHWay hway1 = OSHWay.build(w1versions, Arrays.asList(hnode1, hnode2, hnode3));
+
+    List<OSMRelation> versions = new ArrayList<>();
+    versions.add(new OSMRelation(1, 3, 10l, 10000l, 1, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(1, 1, 0)}));
+    versions.add(new OSMRelation(1, 2, 8l, 10000l, 1, new int[] {1,1,2,2}, new OSMMember[] {}));
+    versions.add(new OSMRelation(1, 1, 5l, 10000l, 1, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(1, 1, 0)}));
+    OSHRelation hrelation = OSHRelation.build(versions, Arrays.asList(hnode1, hnode2, hnode3), Arrays.asList(hway1));
+
+    List<Long> tss = hrelation.getModificationTimestamps(false);
+    assertNotNull(tss);
+    assertEquals(3, tss.size());
+    assertEquals(5l, (long)tss.get(0));
+    assertEquals(8l, (long)tss.get(1));
+    assertEquals(10l, (long)tss.get(2));
+
+    tss = hrelation.getModificationTimestamps(true);
+    assertNotNull(tss);
+    assertEquals(6, tss.size());
+    assertEquals(5l, (long)tss.get(0));
+    assertEquals(6l, (long)tss.get(1));
+    assertEquals(7l, (long)tss.get(2));
+    assertEquals(8l, (long)tss.get(3));
+    // timestamp 9 has to be missing because at the time, the way wasn't a member of the relation anymore
+    assertEquals(10l, (long)tss.get(4));
+    // timestamp 11 has to be missing because at the time, the node wasn't part of the way member of the relation anymore
+    assertEquals(12l, (long)tss.get(5));
+  }
   
   
   

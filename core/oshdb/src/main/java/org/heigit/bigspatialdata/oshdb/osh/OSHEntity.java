@@ -200,4 +200,16 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
       this.bbox.minLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon;
   }
 
+  /*
+   * returns the list of timestamps at which this entity was modified.
+   * If the parameter "recurse" is set to true, it will also include
+   * modifications of the object's child elements (useful to find out
+   * when the geometry of this object has been altered).
+   */
+  public abstract List<Long> getModificationTimestamps(boolean recurse);
+
+  public List<Long> getModificationTimestamps() {
+      return this.getModificationTimestamps(true);
+  }
+
 }

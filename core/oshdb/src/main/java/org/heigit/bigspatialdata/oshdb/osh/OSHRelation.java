@@ -5,20 +5,12 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
@@ -522,6 +514,43 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 			}
 			return null;
 		}
+	}
+
+
+	@Override
+	public List<Long> getModificationTimestamps(boolean recurse) {
+		List<OSMRelation> rels = this.getVersions();
+		Set<Long> relTimestamps = rels.stream()
+		.map(OSMEntity::getTimestamp)
+		.collect(Collectors.toSet());
+
+		if (!recurse) return new ArrayList<>(relTimestamps);
+
+		Set<Long> memberTimestamps = IntStream.range(0, rels.size())
+		.mapToObj(Integer::new)
+		.flatMap(osmRelIndex -> {
+			OSMRelation osmRel = rels.get(osmRelIndex);
+			OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
+			return Arrays.stream(osmRel.getMembers())
+			.filter(member -> member.getType() == OSHEntity.NODE || member.getType() == OSHEntity.WAY)
+			.map(OSMMember::getEntity)
+			.flatMap(oshEntity ->
+				(oshEntity instanceof OSHNode ? (OSHNode)oshEntity : (OSHWay)oshEntity)
+				// gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
+				.getModificationTimestamps(true).stream()
+				.filter(ts ->
+					ts > osmRel.getTimestamp() && (nextOsmRel == null ||
+					ts < nextOsmRel.getTimestamp())
+				)
+			);
+		})
+		.collect(Collectors.toSet());
+
+		relTimestamps.addAll(memberTimestamps);
+
+		List<Long> result = new ArrayList<>(relTimestamps);
+		Collections.sort(result);
+		return result;
 	}
 
 }

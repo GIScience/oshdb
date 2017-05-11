@@ -38,10 +38,10 @@ public class OSHNodeTest {
 	    assertEquals(2, v.size());
 	}
 	
-	@Test
+	/*@Test
 	public void testCompact() {
 		fail("Not yet implemented");
-	}
+	}*/
 	
 	@Test
 	public void testRebase() throws IOException{
@@ -72,6 +72,23 @@ public class OSHNodeTest {
 	    	System.out.println(osm);
 	    }
 		
+	}
+
+	@Test
+	public void testGetModificationTimestamps() throws IOException{
+		List<OSMNode> versions = new ArrayList<>();
+
+		versions.add(new OSMNode(123l,2,2l,0l,USER_A,TAGS_A,LONLAT_A[0], LONLAT_A[1]));
+		versions.add(new OSMNode(123l,1,1l,0l,USER_A,TAGS_A,LONLAT_A[0], LONLAT_A[1]));
+
+
+		OSHNode hnode = OSHNode.build(versions);
+
+		List<Long> tss = hnode.getModificationTimestamps();
+		assertNotNull(tss);
+		assertEquals(2, tss.size());
+		assertEquals(1l, (long)tss.get(0));
+		assertEquals(2l, (long)tss.get(1));
 	}
 
 }
