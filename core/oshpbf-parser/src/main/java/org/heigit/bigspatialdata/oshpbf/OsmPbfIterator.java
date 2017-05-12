@@ -92,7 +92,7 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 		} else if (hasElements(group.getNodesList())) {
 			parseNodes(group.getNodesList());
 		} else if (hasElements(group.getWaysList())) {
-			praseWays(group.getWaysList());
+			parseWays(group.getWaysList());
 		} else if (hasElements(group.getRelationsList())) {
 			parseRelations(group.getRelationsList());
 		} else if (hasElements(group.getChangesetsList())) {
@@ -197,7 +197,7 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 		}
 	}
 
-	private void praseWays(List<Way> ways) {
+	private void parseWays(List<Way> ways) {
 		for (Osmformat.Way e : ways) {
 			OSMCommonProperties props = new OSMCommonProperties();
 			props.id = e.getId();
@@ -255,7 +255,7 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 			props.version = info.getVersion();
 		}
 		if (info.hasTimestamp()) {
-			props.timestamp = info.getTimestamp() * block.getDateGranularity();
+			props.timestamp = info.getTimestamp() * 1; // // fix timestamp to dateGranularity = 1, osm only is second precision, block.getDateGranularity();
 		}
 		if (info.hasChangeset()) {
 			props.changeset = Long.valueOf(info.getChangeset());
