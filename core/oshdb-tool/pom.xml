@@ -94,6 +94,13 @@
 			<artifactId>oshdb</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+
 	</dependencies>
 
 	<repositories>
@@ -122,13 +129,13 @@
 	</repositories>
 
 
-    <profiles>
-    <profile>
-      <id>tool</id>
+	<profiles>
+		<profile>
+			<id>tool</id>
 
-      <build>
-      </build>
-    </profile>
-  </profiles>
+			<build>
+			</build>
+		</profile>
+	</profiles>
 
 </project>
