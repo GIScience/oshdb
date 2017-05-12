@@ -83,8 +83,8 @@ public class TestMultipolygonGeometry {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, org.json.simple.parser.ParseException {
 		Class.forName("org.h2.Driver");
 
-		try (Connection conn = DriverManager.getConnection("jdbc:h2:./hosmdb", "sa", "");
-			 final Statement stmt = conn.createStatement()) {
+		try (Connection conn = DriverManager.getConnection("jdbc:h2:./heidelberg-ccbysa", "sa", "");
+				 final Statement stmt = conn.createStatement()) {
 
 			System.out.println("Select tag key/value ids from DB");
 			ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
@@ -119,7 +119,7 @@ public class TestMultipolygonGeometry {
 			}
 			rst.close();*/
 
-			final BoundingBox bboxFilter = new BoundingBox(85, 86, 27, 28);
+			final BoundingBox bboxFilter = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
 			for (int zoom = 0; zoom<= MAXZOOM; zoom++) {
 				XYGrid grid = new XYGrid(zoom);
 				Set<Pair<Long,Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);
@@ -186,26 +186,31 @@ public class TestMultipolygonGeometry {
 								Long timestamp = entity.getKey();
 								OSMEntity osmEntity = entity.getValue();
 								//if (osmEntity.isVisible() && osmEntity.hasTagKey(403) && osmEntity.hasTagValue(403,4)) {
-								if (osmEntity.isVisible() && (osmEntity.getId()==3188431 || osmEntity.getId()==236978113)) {
-								//if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft())) {//, new int[]{allKeyValues.get("building").get("no").getRight()})) {
-								//if (osmEntity.isVisible() && osmEntity.hasTagValue(allKeyValues.get("type").get("multipolygon").getLeft(), allKeyValues.get("type").get("multipolygon").getRight())) {
+								//if (osmEntity.isVisible() && (osmEntity.getId()==3188431 || osmEntity.getId()==236978113)) {
+								if (osmEntity.isVisible() && osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft())) {//, new int[]{allKeyValues.get("building").get("no").getRight()})) {
+                /*if (osmEntity.isVisible() && (
+                    osmEntity.hasTagValue(allKeyValues.get("type").get("multipolygon").getLeft(), allKeyValues.get("type").get("multipolygon").getRight()) ||
+                        osmEntity.hasTagValue(allKeyValues.get("aeroway").get("runway").getLeft(), allKeyValues.get("aeroway").get("runway").getRight())
+                )) {*/
 									boolean isOldstyleMultipolygon = false;
-									//System.err.println(osmEntity.getClass().toString());
 									OSMWay oldstyleMultipolygonOuterWay = null;
-									if (osmEntity instanceof OSMRelation && tagInterpreter.isOldStyleMultipolygon((OSMRelation)osmEntity)) {
-										OSMRelation rel = (OSMRelation) osmEntity;
-										for (int i=0; i<rel.getMembers().length; i++) {
-											if (rel.getMembers()[i].getType() == OSHEntity.WAY && rel.getMembers()[i].getRoleId() == outerId) {
-												oldstyleMultipolygonOuterWay = (OSMWay)rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
-												break;
+									if (false) {
+										//System.err.println(osmEntity.getClass().toString());
+										if (osmEntity instanceof OSMRelation && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
+											OSMRelation rel = (OSMRelation) osmEntity;
+											for (int i = 0; i < rel.getMembers().length; i++) {
+												if (rel.getMembers()[i].getType() == OSHEntity.WAY && rel.getMembers()[i].getRoleId() == outerId) {
+													oldstyleMultipolygonOuterWay = (OSMWay) rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
+													break;
+												}
 											}
+											if (!oldstyleMultipolygonOuterWay.hasTagKey(allKeyValues.get("building").get("yes").getLeft()))
+												continue;
+											isOldstyleMultipolygon = true;
+										} else {
+											if (!osmEntity.hasTagKey(allKeyValues.get("building").get("yes").getLeft()))
+												continue;
 										}
-										if (!oldstyleMultipolygonOuterWay.hasTagValue(allKeyValues.get("aeroway").get("runway").getLeft(), allKeyValues.get("aeroway").get("runway").getRight()))
-											continue;
-										isOldstyleMultipolygon = true;
-									} else {
-										if (!osmEntity.hasTagValue(allKeyValues.get("aeroway").get("runway").getLeft(), allKeyValues.get("aeroway").get("runway").getRight()))
-											continue;
 									}
 									//for (int i=0; i<osmEntity.getTags().length; i+=2)
 									//	System.out.println(osmEntity.getTags()[i] + "=" + osmEntity.getTags()[i+1]);
@@ -213,8 +218,8 @@ public class TestMultipolygonGeometry {
 									double dist = 0.;
 									try {
 										Geometry geom = fullyInside ?
-											osmEntity.getGeometry(timestamp, tagInterpreter) :
-											osmEntity.getGeometryClipped(timestamp, tagInterpreter, bboxFilter);
+												osmEntity.getGeometry(timestamp, tagInterpreter) :
+												osmEntity.getGeometryClipped(timestamp, tagInterpreter, bboxFilter);
 
 										if (geom == null) throw new NotImplementedException(); // hack!
 										if (geom.isEmpty()) throw new NotImplementedException(); // hack!
@@ -223,10 +228,10 @@ public class TestMultipolygonGeometry {
 										//if (formatter.format(new Date(timestamp)).compareTo("20170101") == 0) System.out.println(geom.getGeometryType()+"--"+osmEntity.getId());
 										switch (geom.getGeometryType()) {
 											case "Polygon":
-												dist += Geo.areaOf((Polygon) geom);
+												dist += 1.0+0*Geo.areaOf((Polygon) geom);
 												break;
 											case "MultiPolygon":
-												dist += Geo.areaOf((MultiPolygon) geom);
+												dist += 1.0+0*Geo.areaOf((MultiPolygon) geom);
 												break;
 											default:
 												System.err.println("Unknown geometry type found: " + geom.getGeometryType());
@@ -235,7 +240,7 @@ public class TestMultipolygonGeometry {
 											Geometry adjustGeom = oldstyleMultipolygonOuterWay.getGeometry(timestamp, tagInterpreter);
 											// oldstyleMultipolygonOuterWay.getGeometry(timestamp, new TagInterpreter()); /// todo -> custom taginterpreter for this case?!
 											System.out.println("subtract: "+Geo.areaOf((Polygon) adjustGeom)+" (from "+dist+")");
-											dist -= Geo.areaOf((Polygon) adjustGeom);
+											dist -= 1.0+0*Geo.areaOf((Polygon) adjustGeom);
 										}
 									} catch(NotImplementedException err) {
 									} catch(IllegalArgumentException err) {
@@ -264,7 +269,7 @@ public class TestMultipolygonGeometry {
 							Double bCnt = b.get(t);
 							sum.put(t,
 									(aCnt != null ? aCnt.doubleValue() : 0.) +
-									(bCnt != null ? bCnt.doubleValue() : 0.)
+											(bCnt != null ? bCnt.doubleValue() : 0.)
 						/*Cnt == null ? bCnt.doubleValue() : (
 							(bCnt == null ? aCnt.doubleValue() : 0.5*(
 								aCnt.doubleValue() + bCnt.doubleValue()
