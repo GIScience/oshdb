@@ -133,12 +133,12 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 	}
 
 	private void readNextBlock() {
-		long blockPos = -1;
+		long blockPos = pos;
 		PrimitiveBlock block = null;
 
 		if (end == -1 || pos < end) {
 			try {
-				blockPos = pos;
+				
 				Fileformat.BlobHeader header = readBlobHeader();
 				ByteString data = readData(header);
 				try {
@@ -152,7 +152,6 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 					throw new Error("ParseError", e);
 				}
 			} catch (IOException e) {
-				blockPos = -1;
 				block = null;
 				if (!(e instanceof EOFException)) {
 					e.printStackTrace();
@@ -261,6 +260,10 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 
 	public long getBlockPos() {
 		return blockPos;
+	}
+	
+	public long getNextBlockPos(){
+		return nextBlockPos;
 	}
 
 	@Override
