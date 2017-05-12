@@ -96,6 +96,7 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 						|| (SIGNATURE_OSMHEADER[val] == nextByte && val == SIGNATURE_OSMHEADER.length - 1)) {
 					// Full OSMData SIGNATURE is found.
 					pushBackStream.unread(pushBackBytes, 0, BlobHeaderLength + val + 1);
+					pos -= BlobHeaderLength + val + 1;
 					return pushBackStream;
 				}
 				val++;
