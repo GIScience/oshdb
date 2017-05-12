@@ -26,7 +26,7 @@ public class OshPbfIterator implements Iterator<List<OSMPbfEntity>> {
 
   @Override
   public boolean hasNext() {
-    return source.hasNext();
+    return !versions.isEmpty() || source.hasNext();
   }
 
   @Override
@@ -52,7 +52,9 @@ public class OshPbfIterator implements Iterator<List<OSMPbfEntity>> {
       if(ret != null)
         return ret;
     }
-    return versions;
+    ret = versions;
+    versions = new ArrayList<>();
+    return ret;
   }
 
 }
