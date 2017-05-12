@@ -47,6 +47,7 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 	private final long start;
 	private final long end;
 	private long pos = 0;
+	private boolean EOF = false;
 
 	private final DataInputStream input;
 
@@ -127,7 +128,7 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 	}
 
 	private void seekForward() throws IOException {
-		while (nextPrimitiveBlock == null && nextBlockPos != -1) {
+		while (nextPrimitiveBlock == null && (end == -1 || pos < end) && !EOF) {
 			readNextBlock();
 		}
 	}
@@ -152,6 +153,7 @@ public class OsmPrimitiveBlockIterator implements Iterator<Osmformat.PrimitiveBl
 					throw new Error("ParseError", e);
 				}
 			} catch (IOException e) {
+				EOF = true;
 				block = null;
 				if (!(e instanceof EOFException)) {
 					e.printStackTrace();
