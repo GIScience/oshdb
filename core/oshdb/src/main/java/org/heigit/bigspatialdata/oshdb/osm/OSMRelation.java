@@ -1,10 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
@@ -147,43 +144,52 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
   // helper that joins adjacent osm ways into linear rings
   private List<List<OSMNode>> join(OSMNode[][] lines) {
-    //OSMNode[][] joined = new OSMNode[0][0];
-    List<List<OSMNode>> ways = new ArrayList<>();
+    // make a (mutable) copy of the lines array
+    List<List<OSMNode>> ways = new LinkedList<>();
     for (int i=0; i<lines.length; i++) {
-      ways.add(Arrays.asList(lines[i]));
+      ways.add(new LinkedList<>(Arrays.asList(lines[i])));
     }
-    List<List<OSMNode>> joined = new ArrayList<>();
+    List<List<OSMNode>> joined = new LinkedList<>();
 
     while (!ways.isEmpty()) {
-      List<OSMNode> current = ways.remove(0); // todo: faster if we "pop()" from the end of the array??
+      List<OSMNode> current = ways.remove(0);
       joined.add(current);
       while (!ways.isEmpty()) {
         long firstId = current.get(0).getId();
-        long lastId = current.get(0).getId();
+        long lastId = current.get(current.size()-1).getId();
         if (firstId == lastId) break; // ring is complete -> we're done
+        boolean joinable = false;
         for (int i=0; i<ways.size(); i++) {
           List<OSMNode> what = ways.get(i);
           if (lastId == what.get(0).getId()) { // end of partial ring matches to start of current line
             what.remove(0);
             current.addAll(what);
             ways.remove(i);
+            joinable = true;
             break;
           } else if (firstId == what.get(what.size()-1).getId()) { // start of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(0, what);
             ways.remove(i);
+            joinable = true;
             break;
           } else if (lastId == what.get(what.size()-1).getId()) { // end of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(Lists.reverse(what));
             ways.remove(i);
+            joinable = true;
             break;
           } else if (firstId == what.get(0).getId()) { // start of partial ring matches start of current line
             what.remove(0);
             current.addAll(0, Lists.reverse(what));
             ways.remove(i);
+            joinable = true;
             break;
           }
+        }
+        if (!joinable) {
+          // Invalid geometry (dangling way, unclosed ring)
+          break;
         }
       }
     }
