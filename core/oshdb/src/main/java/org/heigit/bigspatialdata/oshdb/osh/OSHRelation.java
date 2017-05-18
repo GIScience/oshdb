@@ -534,7 +534,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 			return Arrays.stream(osmRel.getMembers())
 			.filter(member -> member.getType() == OSHEntity.NODE || member.getType() == OSHEntity.WAY)
 			.map(OSMMember::getEntity)
-			.flatMap(oshEntity ->
+			.filter(entity -> entity != null)
+      .flatMap(oshEntity ->
 				(oshEntity instanceof OSHNode ? (OSHNode)oshEntity : (OSHWay)oshEntity)
 				// gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
 				.getModificationTimestamps(true).stream()
