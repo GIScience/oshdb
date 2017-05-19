@@ -10,15 +10,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfRelation;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfTag;
 
 public class TransformMapper2 {
 
-	protected static final int NODE = 0;
-	protected static final int WAY = 1;
-	protected static final int RELATION = 2;
+	protected static final int NODE = OSHEntity.NODE;
+	protected static final int WAY = OSHEntity.WAY;
+	protected static final int RELATION = OSHEntity.RELATION;
 
 	private PreparedStatement pstmtKeyValue = null;
 	private PreparedStatement pstmtRole = null;

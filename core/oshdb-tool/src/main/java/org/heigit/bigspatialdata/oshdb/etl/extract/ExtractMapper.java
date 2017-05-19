@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.KeyValuesFrequency;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.RelationMapping;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
@@ -32,9 +33,9 @@ public class ExtractMapper {
   
   private static final Logger LOGGER = LoggerFactory.getLogger(ExtractMapper.class);
 
-  private static final int NODE = 0;
-  private static final int WAY = 1;
-  private static final int RELATION = 2; 
+  private static final int NODE = OSHEntity.NODE;
+  private static final int WAY = OSHEntity.WAY;
+  private static final int RELATION = OSHEntity.RELATION;
   
   public ExtractMapperResult map(InputStream in) {
     try ( //
