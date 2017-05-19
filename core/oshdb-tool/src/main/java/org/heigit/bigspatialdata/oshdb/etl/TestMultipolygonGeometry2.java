@@ -43,6 +43,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.TopologyException;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sun.reflect.generics.tree.Tree;
 
 public class TestMultipolygonGeometry2 {
 
@@ -86,7 +87,7 @@ public class TestMultipolygonGeometry2 {
   public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, org.json.simple.parser.ParseException {
     Class.forName("org.h2.Driver");
 
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:./heidelberg-ccbysa", "sa", "");
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:./heidelberg", "sa", "");
          final Statement stmt = conn.createStatement()) {
 
       System.out.println("Select tag key/value ids from DB");
@@ -122,7 +123,8 @@ public class TestMultipolygonGeometry2 {
 			}
 			rst.close();*/
 
-      final BoundingBox bboxFilter = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
+      //final BoundingBox bboxFilter = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
+      final BoundingBox bboxFilter = new BoundingBox(8, 9, 49, 50);
       for (int zoom = 0; zoom<= MAXZOOM; zoom++) {
         XYGrid grid = new XYGrid(zoom);
         Set<Pair<Long,Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);
@@ -139,12 +141,12 @@ public class TestMultipolygonGeometry2 {
       timestamps = new ArrayList<>();
       final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
       for (int year = 2004; year <= 2018; year++) {
-        for(int month = 1; month <= 12; month++){
+        for(int month = 1; month <= 12; month++) {
           try {
-            timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime());
-          } catch(java.text.ParseException e) {
+            timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime() / 1000);
+          } catch (java.text.ParseException e) {
             System.err.println("basdoawrd");
-          };
+          }
         }
       }
 
@@ -153,6 +155,7 @@ public class TestMultipolygonGeometry2 {
       Optional<Map<Long, Double>> totals = zoomIds.parallelStream()
           .flatMap(zoomId -> {
             try(final PreparedStatement pstmt = conn.prepareStatement("(select data from grid_relation where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2)")){
+            //try(final PreparedStatement pstmt = conn.prepareStatement("(select data from grid_relation where level = ?1 and id = ?2)")){
               pstmt.setInt(1,zoomId.zoom);
               pstmt.setLong(2, zoomId.id);
 
@@ -175,11 +178,11 @@ public class TestMultipolygonGeometry2 {
 
             Map<Long, Double> counts = new HashMap<>(timestamps.size());
 
-            int interestedKeyId = allKeyValues.get("building").get("yes").getLeft(),
-                outerRoleId = allRoles.get("outer");;
-            CellIterator.iterateAll(hosmCell, bboxFilter, timestamps, tagInterpreter, osmEntity -> osmEntity.hasTagKey(interestedKeyId), false)
+            int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
+            int[] uninterestedValueIds = { allKeyValues.get("building").get("no").getRight() };
+            CellIterator.iterateAll(hosmCell, bboxFilter, timestamps, tagInterpreter, osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds), false)
             .forEach(result -> {
-              result.entrySet().stream().forEach(entry -> {
+              result.entrySet().forEach(entry -> {
                 long timestamp = entry.getKey();
                 OSMEntity osmEntity = entry.getValue().getLeft();
                 Geometry geometry = entry.getValue().getRight();
@@ -212,7 +215,7 @@ public class TestMultipolygonGeometry2 {
           });
 
       for (Map.Entry<Long, Double> total : totals.get().entrySet()) {
-        System.out.printf("%s\t%f\n", formatter.format(new Date(total.getKey())), total.getValue());
+        System.out.printf("%s\t%f\n", formatter.format(new Date(total.getKey()*1000)), total.getValue());
       }
 
     }

@@ -3,11 +3,8 @@ package org.heigit.bigspatialdata.oshdb.osh;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.function.Predicate;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -81,8 +78,8 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   public abstract List<OSM> getVersions();
 
   /* byTimestamps is assumed to be presorted, otherwise output is undetermined */
-  public Map<Long,OSM> getByTimestamps(List<Long> byTimestamps){
-	  Map<Long,OSM> result = new TreeMap<>();
+  public SortedMap<Long,OSM> getByTimestamps(List<Long> byTimestamps){
+    SortedMap<Long,OSM> result = new TreeMap<>();
 	  
 	  int i = byTimestamps.size()-1;
 	  Iterator<OSM> itr = iterator();
@@ -212,4 +209,40 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
       return this.getModificationTimestamps(true);
   }
 
+  /*
+   * returns only the modification timestamps of an object where it
+   * matches a given condition/filter
+   */
+  public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
+    if (!this.getVersions().stream().anyMatch(osmEntityFilter))
+      return new ArrayList<>();
+
+    List<Long> allModTs = this.getModificationTimestamps(true);
+    List<Long> filteredModTs = new LinkedList<>();
+
+    int timeIdx = allModTs.size()-1;
+
+    long lastOsmEntityTs = -1;
+    for (OSMEntity osmEntity : this) {
+      long osmEntityTs = osmEntity.getTimestamp();
+      if (osmEntityTs == lastOsmEntityTs) continue; // skip versions with identical timestamps
+      long modTs = allModTs.get(timeIdx);
+
+      boolean matches = osmEntityFilter.test(osmEntity);
+
+      if (matches) {
+        while (modTs >= osmEntityTs) {
+          filteredModTs.add(0, modTs);
+          if (--timeIdx < 0) break;
+          modTs = allModTs.get(timeIdx);
+        }
+      } else {
+        while (timeIdx >= 0 && allModTs.get(timeIdx) > osmEntityTs) {
+          timeIdx--;
+        }
+      }
+      lastOsmEntityTs = osmEntityTs;
+    }
+    return filteredModTs;
+  };
 }

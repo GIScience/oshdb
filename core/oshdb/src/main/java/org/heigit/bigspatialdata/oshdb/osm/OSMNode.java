@@ -1,10 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.vividsolutions.jts.geom.Coordinate;

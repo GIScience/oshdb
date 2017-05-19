@@ -28,9 +28,31 @@ public class CellIterator {
       }
       boolean fullyInside = oshEntity.insideBbox(boundingBox);
 
-      // todo: optimize by requesting modification timestamps first, and skip geometry calculations where not needed
-      Map<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(timestamps);
+      // optimize loop by requesting modification timestamps first, and skip geometry calculations where not needed
+      SortedMap<Long, List<Long>> queryTs = new TreeMap<>();
+      if (!includeOldStyleMultipolygons) {
+        List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+        int j = 0;
+        for (long requestedT : timestamps) {
+          boolean needToRequest = false;
+          while (j < modTs.size() && modTs.get(j) < requestedT) {
+            needToRequest = true;
+            j++;
+          }
+          if (needToRequest)
+            queryTs.put(requestedT, new LinkedList<>());
+          else if (queryTs.size() > 0)
+            queryTs.get(queryTs.lastKey()).add(requestedT);
+        }
+      } else {
+        // todo: make this work with old style multipolygons!!?!
+        for (Long ts : timestamps)
+          queryTs.put(ts, new LinkedList<>());
+      }
+
+      SortedMap<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(new ArrayList<>(queryTs.keySet()));
       Map<Long, Pair<OSMEntity, Geometry>> oshResult = new TreeMap<>();
+
       osmEntityLoop:
       for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         Long timestamp = entity.getKey();
@@ -83,12 +105,24 @@ public class CellIterator {
         } catch (TopologyException err) {
           System.err.printf("Topology error at object %d at timestamp %d: %s\n", osmEntity.getId(), timestamp, err.toString());
         }
-
       }
+
+      // add skipped timestamps (where nothing has changed from the last timestamp) to set of results
+      for (Map.Entry<Long, List<Long>> entry : queryTs.entrySet()) {
+        Long key = entry.getKey();
+        if (oshResult.containsKey(key)) { // could be missing in case this version
+          Pair<OSMEntity, Geometry> existingResult = oshResult.get(key);
+          for (Long additionalTs : entry.getValue()) {
+            oshResult.put(additionalTs, existingResult);
+          }
+        }
+      }
+
       results.add(oshResult);
     }
 
     // return as an obj stream
     return results.stream();
   }
+
 }

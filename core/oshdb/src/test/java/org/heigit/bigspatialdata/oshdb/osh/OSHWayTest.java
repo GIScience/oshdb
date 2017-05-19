@@ -143,6 +143,55 @@ public class OSHWayTest {
     assertEquals(8l, (long)tss.get(3));
     assertEquals(12l, (long)tss.get(4));
   }
+
+  @Test
+  public void testGetModificationTimestampsWithFilter() throws IOException{
+    List<OSMNode> n1versions = new ArrayList<>();
+    n1versions.add(new OSMNode(123l,2,2l,12l,0,new int[] {},0, 0));
+    n1versions.add(new OSMNode(123l,1,1l,11l,0,new int[] {},0, 0));
+    OSHNode hnode1 = OSHNode.build(n1versions);
+    List<OSMNode> n2versions = new ArrayList<>();
+    n2versions.add(new OSMNode(124l,5,16l,25l,0,new int[] {},0, 0));
+    n2versions.add(new OSMNode(124l,4,12l,24l,0,new int[] {},0, 0));
+    n2versions.add(new OSMNode(124l,3,8l,23l,0,new int[] {},0, 0));
+    n2versions.add(new OSMNode(124l,2,4l,22l,0,new int[] {},0, 0));
+    n2versions.add(new OSMNode(124l,1,3l,21l,0,new int[] {},0, 0));
+    OSHNode hnode2 = OSHNode.build(n2versions);
+    List<OSMNode> n3versions = new ArrayList<>();
+    n3versions.add(new OSMNode(125l,4,15l,34l,0,new int[] {},0, 0));
+    n3versions.add(new OSMNode(125l,3,9l,33l,0,new int[] {},0, 0));
+    n3versions.add(new OSMNode(125l,2,6l,32l,0,new int[] {},0, 0));
+    n3versions.add(new OSMNode(125l,1,1l,31l,0,new int[] {},0, 0));
+    OSHNode hnode3 = OSHNode.build(n3versions);
+
+    List<OSMWay> versions = new ArrayList<>();
+    versions.add(new OSMWay(123, 4, 14l, 4447l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
+    versions.add(new OSMWay(123, 3, 13l, 4446l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
+    versions.add(new OSMWay(123, 2, 7l, 4445l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
+    versions.add(new OSMWay(123, 1, 5l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0),new OSMMember(125,0,0)}));
+    OSHWay hway = OSHWay.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
+
+    List<Long> tss = hway.getModificationTimestamps(true);
+    assertNotNull(tss);
+    assertEquals(8, tss.size());
+    assertEquals(5l, (long)tss.get(0));
+    assertEquals(6l, (long)tss.get(1));
+    assertEquals(7l, (long)tss.get(2));
+    assertEquals(8l, (long)tss.get(3));
+    assertEquals(12l, (long)tss.get(4));
+    assertEquals(13l, (long)tss.get(5));
+    assertEquals(14l, (long)tss.get(6));
+    assertEquals(16l, (long)tss.get(7));
+
+    tss = hway.getModificationTimestamps(osmEntity -> osmEntity.hasTagValue(2,1));
+    assertNotNull(tss);
+    //assertEquals(5, tss.size());
+    assertEquals(5l, (long)tss.get(0));
+    assertEquals(6l, (long)tss.get(1));
+    assertEquals(7l, (long)tss.get(2));
+    assertEquals(14l, (long)tss.get(3));
+    assertEquals(16l, (long)tss.get(4));
+  }
   
   
   static OSHNode buildHOSMNode(List<OSMNode> versions){

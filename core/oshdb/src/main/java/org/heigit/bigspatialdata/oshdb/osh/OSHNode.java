@@ -301,7 +301,9 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 
 	@Override
 	public List<Long> getModificationTimestamps(boolean recurse) {
-		List <Long> result = this.getVersions().stream().map(OSMNode::getTimestamp).collect(Collectors.toList());
+		List <Long> result = this.getVersions().stream()
+		.map(OSMNode::getTimestamp)
+		.collect(Collectors.toList());
 		Collections.sort(result);
 		return result;
 	}
