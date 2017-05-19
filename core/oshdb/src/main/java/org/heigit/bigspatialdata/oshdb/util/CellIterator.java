@@ -19,12 +19,9 @@ import java.util.stream.Stream;
 public class CellIterator {
 
   public static Stream<Map<Long, Pair<OSMEntity, Geometry>>> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    List<Map<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<Map<Long, Pair<OSMEntity, Geometry>>>();
+    List<Map<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
 
-    Iterator<OSHEntity> oshEntitylIt = cell.iterator();
-    while(oshEntitylIt.hasNext()) {
-      OSHEntity oshEntity = oshEntitylIt.next();
-
+    for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntity.intersectsBbox(boundingBox)) {
         // this osh entity is fully outside the requested bounding box -> skip it
         continue;
@@ -46,8 +43,8 @@ public class CellIterator {
 
         if (includeOldStyleMultipolygons &&
             osmEntity instanceof OSMRelation &&
-            tagInterpreter.isOldStyleMultipolygon((OSMRelation)osmEntity)
-        ) {
+            tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)
+            ) {
           OSMRelation rel = (OSMRelation) osmEntity;
           for (int i = 0; i < rel.getMembers().length; i++) {
             if (rel.getMembers()[i].getType() == OSHEntity.WAY && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
@@ -79,11 +76,11 @@ public class CellIterator {
           //if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack! // todo: wat?
 
           oshResult.put(timestamp, new ImmutablePair<>(osmEntity, geom));
-        } catch(NotImplementedException err) {
+        } catch (NotImplementedException err) {
           // todo: what to do here???
-        } catch(IllegalArgumentException err) {
+        } catch (IllegalArgumentException err) {
           System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
-        } catch(TopologyException err) {
+        } catch (TopologyException err) {
           System.err.printf("Topology error at object %d at timestamp %d: %s\n", osmEntity.getId(), timestamp, err.toString());
         }
 
