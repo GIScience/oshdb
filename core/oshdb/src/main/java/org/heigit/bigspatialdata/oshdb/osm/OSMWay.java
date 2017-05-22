@@ -1,8 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
 
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
@@ -89,4 +88,5 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
       return geometryFactory.createPolygon(coords);
     }
   }
+
 }

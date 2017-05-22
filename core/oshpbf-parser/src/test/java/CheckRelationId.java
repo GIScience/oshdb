@@ -6,6 +6,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -34,7 +36,7 @@ public class CheckRelationId {
 
         for (OSMPbfRelation osmPbfRelation : versions) {
           for (OSMPbfRelation.OSMMember member : osmPbfRelation.getMembers()) {
-            if (member.getType() == 2) {
+            if (member.getType() == OSHEntity.RELATION) {
               if (member.getMemId() == id) {
                 System.out.println("selbst referenz! " + id);
               } else if (member.getMemId() > id) {
