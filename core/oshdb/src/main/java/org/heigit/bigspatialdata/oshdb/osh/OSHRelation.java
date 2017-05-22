@@ -137,6 +137,12 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
 	}
 
+
+	@Override
+	public int getType() {
+		return OSHEntity.RELATION;
+	}
+
 	public List<OSMRelation> getVersions() {
 		List<OSMRelation> versions = new ArrayList<>();
 		this.forEach(versions::add);

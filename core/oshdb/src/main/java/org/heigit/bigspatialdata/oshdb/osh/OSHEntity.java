@@ -63,6 +63,8 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     return id;
   }
 
+  public abstract int getType();
+
   public int getLength() {
     return length;
   }

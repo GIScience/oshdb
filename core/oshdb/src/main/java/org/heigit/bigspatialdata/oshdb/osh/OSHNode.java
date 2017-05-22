@@ -82,6 +82,12 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 				dataOffset, dataLength);
 	}
 
+
+	@Override
+	public int getType() {
+		return OSHEntity.NODE;
+	}
+
 	public List<OSMNode> getVersions() {
 		List<OSMNode> versions = new ArrayList<>();
 		this.forEach(versions::add);
