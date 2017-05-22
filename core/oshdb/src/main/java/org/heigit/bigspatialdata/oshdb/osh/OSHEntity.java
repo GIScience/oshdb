@@ -171,16 +171,18 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    * Used to roughly pre-filter objects against a bbox.
    * See https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/11
    */
-  public boolean intersectsBbox(BoundingBox bbox) {
-  	if (this.insideBbox(bbox))
+  public boolean intersectsBbox(BoundingBox otherBbox) {
+    BoundingBox bbox = this.getBoundingBox();
+    if (bbox == null) return false;
+  	if (this.insideBbox(otherBbox))
       return true;
-    if (this.bbox.minLat >= bbox.minLat && this.bbox.minLat <= bbox.maxLat && (
-      this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon ||
-      this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon))
+    if (bbox.minLat >= otherBbox.minLat && bbox.minLat <= otherBbox.maxLat && (
+      bbox.minLon >= otherBbox.minLon && bbox.minLon <= otherBbox.maxLon ||
+      bbox.maxLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon))
       return true;
-    if (this.bbox.maxLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat && (
-      this.bbox.minLon >= bbox.minLon && this.bbox.minLon <= bbox.maxLon ||
-      this.bbox.maxLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon))
+    if (bbox.maxLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat && (
+      bbox.minLon >= otherBbox.minLon && bbox.minLon <= otherBbox.maxLon ||
+      bbox.maxLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon))
       return true;
     return false;
   }
@@ -191,10 +193,12 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    * (see https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/13)
    * todo: extend funtionality for non-bbox case: insidePolygon(poly)
    */
-  public boolean insideBbox(BoundingBox bbox) {
+  public boolean insideBbox(BoundingBox otherBbox) {
+    BoundingBox bbox = this.getBoundingBox();
+    if (bbox == null) return false;
   	return
-      this.bbox.minLat >= bbox.minLat && this.bbox.maxLat <= bbox.maxLat &&
-      this.bbox.minLon >= bbox.minLon && this.bbox.maxLon <= bbox.maxLon;
+        bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat &&
+        bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
   }
 
   /*
