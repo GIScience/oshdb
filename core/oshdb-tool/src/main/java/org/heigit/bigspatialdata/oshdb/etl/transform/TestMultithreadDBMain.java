@@ -15,6 +15,7 @@ import java.util.OptionalDouble;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
@@ -62,7 +63,7 @@ public class TestMultithreadDBMain {
 			
 			.flatMap(cellId -> {
 				System.out.println(cellId);
-				XYGrid g = new XYGrid(12);
+				XYGrid g = new XYGrid(OSHDb.MAXZOOM);
 				System.out.println(Arrays.toString(g.getCellDimensions(((CellId)cellId).getId()).getMaxValuesPerDimension()));
 				System.out.println(Arrays.toString(g.getCellDimensions(((CellId)cellId).getId()).getMinValuesPerDimension()));
 				

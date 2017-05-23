@@ -23,6 +23,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -76,7 +77,7 @@ public class TestMultipolygonGeometry {
 
 
 
-	private static final int MAXZOOM = 12;
+	private static final int MAXZOOM = OSHDb.MAXZOOM;
 
 
 
