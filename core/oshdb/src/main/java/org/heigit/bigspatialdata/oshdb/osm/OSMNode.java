@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.osm;
 import java.io.Serializable;
 import java.util.*;
 
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -27,6 +28,10 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
     this.latitude = latitude;
   }
 
+  @Override
+  public int getType() {
+    return OSHEntity.NODE;
+  }
 
   public double getLongitude() {
     return longitude * GEOM_PRECISION;

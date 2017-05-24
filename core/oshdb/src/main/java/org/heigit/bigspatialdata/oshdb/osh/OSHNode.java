@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
@@ -79,6 +82,12 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 				dataOffset, dataLength);
 	}
 
+
+	@Override
+	public int getType() {
+		return OSHEntity.NODE;
+	}
+
 	public List<OSMNode> getVersions() {
 		List<OSMNode> versions = new ArrayList<>();
 		this.forEach(versions::add);
@@ -104,6 +113,10 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 				maxLat = Math.max(maxLat, osm.getLat());
 			}
 		}
+		
+		if(minLon == Long.MAX_VALUE || minLat == Long.MAX_VALUE)
+			return null;
+		
 		return new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
 				minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
 	}

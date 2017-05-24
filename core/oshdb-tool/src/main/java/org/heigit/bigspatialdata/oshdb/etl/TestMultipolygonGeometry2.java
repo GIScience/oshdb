@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -80,7 +81,7 @@ public class TestMultipolygonGeometry2 {
 
 
 
-  private static final int MAXZOOM = 12;
+  private static final int MAXZOOM = OSHDb.MAXZOOM;
 
 
 
@@ -123,8 +124,8 @@ public class TestMultipolygonGeometry2 {
 			}
 			rst.close();*/
 
-      //final BoundingBox bboxFilter = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
-      final BoundingBox bboxFilter = new BoundingBox(8, 9, 49, 50);
+      final BoundingBox bboxFilter = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
+      //final BoundingBox bboxFilter = new BoundingBox(8, 9, 49, 50);
       for (int zoom = 0; zoom<= MAXZOOM; zoom++) {
         XYGrid grid = new XYGrid(zoom);
         Set<Pair<Long,Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);

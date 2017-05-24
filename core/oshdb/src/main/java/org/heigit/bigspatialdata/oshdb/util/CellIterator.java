@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.TopologyException;
+import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
@@ -18,6 +17,25 @@ import java.util.stream.Stream;
 
 public class CellIterator {
 
+  /**
+   * Helper method to easily iterate over all entities in a cell that match a given condition/filter.
+   *
+   * @param cell the data cell
+   * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
+   * @param timestamps a list of timestamps to return data for
+   * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
+   * @param includeOldStyleMultipolygons if true, output contains also data for "old style multipolygons".
+   *
+   * Note, that if includeOldStyleMultipolygons is true, for each old style multipolygon only the geometry of the inner
+   * holes are returned (while the outer part is already present as the respective way's output)! This has to be
+   * interpreted separately and differently in the data analysis!
+   * The includeOldStyleMultipolygons is also quite a bit less efficient (both CPU and memory) as the default path.
+   *
+   * @return a stream of matching filtered OSMEntities with their clipped Geometries at each timestamp.
+   * If an object has not been modified between timestamps, the output may contain the *same* Geometry object in the
+   * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
+   * feature geometries later on in the code.
+   */
   public static Stream<Map<Long, Pair<OSMEntity, Geometry>>> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<Map<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
 
@@ -63,6 +81,7 @@ public class CellIterator {
           continue;
         }
 
+        boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons &&
             osmEntity instanceof OSMRelation &&
             tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)
@@ -77,6 +96,7 @@ public class CellIterator {
               } else {
                 // we know this multipolygon only has exactly one outer way, so we can abort the loop and actually
                 // "continue" with the calculations ^-^
+                isOldStyleMultipolygon = true;
                 break;
               }
             }
@@ -89,9 +109,26 @@ public class CellIterator {
         }
 
         try {
-          Geometry geom = fullyInside ?
-              osmEntity.getGeometry(timestamp, tagInterpreter) :
-              osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
+          Geometry geom;
+          if (!isOldStyleMultipolygon) {
+            geom = fullyInside ?
+                osmEntity.getGeometry(timestamp, tagInterpreter) :
+                osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
+          } else {
+            // old style multipolygons: return only the inner holes of the geometry -> this is then used to "fix" the
+            // results obtained from calculating the geometry on the object's outer way which doesn't know about the
+            // inner members of the multipolygon relation
+            // todo: check if this is all valid?
+            GeometryFactory gf = new GeometryFactory();
+            geom = osmEntity.getGeometry(timestamp, tagInterpreter);
+            Polygon poly = (Polygon)geom;
+            Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
+            for (int i=0; i<poly.getNumInteriorRing(); i++)
+              interiorRings[i] = new Polygon((LinearRing)poly.getInteriorRingN(i), new LinearRing[] {}, gf);
+            geom = new MultiPolygon(interiorRings, gf);
+            if (!fullyInside)
+              geom = Geo.clip(geom, boundingBox);
+          }
 
           if (geom == null) throw new NotImplementedException(); // todo: fix this hack!
           if (geom.isEmpty()) throw new NotImplementedException(); // todo: fix this hack!

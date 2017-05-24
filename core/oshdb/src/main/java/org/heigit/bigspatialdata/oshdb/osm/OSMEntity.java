@@ -34,6 +34,8 @@ public abstract class OSMEntity {
 		return id;
 	}
 
+	public abstract int getType();
+
 	public int getVersion() {
 		return Math.abs(version);
 	}

@@ -103,6 +103,12 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 		this.nodeDataLength = nodeDataLength;
 	}
 
+
+	@Override
+	public int getType() {
+		return OSHEntity.WAY;
+	}
+
 	public List<OSMWay> getVersions() {
 		List<OSMWay> versions = new ArrayList<>();
 		this.forEach(versions::add);

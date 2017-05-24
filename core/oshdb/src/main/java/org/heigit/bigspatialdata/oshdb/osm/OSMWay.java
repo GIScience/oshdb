@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.osm;
 import java.io.Serializable;
 import java.util.*;
 
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -21,6 +22,10 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     this.refs = refs;
   }
 
+  @Override
+  public int getType() {
+    return OSHEntity.WAY;
+  }
 
   public OSMMember[] getRefs() {
     return refs;

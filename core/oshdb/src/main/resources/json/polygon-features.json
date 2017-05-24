@@ -14,6 +14,61 @@
         ]
     },
     {
+        "key": "natural",
+        "polygon": "blacklist",
+        "values": [
+            "coastline",
+            "cliff",
+            "ridge",
+            "arete",
+            "tree_row"
+        ]
+    },
+    {
+        "key": "landuse",
+        "polygon": "all"
+    },
+    {
+        "key": "waterway",
+        "polygon": "whitelist",
+        "values": [
+            "riverbank",
+            "dock",
+            "boatyard",
+            "dam"
+        ]
+    },
+    {
+        "key": "amenity",
+        "polygon": "all"
+    },
+    {
+        "key": "leisure",
+        "polygon": "all"
+    },
+    {
+        "key": "barrier",
+        "polygon": "whitelist",
+        "values": [
+            "city_wall",
+            "ditch",
+            "hedge",
+            "retaining_wall",
+            "wall",
+            "spikes"
+        ]
+    },
+    {
+        "key": "railway",
+        "polygon": "whitelist",
+        "values": [
+            "station",
+            "turntable",
+            "roundhouse",
+            "platform"
+        ]
+    },
+    {
         "key": "area",
         "polygon": "all"
     },

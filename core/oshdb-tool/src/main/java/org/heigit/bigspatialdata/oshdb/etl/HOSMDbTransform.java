@@ -24,6 +24,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellInfo;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellNode;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellRelation;
@@ -70,7 +71,7 @@ public class HOSMDbTransform {
       final String tmpDir = cli.getOptionValue("tmpDir", "./");
 
       //set some basic variables
-      final int maxZoom = 12;
+      final int maxZoom = OSHDb.MAXZOOM;
       final String n2wRelationFile = tmpDir + "temp_nodesForWays.ser";
       final String n2rRelationFile = tmpDir + "temp_nodesForRelation.ser";
       final String w2rRelationFile = tmpDir + "temp_waysForRelation.ser";

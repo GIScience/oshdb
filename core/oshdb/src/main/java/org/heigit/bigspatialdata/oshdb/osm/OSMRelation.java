@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
@@ -28,6 +29,10 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     this.members = members;
   }
 
+  @Override
+  public int getType() {
+    return OSHEntity.RELATION;
+  }
 
   public OSMMember[] getMembers() {
     return members;

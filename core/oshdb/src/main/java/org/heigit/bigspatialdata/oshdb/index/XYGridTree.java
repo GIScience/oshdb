@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 
@@ -38,6 +39,10 @@ public class XYGridTree {
       gridMap.put(i, new XYGrid(i));
     }
 
+  }
+
+  public XYGridTree() {
+    this(OSHDb.MAXZOOM);
   }
 
   /**

@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.junit.Before;
@@ -27,7 +28,7 @@ import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 public class XYGridTest {
 
   private static final Logger LOG = Logger.getLogger(XYGridTest.class.getName());
-  private static final int MAXZOOM = 12;
+  private static final int MAXZOOM = OSHDb.MAXZOOM;
   private XYGrid zero;
   private XYGrid two;
   private XYGrid thirty;
