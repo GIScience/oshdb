@@ -100,7 +100,7 @@ public class ActivityIndicatorFromPolygonBuildings {
 
       try (final PreparedStatement pstmt = conn.prepareStatement(
           // union (select data from grid_relation where level = ?1 and id = ?2)
-          "(select data from grid_way where level = ?1 and id = ?2)")) {
+          "(select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)")) {
         pstmt.setInt(1, cellId.getZoomLevel());
         pstmt.setLong(2, cellId.getId());
 
@@ -134,7 +134,7 @@ public class ActivityIndicatorFromPolygonBuildings {
 
       while (itr.hasNext()) {
         OSHEntity<OSMEntity> osh = itr.next();
-
+        if (!osh.hasKey(0)) continue;
         if (!osh.getBoundingBox().getGeometry().intersects(inputPolygon)) {
           continue;
         }
@@ -262,7 +262,7 @@ public class ActivityIndicatorFromPolygonBuildings {
     for (Long ts : timestamps.subList(1, timestamps.size())) {
       superresult.putIfAbsent(ts, (long) 0);
     }
-
+//System.out.println("1 Polygon done.");
     return superresult;
 
   }

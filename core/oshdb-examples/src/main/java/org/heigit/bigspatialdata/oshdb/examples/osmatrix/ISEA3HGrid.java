@@ -132,7 +132,8 @@ public class ISEA3HGrid {
     }).reduce((a, b) -> {
 
       a = a + b;
-
+      int count = a.length() - a.replace("\n", "").length();
+      System.out.println(count);
       return a.toString();
     });
     
