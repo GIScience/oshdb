@@ -121,10 +121,10 @@ public class CellIterator {
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = osmEntity.getGeometry(timestamp, tagInterpreter);
-            Polygon poly = (Polygon)geom;
+            Polygon poly = (Polygon) geom;
             Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
-            for (int i=0; i<poly.getNumInteriorRing(); i++)
-              interiorRings[i] = new Polygon((LinearRing)poly.getInteriorRingN(i), new LinearRing[] {}, gf);
+            for (int i = 0; i < poly.getNumInteriorRing(); i++)
+              interiorRings[i] = new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
             geom = new MultiPolygon(interiorRings, gf);
             if (!fullyInside)
               geom = Geo.clip(geom, boundingBox);
@@ -135,6 +135,8 @@ public class CellIterator {
           //if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack! // todo: wat?
 
           oshResult.put(timestamp, new ImmutablePair<>(osmEntity, geom));
+        } catch (UnsupportedOperationException err) {
+          // e.g. unsupported relation types go here
         } catch (NotImplementedException err) {
           // todo: what to do here???
         } catch (IllegalArgumentException err) {
