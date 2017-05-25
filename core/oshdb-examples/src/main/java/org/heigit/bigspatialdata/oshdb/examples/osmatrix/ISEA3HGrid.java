@@ -47,7 +47,9 @@ public class ISEA3HGrid {
     FileWriter fw = new FileWriter("hd_activity.csv");
     
     // load shapefile and get features
-    File file = new File("data/grid19_hd_ISEA3H_poly.shp");
+    File file = new File("/tmp/grid19_hd_ISEA3H_poly.shp");
+    //File file = new File("/tmp/heidelberg_boundary.shp");
+
     // File file = new File("data/heidelberg_boundary.shp");
     Map<String, Object> map = new HashMap<>();
     map.put("url", file.toURI().toURL());
@@ -62,7 +64,7 @@ public class ISEA3HGrid {
 
     // tcp://localhost
     Connection conn = DriverManager
-        .getConnection("jdbc:h2:/d:/eclipseNeon2Workspace/OSH-BigDB/core/hosmdb/resources/oshdb/heidelberg", "sa", "");
+        .getConnection("jdbc:h2:./heidelberg", "sa", "");
     
     //create lookupmap of tags and TagInterpreter for getGeometry() methods
     final Statement stmt = conn.createStatement();
@@ -91,22 +93,23 @@ public class ISEA3HGrid {
 
     
     // fill features into parallelizable List
-    List<Geometry> list = new ArrayList<>();
+    List<MultiPolygon> polygonList = new ArrayList<>();
     FeatureCollection<SimpleFeatureType, SimpleFeature> fcollection = source.getFeatures(filter);
 
     try (FeatureIterator<SimpleFeature> features = fcollection.features()) {
       while (features.hasNext()) {
 
         SimpleFeature feature = features.next();
-        Geometry multipolygon = (Geometry) feature.getDefaultGeometry();
-        list.add(multipolygon);
+        MultiPolygon multipolygon = (MultiPolygon) feature.getDefaultGeometry();
+        polygonList.add(multipolygon);
 
       }
     }
 
     
     //execute ActivityIndicator in parallel for all features of shapefile
-    Optional<String> superresult = list.parallelStream().map(multipoly -> {
+    /*
+    Optional<String> superresult = polygonList.parallelStream().map(multipoly -> {
       ActivityIndicatorFromPolygonBuildings aifp = new ActivityIndicatorFromPolygonBuildings();
       Map<Long, Long> cellresult;
       StringBuilder sb = new StringBuilder();
@@ -134,10 +137,16 @@ public class ISEA3HGrid {
       a = a + b;
 
       return a.toString();
-    });
+    });*/
+
+    ActivityIndicatorFromPolygonBuildings aifp = new ActivityIndicatorFromPolygonBuildings();
+    Map<Pair<Integer, Long>, Long> superresult = aifp.execute(conn, polygonList, tagInterpreter);
+    for (Map.Entry<Pair<Integer, Long>, Long> result : superresult.entrySet()) {
+      System.out.printf("%d\t%d\t%d\n", result.getKey().getLeft(), result.getKey().getRight(), result.getValue());
+    }
     
     //write out the whole csv file
-    fw.append(superresult.get());
+    //fw.append(superresult);
     
     fw.close();
     System.out.println("Done: " + new Date().toString());

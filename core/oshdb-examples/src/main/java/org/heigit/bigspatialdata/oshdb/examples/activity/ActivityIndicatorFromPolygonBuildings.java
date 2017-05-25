@@ -19,6 +19,8 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.geotools.geometry.jts.JTS;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
@@ -37,14 +39,14 @@ import com.vividsolutions.jts.io.ParseException;
 public class ActivityIndicatorFromPolygonBuildings {
 
   /**
-   * Computes an Activity Indicator for buildings inside a polygon. This
+   * Computes an Activity Indicator for buildings inside a polygons. This
    * activity indicator counts all changes of building objects,which are
    * geometry changes + tag changes (way versions) + tag and relation_member
    * changes (relation versions)
    * 
    * @param conn
    *          connection object to OSHDB e.g h2
-   * @param polygon
+   * @param polygons
    *          to define analyis area
    * @param ti
    *          TagInterpreter to decide whether to build polygons or linestrings
@@ -53,7 +55,7 @@ public class ActivityIndicatorFromPolygonBuildings {
    * @throws ParseException
    * @throws IOException
    */
-  public Map<Long, Long> execute(Connection conn, Geometry polygon, TagInterpreter ti)
+  public Map<Pair<Integer, Long>, Long> execute(Connection conn, List<MultiPolygon> polygons, TagInterpreter ti)
       throws ClassNotFoundException, ParseException, IOException {
     Class.forName("org.h2.Driver");
 
@@ -77,12 +79,17 @@ public class ActivityIndicatorFromPolygonBuildings {
 
     // create BBOX to query gridcells as CellId-Objects, which contain
     // (zoomlevel,id)
-    MultiPolygon inputPolygon = (MultiPolygon) polygon;
 
-    Double minLon = JTS.toEnvelope(inputPolygon).getMinX();
-    Double maxLon = JTS.toEnvelope(inputPolygon).getMaxX();
-    Double minLat = JTS.toEnvelope(inputPolygon).getMinY();
-    Double maxLat = JTS.toEnvelope(inputPolygon).getMaxY();
+    Double minLon = Double.MAX_VALUE;
+    Double maxLon = Double.MIN_VALUE;
+    Double minLat = Double.MAX_VALUE;
+    Double maxLat = Double.MIN_VALUE;
+    for (MultiPolygon inputPolygon: polygons) {
+      minLon = Double.min(JTS.toEnvelope(inputPolygon).getMinX(), minLon);
+      maxLon = Double.max(JTS.toEnvelope(inputPolygon).getMaxX(), maxLon);
+      minLat = Double.min(JTS.toEnvelope(inputPolygon).getMinY(), minLat);
+      maxLat = Double.max(JTS.toEnvelope(inputPolygon).getMaxY(), maxLat);
+    }
 
     BoundingBox inputBbox = new BoundingBox(minLon, maxLon, minLat, maxLat);
 
@@ -90,17 +97,14 @@ public class ActivityIndicatorFromPolygonBuildings {
 
     final List<CellId> cellIds = new ArrayList<>();
 
-    grid.bbox2CellIds(inputBbox, true).forEach(cell -> {
-      cellIds.add(cell);
-    });
+    grid.bbox2CellIds(inputBbox, true).forEach(cellIds::add);
 
     // start processing in parallel all grid cells that relate to the input
     // polygons BBOX
-    Map<Long, Long> superresult = cellIds.parallelStream().flatMap(cellId -> {
+    Map<Pair<Integer, Long>, Long> superresult = cellIds.parallelStream().flatMap(cellId -> {
 
       try (final PreparedStatement pstmt = conn.prepareStatement(
-          // union (select data from grid_relation where level = ?1 and id = ?2)
-          "(select data from grid_way where level = ?1 and id = ?2)")) {
+          "(select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)")) {
         pstmt.setInt(1, cellId.getZoomLevel());
         pstmt.setLong(2, cellId.getId());
 
@@ -128,27 +132,33 @@ public class ActivityIndicatorFromPolygonBuildings {
 
       GridOSHEntity cell = (GridOSHEntity) gridCell;
 
-      Map<Long, Long> timestampActivity = new TreeMap<>();
+      //Map<Integer, Map<Long, Long>> timestampActivity = new TreeMap<>();
+      Map<Pair<Integer,Long>, Long> timestampActivity = new TreeMap<>();
 
-      Iterator<OSHEntity> itr = cell.iterator();
+      for (OSHEntity<OSMEntity> osh : (Iterable<OSHEntity<OSMEntity>>) cell) {
+        if (!osh.hasTagKey(0)) continue;
 
-      while (itr.hasNext()) {
-        OSHEntity<OSMEntity> osh = itr.next();
-
-        if (!osh.getBoundingBox().getGeometry().intersects(inputPolygon)) {
+        /*if (!osh.getBoundingBox().getGeometry().intersects(inputPolygon)) {
           continue;
+        }*/
+        /*boolean matches = false;
+        for (OSMEntity osm: osh) {
+          if (osm.hasTagValue(0,1123))
+            matches = true;
         }
-        
+        if (!matches) continue;*/
+
         //check if all versions are inside cell to avoid geometry checks
         boolean allVersionsWithin = false;
-        if (osh.getBoundingBox().getGeometry().within(inputPolygon)){
-           allVersionsWithin = true;
-        };
-        
+        /*if (osh.getBoundingBox().getGeometry().within(inputPolygon)) {
+          allVersionsWithin = true;
+        }*/
+
         List<OSMEntity> versions = new ArrayList<>();
+        List<Integer> polygonIds = new ArrayList<>();
 
         List<Long> modTs = osh.getModificationTimestamps(true);
-        Collections.sort(modTs, Collections.reverseOrder());
+        modTs.sort(Collections.reverseOrder());
 
         Iterator<OSMEntity> allVersions = osh.getVersions().iterator();
         allVersions.hasNext();
@@ -161,62 +171,73 @@ public class ActivityIndicatorFromPolygonBuildings {
               break;
             osm = allVersions.next();
           }
-          
+
           if (!osm.isVisible() || !osm.hasTagKey(0)) continue;
-          
-          if (! allVersionsWithin){
-          try {
-            
-            
-            Geometry osmGeom = osm.getGeometry(t, ti);
-            
-            if ( //osmGeom.isValid()
+
+          /*if (!allVersionsWithin) {*/
+            try {
+
+
+              Geometry osmGeom = osm.getGeometry(t, ti);
+
+              Point centr = osmGeom.getCentroid();
+
+              int foundIndex = -1;
+              for (MultiPolygon p : polygons) {
+                if (p.contains(centr)) {
+                  foundIndex = polygons.indexOf(p);
+                  break;
+                }
+              }
+
+              if ( //osmGeom.isValid()
                 //getCoordinate instead of getCentroid
-                
+
                 //&& osmGeom.isSimple() &&  
                 //GeometryFactory.createPointFromInternalCoord(osmGeom.getCoordinate(), osmGeom).intersects(inputPolygon)
-                osmGeom.getCentroid().intersects(inputPolygon)
-                ) 
-                
-            {
 
-              // try {
-              // fw.append(osm.getGeometry(t, ti).toText().toString() + "\n");
-              // } catch (IOException e) {
-              // // TODO Auto-generated catch block
-              // e.printStackTrace();
-              // }
+                  //osmGeom.getCentroid().intersects(inputPolygon)
+                  foundIndex != -1
+                  )
 
-              versions.add(osm);
+              {
+
+                // try {
+                // fw.append(osm.getGeometry(t, ti).toText().toString() + "\n");
+                // } catch (IOException e) {
+                // // TODO Auto-generated catch block
+                // e.printStackTrace();
+                // }
+
+                versions.add(osm);
+                polygonIds.add(foundIndex);
+              }
+            } catch (Exception e) {
+              // TODO: handle exception
+              //e.printStackTrace();
             }
-          } catch (Exception e) {
-            // TODO: handle exception
-            System.err.println(e);
-          }
-          }
-          else {
+          /*} else {
             versions.add(osm);
-          }
+          }*/
         }
 
         int v = 0;
         for (int i = 0; i < timestamps.size(); i++) {
           long ts = timestamps.get(i);
-          long count = 0;
           while (v < versions.size() && versions.get(v).getTimestamp() > ts) {
-            count++;
+            if (i != 0) { // ??????
+              int polygonId = polygonIds.get(v);
+              Pair<Integer, Long> idx = new ImmutablePair<>(polygonId, ts);
+              if (timestampActivity.containsKey(idx)) {
+                timestampActivity.put(idx, timestampActivity.get(idx) + 1l);
+              } else {
+                timestampActivity.put(idx, 1l);
+              }
+            }
+
             v++;
           }
-          if (i == 0) {
-            continue;
-          }
-          if (timestampActivity.containsKey(ts)) {
 
-            timestampActivity.put(ts, timestampActivity.get(ts) + count);
-
-          } else {
-            timestampActivity.put(ts, count);
-          }
 
           if (v >= versions.size())
             break;
@@ -229,9 +250,9 @@ public class ActivityIndicatorFromPolygonBuildings {
 
     }).reduce(Collections.emptyMap(), (partial, b) -> {
 
-      Map<Long, Long> sum = new TreeMap<>();
+      Map<Pair<Integer, Long>, Long> sum = new TreeMap<>();
       sum.putAll(partial);
-      for (Map.Entry<Long, Long> entry : b.entrySet()) {
+      for (Map.Entry<Pair<Integer, Long>, Long> entry : b.entrySet()) {
 
         Long activity = partial.get(entry.getKey());
         if (activity == null) {
@@ -239,13 +260,13 @@ public class ActivityIndicatorFromPolygonBuildings {
           activity = entry.getValue();
 
           if (activity == null) {
-            activity = (long) 0;
+            activity = 0l;
           }
 
         } else {
-          Long newActivity = entry.getValue().longValue();
+          Long newActivity = entry.getValue();
           // if (newActivity == null){ newActivity = Long.valueOf(0); }
-          activity = Long.valueOf((activity.longValue() + newActivity));
+          activity = activity + newActivity;
 
         }
         sum.put(entry.getKey(), activity);
@@ -259,8 +280,10 @@ public class ActivityIndicatorFromPolygonBuildings {
     );
 
     // fill missing values with 0
-    for (Long ts : timestamps.subList(1, timestamps.size())) {
-      superresult.putIfAbsent(ts, (long) 0);
+    for (int i=0; i<polygons.size(); i++) {
+      for (Long ts : timestamps.subList(1, timestamps.size())) {
+        ;//superresult.putIfAbsent(new ImmutablePair<>(i, ts), 0l);
+      }
     }
 
     return superresult;
