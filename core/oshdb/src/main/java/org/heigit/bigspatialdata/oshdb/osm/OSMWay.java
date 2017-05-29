@@ -64,7 +64,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   @Override
   public boolean isArea(TagInterpreter areaDecider) {
     OSMMember[] nds = this.getRefs();
-    if (nds[0].getId() != nds[nds.length-1].getId())
+    if (nds.length < 4 || nds[0].getId() != nds[nds.length-1].getId())
       return false;
     return areaDecider.evaluateForArea(this);
   }
