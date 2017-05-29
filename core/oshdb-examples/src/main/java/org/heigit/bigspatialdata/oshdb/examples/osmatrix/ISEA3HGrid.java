@@ -41,7 +41,11 @@ import com.vividsolutions.jts.io.WKTWriter;
 
 public class ISEA3HGrid {
   public static void main(String[] args) throws IOException, SQLException, IndexOutOfBoundsException, ParseException,
-      ClassNotFoundException, org.json.simple.parser.ParseException {
+  ClassNotFoundException, org.json.simple.parser.ParseException {
+    
+   
+    
+    
     System.out.println("Start: " + new Date().toString());
     // create filewriter to output results
     FileWriter fw = new FileWriter("hd_activity.csv");

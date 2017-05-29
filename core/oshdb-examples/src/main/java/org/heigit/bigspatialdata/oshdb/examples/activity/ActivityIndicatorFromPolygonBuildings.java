@@ -98,7 +98,8 @@ public class ActivityIndicatorFromPolygonBuildings {
     // polygons BBOX
     Map<Long, Long> superresult = cellIds.parallelStream().flatMap(cellId -> {
 
-      try (final PreparedStatement pstmt = conn.prepareStatement(
+      try (
+          final PreparedStatement pstmt = conn.prepareStatement(
           // union (select data from grid_relation where level = ?1 and id = ?2)
           "(select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)")) {
         pstmt.setInt(1, cellId.getZoomLevel());
@@ -134,8 +135,8 @@ public class ActivityIndicatorFromPolygonBuildings {
 
       while (itr.hasNext()) {
         OSHEntity<OSMEntity> osh = itr.next();
-        if (!osh.hasKey(0)) continue;
-        if (!osh.getBoundingBox().getGeometry().intersects(inputPolygon)) {
+        if (!osh.hasTagKey(0)) continue;
+        if (!osh.intersectsBbox(inputBbox)){ //getBoundingBox().getGeometry().intersects(inputPolygon)) {
           continue;
         }
         
