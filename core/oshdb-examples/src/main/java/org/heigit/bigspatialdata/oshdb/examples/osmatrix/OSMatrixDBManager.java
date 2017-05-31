@@ -58,5 +58,18 @@ public class OSMatrixDBManager {
     
         
   }
+  public int truncateTimesTable(){
+    try (Connection connection = getConn();
+        Statement statement = connection.createStatement()) {
+     int result = statement.executeUpdate("TRUNCATE " + "times" + " CASCADE");
+     connection.commit();
+     return result;
+   } catch (SQLException e) {
+    // TODO Auto-generated catch block
+    e.printStackTrace();
+  }
+    return 0;
+    
+  }
 
 }

@@ -28,9 +28,11 @@ import org.heigit.bigspatialdata.oshdb.examples.activity.ActivityIndicatorFromPo
 import org.heigit.bigspatialdata.oshdb.examples.activity.ActivityIndicatorFromPolygonBuildings;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.utils.OSMTimeStamps;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
+
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -43,8 +45,21 @@ public class ISEA3HGrid {
   public static void main(String[] args) throws IOException, SQLException, IndexOutOfBoundsException, ParseException,
   ClassNotFoundException, org.json.simple.parser.ParseException {
     
-   
     
+    OSMTimeStamps osmtrxTs = new OSMTimeStamps(2016, 2016, 01, 05);
+    
+    List<Long> timestamps = osmtrxTs.createTimeStamps();
+    
+    for (Long long1 : timestamps) {
+      System.out.println(long1);
+    }
+    
+    OSMatrixDBManager osmatrixMgr = new OSMatrixDBManager();
+    Connection osmatrixConn = osmatrixMgr.createOSMatrixDBConnection();
+    
+    int trunc = osmatrixMgr.truncateTimesTable();
+    
+    System.out.println(trunc);
     
     System.out.println("Start: " + new Date().toString());
     // create filewriter to output results
