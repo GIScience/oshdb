@@ -48,18 +48,19 @@ public class ISEA3HGrid {
     
     OSMTimeStamps osmtrxTs = new OSMTimeStamps(2016, 2016, 01, 05);
     
-    List<Long> timestamps = osmtrxTs.createTimeStamps();
+    List<Long> timeStamps = osmtrxTs.createTimeStamps();
     
-    for (Long long1 : timestamps) {
+    for (Long long1 : timeStamps) {
       System.out.println(long1);
     }
     
     OSMatrixDBManager osmatrixMgr = new OSMatrixDBManager();
     Connection osmatrixConn = osmatrixMgr.createOSMatrixDBConnection();
     
-    int trunc = osmatrixMgr.truncateTimesTable();
+    osmatrixMgr.truncateTimesTable();
     
-    System.out.println(trunc);
+    osmatrixMgr.fillTimesTable(timeStamps);    
+    
     
     System.out.println("Start: " + new Date().toString());
     // create filewriter to output results

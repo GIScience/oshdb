@@ -24,7 +24,6 @@ public class OSMTimeStamps {
   }
 
 
-  
 
   public List createTimeStamps(){
     List<Long> timestamps = new ArrayList<>();
@@ -35,11 +34,11 @@ public class OSMTimeStamps {
         try {
           timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime() / 1000);
         } catch (java.text.ParseException e) {
-          System.err.println("basdoawrd");
+          System.err.println("error, please check your code!");
         };
       }
     }
-   Collections.sort(timestamps, Collections.reverseOrder());
+   //Collections.sort(timestamps, Collections.reverseOrder());
    return timestamps;
   }
 
