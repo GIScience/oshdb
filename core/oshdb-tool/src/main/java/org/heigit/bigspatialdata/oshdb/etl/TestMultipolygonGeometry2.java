@@ -13,38 +13,25 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.TopologyException;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import sun.reflect.generics.tree.Tree;
 
 public class TestMultipolygonGeometry2 {
 
@@ -181,7 +168,7 @@ public class TestMultipolygonGeometry2 {
 
             int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
             int[] uninterestedValueIds = { allKeyValues.get("building").get("no").getRight() };
-            CellIterator.iterateAll(hosmCell, bboxFilter, timestamps, tagInterpreter, osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds), false)
+            CellIterator.iterateByTimestamps(hosmCell, bboxFilter, timestamps, tagInterpreter, osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds), false)
             .forEach(result -> {
               result.entrySet().forEach(entry -> {
                 long timestamp = entry.getKey();

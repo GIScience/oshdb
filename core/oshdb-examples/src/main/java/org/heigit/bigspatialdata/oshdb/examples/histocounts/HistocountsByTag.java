@@ -1,13 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.examples.histocounts;
 
-import com.sun.org.apache.xpath.internal.operations.Mult;
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDb;
-import org.heigit.bigspatialdata.oshdb.examples.stratigraphy.LLMATest;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -78,8 +75,9 @@ public class HistocountsByTag {
       }
     }
 
-    BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
+    //BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
     //BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
+    BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -87,7 +85,7 @@ public class HistocountsByTag {
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
 
     // connect to the "Big"DB
-    Connection conn = DriverManager.getConnection("jdbc:h2:./heidelberg","sa", "");
+    Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
     final Statement stmt = conn.createStatement();
 
     System.out.println("Select tag key/value ids from DB");
@@ -139,7 +137,7 @@ public class HistocountsByTag {
 
       int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
       int[] uninterestedValueIds = { allKeyValues.get("building").get("no").getRight() };
-      CellIterator.iterateAll(
+      CellIterator.iterateByTimestamps(
           oshCell,
           bbox,
           timestamps,

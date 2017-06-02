@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class CellIterator {
 
   /**
-   * Helper method to easily iterate over all entities in a cell that match a given condition/filter.
+   * Helper method to easily iterate over all entities in a cell that match a given condition/filter as they existed at the given timestamps.
    *
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
@@ -36,7 +36,7 @@ public class CellIterator {
    * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
    * feature geometries later on in the code.
    */
-  public static Stream<Map<Long, Pair<OSMEntity, Geometry>>> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<Map<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<Map<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
@@ -158,6 +158,133 @@ public class CellIterator {
       }
 
       results.add(oshResult);
+    }
+
+    // return as an obj stream
+    return results.stream();
+  }
+
+  public static class IterateAllEntry {
+    public final Long validFrom;
+    public final Long validTo;
+    public final OSMEntity osmEntity;
+    public final Geometry geometry;
+    IterateAllEntry(Long from, Long to, OSMEntity entity, Geometry geom) {
+      this.validFrom = from;
+      this.validTo = to;
+      this.osmEntity = entity;
+      this.geometry = geom;
+    }
+  }
+  /**
+   * Helper method to easily iterate over all entities in a cell that match a given condition/filter.
+   *
+   * @param cell the data cell
+   * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
+   * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
+   * @param includeOldStyleMultipolygons if true, output contains also data for "old style multipolygons".
+   *
+   * Note, that if includeOldStyleMultipolygons is true, for each old style multipolygon only the geometry of the inner
+   * holes are returned (while the outer part is already present as the respective way's output)! This has to be
+   * interpreted separately and differently in the data analysis!
+   * The includeOldStyleMultipolygons is also quite a bit less efficient (both CPU and memory) as the default path.
+   *
+   * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp intervals.
+   */
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    List<IterateAllEntry> results = new LinkedList<>();
+    if (includeOldStyleMultipolygons)
+      throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
+
+    for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
+      if (!oshEntity.intersectsBbox(boundingBox)) {
+        // this osh entity is fully outside the requested bounding box -> skip it
+        continue;
+      }
+      boolean fullyInside = oshEntity.insideBbox(boundingBox);
+
+      List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+      SortedMap<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(modTs);
+
+      osmEntityLoop:
+      for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+        Long timestamp = entity.getKey();
+        OSMEntity osmEntity = entity.getValue();
+
+        if (!osmEntity.isVisible()) {
+          // skip because this entity is deleted at this timestamp
+          continue;
+        }
+
+        // todo check old style mp code
+        boolean isOldStyleMultipolygon = false;
+        if (includeOldStyleMultipolygons &&
+            osmEntity instanceof OSMRelation &&
+            tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)
+            ) {
+          OSMRelation rel = (OSMRelation) osmEntity;
+          for (int i = 0; i < rel.getMembers().length; i++) {
+            if (rel.getMembers()[i].getType() == OSHEntity.WAY && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
+              OSMEntity way = rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
+              if (!osmEntityFilter.test(way)) {
+                // skip this old-style-multipolygon because it doesn't match our filter
+                continue osmEntityLoop;
+              } else {
+                // we know this multipolygon only has exactly one outer way, so we can abort the loop and actually
+                // "continue" with the calculations ^-^
+                isOldStyleMultipolygon = true;
+                break;
+              }
+            }
+          }
+        } else {
+          if (!osmEntityFilter.test(osmEntity)) {
+            // skip because this entity doesn't match our filter
+            continue osmEntityLoop;
+          }
+        }
+
+        try {
+          Geometry geom;
+          if (!isOldStyleMultipolygon) {
+            geom = fullyInside ?
+                osmEntity.getGeometry(timestamp, tagInterpreter) :
+                osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
+          } else {
+            // old style multipolygons: return only the inner holes of the geometry -> this is then used to "fix" the
+            // results obtained from calculating the geometry on the object's outer way which doesn't know about the
+            // inner members of the multipolygon relation
+            // todo: check if this is all valid?
+            GeometryFactory gf = new GeometryFactory();
+            geom = osmEntity.getGeometry(timestamp, tagInterpreter);
+            Polygon poly = (Polygon) geom;
+            Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
+            for (int i = 0; i < poly.getNumInteriorRing(); i++)
+              interiorRings[i] = new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
+            geom = new MultiPolygon(interiorRings, gf);
+            if (!fullyInside)
+              geom = Geo.clip(geom, boundingBox);
+          }
+
+          if (geom == null) throw new NotImplementedException(); // todo: fix this hack!
+          if (geom.isEmpty()) throw new NotImplementedException(); // todo: fix this hack!
+          //if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack! // todo: wat?
+
+          //oshResult.put(timestamp, new ImmutablePair<>(osmEntity, geom));
+          Long nextTs = null;
+          if (modTs.size() > modTs.indexOf(timestamp)+1) //todo: better way to figure out if timestamp is not last element??
+            nextTs = modTs.get(modTs.indexOf(timestamp)+1);
+          results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, geom));
+        } catch (UnsupportedOperationException err) {
+          // e.g. unsupported relation types go here
+        } catch (NotImplementedException err) {
+          // todo: what to do here???
+        } catch (IllegalArgumentException err) {
+          System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
+        } catch (TopologyException err) {
+          System.err.printf("Topology error at object %d at timestamp %d: %s\n", osmEntity.getId(), timestamp, err.toString());
+        }
+      }
     }
 
     // return as an obj stream
