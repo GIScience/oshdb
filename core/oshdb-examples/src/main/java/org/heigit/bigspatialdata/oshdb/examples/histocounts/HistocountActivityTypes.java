@@ -129,6 +129,9 @@ public class HistocountActivityTypes {
       }
     }).map(oshCell -> {
       Map<Long, ResultActivityEntry> activitiesOverTime = new HashMap<>(timestamps.size());
+      for (long t : timestamps) {
+        activitiesOverTime.put(t, new ResultActivityEntry());
+      }
 
       //int interestedKeyId = allKeyValues.get("landuse").get("residential").getLeft();
       int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
@@ -160,9 +163,7 @@ public class HistocountActivityTypes {
           }
           if (i==0) return; // skip altogether if too old
         }
-        if (!activitiesOverTime.containsKey(timestamp)) {
-          activitiesOverTime.put(timestamp, new ResultActivityEntry());
-        }
+
         ResultActivityEntry thisResult = activitiesOverTime.get(timestamp);
 
 
