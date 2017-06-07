@@ -31,39 +31,6 @@ public class HistocountUsers {
 
   public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, org.json.simple.parser.ParseException {
 
-    class ResultEntry {
-      long countTotal;
-      long countLinestrings;
-      long countPolygons;
-      long countNodes;
-      long countWays;
-      long countRelations;
-      double length;
-      double area;
-
-      ResultEntry() {
-        this.countTotal = 0;
-        this.countLinestrings = 0;
-        this.countPolygons = 0;
-        this.countNodes = 0;
-        this.countWays = 0;
-        this.countRelations = 0;
-        this.length = 0.0;
-        this.area = 0.0;
-      }
-
-      public void add(ResultEntry other) {
-        this.countTotal += other.countTotal;
-        this.countLinestrings += other.countLinestrings;
-        this.countPolygons += other.countPolygons;
-        this.countNodes += other.countNodes;
-        this.countWays += other.countWays;
-        this.countRelations += other.countRelations;
-        this.length += other.length;
-        this.area += other.area;
-      }
-    }
-
     boolean handleOldStyleMultipolygons = false;
 
     List<Long> timestamps = new ArrayList<>();
@@ -81,7 +48,8 @@ public class HistocountUsers {
 
     //final BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
     //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
-    final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+    //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+    final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -89,7 +57,7 @@ public class HistocountUsers {
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
 
     // connect to the "Big"DB
-    Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
+    Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
     final Statement stmt = conn.createStatement();
 
     System.out.println("Select tag key/value ids from DB");
@@ -138,6 +106,9 @@ public class HistocountUsers {
       }
     }).map(oshCell -> {
       Map<Long, Set<Integer>> activeUsersOverTime = new HashMap<>(timestamps.size());
+      for (long t : timestamps) {
+        activeUsersOverTime.put(t, new HashSet<>());
+      }
 
       //int interestedKeyId = allKeyValues.get("landuse").get("residential").getLeft();
       int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
@@ -154,64 +125,65 @@ public class HistocountUsers {
           handleOldStyleMultipolygons
       )
       .forEach(result -> {
-        long timestamp = result.validFrom;
+        long validFromTimestamp = result.validFrom;
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
         // todo: geometry intersection with actual non-bbox area of interest
 
-
+        Long timestamp = null;
         for (int i=timestamps.size()-1; i>=0; i--) {
-          if (timestamp > timestamps.get(i)) {
+          if (validFromTimestamp > timestamps.get(i)) {
             timestamp = timestamps.get(i);
             break;
           }
           if (i==0) return; // skip altogether if too old
         }
-        if (!activeUsersOverTime.containsKey(timestamp)) {
-          activeUsersOverTime.put(timestamp, new HashSet<>());
-        }
+
         Set<Integer> thisResult = activeUsersOverTime.get(timestamp);
 
+        if (osmEntity.getTimestamp() == validFromTimestamp)
+          thisResult.add(osmEntity.getUserId());
 
-        thisResult.add(osmEntity.getUserId());
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBER_CHANGE)) { // only do this if members were actually changed in this modification (e.g. not on a "DELETION")
+          if (osmEntity instanceof OSMWay) {
+            for (OSMMember m : ((OSMWay) osmEntity).getRefs()) {
+              OSHNode oshEntity = (OSHNode) m.getEntity();
 
-        if (osmEntity instanceof OSMWay) {
-          for (OSMMember m : ((OSMWay) osmEntity).getRefs()) {
-            OSHNode oshEntity = (OSHNode)m.getEntity();
-
-            for (OSMEntity n : oshEntity) {
-              long ts = n.getTimestamp();
-              if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
-                thisResult.add(n.getUserId());
+              for (OSMEntity n : oshEntity) {
+                long ts = n.getTimestamp();
+                //if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
+                if (ts == result.validFrom) {
+                  thisResult.add(n.getUserId());
+                }
               }
             }
           }
-        }
-        if (osmEntity instanceof OSMRelation) {
-          for (OSMMember m : ((OSMRelation) osmEntity).getMembers()) {
-            OSHEntity oshEntity = m.getEntity();
+          if (osmEntity instanceof OSMRelation) {
+            for (OSMMember m : ((OSMRelation) osmEntity).getMembers()) {
+              OSHEntity oshEntity = m.getEntity();
 
-            if (oshEntity instanceof OSHNode) {
-              for (OSMNode node : (OSHNode) oshEntity) {
-                long ts = node.getTimestamp();
-                if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
-                  thisResult.add(node.getUserId());
+              if (oshEntity instanceof OSHNode) {
+                for (OSMNode node : (OSHNode) oshEntity) {
+                  long ts = node.getTimestamp();
+                  if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
+                    thisResult.add(node.getUserId());
+                  }
                 }
-              }
-            } else if (oshEntity instanceof OSHWay) {
-              for (OSMWay way : (OSHWay) oshEntity) {
-                long ts = way.getTimestamp();
-                if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
-                  thisResult.add(way.getUserId());
-                  // recurse way nodes
-                  for (OSMMember wm : way.getRefs()) {
-                    OSHNode oshEntity2 = (OSHNode)m.getEntity();
+              } else if (oshEntity instanceof OSHWay) {
+                for (OSMWay way : (OSHWay) oshEntity) {
+                  long ts = way.getTimestamp();
+                  if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
+                    thisResult.add(way.getUserId());
+                    // recurse way nodes
+                    for (OSMMember wm : way.getRefs()) {
+                      OSHNode oshEntity2 = (OSHNode) wm.getEntity();
 
-                    for (OSMEntity n : oshEntity2) {
-                      long ts2 = n.getTimestamp();
-                      if (ts2 > result.validFrom && (result.validTo == null || ts2 < result.validTo)) {
-                        thisResult.add(n.getUserId());
+                      for (OSMEntity n : oshEntity2) {
+                        long ts2 = n.getTimestamp();
+                        if (ts2 > result.validFrom && (result.validTo == null || ts2 < result.validTo)) {
+                          thisResult.add(n.getUserId());
+                        }
                       }
                     }
                   }
@@ -220,6 +192,7 @@ public class HistocountUsers {
             }
           }
         }
+
 
         /*if (handleOldStyleMultipolygons &&
             osmEntity instanceof OSMRelation &&
@@ -235,10 +208,10 @@ public class HistocountUsers {
           thisResult.countTotal++;
           switch (osmEntity.getType()) {
             case OSHEntity.NODE:
-              thisResult.countNodes++;
+              thisResult.countTagChange++;
               break;
             case OSHEntity.WAY:
-              thisResult.countWays++;
+              thisResult.countDeletion++;
               break;
             case OSHEntity.RELATION:
               thisResult.countRelations++;
@@ -247,10 +220,10 @@ public class HistocountUsers {
           if (geometry.getGeometryType().startsWith("LineString")) {
             //System.err.printf("%s %s\n", formatter.format(new Date(timestamp*1000)), osmEntity.toString());
             //System.err.printf("%s\n", geometry.toString());
-            thisResult.countLinestrings++;
+            thisResult.countCreation++;
             thisResult.length += Geo.distanceOf((LineString) geometry);
           } else if (geometry.getGeometryType().startsWith("Polygon")) {
-            thisResult.countPolygons++;
+            thisResult.countGeometryChange++;
             if (geometry instanceof Polygon)
               thisResult.area += Geo.areaOf((Polygon) geometry);
             else
@@ -283,6 +256,11 @@ public class HistocountUsers {
           formatter.format(new Date(total.getKey()*1000)),
           total.getValue().size()
       );
+      if (formatter.format(new Date(total.getKey()*1000)).equals("20161101")) {
+        for (Integer uid : total.getValue()) {
+          ;//System.err.println(uid);
+        }
+      }
     }
 
   }

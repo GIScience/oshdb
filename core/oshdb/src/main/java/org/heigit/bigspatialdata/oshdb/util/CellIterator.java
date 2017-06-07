@@ -6,7 +6,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -169,11 +171,16 @@ public class CellIterator {
     public final Long validTo;
     public final OSMEntity osmEntity;
     public final Geometry geometry;
-    IterateAllEntry(Long from, Long to, OSMEntity entity, Geometry geom) {
+    public final EnumSet<ActivityType> activities;
+    IterateAllEntry(Long from, Long to, OSMEntity entity, Geometry geom, EnumSet<ActivityType> activities) {
       this.validFrom = from;
       this.validTo = to;
       this.osmEntity = entity;
       this.geometry = geom;
+      this.activities = activities;
+    }
+    public enum ActivityType {
+      CREATION, DELETION, TAG_CHANGE, MEMBER_CHANGE, GEOMETRY_CHANGE
     }
   }
   /**
@@ -211,12 +218,19 @@ public class CellIterator {
         Long timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
+        IterateAllEntry prev = results.size() > 0 ? results.get(results.size()-1) : null;
+        Long nextTs = null;
+        if (modTs.size() > modTs.indexOf(timestamp)+1) //todo: better way to figure out if timestamp is not last element??
+          nextTs = modTs.get(modTs.indexOf(timestamp)+1);
+
         if (!osmEntity.isVisible()) {
-          // skip because this entity is deleted at this timestamp
+          // this entity is deleted at this timestamp
+          if (prev != null && prev.osmEntity.getId() == osmEntity.getId() && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) // todo: some of this may be refactorable between the two for loops
+            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, null, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
           continue;
         }
 
-        // todo check old style mp code
+        // todo check old style mp code!!1!!!11!
         boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons &&
             osmEntity instanceof OSMRelation &&
@@ -239,7 +253,10 @@ public class CellIterator {
           }
         } else {
           if (!osmEntityFilter.test(osmEntity)) {
-            // skip because this entity doesn't match our filter
+            // this entity doesn't match our filter
+            // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct geometries for these?
+            if (prev != null && prev.osmEntity.getId() == osmEntity.getId() && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION))
+              results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, null, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
             continue osmEntityLoop;
           }
         }
@@ -270,11 +287,61 @@ public class CellIterator {
           if (geom.isEmpty()) throw new NotImplementedException(); // todo: fix this hack!
           //if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack! // todo: wat?
 
-          //oshResult.put(timestamp, new ImmutablePair<>(osmEntity, geom));
-          Long nextTs = null;
-          if (modTs.size() > modTs.indexOf(timestamp)+1) //todo: better way to figure out if timestamp is not last element??
-            nextTs = modTs.get(modTs.indexOf(timestamp)+1);
-          results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, geom));
+          EnumSet<IterateAllEntry.ActivityType> activity;
+          if (prev == null || prev.osmEntity.getId() != osmEntity.getId()) {
+            activity = EnumSet.of(IterateAllEntry.ActivityType.CREATION);
+          } else {
+            activity = EnumSet.noneOf(IterateAllEntry.ActivityType.class);
+            // look if tags have been changed between versions
+            boolean tagsChange = false;
+            if (prev.osmEntity.getTags().length != osmEntity.getTags().length)
+              tagsChange = true;
+            else
+              for (int i=0; i<prev.osmEntity.getTags().length; i++)
+                if (prev.osmEntity.getTags()[i] != osmEntity.getTags()[i]) {
+                  tagsChange = true;
+                  break;
+                }
+            if (tagsChange) activity.add(IterateAllEntry.ActivityType.TAG_CHANGE);
+            // look if members have been changed between versions
+            boolean membersChange = false;
+            switch (prev.osmEntity.getType()) {
+              case OSHEntity.WAY:
+                OSMMember[] prevNds = ((OSMWay)prev.osmEntity).getRefs();
+                OSMMember[] currNds = ((OSMWay)osmEntity).getRefs();
+                if (prevNds.length != currNds.length)
+                  membersChange = true;
+                else
+                  for (int i=0; i<prevNds.length; i++)
+                    if (prevNds[i].getId() != currNds[i].getId()) {
+                      membersChange = true;
+                      break;
+                    }
+                break;
+              case OSHEntity.RELATION:
+                OSMMember[] prevMembers = ((OSMRelation)prev.osmEntity).getMembers();
+                OSMMember[] currMembers = ((OSMRelation)osmEntity).getMembers();
+                if (prevMembers.length != currMembers.length)
+                  membersChange = true;
+                else
+                  for (int i=0; i<prevMembers.length; i++)
+                    if (prevMembers[i].getId() != currMembers[i].getId() ||
+                        prevMembers[i].getType() != currMembers[i].getType() ||
+                        prevMembers[i].getRoleId() != currMembers[i].getRoleId()) {
+                      membersChange = true;
+                      break;
+                    }
+                break;
+            }
+            if (membersChange) activity.add(IterateAllEntry.ActivityType.MEMBER_CHANGE);
+            // look if geometry has been changed between versions
+            boolean geometryChange = false;
+            if (geom != null && prev.geometry != null) // todo: what if both are null? -> maybe fall back to MEMEBER_CHANGE?
+              geometryChange = !prev.geometry.equals(geom); // todo: check: does this work as expected?
+            if (geometryChange) activity.add(IterateAllEntry.ActivityType.GEOMETRY_CHANGE);
+          }
+
+          results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, geom, activity));
         } catch (UnsupportedOperationException err) {
           // e.g. unsupported relation types go here
         } catch (NotImplementedException err) {

@@ -1,18 +1,18 @@
 package org.heigit.bigspatialdata.oshdb.examples.histocounts;
 
-import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
+import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
@@ -23,40 +23,34 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
-public class HistocountsByTag {
+public class HistocountActivityTypes {
 
   public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, org.json.simple.parser.ParseException {
 
-    class ResultEntry {
+    class ResultActivityEntry {
       long countTotal;
-      long countLinestrings;
-      long countPolygons;
-      long countNodes;
-      long countWays;
-      long countRelations;
-      double length;
-      double area;
+      long countCreation;
+      long countTagChange;
+      long countMemberChange;
+      long countGeometryChange;
+      long countDeletion;
 
-      ResultEntry() {
+      ResultActivityEntry() {
         this.countTotal = 0;
-        this.countLinestrings = 0;
-        this.countPolygons = 0;
-        this.countNodes = 0;
-        this.countWays = 0;
-        this.countRelations = 0;
-        this.length = 0.0;
-        this.area = 0.0;
+        this.countCreation = 0;
+        this.countTagChange = 0;
+        this.countMemberChange = 0;
+        this.countGeometryChange = 0;
+        this.countDeletion = 0;
       }
 
-      public void add(ResultEntry other) {
+      public void add(ResultActivityEntry other) {
         this.countTotal += other.countTotal;
-        this.countLinestrings += other.countLinestrings;
-        this.countPolygons += other.countPolygons;
-        this.countNodes += other.countNodes;
-        this.countWays += other.countWays;
-        this.countRelations += other.countRelations;
-        this.length += other.length;
-        this.area += other.area;
+        this.countCreation += other.countCreation;
+        this.countTagChange += other.countTagChange;
+        this.countMemberChange += other.countMemberChange;
+        this.countGeometryChange += other.countGeometryChange;
+        this.countDeletion += other.countDeletion;
       }
     }
 
@@ -75,10 +69,10 @@ public class HistocountsByTag {
       }
     }
 
-    //BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
-    //BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
-    //BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
+    //final BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
+    //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
     final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+    //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -112,7 +106,7 @@ public class HistocountsByTag {
     final TagInterpreter tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
 
 
-    Map<Long,ResultEntry> countByTimestamp = cellIds.parallelStream().flatMap(cell -> {
+    Map<Long, ResultActivityEntry> countByTimestamp = cellIds.parallelStream().flatMap(cell -> {
       try (final PreparedStatement pstmt = conn.prepareStatement("" +
           "(select data from grid_node where level = ?1 and id = ?2) union " +
           "(select data from grid_way where level = ?1 and id = ?2) union " +
@@ -134,77 +128,67 @@ public class HistocountsByTag {
         return null;
       }
     }).map(oshCell -> {
-      Map<Long, ResultEntry> counts = new HashMap<>(timestamps.size());
+      Map<Long, ResultActivityEntry> activitiesOverTime = new HashMap<>(timestamps.size());
 
+      //int interestedKeyId = allKeyValues.get("landuse").get("residential").getLeft();
       int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
-      int[] uninterestedValueIds = { allKeyValues.get("building").get("no").getRight() };
-      CellIterator.iterateByTimestamps(
+      //int interestedValueId = allKeyValues.get("building").get("yes").getRight();
+      //int[] uninterestedValueIds = { allKeyValues.get("building").get("no").getRight() };
+      CellIterator.iterateAll(
           oshCell,
           bbox,
-          timestamps,
           tagInterpreter,
-          osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
+          //osmEntity -> true,
+          osmEntity -> osmEntity.hasTagKey(interestedKeyId),
+          //osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
+          //osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId),
           handleOldStyleMultipolygons
       )
       .forEach(result -> {
-        result.entrySet().forEach(entry -> {
-          long timestamp = entry.getKey();
-          OSMEntity osmEntity = entry.getValue().getLeft();
-          Geometry geometry = entry.getValue().getRight();
-
-          // todo: geometry intersection with actual non-bbox area of interest
+        long timestamp = result.validFrom;
+        OSMEntity osmEntity = result.osmEntity;
+        Geometry geometry = result.geometry;
 
 
+        // todo: geometry intersection with actual non-bbox area of interest
 
-          if (!counts.containsKey(timestamp)) {
-            counts.put(timestamp, new ResultEntry());
+
+        for (int i=timestamps.size()-1; i>=0; i--) {
+          if (timestamp > timestamps.get(i)) {
+            timestamp = timestamps.get(i);
+            break;
           }
-          ResultEntry thisResult = counts.get(timestamp);
+          if (i==0) return; // skip altogether if too old
+        }
+        if (!activitiesOverTime.containsKey(timestamp)) {
+          activitiesOverTime.put(timestamp, new ResultActivityEntry());
+        }
+        ResultActivityEntry thisResult = activitiesOverTime.get(timestamp);
 
-          if (handleOldStyleMultipolygons &&
-              osmEntity instanceof OSMRelation &&
-              tagInterpreter.isOldStyleMultipolygon((OSMRelation)osmEntity)) {
-            // special handling of old style multipolygons: don't count this as a separate entity, just subtract the
-            // total hole(s) size of the polygon from the end result
-            if (geometry instanceof Polygon)
-              thisResult.area -= Geo.areaOf((Polygon) geometry);
-            else
-              thisResult.area -= Geo.areaOf((MultiPolygon) geometry);
-          } else {
-            // normal case: a regular point, line or (multi)polygon
-            thisResult.countTotal++;
-            switch (osmEntity.getType()) {
-              case OSHEntity.NODE:
-                thisResult.countNodes++;
-                break;
-              case OSHEntity.WAY:
-                thisResult.countWays++;
-                break;
-              case OSHEntity.RELATION:
-                thisResult.countRelations++;
-                break;
-            }
-            if (geometry.getGeometryType().startsWith("LineString")) {
-              thisResult.countLinestrings++;
-              thisResult.length += Geo.distanceOf((LineString) geometry);
-            } else if (geometry.getGeometryType().startsWith("Polygon")) {
-              thisResult.countPolygons++;
-              if (geometry instanceof Polygon)
-                thisResult.area += Geo.areaOf((Polygon) geometry);
-              else
-                thisResult.area += Geo.areaOf((MultiPolygon) geometry);
-            }
-          }
-        });
+
+        thisResult.countTotal++;
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.CREATION))
+          thisResult.countCreation++;
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
+          thisResult.countDeletion++;
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.TAG_CHANGE))
+          thisResult.countTagChange++;
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBER_CHANGE))
+          thisResult.countMemberChange++;
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE))
+          thisResult.countGeometryChange++;
+
+
+
       });
 
-      return counts;
+      return activitiesOverTime;
     }).reduce(new HashMap<>(), (a, b) -> {
       Set<Long> ts = new HashSet<>();
       ts.addAll(a.keySet());
       ts.addAll(b.keySet());
       // make a copy of one of the intermediate results to aggregate results in
-      Map<Long,ResultEntry> combined = new HashMap<>(b);
+      Map<Long,ResultActivityEntry> combined = new HashMap<>(b);
       for (Long t : ts) {
         if (!combined.containsKey(t))
           combined.put(t, a.get(t));
@@ -215,17 +199,15 @@ public class HistocountsByTag {
       return combined;
     });
 
-    for (Map.Entry<Long,ResultEntry> total : new TreeMap<>(countByTimestamp).entrySet()) {
-      System.out.printf("%s\t%d\t%d\t%d\t%d\t%d\t%f\t%d\t%f\n",
+    for (Map.Entry<Long,ResultActivityEntry> total : new TreeMap<>(countByTimestamp).entrySet()) {
+      System.out.printf("%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
           formatter.format(new Date(total.getKey()*1000)),
           total.getValue().countTotal,
-          total.getValue().countNodes,
-          total.getValue().countWays,
-          total.getValue().countRelations,
-          total.getValue().countLinestrings,
-          total.getValue().length,
-          total.getValue().countPolygons,
-          total.getValue().area
+          total.getValue().countCreation,
+          total.getValue().countDeletion,
+          total.getValue().countTagChange,
+          total.getValue().countMemberChange,
+          total.getValue().countGeometryChange
       );
     }
 
