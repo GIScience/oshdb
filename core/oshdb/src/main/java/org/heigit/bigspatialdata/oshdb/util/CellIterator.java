@@ -180,7 +180,11 @@ public class CellIterator {
       this.activities = activities;
     }
     public enum ActivityType {
-      CREATION, DELETION, TAG_CHANGE, MEMBER_CHANGE, GEOMETRY_CHANGE
+      CREATION, // a new object has been created
+      DELETION, // one object has been deleted
+      TAG_CHANGE, // at least one tag of this object has been modified
+      MEMBERLIST_CHANGE, // the member list of this object (way or relation) has changed in some way
+      GEOMETRY_CHANGE // the geometry of the object has been modified either directly (see MEMBERLIST_CHANGE) or via changed coordinates of the object's child entities
     }
   }
   /**
@@ -333,7 +337,7 @@ public class CellIterator {
                     }
                 break;
             }
-            if (membersChange) activity.add(IterateAllEntry.ActivityType.MEMBER_CHANGE);
+            if (membersChange) activity.add(IterateAllEntry.ActivityType.MEMBERLIST_CHANGE);
             // look if geometry has been changed between versions
             boolean geometryChange = false;
             if (geom != null && prev.geometry != null) // todo: what if both are null? -> maybe fall back to MEMEBER_CHANGE?

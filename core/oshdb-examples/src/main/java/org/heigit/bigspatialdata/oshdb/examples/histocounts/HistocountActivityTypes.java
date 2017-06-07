@@ -6,9 +6,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
-import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -174,7 +171,7 @@ public class HistocountActivityTypes {
           thisResult.countDeletion++;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.TAG_CHANGE))
           thisResult.countTagChange++;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBER_CHANGE))
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBERLIST_CHANGE))
           thisResult.countMemberChange++;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE))
           thisResult.countGeometryChange++;
