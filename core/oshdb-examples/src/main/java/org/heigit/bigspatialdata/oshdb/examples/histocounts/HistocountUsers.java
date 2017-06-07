@@ -145,7 +145,8 @@ public class HistocountUsers {
         if (osmEntity.getTimestamp() == validFromTimestamp)
           thisResult.add(osmEntity.getUserId());
 
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBER_CHANGE)) { // only do this if members were actually changed in this modification (e.g. not on a "DELETION")
+        if (!result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION) &&
+            !result.activities.contains(CellIterator.IterateAllEntry.ActivityType.CREATION)) {// only do this if members were actually changed in this modification
           if (osmEntity instanceof OSMWay) {
             for (OSMMember m : ((OSMWay) osmEntity).getRefs()) {
               OSHNode oshEntity = (OSHNode) m.getEntity();
