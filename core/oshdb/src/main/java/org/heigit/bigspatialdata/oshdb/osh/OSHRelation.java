@@ -525,12 +525,18 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
 	@Override
 	public List<Long> getModificationTimestamps(boolean recurse) {
+		List<Long> result;
+
 		List<OSMRelation> rels = this.getVersions();
 		Set<Long> relTimestamps = rels.stream()
 		.map(OSMEntity::getTimestamp)
 		.collect(Collectors.toSet());
 
-		if (!recurse) return new ArrayList<>(relTimestamps);
+		result = new ArrayList<>(relTimestamps);
+		if (!recurse) {
+			Collections.sort(result);
+			return result;
+		}
 
 		Set<Long> memberTimestamps = IntStream.range(0, rels.size())
 		.mapToObj(Integer::new)
@@ -553,9 +559,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 		})
 		.collect(Collectors.toSet());
 
-		relTimestamps.addAll(memberTimestamps);
+		result.addAll(memberTimestamps);
 
-		List<Long> result = new ArrayList<>(relTimestamps);
 		Collections.sort(result);
 		return result;
 	}

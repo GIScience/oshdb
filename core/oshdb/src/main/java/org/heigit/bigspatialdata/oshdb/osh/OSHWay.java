@@ -385,12 +385,18 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 
 	@Override
 	public List<Long> getModificationTimestamps(boolean recurse) {
+		List<Long> result;
+
 		List<OSMWay> ways = this.getVersions();
 		Set<Long> wayTimestamps = ways.stream()
 		.map(OSMEntity::getTimestamp)
 		.collect(Collectors.toSet());
 
-		if (!recurse) return new ArrayList<>(wayTimestamps);
+		result = new ArrayList<>(wayTimestamps);
+		if (!recurse) {
+			Collections.sort(result);
+			return result;
+		}
 
 		Set<Long> ndTimestamps = IntStream.range(0, ways.size())
 		.mapToObj((Integer::new))
@@ -410,9 +416,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 		})
 		.collect(Collectors.toSet());
 
-		wayTimestamps.addAll(ndTimestamps);
+		result.addAll(ndTimestamps);
 
-		List<Long> result = new ArrayList<>(wayTimestamps);
 		Collections.sort(result);
 		return result;
 	}
