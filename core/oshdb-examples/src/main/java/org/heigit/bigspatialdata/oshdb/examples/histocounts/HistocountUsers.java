@@ -153,7 +153,6 @@ public class HistocountUsers {
 
               for (OSMEntity n : oshEntity) {
                 long ts = n.getTimestamp();
-                //if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
                 if (ts == result.validFrom) {
                   thisResult.add(n.getUserId());
                 }
@@ -167,14 +166,14 @@ public class HistocountUsers {
               if (oshEntity instanceof OSHNode) {
                 for (OSMNode node : (OSHNode) oshEntity) {
                   long ts = node.getTimestamp();
-                  if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
+                  if (ts == result.validFrom) {
                     thisResult.add(node.getUserId());
                   }
                 }
               } else if (oshEntity instanceof OSHWay) {
                 for (OSMWay way : (OSHWay) oshEntity) {
                   long ts = way.getTimestamp();
-                  if (ts > result.validFrom && (result.validTo == null || ts < result.validTo)) {
+                  if (ts == result.validFrom) {
                     thisResult.add(way.getUserId());
                     // recurse way nodes
                     for (OSMMember wm : way.getRefs()) {
@@ -182,7 +181,7 @@ public class HistocountUsers {
 
                       for (OSMEntity n : oshEntity2) {
                         long ts2 = n.getTimestamp();
-                        if (ts2 > result.validFrom && (result.validTo == null || ts2 < result.validTo)) {
+                        if (ts2 == result.validFrom) {
                           thisResult.add(n.getUserId());
                         }
                       }
