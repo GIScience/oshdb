@@ -228,10 +228,10 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
 
     int timeIdx = allModTs.size()-1;
 
-    long lastOsmEntityTs = -1;
+    long lastOsmEntityTs = Long.MAX_VALUE;
     for (OSMEntity osmEntity : this) {
       long osmEntityTs = osmEntity.getTimestamp();
-      if (osmEntityTs == lastOsmEntityTs) continue; // skip versions with identical timestamps
+      if (osmEntityTs >= lastOsmEntityTs) continue; // skip versions with identical (or invalid*) timestamps
       long modTs = allModTs.get(timeIdx);
 
       boolean matches = osmEntityFilter.test(osmEntity);
