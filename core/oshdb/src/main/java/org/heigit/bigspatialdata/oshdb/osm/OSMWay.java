@@ -78,7 +78,9 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     // todo: handle old-style multipolygons here???
     GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = Arrays.stream(this.getRefs())
-    .map(d -> d.getEntity().getByTimestamp(timestamp))
+    .map(OSMMember::getEntity)
+    .filter(Objects::nonNull)
+    .map(entity -> entity.getByTimestamp(timestamp))
     .map(osm -> (OSMNode)osm)
     .filter(node -> node != null && node.isVisible())
     .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))

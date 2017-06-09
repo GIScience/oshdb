@@ -405,6 +405,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 			OSMWay nextOsmWay = osmWayIndex > 0 ? ways.get(osmWayIndex - 1) : null;
 			return Arrays.stream(osmWay.getRefs())
 			.map(osmNd -> ((OSHNode)osmNd.getEntity()))
+			.filter(Objects::nonNull)
 			.flatMap(oshNode ->
 				oshNode.getVersions().stream()
 				.filter(osmNode ->
