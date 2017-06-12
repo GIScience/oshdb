@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.examples.histocounts;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDb;
@@ -10,6 +12,7 @@ import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
@@ -25,12 +28,12 @@ public class HistocountActivityTypes {
   public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, org.json.simple.parser.ParseException {
 
     class ResultActivityEntry {
-      long countTotal;
-      long countCreation;
-      long countTagChange;
-      long countMemberChange;
-      long countGeometryChange;
-      long countDeletion;
+      double countTotal;
+      double countCreation;
+      double countTagChange;
+      double countMemberChange;
+      double countGeometryChange;
+      double countDeletion;
 
       ResultActivityEntry() {
         this.countTotal = 0;
@@ -68,8 +71,8 @@ public class HistocountActivityTypes {
 
     //final BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
     //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
-    final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
-    //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
+    //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+    final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -77,7 +80,7 @@ public class HistocountActivityTypes {
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
 
     // connect to the "Big"DB
-    Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
+    Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
     final Statement stmt = conn.createStatement();
 
     System.out.println("Select tag key/value ids from DB");
@@ -131,16 +134,17 @@ public class HistocountActivityTypes {
       }
 
       //int interestedKeyId = allKeyValues.get("landuse").get("residential").getLeft();
-      int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
+      int interestedKeyId = allKeyValues.get("highway").get("residential").getLeft();
       //int interestedValueId = allKeyValues.get("building").get("yes").getRight();
-      //int[] uninterestedValueIds = { allKeyValues.get("building").get("no").getRight() };
+      int[] uninterestedValueIds = { allKeyValues.get("highway").get("no").getRight() };
       CellIterator.iterateAll(
           oshCell,
           bbox,
           tagInterpreter,
+          //osmEntity -> osmEntity.getId() == 88962805 && osmEntity instanceof OSMWay,
           //osmEntity -> true,
-          osmEntity -> osmEntity.hasTagKey(interestedKeyId),
-          //osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
+          //osmEntity -> osmEntity.hasTagKey(interestedKeyId),
+          osmEntity -> osmEntity instanceof OSMWay && osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
           //osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId),
           handleOldStyleMultipolygons
       )
@@ -149,6 +153,13 @@ public class HistocountActivityTypes {
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
+        double length = 0;
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
+          geometry = result.previousGeometry;
+        if (geometry instanceof MultiLineString)
+          length = Geo.distanceOf((MultiLineString)geometry);
+        else if (geometry instanceof LineString)
+          length = Geo.distanceOf((LineString)geometry);
 
         // todo: geometry intersection with actual non-bbox area of interest
 
@@ -163,18 +174,21 @@ public class HistocountActivityTypes {
 
         ResultActivityEntry thisResult = activitiesOverTime.get(timestamp);
 
+        if (result.activities.equals(EnumSet.of(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)))
+          thisResult.countTotal += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length;
+        else
+          thisResult.countTotal += length;
 
-        thisResult.countTotal++;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.CREATION))
-          thisResult.countCreation++;
+          thisResult.countCreation += length;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
-          thisResult.countDeletion++;
+          thisResult.countDeletion += length;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.TAG_CHANGE))
-          thisResult.countTagChange++;
+          thisResult.countTagChange += length;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBERLIST_CHANGE))
-          thisResult.countMemberChange++;
+          thisResult.countMemberChange += length;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE))
-          thisResult.countGeometryChange++;
+          thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length;
 
 
 
@@ -198,7 +212,7 @@ public class HistocountActivityTypes {
     });
 
     for (Map.Entry<Long,ResultActivityEntry> total : new TreeMap<>(countByTimestamp).entrySet()) {
-      System.out.printf("%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
+      System.out.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\n",
           formatter.format(new Date(total.getKey()*1000)),
           total.getValue().countTotal,
           total.getValue().countCreation,

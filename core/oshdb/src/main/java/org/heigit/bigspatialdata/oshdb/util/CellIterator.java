@@ -170,13 +170,17 @@ public class CellIterator {
     public final Long validFrom;
     public final Long validTo;
     public final OSMEntity osmEntity;
+    public final OSMEntity previousOsmEntity;
     public final Geometry geometry;
+    public final Geometry previousGeometry;
     public final EnumSet<ActivityType> activities;
-    IterateAllEntry(Long from, Long to, OSMEntity entity, Geometry geom, EnumSet<ActivityType> activities) {
+    IterateAllEntry(Long from, Long to, OSMEntity entity, OSMEntity previousOsmEntity, Geometry geom, Geometry previousGeometry, EnumSet<ActivityType> activities) {
       this.validFrom = from;
       this.validTo = to;
       this.osmEntity = entity;
+      this.previousOsmEntity = previousOsmEntity;
       this.geometry = geom;
+      this.previousGeometry = previousGeometry;
       this.activities = activities;
     }
     public enum ActivityType {
@@ -222,7 +226,7 @@ public class CellIterator {
         Long timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
-        IterateAllEntry prev = results.size() > 0 ? results.get(results.size()-1) : null;
+        IterateAllEntry prev = results.size() > 0 ? results.get(results.size()-1) : null; // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
         Long nextTs = null;
         if (modTs.size() > modTs.indexOf(timestamp)+1) //todo: better way to figure out if timestamp is not last element??
           nextTs = modTs.get(modTs.indexOf(timestamp)+1);
@@ -230,7 +234,7 @@ public class CellIterator {
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
           if (prev != null && prev.osmEntity.getId() == osmEntity.getId() && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) // todo: some of this may be refactorable between the two for loops
-            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, null, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
+            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
           continue;
         }
 
@@ -257,10 +261,10 @@ public class CellIterator {
           }
         } else {
           if (!osmEntityFilter.test(osmEntity)) {
-            // this entity doesn't match our filter
+            // this entity doesn't match our filter (anymore)
             // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct geometries for these?
             if (prev != null && prev.osmEntity.getId() == osmEntity.getId() && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION))
-              results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, null, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
+              results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
             continue osmEntityLoop;
           }
         }
@@ -340,12 +344,15 @@ public class CellIterator {
             if (membersChange) activity.add(IterateAllEntry.ActivityType.MEMBERLIST_CHANGE);
             // look if geometry has been changed between versions
             boolean geometryChange = false;
-            if (geom != null && prev.geometry != null) // todo: what if both are null? -> maybe fall back to MEMEBER_CHANGE?
+            if (geom != null && prev.osmEntity.getId() == osmEntity.getId() && prev.geometry != null) // todo: what if both are null? -> maybe fall back to MEMEBER_CHANGE?
               geometryChange = !prev.geometry.equals(geom); // todo: check: does this work as expected?
             if (geometryChange) activity.add(IterateAllEntry.ActivityType.GEOMETRY_CHANGE);
           }
 
-          results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, geom, activity));
+          if (prev != null && prev.osmEntity.getId() == osmEntity.getId())
+            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, geom, prev.geometry, activity));
+          else
+            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, null, geom, null, activity));
         } catch (UnsupportedOperationException err) {
           // e.g. unsupported relation types go here
         } catch (NotImplementedException err) {
