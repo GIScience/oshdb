@@ -3,12 +3,11 @@ package org.heigit.bigspatialdata.oshdb.util;
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -40,6 +39,7 @@ public class CellIterator {
    */
   public static Stream<Map<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<Map<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
+    XYGrid nodeGrid = new XYGrid(OSHDb.MAXZOOM);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntity.intersectsBbox(boundingBox)) {
@@ -77,6 +77,12 @@ public class CellIterator {
       for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         Long timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
+
+        if (osmEntity instanceof OSMNode) {
+          OSMNode node = (OSMNode)osmEntity;
+          if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
+            continue;
+        }
 
         if (!osmEntity.isVisible()) {
           // skip because this entity is deleted at this timestamp
