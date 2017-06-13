@@ -253,9 +253,10 @@ public class CellIterator {
 
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
-          if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) // todo: some of this may be refactorable between the two for loops
+          if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) { // todo: some of this may be refactorable between the two for loops
             prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
-          if (!skipOutput) results.add(prev);
+            if (!skipOutput) results.add(prev);
+          }
           continue;
         }
 
@@ -284,9 +285,10 @@ public class CellIterator {
           if (!osmEntityFilter.test(osmEntity)) {
             // this entity doesn't match our filter (anymore)
             // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct geometries for these?
-            if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION))
+            if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
               prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
-            if (!skipOutput) results.add(prev);
+              if (!skipOutput) results.add(prev);
+            }
             continue osmEntityLoop;
           }
         }
@@ -312,13 +314,15 @@ public class CellIterator {
             if (!fullyInside)
               geom = Geo.clip(geom, boundingBox);
           }
-
-          if (geom == null) throw new NotImplementedException(); // todo: fix this hack!
-          if (geom.isEmpty()) throw new NotImplementedException(); // todo: fix this hack!
-          //if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack! // todo: wat?
-
+          
           EnumSet<IterateAllEntry.ActivityType> activity;
-          if (prev == null || prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
+          if (geom == null || geom.isEmpty()) { // either object is outside of current area or has invalid geometry
+            if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
+              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
+              if (!skipOutput) results.add(prev);
+            }
+            continue osmEntityLoop;
+          } else if (prev == null || prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
             activity = EnumSet.of(IterateAllEntry.ActivityType.CREATION);
             // todo: special case when an object gets specific tag/condition again after having them removed?
           } else {
@@ -383,8 +387,6 @@ public class CellIterator {
           prev = result;
         } catch (UnsupportedOperationException err) {
           // e.g. unsupported relation types go here
-        } catch (NotImplementedException err) {
-          // todo: what to do here???
         } catch (IllegalArgumentException err) {
           System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
