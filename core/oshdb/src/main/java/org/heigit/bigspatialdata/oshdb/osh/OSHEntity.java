@@ -176,17 +176,11 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   public boolean intersectsBbox(BoundingBox otherBbox) {
     BoundingBox bbox = this.getBoundingBox();
     if (bbox == null) return false;
-  	if (this.insideBbox(otherBbox))
-      return true;
-    if (bbox.minLat >= otherBbox.minLat && bbox.minLat <= otherBbox.maxLat && (
-      bbox.minLon >= otherBbox.minLon && bbox.minLon <= otherBbox.maxLon ||
-      bbox.maxLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon))
-      return true;
-    if (bbox.maxLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat && (
-      bbox.minLon >= otherBbox.minLon && bbox.minLon <= otherBbox.maxLon ||
-      bbox.maxLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon))
-      return true;
-    return false;
+    if (bbox.maxLat < otherBbox.minLat) return false;
+    if (bbox.minLat > otherBbox.maxLat) return false;
+  	if (bbox.maxLon < otherBbox.minLon) return false;
+    if (bbox.minLon > otherBbox.maxLon) return false;
+    return true;
   }
 
   /*
