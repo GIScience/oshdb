@@ -72,7 +72,8 @@ public class HistocountActivityTypes {
     //final BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
     //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
     //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
-    final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
+    //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
+    final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -134,9 +135,17 @@ public class HistocountActivityTypes {
       }
 
       //int interestedKeyId = allKeyValues.get("landuse").get("residential").getLeft();
-      int interestedKeyId = allKeyValues.get("highway").get("residential").getLeft();
+      //int interestedKeyId = allKeyValues.get("highway").get("residential").getLeft();
       //int interestedValueId = allKeyValues.get("building").get("yes").getRight();
-      int[] uninterestedValueIds = { allKeyValues.get("highway").get("no").getRight() };
+      //int[] uninterestedValueIds = { allKeyValues.get("highway").get("no").getRight() };
+      int interestedKeyId = allKeyValues.get("wikidata").get("Q513").getLeft();
+      int interestedValueId = allKeyValues.get("wikidata").get("Q513").getRight();
+      int interestedKeyId2 = allKeyValues.get("natural").get("peak").getLeft();
+      int interestedValueId2 = allKeyValues.get("natural").get("peak").getRight();
+      int interestedKeyId3 = allKeyValues.get("name").get("Mount Everest").getLeft();
+      int interestedValueId3 = allKeyValues.get("name").get("Mount Everest").getRight();
+      int interestedKeyId4 = allKeyValues.get("name").get("Everest").getLeft();
+      int interestedValueId4 = allKeyValues.get("name").get("Everest").getRight();
       CellIterator.iterateAll(
           oshCell,
           bbox,
@@ -144,22 +153,36 @@ public class HistocountActivityTypes {
           //osmEntity -> osmEntity.getId() == 88962805 && osmEntity instanceof OSMWay,
           //osmEntity -> true,
           //osmEntity -> osmEntity.hasTagKey(interestedKeyId),
-          osmEntity -> osmEntity instanceof OSMWay && osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
+          osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId) || (
+              osmEntity.hasTagValue(interestedKeyId2, interestedValueId2) && (
+                  osmEntity.hasTagValue(interestedKeyId3, interestedValueId3) ||
+                  osmEntity.hasTagValue(interestedKeyId4, interestedValueId4)
+              )
+          ),
           //osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId),
           handleOldStyleMultipolygons
       )
       .forEach(result -> {
+        //todo: replace this with grouping by changeset id?!!?! -> maybe in iterateAll()!
         long timestamp = result.validFrom;
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
+        System.out.printf("---> [%s] %s - %s: %s\n",
+            result.activities.toString(),
+            formatter.format(new Date(result.validFrom*1000)),
+            result.validTo != null ? formatter.format(new Date(result.validTo*1000)) : "/",
+            osmEntity.toString()
+        );
+
         double length = 0;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
+        /*if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
           geometry = result.previousGeometry;
         if (geometry instanceof MultiLineString)
           length = Geo.distanceOf((MultiLineString)geometry);
         else if (geometry instanceof LineString)
-          length = Geo.distanceOf((LineString)geometry);
+          length = Geo.distanceOf((LineString)geometry);*/
+        length = 1.0;
 
         // todo: geometry intersection with actual non-bbox area of interest
 
@@ -175,7 +198,7 @@ public class HistocountActivityTypes {
         ResultActivityEntry thisResult = activitiesOverTime.get(timestamp);
 
         if (result.activities.equals(EnumSet.of(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)))
-          thisResult.countTotal += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length;
+          thisResult.countTotal += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length; //todo: replace this with grouping by changeset id?!!?!
         else
           thisResult.countTotal += length;
 
@@ -188,7 +211,7 @@ public class HistocountActivityTypes {
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBERLIST_CHANGE))
           thisResult.countMemberChange += length;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE))
-          thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length;
+          thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length; //todo: replace this with grouping by changeset id?!!?!
 
 
 

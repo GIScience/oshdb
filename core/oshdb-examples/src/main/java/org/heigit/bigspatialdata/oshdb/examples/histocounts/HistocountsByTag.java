@@ -75,10 +75,11 @@ public class HistocountsByTag {
       }
     }
 
-    //BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
-    //BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
-    //BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
-    final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+    //final BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
+    //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
+    //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
+    //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+    final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -86,7 +87,7 @@ public class HistocountsByTag {
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
 
     // connect to the "Big"DB
-    Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
+    Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
     final Statement stmt = conn.createStatement();
 
     System.out.println("Select tag key/value ids from DB");
@@ -136,14 +137,27 @@ public class HistocountsByTag {
     }).map(oshCell -> {
       Map<Long, ResultEntry> counts = new HashMap<>(timestamps.size());
 
-      int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
-      int[] uninterestedValueIds = { allKeyValues.get("building").get("no").getRight() };
+      //int interestedKeyId = allKeyValues.get("highway").get("residential").getLeft();
+      //int[] uninterestedValueIds = { allKeyValues.get("highway").get("no").getRight() };
+      int interestedKeyId = allKeyValues.get("wikidata").get("Q513").getLeft();
+      int interestedValueId = allKeyValues.get("wikidata").get("Q513").getRight();
+      int interestedKeyId2 = allKeyValues.get("natural").get("peak").getLeft();
+      int interestedValueId2 = allKeyValues.get("natural").get("peak").getRight();
+      int interestedKeyId3 = allKeyValues.get("name").get("Mount Everest").getLeft();
+      int interestedValueId3 = allKeyValues.get("name").get("Mount Everest").getRight();
+      int interestedKeyId4 = allKeyValues.get("name").get("Everest").getLeft();
+      int interestedValueId4 = allKeyValues.get("name").get("Everest").getRight();
       CellIterator.iterateByTimestamps(
           oshCell,
           bbox,
           timestamps,
           tagInterpreter,
-          osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
+          osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId) || (
+              osmEntity.hasTagValue(interestedKeyId2, interestedValueId2) && (
+                  osmEntity.hasTagValue(interestedKeyId3, interestedValueId3) ||
+                  osmEntity.hasTagValue(interestedKeyId4, interestedValueId4)
+              )
+          ),
           handleOldStyleMultipolygons
       )
       .forEach(result -> {
@@ -151,6 +165,12 @@ public class HistocountsByTag {
           long timestamp = entry.getKey();
           OSMEntity osmEntity = entry.getValue().getLeft();
           Geometry geometry = entry.getValue().getRight();
+
+          if (formatter.format(new Date(timestamp*1000)).equals("20130601")) {
+            System.out.println("####");
+            System.out.println(oshCell.getId());
+            System.out.println(osmEntity.getId());
+          }
 
           // todo: geometry intersection with actual non-bbox area of interest
 

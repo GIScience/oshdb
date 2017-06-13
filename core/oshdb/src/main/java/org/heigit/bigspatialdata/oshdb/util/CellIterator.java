@@ -78,6 +78,7 @@ public class CellIterator {
         Long timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
+        // skip node versions outside of the current cell
         if (osmEntity instanceof OSMNode) {
           OSMNode node = (OSMNode)osmEntity;
           if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
@@ -214,6 +215,8 @@ public class CellIterator {
    */
   public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
+    XYGrid nodeGrid = new XYGrid(OSHDb.MAXZOOM);
+
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
 
@@ -227,20 +230,32 @@ public class CellIterator {
       List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
       SortedMap<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(modTs);
 
+      IterateAllEntry prev = null;
       osmEntityLoop:
       for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         Long timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
-        IterateAllEntry prev = results.size() > 0 ? results.get(results.size()-1) : null; // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
+        //prev = results.size() > 0 ? results.get(results.size()-1) : null; // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
+
+        boolean skipOutput = false;
+        // skip node versions outside of the current cell
+        if (osmEntity instanceof OSMNode) {
+          OSMNode node = osmEntity.isVisible() ? (OSMNode)osmEntity : (OSMNode)prev.osmEntity;
+          // todo: add case for node leaving bbox region -> (next version is probably not in out list of cells anymore) -> issue "deletion" result here and continue
+          if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
+            skipOutput = true; //continue;
+        }
+
         Long nextTs = null;
         if (modTs.size() > modTs.indexOf(timestamp)+1) //todo: better way to figure out if timestamp is not last element??
           nextTs = modTs.get(modTs.indexOf(timestamp)+1);
 
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
-          if (prev != null && prev.osmEntity.getId() == osmEntity.getId() && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) // todo: some of this may be refactorable between the two for loops
-            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
+          if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) // todo: some of this may be refactorable between the two for loops
+            prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
+          if (!skipOutput) results.add(prev);
           continue;
         }
 
@@ -269,8 +284,9 @@ public class CellIterator {
           if (!osmEntityFilter.test(osmEntity)) {
             // this entity doesn't match our filter (anymore)
             // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct geometries for these?
-            if (prev != null && prev.osmEntity.getId() == osmEntity.getId() && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION))
-              results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION)));
+            if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION))
+              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
+            if (!skipOutput) results.add(prev);
             continue osmEntityLoop;
           }
         }
@@ -302,8 +318,9 @@ public class CellIterator {
           //if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack! // todo: wat?
 
           EnumSet<IterateAllEntry.ActivityType> activity;
-          if (prev == null || prev.osmEntity.getId() != osmEntity.getId()) {
+          if (prev == null || prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
             activity = EnumSet.of(IterateAllEntry.ActivityType.CREATION);
+            // todo: special case when an object gets specific tag/condition again after having them removed?
           } else {
             activity = EnumSet.noneOf(IterateAllEntry.ActivityType.class);
             // look if tags have been changed between versions
@@ -350,15 +367,20 @@ public class CellIterator {
             if (membersChange) activity.add(IterateAllEntry.ActivityType.MEMBERLIST_CHANGE);
             // look if geometry has been changed between versions
             boolean geometryChange = false;
-            if (geom != null && prev.osmEntity.getId() == osmEntity.getId() && prev.geometry != null) // todo: what if both are null? -> maybe fall back to MEMEBER_CHANGE?
+            if (geom != null && prev.geometry != null) // todo: what if both are null? -> maybe fall back to MEMEBER_CHANGE?
               geometryChange = !prev.geometry.equals(geom); // todo: check: does this work as expected?
             if (geometryChange) activity.add(IterateAllEntry.ActivityType.GEOMETRY_CHANGE);
           }
 
-          if (prev != null && prev.osmEntity.getId() == osmEntity.getId())
-            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, geom, prev.geometry, activity));
+          IterateAllEntry result;
+          if (prev != null)
+            result = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, geom, prev.geometry, activity);
           else
-            results.add(new IterateAllEntry(timestamp, nextTs, osmEntity, null, geom, null, activity));
+            result = new IterateAllEntry(timestamp, nextTs, osmEntity, null, geom, null, activity);
+
+          if (!skipOutput)
+            results.add(result);
+          prev = result;
         } catch (UnsupportedOperationException err) {
           // e.g. unsupported relation types go here
         } catch (NotImplementedException err) {
