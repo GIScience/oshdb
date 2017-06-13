@@ -241,7 +241,12 @@ public class CellIterator {
         boolean skipOutput = false;
         // skip node versions outside of the current cell
         if (osmEntity instanceof OSMNode) {
-          OSMNode node = osmEntity.isVisible() ? (OSMNode)osmEntity : (OSMNode)prev.osmEntity;
+          OSMNode node = (OSMNode)osmEntity;
+          if (!node.isVisible()) {
+            if (prev == null || prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) // previous version was deleted -> skip
+              continue osmEntityLoop;
+            node = (OSMNode)prev.osmEntity;
+          }
           // todo: add case for node leaving bbox region -> (next version is probably not in out list of cells anymore) -> issue "deletion" result here and continue
           if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
             skipOutput = true; //continue;
@@ -257,7 +262,7 @@ public class CellIterator {
             prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
             if (!skipOutput) results.add(prev);
           }
-          continue;
+          continue osmEntityLoop;
         }
 
         // todo check old style mp code!!1!!!11!
@@ -314,7 +319,7 @@ public class CellIterator {
             if (!fullyInside)
               geom = Geo.clip(geom, boundingBox);
           }
-          
+
           EnumSet<IterateAllEntry.ActivityType> activity;
           if (geom == null || geom.isEmpty()) { // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {

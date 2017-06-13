@@ -73,7 +73,8 @@ public class HistocountActivityTypes {
     //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
     //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
     //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
-    final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
+    //final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
+    final BoundingBox bbox = new BoundingBox(86.92209, 86.92535, 27.9857, 27.98805);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
