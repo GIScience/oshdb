@@ -33,6 +33,7 @@ public class HistocountActivityTypes {
       double countTagChange;
       double countMemberChange;
       double countGeometryChange;
+      double countGeometryChangeDiff;
       double countDeletion;
 
       ResultActivityEntry() {
@@ -41,6 +42,7 @@ public class HistocountActivityTypes {
         this.countTagChange = 0;
         this.countMemberChange = 0;
         this.countGeometryChange = 0;
+        this.countGeometryChangeDiff = 0;
         this.countDeletion = 0;
       }
 
@@ -50,6 +52,7 @@ public class HistocountActivityTypes {
         this.countTagChange += other.countTagChange;
         this.countMemberChange += other.countMemberChange;
         this.countGeometryChange += other.countGeometryChange;
+        this.countGeometryChangeDiff += other.countGeometryChangeDiff;
         this.countDeletion += other.countDeletion;
       }
     }
@@ -74,7 +77,8 @@ public class HistocountActivityTypes {
     //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
     //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
     //final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
-    final BoundingBox bbox = new BoundingBox(86.92209, 86.92535, 27.9857, 27.98805);
+    //final BoundingBox bbox = new BoundingBox(86.92209, 86.92535, 27.9857, 27.98805);
+    final BoundingBox bbox = new BoundingBox(-1, 1, 51, 52);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -82,7 +86,7 @@ public class HistocountActivityTypes {
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
 
     // connect to the "Big"DB
-    Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
+    Connection conn = DriverManager.getConnection("jdbc:h2:./london","sa", "");
     final Statement stmt = conn.createStatement();
 
     System.out.println("Select tag key/value ids from DB");
@@ -136,17 +140,26 @@ public class HistocountActivityTypes {
       }
 
       //int interestedKeyId = allKeyValues.get("landuse").get("residential").getLeft();
-      //int interestedKeyId = allKeyValues.get("highway").get("residential").getLeft();
       //int interestedValueId = allKeyValues.get("building").get("yes").getRight();
-      //int[] uninterestedValueIds = { allKeyValues.get("highway").get("no").getRight() };
-      int interestedKeyId = allKeyValues.get("wikidata").get("Q513").getLeft();
+      int interestedKeyId = allKeyValues.get("highway").get("residential").getLeft();
+      //int interestedValueId = allKeyValues.get("highway").get("residential").getRight();
+      int[] uninterestedValueIds = {
+          allKeyValues.get("highway").get("no").getRight(),
+          allKeyValues.get("highway").get("path").getRight(),
+          allKeyValues.get("highway").get("footway").getRight(),
+          allKeyValues.get("highway").get("cycleway").getRight(),
+          allKeyValues.get("highway").get("pedestrian").getRight(),
+          allKeyValues.get("highway").get("track").getRight(),
+          allKeyValues.get("highway").get("service").getRight()
+      };
+      /*int interestedKeyId = allKeyValues.get("wikidata").get("Q513").getLeft();
       int interestedValueId = allKeyValues.get("wikidata").get("Q513").getRight();
       int interestedKeyId2 = allKeyValues.get("natural").get("peak").getLeft();
       int interestedValueId2 = allKeyValues.get("natural").get("peak").getRight();
       int interestedKeyId3 = allKeyValues.get("name").get("Mount Everest").getLeft();
       int interestedValueId3 = allKeyValues.get("name").get("Mount Everest").getRight();
       int interestedKeyId4 = allKeyValues.get("name").get("Everest").getLeft();
-      int interestedValueId4 = allKeyValues.get("name").get("Everest").getRight();
+      int interestedValueId4 = allKeyValues.get("name").get("Everest").getRight();*/
       CellIterator.iterateAll(
           oshCell,
           bbox,
@@ -154,13 +167,14 @@ public class HistocountActivityTypes {
           //osmEntity -> osmEntity.getId() == 88962805 && osmEntity instanceof OSMWay,
           //osmEntity -> true,
           //osmEntity -> osmEntity.hasTagKey(interestedKeyId),
-          osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId) || (
+          //osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId),
+          osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
+          /*osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId) || (
               osmEntity.hasTagValue(interestedKeyId2, interestedValueId2) && (
                   osmEntity.hasTagValue(interestedKeyId3, interestedValueId3) ||
                   osmEntity.hasTagValue(interestedKeyId4, interestedValueId4)
               )
-          ),
-          //osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId),
+          ),*/
           handleOldStyleMultipolygons
       )
       .forEach(result -> {
@@ -169,21 +183,21 @@ public class HistocountActivityTypes {
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
-        System.out.printf("---> [%s] %s - %s: %s\n",
+        /*System.out.printf("---> [%s] %s - %s: %s\n",
             result.activities.toString(),
             formatter.format(new Date(result.validFrom*1000)),
             result.validTo != null ? formatter.format(new Date(result.validTo*1000)) : "/",
             osmEntity.toString()
-        );
+        );*/
 
         double length = 0;
-        /*if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
           geometry = result.previousGeometry;
         if (geometry instanceof MultiLineString)
           length = Geo.distanceOf((MultiLineString)geometry);
         else if (geometry instanceof LineString)
-          length = Geo.distanceOf((LineString)geometry);*/
-        length = 1.0;
+          length = Geo.distanceOf((LineString)geometry);
+        //length = 1.0;
 
         // todo: geometry intersection with actual non-bbox area of interest
 
@@ -211,8 +225,13 @@ public class HistocountActivityTypes {
           thisResult.countTagChange += length;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBERLIST_CHANGE))
           thisResult.countMemberChange += length;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE))
-          thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length; //todo: replace this with grouping by changeset id?!!?!
+        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)) {
+          thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo - result.validFrom, 60 * 60 * 24) / (60 * 60 * 24) : length; //todo: replace this with grouping by changeset id?!!?!
+          thisResult.countGeometryChangeDiff += length - ((result.previousGeometry instanceof MultiLineString) ?
+              Geo.distanceOf((MultiLineString)result.previousGeometry) :
+              (result.previousGeometry instanceof LineString) ? Geo.distanceOf((LineString)result.previousGeometry) : 0.0
+          );
+        }
 
 
 
@@ -236,14 +255,15 @@ public class HistocountActivityTypes {
     });
 
     for (Map.Entry<Long,ResultActivityEntry> total : new TreeMap<>(countByTimestamp).entrySet()) {
-      System.out.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\n",
+      System.out.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
           formatter.format(new Date(total.getKey()*1000)),
           total.getValue().countTotal,
           total.getValue().countCreation,
           total.getValue().countDeletion,
           total.getValue().countTagChange,
           total.getValue().countMemberChange,
-          total.getValue().countGeometryChange
+          total.getValue().countGeometryChange,
+          total.getValue().countGeometryChangeDiff
       );
     }
 
