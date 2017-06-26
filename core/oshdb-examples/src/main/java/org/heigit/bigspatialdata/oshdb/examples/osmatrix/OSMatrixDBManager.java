@@ -15,8 +15,7 @@ import java.util.TimeZone;
 public class OSMatrixDBManager {
   
   private Connection conn = null;
-  
-  
+    
   private void setConn(Connection conn) {
     this.conn = conn;
   }
@@ -116,5 +115,36 @@ public class OSMatrixDBManager {
     }        
     
   }
+  public void insertOSMatrixAttributeTypes(String attribute, String description, String title, Timestamp validFrom ){
+    
+    Connection connection = createOSMatrixDBConnection();
+    try {
+      
+      Calendar local = Calendar.getInstance(TimeZone.getTimeZone("UTC"));    
+            
+      String query = "INSERT INTO attribute_types (attribute, description, title, validFrom) VALUES (?,?,?,?)";
+      PreparedStatement ps = connection.prepareStatement(query);            
+      
+
+          ps.setString(1, attribute);
+          ps.setString(2, description);
+          ps.setString(3, title);
+          ps.setTimestamp(4, validFrom, local);
+          ps.addBatch();
+ 
+      ps.executeBatch();
+      
+
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      System.err.println("could not instert into attributes_types table!");
+      e.printStackTrace();
+      
+    }  
+    
+    
+    
+  }
+
 
 }
