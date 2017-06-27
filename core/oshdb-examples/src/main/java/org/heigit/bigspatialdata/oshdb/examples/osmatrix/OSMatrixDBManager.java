@@ -15,26 +15,26 @@ import java.util.TimeZone;
 public class OSMatrixDBManager {
   
   private Connection conn = null;
-    
-  private void setConn(Connection conn) {
-    this.conn = conn;
-  }
   
-  public Connection getConn() {
-    return this.conn;
+  private String connString;
+  private String userName;
+  private String password;
+  
+    
+  public OSMatrixDBManager(String connString, String userName, String password) {
+    super();
+    this.connString = connString;
+    this.userName = userName;
+    this.password = password;
   }
 
-  public OSMatrixDBManager() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
 
   public Connection createOSMatrixDBConnection() {
     
     Connection conn = null;
     try {
-      conn = DriverManager.getConnection("jdbc:postgresql://lemberg.geog.uni-heidelberg.de:5432/osmatrixhd", "osmatrix", "osmatrix2016");
-      setConn(conn);
+      conn = DriverManager.getConnection(this.connString, this.userName, this.password);
+     
       System.out.println("Hi 5. Connection established.");
     } catch (SQLException e) {
       // TODO Auto-generated catch block
@@ -115,7 +115,7 @@ public class OSMatrixDBManager {
     }        
     
   }
-  public void insertOSMatrixAttributeTypes(String attribute, String description, String title, Timestamp validFrom ){
+    public void insertOSMatrixAttributeTypes(String attribute, String description, String title, Timestamp validFrom ){
     
     Connection connection = createOSMatrixDBConnection();
     try {
@@ -142,9 +142,5 @@ public class OSMatrixDBManager {
       
     }  
     
-    
-    
-  }
-
-
-}
+    }
+    }

@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,20 +55,13 @@ public class ISEA3HGrid {
       System.out.println(long1);
     }
     
-    OSMatrixDBManager osmatrixMgr = new OSMatrixDBManager();
-    Connection osmatrixConn = osmatrixMgr.createOSMatrixDBConnection();
-    
-    osmatrixMgr.truncateTimesTable();
-    
-    osmatrixMgr.fillTimesTable(timeStamps);    
-    
-    
+   
     System.out.println("Start: " + new Date().toString());
     // create filewriter to output results
     FileWriter fw = new FileWriter("hd_activity.csv");
     
     // load shapefile and get features
-    File file = new File("/tmp/grid19_hd_ISEA3H_poly.shp");
+    File file = new File("grid19_hd_ISEA3H_poly.shp");
     //File file = new File("/tmp/heidelberg_boundary.shp");
 
     // File file = new File("data/heidelberg_boundary.shp");
@@ -84,7 +78,7 @@ public class ISEA3HGrid {
 
     // tcp://localhost
     Connection conn = DriverManager
-        .getConnection("jdbc:h2:./heidelberg", "sa", "");
+        .getConnection("jdbc:h2:./heidelberg--2017-05-29", "sa", "");
     
     //create lookupmap of tags and TagInterpreter for getGeometry() methods
     final Statement stmt = conn.createStatement();

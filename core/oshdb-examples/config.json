@@ -1,0 +1,8 @@
+{
+"osmatrix-db": {"connection":"jdbc:postgresql://lemberg.geog.uni-heidelberg.de:5432/osmatrixhd", "user":"osmatrix", "password":"password"}, 
+"osh-db": {"connection":"jdbc:h2:./heidelberg--2017-05-29", "user":"sa", "password":""},
+"temp-db": {"connection": "jdbc:postgresql://lemberg.geog.uni-heidelberg.de:5432/osmatrixhd", "user":"osmatrix", "password":"password"},
+"timestamps": {"start": "2012-01","end":"2012-12", "steps":"PM1"},
+"bbox":[8.56982,8.79541,49.3504,49.4616],
+"attributes": ["totalAreaVineyards"]
+}
