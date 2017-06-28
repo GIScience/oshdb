@@ -12,7 +12,7 @@ public abstract class Attribute {
 
   private int type_id;
 
-  private String type;
+  private String name;
 
   protected volatile Map<Long,Double> values = new HashMap<Long,Double>(); //long cellenid 
   //maps in 
@@ -27,13 +27,8 @@ public abstract class Attribute {
   }
   
 
-  public String getType(){
-    return type;
-  }
-  
-
-  public void setType(String type) {
-    this.type = type;
+  public void setName(String name) {
+    this.name = name;
     
   }
  

@@ -9,7 +9,7 @@ import javax.sql.DataSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-public class OSMatrixTempDBManager {
+public class TempDBManager {
   
   private static DataSource datasource;
   

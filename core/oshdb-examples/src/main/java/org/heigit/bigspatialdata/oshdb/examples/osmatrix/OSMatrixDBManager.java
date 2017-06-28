@@ -14,8 +14,6 @@ import java.util.TimeZone;
 
 public class OSMatrixDBManager {
   
-  private Connection conn = null;
-  
   private String connString;
   private String userName;
   private String password;

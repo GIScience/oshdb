@@ -3,6 +3,8 @@ package org.heigit.bigspatialdata.oshdb.examples.osmatrix;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +25,11 @@ public class OSMatrixProcessor {
   
   public enum TABLE { // could be one of those three
     /** The polygon. */
-    POLYGON,
+    RELATION,
     /** The line. */
-    LINE,
+    WAY,
     /** The point. */
-    POINT
+    NODE
   }
   
 
@@ -35,7 +37,7 @@ public class OSMatrixProcessor {
   
   private Map<String, Attribute> mapTypeAttribute = new HashMap<String, Attribute>();
   
-  public static void main(String[] args) { //options start---------------------------------------
+  public static void main(String[] args) throws SQLException { //options start---------------------------------------
     
     Option help = OptionBuilder.withLongOpt("help").withDescription("Print this help.").create('?');
     
@@ -70,15 +72,57 @@ public class OSMatrixProcessor {
       
       JSONArray attributes = (JSONArray) config.get("attributes");
       
+      OSMatrixProcessor op = new OSMatrixProcessor();
+      //starting init phase
       for (int i = 0; i < attributes.size(); i++) {
-        //addAttribute(attributes.get(i));
+        Class<Attribute> clazz;
+        
+        try {
+          clazz = (Class<Attribute>) Class.forName("org.heigit.bigspatialdata.oshdb.examples.osmatrix."+ attributes.get(i).toString());
+  
+          //clazz = (Class<Attribute>) Class.forName("org.heigit.bigspatialdata.oshdb.examples.osmatrix.TotalAreaVineyards");
+          op.addAttribute(clazz);
+         // TotalAreaVineyards tota = new TotalAreaVineyards();
+          
+        } catch (ClassNotFoundException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (InstantiationException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IllegalAccessException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        
       }
       
+      System.out.println("mapTypeAttribute: " + op.mapTypeAttribute + " mapTableTypeDep: " + op.mapTableTypeDep);
       
-      System.out.println(attributes.size());
+      System.out.println("attributes size: " + attributes.size());
       
       System.out.println(osmatrixdb.get("connection")+ " " + osmatrixdb.get("user") );
-     
+      
+      
+      
+      OshDBManager oshmgr = new OshDBManager(oshdb.get("connection").toString(), oshdb.get("user").toString(), oshdb.get("password").toString());
+      
+      Connection h2Conn = oshmgr.createOshDBConnection();
+      TagLookup tlookup = new TagLookup(h2Conn);
+      
+      //
+      //TODO init temp table
+      //TODO query attribute_types from osmatrix
+      //TODO 
+      
+      
+      System.out.println("!!!!!!!!!!!!!!!!!" + tlookup.getAllKeyValues().get("building").get("yes"));
+      
+      
+      processNodeTiles();
+      
+      
+
       
     } catch (org.apache.commons.cli.ParseException e) {
       System.out.println("Unexpected exception:" + e.getMessage());
@@ -95,28 +139,34 @@ public class OSMatrixProcessor {
     }
     
   }
-
+  
 
   
+  private static void processNodeTiles() {
+    
+    
+    
+  }
+
   private void addAttribute(Class<? extends Attribute> clazz) //erwarted klassendefiniion die von attribute abgeleitet ist
       throws InstantiationException, IllegalAccessException {
 
     Attribute attr = clazz.newInstance();
     if (attr != null) {
-      String type = attr.getName(); // Attribute class name
-      type = type.trim().replace(" ", "_");
-      attr.setType(type);
+      String attrName = attr.getName(); // Attribute class name
+      attrName = attrName.trim().replace(" ", "_");
+      attr.setName(attrName);
 
-      List<TABLE> dependencies = attr.getDependencies();
-      if (type.length() > 0 && !mapTypeAttribute.containsKey(type)) {
-        mapTypeAttribute.put(type, attr);
-        for (TABLE table : dependencies) {
+      List<TABLE> tableDependencies = attr.getDependencies();
+      if (attrName.length() > 0 && !mapTypeAttribute.containsKey(attrName)) {
+        mapTypeAttribute.put(attrName, attr);
+        for (TABLE table : tableDependencies) {
           List<String> types = mapTableTypeDep.get(table);
           if (types == null) {
             types = new ArrayList<String>();
             mapTableTypeDep.put(table, types);
           }
-          types.add(type);
+          types.add(attrName);
         }
       }
     }
