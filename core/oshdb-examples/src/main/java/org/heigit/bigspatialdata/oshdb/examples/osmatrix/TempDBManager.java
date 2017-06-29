@@ -13,6 +13,33 @@ public class TempDBManager {
   
   private static DataSource datasource;
   
+//  CREATE TABLE attributes_temp
+//  (
+//    id serial NOT NULL,
+//    cell_id integer NOT NULL,
+//    attribute_type_id integer NOT NULL,
+//    value double precision NOT NULL,
+//    valid integer NOT NULL,
+//  CONSTRAINT pk_attributes_temp PRIMARY KEY (id)
+//    )
+//    
+//  WITH (
+//    OIDS=FALSE
+//  )
+//  TABLESPACE osmatrix_data;
+//  ALTER TABLE attributes_temp
+//    OWNER TO osmatrix;
+//
+//  -- Index: attributes_id_index
+//
+//  -- DROP INDEX attributes_id_index;
+//
+//  CREATE INDEX attributes_temp_id_index
+//    ON attributes_temp
+//    USING btree
+//    (id)
+//  TABLESPACE osmatrix_index;
+  
   public static DataSource getDataSource(String connString, String user, String password)
   {
       if(datasource == null)
@@ -23,11 +50,11 @@ public class TempDBManager {
           config.setUsername(user);
           config.setPassword(password);
 
-          config.setMaximumPoolSize(10);
-          config.setAutoCommit(false);
-          config.addDataSourceProperty("cachePrepStmts", "true");
-          config.addDataSourceProperty("prepStmtCacheSize", "250");
-          config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+//          config.setMaximumPoolSize(10);
+//          config.setAutoCommit(false);
+//          config.addDataSourceProperty("cachePrepStmts", "true");
+//          config.addDataSourceProperty("prepStmtCacheSize", "250");
+//          config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
           
           datasource = new HikariDataSource(config);
       }

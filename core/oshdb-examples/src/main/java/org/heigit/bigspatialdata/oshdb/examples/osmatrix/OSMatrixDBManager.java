@@ -9,15 +9,19 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
+import org.apache.log4j.Logger;
+
 
 public class OSMatrixDBManager {
   
   private String connString;
   private String userName;
   private String password;
-  
+  private static final Logger logger = Logger.getRootLogger();
     
   public OSMatrixDBManager(String connString, String userName, String password) {
     super();
@@ -26,14 +30,16 @@ public class OSMatrixDBManager {
     this.password = password;
   }
 
-
-  public Connection createOSMatrixDBConnection() {
+  //TODO implement connection pool
+  public Connection getOSMatrixDBConnection() {
     
     Connection conn = null;
     try {
       conn = DriverManager.getConnection(this.connString, this.userName, this.password);
-     
-      System.out.println("Hi 5. Connection established.");
+      
+      logger.info("OSMatrix DB Driver successfully loaded");
+
+      
     } catch (SQLException e) {
       // TODO Auto-generated catch block
       System.err.println("Connection failed.");
@@ -47,7 +53,7 @@ public class OSMatrixDBManager {
   
   
   public void insertOSMatrixTimestamp(java.util.Date date) {
-    Connection conn = createOSMatrixDBConnection();
+    Connection conn = getOSMatrixDBConnection();
     try {
       final PreparedStatement pstmt = conn.prepareStatement("INSERT INTO times (time) VALUES(?);");
       pstmt.setDate(1, new java.sql.Date( date.getTime()));
@@ -62,7 +68,7 @@ public class OSMatrixDBManager {
   public void truncateTimesTable(){
     Connection connection = null;
     try {
-      connection = createOSMatrixDBConnection();
+      connection = getOSMatrixDBConnection();
       Statement statement = connection.createStatement();
       statement.execute("TRUNCATE " + "times" + " CASCADE");
       
@@ -85,10 +91,11 @@ public class OSMatrixDBManager {
     }
   
   }
+  
   public void fillTimesTable(List<Long> timeStamps){
     
     
-    Connection connection = createOSMatrixDBConnection();
+    Connection connection = getOSMatrixDBConnection();
     try {
       
       Calendar local = Calendar.getInstance(TimeZone.getTimeZone("UTC"));    
@@ -115,7 +122,7 @@ public class OSMatrixDBManager {
   }
     public void insertOSMatrixAttributeTypes(String attribute, String description, String title, Timestamp validFrom ){
     
-    Connection connection = createOSMatrixDBConnection();
+    Connection connection = getOSMatrixDBConnection();
     try {
       
       Calendar local = Calendar.getInstance(TimeZone.getTimeZone("UTC"));    
@@ -141,4 +148,32 @@ public class OSMatrixDBManager {
     }  
     
     }
+    
+  public Map<String, Integer> getAttrAndId(){
+      
+      Connection connection = getOSMatrixDBConnection();
+      Map<String, Integer> mapTypId = new HashMap<String, Integer>();
+      try {
+        Statement select = connection.createStatement();
+        ResultSet rst;  
+        
+        rst = select.executeQuery("select attribute, id from attribute_types");
+        
+        
+        while (rst.next()) {
+          logger.info(rst.getObject(1));
+          mapTypId.put(rst.getString(1), rst.getInt(2));
+        }
+        rst.close();
+        
+       //TODO return gescheit machen, gehackt!
+      
+      } catch (SQLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        
+      }
+      return mapTypId;  
+      
     }
+  }

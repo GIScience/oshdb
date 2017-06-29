@@ -25,7 +25,7 @@ public class OSMTimeStamps {
 
 
 
-  public List createTimeStamps(){
+  public List<Long> getTimeStamps(){
     List<Long> timestamps = new ArrayList<>();
     final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
