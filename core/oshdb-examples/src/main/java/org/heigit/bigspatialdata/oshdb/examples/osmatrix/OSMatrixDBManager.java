@@ -21,7 +21,7 @@ public class OSMatrixDBManager {
   private String connString;
   private String userName;
   private String password;
-  private static final Logger logger = Logger.getRootLogger();
+  private static final Logger logger = Logger.getLogger(OSMatrixDBManager.class);
     
   public OSMatrixDBManager(String connString, String userName, String password) {
     super();
@@ -161,7 +161,7 @@ public class OSMatrixDBManager {
         
         
         while (rst.next()) {
-          logger.info(rst.getObject(1));
+          //logger.info(rst.getObject(1));
           mapTypId.put(rst.getString(1), rst.getInt(2));
         }
         rst.close();

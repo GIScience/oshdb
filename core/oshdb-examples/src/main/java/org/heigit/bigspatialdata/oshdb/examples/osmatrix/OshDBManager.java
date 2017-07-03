@@ -10,7 +10,7 @@ public class OshDBManager {
   private String connString;
   private String userName;
   private String password;
-  private static final Logger logger = Logger.getRootLogger();
+  private static final Logger logger = Logger.getLogger(OshDBManager.class);
   
     
   public OshDBManager(String connString, String userName, String password) {
