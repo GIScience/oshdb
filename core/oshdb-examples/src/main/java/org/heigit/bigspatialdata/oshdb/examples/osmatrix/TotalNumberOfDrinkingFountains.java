@@ -87,7 +87,7 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
       
       long ts = entry.getKey();
       OSMNode osm = (OSMNode) entry.getValue();
-      
+//      System.out.printf("%d  ->  %s\n",ts,osm);
       Point osmPoint = osm.getGeometry();
 
       
@@ -142,13 +142,19 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
        for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
          
          final ValueWeight valueWeight = timestampValueWeight.getValue();
+         //System.out.println("valueWeight: " + valueWeight.getValue());
          
          ValueWeight partial = gridcellOutput.get(attributeCell.getKey()).get(cellTimestamp.getKey()).get(timestampValueWeight.getKey());
-         
+//         System.out.println("partial before: " + partial.getValue());
          //count
          partial.setValue(partial.getValue() + valueWeight.getValue() );
+//         System.out.println("partial after: " + partial.getValue());
          
-         gridcellOutput.get(attributeCell.getKey()).get(cellTimestamp.getKey()).get(timestampValueWeight.getKey()).setValue(partial.getValue());
+         gridcellOutput
+         .get(attributeCell.getKey())
+         .get(cellTimestamp.getKey())
+         .get(timestampValueWeight.getKey())
+         .setValue(partial.getValue());
          
        }
        
