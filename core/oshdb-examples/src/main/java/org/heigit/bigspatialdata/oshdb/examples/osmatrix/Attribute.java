@@ -5,7 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.geotools.data.collection.SpatialIndexFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.heigit.bigspatialdata.oshdb.examples.osmatrix.OSMatrixProcessor.TABLE;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 
 
 public abstract class Attribute {
@@ -93,6 +97,14 @@ public abstract class Attribute {
     beforSend();
     return values;
   }
+
+
+  public abstract AttributeCells compute(SimpleFeatureSource cellsIndex, OSHEntity<OSMEntity> osh, TagLookup tagLookup, List<Long> timestampsList, int attributeId);
+
+
+  public abstract void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult);
+    
+  
 
   
   
