@@ -7,23 +7,20 @@ import java.util.Map;
 
 public class AttributeCells {
      
-  public AttributeCells() {
-    //super();
-    this.attrCells = new HashMap<Integer, CellTimeStamps>();
-  }
-
-  private Map<Integer,CellTimeStamps> attrCells;
+  public final Map<Integer,CellTimeStamps> map = new HashMap<Integer, CellTimeStamps>();
   
   CellTimeStamps get(int attributeId){
     
-    if (attrCells.containsKey(attributeId)){
-      return attrCells.get(attributeId);
+    if (map.containsKey(attributeId)){
+      return map.get(attributeId);
     }
     else
     {
-      attrCells.put(attributeId, attrCells.get(attributeId));
-      return attrCells.get(attributeId); 
+      map.put(attributeId, new CellTimeStamps());
+      return map.get(attributeId); 
     }
       
   }
+  
+  
 }

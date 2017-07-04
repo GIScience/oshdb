@@ -7,22 +7,17 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class TimeStampValuesWeights {
-  
-  public TimeStampValuesWeights() {
-    //super();
-    this.timeStampValuesWeights = new HashMap<Long,ValueWeight>();
-  }
 
-  private Map<Long, ValueWeight> timeStampValuesWeights;
+  public final Map<Long, ValueWeight> map = new HashMap<>();
   
   ValueWeight get(long timeStamp){
     
-    if (timeStampValuesWeights.containsKey(timeStamp)){
-      return timeStampValuesWeights.get(timeStamp);
+    if (map.containsKey(timeStamp)){
+      return map.get(timeStamp);
     }
     else {
-      timeStampValuesWeights.put(timeStamp, timeStampValuesWeights.get(timeStamp));
-      return timeStampValuesWeights.get(timeStamp);
+      map.put(timeStamp, new ValueWeight());
+      return map.get(timeStamp);
     }
     
   }

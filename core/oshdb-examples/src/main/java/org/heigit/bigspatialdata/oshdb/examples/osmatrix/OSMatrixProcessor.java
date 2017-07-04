@@ -148,7 +148,7 @@ public class OSMatrixProcessor {
     }
   }
   
-  public Map<Pair<Integer, Long>, Long> execute()
+  public void execute()
       throws ClassNotFoundException, ParseException, IOException {
 //    System.out.println("execute");
     Connection oshdbCon = oshmgr.createOshDBConnection();
@@ -194,9 +194,31 @@ public class OSMatrixProcessor {
       }
     }).map( this::mapper )
       .forEach(r -> {
-        System.out.println("foresach " + r.get(2));
+       
+        for (Map.Entry<Integer, CellTimeStamps>  attributeCell : r.map.entrySet()){
+          
+          final CellTimeStamps cellTimestamps = attributeCell.getValue();
+          
+          for ( Map.Entry<Long, TimeStampValuesWeights> cellTimestamp : cellTimestamps.map.entrySet()){
+            
+            final TimeStampValuesWeights timestampValueWeights = cellTimestamp.getValue();
+            
+            for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
+              
+              final int attributeId = attributeCell.getKey();
+              final long cellId = cellTimestamp.getKey();
+              final long ts = timestampValueWeight.getKey();
+              double value = timestampValueWeight.getValue().getValue();
+              double weight = timestampValueWeight.getValue().getWeight();
+              
+             System.out.println(attributeId + ";" + cellId + ";" + ts*1000 + ";" + value);
+            }
+            
+          }
+          
+        }
       });
-      ;
+      
 //      .collect(new AttributeCells(), (partial, current) -> {
 //        
 //        //AttributeCells aggregated = new AttributeCells();
@@ -242,7 +264,7 @@ public class OSMatrixProcessor {
 //      }
 //    }
 //    //System.out.println("1 Polygon done.");
-    return null; //superresult;
+    //return null; //superresult;
 
   }
 
@@ -266,7 +288,7 @@ public class OSMatrixProcessor {
           AttributeCells oshresult =  attribute.compute(cellsIndex,osh,tagLookup, timestampsList, attributeId);
           
           //System.out.println("oshresult " + oshresult.get(2));
-          //attribute.aggregate(gridcellOutput,oshresult);
+          attribute.aggregate(gridcellOutput,oshresult);
           
         }
           
@@ -431,7 +453,7 @@ public class OSMatrixProcessor {
       // TODO get Timestamps from config.json
 
       logger.info("generating timestamps");
-      OSMTimeStamps timestamps = new OSMTimeStamps(2012, 2013, 1, 9);
+      OSMTimeStamps timestamps = new OSMTimeStamps(2008, 2016, 1, 1);
       timestampsList = timestamps.getTimeStamps(); //TODO net gut
       Collections.sort(timestampsList, Collections.reverseOrder());
 

@@ -4,26 +4,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CellTimeStamps {
-  
-  public CellTimeStamps() {
-   // super();
-    this.cellTimeStamps = new HashMap<Long, TimeStampValuesWeights>();
-  }
 
-  private Map<Long, TimeStampValuesWeights> cellTimeStamps;
+  public final Map<Long, TimeStampValuesWeights> map = new HashMap<Long, TimeStampValuesWeights>();
   
   TimeStampValuesWeights get(long cellId){
     
-    if ( cellTimeStamps.containsKey(cellId) ){
+    if ( map.containsKey(cellId) ){
     
-    TimeStampValuesWeights ret = cellTimeStamps.get(cellId);
+    TimeStampValuesWeights ret = map.get(cellId);
     return ret;
     }
     
     else {
 
-      cellTimeStamps.put(cellId, cellTimeStamps.get(cellId));
-      TimeStampValuesWeights ret = cellTimeStamps.get(cellId);
+      map.put(cellId, new TimeStampValuesWeights());
+      TimeStampValuesWeights ret = map.get(cellId);
       return ret;
   
   }

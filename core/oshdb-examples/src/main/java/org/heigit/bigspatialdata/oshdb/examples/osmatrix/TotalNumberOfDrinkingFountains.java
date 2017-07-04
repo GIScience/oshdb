@@ -75,7 +75,7 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
     int tagKey = (int) tagKeyValue.getLeft();
     
     //filter all osh that have never been an amenity
-    if ( !osh.hasTagKey(tagKey) ) return null;
+    if ( !osh.hasTagKey(tagKey) ) return oshresult; //empty
     
     //osh has at some point in time a tag amenity
     //System.out.println("Here");
@@ -106,7 +106,7 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
           
           Double cellId_ = Double.parseDouble( feature.getAttribute("id").toString() );
           long cellId = cellId_.longValue();
-          System.out.println("attributeId " + attributeId);
+//          System.out.println("attributeId " + attributeId);
          oshresult.get(attributeId).get(cellId).get(ts).setValueWeight(1, 1);
          
           
@@ -130,7 +130,33 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
 
   @Override
   public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult) {
-    // TODO Auto-generated method stub
+    
+   for (Map.Entry<Integer, CellTimeStamps>  attributeCell : oshresult.map.entrySet()){
+     
+     final CellTimeStamps cellTimestamps = attributeCell.getValue();
+     
+     for ( Map.Entry<Long, TimeStampValuesWeights> cellTimestamp : cellTimestamps.map.entrySet()){
+       
+       final TimeStampValuesWeights timestampValueWeights = cellTimestamp.getValue();
+       
+       for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
+         
+         final ValueWeight valueWeight = timestampValueWeight.getValue();
+         
+         ValueWeight partial = gridcellOutput.get(attributeCell.getKey()).get(cellTimestamp.getKey()).get(timestampValueWeight.getKey());
+         
+         //count
+         partial.setValue(partial.getValue() + valueWeight.getValue() );
+         
+         gridcellOutput.get(attributeCell.getKey()).get(cellTimestamp.getKey()).get(timestampValueWeight.getKey()).setValue(partial.getValue());
+         
+       }
+       
+     }
+     
+   }
+   
+   
     
   }
 
