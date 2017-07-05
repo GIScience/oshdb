@@ -3,11 +3,11 @@ package org.heigit.bigspatialdata.oshdb.examples.osmatrix;
 import java.util.ArrayList;
 
 public class ValueWeight {
-  ArrayList<Double> valueWeight = new ArrayList<Double>(2);
+  public final ArrayList<Double> valueWeight = new ArrayList<Double>(2);
   
   public ValueWeight() {
-    valueWeight.set(0, 0.0);
-    valueWeight.set(1, 1.0);
+    valueWeight.add(0.0);
+    valueWeight.add(0.0);
     
   }
   public void setValueWeight(double value, double weight){

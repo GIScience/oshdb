@@ -1,20 +1,26 @@
 package org.heigit.bigspatialdata.oshdb.examples.osmatrix;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 
 public class AttributeCells {
      
-  private Map<Integer,CellTimeStamps> attrCells;
+  public final Map<Integer,CellTimeStamps> map = new HashMap<Integer, CellTimeStamps>();
   
   CellTimeStamps get(int attributeId){
-    CellTimeStamps ret = attrCells.get(attributeId);
-    if(ret == null){
-      ret = new CellTimeStamps();
-      attrCells.put(attributeId, ret);
-    }
     
-    return ret;
+    if (map.containsKey(attributeId)){
+      return map.get(attributeId);
+    }
+    else
+    {
+      map.put(attributeId, new CellTimeStamps());
+      return map.get(attributeId); 
+    }
       
   }
+  
+  
 }

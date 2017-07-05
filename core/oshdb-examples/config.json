@@ -4,5 +4,5 @@
 "temp-db": {"connection": "jdbc:postgresql://lemberg.geog.uni-heidelberg.de:5432/osmatrixhd", "user":"osmatrix", "password":"osmatrix2016"},
 "timestamps": {"start": "2012-01","end":"2012-12", "steps":"PM1"},
 "bbox":[8.56982,8.79541,49.3504,49.4616],
-"attributes": ["TotalNumberOfDrinkingFountain"]
+"attributes": ["TotalNumberOfDrinkingFountains"]
 }
