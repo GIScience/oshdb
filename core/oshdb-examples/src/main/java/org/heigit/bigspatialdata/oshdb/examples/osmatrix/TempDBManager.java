@@ -50,17 +50,18 @@ public class TempDBManager {
           config.setUsername(user);
           config.setPassword(password);
 
-//          config.setMaximumPoolSize(10);
-//          config.setAutoCommit(false);
-//          config.addDataSourceProperty("cachePrepStmts", "true");
-//          config.addDataSourceProperty("prepStmtCacheSize", "250");
-//          config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+          config.setMaximumPoolSize(10);
+          config.setAutoCommit(false);
+          config.addDataSourceProperty("cachePrepStmts", "true");
+          config.addDataSourceProperty("prepStmtCacheSize", "250");
+          config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
           
           datasource = new HikariDataSource(config);
       }
       return datasource;
   }
   
+
 //  public static void main(String[] args)
 //  {
 //            

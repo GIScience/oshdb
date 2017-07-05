@@ -148,6 +148,32 @@ public class OSMatrixDBManager {
     }  
     
     }
+    public void truncateAttributeTempTable(){
+      
+      Connection connection = null;
+      try {
+        connection = getOSMatrixDBConnection();
+        Statement statement = connection.createStatement();
+        statement.execute("TRUNCATE " + "attributes_temp2" + " CASCADE");
+        
+        Statement resetSequence = connection.createStatement();
+        resetSequence.execute("ALTER SEQUENCE attributes_temp2_id_seq RESTART");
+    
+     } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+   
+      }
+      finally{
+        
+        try {
+          connection.close();
+        } catch (SQLException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+    }
     
   public Map<String, Integer> getAttrAndId(){
       

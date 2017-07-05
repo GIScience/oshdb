@@ -3,13 +3,10 @@ package org.heigit.bigspatialdata.oshdb.examples.osmatrix;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.iterators.EntrySetMapIterator;
 import org.apache.commons.lang3.tuple.Pair;
-import org.geotools.data.collection.SpatialIndexFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
@@ -18,33 +15,32 @@ import org.heigit.bigspatialdata.oshdb.examples.osmatrix.OSMatrixProcessor.TABLE
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
-import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Point;
 
-public class TotalNumberOfDrinkingFountains extends Attribute {
+public class TotalNumberOfWaterPoints extends Attribute {
 
   @Override
   public String getName() {
     // TODO Auto-generated method stub
-    return "TotalNumberOfDrinkingFountain";
+    return "TotalNumberOfWaterPoints";
   }
 
   @Override
   public String getDescription() {
     // TODO Auto-generated method stub
-    return "The total Number of Drinking Fountains in the respective Cell. We looked for amenity drinking water";
+    String tmp = "Total number of water points (places to fill a caravan fresh water holding tank)";
+  return tmp;
   }
 
   @Override
   public String getTitle() {
     // TODO Auto-generated method stub
-    return "Total Number Of Drinking Fountain";
+    return "Total Number of Water Points";
   }
 
   @Override
@@ -66,12 +62,14 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
   }
 
   @Override
-  public AttributeCells compute(SimpleFeatureSource cellsIndex, OSHEntity<OSMEntity> osh, TagLookup tagLookup, List<Long> timestampsList, int attributeId) {
-    
+  public AttributeCells compute(SimpleFeatureSource cellsIndex, OSHEntity<OSMEntity> osh, TagLookup tagLookup,
+    List<Long> timestampsList, int attributeId) {
     AttributeCells oshresult = new AttributeCells();
     
+    //if(tagLookup.getAllKeyValues().get("amenity") == null || tagLookup.getAllKeyValues().get("amenity").get("water_point") ==null ) return oshresult;
+    Pair tagKeyValue = tagLookup.getAllKeyValues().get("amenity").get("water_point");
+   // if (tagKeyValue.getRight() == null || tagKeyValue.getLeft() == null) return oshresult;
     
-    Pair tagKeyValue = tagLookup.getAllKeyValues().get("amenity").get("drinking_water");
     int tagKey = (int) tagKeyValue.getLeft();
     int tagValue = (int) tagKeyValue.getRight();
     
@@ -89,7 +87,7 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
       long ts = entry.getKey();
       OSMNode osm = (OSMNode) entry.getValue();
       
-      if(! osm.hasTagValue(tagKey, tagValue) || !osm.isVisible() ) return oshresult;
+      if(! osm.hasTagValue(tagKey, tagValue) || !osm.isVisible()) return oshresult;
       
 //      System.out.printf("%d  ->  %s\n",ts,osm);
       Point osmPoint = osm.getGeometry();
@@ -134,39 +132,37 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
 
   @Override
   public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult) {
-    
-   for (Map.Entry<Integer, CellTimeStamps>  attributeCell : oshresult.map.entrySet()){
-     
-     final CellTimeStamps cellTimestamps = attributeCell.getValue();
-     
-     for ( Map.Entry<Long, TimeStampValuesWeights> cellTimestamp : cellTimestamps.map.entrySet()){
-       
-       final TimeStampValuesWeights timestampValueWeights = cellTimestamp.getValue();
-       
-       for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
-         
-         final ValueWeight valueWeight = timestampValueWeight.getValue();
-         //System.out.println("valueWeight: " + valueWeight.getValue());
-         
-         ValueWeight partial = gridcellOutput.get(attributeCell.getKey()).get(cellTimestamp.getKey()).get(timestampValueWeight.getKey());
-//         System.out.println("partial before: " + partial.getValue());
-         //count
-         partial.setValue(partial.getValue() + valueWeight.getValue() );
-//         System.out.println("partial after: " + partial.getValue());
-         
-         gridcellOutput
-         .get(attributeCell.getKey())
-         .get(cellTimestamp.getKey())
-         .get(timestampValueWeight.getKey())
-         .setValue(partial.getValue());
-         
-       }
-       
-     }
-     
-   }
    
-   
+    for (Map.Entry<Integer, CellTimeStamps>  attributeCell : oshresult.map.entrySet()){
+      
+      final CellTimeStamps cellTimestamps = attributeCell.getValue();
+      
+      for ( Map.Entry<Long, TimeStampValuesWeights> cellTimestamp : cellTimestamps.map.entrySet()){
+        
+        final TimeStampValuesWeights timestampValueWeights = cellTimestamp.getValue();
+        
+        for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
+          
+          final ValueWeight valueWeight = timestampValueWeight.getValue();
+          //System.out.println("valueWeight: " + valueWeight.getValue());
+          
+          ValueWeight partial = gridcellOutput.get(attributeCell.getKey()).get(cellTimestamp.getKey()).get(timestampValueWeight.getKey());
+//          System.out.println("partial before: " + partial.getValue());
+          //count
+          partial.setValue(partial.getValue() + valueWeight.getValue() );
+//          System.out.println("partial after: " + partial.getValue());
+          
+          gridcellOutput
+          .get(attributeCell.getKey())
+          .get(cellTimestamp.getKey())
+          .get(timestampValueWeight.getKey())
+          .setValue(partial.getValue());
+          
+        }
+        
+      }
+      
+    }
     
   }
 

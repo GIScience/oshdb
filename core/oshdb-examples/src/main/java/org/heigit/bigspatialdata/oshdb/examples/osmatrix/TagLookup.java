@@ -81,7 +81,7 @@ public class TagLookup {
   }
   
   private void createTagInterpreter() throws IOException, ParseException{
-    tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
+    tagInterpreter = new DefaultTagInterpreter("./polygon-features.json","./uninterestingTags.json",allKeyValues, allRoles);
   //return tagInterpreter;
   }
   
