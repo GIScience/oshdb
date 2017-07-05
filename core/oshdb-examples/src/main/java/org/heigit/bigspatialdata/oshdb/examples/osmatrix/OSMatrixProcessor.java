@@ -18,9 +18,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 import javax.measure.unit.SystemOfUnits;
 import javax.sql.DataSource;
@@ -35,10 +37,19 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
+import org.apache.logging.log4j.core.Filter.Result;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.collection.SpatialIndexFeatureCollection;
+import org.geotools.data.postgis.PostgisNGDataStoreFactory;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.JTSFactoryFinder;
+
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
@@ -46,17 +57,21 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+
 import org.heigit.bigspatialdata.oshdb.utils.OSMTimeStamps;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.opengis.feature.simple.SimpleFeature;
+
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 
 public class OSMatrixProcessor {
@@ -77,14 +92,21 @@ public class OSMatrixProcessor {
   
   private Map<TABLE, List<String>> mapTableTypeDep = new HashMap<TABLE, List<String>>();
   
-  private Map<String, Attribute> mapTypeAttribute = new HashMap<String, Attribute>();
+  private static Map<String, Attribute> mapTypeAttribute = new HashMap<String, Attribute>();
   
-  private Map<String, Integer> mapTypId = new HashMap<String, Integer>();
+  private static Map<String, Integer> mapTypId = new HashMap<String, Integer>();
   
-  List<Long> timestampsList;
+  private static List<Long> timestampsList;
   
+  private static TagLookup tagLookup;
   
+  private OshDBManager oshmgr;
   
+  DataSource dataSource;
+  
+  BoundingBox inputBbox;
+  
+  static SimpleFeatureSource cellsIndex;// = new SpatialIndexFeatureCollection();
   
   public void start() { 
  
@@ -110,51 +132,48 @@ public class OSMatrixProcessor {
   private void doTheWork() {
     if (mapTypeAttribute.size() == 0) {
       logger.info("No registered types!");
-      return;
+      return; 
+    }   
+    try {
+      execute();
+    } catch (ClassNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (ParseException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
-    //TODO get List of timestamps
-    //TODO Collections.sort(timestamps, Collections.reverseOrder());
-   
-    
-    
-    
   }
-  public Map<Pair<Integer, Long>, Long> executeNodes(Connection conn, List<MultiPolygon> polygons, TagInterpreter ti, List<Long> timestamps)
+  
+  public void execute()
       throws ClassNotFoundException, ParseException, IOException {
-    
-    Class.forName("org.h2.Driver");
+//    System.out.println("execute");
+    Connection oshdbCon = oshmgr.createOshDBConnection();
 
-
-    // create BBOX to query gridcells as CellId-Objects, which contain
-    // (zoomlevel,id)
-
-    Double minLon = Double.MAX_VALUE;
-    Double maxLon = Double.MIN_VALUE;
-    Double minLat = Double.MAX_VALUE;
-    Double maxLat = Double.MIN_VALUE;
-    for (MultiPolygon inputPolygon: polygons) {
-      minLon = Double.min(JTS.toEnvelope(inputPolygon).getMinX(), minLon);
-      maxLon = Double.max(JTS.toEnvelope(inputPolygon).getMaxX(), maxLon);
-      minLat = Double.min(JTS.toEnvelope(inputPolygon).getMinY(), minLat);
-      maxLat = Double.max(JTS.toEnvelope(inputPolygon).getMaxY(), maxLat);
-    }
-
-    BoundingBox inputBbox = new BoundingBox(minLon, maxLon, minLat, maxLat);
-    
-    XYGrid grid = new XYGrid(12);
-   
+    XYGridTree grid = new XYGridTree(12);
 
     final List<CellId> cellIds = new ArrayList<>();
 
-    //grid.bbox2CellIds(inputBbox, true).forEach(cellIds::add);
+    grid.bbox2CellIds(inputBbox, true).forEach(cellIds::add);
 
     // start processing in parallel all grid cells that relate to the input
 
-    Map<Pair<Integer, Long>, Long> superresult = cellIds.parallelStream().flatMap(cellId -> {
+    //TODO implement different workflows for count, unique, etc...? 
+    
+//    System.out.println("before flatmap");
+    System.out.println("# of grid cells " + cellIds.size());
+    //AttributeCells superresult =
+      cellIds.parallelStream().flatMap(cellId -> {
+    
+//    System.out.println("flatmap");
+      
+    try (final PreparedStatement pstmt = oshdbCon.prepareStatement(
 
-      try (final PreparedStatement pstmt = conn.prepareStatement(
-
-          "(select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)")) {
+         // "(select data from grid_node where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)")) {
+        "(select data from grid_node where level = ?1 and id = ?2)")) {
         pstmt.setInt(1, cellId.getZoomLevel());
         pstmt.setLong(2, cellId.getId());
 
@@ -173,138 +192,199 @@ public class OSMatrixProcessor {
         e.printStackTrace();
         return null;
       }
-    }).map(gridCell -> {
-
-      GridOSHEntity cell = (GridOSHEntity) gridCell;
-      //Map<Integer, Map<Long, Long>> timestampActivity = new TreeMap<>();
-      Map<Pair<Integer,Long>, Long> timestampActivity = new TreeMap<>();
-
-      for (OSHEntity<OSMEntity> osh : (Iterable<OSHEntity<OSMEntity>>) cell) {
-        
-        if (!osh.hasTagKey(0)) continue;
-
-
-        List<OSMEntity> versions = new ArrayList<>();
-        List<Integer> polygonIds = new ArrayList<>();
-
-        List<Long> modTs = osh.getModificationTimestamps(true);
-        modTs.sort(Collections.reverseOrder());
-
-        Iterator<OSMEntity> allVersions = osh.getVersions().iterator();
-        allVersions.hasNext();
-
-        OSMEntity osm = allVersions.next();
-        for (Long t : modTs) {
-
-          if (t < osm.getTimestamp()) {
-            if (!allVersions.hasNext())
-              break;
-            osm = allVersions.next();
-          }
-
-          if (!osm.isVisible() || !osm.hasTagKey(0)) continue;
-
-            try {
-
-
-              Geometry osmGeom = osm.getGeometry(t, ti);
-
-              Point centr = osmGeom.getCentroid();
-              //every map has to go through all osmatrix cells
-              int foundIndex = -1;
-              for (MultiPolygon p : polygons) {
-                if (p.contains(centr)) {
-                  foundIndex = polygons.indexOf(p);
-                  break;
-                }
-              }
-
-              if ( 
-                  foundIndex != -1
-                  )
-
-              {
-
-                versions.add(osm);
-                polygonIds.add(foundIndex);
-              }
-            } catch (Exception e) {
-              // TODO: handle exception
-
+    }).map( this::mapper )
+      .forEach(r -> {
+       
+        for (Map.Entry<Integer, CellTimeStamps>  attributeCell : r.map.entrySet()){
+          
+          final CellTimeStamps cellTimestamps = attributeCell.getValue();
+          
+          for ( Map.Entry<Long, TimeStampValuesWeights> cellTimestamp : cellTimestamps.map.entrySet()){
+            
+            final TimeStampValuesWeights timestampValueWeights = cellTimestamp.getValue();
+            
+            for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
+              
+              final int attributeId = attributeCell.getKey();
+              final long cellId = cellTimestamp.getKey();
+              final long ts = timestampValueWeight.getKey();
+              double value = timestampValueWeight.getValue().getValue();
+              double weight = timestampValueWeight.getValue().getWeight();
+              
+             System.out.println(attributeId + ";" + cellId + ";" + ts*1000 + ";" + value);
             }
-
-        }
-
-        int v = 0;
-        for (int i = 0; i < timestamps.size(); i++) {
-          long ts = timestamps.get(i);
-          while (v < versions.size() && versions.get(v).getTimestamp() > ts) {
-            if (i != 0) { // ??????
-              int polygonId = polygonIds.get(v);
-              Pair<Integer, Long> idx = new ImmutablePair<>(polygonId, ts);
-              if (timestampActivity.containsKey(idx)) {
-                timestampActivity.put(idx, timestampActivity.get(idx) + 1l);
-              } else {
-                timestampActivity.put(idx, 1l);
-              }
-            }
-
-            v++;
+            
           }
-
-
-          if (v >= versions.size())
-            break;
-
+          
         }
+      });
+      
+//      .collect(new AttributeCells(), (partial, current) -> {
+//        
+//        //AttributeCells aggregated = new AttributeCells();
+//        
+//        return partial;
+//      });
+      //.count();
+//      .reduce(Collections.emptyMap(), (partial, b) -> {
+//
+//      Map<Pair<Integer, Long>, Long> sum = new TreeMap<>();
+//      sum.putAll(partial);
+//      for (Map.Entry<Pair<Integer, Long>, Long> entry : b.entrySet()) {
+//
+//        Long activity = partial.get(entry.getKey());
+//        if (activity == null) {
+//
+//          activity = entry.getValue();
+//
+//          if (activity == null) {
+//            activity = 0l;
+//          }
+//
+//        } else {
+//          Long newActivity = entry.getValue();
+//          // if (newActivity == null){ newActivity = Long.valueOf(0); }
+//          activity = activity + newActivity;
+//
+//        }
+//        sum.put(entry.getKey(), activity);
+//      }
+//
+//      // System.out.println(sum);
+//
+//      return sum;
+//    }
 
-      }
-
-      return timestampActivity;
-
-    }).reduce(Collections.emptyMap(), (partial, b) -> {
-
-      Map<Pair<Integer, Long>, Long> sum = new TreeMap<>();
-      sum.putAll(partial);
-      for (Map.Entry<Pair<Integer, Long>, Long> entry : b.entrySet()) {
-
-        Long activity = partial.get(entry.getKey());
-        if (activity == null) {
-
-          activity = entry.getValue();
-
-          if (activity == null) {
-            activity = 0l;
-          }
-
-        } else {
-          Long newActivity = entry.getValue();
-          // if (newActivity == null){ newActivity = Long.valueOf(0); }
-          activity = activity + newActivity;
-
-        }
-        sum.put(entry.getKey(), activity);
-      }
-
-      // System.out.println(sum);
-
-      return sum;
-    }
-
-    );
+   // );
 
     // fill missing values with 0
-    for (int i=0; i<polygons.size(); i++) {
-      for (Long ts : timestamps.subList(1, timestamps.size())) {
-        ;//superresult.putIfAbsent(new ImmutablePair<>(i, ts), 0l);
-      }
-    }
-    //System.out.println("1 Polygon done.");
-    return superresult;
+//    for (int i=0; i<polygons.size(); i++) {
+//      for (Long ts : timestamps.subList(1, timestamps.size())) {
+//        ;//superresult.putIfAbsent(new ImmutablePair<>(i, ts), 0l);
+//      }
+//    }
+//    //System.out.println("1 Polygon done.");
+    //return null; //superresult;
 
   }
 
+  public  AttributeCells mapper(GridOSHEntity<OSHEntity> gridCell){
+    
+//    System.out.println("mapper");
+      
+      GridOSHEntity cell = (GridOSHEntity) gridCell;
+      
+      //TODO hier sollte special object hin
+      AttributeCells gridcellOutput = new AttributeCells();
+      
+      //Map<Pair<Integer,Long>, Long> timestampActivity = new TreeMap<>(); //TODO remove
+      
+      for (OSHEntity<OSMEntity> osh : (Iterable<OSHEntity<OSMEntity>>) cell) {        
 
+        for (Map.Entry<String, Attribute> entry : mapTypeAttribute.entrySet()){
+          Attribute attribute = entry.getValue();
+          int attributeId = mapTypId.get(entry.getKey());
+          //System.out.println(attributeId + "...");
+          AttributeCells oshresult =  attribute.compute(cellsIndex,osh,tagLookup, timestampsList, attributeId);
+          
+          //System.out.println("oshresult " + oshresult.get(2));
+          attribute.aggregate(gridcellOutput,oshresult);
+          
+        }
+          
+        
+      }
+      
+     
+      
+      return gridcellOutput; 
+//        //attribute.compute
+//        //TODO hier schaut das Attribut
+//        if (!osh.hasTagKey(0)) continue;
+//
+//
+//        List<OSMEntity> versions = new ArrayList<>();
+//        List<Integer> polygonIds = new ArrayList<>();
+//
+//        List<Long> modTs = osh.getModificationTimestamps(true);
+//        modTs.sort(Collections.reverseOrder());
+//
+//        Iterator<OSMEntity> allVersions = osh.getVersions().iterator();
+//        allVersions.hasNext();
+//
+//        OSMEntity osm = allVersions.next();
+//        
+//        for (Long t : modTs) {
+//
+//          if (t < osm.getTimestamp()) {
+//            if (!allVersions.hasNext())
+//              break;
+//            osm = allVersions.next();
+//          }
+//
+//          if (!osm.isVisible() || !osm.hasTagKey(0)) continue;
+//
+//            try {
+//
+//
+//              Geometry osmGeom = osm.getGeometry(t, tagLookup.getTagInterpreter());
+//
+//              Point centr = osmGeom.getCentroid();
+//              //every map has to go through all osmatrix cells
+//              int foundIndex = -1;
+////              for (MultiPolygon p : polygons) {
+////                if (p.contains(centr)) {
+////                  foundIndex = polygons.indexOf(p);
+////                  break;
+////                }
+////              }
+//
+//              if ( 
+//                  foundIndex != -1
+//                  )
+//
+//              {
+//
+//                versions.add(osm);
+//                polygonIds.add(foundIndex);
+//              }
+//            } catch (Exception e) {
+//              // TODO: handle exception
+//
+//            }
+//
+//        }
+//
+//        int v = 0;
+////        for (int i = 0; i < timestamps.size(); i++) {
+////          long ts = timestamps.get(i);
+////          while (v < versions.size() && versions.get(v).getTimestamp() > ts) {
+////            if (i != 0) { // ??????
+////              int polygonId = polygonIds.get(v);
+////              Pair<Integer, Long> idx = new ImmutablePair<>(polygonId, ts);
+////              if (timestampActivity.containsKey(idx)) {
+////                timestampActivity.put(idx, timestampActivity.get(idx) + 1l);
+////              } else {
+////                timestampActivity.put(idx, 1l);
+////              }
+////            }
+////
+////            v++;
+////          }
+////
+////
+////          if (v >= versions.size())
+////            break;
+////
+////        }
+//
+//      }
+//
+//      return timestampActivity;
+//      //TODO hier werden die Hashmaps 
+    
+    
+  }
 
   @SuppressWarnings("static-access")
   public static void main(String[] args) throws SQLException { 
@@ -361,50 +441,73 @@ public class OSMatrixProcessor {
       JSONObject timestampsConfig = (JSONObject) config.get("timestamps");
 
       JSONArray attributesConfig = (JSONArray) config.get("attributes");
+      JSONArray processingbbox = (JSONArray) config.get("bbox");
+      
+      inputBbox = new BoundingBox(
+          Double.parseDouble(processingbbox.get(0).toString()),
+          Double.parseDouble(processingbbox.get(1).toString()), 
+          Double.parseDouble(processingbbox.get(2).toString()),
+          Double.parseDouble(processingbbox.get(3).toString())
+          );
 
       // TODO get Timestamps from config.json
 
       logger.info("generating timestamps");
-      OSMTimeStamps timestamps = new OSMTimeStamps(2012, 2013, 1, 9);
+      OSMTimeStamps timestamps = new OSMTimeStamps(2008, 2016, 1, 1);
       timestampsList = timestamps.getTimeStamps(); //TODO net gut
-      Collections.sort(timestampsList, Collections.reverseOrder());
+      //Collections.sort(timestampsList, Collections.reverseOrder());
 
       // get connection to oshdb
-      OshDBManager oshmgr = new OshDBManager(oshDbConfig.get("connection").toString(), oshDbConfig.get("user").toString(), oshDbConfig.get("password").toString());
+      oshmgr = new OshDBManager(oshDbConfig.get("connection").toString(), oshDbConfig.get("user").toString(), oshDbConfig.get("password").toString());
       
       //TODO das muss man noch ander machen
       Connection h2Conn = oshmgr.createOshDBConnection();
       // create lookup tables
-      TagLookup tlookup = new TagLookup(h2Conn);
+      tagLookup = new TagLookup(h2Conn);
 
       // get connection to osmatrix db
       OSMatrixDBManager osmatrixmgr = new OSMatrixDBManager(osmatrixDbConfig.get("connection").toString(), osmatrixDbConfig.get("user").toString(), osmatrixDbConfig.get("password").toString());
       
       mapTypId = osmatrixmgr.getAttrAndId();
       
-      ResultSet osmatrixCells = osmatrixmgr.getOSMatrixDBConnection().createStatement().executeQuery("SELECT id, geom FROM cells");
-      //FeatureCollection<Polygon, Feature>
-      SpatialIndexFeatureCollection cellsIndex  = new SpatialIndexFeatureCollection();
+     // ResultSet osmatrixCells = osmatrixmgr.getOSMatrixDBConnection().createStatement().executeQuery("SELECT id, ST_AsText(geom) FROM cells");
+      PostgisNGDataStoreFactory bla = new PostgisNGDataStoreFactory();
       
-      SimpleFeatureSource sfsource; 
+      Map<String,Object> params = new HashMap<>();
+      params.put( "dbtype", "postgis");
+      params.put( "host", "lemberg.geog.uni-heidelberg.de");
+      params.put( "port", 5432);
+      params.put( "schema", "public");
+      params.put( "database", "osmatrixhd");
+      params.put( "user", "osmatrix");
+      params.put( "passwd", "osmatrix2016");
       
-      while (osmatrixCells.next()) {
+      DataStore dataStore = DataStoreFinder.getDataStore(params);
+     // System.out.println(dataStore.getSchema("cells4326").getAttributeDescriptors().get(0));
+      
+      SimpleFeatureSource featureSource = dataStore.getFeatureSource("cells4326");
+//      final FilterFactory ff = CommonFactoryFinder.getFilterFactory();
+//      Filter filter = ff.propertyLessThan( ff.property( "AGE"), ff.literal( 12 ) );
+//      //FeatureCollection<Polygon, Feature>
+      cellsIndex  = DataUtilities.source( new SpatialIndexFeatureCollection(featureSource.getFeatures()) );
+      
+      
+      
+     // System.out.println(cellsIndex.getBounds().getArea());
+      
+      //WKTReader wktreader = new WKTReader();
        
-//        SimpleFeature feature = new 
-//        cellsIndex.add(feature);
-        
-        //new SpatialIndexFeatureCollection(grid.getFeatures());
-      }
+
       
       
 
-      DataSource dataSource = TempDBManager.getDataSource(tempDbConfig.get("connection").toString(),
+      dataSource = TempDBManager.getDataSource(tempDbConfig.get("connection").toString(),
           tempDbConfig.get("user").toString(), tempDbConfig.get("password").toString());
      
       logger.info("TempDB Connection Pool established.");
      
-      Connection connection = dataSource.getConnection();
-      System.out.println("The Connection Object is of Class: " + connection.getClass());
+      //Connection connection = dataSource.getConnection();
+      
 
 //      PreparedStatement  pstmt = connection
 //          .prepareStatement("INSERT INTO attributes_temp (cell_id, attribute_type_id, value, valid) VALUES (?,?,?,?)");
