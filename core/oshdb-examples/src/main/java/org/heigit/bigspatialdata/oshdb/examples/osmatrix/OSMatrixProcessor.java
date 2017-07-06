@@ -193,7 +193,8 @@ public class OSMatrixProcessor {
         return null;
       }
     }).map( this::mapper )
-      .forEach(r -> {
+      .forEach(x -> {
+        AttributeCells r = (AttributeCells)x;
        
         for (Map.Entry<Integer, CellTimeStamps>  attributeCell : r.map.entrySet()){
           
