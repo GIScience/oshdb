@@ -33,7 +33,7 @@ public class ObjectGeometries {
 
     boolean handleOldStyleMultipolygons = false;
 
-    final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     //final BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
     //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
@@ -105,7 +105,10 @@ public class ObjectGeometries {
           //osmEntity -> osmEntity.getId() == 254154168 && osmEntity instanceof OSMWay,
           //osmEntity -> osmEntity.getId() == 60105 && osmEntity instanceof OSMRelation,
           //osmEntity -> osmEntity.getId() == 150834648 && osmEntity instanceof OSMWay,
-          osmEntity -> osmEntity.getId() == 26946230 && osmEntity instanceof OSMWay,
+          //osmEntity -> osmEntity.getId() == 26946230 && osmEntity instanceof OSMWay,
+          //osmEntity -> osmEntity.getId() == 5182648 && osmEntity instanceof OSMWay,
+          osmEntity -> osmEntity.getId() == 154937898 && osmEntity instanceof OSMWay,
+          //osmEntity -> …
           handleOldStyleMultipolygons
       )
       .forEach(result -> {
@@ -114,10 +117,15 @@ public class ObjectGeometries {
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
-        GeoJSONWriter writer = new GeoJSONWriter();
-        GeoJSON json = writer.write(geometry);
+        String jsonstring;
+        if (geometry == null) {
+          jsonstring = null;
+        } else {
+          GeoJSONWriter writer = new GeoJSONWriter();
+          GeoJSON json = writer.write(geometry);
 
-        String jsonstring = json.toString();
+          jsonstring = json.toString();
+        }
         System.out.println();
         System.out.println(formatter.format(new Date(result.validFrom*1000))+","+(result.validTo != null ? formatter.format(new Date(result.validTo*1000)) : ""));
         System.out.println(jsonstring);
