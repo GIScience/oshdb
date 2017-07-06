@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.*;
@@ -542,6 +543,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 		.mapToObj(Integer::new)
 		.flatMap(osmRelIndex -> {
 			OSMRelation osmRel = rels.get(osmRelIndex);
+			if (!osmRel.isVisible()) return Stream.empty();
 			OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
 			return Arrays.stream(osmRel.getMembers())
 			.filter(member -> member.getType() == OSHEntity.NODE || member.getType() == OSHEntity.WAY)
