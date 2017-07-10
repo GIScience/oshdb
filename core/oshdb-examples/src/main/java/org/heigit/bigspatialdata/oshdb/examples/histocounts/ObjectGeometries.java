@@ -50,30 +50,8 @@ public class ObjectGeometries {
 
     // connect to the "Big"DB
     Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
-    final Statement stmt = conn.createStatement();
 
-    System.out.println("Select tag key/value ids from DB");
-    ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
-    Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
-    while(rstTags.next()){
-      int keyId   = rstTags.getInt(1);
-      int valueId = rstTags.getInt(2);
-      String keyStr   = rstTags.getString(3);
-      String valueStr = rstTags.getString(4);
-      if (!allKeyValues.containsKey(keyStr)) allKeyValues.put(keyStr, new HashMap<>());
-      allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
-    }
-    rstTags.close();
-    ResultSet rstRoles = stmt.executeQuery("select ID as ROLEID, txt as ROLE from ROLE;");
-    Map<String, Integer> allRoles = new HashMap<>();
-    while(rstRoles.next()){
-      int roleId = rstRoles.getInt(1);
-      String roleStr = rstRoles.getString(2);
-      allRoles.put(roleStr, roleId);
-    }
-    rstRoles.close();
-    final TagInterpreter tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
-
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
 
     cellIds.parallelStream().flatMap(cell -> {
       try (final PreparedStatement pstmt = conn.prepareStatement("" +
@@ -102,12 +80,12 @@ public class ObjectGeometries {
           oshCell,
           bbox,
           tagInterpreter,
-          //osmEntity -> osmEntity.getId() == 254154168 && osmEntity instanceof OSMWay,
+          osmEntity -> osmEntity.getId() == 254154168 && osmEntity instanceof OSMWay,
           //osmEntity -> osmEntity.getId() == 60105 && osmEntity instanceof OSMRelation,
           //osmEntity -> osmEntity.getId() == 150834648 && osmEntity instanceof OSMWay,
           //osmEntity -> osmEntity.getId() == 26946230 && osmEntity instanceof OSMWay,
           //osmEntity -> osmEntity.getId() == 5182648 && osmEntity instanceof OSMWay,
-          osmEntity -> osmEntity.getId() == 154937898 && osmEntity instanceof OSMWay,
+          //osmEntity -> osmEntity.getId() == 154937898 && osmEntity instanceof OSMWay,
           //osmEntity -> …
           handleOldStyleMultipolygons
       )
