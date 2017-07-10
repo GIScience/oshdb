@@ -58,6 +58,9 @@ public class HistocountUsers {
 
     // connect to the "Big"DB
     Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
+
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+
     final Statement stmt = conn.createStatement();
 
     System.out.println("Select tag key/value ids from DB");
@@ -72,15 +75,6 @@ public class HistocountUsers {
       allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
     }
     rstTags.close();
-    ResultSet rstRoles = stmt.executeQuery("select ID as ROLEID, txt as ROLE from ROLE;");
-    Map<String, Integer> allRoles = new HashMap<>();
-    while(rstRoles.next()){
-      int roleId = rstRoles.getInt(1);
-      String roleStr = rstRoles.getString(2);
-      allRoles.put(roleStr, roleId);
-    }
-    rstRoles.close();
-    final TagInterpreter tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
 
 
     Map<Long, Set<Integer>> countByTimestamp = cellIds.parallelStream().flatMap(cell -> {

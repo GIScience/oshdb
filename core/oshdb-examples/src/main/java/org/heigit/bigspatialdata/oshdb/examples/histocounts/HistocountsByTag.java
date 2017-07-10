@@ -89,8 +89,10 @@ public class HistocountsByTag {
 
     // connect to the "Big"DB
     Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
-    final Statement stmt = conn.createStatement();
 
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+
+    final Statement stmt = conn.createStatement();
     System.out.println("Select tag key/value ids from DB");
     ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
     Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
@@ -103,15 +105,6 @@ public class HistocountsByTag {
       allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
     }
     rstTags.close();
-    ResultSet rstRoles = stmt.executeQuery("select ID as ROLEID, txt as ROLE from ROLE;");
-    Map<String, Integer> allRoles = new HashMap<>();
-    while(rstRoles.next()){
-      int roleId = rstRoles.getInt(1);
-      String roleStr = rstRoles.getString(2);
-      allRoles.put(roleStr, roleId);
-    }
-    rstRoles.close();
-    final TagInterpreter tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
 
 
     Map<Long,ResultEntry> countByTimestamp = cellIds.parallelStream().flatMap(cell -> {
