@@ -166,7 +166,8 @@ public class CellIterator {
         }
       }
 
-      results.add(oshResult);
+      if (oshResult.size() > 0)
+        results.add(oshResult);
     }
 
     // return as an obj stream
