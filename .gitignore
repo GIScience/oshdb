@@ -1,5 +1,5 @@
 # maven generated target folder
-/target/
+**/target/
 
 # eclipse stuff
 .project
