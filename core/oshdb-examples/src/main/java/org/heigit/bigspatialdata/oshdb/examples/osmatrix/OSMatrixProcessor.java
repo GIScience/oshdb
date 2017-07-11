@@ -185,6 +185,7 @@ public class OSMatrixProcessor {
     }).map( this::mapper )
       .forEach(r -> {
 
+
         
         try (
           Connection connection = dataSource.getConnection();      
@@ -197,7 +198,7 @@ public class OSMatrixProcessor {
       ){
       
         
-        for (Map.Entry<Integer, CellTimeStamps>  attributeCell : r.map.entrySet()){
+        for (Map.Entry<Integer, CellTimeStamps>  attributeCell : ((AttributeCells)r).map.entrySet()){
           
           final CellTimeStamps cellTimestamps = attributeCell.getValue();
           
