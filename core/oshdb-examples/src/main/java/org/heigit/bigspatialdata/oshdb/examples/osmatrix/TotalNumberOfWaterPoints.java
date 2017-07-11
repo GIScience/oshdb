@@ -26,39 +26,23 @@ public class TotalNumberOfWaterPoints extends Attribute {
 
   @Override
   public String getName() {
-    // TODO Auto-generated method stub
     return "TotalNumberOfWaterPoints";
   }
 
   @Override
   public String getDescription() {
-    // TODO Auto-generated method stub
-    String tmp = "Total number of water points (places to fill a caravan fresh water holding tank)";
+  String tmp = "Total number of water points (places to fill a caravan fresh water holding tank)";
   return tmp;
   }
 
   @Override
   public String getTitle() {
-    // TODO Auto-generated method stub
     return "Total Number of Water Points";
   }
 
   @Override
   public List<TABLE> getDependencies() {
-    // TODO Auto-generated method stub
     return Arrays.asList(TABLE.NODE);
-  }
-
-  @Override
-  protected double doUpdate(TABLE table, long cell_id, double old_value, ResultSet row) throws Exception {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
-  @Override
-  protected String where(TABLE table) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
   @Override
@@ -131,7 +115,7 @@ public class TotalNumberOfWaterPoints extends Attribute {
   }
 
   @Override
-  public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult) {
+  public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult,List<Long> timestampsList) {
    
     for (Map.Entry<Integer, CellTimeStamps>  attributeCell : oshresult.map.entrySet()){
       
@@ -140,6 +124,10 @@ public class TotalNumberOfWaterPoints extends Attribute {
       for ( Map.Entry<Long, TimeStampValuesWeights> cellTimestamp : cellTimestamps.map.entrySet()){
         
         final TimeStampValuesWeights timestampValueWeights = cellTimestamp.getValue();
+        
+        for (Long long1 : timestampsList) {
+          timestampValueWeights.map.putIfAbsent(long1, new ValueWeight());
+        } 
         
         for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
           

@@ -192,7 +192,7 @@ public class OSMatrixProcessor {
       PreparedStatement  pstmt = connection
        //   .prepareStatement("INSERT INTO attributes_temp (cell_id, attribute_type_id, value, valid) VALUES (?,?,?,?)");
           //.prepareStatement("INSERT INTO attributes_temp (cell_id, attribute_type_id, value, valid ) VALUES (?,?,?,(SELECT id FROM times WHERE times.time = ?),(SELECT (id + 1) as id FROM times WHERE times.time = ?)");
-            .prepareStatement("INSERT INTO attributes_temp2 (cell_id, attribute_type_id, value, valid ) VALUES (?,?,?,(SELECT id FROM times WHERE times.time = ?))");
+            .prepareStatement("INSERT INTO attributes_temp (cell_id, attribute_type_id, value, valid ) VALUES (?,?,?,(SELECT id FROM times WHERE times.time = ?))");
 
       ){
       
@@ -244,7 +244,7 @@ public class OSMatrixProcessor {
 
   public  AttributeCells mapper(GridOSHEntity<OSHEntity> gridCell){
     
-//    System.out.println("mapper");
+
       
       GridOSHEntity cell = (GridOSHEntity) gridCell;
       
@@ -262,7 +262,8 @@ public class OSMatrixProcessor {
           AttributeCells oshresult =  attribute.compute(cellsIndex,osh,tagLookup, timestampsList, attributeId);
           
           //System.out.println("oshresult " + oshresult.get(2));
-          attribute.aggregate(gridcellOutput,oshresult);
+          attribute.aggregate(gridcellOutput,oshresult,timestampsList);
+          
           
         }
           
@@ -316,6 +317,7 @@ public class OSMatrixProcessor {
     
   }
   
+  @SuppressWarnings("unchecked")
   private boolean init() {
 
     try {
@@ -373,7 +375,7 @@ public class OSMatrixProcessor {
       OSMatrixDBManager osmatrixmgr = new OSMatrixDBManager(osmatrixDbConfig.get("connection").toString(), osmatrixDbConfig.get("user").toString(), osmatrixDbConfig.get("password").toString());
       
       osmatrixmgr.truncateAttributeTempTable();
-      logger.info("attributes_temp2 Table truncated!");
+      logger.info("attributes_temp Table truncated!");
       mapTypId = osmatrixmgr.getAttrAndId();
       
      // ResultSet osmatrixCells = osmatrixmgr.getOSMatrixDBConnection().createStatement().executeQuery("SELECT id, ST_AsText(geom) FROM cells");
@@ -389,13 +391,15 @@ public class OSMatrixProcessor {
       params.put( "passwd", "osmatrix2016");
       
       DataStore dataStore = DataStoreFinder.getDataStore(params);
-     // System.out.println(dataStore.getSchema("cells4326").getAttributeDescriptors().get(0));
+     System.out.println(dataStore.getSchema("cells").getGeometryDescriptor().getLocalName());
       
      // SimpleFeatureSource featureSource = dataStore.getFeatureSource("cells4326");
       SimpleFeatureSource featureSource = dataStore.getFeatureSource("cells");
+      
 //      final FilterFactory ff = CommonFactoryFinder.getFilterFactory();
 //      Filter filter = ff.propertyLessThan( ff.property( "AGE"), ff.literal( 12 ) );
 //      //FeatureCollection<Polygon, Feature>
+      System.out.println(featureSource.getFeatures().getSchema().getGeometryDescriptor().getLocalName());
       cellsIndex  = DataUtilities.source( new SpatialIndexFeatureCollection(featureSource.getFeatures()) );
       
       dataStore.dispose();
@@ -413,8 +417,7 @@ public class OSMatrixProcessor {
      
       logger.info("TempDB Connection Pool established.");
      
-      //Connection connection = dataSource.getConnection();
-      
+      //Connection connection = dataSource.getConnection();      
 
 //      PreparedStatement  pstmt = connection
 //          .prepareStatement("INSERT INTO attributes_temp (cell_id, attribute_type_id, value, valid) VALUES (?,?,?,?)");
@@ -424,9 +427,7 @@ public class OSMatrixProcessor {
 //      pstmt.setDouble(3, 123.1234);
 //      pstmt.setInt(4, 1000);
 //
-//      pstmt.execute();
-        
-   
+//      pstmt.execute();  
       
       // starting init phase
 

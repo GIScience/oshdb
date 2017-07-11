@@ -54,18 +54,6 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
   }
 
   @Override
-  protected double doUpdate(TABLE table, long cell_id, double old_value, ResultSet row) throws Exception {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
-  @Override
-  protected String where(TABLE table) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public AttributeCells compute(SimpleFeatureSource cellsIndex, OSHEntity<OSMEntity> osh, TagLookup tagLookup, List<Long> timestampsList, int attributeId) {
     
     AttributeCells oshresult = new AttributeCells();
@@ -133,7 +121,7 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
   }
 
   @Override
-  public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult) {
+  public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult, List<Long> timestampsList) {
     
    for (Map.Entry<Integer, CellTimeStamps>  attributeCell : oshresult.map.entrySet()){
      
@@ -142,6 +130,10 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
      for ( Map.Entry<Long, TimeStampValuesWeights> cellTimestamp : cellTimestamps.map.entrySet()){
        
        final TimeStampValuesWeights timestampValueWeights = cellTimestamp.getValue();
+       
+       for (Long long1 : timestampsList) {
+         timestampValueWeights.map.putIfAbsent(long1, new ValueWeight());
+       } 
        
        for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
          
@@ -164,8 +156,7 @@ public class TotalNumberOfDrinkingFountains extends Attribute {
        
      }
      
-   }
-   
+   }  
    
     
   }

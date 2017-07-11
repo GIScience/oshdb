@@ -14,7 +14,6 @@ import org.geotools.feature.FeatureIterator;
 import org.heigit.bigspatialdata.oshdb.examples.osmatrix.OSMatrixProcessor.TABLE;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -23,44 +22,58 @@ import org.opengis.filter.FilterFactory2;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
-public class TotalNumberOfBuildings extends Attribute{
+public class LandUseDiversityIndex extends Attribute{
 
   @Override
   public String getName() {
-    return "TotalNumberOfBuildings";
+    // TODO Auto-generated method stub
+    return "LandUseDiversityIndex";
   }
 
   @Override
   public String getDescription() {
-    return "Number of Buildings";
+    // TODO Auto-generated method stub
+    return "LandUseDiversityIndex";
   }
 
   @Override
   public String getTitle() {
-     return "TotalNumberOfBuilidings";
+    // TODO Auto-generated method stub
+    return "LandUseDiversityIndex";
   }
 
   @Override
   public List<TABLE> getDependencies() {
-     return Arrays.asList(TABLE.WAY,TABLE.RELATION);
+    // TODO Auto-generated method stub
+    return Arrays.asList(TABLE.WAY, TABLE.RELATION);
   }
 
 
   @Override
   public AttributeCells compute(SimpleFeatureSource cellsIndex, OSHEntity<OSMEntity> osh, TagLookup tagLookup,
-      List<Long> timestampsList, int attributeId) {
-    
+    List<Long> timestampsList, int attributeId) {
+   
     AttributeCells oshresult = new AttributeCells();
     
+   
+    Map<String,Pair <Integer, Integer >> landuseTags = tagLookup.getAllKeyValues().get("landuse");
     
-    Pair tagKeyValue = tagLookup.getAllKeyValues().get("building").get("yes");
+    for (Map.Entry<String, Pair<Integer,Integer>> key : landuseTags.entrySet()) {
+      
+      
+    }
+   
+    
+    
+    
+    Pair tagKeyValue = tagLookup.getAllKeyValues().get("landuse").get("yes");
     int tagKey = (int) tagKeyValue.getLeft();
     int tagValue = (int) tagKeyValue.getRight();
     
     //filter all osh that have never been an amenity
     if ( !(osh.hasTagKey(tagKey) && ( osh.getType()== OSHEntity.WAY || osh.getType()==OSHEntity.RELATION))) return oshresult; //empty
     //System.out.println("Here");
-    //osh has at some point in time a tag amenity
+
     
     //System.out.println(tagKey);
     //System.out.println(cellsIndex.getSchema().getGeometryDescriptor().getLocalName());
@@ -83,7 +96,6 @@ public class TotalNumberOfBuildings extends Attribute{
       } catch (Exception e) {
         osmGeometry = null;
       }
-      
       if(osmGeometry == null)
         continue;
       Point osmCentroid = osmGeometry.getCentroid();  
@@ -114,7 +126,11 @@ public class TotalNumberOfBuildings extends Attribute{
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-
+      
+      
+      
+     
+      
     }
    
     // Iterator<OSMEntity> osmIterator
@@ -122,7 +138,7 @@ public class TotalNumberOfBuildings extends Attribute{
   }
 
   @Override
-  public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult,List<Long> timestampsList) {
+  public void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult, List<Long> timestampsList) {
     for (Map.Entry<Integer, CellTimeStamps>  attributeCell : oshresult.map.entrySet()){
       
       final CellTimeStamps cellTimestamps = attributeCell.getValue();
@@ -133,8 +149,7 @@ public class TotalNumberOfBuildings extends Attribute{
         
         for (Long long1 : timestampsList) {
           timestampValueWeights.map.putIfAbsent(long1, new ValueWeight());
-        } 
-        
+        }        
         
         
         for ( Map.Entry<Long, ValueWeight> timestampValueWeight : timestampValueWeights.map.entrySet() ){
@@ -159,7 +174,6 @@ public class TotalNumberOfBuildings extends Attribute{
       }
       
     }
-    
   }
 
 }

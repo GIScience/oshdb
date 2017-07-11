@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.examples.osmatrix;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
@@ -67,24 +68,24 @@ public abstract class Attribute {
  
   public abstract List<TABLE> getDependencies();
       
-  protected abstract double doUpdate(OSMatrixProcessor.TABLE table,long cell_id, double old_value,ResultSet row) throws Exception;
-
-  protected abstract String where(OSMatrixProcessor.TABLE table);
+//  protected abstract double doUpdate(OSMatrixProcessor.TABLE table,long cell_id, double old_value,ResultSet row) throws Exception;
+//
+//  protected abstract String where(OSMatrixProcessor.TABLE table);
   
   public void update(OSMatrixProcessor.TABLE table,long cell_id, ResultSet row){
-    Double last_value = values.get(cell_id);
-    if(last_value == null)
-      last_value = defaultValue();
-      
-
-    try {
-      Double new_value = doUpdate(table,cell_id, last_value, row);
-      if(last_value.compareTo(new_value) != 0){
-        values.put(cell_id, new_value);
-      }
-    } catch (Exception e) {
-      
-    }
+//    Double last_value = values.get(cell_id);
+//    if(last_value == null)
+//      last_value = defaultValue();
+//      
+//
+//    try {
+//      Double new_value = doUpdate(table,cell_id, last_value, row);
+//      if(last_value.compareTo(new_value) != 0){
+//        values.put(cell_id, new_value);
+//      }
+//    } catch (Exception e) {
+//      
+//    }
     
   }
 
@@ -102,7 +103,7 @@ public abstract class Attribute {
   public abstract AttributeCells compute(SimpleFeatureSource cellsIndex, OSHEntity<OSMEntity> osh, TagLookup tagLookup, List<Long> timestampsList, int attributeId);
 
 
-  public abstract void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult);
+  public abstract void aggregate(AttributeCells gridcellOutput, AttributeCells oshresult, List<Long> timestampList);
     
   
 

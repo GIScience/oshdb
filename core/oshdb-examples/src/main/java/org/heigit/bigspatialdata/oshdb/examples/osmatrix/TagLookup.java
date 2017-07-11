@@ -46,6 +46,7 @@ public class TagLookup {
   public TagInterpreter getTagInterpreter() {
     return tagInterpreter;
   }
+  //TODO implement getAllValues()
 
   private void createAllKeyValues() throws SQLException{    
   
@@ -81,7 +82,8 @@ public class TagLookup {
   }
   
   private void createTagInterpreter() throws IOException, ParseException{
-    tagInterpreter = new DefaultTagInterpreter("./polygon-features.json","./uninterestingTags.json",allKeyValues, allRoles);
+   //tagInterpreter = new DefaultTagInterpreter("./polygon-features.json","./uninterestingTags.json",allKeyValues, allRoles);
+   tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
   //return tagInterpreter;
   }
   

@@ -154,10 +154,10 @@ public class OSMatrixDBManager {
       try {
         connection = getOSMatrixDBConnection();
         Statement statement = connection.createStatement();
-        statement.execute("TRUNCATE " + "attributes_temp2" + " CASCADE");
+        statement.execute("TRUNCATE " + "attributes_temp" + " CASCADE");
         
         Statement resetSequence = connection.createStatement();
-        resetSequence.execute("ALTER SEQUENCE attributes_temp2_id_seq RESTART");
+        resetSequence.execute("ALTER SEQUENCE attributes_temp_id_seq RESTART");
     
      } catch (SQLException e) {
       // TODO Auto-generated catch block
