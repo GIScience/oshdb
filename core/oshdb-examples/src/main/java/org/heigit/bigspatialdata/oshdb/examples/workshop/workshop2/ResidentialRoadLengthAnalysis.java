@@ -73,7 +73,7 @@ public class ResidentialRoadLengthAnalysis {
       ResultSet oshCellsRawData = pstmt.executeQuery();
 
       //iterate over result (this should be only one)
-      if (oshCellsRawData.next()) {
+      while (oshCellsRawData.next()) {
         //get one object (cell) from the raw data stream
         GridOSHEntity oshCell = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
 
