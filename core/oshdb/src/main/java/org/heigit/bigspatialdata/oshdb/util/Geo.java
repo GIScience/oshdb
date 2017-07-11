@@ -3,6 +3,8 @@ package org.heigit.bigspatialdata.oshdb.util;
 import com.vividsolutions.jts.geom.*;
 import org.geotools.geometry.jts.JTS;
 
+import javax.sound.sampled.Line;
+
 /**
  * Geometry utility functions
  */
@@ -54,6 +56,14 @@ public class Geo {
 		return dist;
 	}
 
+	public static double distanceOf(Geometry geom) {
+		if (geom instanceof LineString)
+			return distanceOf((LineString)geom);
+		if (geom instanceof MultiLineString)
+			return distanceOf((MultiLineString)geom);
+		return 0.0;
+	}
+
 	// =====================
 	// = area calculations =
 	// =====================
@@ -73,6 +83,14 @@ public class Geo {
 		for (int i=0; i<multipoly.getNumGeometries(); i++)
 			area += areaOf((Polygon) multipoly.getGeometryN(i));
 		return area;
+	}
+
+	public static double areaOf(Geometry geom) {
+		if (geom instanceof Polygon)
+			return areaOf((Polygon)geom);
+		if (geom instanceof MultiPolygon)
+			return areaOf((MultiPolygon)geom);
+		return 0.0;
 	}
 
 	/**
