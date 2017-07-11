@@ -37,8 +37,8 @@ public class CellIterator {
    * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
    * feature geometries later on in the code.
    */
-  public static Stream<Map<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    List<Map<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDb.MAXZOOM);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
@@ -71,7 +71,7 @@ public class CellIterator {
       }
 
       SortedMap<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(new ArrayList<>(queryTs.keySet()));
-      Map<Long, Pair<OSMEntity, Geometry>> oshResult = new TreeMap<>();
+      SortedMap<Long, Pair<OSMEntity, Geometry>> oshResult = new TreeMap<>();
 
       osmEntityLoop:
       for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
@@ -166,7 +166,8 @@ public class CellIterator {
         }
       }
 
-      results.add(oshResult);
+      if (oshResult.size() > 0)
+        results.add(oshResult);
     }
 
     // return as an obj stream

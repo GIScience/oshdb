@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -402,6 +403,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 		.mapToObj((Integer::new))
 		.flatMap(osmWayIndex -> {
 			OSMWay osmWay = ways.get(osmWayIndex);
+			if (!osmWay.isVisible()) return Stream.empty();
 			OSMWay nextOsmWay = osmWayIndex > 0 ? ways.get(osmWayIndex - 1) : null;
 			return Arrays.stream(osmWay.getRefs())
 			.map(osmNd -> ((OSHNode)osmNd.getEntity()))

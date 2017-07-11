@@ -9,6 +9,7 @@ import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
@@ -78,8 +79,8 @@ public class HistocountsByTag {
     //final BoundingBox bbox = new BoundingBox(8.61, 8.76, 49.40, 49.41);
     //final BoundingBox bbox = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
     //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
-    //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
-    final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
+    final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+    //final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -87,9 +88,11 @@ public class HistocountsByTag {
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
 
     // connect to the "Big"DB
-    Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
-    final Statement stmt = conn.createStatement();
+    Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
 
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+
+    final Statement stmt = conn.createStatement();
     System.out.println("Select tag key/value ids from DB");
     ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
     Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
@@ -102,15 +105,6 @@ public class HistocountsByTag {
       allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
     }
     rstTags.close();
-    ResultSet rstRoles = stmt.executeQuery("select ID as ROLEID, txt as ROLE from ROLE;");
-    Map<String, Integer> allRoles = new HashMap<>();
-    while(rstRoles.next()){
-      int roleId = rstRoles.getInt(1);
-      String roleStr = rstRoles.getString(2);
-      allRoles.put(roleStr, roleId);
-    }
-    rstRoles.close();
-    final TagInterpreter tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
 
 
     Map<Long,ResultEntry> countByTimestamp = cellIds.parallelStream().flatMap(cell -> {
@@ -139,25 +133,26 @@ public class HistocountsByTag {
 
       //int interestedKeyId = allKeyValues.get("highway").get("residential").getLeft();
       //int[] uninterestedValueIds = { allKeyValues.get("highway").get("no").getRight() };
-      int interestedKeyId = allKeyValues.get("wikidata").get("Q513").getLeft();
+      /*int interestedKeyId = allKeyValues.get("wikidata").get("Q513").getLeft();
       int interestedValueId = allKeyValues.get("wikidata").get("Q513").getRight();
       int interestedKeyId2 = allKeyValues.get("natural").get("peak").getLeft();
       int interestedValueId2 = allKeyValues.get("natural").get("peak").getRight();
       int interestedKeyId3 = allKeyValues.get("name").get("Mount Everest").getLeft();
       int interestedValueId3 = allKeyValues.get("name").get("Mount Everest").getRight();
       int interestedKeyId4 = allKeyValues.get("name").get("Everest").getLeft();
-      int interestedValueId4 = allKeyValues.get("name").get("Everest").getRight();
+      int interestedValueId4 = allKeyValues.get("name").get("Everest").getRight();*/
       CellIterator.iterateByTimestamps(
           oshCell,
           bbox,
           timestamps,
           tagInterpreter,
-          osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId) || (
+          osmEntity -> osmEntity.getId() == 254154168 && osmEntity instanceof OSMWay,
+          /*osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId) || (
               osmEntity.hasTagValue(interestedKeyId2, interestedValueId2) && (
                   osmEntity.hasTagValue(interestedKeyId3, interestedValueId3) ||
                   osmEntity.hasTagValue(interestedKeyId4, interestedValueId4)
               )
-          ),
+          ),*/
           handleOldStyleMultipolygons
       )
       .forEach(result -> {

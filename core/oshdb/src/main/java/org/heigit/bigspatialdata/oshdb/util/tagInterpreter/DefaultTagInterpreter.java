@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.tagInterpreter;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
@@ -11,6 +12,7 @@ import org.json.simple.parser.ParseException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -23,10 +25,104 @@ public class DefaultTagInterpreter extends TagInterpreter {
 	private int typeBoundaryValue = -1;
 	private int typeRouteValue = -1;
 
+	private final static String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
+	private final static String defaultUninterestingTagsDefinitionFile = "json/uninterestingTags.json";
+
+	public static DefaultTagInterpreter fromH2(Connection conn) throws SQLException, IOException, ParseException {
+		return DefaultTagInterpreter.fromH2(conn,
+				Thread.currentThread().getContextClassLoader().getResource(defaultAreaTagsDefinitionFile).getPath(),
+				Thread.currentThread().getContextClassLoader().getResource(defaultUninterestingTagsDefinitionFile).getPath()
+		);
+	}
+	public static DefaultTagInterpreter fromH2(Connection conn, String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile) throws SQLException, IOException, ParseException {
+		// fetch list of tags/keys
+		// 1. gather list of tags which we need to fetch
+		// 1.a. hardcoded tags (area=no, type=multipolygon, …)
+		List<Pair<String, String>> requiredTags = new LinkedList<>();
+		requiredTags.add(new ImmutablePair<>("area", "no"));
+		requiredTags.add(new ImmutablePair<>("type", "multipolygon"));
+		requiredTags.add(new ImmutablePair<>("type", "boundary"));
+		requiredTags.add(new ImmutablePair<>("type", "route"));
+		// 1.b. tags from uninterestingTagsDefinitionFile
+		JSONParser parser = new JSONParser();
+		JSONArray uninterestingTagsList = (JSONArray)parser.parse(new FileReader(uninterestingTagsDefinitionFile));
+		for (String tagKey : (Iterable<String>) uninterestingTagsList) {
+			requiredTags.add(new ImmutablePair<>(tagKey, null));
+		}
+		// 1.c. tags from areaTagsDefinitionFile
+		JSONArray tagList = (JSONArray)parser.parse(new FileReader(areaTagsDefinitionFile));
+		for (JSONObject tag : (Iterable<JSONObject>) tagList) {
+			String type = (String) tag.get("polygon");
+			String tagKey = (String)tag.get("key");
+			switch (type) {
+				case "all":
+					requiredTags.add(new ImmutablePair<>(tagKey, null));
+					break;
+				case "whitelist":
+				case "blacklist":
+					JSONArray values = (JSONArray)tag.get("values");
+					for (String tagValue : (Iterable<String>) values) {
+						requiredTags.add(new ImmutablePair<>(tagKey, tagValue));
+					}
+					break;
+				default:
+					System.err.println("Warning: unable to handle type '"+type+"' in areaTagsDefinitionFile.");
+			}
+		}
+		// 2. get tag ids from H2 DB
+		Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
+		PreparedStatement pstmtTagsKey = conn.prepareStatement("select ID as KEYID from KEY WHERE txt = ?;");
+		PreparedStatement pstmtTagsKeyValue = conn.prepareStatement("select k.ID as KEYID, kv.VALUEID as VALUEID from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID WHERE k.txt = ? and kv.txt = ?;");
+		for (Pair<String, String> requiredTag: requiredTags) {
+			String key = requiredTag.getLeft();
+			String value = requiredTag.getRight();
+			ResultSet rstTags;
+			if (requiredTag.getRight() == null) {
+				pstmtTagsKey.setString(1, key);
+				rstTags = pstmtTagsKey.executeQuery();
+			} else {
+				pstmtTagsKeyValue.setString(1, key);
+				pstmtTagsKeyValue.setString(2, value);
+				rstTags = pstmtTagsKeyValue.executeQuery();
+			}
+			if (rstTags.next()) {
+				int keyId = rstTags.getInt(1);
+				int valueId = value != null ? rstTags.getInt(2) : 0;
+				if (!allKeyValues.containsKey(key))
+					allKeyValues.put(key, new HashMap<>());
+				allKeyValues.get(key).put(value, new ImmutablePair<>(keyId, valueId));
+			}
+			rstTags.close();
+		}
+		// fetch role ids
+		List<String> requiredRoles = new LinkedList<>();
+		requiredRoles.add("outer");
+		requiredRoles.add("inner");
+		requiredRoles.add("");
+		Map<String, Integer> allRoles = new HashMap<>();
+		PreparedStatement pstmtRoles = conn.prepareStatement("select ID as ROLEID from ROLE WHERE txt = ?;");
+		for (String requiredRole: requiredRoles) {
+			pstmtRoles.setString(1, requiredRole);
+			ResultSet rstRoles = pstmtRoles.executeQuery();
+			if (rstRoles.next()) {
+				int roleId = rstRoles.getInt(1);
+				allRoles.put(requiredRole, roleId);
+			}
+			rstRoles.close();
+		}
+		// return new DefaultTagInterpreter
+		return new DefaultTagInterpreter(
+				areaTagsDefinitionFile,
+				uninterestingTagsDefinitionFile,
+				allKeyValues,
+				allRoles
+		);
+	}
+
 	public DefaultTagInterpreter(Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues, Map<String, Integer> allRoles) throws IOException, ParseException {
 		this(
-			Thread.currentThread().getContextClassLoader().getResource("json/polygon-features.json").getPath(),
-			Thread.currentThread().getContextClassLoader().getResource("json/uninterestingTags.json").getPath(),
+			Thread.currentThread().getContextClassLoader().getResource(defaultAreaTagsDefinitionFile).getPath(),
+			Thread.currentThread().getContextClassLoader().getResource(defaultUninterestingTagsDefinitionFile).getPath(),
 			allKeyValues,
 			allRoles
 		);

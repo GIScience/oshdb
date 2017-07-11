@@ -167,5 +167,15 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>deployignite</id>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+      <build>
+        <directory>/opt/ignite/libs/oshdb</directory>
+      </build>
+    </profile>
   </profiles>
 </project>

@@ -78,7 +78,11 @@ public class HistocountActivityTypes {
     //final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
     //final BoundingBox bbox = new BoundingBox(86.8798, 86.96065, 27.95271, 28.03774);
     //final BoundingBox bbox = new BoundingBox(86.92209, 86.92535, 27.9857, 27.98805);
-    final BoundingBox bbox = new BoundingBox(-1, 1, 51, 52);
+    //final BoundingBox bbox = new BoundingBox(-1, 1, 51, 52);
+    //final BoundingBox bbox = new BoundingBox(18.3592, 18.6349, -34.0009, -33.857); // cape town
+    //final BoundingBox bbox = new BoundingBox(26.98, 29.56, -30.72, -28.33); // lesotho
+    //final BoundingBox bbox = new BoundingBox(-26.7, 53.1, -37.4, 37.5); // africa
+    final BoundingBox bbox = new BoundingBox(42.4, 51.2,  -25.8, -11.8); // madagascar
 
     XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
 
@@ -86,11 +90,14 @@ public class HistocountActivityTypes {
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
 
     // connect to the "Big"DB
-    Connection conn = DriverManager.getConnection("jdbc:h2:./london","sa", "");
-    final Statement stmt = conn.createStatement();
+    final Connection connKT = DriverManager.getConnection("jdbc:h2:./africaKeytables","sa", "");
+
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(connKT);
+
+    final Statement stmtKT = connKT.createStatement();
 
     System.out.println("Select tag key/value ids from DB");
-    ResultSet rstTags = stmt.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
+    ResultSet rstTags = stmtKT.executeQuery("select k.ID as KEYID, kv.VALUEID as VALUEID, k.txt as KEY, kv.txt as VALUE from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID;");
     Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
     while(rstTags.next()){
       int keyId   = rstTags.getInt(1);
@@ -101,16 +108,9 @@ public class HistocountActivityTypes {
       allKeyValues.get(keyStr).put(valueStr, new ImmutablePair<>(keyId, valueId));
     }
     rstTags.close();
-    ResultSet rstRoles = stmt.executeQuery("select ID as ROLEID, txt as ROLE from ROLE;");
-    Map<String, Integer> allRoles = new HashMap<>();
-    while(rstRoles.next()){
-      int roleId = rstRoles.getInt(1);
-      String roleStr = rstRoles.getString(2);
-      allRoles.put(roleStr, roleId);
-    }
-    rstRoles.close();
-    final TagInterpreter tagInterpreter = new DefaultTagInterpreter(allKeyValues, allRoles);
 
+
+    final Connection conn = DriverManager.getConnection("jdbc:h2:./africa","sa", "");
 
     Map<Long, ResultActivityEntry> countByTimestamp = cellIds.parallelStream().flatMap(cell -> {
       try (final PreparedStatement pstmt = conn.prepareStatement("" +
@@ -149,9 +149,13 @@ public class HistocountActivityTypes {
           allKeyValues.get("highway").get("footway").getRight(),
           allKeyValues.get("highway").get("cycleway").getRight(),
           allKeyValues.get("highway").get("pedestrian").getRight(),
-          allKeyValues.get("highway").get("track").getRight(),
-          allKeyValues.get("highway").get("service").getRight()
+          //allKeyValues.get("highway").get("track").getRight(),
+          //allKeyValues.get("highway").get("service").getRight()
       };
+      int nameKeyId = allKeyValues.get("name").get("Madagascar").getLeft();
+      int refKeyId = allKeyValues.get("ref").get("N 7").getLeft();
+      int primaryValueId = allKeyValues.get("highway").get("primary").getRight();
+      int trackValueId = allKeyValues.get("highway").get("track").getRight();
       /*int interestedKeyId = allKeyValues.get("wikidata").get("Q513").getLeft();
       int interestedValueId = allKeyValues.get("wikidata").get("Q513").getRight();
       int interestedKeyId2 = allKeyValues.get("natural").get("peak").getLeft();
@@ -168,7 +172,7 @@ public class HistocountActivityTypes {
           //osmEntity -> true,
           //osmEntity -> osmEntity.hasTagKey(interestedKeyId),
           //osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId),
-          osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),
+          osmEntity -> osmEntity.hasTagKey(interestedKeyId, uninterestedValueIds),//&& (osmEntity.hasTagKey(nameKeyId) || osmEntity.hasTagKey(refKeyId)),//&& osmEntity.hasTagValue(interestedKeyId, primaryValueId),
           /*osmEntity -> osmEntity.hasTagValue(interestedKeyId, interestedValueId) || (
               osmEntity.hasTagValue(interestedKeyId2, interestedValueId2) && (
                   osmEntity.hasTagValue(interestedKeyId3, interestedValueId3) ||

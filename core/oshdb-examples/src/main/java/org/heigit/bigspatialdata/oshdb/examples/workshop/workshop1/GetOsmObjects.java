@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.examples.workshop;
+package org.heigit.bigspatialdata.oshdb.examples.workshop.workshop1;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,10 +12,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
-import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
 
 public class GetOsmObjects {
 	private static final Logger LOG = Logger.getLogger(GetHosmCell.class.getName());

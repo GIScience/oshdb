@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.examples.workshop;
+package org.heigit.bigspatialdata.oshdb.examples.workshop.workshop1;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
