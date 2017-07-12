@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.generic;
+package org.heigit.bigspatialdata.oshdb.api.generic;
 
 import java.util.Objects;
 import java.util.function.Function;

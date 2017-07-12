@@ -43,7 +43,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 
-import org.heigit.bigspatialdata.oshdb.utils.OSMTimeStamps;
+import org.heigit.bigspatialdata.oshdb.api.objects.Timestamps;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -349,7 +349,7 @@ public class OSMatrixProcessor {
       // TODO get Timestamps from config.json
 
       logger.info("generating timestamps");
-      OSMTimeStamps timestamps = new OSMTimeStamps(2008, 2017, 1, 1);
+      Timestamps timestamps = new Timestamps(2008, 2017, 1, 1);
       timestampsList = timestamps.getTimeStampIds(); //TODO net gut
       //Collections.sort(timestampsList, Collections.reverseOrder());
 

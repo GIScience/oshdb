@@ -11,7 +11,7 @@ import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.utils.OSMTimeStamps;
+import org.heigit.bigspatialdata.oshdb.api.objects.Timestamps;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
@@ -55,7 +55,7 @@ public class ResidentialRoadLengthAnalysis {
     Iterable<CellId> cellIds = grid.bbox2CellIds(bbox, true);
 
     //determine timestamps to query features at
-    List<Long> timestamps = (new OSMTimeStamps(2008, 2017, 1, 12)).getTimeStampIds();
+    List<Long> timestamps = (new Timestamps(2008, 2017, 1, 12)).getTimeStampIds();
     SortedMap<Long,Double> countsByTimestamp = new TreeMap<>();
 
     //iterate over all cellIds

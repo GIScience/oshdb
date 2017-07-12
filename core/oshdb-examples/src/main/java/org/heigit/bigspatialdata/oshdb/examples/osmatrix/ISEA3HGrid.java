@@ -29,7 +29,7 @@ import org.heigit.bigspatialdata.oshdb.examples.activity.ActivityIndicatorFromPo
 import org.heigit.bigspatialdata.oshdb.examples.activity.ActivityIndicatorFromPolygonBuildings;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.utils.OSMTimeStamps;
+import org.heigit.bigspatialdata.oshdb.api.objects.Timestamps;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -47,7 +47,7 @@ public class ISEA3HGrid {
   ClassNotFoundException, org.json.simple.parser.ParseException {
     
     
-    OSMTimeStamps osmtrxTs = new OSMTimeStamps(2016, 2016, 01, 05);
+    Timestamps osmtrxTs = new Timestamps(2016, 2016, 01, 05);
     
     List<Long> timeStamps = osmtrxTs.getTimeStampIds();
     
