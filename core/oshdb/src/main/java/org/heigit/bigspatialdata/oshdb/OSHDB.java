@@ -23,7 +23,7 @@ public abstract class OSHDB {
         return new CellMapper(this, bbox, tstamps);
     }
     
-    protected abstract <R, S> S foldCells(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, TriFunction<OSMTimeStamp, Geometry, OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception;
+    protected abstract <R, S> S reduceCells(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, TriFunction<OSMTimeStamp, Geometry, OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception;
     
     public class CellMapper {
         private final OSHDB _oshdb;
@@ -43,25 +43,25 @@ public abstract class OSHDB {
         }
         
         public <R> List<R> map(TriFunction<OSMTimeStamp, Geometry, OSMEntity, R> f) throws Exception {
-            return this._oshdb.foldCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, new ArrayList<>(), (l, r) -> {
+            return this._oshdb.reduceCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, new ArrayList<>(), (l, r) -> {
                 l.add(r);
                 return l;
             });
         }
 
         public <R> List<R> flatMap(TriFunction<OSMTimeStamp, Geometry, OSMEntity, List<R>> f) throws Exception {
-            return this._oshdb.foldCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, new ArrayList<>(), (l, r) -> {
+            return this._oshdb.reduceCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, new ArrayList<>(), (l, r) -> {
                 l.addAll(r);
                 return l;
             });
         }
         
         public Double sum(TriFunction<OSMTimeStamp, Geometry, OSMEntity, Double> f) throws Exception {
-            return this._oshdb.foldCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, 0., (s, r) -> s + r);
+            return this._oshdb.reduceCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, 0., (s, r) -> s + r);
         }
         
         public SortedMap<OSMTimeStamp, Double> aggregate(TriFunction<OSMTimeStamp, Geometry, OSMEntity, Pair<OSMTimeStamp, Double>> f) throws Exception {
-            return this._oshdb.foldCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, new TreeMap<>(), (m, r) -> {
+            return this._oshdb.reduceCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, new TreeMap<>(), (m, r) -> {
                 m.put(r.getKey(), m.getOrDefault(r.getKey(), 0.) + r.getValue());
                 return m;
             });
