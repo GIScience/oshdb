@@ -6,7 +6,7 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.OSHDb;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -51,7 +51,7 @@ public class HistocountUsers {
     //final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
     final BoundingBox bbox = new BoundingBox(75.98145, 99.53613, 14.71113, 38.73695);
 
-    XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
+    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
 
     final List<CellId> cellIds = new ArrayList<>();
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);

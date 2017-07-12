@@ -5,7 +5,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.OSHDb;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osm.*;
@@ -84,7 +84,7 @@ public class HistocountActivityTypes {
     //final BoundingBox bbox = new BoundingBox(-26.7, 53.1, -37.4, 37.5); // africa
     final BoundingBox bbox = new BoundingBox(42.4, 51.2,  -25.8, -11.8); // madagascar
 
-    XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
+    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
 
     final List<CellId> cellIds = new ArrayList<>();
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);

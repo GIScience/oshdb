@@ -49,7 +49,7 @@ public class ISEA3HGrid {
     
     OSMTimeStamps osmtrxTs = new OSMTimeStamps(2016, 2016, 01, 05);
     
-    List<Long> timeStamps = osmtrxTs.getTimeStamps();
+    List<Long> timeStamps = osmtrxTs.getTimeStampIds();
     
     for (Long long1 : timeStamps) {
       System.out.println(long1);

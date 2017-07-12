@@ -83,6 +83,12 @@
 	  <version>0.10.0</version>
 	  <type>jar</type>
 	 </dependency>
+	 <dependency>
+	  <groupId>org.heigit.bigspatialdata</groupId>
+	  <artifactId>oshdb-utils</artifactId>
+	  <version>0.0.1-SNAPSHOT</version>
+	  <type>jar</type>
+	 </dependency>
 	</dependencies>
 
 	<repositories>

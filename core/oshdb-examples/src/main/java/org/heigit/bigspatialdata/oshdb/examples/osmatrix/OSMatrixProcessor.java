@@ -350,7 +350,7 @@ public class OSMatrixProcessor {
 
       logger.info("generating timestamps");
       OSMTimeStamps timestamps = new OSMTimeStamps(2008, 2017, 1, 1);
-      timestampsList = timestamps.getTimeStamps(); //TODO net gut
+      timestampsList = timestamps.getTimeStampIds(); //TODO net gut
       //Collections.sort(timestampsList, Collections.reverseOrder());
 
       // get connection to oshdb

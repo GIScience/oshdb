@@ -39,7 +39,7 @@ public class OSMTimeStamps {
 
 
 
-  public List<Long> getTimeStamps(){
+  public List<Long> getTimeStampIds(){
     List<Long> timestamps = new ArrayList<>();
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     for (int year = startYear; year <= endYear; year++) {

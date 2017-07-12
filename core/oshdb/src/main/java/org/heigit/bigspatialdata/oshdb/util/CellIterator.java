@@ -3,7 +3,7 @@ package org.heigit.bigspatialdata.oshdb.util;
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.OSHDb;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -39,7 +39,7 @@ public class CellIterator {
    */
   public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
-    XYGrid nodeGrid = new XYGrid(OSHDb.MAXZOOM);
+    XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntity.intersectsBbox(boundingBox)) {
@@ -216,7 +216,7 @@ public class CellIterator {
    */
   public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
-    XYGrid nodeGrid = new XYGrid(OSHDb.MAXZOOM);
+    XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
