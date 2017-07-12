@@ -38,12 +38,12 @@ public abstract class Mapper {
   
   protected abstract <R, S> S reduceCells(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, TriFunction<Timestamp, Geometry, OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception;
   
-  public Mapper setBoundingBox(BoundingBox bbox) {
+  public Mapper boundingBox(BoundingBox bbox) {
     this._bbox = bbox;
     return this;
   }
   
-  public Mapper setTimestamps(Timestamps tstamps) {
+  public Mapper timestamps(Timestamps tstamps) {
     this._tstamps = tstamps;
     return this;
   }
