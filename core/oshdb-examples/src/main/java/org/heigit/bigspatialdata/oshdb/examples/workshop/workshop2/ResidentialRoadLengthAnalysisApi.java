@@ -24,6 +24,6 @@ public class ResidentialRoadLengthAnalysisApi {
             .aggregate((timestamp, geometry, entity) -> new ImmutablePair<>(timestamp, Geo.distanceOf(geometry)));
 
     // output
-    for (Map.Entry<Timestamp, Double> entry : result.entrySet()) System.out.format("%s\t%f\n", entry.getKey().date(), entry.getValue());
+    for (Map.Entry<Timestamp, Double> entry : result.entrySet()) System.out.format("%s\t%f\n", entry.getKey().formatDate(), entry.getValue());
   }
 }

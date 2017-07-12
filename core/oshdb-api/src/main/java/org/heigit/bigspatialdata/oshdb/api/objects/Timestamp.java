@@ -15,15 +15,15 @@ public class Timestamp implements Comparable<Timestamp> {
     return Long.compare(this._tstamp, other._tstamp);
   }
   
-  public Date getDate() {
+  public Date toDate() {
     return new Date(this._tstamp * 1000);
   }
   
-  public String date() {
-    return this._timeStampFormatter.date(this.getDate());
+  public String formatDate() {
+    return this._timeStampFormatter.date(this.toDate());
   }
 
-  public String isoDateTime() {
-    return this._timeStampFormatter.isoDateTime(this.getDate());
+  public String formatIsoDateTime() {
+    return this._timeStampFormatter.isoDateTime(this.toDate());
   }
 }
