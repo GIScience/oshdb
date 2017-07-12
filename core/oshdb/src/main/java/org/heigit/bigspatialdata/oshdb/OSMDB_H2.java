@@ -32,7 +32,7 @@ public class OSMDB_H2 extends OSHDB {
     }
     
     @Override
-    protected <R, S> S getCellIterators(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, TriFunction<OSMTimeStamp, Geometry, OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws SQLException, IOException, ParseException, ClassNotFoundException {
+    protected <R, S> S foldCells(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, TriFunction<OSMTimeStamp, Geometry, OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws SQLException, IOException, ParseException, ClassNotFoundException {
         //load tag interpreter helper which is later used for geometry building
         final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(this._conn);
         
