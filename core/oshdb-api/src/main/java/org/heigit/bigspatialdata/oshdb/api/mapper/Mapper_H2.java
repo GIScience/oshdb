@@ -19,7 +19,6 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
 import org.json.simple.parser.ParseException;
 
@@ -32,7 +31,7 @@ public class Mapper_H2 extends Mapper {
   @Override
   protected <R, S> S reduceCells(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, TriFunction<Timestamp, Geometry, OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws SQLException, IOException, ParseException, ClassNotFoundException {
     //load tag interpreter helper which is later used for geometry building
-    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
     
     for (CellId cellId : cellIds) {
       // prepare SQL statement
@@ -50,7 +49,7 @@ public class Mapper_H2 extends Mapper {
 
         // iterate over the history of all OSM objects in the current cell
         List<R> rs = new ArrayList<>();
-        CellIterator.iterateByTimestamps(oshCellRawData, bbox, tstampsIds, tagInterpreter, filter, false).forEach(result -> result.entrySet().forEach(entry -> {
+        CellIterator.iterateByTimestamps(oshCellRawData, bbox, tstampsIds, this._tagInterpreter, filter, false).forEach(result -> result.entrySet().forEach(entry -> {
           List<Long> x = tstampsIds;
           Timestamp tstamp = new Timestamp(entry.getKey());
           Geometry geometry = entry.getValue().getRight();

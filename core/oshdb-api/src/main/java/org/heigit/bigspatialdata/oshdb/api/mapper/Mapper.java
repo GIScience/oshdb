@@ -17,12 +17,14 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamps;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper {
   protected OSHDB _oshdb;
   private BoundingBox _bbox = null;
   private Timestamps _tstamps = null;
   private final List<Predicate<OSMEntity>> _filters = new ArrayList<>();
+  protected TagInterpreter _tagInterpreter = null;
   
   protected Mapper(OSHDB oshdb) {
     this._oshdb = oshdb;
@@ -45,6 +47,11 @@ public abstract class Mapper {
   
   public Mapper timestamps(Timestamps tstamps) {
     this._tstamps = tstamps;
+    return this;
+  }
+  
+  public Mapper tagInterpreter(TagInterpreter tagInterpreter) {
+    this._tagInterpreter = tagInterpreter;
     return this;
   }
   
