@@ -49,7 +49,7 @@ public abstract class OSHDB {
             });
         }
 
-        public <R> List<R> mapAll(TriFunction<OSMTimeStamp, Geometry, OSMEntity, List<R>> f) throws Exception {
+        public <R> List<R> flatMap(TriFunction<OSMTimeStamp, Geometry, OSMEntity, List<R>> f) throws Exception {
             return this._oshdb.foldCells(this._getCellIds(), this._getTimestamps(), this._bbox, this._getFilter(), f, new ArrayList<>(), (l, r) -> {
                 l.addAll(r);
                 return l;
