@@ -23,10 +23,10 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.json.simple.parser.ParseException;
 
-public class OSMDB_H2 extends OSHDB {
+public class OSHDB_H2 extends OSHDB {
     private final Connection _conn;
     
-    public OSMDB_H2(String databaseFile) throws SQLException, ClassNotFoundException {
+    public OSHDB_H2(String databaseFile) throws SQLException, ClassNotFoundException {
         Class.forName("org.h2.Driver");
         this._conn = DriverManager.getConnection("jdbc:h2:" + databaseFile, "sa", "");
     }

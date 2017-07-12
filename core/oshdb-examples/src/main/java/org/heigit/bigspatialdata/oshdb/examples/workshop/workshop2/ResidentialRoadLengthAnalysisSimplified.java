@@ -1,7 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.examples.workshop.workshop2;
 
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.OSMDB_H2;
+import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.utils.OSMTimeStamp;
 import java.util.Map;
 import java.util.SortedMap;
