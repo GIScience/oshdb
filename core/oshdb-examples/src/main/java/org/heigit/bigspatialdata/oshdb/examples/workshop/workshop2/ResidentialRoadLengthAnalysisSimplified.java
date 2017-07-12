@@ -13,10 +13,10 @@ import org.heigit.bigspatialdata.oshdb.utils.OSMTimeStamps;
 public class ResidentialRoadLengthAnalysisSimplified {
     public static void main(String[] args) throws Exception {
         // database
-        OSHDB osmdb = new OSMDB_H2("./heidelberg--2017-05-29");
+        OSHDB oshdb = new OSHDB_H2("./heidelberg--2017-05-29");
         
         // query
-        SortedMap<OSMTimeStamp, Double> result = osmdb.createCellMapper(new BoundingBox(8.6528,8.7294, 49.3683,49.4376), new OSMTimeStamps(2008, 2017, 1, 12))
+        SortedMap<OSMTimeStamp, Double> result = oshdb.createCellMapper(new BoundingBox(8.6528,8.7294, 49.3683,49.4376), new OSMTimeStamps(2008, 2017, 1, 12))
                 .filter(entity -> entity.hasTagValue(2, 0))
                 .aggregate((timestamp, geometry, entity) -> new ImmutablePair<>(timestamp, Geo.distanceOf(geometry)));
         
