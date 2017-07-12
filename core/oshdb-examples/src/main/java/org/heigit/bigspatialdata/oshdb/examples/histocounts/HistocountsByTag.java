@@ -201,7 +201,7 @@ public class HistocountsByTag {
             }
             if (geometry.getGeometryType().startsWith("LineString")) {
               thisResult.countLinestrings++;
-              thisResult.length += Geo.distanceOf((LineString) geometry);
+              thisResult.length += Geo.lengthOf((LineString) geometry);
             } else if (geometry.getGeometryType().startsWith("Polygon")) {
               thisResult.countPolygons++;
               if (geometry instanceof Polygon)

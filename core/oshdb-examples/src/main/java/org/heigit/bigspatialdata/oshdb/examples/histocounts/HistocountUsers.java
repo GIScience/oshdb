@@ -215,7 +215,7 @@ public class HistocountUsers {
             //System.err.printf("%s %s\n", formatter.format(new Date(timestamp*1000)), osmEntity.toString());
             //System.err.printf("%s\n", geometry.toString());
             thisResult.countCreation++;
-            thisResult.length += Geo.distanceOf((LineString) geometry);
+            thisResult.length += Geo.lengthOf((LineString) geometry);
           } else if (geometry.getGeometryType().startsWith("Polygon")) {
             thisResult.countGeometryChange++;
             if (geometry instanceof Polygon)

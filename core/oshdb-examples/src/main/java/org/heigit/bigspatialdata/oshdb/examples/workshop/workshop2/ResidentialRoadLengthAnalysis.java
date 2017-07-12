@@ -91,7 +91,7 @@ public class ResidentialRoadLengthAnalysis {
             OSMEntity osmEntity = entry.getValue().getLeft();
             Geometry geometry = entry.getValue().getRight();
 
-            double length = Geo.distanceOf(geometry);
+            double length = Geo.lengthOf(geometry);
 
             countsByTimestamp.put(
                 timestamp,

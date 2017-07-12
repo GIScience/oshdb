@@ -3,8 +3,6 @@ package org.heigit.bigspatialdata.oshdb.util;
 import com.vividsolutions.jts.geom.*;
 import org.geotools.geometry.jts.JTS;
 
-import javax.sound.sampled.Line;
-
 /**
  * Geometry utility functions
  */
@@ -35,7 +33,7 @@ public class Geo {
 		return earthRadius * Math.sqrt(dLng*dLng + dLat*dLat);
 	}
 
-	public static double distanceOf(LineString line) {
+	public static double lengthOf(LineString line) {
 		double dist = 0.0;
 		Coordinate[] coords = line.getCoordinates();
 
@@ -49,18 +47,18 @@ public class Geo {
 		return dist;
 	}
 
-	public static double distanceOf(MultiLineString multiline) {
+	public static double lengthOf(MultiLineString multiline) {
 		double dist = 0.0;
 		for (int i=0; i<multiline.getNumGeometries(); i++)
-			dist += distanceOf((LineString) multiline.getGeometryN(i));
+			dist += lengthOf((LineString) multiline.getGeometryN(i));
 		return dist;
 	}
 
-	public static double distanceOf(Geometry geom) {
+	public static double lengthOf(Geometry geom) {
 		if (geom instanceof LineString)
-			return distanceOf((LineString)geom);
+			return lengthOf((LineString)geom);
 		if (geom instanceof MultiLineString)
-			return distanceOf((MultiLineString)geom);
+			return lengthOf((MultiLineString)geom);
 		return 0.0;
 	}
 

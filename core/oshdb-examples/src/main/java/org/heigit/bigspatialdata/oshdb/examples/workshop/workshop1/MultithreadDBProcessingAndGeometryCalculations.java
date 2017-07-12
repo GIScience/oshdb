@@ -134,7 +134,7 @@ public class MultithreadDBProcessingAndGeometryCalculations {
 
 								LineString line = (LineString) geom;
 
-								dist += Geo.distanceOf(line);
+								dist += Geo.lengthOf(line);
 
 
 							} catch(NotImplementedException err) {}

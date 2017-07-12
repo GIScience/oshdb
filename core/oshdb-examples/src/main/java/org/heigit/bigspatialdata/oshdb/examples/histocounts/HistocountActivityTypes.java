@@ -198,9 +198,9 @@ public class HistocountActivityTypes {
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
           geometry = result.previousGeometry;
         if (geometry instanceof MultiLineString)
-          length = Geo.distanceOf((MultiLineString)geometry);
+          length = Geo.lengthOf((MultiLineString)geometry);
         else if (geometry instanceof LineString)
-          length = Geo.distanceOf((LineString)geometry);
+          length = Geo.lengthOf((LineString)geometry);
         //length = 1.0;
 
         // todo: geometry intersection with actual non-bbox area of interest
@@ -232,8 +232,8 @@ public class HistocountActivityTypes {
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)) {
           thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo - result.validFrom, 60 * 60 * 24) / (60 * 60 * 24) : length; //todo: replace this with grouping by changeset id?!!?!
           thisResult.countGeometryChangeDiff += length - ((result.previousGeometry instanceof MultiLineString) ?
-              Geo.distanceOf((MultiLineString)result.previousGeometry) :
-              (result.previousGeometry instanceof LineString) ? Geo.distanceOf((LineString)result.previousGeometry) : 0.0
+              Geo.lengthOf((MultiLineString)result.previousGeometry) :
+              (result.previousGeometry instanceof LineString) ? Geo.lengthOf((LineString)result.previousGeometry) : 0.0
           );
         }
 

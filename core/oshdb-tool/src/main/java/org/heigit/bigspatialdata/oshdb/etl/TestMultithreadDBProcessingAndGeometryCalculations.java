@@ -156,7 +156,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 
 								LineString line = (LineString) geom;
 
-								dist += Geo.distanceOf(line);
+								dist += Geo.lengthOf(line);
 
 
 							} catch(NotImplementedException err) {}
