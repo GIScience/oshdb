@@ -158,7 +158,7 @@ public abstract class Mapper<T> {
   }
   
   private Predicate<OSMEntity> _getFilter() {
-    return this._filters.stream().reduce(Predicate::and).get();
+    return (this._filters.isEmpty()) ? (entity -> true) : this._filters.stream().reduce(Predicate::and).get();
   }
 
   private Iterable<CellId> _getCellIds() {
