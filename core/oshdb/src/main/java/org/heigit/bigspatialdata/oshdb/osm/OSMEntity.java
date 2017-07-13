@@ -2,21 +2,20 @@ package org.heigit.bigspatialdata.oshdb.osm;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.json.simple.parser.ParseException;
 import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
 
@@ -140,7 +139,20 @@ public abstract class OSMEntity {
             getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
   }
 
-  public String toGeoJSON() throws IOException, ParseException {
+  /**
+   * This is the step before actually creating a GeoJSON-String. It holds the
+   * option to interactively add some information before calling
+   * .build().toString()
+   *
+   * @param timestamp The timestamp for which to create the geometry. NB: the
+   * geometry will be created for exactly that point in time (see
+   * this.getGeometry()).
+   * @param areaDecider A list of tags, that define a polygon from a linestring.
+   * A default one is available.
+   * @return A GeoJSON representation of the Object
+   * https://tools.ietf.org/html/rfc7946#section-3
+   */
+  protected JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagInterpreter areaDecider) {
     //JSON for properties
     JsonObjectBuilder properties = Json.createObjectBuilder().add("version", this.version).add("changeset", this.changeset).add("timestamp", this.timestamp).add("userid", this.userId);
     for (int i = 0; i < this.tags.length; i += 2) {
@@ -148,14 +160,51 @@ public abstract class OSMEntity {
     }
     //JSON for geometry
     GeoJSONWriter writer = new GeoJSONWriter();
-    GeoJSON json = writer.write(this.getGeometry(1L, new TagInterpreter(1,1,new HashMap<>(),new HashMap<>(), new HashSet<>(),1,1,1)));
+    GeoJSON json = writer.write(this.getGeometry(timestamp, areaDecider));
     JsonReader jsonReader = Json.createReader(new StringReader(json.toString()));
     JsonObject geom = jsonReader.readObject();
-    
 
-    String result = Json.createObjectBuilder().add("type", "Feature").add("id", this.id).add("properties", properties).add("geometry",geom).build().toString();
+    return Json.createObjectBuilder().add("type", "Feature").add("id", this.id).add("properties", properties).add("geometry", geom);
+  }
+
+  /**
+   * Get a GIS-compatible String version of your OSM-Object.
+   *
+   * @param timestamp The timestamp for which to create the geometry. NB: the
+   * geometry will be created for exactly that point in time (see
+   * this.getGeometry()).
+   * @param areaDecider A list of tags, that define a polygon from a linestring.
+   * A default one is available.
+   * @return A string representation of the Object in GeoJSON-format
+   * (https://tools.ietf.org/html/rfc7946#section-3.3)
+   */
+  public String toGeoJSON(long timestamp, TagInterpreter areaDecider) {
+    String result = this.toGeoJSONbuilder(timestamp, areaDecider).build().toString();
     return result;
+  }
 
+  /**
+   * Convert multiple features at once. Calls toGeoJSON for each feature but
+   * puts them in a FeatureCollection so you can see the all at once in your
+   * GIS.
+   *
+   * @param OSMObjects A list of pairs, the left being the OSMEntity to convert
+   * and the right being the point in time to use. So this leaves you with the
+   * option to get an overview of all versions of one object, as fine grained as
+   * you wish.
+   * @param areaDecider A list of tags, that define a polygon from a linestring.
+   * A default one is available.
+   * @return A GeoJSON-String representation of all these OSM-Objects
+   * (https://tools.ietf.org/html/rfc7946#section-3.3
+   */
+  public static String toGeoJSON(List<Pair<? extends OSMEntity, Long>> OSMObjects, TagInterpreter areaDecider) {
+    JsonObjectBuilder builder = Json.createObjectBuilder().add("type", "FeatureCollection");
+    JsonArrayBuilder Abuilder = Json.createArrayBuilder();
+    OSMObjects.stream().forEach((Pair<? extends OSMEntity, Long> OSMObject) -> {
+      Abuilder.add(OSMObject.getKey().toGeoJSONbuilder(OSMObject.getValue(), areaDecider));
+    });
+    builder.add("features", Abuilder);
+    return builder.build().toString();
   }
 
   // helpers to determine underlying structure of osm objects
