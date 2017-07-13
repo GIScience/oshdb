@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
@@ -24,6 +26,24 @@ public class Mapper_H2<T> extends Mapper<T> {
   
   protected Mapper_H2(OSHDB oshdb) {
     super(oshdb);
+  }
+  
+  protected Integer getTagKeyId(String key) throws Exception {
+    PreparedStatement pstmt = ((OSHDB_H2) this._oshdbForTags).getConnection().prepareStatement("select id from KEY where txt = ?");
+    pstmt.setString(1, key);
+    ResultSet resultSet = pstmt.executeQuery();
+    if (!resultSet.next()) System.err.println("tag id not found");
+    return resultSet.getInt(1);
+  }
+  
+  protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
+    int keyId = this.getTagKeyId(key);
+    PreparedStatement pstmt = ((OSHDB_H2) this._oshdbForTags).getConnection().prepareStatement("select valueid from KEYVALUE where keyid = ? and txt = ?");
+    pstmt.setInt(1, keyId);
+    pstmt.setString(2, "residential");
+    ResultSet resultSet = pstmt.executeQuery();
+    if (!resultSet.next()) System.err.println("tag id not found");
+    return new ImmutablePair(keyId, resultSet.getInt(1));
   }
   
   /*

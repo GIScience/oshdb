@@ -19,7 +19,7 @@ public class ResidentialRoadLengthAnalysisApi {
     SortedMap<Timestamp, Double> result = OSMEntitySnapshotMapper.using(oshdb)
             .boundingBox(new BoundingBox(8.6528,8.7294, 49.3683,49.4376))
             .timestamps(new Timestamps(2008, 2017, 1, 12))
-            .filter(entity -> entity.hasTagValue(2, 0))
+            .filterByTagValue("highway", "residential")
             .sumAggregateByTimestamp(snapshot -> Geo.distanceOf(snapshot.getGeometry()));
     
     // output

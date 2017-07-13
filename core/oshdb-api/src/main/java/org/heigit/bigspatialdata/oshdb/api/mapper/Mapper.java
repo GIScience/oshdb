@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapper;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -8,6 +10,8 @@ import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -25,6 +29,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
   protected OSHDB _oshdb;
+  protected OSHDB _oshdbForTags;
   protected Class _forClass = null;
   private BoundingBox _bbox = null;
   private Timestamps _tstamps = null;
@@ -39,10 +44,19 @@ public abstract class Mapper<T> {
     if (oshdb instanceof OSHDB_H2) {
       Mapper<T> mapper = new Mapper_H2((OSHDB_H2) oshdb);
       mapper._oshdb = oshdb;
+      mapper._oshdbForTags = oshdb;
       return mapper;
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
   }
   
+  public Mapper<T> usingForTags(OSHDB oshdb) {
+    this._oshdbForTags = oshdb;
+    return this;
+  }
+  
+  protected abstract Integer getTagKeyId(String key) throws Exception;
+  protected abstract Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception;
+
   protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMContribution, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
@@ -72,6 +86,23 @@ public abstract class Mapper<T> {
   
   public Mapper<T> filter(Predicate<OSMEntity> f) {
     this._filters.add(f);
+    return this;
+  }
+  
+  @FunctionalInterface
+  public interface ExceptionFunction<X, Y> {
+    Y apply(X x) throws Exception;
+  }
+  
+  public Mapper<T> filterByTagKey(String key) throws Exception {
+    int keyId = this.getTagKeyId(key);
+    this._filters.add(entity -> entity.hasTagKey(keyId));
+    return this;
+  }
+  
+  public Mapper<T> filterByTagValue(String key, String value) throws Exception {
+    Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
+    this._filters.add(entity -> entity.hasTagValue(keyValueId.getKey(), keyValueId.getValue()));
     return this;
   }
   
