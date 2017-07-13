@@ -1,18 +1,17 @@
 package org.heigit.bigspatialdata.oshdb.api.mapper;
 
 import com.vividsolutions.jts.geom.Geometry;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.generic.TriFunction;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -20,16 +19,25 @@ import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
-import org.json.simple.parser.ParseException;
 
-public class Mapper_H2 extends Mapper {
+public class Mapper_H2<T> extends Mapper<T> {
   
   protected Mapper_H2(OSHDB oshdb) {
     super(oshdb);
   }
   
+  /*
   @Override
-  protected <R, S> S reduceCells(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, TriFunction<Timestamp, Geometry, OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws SQLException, IOException, ParseException, ClassNotFoundException {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMContribution, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  }
+  
+  @Override
+  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  }
+  */
+  
+  @Override
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
     
@@ -54,7 +62,7 @@ public class Mapper_H2 extends Mapper {
           Timestamp tstamp = new Timestamp(entry.getKey());
           Geometry geometry = entry.getValue().getRight();
           OSMEntity entity = entry.getValue().getLeft();
-          rs.add(f.apply(tstamp, geometry, entity));
+          rs.add(f.apply(new OSMEntitySnapshot(tstamp, geometry, entity)));
         }));
         
         // fold the results
@@ -64,5 +72,5 @@ public class Mapper_H2 extends Mapper {
       }
     }
     return s;
-  }   
+  }
 }
