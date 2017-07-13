@@ -22,6 +22,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 
 public class HistocountActivityTypes {
 
@@ -195,7 +196,7 @@ public class HistocountActivityTypes {
         );*/
 
         double length = 0;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
+        if (result.activities.contains(ContributionType.DELETION))
           geometry = result.previousGeometry;
         if (geometry instanceof MultiLineString)
           length = Geo.distanceOf((MultiLineString)geometry);
@@ -216,20 +217,20 @@ public class HistocountActivityTypes {
 
         ResultActivityEntry thisResult = activitiesOverTime.get(timestamp);
 
-        if (result.activities.equals(EnumSet.of(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)))
+        if (result.activities.equals(EnumSet.of(ContributionType.GEOMETRY_CHANGE)))
           thisResult.countTotal += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length; //todo: replace this with grouping by changeset id?!!?!
         else
           thisResult.countTotal += length;
 
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.CREATION))
+        if (result.activities.contains(ContributionType.CREATION))
           thisResult.countCreation += length;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION))
+        if (result.activities.contains(ContributionType.DELETION))
           thisResult.countDeletion += length;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.TAG_CHANGE))
+        if (result.activities.contains(ContributionType.TAG_CHANGE))
           thisResult.countTagChange += length;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBERLIST_CHANGE))
+        if (result.activities.contains(ContributionType.MEMBERLIST_CHANGE))
           thisResult.countMemberChange += length;
-        if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)) {
+        if (result.activities.contains(ContributionType.GEOMETRY_CHANGE)) {
           thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo - result.validFrom, 60 * 60 * 24) / (60 * 60 * 24) : length; //todo: replace this with grouping by changeset id?!!?!
           thisResult.countGeometryChangeDiff += length - ((result.previousGeometry instanceof MultiLineString) ?
               Geo.distanceOf((MultiLineString)result.previousGeometry) :

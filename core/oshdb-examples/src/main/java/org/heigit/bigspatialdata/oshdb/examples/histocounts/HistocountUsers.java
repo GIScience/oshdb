@@ -26,6 +26,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 
 public class HistocountUsers {
 
@@ -139,8 +140,8 @@ public class HistocountUsers {
         if (osmEntity.getTimestamp() == validFromTimestamp)
           thisResult.add(osmEntity.getUserId());
 
-        if (!result.activities.contains(CellIterator.IterateAllEntry.ActivityType.DELETION) &&
-            !result.activities.contains(CellIterator.IterateAllEntry.ActivityType.CREATION)) {// only do this if members were actually changed in this modification
+        if (!result.activities.contains(ContributionType.DELETION) &&
+            !result.activities.contains(ContributionType.CREATION)) {// only do this if members were actually changed in this modification
           if (osmEntity instanceof OSMWay) {
             for (OSMMember m : ((OSMWay) osmEntity).getRefs()) {
               OSHNode oshEntity = (OSHNode) m.getEntity();
