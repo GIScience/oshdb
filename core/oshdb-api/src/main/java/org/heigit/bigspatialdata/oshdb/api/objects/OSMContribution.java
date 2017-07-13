@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.objects;
 
 import com.vividsolutions.jts.geom.Geometry;
+import java.util.EnumSet;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 
@@ -11,16 +12,16 @@ public class OSMContribution {
   private final Geometry _geometryAfter;
   private final OSMEntity _entityBefore;
   private final OSMEntity _entityAfter;
-  private final ContributionType _contributionType;
+  private final EnumSet<ContributionType> _contributionTypes;
   
-  public OSMContribution(Timestamp tstamp, Timestamp validTo, Geometry geometryBefore, Geometry geometryAfter, OSMEntity entityBefore, OSMEntity entityAfter, ContributionType contributionType) {
+  public OSMContribution(Timestamp tstamp, Timestamp validTo, Geometry geometryBefore, Geometry geometryAfter, OSMEntity entityBefore, OSMEntity entityAfter, EnumSet<ContributionType> contributionTypes) {
     this._tstamp = tstamp;
     this._validTo = validTo;
     this._geometryBefore = geometryBefore;
     this._geometryAfter = geometryAfter;
     this._entityBefore = entityBefore;
     this._entityAfter = entityAfter;
-    this._contributionType = contributionType;
+    this._contributionTypes = contributionTypes;
   }
   
   public Timestamp getTimestamp() {
@@ -47,7 +48,7 @@ public class OSMContribution {
     return this._entityAfter;
   }
   
-  public ContributionType getContributionType() {
-    return this._contributionType;
+  public EnumSet<ContributionType> getContributionTypes() {
+    return this._contributionTypes;
   }
 }

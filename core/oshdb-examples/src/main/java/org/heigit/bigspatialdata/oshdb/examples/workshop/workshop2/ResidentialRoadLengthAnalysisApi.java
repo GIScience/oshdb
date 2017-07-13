@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.api.mapper.OSMContributionMapper;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamps;
 import org.heigit.bigspatialdata.oshdb.api.mapper.OSMEntitySnapshotMapper;
