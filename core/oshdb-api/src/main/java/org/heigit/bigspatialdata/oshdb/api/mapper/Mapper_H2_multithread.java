@@ -95,7 +95,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
         rs.add(mapper.apply(new OSMContribution(new Timestamp(contribution.timestamp), new Timestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
       });
 
-      // todo: replace this with `rs.stream().mapReduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
+      // todo: replace this with `rs.stream().reduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
       S accInternal = identitySupplier.get();
       // fold the results
       for (R r : rs) {
@@ -161,7 +161,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
         rs.add(mapper.apply(new OSMEntitySnapshot(tstamp, geometry, entity)));
       }));
 
-      // todo: replace this with `rs.stream().mapReduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
+      // todo: replace this with `rs.stream().reduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
       S accInternal = identitySupplier.get();
       // fold the results
       for (R r : rs) {
