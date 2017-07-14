@@ -20,6 +20,7 @@ public class ResidentialRoadLengthAnalysisApi {
         .boundingBox(new BoundingBox(8.6528,8.7294, 49.3683,49.4376))
         .timestamps(new Timestamps(2008, 2017, 1, 12))
         .filterByTagValue("highway", "residential")
+        .filterByTagKey("maxspeed")
         .sumAggregateByTimestamp(snapshot -> Geo.lengthOf(snapshot.getGeometry()));
     
     // output

@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapper;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,8 +8,7 @@ import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -21,6 +18,7 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -33,6 +31,7 @@ public abstract class Mapper<T> {
   protected Class _forClass = null;
   private BoundingBox _bbox = null;
   private Timestamps _tstamps = null;
+  private final List<Predicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<Predicate<OSMEntity>> _filters = new ArrayList<>();
   protected TagInterpreter _tagInterpreter = null;
   
@@ -57,15 +56,15 @@ public abstract class Mapper<T> {
   protected abstract Integer getTagKeyId(String key) throws Exception;
   protected abstract Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception;
 
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMContribution, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
-  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
@@ -96,13 +95,16 @@ public abstract class Mapper<T> {
   
   public Mapper<T> filterByTagKey(String key) throws Exception {
     int keyId = this.getTagKeyId(key);
-    this._filters.add(entity -> entity.hasTagKey(keyId));
+    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
     return this;
   }
   
   public Mapper<T> filterByTagValue(String key, String value) throws Exception {
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
-    this._filters.add(entity -> entity.hasTagValue(keyValueId.getKey(), keyValueId.getValue()));
+    int keyId = keyValueId.getKey();
+    int valueId = keyValueId.getValue();
+    this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
     return this;
   }
   
@@ -126,11 +128,11 @@ public abstract class Mapper<T> {
   
   public <R, S> S reduce(Function<T, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
-      return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bbox, (Predicate<OSMEntity>) this._getFilter(), (Function<OSMContribution, R>) f, s, rf);
+      return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMContribution, R>) f, s, rf);
     } else if (this._forClass.equals(OSMEntity.class)) {
-      return this.reduceCellsOSMEntity(this._getCellIds(), this._getTimestamps(), this._bbox, (Predicate<OSMEntity>) this._getFilter(), (Function<OSMEntity, R>) f, s, rf);
+      return this.reduceCellsOSMEntity(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntity, R>) f, s, rf);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bbox, (Predicate<OSMEntity>) this._getFilter(), (Function<OSMEntitySnapshot, R>) f, s, rf);
+      return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntitySnapshot, R>) f, s, rf);
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
   }
   
@@ -156,9 +158,13 @@ public abstract class Mapper<T> {
   public <R extends Number, U> SortedMap<U, R> sumAggregate(Function<T, Pair<U, R>> f) throws Exception {
     return this.mapAggregate(f, (R) (Integer) 0, (x, y) -> NumberUtils.add(x, y));
   }
-  
+
+  private Predicate<OSHEntity> _getPreFilter() {
+    return (this._preFilters.isEmpty()) ? (oshEntity -> true) : this._preFilters.stream().reduce(Predicate::and).get();
+  }
+
   private Predicate<OSMEntity> _getFilter() {
-    return (this._filters.isEmpty()) ? (entity -> true) : this._filters.stream().reduce(Predicate::and).get();
+    return (this._filters.isEmpty()) ? (osmEntity -> true) : this._filters.stream().reduce(Predicate::and).get();
   }
 
   private Iterable<CellId> _getCellIds() {

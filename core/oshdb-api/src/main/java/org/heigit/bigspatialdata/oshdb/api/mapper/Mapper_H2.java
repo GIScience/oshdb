@@ -17,6 +17,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -50,7 +51,7 @@ public class Mapper_H2<T> extends Mapper<T> {
   }
   
   @Override
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMContribution, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
     
@@ -70,7 +71,13 @@ public class Mapper_H2<T> extends Mapper<T> {
 
         // iterate over the history of all OSM objects in the current cell
         List<R> rs = new ArrayList<>();
-        CellIterator.iterateAll(oshCellRawData, bbox, this._tagInterpreter, filter, false).forEach(contribution -> {
+        CellIterator.iterateAll(
+            oshCellRawData,
+            bbox,
+            this._tagInterpreter,
+            filter,
+            false
+        ).forEach(contribution -> {
           rs.add(f.apply(new OSMContribution(new Timestamp(contribution.timestamp), new Timestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
         });
         
@@ -85,12 +92,12 @@ public class Mapper_H2<T> extends Mapper<T> {
   
   /*
   @Override
-  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
   }
   */
   
   @Override
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
     
@@ -110,7 +117,15 @@ public class Mapper_H2<T> extends Mapper<T> {
 
         // iterate over the history of all OSM objects in the current cell
         List<R> rs = new ArrayList<>();
-        CellIterator.iterateByTimestamps(oshCellRawData, bbox, tstampsIds, this._tagInterpreter, filter, false).forEach(result -> result.entrySet().forEach(entry -> {
+        CellIterator.iterateByTimestamps(
+            oshCellRawData,
+            bbox,
+            tstampsIds,
+            this._tagInterpreter,
+            preFilter,
+            filter,
+            false
+        ).forEach(result -> result.entrySet().forEach(entry -> {
           List<Long> x = tstampsIds;
           Timestamp tstamp = new Timestamp(entry.getKey());
           Geometry geometry = entry.getValue().getRight();

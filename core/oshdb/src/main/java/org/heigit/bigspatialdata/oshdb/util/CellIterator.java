@@ -24,6 +24,7 @@ public class CellIterator {
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
    * @param timestamps a list of timestamps to return data for
+   * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter elements. only if it returns true, its osmEntity objects can be included in the output
    * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
    * @param includeOldStyleMultipolygons if true, output contains also data for "old style multipolygons".
    *
@@ -37,13 +38,14 @@ public class CellIterator {
    * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
    * feature geometries later on in the code.
    */
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
-      if (!oshEntity.intersectsBbox(boundingBox)) {
-        // this osh entity is fully outside the requested bounding box -> skip it
+      if (!oshEntityPreFilter.test(oshEntity) ||
+          !oshEntity.intersectsBbox(boundingBox)) {
+        // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
         continue;
       }
       boolean fullyInside = oshEntity.insideBbox(boundingBox);
@@ -173,6 +175,9 @@ public class CellIterator {
     // return as an obj stream
     return results.stream();
   }
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateByTimestamps(cell, boundingBox, timestamps, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
+  }
 
   public static class IterateAllEntry {
     public final Long timestamp;
@@ -197,6 +202,7 @@ public class CellIterator {
    *
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
+   * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter elements. only if it returns true, its osmEntity objects can be included in the output
    * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
    * @param includeOldStyleMultipolygons if true, output contains also data for "old style multipolygons".
    *
@@ -207,7 +213,7 @@ public class CellIterator {
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp intervals.
    */
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -215,8 +221,9 @@ public class CellIterator {
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
-      if (!oshEntity.intersectsBbox(boundingBox)) {
-        // this osh entity is fully outside the requested bounding box -> skip it
+      if (!oshEntityPreFilter.test(oshEntity) ||
+          !oshEntity.intersectsBbox(boundingBox)) {
+        // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
         continue;
       }
       boolean fullyInside = oshEntity.insideBbox(boundingBox);
@@ -396,6 +403,9 @@ public class CellIterator {
 
     // return as an obj stream
     return results.stream();
+  }
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateAll(cell, boundingBox, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
 
 }
