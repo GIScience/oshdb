@@ -99,7 +99,7 @@ public class Mapper_H2<T> extends Mapper<T> {
   @Override
   protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
     //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
     
     for (CellId cellId : cellIds) {
       // prepare SQL statement
