@@ -88,7 +88,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
     OSMWay[] outerMembers = Arrays.stream(this.getMembers())
     .filter(tagInterpreter::isMultipolygonOuterMember)
-    .map(outerMember -> outerMember.getEntity())
+    .map(OSMMember::getEntity)
     .filter(hosm -> hosm instanceof OSHWay)
     .map(hosm -> (OSHWay)hosm)
     .map(hosm -> hosm.getByTimestamp(timestamp))
@@ -97,7 +97,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
     OSMWay[] innerMembers = Arrays.stream(this.getMembers())
     .filter(tagInterpreter::isMultipolygonInnerMember)
-    .map(outerMember -> outerMember.getEntity())
+    .map(OSMMember::getEntity)
     .filter(hosm -> hosm instanceof OSHWay)
     .map(hosm -> (OSHWay)hosm)
     .map(hosm -> hosm.getByTimestamp(timestamp))
@@ -106,18 +106,20 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
     OSMNode[][] outerLines = Arrays.stream(outerMembers)
     .map(way -> Arrays.stream(way.getRefs())
-      .map(nd -> nd.getEntity().getByTimestamp(timestamp))
-      .map(osm -> (OSMNode)osm)
+      .map(OSMMember::getEntity)
+      .filter(Objects::nonNull)
+      .map(oshNode -> (OSMNode)oshNode.getByTimestamp(timestamp))
       .filter(node -> node != null && node.isVisible())
       .toArray(OSMNode[]::new)
-    ).toArray(OSMNode[][]::new);
+    ).filter(line -> line.length > 0).toArray(OSMNode[][]::new);
     OSMNode[][] innerLines = Arrays.stream(innerMembers)
     .map(way -> Arrays.stream(way.getRefs())
-      .map(nd -> nd.getEntity().getByTimestamp(timestamp))
-      .map(osm -> (OSMNode)osm)
+      .map(OSMMember::getEntity)
+      .filter(Objects::nonNull)
+      .map(oshNode -> (OSMNode)oshNode.getByTimestamp(timestamp))
       .filter(node -> node != null && node.isVisible())
       .toArray(OSMNode[]::new)
-    ).toArray(OSMNode[][]::new);
+    ).filter(line -> line.length > 0).toArray(OSMNode[][]::new);
 
     // construct rings from lines
     List<LinearRing> outerRings = join(outerLines).stream()
