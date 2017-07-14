@@ -27,4 +27,8 @@ public class Timestamp implements Comparable<Timestamp> {
   public String formatIsoDateTime() {
     return this._timeStampFormatter.isoDateTime(this.toDate());
   }
+
+  public String toString() {
+    return this.formatIsoDateTime();
+  }
 }

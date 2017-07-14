@@ -6,9 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,9 +24,9 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
-public class Mapper_H2<T> extends Mapper<T> {
+public class Mapper_H2_singlethread<T> extends Mapper<T> {
   
-  protected Mapper_H2(OSHDB oshdb) {
+  protected Mapper_H2_singlethread(OSHDB oshdb) {
     super(oshdb);
   }
   
@@ -51,10 +49,11 @@ public class Mapper_H2<T> extends Mapper<T> {
   }
   
   @Override
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
-    
+
+    S result = identitySupplier.get();
     for (CellId cellId : cellIds) {
       // prepare SQL statement
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement("(select data from grid_node where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)");
@@ -75,32 +74,34 @@ public class Mapper_H2<T> extends Mapper<T> {
             oshCellRawData,
             bbox,
             this._tagInterpreter,
+            preFilter,
             filter,
             false
         ).forEach(contribution -> {
-          rs.add(f.apply(new OSMContribution(new Timestamp(contribution.timestamp), new Timestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
+          rs.add(mapper.apply(new OSMContribution(new Timestamp(contribution.timestamp), new Timestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
         });
         
         // fold the results
         for (R r : rs) {
-          s = rf.apply(s, r);
+          result = accumulator.apply(result, r);
         }
       }
     }
-    return s;
+    return result;
   }
   
   /*
   @Override
-  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMEntity(…) throws Exception {
   }
   */
   
   @Override
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> f, S s, BiFunction<S, R, S> rf) throws Exception {
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
-    
+
+    S result = identitySupplier.get();
     for (CellId cellId : cellIds) {
       // prepare SQL statement
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement("(select data from grid_node where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)");
@@ -125,20 +126,19 @@ public class Mapper_H2<T> extends Mapper<T> {
             preFilter,
             filter,
             false
-        ).forEach(result -> result.entrySet().forEach(entry -> {
-          List<Long> x = tstampsIds;
+        ).forEach(snapshot -> snapshot.entrySet().forEach(entry -> {
           Timestamp tstamp = new Timestamp(entry.getKey());
           Geometry geometry = entry.getValue().getRight();
           OSMEntity entity = entry.getValue().getLeft();
-          rs.add(f.apply(new OSMEntitySnapshot(tstamp, geometry, entity)));
+          rs.add(mapper.apply(new OSMEntitySnapshot(tstamp, geometry, entity)));
         }));
         
         // fold the results
         for (R r : rs) {
-          s = rf.apply(s, r);
+          result = accumulator.apply(result, r);
         }
       }
     }
-    return s;
+    return result;
   }
 }

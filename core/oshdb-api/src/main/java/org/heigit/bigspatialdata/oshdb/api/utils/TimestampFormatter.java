@@ -6,7 +6,7 @@ import java.util.Date;
 public class TimestampFormatter {
   private static TimestampFormatter _instance;
   private static final SimpleDateFormat _formatDate = new SimpleDateFormat("yyyy-MM-dd");
-  private static final SimpleDateFormat _formatIsoDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+  private static final SimpleDateFormat _formatIsoDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
   private TimestampFormatter() {}
 

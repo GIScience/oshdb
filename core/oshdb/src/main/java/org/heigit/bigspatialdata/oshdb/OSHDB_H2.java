@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 public class OSHDB_H2 extends OSHDB {
   private final Connection _conn;
+  private boolean useMultithreading = true;
 
   public OSHDB_H2(String databaseFile) throws SQLException, ClassNotFoundException {
     Class.forName("org.h2.Driver");
@@ -14,5 +15,14 @@ public class OSHDB_H2 extends OSHDB {
   
   public Connection getConnection() {
     return this._conn;
+  }
+
+  public OSHDB_H2 multithreading(boolean useMultithreading) {
+    this.useMultithreading = useMultithreading;
+    return this;
+  }
+
+  public boolean multithreading() {
+    return this.useMultithreading;
   }
 }
