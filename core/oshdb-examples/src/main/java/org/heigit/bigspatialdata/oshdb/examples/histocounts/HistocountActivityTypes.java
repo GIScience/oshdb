@@ -183,14 +183,14 @@ public class HistocountActivityTypes {
       )
       .forEach(result -> {
         //todo: replace this with grouping by changeset id?!!?! -> maybe in iterateAll()!
-        long timestamp = result.validFrom;
+        long timestamp = result.timestamp;
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
         /*System.out.printf("---> [%s] %s - %s: %s\n",
             result.activities.toString(),
-            formatter.format(new Date(result.validFrom*1000)),
-            result.validTo != null ? formatter.format(new Date(result.validTo*1000)) : "/",
+            formatter.format(new Date(result.timestamp*1000)),
+            result.nextTimestamp != null ? formatter.format(new Date(result.nextTimestamp*1000)) : "/",
             osmEntity.toString()
         );*/
 
@@ -217,7 +217,7 @@ public class HistocountActivityTypes {
         ResultActivityEntry thisResult = activitiesOverTime.get(timestamp);
 
         if (result.activities.equals(EnumSet.of(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)))
-          thisResult.countTotal += (result.validTo != null) ? length * Math.min(result.validTo-result.validFrom, 60*60*24) / (60*60*24) : length; //todo: replace this with grouping by changeset id?!!?!
+          thisResult.countTotal += (result.nextTimestamp != null) ? length * Math.min(result.nextTimestamp -result.timestamp, 60*60*24) / (60*60*24) : length; //todo: replace this with grouping by changeset id?!!?!
         else
           thisResult.countTotal += length;
 
@@ -230,7 +230,7 @@ public class HistocountActivityTypes {
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.MEMBERLIST_CHANGE))
           thisResult.countMemberChange += length;
         if (result.activities.contains(CellIterator.IterateAllEntry.ActivityType.GEOMETRY_CHANGE)) {
-          thisResult.countGeometryChange += (result.validTo != null) ? length * Math.min(result.validTo - result.validFrom, 60 * 60 * 24) / (60 * 60 * 24) : length; //todo: replace this with grouping by changeset id?!!?!
+          thisResult.countGeometryChange += (result.nextTimestamp != null) ? length * Math.min(result.nextTimestamp - result.timestamp, 60 * 60 * 24) / (60 * 60 * 24) : length; //todo: replace this with grouping by changeset id?!!?!
           thisResult.countGeometryChangeDiff += length - ((result.previousGeometry instanceof MultiLineString) ?
               Geo.lengthOf((MultiLineString)result.previousGeometry) :
               (result.previousGeometry instanceof LineString) ? Geo.lengthOf((LineString)result.previousGeometry) : 0.0

@@ -175,16 +175,16 @@ public class CellIterator {
   }
 
   public static class IterateAllEntry {
-    public final Long validFrom;
-    public final Long validTo;
+    public final Long timestamp;
+    public final Long nextTimestamp;
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
     public final Geometry geometry;
     public final Geometry previousGeometry;
     public final EnumSet<ActivityType> activities;
-    IterateAllEntry(Long from, Long to, OSMEntity entity, OSMEntity previousOsmEntity, Geometry geom, Geometry previousGeometry, EnumSet<ActivityType> activities) {
-      this.validFrom = from;
-      this.validTo = to;
+    IterateAllEntry(Long timestamp, Long nextTimestamp, OSMEntity entity, OSMEntity previousOsmEntity, Geometry geom, Geometry previousGeometry, EnumSet<ActivityType> activities) {
+      this.timestamp = timestamp;
+      this.nextTimestamp = nextTimestamp;
       this.osmEntity = entity;
       this.previousOsmEntity = previousOsmEntity;
       this.geometry = geom;

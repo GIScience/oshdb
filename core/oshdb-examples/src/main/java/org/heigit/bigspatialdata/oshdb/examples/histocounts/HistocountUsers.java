@@ -1,9 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.examples.histocounts;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDb;
@@ -16,7 +13,6 @@ import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
@@ -119,7 +115,7 @@ public class HistocountUsers {
           handleOldStyleMultipolygons
       )
       .forEach(result -> {
-        long validFromTimestamp = result.validFrom;
+        long validFromTimestamp = result.timestamp;
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
@@ -147,7 +143,7 @@ public class HistocountUsers {
 
               for (OSMEntity n : oshEntity) {
                 long ts = n.getTimestamp();
-                if (ts == result.validFrom) {
+                if (ts == result.timestamp) {
                   thisResult.add(n.getUserId());
                 }
               }
@@ -160,14 +156,14 @@ public class HistocountUsers {
               if (oshEntity instanceof OSHNode) {
                 for (OSMNode node : (OSHNode) oshEntity) {
                   long ts = node.getTimestamp();
-                  if (ts == result.validFrom) {
+                  if (ts == result.timestamp) {
                     thisResult.add(node.getUserId());
                   }
                 }
               } else if (oshEntity instanceof OSHWay) {
                 for (OSMWay way : (OSHWay) oshEntity) {
                   long ts = way.getTimestamp();
-                  if (ts == result.validFrom) {
+                  if (ts == result.timestamp) {
                     thisResult.add(way.getUserId());
                     // recurse way nodes
                     for (OSMMember wm : way.getRefs()) {
@@ -175,7 +171,7 @@ public class HistocountUsers {
 
                       for (OSMEntity n : oshEntity2) {
                         long ts2 = n.getTimestamp();
-                        if (ts2 == result.validFrom) {
+                        if (ts2 == result.timestamp) {
                           thisResult.add(n.getUserId());
                         }
                       }

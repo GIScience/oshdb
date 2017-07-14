@@ -1,20 +1,14 @@
 package org.heigit.bigspatialdata.oshdb.examples.histocounts;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDb;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.wololo.geojson.GeoJSON;
@@ -91,7 +85,7 @@ public class ObjectGeometries {
       )
       .forEach(result -> {
         //todo: replace this with grouping by changeset id?!!?! -> maybe in iterateAll()!
-        long timestamp = result.validFrom;
+        long timestamp = result.timestamp;
         OSMEntity osmEntity = result.osmEntity;
         Geometry geometry = result.geometry;
 
@@ -105,7 +99,7 @@ public class ObjectGeometries {
           jsonstring = json.toString();
         }
         System.out.println();
-        System.out.println(formatter.format(new Date(result.validFrom*1000))+","+(result.validTo != null ? formatter.format(new Date(result.validTo*1000)) : ""));
+        System.out.println(formatter.format(new Date(result.timestamp *1000))+","+(result.nextTimestamp != null ? formatter.format(new Date(result.nextTimestamp *1000)) : ""));
         System.out.println(jsonstring);
 
         //GeometryJSON asd = new GeometryJSON();
