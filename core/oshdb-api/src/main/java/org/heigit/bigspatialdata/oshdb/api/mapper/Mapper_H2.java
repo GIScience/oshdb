@@ -43,7 +43,7 @@ public class Mapper_H2<T> extends Mapper<T> {
     int keyId = this.getTagKeyId(key);
     PreparedStatement pstmt = ((OSHDB_H2) this._oshdbForTags).getConnection().prepareStatement("select valueid from KEYVALUE where keyid = ? and txt = ?");
     pstmt.setInt(1, keyId);
-    pstmt.setString(2, "residential");
+    pstmt.setString(2, value);
     ResultSet resultSet = pstmt.executeQuery();
     if (!resultSet.next()) System.err.println("tag id not found");
     return new ImmutablePair(keyId, resultSet.getInt(1));
