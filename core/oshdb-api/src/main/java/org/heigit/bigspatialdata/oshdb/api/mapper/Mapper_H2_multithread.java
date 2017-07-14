@@ -56,8 +56,6 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
 
-    // todo: make parallel!
-
     final List<CellId> cellIdsList = new ArrayList<>();
     cellIds.forEach(cellIdsList::add);
 
