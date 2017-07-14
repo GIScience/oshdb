@@ -1,12 +1,11 @@
-package org.heigit.bigspatialdata.oshdb.utils;
+package org.heigit.bigspatialdata.oshdb.api.objects;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 
-public class OSMTimeStamps {
+public class Timestamps {
   
   private int startYear;
   private int endYear;
@@ -18,7 +17,7 @@ public class OSMTimeStamps {
   private final SimpleDateFormat formatter;
 
 
-  public OSMTimeStamps(int startYear, int endYear, int startMonth, int endMonth, int startDay, int endDay) {
+  public Timestamps(int startYear, int endYear, int startMonth, int endMonth, int startDay, int endDay) {
     super();
     this.startYear = startYear;
     this.endYear = endYear;
@@ -29,17 +28,17 @@ public class OSMTimeStamps {
     this.formatter = new SimpleDateFormat("yyyyMMdd");
   }
 
-  public OSMTimeStamps(int startYear, int endYear, int startMonth, int endMonth) {
+  public Timestamps(int startYear, int endYear, int startMonth, int endMonth) {
     this(startYear, endYear, startMonth, endMonth, 1, 1);
   }
 
-  public OSMTimeStamps(int startYear, int endYear) {
+  public Timestamps(int startYear, int endYear) {
     this(startYear, endYear, 1,1, 1, 1);
   }
 
 
 
-  public List<Long> getTimeStamps(){
+  public List<Long> getTimeStampIds(){
     List<Long> timestamps = new ArrayList<>();
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     for (int year = startYear; year <= endYear; year++) {

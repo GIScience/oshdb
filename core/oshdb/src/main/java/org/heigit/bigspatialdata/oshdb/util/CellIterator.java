@@ -3,7 +3,7 @@ package org.heigit.bigspatialdata.oshdb.util;
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.OSHDb;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -39,7 +39,7 @@ public class CellIterator {
    */
   public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
-    XYGrid nodeGrid = new XYGrid(OSHDb.MAXZOOM);
+    XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntity.intersectsBbox(boundingBox)) {
@@ -181,8 +181,8 @@ public class CellIterator {
     public final OSMEntity previousOsmEntity;
     public final Geometry geometry;
     public final Geometry previousGeometry;
-    public final EnumSet<ActivityType> activities;
-    IterateAllEntry(Long timestamp, Long nextTimestamp, OSMEntity entity, OSMEntity previousOsmEntity, Geometry geom, Geometry previousGeometry, EnumSet<ActivityType> activities) {
+    public final EnumSet<ContributionType> activities;
+    IterateAllEntry(Long timestamp, Long nextTimestamp, OSMEntity entity, OSMEntity previousOsmEntity, Geometry geom, Geometry previousGeometry, EnumSet<ContributionType> activities) {
       this.timestamp = timestamp;
       this.nextTimestamp = nextTimestamp;
       this.osmEntity = entity;
@@ -190,13 +190,6 @@ public class CellIterator {
       this.geometry = geom;
       this.previousGeometry = previousGeometry;
       this.activities = activities;
-    }
-    public enum ActivityType {
-      CREATION, // a new object has been created
-      DELETION, // one object has been deleted
-      TAG_CHANGE, // at least one tag of this object has been modified
-      MEMBERLIST_CHANGE, // the member list of this object (way or relation) has changed in some way
-      GEOMETRY_CHANGE // the geometry of the object has been modified either directly (see MEMBERLIST_CHANGE) or via changed coordinates of the object's child entities
     }
   }
   /**
@@ -216,7 +209,7 @@ public class CellIterator {
    */
   public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
-    XYGrid nodeGrid = new XYGrid(OSHDb.MAXZOOM);
+    XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
@@ -244,7 +237,7 @@ public class CellIterator {
         if (osmEntity instanceof OSMNode) {
           OSMNode node = (OSMNode)osmEntity;
           if (!node.isVisible()) {
-            if (prev == null || prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) // previous version was deleted -> skip
+            if (prev == null || prev.activities.contains(ContributionType.DELETION)) // previous version was deleted -> skip
               continue osmEntityLoop;
             node = (OSMNode)prev.osmEntity;
           }
@@ -259,8 +252,8 @@ public class CellIterator {
 
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
-          if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) { // todo: some of this may be refactorable between the two for loops
-            prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
+          if (prev != null && !prev.activities.contains(ContributionType.DELETION)) { // todo: some of this may be refactorable between the two for loops
+            prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(ContributionType.DELETION));
             if (!skipOutput) results.add(prev);
           }
           continue osmEntityLoop;
@@ -291,8 +284,8 @@ public class CellIterator {
           if (!osmEntityFilter.test(osmEntity)) {
             // this entity doesn't match our filter (anymore)
             // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct geometries for these?
-            if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
-              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
+            if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
+              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(ContributionType.DELETION));
               if (!skipOutput) results.add(prev);
             }
             continue osmEntityLoop;
@@ -321,18 +314,18 @@ public class CellIterator {
               geom = Geo.clip(geom, boundingBox);
           }
 
-          EnumSet<IterateAllEntry.ActivityType> activity;
+          EnumSet<ContributionType> activity;
           if (geom == null || geom.isEmpty()) { // either object is outside of current area or has invalid geometry
-            if (prev != null && !prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
-              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(IterateAllEntry.ActivityType.DELETION));
+            if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
+              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null, prev.geometry, EnumSet.of(ContributionType.DELETION));
               if (!skipOutput) results.add(prev);
             }
             continue osmEntityLoop;
-          } else if (prev == null || prev.activities.contains(IterateAllEntry.ActivityType.DELETION)) {
-            activity = EnumSet.of(IterateAllEntry.ActivityType.CREATION);
+          } else if (prev == null || prev.activities.contains(ContributionType.DELETION)) {
+            activity = EnumSet.of(ContributionType.CREATION);
             // todo: special case when an object gets specific tag/condition again after having them removed?
           } else {
-            activity = EnumSet.noneOf(IterateAllEntry.ActivityType.class);
+            activity = EnumSet.noneOf(ContributionType.class);
             // look if tags have been changed between versions
             boolean tagsChange = false;
             if (prev.osmEntity.getTags().length != osmEntity.getTags().length)
@@ -343,7 +336,7 @@ public class CellIterator {
                   tagsChange = true;
                   break;
                 }
-            if (tagsChange) activity.add(IterateAllEntry.ActivityType.TAG_CHANGE);
+            if (tagsChange) activity.add(ContributionType.TAG_CHANGE);
             // look if members have been changed between versions
             boolean membersChange = false;
             switch (prev.osmEntity.getType()) {
@@ -374,12 +367,12 @@ public class CellIterator {
                     }
                 break;
             }
-            if (membersChange) activity.add(IterateAllEntry.ActivityType.MEMBERLIST_CHANGE);
+            if (membersChange) activity.add(ContributionType.MEMBERLIST_CHANGE);
             // look if geometry has been changed between versions
             boolean geometryChange = false;
             if (geom != null && prev.geometry != null) // todo: what if both are null? -> maybe fall back to MEMEBER_CHANGE?
               geometryChange = !prev.geometry.equals(geom); // todo: check: does this work as expected?
-            if (geometryChange) activity.add(IterateAllEntry.ActivityType.GEOMETRY_CHANGE);
+            if (geometryChange) activity.add(ContributionType.GEOMETRY_CHANGE);
           }
 
           IterateAllEntry result;

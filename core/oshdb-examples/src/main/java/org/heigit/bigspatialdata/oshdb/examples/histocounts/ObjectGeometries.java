@@ -1,7 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.examples.histocounts;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.heigit.bigspatialdata.oshdb.OSHDb;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -37,7 +37,7 @@ public class ObjectGeometries {
     //final BoundingBox bbox = new BoundingBox(86.92209, 86.92535, 27.9857, 27.98805);
     //final BoundingBox bbox = new BoundingBox(-1, 1, 51, 52);
 
-    XYGridTree grid = new XYGridTree(OSHDb.MAXZOOM);
+    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
 
     final List<CellId> cellIds = new ArrayList<>();
     grid.bbox2CellIds(bbox, true).forEach(cellIds::add);
