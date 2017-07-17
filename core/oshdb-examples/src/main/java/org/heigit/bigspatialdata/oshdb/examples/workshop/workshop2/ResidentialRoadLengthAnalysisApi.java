@@ -16,15 +16,15 @@ public class ResidentialRoadLengthAnalysisApi {
     OSHDB oshdb = (new OSHDB_H2("./karlsruhe-regbez")).multithreading(true);
 
     // query
-    SortedMap<Timestamp, Double> result = OSMEntitySnapshotMapper.using(oshdb)
+    SortedMap<Timestamp, Number> result = OSMEntitySnapshotMapper.using(oshdb)
         .boundingBox(new BoundingBox(8.6528,8.7294, 49.3683,49.4376))
         .timestamps(new Timestamps(2008, 2017, 1, 12))
         .filterByTagValue("highway", "residential")
         .filterByTagKey("maxspeed")
         .sumAggregateByTimestamp(snapshot -> Geo.lengthOf(snapshot.getGeometry()));
-    
+
     // output
-    for (Map.Entry<Timestamp, Double> entry : result.entrySet())
-      System.out.format("%s\t%s\n", entry.getKey().formatDate(), entry.getValue().toString());
+    for (Map.Entry<Timestamp, Number> entry : result.entrySet())
+      System.out.format("%s\t%.2f\n", entry.getKey().formatDate(), entry.getValue().doubleValue());
   }
 }
