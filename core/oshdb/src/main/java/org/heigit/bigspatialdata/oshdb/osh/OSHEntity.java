@@ -83,76 +83,76 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   /* byTimestamps is assumed to be presorted, otherwise output is undetermined */
   public SortedMap<Long,OSM> getByTimestamps(List<Long> byTimestamps){
     SortedMap<Long,OSM> result = new TreeMap<>();
-	  
-	  int i = byTimestamps.size()-1;
-	  Iterator<OSM> itr = iterator();
-	  while(itr.hasNext() && i >= 0){
-		  OSM osm = itr.next();
-		  if(osm.getTimestamp() > byTimestamps.get(i)){
-			  continue;
-		  } else {
-			  while (i >= 0 && osm.getTimestamp() <= byTimestamps.get(i)) {
-				  result.put(byTimestamps.get(i), osm);
-				  i--;
-			  }
-		  }
-	  }
-	  return result;
+
+    int i = byTimestamps.size()-1;
+    Iterator<OSM> itr = iterator();
+    while(itr.hasNext() && i >= 0){
+      OSM osm = itr.next();
+      if(osm.getTimestamp() > byTimestamps.get(i)){
+        continue;
+      } else {
+        while (i >= 0 && osm.getTimestamp() <= byTimestamps.get(i)) {
+          result.put(byTimestamps.get(i), osm);
+          i--;
+        }
+      }
+    }
+    return result;
   }
 
   public Map<Long,OSM> getByTimestamps(){ // todo: name of method?
-	  Map<Long,OSM> result = new TreeMap<>();
-	  Iterator<OSM> itr = iterator();
-	  while(itr.hasNext()){
-		  OSM osm = itr.next();
-		  result.put(osm.getTimestamp(), osm);
-	  }
-	  return result;
-	  // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity):
-  	  //return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
+    Map<Long,OSM> result = new TreeMap<>();
+    Iterator<OSM> itr = iterator();
+    while(itr.hasNext()){
+      OSM osm = itr.next();
+      result.put(osm.getTimestamp(), osm);
+    }
+    return result;
+    // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity):
+      //return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
   }
 
   public OSM getByTimestamp(long timestamp){
-	  Iterator<OSM> itr = iterator();
-	  while(itr.hasNext()){
-		  OSM osm = itr.next();
-		  if (osm.getTimestamp() <= timestamp)
-		  	  return osm;
-	  }
-	  return null;
+    Iterator<OSM> itr = iterator();
+    while(itr.hasNext()){
+      OSM osm = itr.next();
+      if (osm.getTimestamp() <= timestamp)
+          return osm;
+    }
+    return null;
   }
   
   public List<OSM> getBetweenTimestamps(final long t1, final long t2){
-	  final long maxTimestamp = Math.max(t1, t2);
-	  final long minTimestamp = Math.min(t1, t2);
-	  
-	  List<OSM> result = new ArrayList<>();
-	  
-	  Iterator<OSM> itr = iterator();
-	  while(itr.hasNext()){
-		  OSM osm = itr.next();
-		  if(osm.getTimestamp() > maxTimestamp)
-			  continue;
-		  result.add(osm);
-		  if(osm.getTimestamp() < minTimestamp)
-			  break;
-	  }  
-	  return result;
+    final long maxTimestamp = Math.max(t1, t2);
+    final long minTimestamp = Math.min(t1, t2);
+
+    List<OSM> result = new ArrayList<>();
+
+    Iterator<OSM> itr = iterator();
+    while(itr.hasNext()){
+      OSM osm = itr.next();
+      if(osm.getTimestamp() > maxTimestamp)
+        continue;
+      result.add(osm);
+      if(osm.getTimestamp() < minTimestamp)
+        break;
+    }
+    return result;
   }
   
   public boolean hasTagKey(int key){
-  	// todo: replace with binary search (keys are sorted)
+    // todo: replace with binary search (keys are sorted)
     for(int i=0; i<keys.length; i++){
-		if(keys[i] == key)
-			return true;
+    if(keys[i] == key)
+      return true;
       if(keys[i] > key)
-    	  break;
+        break;
     }
     return false;
   }
   
   public abstract OSHEntity<OSM> rebase(long baseId, long baseTimestamp, long baseLongitude,
-	      long baseLatitude) throws IOException;
+        long baseLatitude) throws IOException;
 
   @Override
   public int compareTo(OSHEntity o) {
@@ -179,7 +179,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     if (bbox == null) return false;
     if (bbox.maxLat < otherBbox.minLat) return false;
     if (bbox.minLat > otherBbox.maxLat) return false;
-  	if (bbox.maxLon < otherBbox.minLon) return false;
+    if (bbox.maxLon < otherBbox.minLon) return false;
     if (bbox.minLon > otherBbox.maxLon) return false;
     return true;
   }
@@ -193,7 +193,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   public boolean insideBbox(BoundingBox otherBbox) {
     BoundingBox bbox = this.getBoundingBox();
     if (bbox == null) return false;
-  	return
+    return
         bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat &&
         bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
   }
