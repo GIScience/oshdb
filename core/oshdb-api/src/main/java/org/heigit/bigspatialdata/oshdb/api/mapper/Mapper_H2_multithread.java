@@ -52,7 +52,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
   }
   
   @Override
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
 

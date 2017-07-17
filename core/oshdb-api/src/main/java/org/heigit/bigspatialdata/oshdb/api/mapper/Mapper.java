@@ -57,11 +57,11 @@ public abstract class Mapper<T> {
   protected abstract Integer getTagKeyId(String key) throws Exception;
   protected abstract Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception;
 
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
-  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
@@ -129,9 +129,9 @@ public abstract class Mapper<T> {
   
   public <R, S> S mapReduce(Function<T, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
-      return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.reduceCellsOSMContribution(this._getCellIds(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntity.class)) {
-      return this.reduceCellsOSMEntity(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntity, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.reduceCellsOSMEntity(this._getCellIds(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntity, R>) mapper, identitySupplier, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
