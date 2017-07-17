@@ -25,6 +25,6 @@ public class ResidentialRoadLengthAnalysisApi {
     
     // output
     for (Map.Entry<Timestamp, Double> entry : result.entrySet())
-      System.out.format("%s\t%f\n", entry.getKey().formatDate(), entry.getValue());
+      System.out.format("%s\t%s\n", entry.getKey().formatDate(), entry.getValue().toString());
   }
 }

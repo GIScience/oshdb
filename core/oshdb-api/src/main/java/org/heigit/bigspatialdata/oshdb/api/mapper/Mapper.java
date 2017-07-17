@@ -160,11 +160,15 @@ public abstract class Mapper<T> {
   }
 
   public <R, S> SortedMap<Timestamp, S> mapAggregateByTimestamp(Function<T, R> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+    SortedMap<Timestamp, S> result;
     if (this._forClass.equals(OSMContribution.class)) {
-      return this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> new ImmutablePair<>(((OSMContribution) t).getTimestamp(), mapper.apply(t))), identity, accumulator, combiner);
+      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> new ImmutablePair<>(((OSMContribution) t).getTimestamp(), mapper.apply(t))), identity, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      return this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t))), identity, accumulator, combiner);
+      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t))), identity, accumulator, combiner);
     } else throw new UnsupportedOperationException("mapAggregateByTimestamp only allowed for OSMContribution and OSMEntitySnapshot");
+    // fill nodata entries with "0"
+    this._getTimestamps().stream().map(Timestamp::new).forEach(ts -> result.putIfAbsent(ts, identity));
+    return result;
   }
 
   public <R extends Number> SortedMap<Timestamp, R> sumAggregateByTimestamp(Function<T, R> mapper) throws Exception {
