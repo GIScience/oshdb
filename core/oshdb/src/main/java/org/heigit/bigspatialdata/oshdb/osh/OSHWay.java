@@ -424,4 +424,26 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 		Collections.sort(result);
 		return result;
 	}
+
+	@Override
+	protected Map<Long, Long> getChangesetTimestamps() {
+		Map<Long, Long> result = new TreeMap<>();
+
+		List<OSMWay> ways = this.getVersions();
+		ways.forEach(osmWay -> {
+			result.putIfAbsent(osmWay.getTimestamp(), osmWay.getChangeset());
+			// recurse way nds
+			if (!osmWay.isVisible()) return;
+			Arrays.stream(osmWay.getRefs())
+			.map(osmNd -> ((OSHNode)osmNd.getEntity()))
+			.filter(Objects::nonNull)
+			.forEach(oshNode ->
+				oshNode.getVersions().forEach(osmNode ->
+					result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
+				)
+			);
+		});
+
+		return result;
+	}
 }

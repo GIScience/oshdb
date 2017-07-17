@@ -6,6 +6,7 @@ import java.io.ObjectOutput;
 import java.util.*;
 import java.util.function.Predicate;
 
+import com.google.common.collect.Lists;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
@@ -245,4 +246,42 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     }
     return filteredModTs;
   };
+
+  /*
+   * returns only the modification timestamps of an object where it
+   * matches a given condition/filter. If groupedByChangeset is set to
+   * true, consecutive modifications in the same changeset are grouped
+   * together (only the last timestamp of the corresponding changeset
+   * is returned). This can reduce the amount of geometry modifications
+   * by a lot (e.g. when sequential node uploads of a way modification
+   * causes many intermediate modification states), making results more
+   * "accurate"/comparable as well as faster processing of geometries.
+   */
+  public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter, boolean groupedByChangeset) {
+    List<Long> allModificationTimestamps = this.getModificationTimestamps(osmEntityFilter);
+    if (!groupedByChangeset || allModificationTimestamps.size()<=1)
+      return allModificationTimestamps;
+
+    // group modification timestamps by changeset
+    List<Long> result = new ArrayList<>();
+    Map<Long, Long> changesetTimestamps = this.getChangesetTimestamps();
+
+    allModificationTimestamps = Lists.reverse(allModificationTimestamps);
+
+    Long nextChangeset = -1L;
+    allModificationTimestamps.remove(0);
+    for (Long timestamp : allModificationTimestamps) {
+      Long changeset = changesetTimestamps.get(timestamp);
+      if (!Objects.equals(changeset, nextChangeset))
+        result.add(timestamp);
+      nextChangeset = changeset;
+    }
+
+    return Lists.reverse(result);
+  }
+
+  /*
+   * returns the changeset ids responsible for the
+   */
+  protected abstract Map<Long, Long> getChangesetTimestamps();
 }

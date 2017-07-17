@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
@@ -318,6 +315,15 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 		.map(OSMNode::getTimestamp)
 		.collect(Collectors.toList());
 		Collections.sort(result);
+		return result;
+	}
+
+	@Override
+	protected Map<Long, Long> getChangesetTimestamps() {
+		Map<Long, Long> result = new TreeMap<>();
+		this.getVersions().forEach(osmNode ->
+			result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
+		);
 		return result;
 	}
 }

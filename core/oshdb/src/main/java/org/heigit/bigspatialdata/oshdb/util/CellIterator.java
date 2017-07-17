@@ -251,7 +251,7 @@ public class CellIterator {
       }
       boolean fullyInside = oshEntity.insideBbox(boundingBox);
 
-      List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+      List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
       if (modTs.size() == 0 ||
           !timeInterval.intersects(new TimestampInterval(modTs.get(0), modTs.get(modTs.size()-1)))

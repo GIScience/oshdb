@@ -567,4 +567,24 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 		return result;
 	}
 
+	@Override
+	protected Map<Long, Long> getChangesetTimestamps() {
+		Map<Long, Long> result = new TreeMap<>();
+
+		List<OSMRelation> rels = this.getVersions();
+		rels.forEach(osmRel -> {
+			result.putIfAbsent(osmRel.getTimestamp(), osmRel.getChangeset());
+			// recurse rel members
+			if (!osmRel.isVisible()) return;
+			Arrays.stream(osmRel.getMembers())
+			.map(member -> ((OSHEntity)member.getEntity()))
+			.filter(Objects::nonNull)
+			.forEach(oshEntity ->
+				result.putAll(oshEntity.getChangesetTimestamps())
+			);
+		});
+
+		return result;
+	}
+
 }
