@@ -179,6 +179,28 @@ public class CellIterator {
     return iterateByTimestamps(cell, boundingBox, timestamps, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
 
+  public static class TimestampInterval {
+    private long fromTimestamp;
+    private long toTimestamp;
+    public TimestampInterval() {
+      this(Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+    public TimestampInterval(Long fromTimestamp, Long toTimestamp) {
+      this.fromTimestamp = fromTimestamp;
+      this.toTimestamp = toTimestamp;
+    }
+    public boolean intersects(TimestampInterval other) {
+      return other.toTimestamp >= this.fromTimestamp && other.fromTimestamp <= this.toTimestamp;
+    }
+    public boolean includes(long timestamp) {
+      return timestamp >= this.fromTimestamp && timestamp < this.toTimestamp;
+    }
+    public int compareTo(long timestamp) {
+      if (this.includes(timestamp))
+        return 0;
+      return timestamp < this.fromTimestamp ? -1 : 1;
+    }
+  }
   public static class IterateAllEntry {
     public final Long timestamp;
     public final Long nextTimestamp;
@@ -198,10 +220,11 @@ public class CellIterator {
     }
   }
   /**
-   * Helper method to easily iterate over all entities in a cell that match a given condition/filter.
+   * Helper method to easily iterate over all entity modifications in a cell that match a given condition/filter.
    *
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
+   * @param timeInterval time range of interest – only modifications inside this interval are included in the result
    * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter elements. only if it returns true, its osmEntity objects can be included in the output
    * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
    * @param includeOldStyleMultipolygons if true, output contains also data for "old style multipolygons".
@@ -213,7 +236,7 @@ public class CellIterator {
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp intervals.
    */
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -229,6 +252,11 @@ public class CellIterator {
       boolean fullyInside = oshEntity.insideBbox(boundingBox);
 
       List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+
+      if (modTs.size() == 0 ||
+          !timeInterval.intersects(new TimestampInterval(modTs.get(0), modTs.get(modTs.size()-1)))
+      ) continue; // ignore osh entity because it's edit history is fully outside of the given time interval of interest
+
       SortedMap<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(modTs);
 
       IterateAllEntry prev = null;
@@ -240,7 +268,8 @@ public class CellIterator {
         //prev = results.size() > 0 ? results.get(results.size()-1) : null; // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
 
         boolean skipOutput = false;
-        // skip node versions outside of the current cell
+
+        // skip node versions outside of the current cell // todo: we can get rid of this with the final db layout (nodes stored the same as other entity types)
         if (osmEntity instanceof OSMNode) {
           OSMNode node = (OSMNode)osmEntity;
           if (!node.isVisible()) {
@@ -256,6 +285,19 @@ public class CellIterator {
         Long nextTs = null;
         if (modTs.size() > modTs.indexOf(timestamp)+1) //todo: better way to figure out if timestamp is not last element??
           nextTs = modTs.get(modTs.indexOf(timestamp)+1);
+
+        if (!timeInterval.includes(timestamp)) {
+          // ignore osm entity because it's outside of the given time interval of interest
+          if (timeInterval.compareTo(timestamp) > 0) { // timestamp in the future of the interval
+            break; // abort current osmEntityByTimestamps loop, continue with next osh entity
+          } else if (!timeInterval.includes(nextTs)) { // next modification state is also in not in our time frame of interest
+            continue; // continue with next mod. state of current osh entity
+          } else {
+            // next mod. state of current entity will be in the time range of interest. -> skip it
+            // but we still have to process this entity fully, because we need stuff in `prev` for previousGeometry, etc. during the next iteration
+            skipOutput = true;
+          }
+        }
 
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
@@ -404,8 +446,13 @@ public class CellIterator {
     // return as an obj stream
     return results.stream();
   }
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    return iterateAll(cell, boundingBox, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateAll(cell, boundingBox, timeInterval, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
-
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateAll(cell, boundingBox, new CellIterator.TimestampInterval(), tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
+  }
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateAll(cell, boundingBox, new CellIterator.TimestampInterval(), tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
+  }
 }

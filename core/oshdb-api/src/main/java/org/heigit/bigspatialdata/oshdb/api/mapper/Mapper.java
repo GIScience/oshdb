@@ -55,15 +55,15 @@ public abstract class Mapper<T> {
   protected abstract Integer getTagKeyId(String key) throws Exception;
   protected abstract Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception;
 
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
-  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
@@ -127,9 +127,9 @@ public abstract class Mapper<T> {
   
   public <R, S> S mapReduce(Function<T, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
-      return this.reduceCellsOSMContribution(this._getCellIds(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntity.class)) {
-      return this.reduceCellsOSMEntity(this._getCellIds(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntity, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.reduceCellsOSMEntity(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntity, R>) mapper, identitySupplier, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
@@ -159,27 +159,21 @@ public abstract class Mapper<T> {
 
   public <R, S> SortedMap<Timestamp, S> mapAggregateByTimestamp(Function<T, R> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     SortedMap<Timestamp, S> result;
+    List<Timestamp> timestamps = this._getTimestamps().stream().map(Timestamp::new).collect(Collectors.toList());
     if (this._forClass.equals(OSMContribution.class)) {
-      List<Timestamp> timestamps = this._getTimestamps().stream().map(Timestamp::new).collect(Collectors.toList());
       result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> {
-        Timestamp timestamp = ((OSMContribution) t).getTimestamp();
-        // todo: replace with binary search for better performance
-        for (int i=timestamps.size()-1; i>=0; i--) {
-          if (timestamp.compareTo(timestamps.get(i)) > 0 || i==0) {
-            // todo: (e.g. for i==0 case:) skip entry if outside requested timestamp range -> add as input to CellIterator?
-            timestamp = timestamps.get(i);
-            break;
-          }
-        }
-        return new ImmutablePair<>(timestamp, mapper.apply(t));
+        int timeBinIndex = Collections.binarySearch(timestamps, ((OSMContribution) t).getTimestamp());
+        if (timeBinIndex < 0) { timeBinIndex = -timeBinIndex - 2; }
+        return new ImmutablePair<>(timestamps.get(timeBinIndex), mapper.apply(t));
       }), identity, accumulator, combiner);
+      timestamps.remove(timestamps.size()-1); // pop last element from timestamps list, so it doesn't get nodata-filled with "0" below
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t ->
         new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t))
       ), identity, accumulator, combiner);
     } else throw new UnsupportedOperationException("mapAggregateByTimestamp only allowed for OSMContribution and OSMEntitySnapshot");
     // fill nodata entries with "0"
-    this._getTimestamps().stream().map(Timestamp::new).forEach(ts -> result.putIfAbsent(ts, identity));
+    timestamps.forEach(ts -> result.putIfAbsent(ts, identity));
     return result;
   }
 

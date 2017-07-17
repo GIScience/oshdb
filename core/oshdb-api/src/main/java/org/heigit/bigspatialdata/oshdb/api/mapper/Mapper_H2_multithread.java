@@ -52,7 +52,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
   }
   
   @Override
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMContribution, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdb).getConnection());
 
@@ -87,6 +87,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
       CellIterator.iterateAll(
           oshCell,
           bbox,
+          new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
           this._tagInterpreter,
           preFilter,
           filter,
@@ -114,7 +115,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
   */
   
   @Override
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstampsIds, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null)
       this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
@@ -149,7 +150,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
       CellIterator.iterateByTimestamps(
           oshCell,
           bbox,
-          tstampsIds,
+          tstamps,
           this._tagInterpreter,
           preFilter,
           filter,
