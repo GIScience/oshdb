@@ -1,10 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.api.mapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -162,9 +160,23 @@ public abstract class Mapper<T> {
   public <R, S> SortedMap<Timestamp, S> mapAggregateByTimestamp(Function<T, R> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     SortedMap<Timestamp, S> result;
     if (this._forClass.equals(OSMContribution.class)) {
-      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> new ImmutablePair<>(((OSMContribution) t).getTimestamp(), mapper.apply(t))), identity, accumulator, combiner);
+      List<Timestamp> timestamps = this._getTimestamps().stream().map(Timestamp::new).collect(Collectors.toList());
+      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> {
+        Timestamp timestamp = ((OSMContribution) t).getTimestamp();
+        // todo: replace with binary search for better performance
+        for (int i=timestamps.size()-1; i>=0; i--) {
+          if (timestamp.compareTo(timestamps.get(i)) > 0 || i==0) {
+            // todo: (e.g. for i==0 case:) skip entry if outside requested timestamp range -> add as input to CellIterator?
+            timestamp = timestamps.get(i);
+            break;
+          }
+        }
+        return new ImmutablePair<>(timestamp, mapper.apply(t));
+      }), identity, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t))), identity, accumulator, combiner);
+      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t ->
+        new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t))
+      ), identity, accumulator, combiner);
     } else throw new UnsupportedOperationException("mapAggregateByTimestamp only allowed for OSMContribution and OSMEntitySnapshot");
     // fill nodata entries with "0"
     this._getTimestamps().stream().map(Timestamp::new).forEach(ts -> result.putIfAbsent(ts, identity));
