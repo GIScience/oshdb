@@ -5,7 +5,7 @@
 	* OSMContributionMapper – iterates over all OSM contributions for each entity (i.e. creation, modifications, deletion)
 * (breaking) renamed properties of `iterateAll`'s results
 * (breaking) renamed `Geo.distanceOf` to `Geo.lengthOf`
-* move osmatrix processing code into it's own repository
+* move osmatrix processing code into its own repository
 * group consecutive changes by changeset in CellIterator.iterateAll
 * …
 
