@@ -12,6 +12,7 @@ import org.json.simple.parser.ParseException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.*;
 
@@ -30,8 +31,8 @@ public class DefaultTagInterpreter extends TagInterpreter {
 
 	public static DefaultTagInterpreter fromH2(Connection conn) throws SQLException, IOException, ParseException {
 		return DefaultTagInterpreter.fromH2(conn,
-				Thread.currentThread().getContextClassLoader().getResource(defaultAreaTagsDefinitionFile).getPath(),
-				Thread.currentThread().getContextClassLoader().getResource(defaultUninterestingTagsDefinitionFile).getPath()
+				defaultAreaTagsDefinitionFile,
+				defaultUninterestingTagsDefinitionFile
 		);
 	}
 	public static DefaultTagInterpreter fromH2(Connection conn, String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile) throws SQLException, IOException, ParseException {
@@ -45,12 +46,12 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		requiredTags.add(new ImmutablePair<>("type", "route"));
 		// 1.b. tags from uninterestingTagsDefinitionFile
 		JSONParser parser = new JSONParser();
-		JSONArray uninterestingTagsList = (JSONArray)parser.parse(new FileReader(uninterestingTagsDefinitionFile));
+		JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(uninterestingTagsDefinitionFile)));
 		for (String tagKey : (Iterable<String>) uninterestingTagsList) {
 			requiredTags.add(new ImmutablePair<>(tagKey, null));
 		}
 		// 1.c. tags from areaTagsDefinitionFile
-		JSONArray tagList = (JSONArray)parser.parse(new FileReader(areaTagsDefinitionFile));
+		JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)));
 		for (JSONObject tag : (Iterable<JSONObject>) tagList) {
 			String type = (String) tag.get("polygon");
 			String tagKey = (String)tag.get("key");
@@ -121,8 +122,8 @@ public class DefaultTagInterpreter extends TagInterpreter {
 
 	public DefaultTagInterpreter(Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues, Map<String, Integer> allRoles) throws IOException, ParseException {
 		this(
-			Thread.currentThread().getContextClassLoader().getResource(defaultAreaTagsDefinitionFile).getPath(),
-			Thread.currentThread().getContextClassLoader().getResource(defaultUninterestingTagsDefinitionFile).getPath(),
+			defaultAreaTagsDefinitionFile,
+			defaultUninterestingTagsDefinitionFile,
 			allKeyValues,
 			allRoles
 		);
@@ -135,7 +136,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		Map<Integer, Set<Integer>> wayAreaTags = new HashMap<>();
 
 		JSONParser parser = new JSONParser();
-		JSONArray tagList = (JSONArray)parser.parse(new FileReader(areaTagsDefinitionFile));
+		JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)));
 		Iterator<JSONObject> tagIt = tagList.iterator();
 		while (tagIt.hasNext()) {
 			JSONObject tag = tagIt.next();
@@ -253,7 +254,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 
 		// list of uninteresting tags
 		Set<Integer> uninterestingTagKeys = new HashSet<>();
-		JSONArray uninterestingTagsList = (JSONArray)parser.parse(new FileReader(uninterestingTagsDefinitionFile));
+		JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(uninterestingTagsDefinitionFile)));
 		Iterator<String> uninterestingTagsIt = uninterestingTagsList.iterator();
 		while (uninterestingTagsIt.hasNext()) {
 			String tagKey = uninterestingTagsIt.next();
