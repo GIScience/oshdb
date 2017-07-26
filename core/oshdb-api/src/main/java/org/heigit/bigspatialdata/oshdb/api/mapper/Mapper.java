@@ -33,8 +33,8 @@ public abstract class Mapper<T> {
   protected Mapper(OSHDB oshdb) {
     this._oshdb = oshdb;
   }
-  
-  public static <T> Mapper<T> using(OSHDB oshdb) {
+
+  public static <T> Mapper<T> using(OSHDB oshdb, Class<?> forClass) {
     if (oshdb instanceof OSHDB_H2) {
       Mapper<T> mapper;
       if (((OSHDB_H2)oshdb).multithreading())
@@ -43,6 +43,7 @@ public abstract class Mapper<T> {
         mapper = new Mapper_H2_singlethread<T>((OSHDB_H2) oshdb);
       mapper._oshdb = oshdb;
       mapper._oshdbForTags = oshdb;
+      mapper._forClass = forClass;
       return mapper;
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
   }
@@ -123,7 +124,6 @@ public abstract class Mapper<T> {
   private List<Long> _getTimestamps() {
     return this._tstamps.getTimeStampIds();
   }
-
   
   public <R, S> S mapReduce(Function<T, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
