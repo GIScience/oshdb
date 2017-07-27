@@ -13,7 +13,8 @@ import org.heigit.bigspatialdata.oshdb.util.Geo;
 public class ResidentialRoadLengthAnalysisApi {
   public static void main(String[] args) throws Exception {
     // database
-    OSHDB oshdb = new OSHDB_H2("./karlsruhe-regbez").multithreading(true);
+    OSHDB oshdb = new OSHDB_H2("./karlsruhe-regbez")
+        .multithreading(true);
 
     // query
     SortedMap<Timestamp, Number> result = OSMEntitySnapshotMapper.using(oshdb)
