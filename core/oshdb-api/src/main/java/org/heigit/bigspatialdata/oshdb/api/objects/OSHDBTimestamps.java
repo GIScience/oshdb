@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
-public class Timestamps {
+public class OSHDBTimestamps {
   
   private int startYear;
   private int endYear;
@@ -17,7 +17,7 @@ public class Timestamps {
   private final SimpleDateFormat formatter;
 
 
-  public Timestamps(int startYear, int endYear, int startMonth, int endMonth, int startDay, int endDay) {
+  public OSHDBTimestamps(int startYear, int endYear, int startMonth, int endMonth, int startDay, int endDay) {
     super();
     this.startYear = startYear;
     this.endYear = endYear;
@@ -28,17 +28,17 @@ public class Timestamps {
     this.formatter = new SimpleDateFormat("yyyyMMdd");
   }
 
-  public Timestamps(int startYear, int endYear, int startMonth, int endMonth) {
+  public OSHDBTimestamps(int startYear, int endYear, int startMonth, int endMonth) {
     this(startYear, endYear, startMonth, endMonth, 1, 1);
   }
 
-  public Timestamps(int startYear, int endYear) {
+  public OSHDBTimestamps(int startYear, int endYear) {
     this(startYear, endYear, 1,1, 1, 1);
   }
 
 
 
-  public List<Long> getTimeStampIds(){
+  public List<Long> getTimeStamps(){
     List<Long> timestamps = new ArrayList<>();
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     for (int year = startYear; year <= endYear; year++) {

@@ -17,7 +17,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.api.objects.Timestamps;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
@@ -25,7 +25,7 @@ public abstract class Mapper<T> {
   protected OSHDB _oshdbForTags;
   protected Class _forClass = null;
   private BoundingBox _bbox = null;
-  private Timestamps _tstamps = null;
+  private OSHDBTimestamps _tstamps = null;
   private final List<Predicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<Predicate<OSMEntity>> _filters = new ArrayList<>();
   protected TagInterpreter _tagInterpreter = null;
@@ -73,7 +73,7 @@ public abstract class Mapper<T> {
     return this;
   }
   
-  public Mapper<T> timestamps(Timestamps tstamps) {
+  public Mapper<T> timestamps(OSHDBTimestamps tstamps) {
     this._tstamps = tstamps;
     return this;
   }
@@ -122,7 +122,7 @@ public abstract class Mapper<T> {
   }
 
   private List<Long> _getTimestamps() {
-    return this._tstamps.getTimeStampIds();
+    return this._tstamps.getTimeStamps();
   }
   
   public <R, S> S mapReduce(Function<T, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
