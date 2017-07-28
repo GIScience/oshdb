@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.heigit.bigspatialdata</groupId>
 		<artifactId>bigspatialdata-core-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.3.0-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -50,7 +50,7 @@
 		<dependency>
 			<groupId>org.heigit.bigspatialdata</groupId>
 			<artifactId>oshpbf-parser</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>org.heigit.bigspatialdata</groupId>
 			<artifactId>oshdb</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
