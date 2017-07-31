@@ -1,6 +1,15 @@
 package org.heigit.bigspatialdata.oshdb.api.mapper;
 
 import com.vividsolutions.jts.geom.Geometry;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.*;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -15,17 +24,7 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.*;
-import java.util.stream.Stream;
+import org.heigit.bigspatialdata.oshdb.utils.TagTranslator;
 
 public class Mapper_H2_multithread<T> extends Mapper<T> {
 
@@ -34,21 +33,17 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
   }
   
   protected Integer getTagKeyId(String key) throws Exception {
-    PreparedStatement pstmt = ((OSHDB_H2) this._oshdbForTags).getConnection().prepareStatement("select id from KEY where txt = ?");
-    pstmt.setString(1, key);
-    ResultSet resultSet = pstmt.executeQuery();
-    if (!resultSet.next()) System.err.println("tag id not found");
-    return resultSet.getInt(1);
+    if(this._tagTranslator==null){
+      this._tagTranslator=new TagTranslator(((OSHDB_H2) this._oshdb).getConnection());
+    }
+    return this._tagTranslator.Key2Int(key);
   }
   
   protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
-    int keyId = this.getTagKeyId(key);
-    PreparedStatement pstmt = ((OSHDB_H2) this._oshdbForTags).getConnection().prepareStatement("select valueid from KEYVALUE where keyid = ? and txt = ?");
-    pstmt.setInt(1, keyId);
-    pstmt.setString(2, value);
-    ResultSet resultSet = pstmt.executeQuery();
-    if (!resultSet.next()) System.err.println("tag id not found");
-    return new ImmutablePair(keyId, resultSet.getInt(1));
+    if(this._tagTranslator==null){
+      this._tagTranslator=new TagTranslator(((OSHDB_H2) this._oshdb).getConnection());
+    }
+    return this._tagTranslator.Tag2Int(new ImmutablePair(key,value));
   }
   
   @Override

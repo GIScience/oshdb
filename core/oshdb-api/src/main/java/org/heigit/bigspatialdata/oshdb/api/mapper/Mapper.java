@@ -3,12 +3,12 @@ package org.heigit.bigspatialdata.oshdb.api.mapper;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
@@ -17,8 +17,8 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.utils.TagTranslator;
 
 public abstract class Mapper<T> {
   protected OSHDB _oshdb;
@@ -29,6 +29,7 @@ public abstract class Mapper<T> {
   private final List<Predicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<Predicate<OSMEntity>> _filters = new ArrayList<>();
   protected TagInterpreter _tagInterpreter = null;
+  protected TagTranslator _tagTranslator=null;
   
   protected Mapper(OSHDB oshdb) {
     this._oshdb = oshdb;
