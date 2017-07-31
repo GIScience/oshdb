@@ -21,7 +21,7 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.utils.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 
 public class Mapper_H2_singlethread<T> extends Mapper<T> {
   

@@ -18,7 +18,6 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.utils.TagTranslator;
 
 public abstract class Mapper<T> {
   protected OSHDB _oshdb;
@@ -29,7 +28,6 @@ public abstract class Mapper<T> {
   private final List<Predicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<Predicate<OSMEntity>> _filters = new ArrayList<>();
   protected TagInterpreter _tagInterpreter = null;
-  protected TagTranslator _tagTranslator=null;
   
   protected Mapper(OSHDB oshdb) {
     this._oshdb = oshdb;
