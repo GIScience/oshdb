@@ -30,17 +30,13 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
   }
   
   protected Integer getTagKeyId(String key) throws Exception {
-    if(this._tagTranslator==null){
-      this._tagTranslator=new TagTranslator(((OSHDB_H2) this._oshdb).getConnection());
-    }
-    return this._tagTranslator.Key2Int(key);
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    return this._tagTranslator.key2Int(key);
   }
   
   protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
-    if(this._tagTranslator==null){
-      this._tagTranslator=new TagTranslator(((OSHDB_H2) this._oshdb).getConnection());
-    }
-    return this._tagTranslator.Tag2Int(new ImmutablePair(key,value));
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
   
   @Override

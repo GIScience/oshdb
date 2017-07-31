@@ -41,7 +41,7 @@ public class TagTranslatorTest {
     Pair<String, String> Tag = new ImmutablePair<>("building", "yes");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     Pair<Integer, Integer> expResult = new ImmutablePair<>(2, 0);
-    Pair<Integer, Integer> result = instance.Tag2Int(Tag);
+    Pair<Integer, Integer> result = instance.tag2Int(Tag);
     assertEquals(expResult, result);
   }
 
@@ -50,7 +50,7 @@ public class TagTranslatorTest {
     Pair<Integer, Integer> Tag = new ImmutablePair<>(2, 1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     Pair<String, String> expResult = new ImmutablePair<>("building", "residential");
-    Pair<String, String> result = instance.Tag2String(Tag);
+    Pair<String, String> result = instance.tag2String(Tag);
     assertEquals(expResult, result);
   }
 
@@ -59,7 +59,7 @@ public class TagTranslatorTest {
     String Role = "from";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     Integer expResult = 1;
-    Integer result = instance.Role2Int(Role);
+    Integer result = instance.role2Int(Role);
     assertEquals(expResult, result);
   }
 
@@ -68,7 +68,7 @@ public class TagTranslatorTest {
     Integer Role = 2;
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     String expResult = "to";
-    String result = instance.Role2String(Role);
+    String result = instance.role2String(Role);
     assertEquals(expResult, result);
   }
 
@@ -89,7 +89,7 @@ public class TagTranslatorTest {
     String Name = "FrankM";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     Integer expResult = 46;
-    Integer result = instance.UsertoID(Name);
+    Integer result = instance.usertoID(Name);
     assertEquals(expResult, result);
   }
 
@@ -98,7 +98,7 @@ public class TagTranslatorTest {
     Integer OSHDbID = 165;
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     String expResult = "Richard";
-    String result = instance.UsertoStr(OSHDbID);
+    String result = instance.usertoStr(OSHDbID);
     assertEquals(expResult, result);
   }
 
@@ -107,7 +107,7 @@ public class TagTranslatorTest {
     String Key = "highway";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     Integer expResult = 1;
-    Integer result = instance.Key2Int(Key);
+    Integer result = instance.key2Int(Key);
     assertEquals(expResult, result);
   }
 

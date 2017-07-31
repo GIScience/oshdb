@@ -43,138 +43,138 @@ public class TagTranslator {
   }
 
   /**
-   * Get the ID for your Tag.
+   * Get the ID for your tag.
    *
-   * @param Tag A Key-Value-Pair
+   * @param tag A Key-Value-Pair
    * @return The correspondent Key-Value-Pair as Integer
    */
-  public Pair<Integer, Integer> Tag2Int(Pair<String, String> Tag) {
-    String KeyString = Tag.getKey();
-    Integer KeyInt = null;
-    String ValueString = Tag.getValue();
-    Integer ValInt = null;
+  public Pair<Integer, Integer> tag2Int(Pair<String, String> tag) {
+    String keyString = tag.getKey();
+    Integer keyInt = null;
+    String valueString = tag.getValue();
+    Integer valInt = null;
 
     //check if Key and Value are in cache
-    if (this.tagToInt.containsKey(KeyString) && this.tagToInt.get(KeyString).getValue().containsKey(ValueString)) {
-      return new ImmutablePair<>(this.tagToInt.get(KeyString).getKey(), this.tagToInt.get(KeyString).getValue().get(ValueString));
+    if (this.tagToInt.containsKey(keyString) && this.tagToInt.get(keyString).getValue().containsKey(valueString)) {
+      return new ImmutablePair<>(this.tagToInt.get(keyString).getKey(), this.tagToInt.get(keyString).getValue().get(valueString));
     }
 
     //key or value is not in cache so let's go get them
     try (PreparedStatement valstmt = this.conn.prepareStatement("select k.ID as KEYID,kv.VALUEID as VALUEID from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID WHERE k.TXT = ? and kv.TXT = ?;")) {
-      valstmt.setString(1, KeyString);
-      valstmt.setString(2, ValueString);
+      valstmt.setString(1, keyString);
+      valstmt.setString(2, valueString);
       ResultSet values = valstmt.executeQuery();
       values.next();
-      KeyInt = values.getInt("KEYID");
-      ValInt = values.getInt("VALUEID");
+      keyInt = values.getInt("KEYID");
+      valInt = values.getInt("VALUEID");
 
       //put it in caches
       Map<String, Integer> valresultstr;
       Map<Integer, String> valresultint;
-      if (this.tagToInt.containsKey(KeyString)) {
-        valresultstr = this.tagToInt.get(KeyString).getValue();
-        valresultint = this.tagToString.get(KeyInt).getValue();
+      if (this.tagToInt.containsKey(keyString)) {
+        valresultstr = this.tagToInt.get(keyString).getValue();
+        valresultint = this.tagToString.get(keyInt).getValue();
       } else {
         valresultstr = new HashMap<>(1);
         valresultint = new HashMap<>(1);
       }
-      valresultstr.put(ValueString, ValInt);
-      valresultint.put(ValInt, ValueString);
-      this.tagToInt.put(KeyString, new ImmutablePair<>(KeyInt, valresultstr));
-      this.tagToString.put(KeyInt, new ImmutablePair<>(KeyString, valresultint));
+      valresultstr.put(valueString, valInt);
+      valresultint.put(valInt, valueString);
+      this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valresultstr));
+      this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valresultint));
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
 
-    return new ImmutablePair<>(KeyInt, ValInt);
+    return new ImmutablePair<>(keyInt, valInt);
 
   }
 
   /**
-   * Get Integer of a single Key.
+   * Get Integer of a single key.
    *
-   * @param Key
+   * @param key
    * @return
    */
-  public Integer Key2Int(String Key) {
-    if (this.tagToInt.containsKey(Key)) {
-      return this.tagToInt.get(Key).getKey();
+  public Integer key2Int(String key) {
+    if (this.tagToInt.containsKey(key)) {
+      return this.tagToInt.get(key).getKey();
     }
-    Integer key = null;
+    Integer keyInt = null;
     try (PreparedStatement keystmt = this.conn.prepareStatement("select ID from KEY where KEY.TXT = ?;")) {
-      keystmt.setString(1, Key);
+      keystmt.setString(1, key);
       ResultSet keys = keystmt.executeQuery();
       keys.next();
-      key = keys.getInt("ID");
-      this.tagToInt.put(Key, new ImmutablePair<>(key, new HashMap<>(0)));
-      this.tagToString.put(key, new ImmutablePair<>(Key, new HashMap<>(0)));
+      keyInt = keys.getInt("ID");
+      this.tagToInt.put(key, new ImmutablePair<>(keyInt, new HashMap<>(0)));
+      this.tagToString.put(keyInt, new ImmutablePair<>(key, new HashMap<>(0)));
 
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
-    return key;
+    return keyInt;
   }
 
   /**
    * Get the String for your ID.
    *
-   * @param Tag
+   * @param tag
    * @return
    */
-  public Pair<String, String> Tag2String(Pair<Integer, Integer> Tag) {
-    String KeyString = null;
-    Integer KeyInt = Tag.getKey();
-    String ValueString = null;
-    Integer ValInt = Tag.getValue();
+  public Pair<String, String> tag2String(Pair<Integer, Integer> tag) {
+    String keyString = null;
+    Integer keyInt = tag.getKey();
+    String valueString = null;
+    Integer valInt = tag.getValue();
 
     //check if Key and Value are in cache
-    if (this.tagToString.containsKey(KeyInt) && this.tagToString.get(KeyInt).getValue().containsKey(ValInt)) {
-      return new ImmutablePair<>(this.tagToString.get(KeyInt).getKey(), this.tagToString.get(KeyInt).getValue().get(ValInt));
+    if (this.tagToString.containsKey(keyInt) && this.tagToString.get(keyInt).getValue().containsKey(valInt)) {
+      return new ImmutablePair<>(this.tagToString.get(keyInt).getKey(), this.tagToString.get(keyInt).getValue().get(valInt));
     }
 
     //key or value is not in cache so let's go get them
     try (PreparedStatement valstmt = this.conn.prepareStatement("select k.TXT as KEYTXT,kv.TXT as VALUETXT from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID WHERE k.ID = ? and kv.VALUEID = ?;")) {
-      valstmt.setInt(1, KeyInt);
-      valstmt.setInt(2, ValInt);
+      valstmt.setInt(1, keyInt);
+      valstmt.setInt(2, valInt);
       ResultSet values = valstmt.executeQuery();
       values.next();
-      KeyString = values.getString("KEYTXT");
-      ValueString = values.getString("VALUETXT");
+      keyString = values.getString("KEYTXT");
+      valueString = values.getString("VALUETXT");
 
       //put it in caches
-      Map<String, Integer> valresultstr;
-      Map<Integer, String> valresultint;
-      if (this.tagToInt.containsKey(KeyString)) {
-        valresultstr = this.tagToInt.get(KeyString).getValue();
-        valresultint = this.tagToString.get(KeyInt).getValue();
+      Map<String, Integer> valResultString;
+      Map<Integer, String> valResultInt;
+      if (this.tagToInt.containsKey(keyString)) {
+        valResultString = this.tagToInt.get(keyString).getValue();
+        valResultInt = this.tagToString.get(keyInt).getValue();
       } else {
-        valresultstr = new HashMap<>(1);
-        valresultint = new HashMap<>(1);
+        valResultString = new HashMap<>(1);
+        valResultInt = new HashMap<>(1);
       }
-      valresultstr.put(ValueString, ValInt);
-      valresultint.put(ValInt, ValueString);
-      this.tagToInt.put(KeyString, new ImmutablePair<>(KeyInt, valresultstr));
-      this.tagToString.put(KeyInt, new ImmutablePair<>(KeyString, valresultint));
+      valResultString.put(valueString, valInt);
+      valResultInt.put(valInt, valueString);
+      this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valResultString));
+      this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valResultInt));
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
 
-    return new ImmutablePair<>(KeyString, ValueString);
+    return new ImmutablePair<>(keyString, valueString);
 
   }
 
   /**
-   * Gets all values (ID and String) for a given Key. To be used with care, as
+   * Gets all values (ID and String) for a given key. To be used with care, as
    * it forcibly queries the DB each time it is called to be accurate.
-   * Preferably call only once per Key you are interested in.
+   * Preferably call only once per key you are interested in.
    *
-   * @param Key The key to query all values for
+   * @param key The key to query all values for
    * @return a pair that holds the ID of the given key and all values with their
    * respective string and integer
    */
-  public Pair<Integer, Map<String, Integer>> getAllValues(String Key) {
+  public Pair<Integer, Map<String, Integer>> getAllValues(String key) {
     //search keyID
-    Integer keyid = this.Key2Int(Key);
+    Integer keyid = this.key2Int(key);
     HashMap<String, Integer> vals = null;
     if (keyid != null) {
       try (PreparedStatement valstmt = this.conn.prepareCall("select VALUEID,TXT from KEYVALUE where KEYID=?;")) {
@@ -185,7 +185,7 @@ public class TagTranslator {
         while (values.next()) {
           vals.put(values.getString("TXT"), values.getInt("VALUEID"));
         } //put results to cache
-        this.tagToInt.put(Key, new ImmutablePair<>(keyid, vals));
+        this.tagToInt.put(key, new ImmutablePair<>(keyid, vals));
       } catch (SQLException ex) {
         LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
       }
@@ -198,27 +198,27 @@ public class TagTranslator {
   /**
    * Get the ID for your Role.
    *
-   * @param Role
+   * @param role
    * @return
    */
-  public Integer Role2Int(String Role) {
-    if (this.roleToInt.containsKey(Role)) {
-      return this.roleToInt.get(Role);
+  public Integer role2Int(String role) {
+    if (this.roleToInt.containsKey(role)) {
+      return this.roleToInt.get(role);
     }
-    Integer role = null;
+    Integer roleInt = null;
     try (PreparedStatement rolestmt = conn.prepareStatement("select ID from ROLE WHERE txt = ?;")) {
-      rolestmt.setString(1, Role);
+      rolestmt.setString(1, role);
       ResultSet roles = rolestmt.executeQuery();
       roles.next();
-      role = roles.getInt("ID");
-      this.roleToInt.put(Role, role);
-      this.roleToString.put(role, Role);
+      roleInt = roles.getInt("ID");
+      this.roleToInt.put(role, roleInt);
+      this.roleToString.put(roleInt, role);
 
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
 
-    return role;
+    return roleInt;
 
   }
 
@@ -228,78 +228,78 @@ public class TagTranslator {
    * @param role
    * @return
    */
-  public String Role2String(Integer role) {
+  public String role2String(Integer role) {
     if (this.roleToString.containsKey(role)) {
       return this.roleToString.get(role);
     }
-    String Role = null;
+    String roleString = null;
     try (PreparedStatement Rolestmt = conn.prepareStatement("select TXT from ROLE WHERE ID = ?;")) {
       Rolestmt.setInt(1, role);
       ResultSet Roles = Rolestmt.executeQuery();
       Roles.next();
-      Role = Roles.getString("TXT");
-      this.roleToInt.put(Role, role);
-      this.roleToString.put(role, Role);
+      roleString = Roles.getString("TXT");
+      this.roleToInt.put(roleString, role);
+      this.roleToString.put(role, roleString);
 
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
 
-    return Role;
+    return roleString;
 
   }
 
   /**
    * Get the OSHDB-UserID of a Username.
    *
-   * @param Name
+   * @param name
    * @return
    */
-  public Integer UsertoID(String Name) {
-    if (this.userToInt.containsKey(Name)) {
-      return this.userToInt.get(Name);
+  public Integer usertoID(String name) {
+    if (this.userToInt.containsKey(name)) {
+      return this.userToInt.get(name);
     }
-    Integer OSHDBuserID = null;
+    Integer uid = null;
     try (PreparedStatement userstmt = conn.prepareStatement("select ID from USER WHERE NAME = ?;")) {
-      userstmt.setString(1, Name);
+      userstmt.setString(1, name);
       ResultSet names = userstmt.executeQuery();
       names.next();
-      OSHDBuserID = names.getInt("ID");
-      this.userToInt.put(Name, OSHDBuserID);
-      this.userToString.put(OSHDBuserID, Name);
+      uid = names.getInt("ID");
+      this.userToInt.put(name, uid);
+      this.userToString.put(uid, name);
 
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
 
-    return OSHDBuserID;
+    return uid;
 
   }
 
   /**
    * Get the Username of a OSHDB-UserID.
    *
-   * @param OSHDBuserID
+   * @param uid
    * @return
    */
-  public String UsertoStr(Integer OSHDBuserID) {
-    if (this.userToString.containsKey(OSHDBuserID)) {
-      return this.userToString.get(OSHDBuserID);
+  public String usertoStr(Integer uid) {
+    if (this.userToString.containsKey(uid)) {
+      return this.userToString.get(uid);
     }
-    String Name = null;
+    String name = null;
     try (PreparedStatement Userstmt = conn.prepareStatement("select NAME from USER WHERE ID = ?;")) {
-      Userstmt.setInt(1, OSHDBuserID);
+      Userstmt.setInt(1, uid);
       ResultSet Names = Userstmt.executeQuery();
       Names.next();
-      Name = Names.getString("NAME");
-      this.roleToInt.put(Name, OSHDBuserID);
-      this.roleToString.put(OSHDBuserID, Name);
+      name = Names.getString("NAME");
+      this.roleToInt.put(name, uid);
+      this.roleToString.put(uid, name);
 
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
 
-    return Name;
+    return name;
   }
 
 }
