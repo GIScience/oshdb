@@ -10,7 +10,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -87,35 +86,29 @@ public class TagTranslatorTest {
 
   @Test
   public void testUsertoID() {
-    System.out.println("UsertoID");
-    String Name = "";
-    TagTranslator instance = null;
-    Integer expResult = null;
+    String Name = "FrankM";
+    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    Integer expResult = 46;
     Integer result = instance.UsertoID(Name);
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
   @Test
   public void testUsertoStr() {
-    System.out.println("UsertoStr");
-    Integer OSHDbID = null;
-    TagTranslator instance = null;
-    String expResult = "";
+    Integer OSHDbID = 165;
+    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    String expResult = "Richard";
     String result = instance.UsertoStr(OSHDbID);
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
   @Test
   public void testKey2Int() {
-    System.out.println("Key2Int");
-    String Key = "";
-    TagTranslator instance = null;
-    Integer expResult = null;
+    String Key = "highway";
+    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    Integer expResult = 1;
     Integer result = instance.Key2Int(Key);
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
 }

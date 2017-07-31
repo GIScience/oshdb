@@ -110,7 +110,7 @@ public class TagTranslator {
       this.tagToString.put(key, new ImmutablePair<>(Key, new HashMap<>(0)));
 
     } catch (SQLException ex) {
-      LOG.log(Level.SEVERE, null, ex);
+      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
     return key;
   }
@@ -202,41 +202,104 @@ public class TagTranslator {
    * @return
    */
   public Integer Role2Int(String Role) {
+    if (this.roleToInt.containsKey(Role)) {
+      return this.roleToInt.get(Role);
+    }
+    Integer role = null;
+    try (PreparedStatement rolestmt = conn.prepareStatement("select ID from ROLE WHERE txt = ?;")) {
+      rolestmt.setString(1, Role);
+      ResultSet roles = rolestmt.executeQuery();
+      roles.next();
+      role = roles.getInt("ID");
+      this.roleToInt.put(Role, role);
+      this.roleToString.put(role, Role);
 
-    return 1;
+    } catch (SQLException ex) {
+      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+    }
+
+    return role;
 
   }
 
   /**
    * Get the String for your Role.
    *
-   * @param Role
+   * @param role
    * @return
    */
-  public String Role2String(Integer Role) {
+  public String Role2String(Integer role) {
+    if (this.roleToString.containsKey(role)) {
+      return this.roleToString.get(role);
+    }
+    String Role = null;
+    try (PreparedStatement Rolestmt = conn.prepareStatement("select TXT from ROLE WHERE ID = ?;")) {
+      Rolestmt.setInt(1, role);
+      ResultSet Roles = Rolestmt.executeQuery();
+      Roles.next();
+      Role = Roles.getString("TXT");
+      this.roleToInt.put(Role, role);
+      this.roleToString.put(role, Role);
 
-    //siehe Workshop!
-    return "inner";
+    } catch (SQLException ex) {
+      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+    }
+
+    return Role;
 
   }
 
   /**
+   * Get the OSHDB-UserID of a Username.
    *
    * @param Name
    * @return
    */
   public Integer UsertoID(String Name) {
-    return 1;
+    if (this.userToInt.containsKey(Name)) {
+      return this.userToInt.get(Name);
+    }
+    Integer OSHDBuserID = null;
+    try (PreparedStatement userstmt = conn.prepareStatement("select ID from USER WHERE NAME = ?;")) {
+      userstmt.setString(1, Name);
+      ResultSet names = userstmt.executeQuery();
+      names.next();
+      OSHDBuserID = names.getInt("ID");
+      this.userToInt.put(Name, OSHDBuserID);
+      this.userToString.put(OSHDBuserID, Name);
+
+    } catch (SQLException ex) {
+      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+    }
+
+    return OSHDBuserID;
 
   }
 
   /**
+   * Get the Username of a OSHDB-UserID.
    *
-   * @param OSHDbID
+   * @param OSHDBuserID
    * @return
    */
-  public String UsertoStr(Integer OSHDbID) {
-    return "1";
+  public String UsertoStr(Integer OSHDBuserID) {
+    if (this.userToString.containsKey(OSHDBuserID)) {
+      return this.userToString.get(OSHDBuserID);
+    }
+    String Name = null;
+    try (PreparedStatement Userstmt = conn.prepareStatement("select NAME from USER WHERE ID = ?;")) {
+      Userstmt.setInt(1, OSHDBuserID);
+      ResultSet Names = Userstmt.executeQuery();
+      Names.next();
+      Name = Names.getString("NAME");
+      this.roleToInt.put(Name, OSHDBuserID);
+      this.roleToString.put(OSHDBuserID, Name);
+
+    } catch (SQLException ex) {
+      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+    }
+
+    return Name;
   }
 
 }
