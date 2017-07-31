@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -34,12 +35,12 @@ public class TagTranslator {
    */
   public TagTranslator(Connection conn) {
     this.conn = conn;
-    this.tagToInt = new HashMap<>(0);
-    this.tagToString = new HashMap<>(0);
-    this.roleToInt = new HashMap<>(0);
-    this.roleToString = new HashMap<>(0);
-    this.userToInt = new HashMap<>(0);
-    this.userToString = new HashMap<>(0);
+    this.tagToInt = new ConcurrentHashMap<>(0);
+    this.tagToString = new ConcurrentHashMap<>(0);
+    this.roleToInt = new ConcurrentHashMap<>(0);
+    this.roleToString = new ConcurrentHashMap<>(0);
+    this.userToInt = new ConcurrentHashMap<>(0);
+    this.userToString = new ConcurrentHashMap<>(0);
   }
 
   /**
