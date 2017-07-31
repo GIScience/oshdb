@@ -70,19 +70,19 @@ public class TagTranslator {
       valInt = values.getInt("VALUEID");
 
       //put it in caches
-      Map<String, Integer> valresultstr;
-      Map<Integer, String> valresultint;
+      Map<String, Integer> valResultString;
+      Map<Integer, String> valResultInt;
       if (this.tagToInt.containsKey(keyString)) {
-        valresultstr = this.tagToInt.get(keyString).getValue();
-        valresultint = this.tagToString.get(keyInt).getValue();
+        valResultString = this.tagToInt.get(keyString).getValue();
+        valResultInt = this.tagToString.get(keyInt).getValue();
       } else {
-        valresultstr = new HashMap<>(1);
-        valresultint = new HashMap<>(1);
+        valResultString = new ConcurrentHashMap<>(1);
+        valResultInt = new ConcurrentHashMap<>(1);
       }
-      valresultstr.put(valueString, valInt);
-      valresultint.put(valInt, valueString);
-      this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valresultstr));
-      this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valresultint));
+      valResultString.put(valueString, valInt);
+      valResultInt.put(valInt, valueString);
+      this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valResultString));
+      this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valResultInt));
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
     }
@@ -107,8 +107,8 @@ public class TagTranslator {
       ResultSet keys = keystmt.executeQuery();
       keys.next();
       keyInt = keys.getInt("ID");
-      this.tagToInt.put(key, new ImmutablePair<>(keyInt, new HashMap<>(0)));
-      this.tagToString.put(keyInt, new ImmutablePair<>(key, new HashMap<>(0)));
+      this.tagToInt.put(key, new ImmutablePair<>(keyInt, new ConcurrentHashMap<>(0)));
+      this.tagToString.put(keyInt, new ImmutablePair<>(key, new ConcurrentHashMap<>(0)));
 
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
@@ -149,8 +149,8 @@ public class TagTranslator {
         valResultString = this.tagToInt.get(keyString).getValue();
         valResultInt = this.tagToString.get(keyInt).getValue();
       } else {
-        valResultString = new HashMap<>(1);
-        valResultInt = new HashMap<>(1);
+        valResultString = new ConcurrentHashMap<>(1);
+        valResultInt = new ConcurrentHashMap<>(1);
       }
       valResultString.put(valueString, valInt);
       valResultInt.put(valInt, valueString);
