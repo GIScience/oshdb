@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
@@ -110,6 +111,7 @@ public class TagInterpreter {
 	}
 
 	public boolean isMultipolygonOuterMember(OSMMember osmMember) {
+		if (!(osmMember.getEntity() instanceof OSHWay)) return false;
 		int roleId = osmMember.getRoleId();
 		return roleId == this.outerRoleId ||
 				roleId == this.emptyRoleId; // some historic osm data may still be mapped without roles set -> assume empty roles to mean outer
@@ -117,6 +119,7 @@ public class TagInterpreter {
 	}
 
 	public boolean isMultipolygonInnerMember(OSMMember osmMember) {
+		if (!(osmMember.getEntity() instanceof OSHWay)) return false;
 		return osmMember.getRoleId() == this.innerRoleId;
 	}
 
