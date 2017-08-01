@@ -102,12 +102,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
       return combiner.apply(acc, cur);
     });
   }
-  
-  /*
-  @Override
-  protected <R, S> S reduceCellsOSMEntity(…) throws Exception {
-  }
-  */
+
   
   @Override
   protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
