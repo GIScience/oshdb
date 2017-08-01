@@ -189,13 +189,13 @@ public class HistocountsByTag {
             // normal case: a regular point, line or (multi)polygon
             thisResult.countTotal++;
             switch (osmEntity.getType()) {
-              case OSHEntity.NODE:
+              case NODE:
                 thisResult.countNodes++;
                 break;
-              case OSHEntity.WAY:
+              case WAY:
                 thisResult.countWays++;
                 break;
-              case OSHEntity.RELATION:
+              case RELATION:
                 thisResult.countRelations++;
                 break;
             }

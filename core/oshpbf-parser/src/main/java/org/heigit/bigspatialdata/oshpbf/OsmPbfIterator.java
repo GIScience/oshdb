@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfChangeset;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.OSMCommonProperties;
@@ -235,13 +236,13 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 				int type = -1;
 				switch (types.get(i)) {
 					case NODE:
-						type = OSHEntity.NODE;
+						type = OSMType.NODE.intValue();
 						break;
 					case WAY:
-						type = OSHEntity.WAY;
+						type = OSMType.WAY.intValue();
 						break;
 					case RELATION:
-						type = OSHEntity.RELATION;
+						type = OSMType.RELATION.intValue();
 						break;
 				}
 				OSMMember m = new OSMMember(memId, getString(role), type);

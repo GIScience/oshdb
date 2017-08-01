@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.junit.Test;
 
 public class OSHWayTest {
@@ -30,9 +31,9 @@ public class OSHWayTest {
   public void testGetNodes() throws IOException {
     List<OSMWay> versions = new ArrayList<>();
     versions.add(
-        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, 0, 0),new OSMMember(104,0,0)}));
+        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, OSMType.NODE, 0),new OSMMember(104, OSMType.NODE, 0)}));
     versions.add(
-        new OSMWay(123, 3, 3333l, 4444l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(100, 0, 0),new OSMMember(104,0,0)}));
+        new OSMWay(123, 3, 3333l, 4444l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),new OSMMember(104, OSMType.NODE, 0)}));
     
     OSHWay hway = OSHWay.build(versions, Arrays.asList(node100,node102,node104));
     assertNotNull(hway);
@@ -47,9 +48,9 @@ public class OSHWayTest {
   public void testCreateGeometrey() throws IOException {
 	  List<OSMWay> versions = new ArrayList<>();
 	    versions.add(
-	        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, 0, 0),new OSMMember(104,0,0)}));
+	        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, OSMType.NODE, 0),new OSMMember(104, OSMType.NODE, 0)}));
 	    versions.add(
-	        new OSMWay(123, 3, 3333l, 4444l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(100, 0, 0),new OSMMember(104,0,0)}));
+	        new OSMWay(123, 3, 3333l, 4444l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),new OSMMember(104, OSMType.NODE, 0)}));
 	    
 	    OSHWay hway = OSHWay.build(versions, Arrays.asList(node100,node102,node104));
 	    assertNotNull(hway);
@@ -73,9 +74,9 @@ public class OSHWayTest {
   public void testWithMissingNode() throws IOException{
     List<OSMWay> versions = new ArrayList<>();
     versions.add(
-        new OSMWay(123, 3, 3333l, 4444l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(100, 0, 0),new OSMMember(104,0,0)}));
+        new OSMWay(123, 3, 3333l, 4444l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),new OSMMember(104, OSMType.NODE, 0)}));
     versions.add(
-        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, 0, 0),new OSMMember(104,0,0)}));
+        new OSMWay(123, 1, 3333l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(102, OSMType.NODE, 0),new OSMMember(104, OSMType.NODE, 0)}));
 
     
     OSHWay hway = OSHWay.build(versions, Arrays.asList(node100,node104));
@@ -124,8 +125,8 @@ public class OSHWayTest {
     OSHNode hnode3 = OSHNode.build(n3versions);
 
     List<OSMWay> versions = new ArrayList<>();
-    versions.add(new OSMWay(123, 2, 7l, 4445l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
-    versions.add(new OSMWay(123, 1, 5l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0),new OSMMember(125,0,0)}));
+    versions.add(new OSMWay(123, 2, 7l, 4445l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, OSMType.NODE, 0),new OSMMember(124, OSMType.NODE, 0)}));
+    versions.add(new OSMWay(123, 1, 5l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, OSMType.NODE, 0),new OSMMember(124, OSMType.NODE, 0),new OSMMember(125, OSMType.NODE, 0)}));
     OSHWay hway = OSHWay.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
 
     List<Long> tss = hway.getModificationTimestamps(false);
@@ -165,10 +166,10 @@ public class OSHWayTest {
     OSHNode hnode3 = OSHNode.build(n3versions);
 
     List<OSMWay> versions = new ArrayList<>();
-    versions.add(new OSMWay(123, 4, 14l, 4447l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
-    versions.add(new OSMWay(123, 3, 13l, 4446l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
-    versions.add(new OSMWay(123, 2, 7l, 4445l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0)}));
-    versions.add(new OSMWay(123, 1, 5l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, 0, 0),new OSMMember(124,0,0),new OSMMember(125,0,0)}));
+    versions.add(new OSMWay(123, 4, 14l, 4447l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, OSMType.NODE, 0),new OSMMember(124, OSMType.NODE, 0)}));
+    versions.add(new OSMWay(123, 3, 13l, 4446l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, OSMType.NODE, 0),new OSMMember(124, OSMType.NODE, 0)}));
+    versions.add(new OSMWay(123, 2, 7l, 4445l, 23, new int[] {1,1,2,2}, new OSMMember[] {new OSMMember(123, OSMType.NODE, 0),new OSMMember(124, OSMType.NODE, 0)}));
+    versions.add(new OSMWay(123, 1, 5l, 4444l, 23, new int[] {1,1,2,1}, new OSMMember[] {new OSMMember(123, OSMType.NODE, 0),new OSMMember(124, OSMType.NODE, 0),new OSMMember(125, OSMType.NODE, 0)}));
     OSHWay hway = OSHWay.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
 
     List<Long> tss = hway.getModificationTimestamps(true);

@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.google.common.collect.Lists;
@@ -34,8 +35,8 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
 
   @Override
-  public int getType() {
-    return OSHEntity.RELATION;
+  public OSMType getType() {
+    return OSMType.RELATION;
   }
 
   public OSMMember[] getMembers() {

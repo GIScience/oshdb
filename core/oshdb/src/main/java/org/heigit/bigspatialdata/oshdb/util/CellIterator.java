@@ -99,7 +99,7 @@ public class CellIterator {
             ) {
           OSMRelation rel = (OSMRelation) osmEntity;
           for (int i = 0; i < rel.getMembers().length; i++) {
-            if (rel.getMembers()[i].getType() == OSHEntity.WAY && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
+            if (rel.getMembers()[i].getType() == OSMType.WAY && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
               OSMEntity way = rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
               if (!osmEntityFilter.test(way)) {
                 // skip this old-style-multipolygon because it doesn't match our filter
@@ -316,7 +316,7 @@ public class CellIterator {
             ) {
           OSMRelation rel = (OSMRelation) osmEntity;
           for (int i = 0; i < rel.getMembers().length; i++) {
-            if (rel.getMembers()[i].getType() == OSHEntity.WAY && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
+            if (rel.getMembers()[i].getType() == OSMType.WAY && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
               OSMEntity way = rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
               if (!osmEntityFilter.test(way)) {
                 // skip this old-style-multipolygon because it doesn't match our filter
@@ -389,7 +389,7 @@ public class CellIterator {
             // look if members have been changed between versions
             boolean membersChange = false;
             switch (prev.osmEntity.getType()) {
-              case OSHEntity.WAY:
+              case WAY:
                 OSMMember[] prevNds = ((OSMWay)prev.osmEntity).getRefs();
                 OSMMember[] currNds = ((OSMWay)osmEntity).getRefs();
                 if (prevNds.length != currNds.length)
@@ -401,7 +401,7 @@ public class CellIterator {
                       break;
                     }
                 break;
-              case OSHEntity.RELATION:
+              case RELATION:
                 OSMMember[] prevMembers = ((OSMRelation)prev.osmEntity).getMembers();
                 OSMMember[] currMembers = ((OSMRelation)osmEntity).getMembers();
                 if (prevMembers.length != currMembers.length)

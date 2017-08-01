@@ -9,6 +9,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 /**
  * instances of this class are used to determine whether a OSM way represents a polygon or linestring geometry.
@@ -96,7 +97,7 @@ public class TagInterpreter {
     int outerWayCount = 0;
     OSMMember[] members = osmRelation.getMembers();
     for (int i=0; i<members.length; i++) {
-      if (members[i].getType() == OSHEntity.WAY && members[i].getRoleId() == outerRoleId)
+      if (members[i].getType() == OSMType.WAY && members[i].getRoleId() == outerRoleId)
         if (++outerWayCount > 1) return false; // exit early if two outer ways were already found
     }
     if (outerWayCount != 1) return false;

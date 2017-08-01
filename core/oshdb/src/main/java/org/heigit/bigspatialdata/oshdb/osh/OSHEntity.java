@@ -10,14 +10,10 @@ import com.google.common.collect.Lists;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 @SuppressWarnings("rawtypes")
 public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSHEntity>,Iterable<OSM> {
-  
-  public static final int NODE = 0;
-  public static final int WAY = 1;
-  public static final int RELATION = 2;
-
   protected final byte[] data;
   protected final int offset;
   protected final int length;
@@ -64,7 +60,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     return id;
   }
 
-  public abstract int getType();
+  public abstract OSMType getType();
 
   public int getLength() {
     return length;

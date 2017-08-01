@@ -15,6 +15,7 @@ import javax.json.JsonReader;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.Geo;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
@@ -43,7 +44,7 @@ public abstract class OSMEntity {
     return id;
   }
 
-  public abstract int getType();
+  public abstract OSMType getType();
 
   public int getVersion() {
     return Math.abs(version);

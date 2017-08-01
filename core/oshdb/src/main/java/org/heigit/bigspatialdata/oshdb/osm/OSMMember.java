@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 /** Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
  *
@@ -8,17 +9,17 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
  */
 public class OSMMember {
 	private final long id;
-	private final int type;
+	private final OSMType type;
 	private final int roleId;
 	@SuppressWarnings("rawtypes")
 	private final OSHEntity entity;
 
 	
-	public OSMMember(final long id, final int type, final int roleId){
+	public OSMMember(final long id, final OSMType type, final int roleId){
 	  this(id,type, roleId, null);
 	}
 	
-	public OSMMember(final long id, final int type, final int roleId, @SuppressWarnings("rawtypes") OSHEntity entity){
+	public OSMMember(final long id, final OSMType type, final int roleId, @SuppressWarnings("rawtypes") OSHEntity entity){
 		this.id = id;
 		this.type = type;
 		this.roleId = roleId;
@@ -30,7 +31,7 @@ public class OSMMember {
 		return id;
 	}
 	
-	public int getType() {
+	public OSMType getType() {
 		return type;
 	}
 
