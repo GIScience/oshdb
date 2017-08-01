@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import org.heigit.bigspatialdata.oshdb.api.utils.ISODateTimeParser;
 
@@ -43,7 +44,7 @@ public class OSHDBTimestamps {
     this(startYear, endYear, 1,1, 1, 1);
   }
 
-  public List<Long> getTimeStamps(){
+  public List<Long> getTimestamps() {
     List<Long> timestamps = new ArrayList<>();
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     for (int year = startYear; year <= endYear; year++) {
@@ -57,8 +58,11 @@ public class OSHDBTimestamps {
         }
       }
     }
-   //Collections.sort(timestamps, Collections.reverseOrder());
-   return timestamps;
+    return timestamps;
+  }
+
+  public List<OSHDBTimestamp> getOSHDBTimestamps() {
+    return this.getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
   }
 
   

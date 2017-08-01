@@ -43,7 +43,7 @@ public class Boilerplate {
     Iterable<CellId> cellIds = grid.bbox2CellIds(bbox, true);
 
     //determine timestamps to query features at
-    List<Long> timstamps = (new OSHDBTimestamps(2008, 2017, 1, 12)).getTimeStamps();
+    List<Long> timstamps = (new OSHDBTimestamps(2008, 2017, 1, 12)).getTimestamps();
     SortedMap<Long,Integer> countsByTimestamp = new TreeMap<>();
 
     //iterate over all cellIds

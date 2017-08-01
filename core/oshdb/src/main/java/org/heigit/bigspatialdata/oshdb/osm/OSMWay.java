@@ -1,9 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.*;
+import java.util.stream.Stream;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -30,7 +33,14 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   public OSMMember[] getRefs() {
     return refs;
   }
-  
+
+  public Stream<OSMNode> getRefs(long timestamp) {
+    return Arrays.stream(this.getRefs())
+    .map(OSMMember::getEntity)
+    .filter(Objects::nonNull)
+    .map(entity -> ((OSHNode)entity).getByTimestamp(timestamp));
+  }
+
   @Override
   public String toString() {
     return String.format("WAY-> %s Refs:%s", super.toString(), Arrays.toString(getRefs()));
@@ -77,11 +87,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   public Geometry getGeometry(long timestamp, TagInterpreter areaDecider) {
     // todo: handle old-style multipolygons here???
     GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords = Arrays.stream(this.getRefs())
-    .map(OSMMember::getEntity)
-    .filter(Objects::nonNull)
-    .map(entity -> entity.getByTimestamp(timestamp))
-    .map(osm -> (OSMNode)osm)
+    Coordinate[] coords = this.getRefs(timestamp)
     .filter(node -> node != null && node.isVisible())
     .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
     .toArray(Coordinate[]::new);

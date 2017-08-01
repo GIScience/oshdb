@@ -16,7 +16,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -27,6 +27,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 
 public class Mapper_H2_multithread<T> extends Mapper<T> {
+  private TagTranslator _tagTranslator = null;
 
   protected Mapper_H2_multithread(OSHDB oshdb) {
     super(oshdb);
@@ -84,7 +85,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
           filter,
           false
       ).forEach(contribution -> {
-        rs.add(mapper.apply(new OSMContribution(new Timestamp(contribution.timestamp), new Timestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
+        rs.add(mapper.apply(new OSMContribution(new OSHDBTimestamp(contribution.timestamp), new OSHDBTimestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
       });
 
       // todo: replace this with `rs.stream().reduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
@@ -147,7 +148,7 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
           filter,
           false
       ).forEach(result -> result.entrySet().forEach(entry -> {
-        Timestamp tstamp = new Timestamp(entry.getKey());
+        OSHDBTimestamp tstamp = new OSHDBTimestamp(entry.getKey());
         Geometry geometry = entry.getValue().getRight();
         OSMEntity entity = entry.getValue().getLeft();
         rs.add(mapper.apply(new OSMEntitySnapshot(tstamp, geometry, entity)));
