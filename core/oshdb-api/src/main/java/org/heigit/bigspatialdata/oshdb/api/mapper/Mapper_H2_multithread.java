@@ -27,6 +27,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 
 public class Mapper_H2_multithread<T> extends Mapper<T> {
+  private TagTranslator _tagTranslator = null;
 
   protected Mapper_H2_multithread(OSHDB oshdb) {
     super(oshdb);
