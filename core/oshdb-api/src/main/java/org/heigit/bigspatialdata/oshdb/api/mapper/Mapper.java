@@ -17,6 +17,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
@@ -28,6 +29,7 @@ public abstract class Mapper<T> {
   private final List<Predicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<Predicate<OSMEntity>> _filters = new ArrayList<>();
   protected TagInterpreter _tagInterpreter = null;
+  protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
   
   protected Mapper(OSHDB oshdb) {
     this._oshdb = oshdb;
@@ -74,6 +76,11 @@ public abstract class Mapper<T> {
   
   public Mapper<T> timestamps(OSHDBTimestamps tstamps) {
     this._tstamps = tstamps;
+    return this;
+  }
+
+  public Mapper<T> osmTypes(EnumSet<OSMType> typeFilter) {
+    this._typeFilter = typeFilter;
     return this;
   }
   
@@ -138,7 +145,7 @@ public abstract class Mapper<T> {
     return this.mapReduce(f, () -> (R) (Integer) 0, (x, y) -> NumberUtils.add(x, y), (x, y) -> NumberUtils.add(x, y));
   }
 
-  // check if the `S identity` here also needs to be replaced with `Supplier<S> identitySupplier` to make it work for "complex" types of S
+  // check if the `S identity` here also needs to be replaced with `Supplier<S> identitySupplier` to make it work for "complex" osmTypes of S
   public <R, S, U> SortedMap<U, S> mapAggregate(Function<T, Pair<U, R>> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     return this.mapReduce(mapper, () -> new TreeMap(), (SortedMap<U, S> m, Pair<U, R> r) -> {
       m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identity), r.getValue()));

@@ -17,11 +17,8 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 
 public class Mapper_H2_singlethread<T> extends Mapper<T> {
   private TagTranslator _tagTranslator = null;
@@ -48,7 +45,13 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
     S result = identitySupplier.get();
     for (CellId cellId : cellIds) {
       // prepare SQL statement
-      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement("(select data from grid_node where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)");
+      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
+          (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
+      );
       pstmt.setInt(1, cellId.getZoomLevel());
       pstmt.setLong(2, cellId.getId());
       
@@ -97,7 +100,13 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
     S result = identitySupplier.get();
     for (CellId cellId : cellIds) {
       // prepare SQL statement
-      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement("(select data from grid_node where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)");
+      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
+          (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
+      );
       pstmt.setInt(1, cellId.getZoomLevel());
       pstmt.setLong(2, cellId.getId());
       
