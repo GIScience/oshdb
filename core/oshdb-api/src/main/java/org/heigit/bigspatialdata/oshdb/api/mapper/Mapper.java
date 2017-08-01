@@ -8,10 +8,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -121,7 +121,7 @@ public abstract class Mapper<T> {
   }
 
   private List<Long> _getTimestamps() {
-    return this._tstamps.getTimeStamps();
+    return this._tstamps.getTimestamps();
   }
   
   public <R, S> S mapReduce(Function<T, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
@@ -156,18 +156,18 @@ public abstract class Mapper<T> {
     return this.mapAggregate(mapper, (R) (Integer) 0, (x, y) -> NumberUtils.add(x, y), (x, y) -> NumberUtils.add(x, y));
   }
 
-  public <R, S> SortedMap<Timestamp, S> mapAggregateByTimestamp(Function<T, R> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
-    SortedMap<Timestamp, S> result;
-    List<Timestamp> timestamps = this._getTimestamps().stream().map(Timestamp::new).collect(Collectors.toList());
+  public <R, S> SortedMap<OSHDBTimestamp, S> mapAggregateByTimestamp(Function<T, R> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+    SortedMap<OSHDBTimestamp, S> result;
+    List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
     if (this._forClass.equals(OSMContribution.class)) {
-      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> {
+      result = this.mapAggregate((Function<T, Pair<OSHDBTimestamp, R>>) (t -> {
         int timeBinIndex = Collections.binarySearch(timestamps, ((OSMContribution) t).getTimestamp());
         if (timeBinIndex < 0) { timeBinIndex = -timeBinIndex - 2; }
         return new ImmutablePair<>(timestamps.get(timeBinIndex), mapper.apply(t));
       }), identity, accumulator, combiner);
       timestamps.remove(timestamps.size()-1); // pop last element from timestamps list, so it doesn't get nodata-filled with "0" below
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t ->
+      result = this.mapAggregate((Function<T, Pair<OSHDBTimestamp, R>>) (t ->
         new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t))
       ), identity, accumulator, combiner);
     } else throw new UnsupportedOperationException("mapAggregateByTimestamp only allowed for OSMContribution and OSMEntitySnapshot");
@@ -176,7 +176,7 @@ public abstract class Mapper<T> {
     return result;
   }
 
-  public <R extends Number> SortedMap<Timestamp, R> sumAggregateByTimestamp(Function<T, R> mapper) throws Exception {
+  public <R extends Number> SortedMap<OSHDBTimestamp, R> sumAggregateByTimestamp(Function<T, R> mapper) throws Exception {
     return this.mapAggregateByTimestamp(mapper, (R) (Integer) 0, (x, y) -> NumberUtils.add(x, y), (x, y) -> NumberUtils.add(x, y));
   }
 }

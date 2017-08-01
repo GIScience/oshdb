@@ -1,23 +1,20 @@
 package org.heigit.bigspatialdata.oshdb.api.objects;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 
 public class OSMEntitySnapshot {
-  private final Timestamp _tstamp;
+  private final OSHDBTimestamp _tstamp;
   private final Geometry _geometry;
   private final OSMEntity _entity;
   
-  public OSMEntitySnapshot(Timestamp tstamp, Geometry geometry, OSMEntity entity) {
+  public OSMEntitySnapshot(OSHDBTimestamp tstamp, Geometry geometry, OSMEntity entity) {
     this._tstamp = tstamp;
     this._geometry = geometry;
     this._entity = entity;
   }
   
-  public Timestamp getTimestamp() {
+  public OSHDBTimestamp getTimestamp() {
     return this._tstamp;
   }
   

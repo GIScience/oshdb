@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 public class OSHDBTimestamps {
   
@@ -38,7 +39,7 @@ public class OSHDBTimestamps {
 
 
 
-  public List<Long> getTimeStamps(){
+  public List<Long> getTimestamps() {
     List<Long> timestamps = new ArrayList<>();
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     for (int year = startYear; year <= endYear; year++) {
@@ -52,8 +53,11 @@ public class OSHDBTimestamps {
         }
       }
     }
-   //Collections.sort(timestamps, Collections.reverseOrder());
-   return timestamps;
+    return timestamps;
+  }
+
+  public List<OSHDBTimestamp> getOSHDBTimestamps() {
+    return this.getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
   }
 
 }
