@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.KeyValuesFrequency;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.RelationMapping;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
@@ -33,10 +34,6 @@ public class ExtractMapper {
   
   private static final Logger LOGGER = LoggerFactory.getLogger(ExtractMapper.class);
 
-  private static final int NODE = OSHEntity.NODE;
-  private static final int WAY = OSHEntity.WAY;
-  private static final int RELATION = OSHEntity.RELATION;
-  
   public ExtractMapperResult map(InputStream in) {
     try ( //
         final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
@@ -201,18 +198,22 @@ public class ExtractMapper {
         for (OSMPbfEntity entity : versions) {
           OSMPbfRelation relation = (OSMPbfRelation) entity;
           for (OSMMember member : relation.getMembers()) {
-            switch (member.getType()) {
-              case NODE:
-                uniqueNodes.add(member.getMemId());
-                break;
-              case WAY:
-                uniqueWays.add(member.getMemId());
-                break;
-              case RELATION:
-                uniqueRelation.add(member.getMemId());
-                break;
-              default:
-                LOGGER.error("unknown member type");
+            try {
+              switch (OSMType.fromInt(member.getType())) {
+                case NODE:
+                  uniqueNodes.add(member.getMemId());
+                  break;
+                case WAY:
+                  uniqueWays.add(member.getMemId());
+                  break;
+                case RELATION:
+                  uniqueRelation.add(member.getMemId());
+                  break;
+                default:
+                  LOGGER.error("unknown member type");
+              }
+            } catch (Exception e) {
+              e.printStackTrace();
             }
           }
         }
@@ -222,6 +223,10 @@ public class ExtractMapper {
         addRelation(id, uniqueRelation, mapping.relationToRelation());
         return;
       }
+      case CHANGESET:
+        break;
+      case OTHER:
+        break;
       default: {
         LOGGER.error("unknown type");
       }

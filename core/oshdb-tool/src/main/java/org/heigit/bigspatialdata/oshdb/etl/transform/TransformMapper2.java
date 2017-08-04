@@ -12,14 +12,11 @@ import java.util.Map;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfRelation;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfTag;
 
 public class TransformMapper2 {
-
-	protected static final int NODE = OSHEntity.NODE;
-	protected static final int WAY = OSHEntity.WAY;
-	protected static final int RELATION = OSHEntity.RELATION;
 
 	private PreparedStatement pstmtKeyValue = null;
 	private PreparedStatement pstmtRole = null;
@@ -111,7 +108,7 @@ public class TransformMapper2 {
 		OSMMember[] ret = new OSMMember[refs.size()];
 		int i = 0;
 		for (Long ref : refs) {
-			ret[i++] = new OSMMember(ref.longValue(), 0, -1);
+			ret[i++] = new OSMMember(ref.longValue(), OSMType.NODE, -1);
 		}
 		return ret;
 	}
@@ -119,8 +116,12 @@ public class TransformMapper2 {
 	protected OSMMember[] convertMembers(List<OSMPbfRelation.OSMMember> members) {
 		OSMMember[] ret = new OSMMember[members.size()];
 		for (int i = 0; i < members.size(); i++) {
-			ret[i] = new OSMMember(members.get(i).getMemId(), members.get(i).getType(),
-					getRole(members.get(i).getRole()));
+			try {
+				ret[i] = new OSMMember(members.get(i).getMemId(), OSMType.fromInt(members.get(i).getType()),
+            getRole(members.get(i).getRole()));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		return ret;
 	}
