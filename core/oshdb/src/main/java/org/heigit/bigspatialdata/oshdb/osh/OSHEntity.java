@@ -1,19 +1,18 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
-
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.util.*;
 import java.util.function.Predicate;
-
-import com.google.common.collect.Lists;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 @SuppressWarnings("rawtypes")
-public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSHEntity>,Iterable<OSM> {
+public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSHEntity>, Iterable<OSM> {
+
   protected final byte[] data;
   protected final int offset;
   protected final int length;
@@ -28,10 +27,10 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   protected final int dataOffset;
   protected final int dataLength;
 
-  public OSHEntity(final byte[] data, final int offset, final int length, 
-      final long baseId,final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, final BoundingBox bbox, final int[] keys,
-      final int dataOffset, final int dataLength) {
+  public OSHEntity(final byte[] data, final int offset, final int length,
+          final long baseId, final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+          final byte header, final long id, final BoundingBox bbox, final int[] keys,
+          final int dataOffset, final int dataLength) {
     this.data = data;
     this.offset = offset;
     this.length = length;
@@ -39,7 +38,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     this.baseTimestamp = baseTimestamp;
     this.baseLongitude = baseLongitude;
     this.baseLatitude = baseLatitude;
-    
+
     this.header = header;
     this.id = id;
     this.bbox = bbox;
@@ -47,15 +46,16 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     this.dataOffset = dataOffset;
     this.dataLength = dataLength;
   }
-  
+
   public byte[] getData() {
-    if (offset == 0 && length == data.length)
+    if (offset == 0 && length == data.length) {
       return data;
+    }
     byte[] result = new byte[length];
     System.arraycopy(data, offset, result, 0, length);
     return result;
   }
-  
+
   public long getId() {
     return id;
   }
@@ -65,26 +65,26 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   public int getLength() {
     return length;
   }
-  
-  public BoundingBox getBoundingBox(){
+
+  public BoundingBox getBoundingBox() {
     return bbox;
   }
-  
-  public int[] getKeys(){
+
+  public int[] getKeys() {
     return keys;
   }
-  
+
   public abstract List<OSM> getVersions();
 
   /* byTimestamps is assumed to be presorted, otherwise output is undetermined */
-  public SortedMap<Long,OSM> getByTimestamps(List<Long> byTimestamps){
-    SortedMap<Long,OSM> result = new TreeMap<>();
+  public SortedMap<Long, OSM> getByTimestamps(List<Long> byTimestamps) {
+    SortedMap<Long, OSM> result = new TreeMap<>();
 
-    int i = byTimestamps.size()-1;
+    int i = byTimestamps.size() - 1;
     Iterator<OSM> itr = iterator();
-    while(itr.hasNext() && i >= 0){
+    while (itr.hasNext() && i >= 0) {
       OSM osm = itr.next();
-      if(osm.getTimestamp() > byTimestamps.get(i)){
+      if (osm.getTimestamp() > byTimestamps.get(i)) {
         continue;
       } else {
         while (i >= 0 && osm.getTimestamp() <= byTimestamps.get(i)) {
@@ -96,70 +96,75 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     return result;
   }
 
-  public Map<Long,OSM> getByTimestamps(){ // todo: name of method?
-    Map<Long,OSM> result = new TreeMap<>();
+  public Map<Long, OSM> getByTimestamps() { // todo: name of method?
+    Map<Long, OSM> result = new TreeMap<>();
     Iterator<OSM> itr = iterator();
-    while(itr.hasNext()){
+    while (itr.hasNext()) {
       OSM osm = itr.next();
       result.put(osm.getTimestamp(), osm);
     }
     return result;
     // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity):
-      //return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
+    //return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
   }
 
-  public OSM getByTimestamp(long timestamp){
+  public OSM getByTimestamp(long timestamp) {
     Iterator<OSM> itr = iterator();
-    while(itr.hasNext()){
+    while (itr.hasNext()) {
       OSM osm = itr.next();
-      if (osm.getTimestamp() <= timestamp)
-          return osm;
+      if (osm.getTimestamp() <= timestamp) {
+        return osm;
+      }
     }
     return null;
   }
-  
-  public List<OSM> getBetweenTimestamps(final long t1, final long t2){
+
+  public List<OSM> getBetweenTimestamps(final long t1, final long t2) {
     final long maxTimestamp = Math.max(t1, t2);
     final long minTimestamp = Math.min(t1, t2);
 
     List<OSM> result = new ArrayList<>();
 
     Iterator<OSM> itr = iterator();
-    while(itr.hasNext()){
+    while (itr.hasNext()) {
       OSM osm = itr.next();
-      if(osm.getTimestamp() > maxTimestamp)
+      if (osm.getTimestamp() > maxTimestamp) {
         continue;
+      }
       result.add(osm);
-      if(osm.getTimestamp() < minTimestamp)
+      if (osm.getTimestamp() < minTimestamp) {
         break;
+      }
     }
     return result;
   }
-  
-  public boolean hasTagKey(int key){
+
+  public boolean hasTagKey(int key) {
     // todo: replace with binary search (keys are sorted)
-    for(int i=0; i<keys.length; i++){
-    if(keys[i] == key)
-      return true;
-      if(keys[i] > key)
+    for (int i = 0; i < keys.length; i++) {
+      if (keys[i] == key) {
+        return true;
+      }
+      if (keys[i] > key) {
         break;
+      }
     }
     return false;
   }
-  
+
   public abstract OSHEntity<OSM> rebase(long baseId, long baseTimestamp, long baseLongitude,
-        long baseLatitude) throws IOException;
+          long baseLatitude) throws IOException;
 
   @Override
   public int compareTo(OSHEntity o) {
     int c = Long.compare(id, o.id);
     return c;
   }
-  
+
   public void writeTo(ByteArrayOutputWrapper out) throws IOException {
     out.writeByteArray(data, offset, length);
   }
-  
+
   public int writeTo(ObjectOutput out) throws IOException {
     out.write(data, offset, length);
     return length;
@@ -172,11 +177,21 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    */
   public boolean intersectsBbox(BoundingBox otherBbox) {
     BoundingBox bbox = this.getBoundingBox();
-    if (bbox == null) return false;
-    if (bbox.maxLat < otherBbox.minLat) return false;
-    if (bbox.minLat > otherBbox.maxLat) return false;
-    if (bbox.maxLon < otherBbox.minLon) return false;
-    if (bbox.minLon > otherBbox.maxLon) return false;
+    if (bbox == null) {
+      return false;
+    }
+    if (bbox.maxLat < otherBbox.minLat) {
+      return false;
+    }
+    if (bbox.minLat > otherBbox.maxLat) {
+      return false;
+    }
+    if (bbox.maxLon < otherBbox.minLon) {
+      return false;
+    }
+    if (bbox.minLon > otherBbox.maxLon) {
+      return false;
+    }
     return true;
   }
 
@@ -188,10 +203,11 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    */
   public boolean insideBbox(BoundingBox otherBbox) {
     BoundingBox bbox = this.getBoundingBox();
-    if (bbox == null) return false;
-    return
-        bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat &&
-        bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
+    if (bbox == null) {
+      return false;
+    }
+    return bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat
+            && bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
   }
 
   /*
@@ -203,7 +219,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   public abstract List<Long> getModificationTimestamps(boolean recurse);
 
   public List<Long> getModificationTimestamps() {
-      return this.getModificationTimestamps(true);
+    return this.getModificationTimestamps(true);
   }
 
   /*
@@ -211,18 +227,21 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    * matches a given condition/filter
    */
   public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
-    if (!this.getVersions().stream().anyMatch(osmEntityFilter))
+    if (!this.getVersions().stream().anyMatch(osmEntityFilter)) {
       return new ArrayList<>();
+    }
 
     List<Long> allModTs = this.getModificationTimestamps(true);
     List<Long> filteredModTs = new LinkedList<>();
 
-    int timeIdx = allModTs.size()-1;
+    int timeIdx = allModTs.size() - 1;
 
     long lastOsmEntityTs = Long.MAX_VALUE;
     for (OSMEntity osmEntity : this) {
       long osmEntityTs = osmEntity.getTimestamp();
-      if (osmEntityTs >= lastOsmEntityTs) continue; // skip versions with identical (or invalid*) timestamps
+      if (osmEntityTs >= lastOsmEntityTs) {
+        continue; // skip versions with identical (or invalid*) timestamps
+      }
       long modTs = allModTs.get(timeIdx);
 
       boolean matches = osmEntityFilter.test(osmEntity);
@@ -230,7 +249,9 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
       if (matches) {
         while (modTs >= osmEntityTs) {
           filteredModTs.add(0, modTs);
-          if (--timeIdx < 0) break;
+          if (--timeIdx < 0) {
+            break;
+          }
           modTs = allModTs.get(timeIdx);
         }
       } else {
@@ -241,7 +262,9 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
       lastOsmEntityTs = osmEntityTs;
     }
     return filteredModTs;
-  };
+  }
+
+  ;
 
   /*
    * returns only the modification timestamps of an object where it
@@ -255,8 +278,9 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    */
   public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter, boolean groupedByChangeset) {
     List<Long> allModificationTimestamps = this.getModificationTimestamps(osmEntityFilter);
-    if (!groupedByChangeset || allModificationTimestamps.size()<=1)
+    if (!groupedByChangeset || allModificationTimestamps.size() <= 1) {
       return allModificationTimestamps;
+    }
 
     // group modification timestamps by changeset
     List<Long> result = new ArrayList<>();
@@ -268,8 +292,9 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     allModificationTimestamps.remove(0);
     for (Long timestamp : allModificationTimestamps) {
       Long changeset = changesetTimestamps.get(timestamp);
-      if (!Objects.equals(changeset, nextChangeset))
+      if (!Objects.equals(changeset, nextChangeset)) {
         result.add(timestamp);
+      }
       nextChangeset = changeset;
     }
 
@@ -280,4 +305,10 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    * returns the changeset ids responsible for the
    */
   protected abstract Map<Long, Long> getChangesetTimestamps();
+
+  @Override
+  public String toString() {
+    System.out.println(String.format(Locale.ENGLISH,"ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size()-1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon));
+    return String.format(Locale.ENGLISH,"ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size()-1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon);
+  }
 }

@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
@@ -42,7 +41,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   public static OSHWay instance(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
 
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -53,7 +52,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     final long maxLat = minLat + wrapper.readUInt64();
 
     final BoundingBox bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-        minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+            minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -90,21 +89,20 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     final int dataLength = length - (dataOffset - offset);
 
     return new OSHWay(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox,
-        keys, dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
+            keys, dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
   }
 
   private OSHWay(final byte[] data, final int offset, final int length, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude, final byte header, final long id, final BoundingBox bbox,
-      final int[] keys, final int dataOffset, final int dataLength, final int[] nodeIndex,
-      final int nodeDataOffset, final int nodeDataLength) {
+          final long baseLongitude, final long baseLatitude, final byte header, final long id, final BoundingBox bbox,
+          final int[] keys, final int dataOffset, final int dataLength, final int[] nodeIndex,
+          final int nodeDataOffset, final int nodeDataLength) {
     super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-        dataOffset, dataLength);
+            dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
     this.nodeDataOffset = nodeDataOffset;
     this.nodeDataLength = nodeDataLength;
   }
-
 
   @Override
   public OSMType getType() {
@@ -180,7 +178,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
             }
 
             return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
-                members);
+                    members);
           } catch (IOException e) {
             e.printStackTrace();
           }
@@ -215,7 +213,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
@@ -229,29 +227,29 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     long maxLat = Long.MIN_VALUE;
 
     Map<Long, Integer> nodeOffsets = new HashMap<>();
-      int[] nodeByteArrayIndex = new int[nodes.size()];
-      ByteArrayOutputWrapper nodeData = new ByteArrayOutputWrapper();
-      int idx = 0;
-      int offset = 0;
-      for (OSHNode node : nodes) {
-        node = node.rebase(0, 0, baseLongitude, baseLatitude);
-        nodeOffsets.put(node.getId(), idx);
-        nodeByteArrayIndex[idx++] = offset;
-        offset = node.getLength();
-        node.writeTo(nodeData);
+    int[] nodeByteArrayIndex = new int[nodes.size()];
+    ByteArrayOutputWrapper nodeData = new ByteArrayOutputWrapper();
+    int idx = 0;
+    int offset = 0;
+    for (OSHNode node : nodes) {
+      node = node.rebase(0, 0, baseLongitude, baseLatitude);
+      nodeOffsets.put(node.getId(), idx);
+      nodeByteArrayIndex[idx++] = offset;
+      offset = node.getLength();
+      node.writeTo(nodeData);
 
-        Iterator<OSMNode> osmItr = node.iterator();
-        while (osmItr.hasNext()) {
-          OSMNode osm = osmItr.next();
-          if (osm.isVisible()) {
-            minLon = Math.min(minLon, osm.getLon());
-            maxLon = Math.max(maxLon, osm.getLon());
+      Iterator<OSMNode> osmItr = node.iterator();
+      while (osmItr.hasNext()) {
+        OSMNode osm = osmItr.next();
+        if (osm.isVisible()) {
+          minLon = Math.min(minLon, osm.getLon());
+          maxLon = Math.max(maxLon, osm.getLon());
 
-            minLat = Math.min(minLat, osm.getLat());
-            maxLat = Math.max(maxLat, osm.getLat());
-          }
+          minLat = Math.min(minLat, osm.getLat());
+          maxLat = Math.max(maxLat, osm.getLat());
         }
       }
+    }
 
     Builder builder = new Builder(output, baseTimestamp);
 
@@ -284,18 +282,21 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     }
 
     // store nodes
-
     ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
 
     byte header = 0;
-    if (versions.size() > 1)
+    if (versions.size() > 1) {
       header |= HEADER_MULTIVERSION;
-    if (builder.getTimestampsNotInOrder())
+    }
+    if (builder.getTimestampsNotInOrder()) {
       header |= HEADER_TIMESTAMPS_NOT_IN_ORDER;
-    if (builder.getKeySet().size() > 0)
+    }
+    if (builder.getKeySet().size() > 0) {
       header |= HEADER_HAS_TAGS;
-    if (nodes.isEmpty())
+    }
+    if (nodes.isEmpty()) {
       header |= HEADER_HAS_NO_NODES;
+    }
 
     record.writeByte(header);
 
@@ -331,18 +332,20 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   private static boolean memberEquals(OSMMember[] a, OSMMember[] b) {
-    if (a.length != b.length)
+    if (a.length != b.length) {
       return false;
+    }
     for (int i = 0; i < a.length; i++) {
-      if (a[i].getId() != b[i].getId())
+      if (a[i].getId() != b[i].getId()) {
         return false;
+      }
     }
     return true;
   }
 
   @Override
   public String toString() {
-    return String.format("Way (%d)", id);
+    return String.format("OSHWay %s", super.toString());
   }
 
   private Object writeReplace() {
@@ -391,8 +394,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 
     List<OSMWay> ways = this.getVersions();
     Set<Long> wayTimestamps = ways.stream()
-    .map(OSMEntity::getTimestamp)
-    .collect(Collectors.toSet());
+            .map(OSMEntity::getTimestamp)
+            .collect(Collectors.toSet());
 
     result = new ArrayList<>(wayTimestamps);
     if (!recurse) {
@@ -401,24 +404,26 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     }
 
     Set<Long> ndTimestamps = IntStream.range(0, ways.size())
-    .mapToObj((Integer::new))
-    .flatMap(osmWayIndex -> {
-      OSMWay osmWay = ways.get(osmWayIndex);
-      if (!osmWay.isVisible()) return Stream.empty();
-      OSMWay nextOsmWay = osmWayIndex > 0 ? ways.get(osmWayIndex - 1) : null;
-      return Arrays.stream(osmWay.getRefs())
-      .map(osmNd -> ((OSHNode)osmNd.getEntity()))
-      .filter(Objects::nonNull)
-      .flatMap(oshNode ->
-        oshNode.getVersions().stream()
-        .filter(osmNode ->
-          osmNode.getTimestamp() > osmWay.getTimestamp() && (nextOsmWay == null ||
-          osmNode.getTimestamp() < nextOsmWay.getTimestamp())
-        )
-        .map(OSMEntity::getTimestamp)
-      );
-    })
-    .collect(Collectors.toSet());
+            .mapToObj((Integer::new))
+            .flatMap(osmWayIndex -> {
+              OSMWay osmWay = ways.get(osmWayIndex);
+              if (!osmWay.isVisible()) {
+                return Stream.empty();
+              }
+              OSMWay nextOsmWay = osmWayIndex > 0 ? ways.get(osmWayIndex - 1) : null;
+              return Arrays.stream(osmWay.getRefs())
+                      .map(osmNd -> ((OSHNode) osmNd.getEntity()))
+                      .filter(Objects::nonNull)
+                      .flatMap(oshNode
+                              -> oshNode.getVersions().stream()
+                              .filter(osmNode
+                                      -> osmNode.getTimestamp() > osmWay.getTimestamp() && (nextOsmWay == null
+                                      || osmNode.getTimestamp() < nextOsmWay.getTimestamp())
+                              )
+                              .map(OSMEntity::getTimestamp)
+                      );
+            })
+            .collect(Collectors.toSet());
 
     result.addAll(ndTimestamps);
 
@@ -434,15 +439,17 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     ways.forEach(osmWay -> {
       result.putIfAbsent(osmWay.getTimestamp(), osmWay.getChangeset());
       // recurse way nds
-      if (!osmWay.isVisible()) return;
+      if (!osmWay.isVisible()) {
+        return;
+      }
       Arrays.stream(osmWay.getRefs())
-      .map(osmNd -> ((OSHNode)osmNd.getEntity()))
-      .filter(Objects::nonNull)
-      .forEach(oshNode ->
-        oshNode.getVersions().forEach(osmNode ->
-          result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
-        )
-      );
+              .map(osmNd -> ((OSHNode) osmNd.getEntity()))
+              .filter(Objects::nonNull)
+              .forEach(oshNode
+                      -> oshNode.getVersions().forEach(osmNode
+                              -> result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
+                      )
+              );
     });
 
     return result;

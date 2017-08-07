@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -44,7 +43,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   }
 
   public static OSHRelation instance(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -55,7 +54,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final long maxLat = minLat + wrapper.readUInt64();
 
     final BoundingBox bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-        minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+            minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -114,20 +113,20 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final int dataLength = length - (dataOffset - offset);
 
     return new OSHRelation(data, offset, length, //
-        baseId, baseTimestamp, baseLongitude, baseLatitude, //
-        header, id, bbox, keys, //
-        dataOffset, dataLength, //
-        nodeIndex, nodeDataOffset, nodeDataLength, //
-        wayIndex, wayDataOffset, wayDataLength);
+            baseId, baseTimestamp, baseLongitude, baseLatitude, //
+            header, id, bbox, keys, //
+            dataOffset, dataLength, //
+            nodeIndex, nodeDataOffset, nodeDataLength, //
+            wayIndex, wayDataOffset, wayDataLength);
   }
 
   private OSHRelation(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
-      final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
-      final int[] nodeIndex, final int nodeDataOffset, final int nodeDataLength, final int[] wayIndex,
-      final int wayDataOffset, final int wayDataLength) {
+          final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
+          final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
+          final int[] nodeIndex, final int nodeDataOffset, final int nodeDataLength, final int[] wayIndex,
+          final int wayDataOffset, final int wayDataLength) {
     super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-        dataOffset, dataLength);
+            dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
     this.nodeDataOffset = nodeDataOffset;
@@ -138,7 +137,6 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     this.wayDataLength = wayDataLength;
 
   }
-
 
   @Override
   public OSMType getType() {
@@ -207,34 +205,34 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
               for (int i = 0; i < size; i++) {
                 memberType = OSMType.fromInt(wrapper.readUInt32());
                 switch (memberType) {
-                case NODE: {
-                  memberOffset = wrapper.readUInt32();
-                  if (memberOffset > 0) {
-                    member = nodes.get(memberOffset - 1);
-                    memberId = member.getId();
+                  case NODE: {
+                    memberOffset = wrapper.readUInt32();
+                    if (memberOffset > 0) {
+                      member = nodes.get(memberOffset - 1);
+                      memberId = member.getId();
 
-                  } else {
-                    member = null;
-                    memberId = wrapper.readSInt64() + memberId;
+                    } else {
+                      member = null;
+                      memberId = wrapper.readSInt64() + memberId;
+                    }
+                    break;
                   }
-                  break;
-                }
-                case WAY: {
-                  memberOffset = wrapper.readUInt32();
-                  if (memberOffset > 0) {
-                    member = ways.get(memberOffset - 1);
-                    memberId = member.getId();
+                  case WAY: {
+                    memberOffset = wrapper.readUInt32();
+                    if (memberOffset > 0) {
+                      member = ways.get(memberOffset - 1);
+                      memberId = member.getId();
 
-                  } else {
-                    member = null;
-                    memberId = wrapper.readSInt64() + memberId;
+                    } else {
+                      member = null;
+                      memberId = wrapper.readSInt64() + memberId;
+                    }
+                    break;
                   }
-                  break;
-                }
-                case RELATION: {
-                  memberId = wrapper.readSInt64() + memberId;
-                  break;
-                }
+                  case RELATION: {
+                    memberId = wrapper.readSInt64() + memberId;
+                    break;
+                  }
                 }
 
                 memberRole = wrapper.readUInt32();
@@ -242,7 +240,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
               }
             }
             return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
-                members);
+                    members);
           } catch (Exception e) {
             e.printStackTrace();
             // TODO: handle exception(s)
@@ -278,13 +276,13 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   }
 
   public static OSHRelation build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
-      final Collection<OSHWay> ways) throws IOException {
+          final Collection<OSHWay> ways) throws IOException {
     return build(versions, nodes, ways, 0, 0, 0, 0);
   }
 
   public static OSHRelation build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
-      final Collection<OSHWay> ways, final long baseId, final long baseTimestamp, final long baseLongitude,
-      final long baseLatitude) throws IOException {
+          final Collection<OSHWay> ways, final long baseId, final long baseTimestamp, final long baseLongitude,
+          final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
@@ -343,7 +341,6 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       minLat = Math.min(minLat, (long) (bbox.minLat / OSMNode.GEOM_PRECISION));
       maxLat = Math.max(maxLat, (long) (bbox.maxLat / OSMNode.GEOM_PRECISION));
 
-
       way = way.rebase(0, 0, baseLongitude, baseLatitude);
       wayOffsets.put(way.getId(), idx);
       wayByteArrayIndex[idx++] = offset;
@@ -370,33 +367,33 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
         for (OSMMember member : members) {
           output.writeUInt32(member.getType().intValue());
           switch (member.getType()) {
-          case RELATION: {
-            output.writeSInt64(member.getId() - lastMemberId);
-            break;
-          }
-          case NODE: {
-            Integer refOffset = nodeOffsets.get(Long.valueOf(member.getId()));
-            if (refOffset == null) {
-              output.writeUInt32(0);
+            case RELATION: {
               output.writeSInt64(member.getId() - lastMemberId);
-            } else {
-              output.writeUInt32(refOffset.intValue() + 1);
+              break;
             }
-            break;
-          }
-          case WAY: {
-            Integer refOffset = wayOffsets.get(Long.valueOf(member.getId()));
-            if (refOffset == null) {
-              output.writeUInt32(0);
-              output.writeSInt64(member.getId() - lastMemberId);
-            } else {
-              output.writeUInt32(refOffset.intValue() + 1);
+            case NODE: {
+              Integer refOffset = nodeOffsets.get(Long.valueOf(member.getId()));
+              if (refOffset == null) {
+                output.writeUInt32(0);
+                output.writeSInt64(member.getId() - lastMemberId);
+              } else {
+                output.writeUInt32(refOffset.intValue() + 1);
+              }
+              break;
             }
-            break;
-          }
-          default: {
-            break;
-          }
+            case WAY: {
+              Integer refOffset = wayOffsets.get(Long.valueOf(member.getId()));
+              if (refOffset == null) {
+                output.writeUInt32(0);
+                output.writeSInt64(member.getId() - lastMemberId);
+              } else {
+                output.writeUInt32(refOffset.intValue() + 1);
+              }
+              break;
+            }
+            default: {
+              break;
+            }
           }
 
           output.writeUInt32(member.getRoleId());
@@ -476,7 +473,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
   @Override
   public OSHRelation rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude)
-      throws IOException {
+          throws IOException {
 
     List<OSMRelation> versions = getVersions();
     List<OSHNode> nodes = getNodes();
@@ -524,15 +521,14 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     }
   }
 
-
   @Override
   public List<Long> getModificationTimestamps(boolean recurse) {
     List<Long> result;
 
     List<OSMRelation> rels = this.getVersions();
     Set<Long> relTimestamps = rels.stream()
-    .map(OSMEntity::getTimestamp)
-    .collect(Collectors.toSet());
+            .map(OSMEntity::getTimestamp)
+            .collect(Collectors.toSet());
 
     result = new ArrayList<>(relTimestamps);
     if (!recurse) {
@@ -541,26 +537,28 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     }
 
     Set<Long> memberTimestamps = IntStream.range(0, rels.size())
-    .mapToObj(Integer::new)
-    .flatMap(osmRelIndex -> {
-      OSMRelation osmRel = rels.get(osmRelIndex);
-      if (!osmRel.isVisible()) return Stream.empty();
-      OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
-      return Arrays.stream(osmRel.getMembers())
-      .filter(member -> member.getType() == OSMType.NODE || member.getType() == OSMType.WAY)
-      .map(OSMMember::getEntity)
-      .filter(Objects::nonNull)
-      .flatMap(oshEntity ->
-        (oshEntity instanceof OSHNode ? (OSHNode)oshEntity : (OSHWay)oshEntity)
-        // gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
-        .getModificationTimestamps(true).stream()
-        .filter(ts ->
-          ts > osmRel.getTimestamp() && (nextOsmRel == null ||
-          ts < nextOsmRel.getTimestamp())
-        )
-      );
-    })
-    .collect(Collectors.toSet());
+            .mapToObj(Integer::new)
+            .flatMap(osmRelIndex -> {
+              OSMRelation osmRel = rels.get(osmRelIndex);
+              if (!osmRel.isVisible()) {
+                return Stream.empty();
+              }
+              OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
+              return Arrays.stream(osmRel.getMembers())
+                      .filter(member -> member.getType() == OSMType.NODE || member.getType() == OSMType.WAY)
+                      .map(OSMMember::getEntity)
+                      .filter(Objects::nonNull)
+                      .flatMap(oshEntity
+                              -> (oshEntity instanceof OSHNode ? (OSHNode) oshEntity : (OSHWay) oshEntity)
+                              // gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
+                              .getModificationTimestamps(true).stream()
+                              .filter(ts
+                                      -> ts > osmRel.getTimestamp() && (nextOsmRel == null
+                                      || ts < nextOsmRel.getTimestamp())
+                              )
+                      );
+            })
+            .collect(Collectors.toSet());
 
     result.addAll(memberTimestamps);
 
@@ -576,16 +574,23 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     rels.forEach(osmRel -> {
       result.putIfAbsent(osmRel.getTimestamp(), osmRel.getChangeset());
       // recurse rel members
-      if (!osmRel.isVisible()) return;
+      if (!osmRel.isVisible()) {
+        return;
+      }
       Arrays.stream(osmRel.getMembers())
-      .map(member -> ((OSHEntity)member.getEntity()))
-      .filter(Objects::nonNull)
-      .forEach(oshEntity ->
-        result.putAll(oshEntity.getChangesetTimestamps())
-      );
+              .map(member -> ((OSHEntity) member.getEntity()))
+              .filter(Objects::nonNull)
+              .forEach(oshEntity
+                      -> result.putAll(oshEntity.getChangesetTimestamps())
+              );
     });
 
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("OSHRelation %s", super.toString());
   }
 
 }

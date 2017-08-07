@@ -7,7 +7,6 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
@@ -34,7 +33,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
   }
 
   public static OSHNode instance(final byte[] data, final int offset, final int length, final long baseNodeId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
 
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     //header holds data on bitlevel and can then be compared to stereotypical bitcombinations (e.g. this.HEADER_HAS_TAGS)
@@ -47,7 +46,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
       final long maxLat = minLat + wrapper.readUInt64();
 
       bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-          minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+              minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
 
     } else {
       bbox = null;
@@ -70,16 +69,15 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
     final int dataLength = length - (dataOffset - offset);
 
     return new OSHNode(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id,
-        bbox, keys, dataOffset, dataLength);
+            bbox, keys, dataOffset, dataLength);
   }
 
   private OSHNode(final byte[] data, final int offset, final int length, final long baseNodeId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
-      final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength) {
+          final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
+          final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength) {
     super(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-        dataOffset, dataLength);
+            dataOffset, dataLength);
   }
-
 
   @Override
   public OSMType getType() {
@@ -112,11 +110,12 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
       }
     }
 
-    if(minLon == Long.MAX_VALUE || minLat == Long.MAX_VALUE)
+    if (minLon == Long.MAX_VALUE || minLat == Long.MAX_VALUE) {
       return null;
+    }
 
     return new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-        minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+            minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
   }
 
   @Override
@@ -168,7 +167,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
           }
 
           return new OSMNode(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
-              (version > 0) ? baseLongitude + longitude : 0, (version > 0) ? baseLatitude + latitude : 0);
+                  (version > 0) ? baseLongitude + longitude : 0, (version > 0) ? baseLatitude + latitude : 0);
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -183,7 +182,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
   }
 
   public static OSHNode build(List<OSMNode> versions, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude) throws IOException {
+          final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
@@ -210,9 +209,9 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
       }
       builder.build(version, changed);
       if ((changed & CHANGED_LOCATION) != 0) {
-        output.writeSInt64((node.getLon()- baseLongitude) - (lastLongitude - baseLongitude));
+        output.writeSInt64((node.getLon() - baseLongitude) - (lastLongitude - baseLongitude));
         lastLongitude = node.getLon();
-        output.writeSInt64((node.getLat()- baseLatitude) - (lastLatitude - baseLatitude));
+        output.writeSInt64((node.getLat() - baseLatitude) - (lastLatitude - baseLatitude));
         lastLatitude = node.getLat();
 
         minLon = Math.min(minLon, lastLongitude);
@@ -226,12 +225,15 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
     ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
 
     byte header = 0;
-    if (versions.size() > 1)
+    if (versions.size() > 1) {
       header |= HEADER_MULTIVERSION;
-    if (builder.getTimestampsNotInOrder())
+    }
+    if (builder.getTimestampsNotInOrder()) {
       header |= HEADER_TIMESTAMPS_NOT_IN_ORDER;
-    if (builder.getKeySet().size() > 0)
+    }
+    if (builder.getKeySet().size() > 0) {
       header |= HEADER_HAS_TAGS;
+    }
 
     if (minLon != maxLon || minLat != maxLat) {
       header |= HEADER_HAS_BOUNDINGBOX;
@@ -261,7 +263,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 
   @Override
   public OSHNode rebase(long baseNodeId, long baseTimestamp2, long baseLongitude2, long baseLatitude2)
-      throws IOException {
+          throws IOException {
     List<OSMNode> nodes = getVersions();
     return OSHNode.build(nodes, baseNodeId, baseTimestamp2, baseLongitude2, baseLatitude2);
   }
@@ -312,9 +314,9 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 
   @Override
   public List<Long> getModificationTimestamps(boolean recurse) {
-    List <Long> result = this.getVersions().stream()
-    .map(OSMNode::getTimestamp)
-    .collect(Collectors.toList());
+    List<Long> result = this.getVersions().stream()
+            .map(OSMNode::getTimestamp)
+            .collect(Collectors.toList());
     Collections.sort(result);
     return result;
   }
@@ -322,9 +324,14 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
   @Override
   protected Map<Long, Long> getChangesetTimestamps() {
     Map<Long, Long> result = new TreeMap<>();
-    this.getVersions().forEach(osmNode ->
-      result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
+    this.getVersions().forEach(osmNode
+            -> result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
     );
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("OSHNode %s", super.toString());
   }
 }
