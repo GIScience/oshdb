@@ -73,9 +73,19 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
             preFilter,
             filter,
             false
-        ).forEach(contribution -> {
-          rs.add(mapper.apply(new OSMContribution(new OSHDBTimestamp(contribution.timestamp), new OSHDBTimestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
-        });
+        ).forEach(contribution -> rs.add(
+            mapper.apply(
+                new OSMContribution(
+                    new OSHDBTimestamp(contribution.timestamp),
+                    contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp) : null,
+                    contribution.previousGeometry,
+                    contribution.geometry,
+                    contribution.previousOsmEntity,
+                    contribution.osmEntity,
+                    contribution.activities
+                )
+            )
+        ));
         
         // fold the results
         for (R r : rs) {
@@ -83,7 +93,7 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
         }
       }
     }
-    return result;
+    return combiner.apply(identitySupplier.get(), result);
   }
 
   
@@ -136,6 +146,6 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
         }
       }
     }
-    return result;
+    return combiner.apply(identitySupplier.get(), result);
   }
 }
