@@ -4,10 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
-
-
 
 @SuppressWarnings("rawtypes")
 public class GridOSHNodes extends GridOSHEntity {
@@ -15,8 +12,8 @@ public class GridOSHNodes extends GridOSHEntity {
   private static final long serialVersionUID = 1L;
 
   public static GridOSHNodes rebase(final long id, final int level, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final List<OSHNode> list) throws IOException {
+          final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+          final List<OSHNode> list) throws IOException {
 
     int offset = 0;
 
@@ -32,11 +29,11 @@ public class GridOSHNodes extends GridOSHEntity {
     }
     final byte[] data = out.toByteArray();
     return new GridOSHNodes(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index,
-        data);
+            data);
   }
 
   private GridOSHNodes(final long id, final int level, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
+          final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
 
@@ -52,7 +49,7 @@ public class GridOSHNodes extends GridOSHEntity {
         pos++;
         try {
           return OSHNode.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-              baseLatitude);
+                  baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -64,5 +61,10 @@ public class GridOSHNodes extends GridOSHEntity {
         return pos < index.length;
       }
     };
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Grid-Cell of OSHNodes %s", super.toString());
   }
 }

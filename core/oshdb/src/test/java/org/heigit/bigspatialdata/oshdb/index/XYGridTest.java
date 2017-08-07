@@ -1,26 +1,22 @@
 package org.heigit.bigspatialdata.oshdb.index;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.index.XYGrid;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.junit.Before;
-import org.junit.Test;
-
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -455,4 +451,10 @@ public class XYGridTest {
     assertEquals(expResult, result);
   }
 
+  @Test
+  public void testGetBoundingBox() throws CellId.cellIdExeption{
+    BoundingBox result=XYGrid.getBoundingBox(new CellId(2,2));
+    BoundingBox expResult=new BoundingBox(0,90,-90,0-1e-11);
+    assertEquals(expResult.toString(),result.toString());
+  }
 }

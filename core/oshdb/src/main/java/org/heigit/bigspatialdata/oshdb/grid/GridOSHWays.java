@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 
 @SuppressWarnings("rawtypes")
@@ -13,8 +12,8 @@ public class GridOSHWays extends GridOSHEntity {
   private static final long serialVersionUID = 1L;
 
   public static GridOSHWays compact(final long id, final int level, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude, final List<OSHWay> list)
-      throws IOException {
+          final long baseLongitude, final long baseLatitude, final List<OSHWay> list)
+          throws IOException {
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final int[] index = new int[list.size()];
     int offset = 0;
@@ -26,15 +25,15 @@ public class GridOSHWays extends GridOSHEntity {
       offset += buffer.length;
     }
     final byte[] data = out.toByteArray();
-    
+
     return new GridOSHWays(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
 
   public GridOSHWays(final long id, final int level, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
+          final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
-  
+
   @Override
   public Iterator<OSHWay> iterator() {
     return new Iterator<OSHWay>() {
@@ -47,7 +46,7 @@ public class GridOSHWays extends GridOSHEntity {
         pos++;
         try {
           return OSHWay.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-              baseLatitude);
+                  baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -59,6 +58,11 @@ public class GridOSHWays extends GridOSHEntity {
         return pos < index.length;
       }
     };
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Grid-Cell of OSHWays %s", super.toString());
   }
 
 }

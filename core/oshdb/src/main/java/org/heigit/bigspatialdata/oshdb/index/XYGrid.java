@@ -2,16 +2,14 @@ package org.heigit.bigspatialdata.oshdb.index;
 
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
 
 /**
  * XYGrid spans an equal degree grid over the world.
@@ -163,6 +161,19 @@ public class XYGrid {
 
     final NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
     return new BasicNumericDataset(dataPerDimension);
+  }
+
+  /**
+   * Calculate the BoundingBox of a specific GridCell.
+   * @param cellID
+   * @return
+   */
+  public static BoundingBox getBoundingBox(final CellId cellID) {
+    XYGrid temp = new XYGrid(cellID.getZoomLevel());
+    MultiDimensionalNumericData bbox = temp.getCellDimensions(cellID.getId());
+    BoundingBox result = new BoundingBox(bbox.getMinValuesPerDimension()[0], bbox.getMaxValuesPerDimension()[0], bbox.getMinValuesPerDimension()[1], bbox.getMaxValuesPerDimension()[1]);
+    return result;
+
   }
 
   private static final double EPSILON = 1e-11;
