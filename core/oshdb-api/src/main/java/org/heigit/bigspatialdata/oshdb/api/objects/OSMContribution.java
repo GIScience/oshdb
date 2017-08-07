@@ -6,15 +6,15 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 
 public class OSMContribution {
-  private final Timestamp _tstamp;
-  private final Timestamp _validTo;
+  private final OSHDBTimestamp _tstamp;
+  private final OSHDBTimestamp _validTo;
   private final Geometry _geometryBefore;
   private final Geometry _geometryAfter;
   private final OSMEntity _entityBefore;
   private final OSMEntity _entityAfter;
   private final EnumSet<ContributionType> _contributionTypes;
   
-  public OSMContribution(Timestamp tstamp, Timestamp validTo, Geometry geometryBefore, Geometry geometryAfter, OSMEntity entityBefore, OSMEntity entityAfter, EnumSet<ContributionType> contributionTypes) {
+  public OSMContribution(OSHDBTimestamp tstamp, OSHDBTimestamp validTo, Geometry geometryBefore, Geometry geometryAfter, OSMEntity entityBefore, OSMEntity entityAfter, EnumSet<ContributionType> contributionTypes) {
     this._tstamp = tstamp;
     this._validTo = validTo;
     this._geometryBefore = geometryBefore;
@@ -24,11 +24,11 @@ public class OSMContribution {
     this._contributionTypes = contributionTypes;
   }
   
-  public Timestamp getTimestamp() {
+  public OSHDBTimestamp getTimestamp() {
     return this._tstamp;
   }
   
-  public Timestamp getValidTo() {
+  public OSHDBTimestamp getValidTo() {
     return this._validTo;
   }
   

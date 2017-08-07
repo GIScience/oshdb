@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.utils;
+package org.heigit.bigspatialdata.oshdb.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,7 +10,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,7 +24,7 @@ public class TagTranslatorTest {
     Class.forName("org.h2.Driver");
 
     //connect to the "Big"DB
-    TagTranslatorTest.conn = DriverManager.getConnection("jdbc:h2:./src/test/resources/heidelberg-ccbysa", "sa", "");
+    TagTranslatorTest.conn = DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "");
 
   }
 
@@ -39,83 +38,81 @@ public class TagTranslatorTest {
 
   @Test
   public void testTag2Int() {
-    Pair<String, String> Tag = new ImmutablePair<>("building", "yes");
+    Pair<String, String> tag = new ImmutablePair<>("building", "yes");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Pair<Integer, Integer> expResult = new ImmutablePair<>(2, 0);
-    Pair<Integer, Integer> result = instance.Tag2Int(Tag);
+    Pair<Integer, Integer> expResult = new ImmutablePair<>(0, 0);
+    Pair<Integer, Integer> result = instance.tag2Int(tag);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testTag2String() {
-    Pair<Integer, Integer> Tag = new ImmutablePair<>(2, 1);
+    Pair<Integer, Integer> tag = new ImmutablePair<>(1, 2);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Pair<String, String> expResult = new ImmutablePair<>("building", "residential");
-    Pair<String, String> result = instance.Tag2String(Tag);
+    Pair<String, String> expResult = new ImmutablePair<>("highway", "track");
+    Pair<String, String> result = instance.tag2String(tag);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testRole2Int() {
-    String Role = "from";
+    String role = "from";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Integer expResult = 1;
-    Integer result = instance.Role2Int(Role);
+    Integer expResult = 4;
+    Integer result = instance.role2Int(role);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testRole2String() {
-    Integer Role = 2;
+    Integer role = 1;
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    String expResult = "to";
-    String result = instance.Role2String(Role);
+    String expResult = "inner";
+    String result = instance.role2String(role);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testGetAllValues() {
-    String Key = "ruins";
+    String key = "surface";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     HashMap<String, Integer> val = new HashMap<>(2);
-    val.put("yes", 0);
-    val.put("monastery", 1);
-    Pair<Integer, Map<String, Integer>> expResult = new ImmutablePair<>(899, val);
-    Pair<Integer, Map<String, Integer>> result = instance.getAllValues(Key);
+    val.put("unpaved", 0);
+    val.put("asphalt", 1);
+    val.put("ground", 2);
+    val.put("paved", 3);
+    val.put("sand", 4);
+    val.put("dirt", 5);
+    Pair<Integer, Map<String, Integer>> expResult = new ImmutablePair<>(5, val);
+    Pair<Integer, Map<String, Integer>> result = instance.getAllValues(key);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testUsertoID() {
-    System.out.println("UsertoID");
-    String Name = "";
-    TagTranslator instance = null;
-    Integer expResult = null;
-    Integer result = instance.UsertoID(Name);
+    String name = "Alice";
+    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    Integer expResult = 1;
+    Integer result = instance.usertoID(name);
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
   @Test
   public void testUsertoStr() {
-    System.out.println("UsertoStr");
-    Integer OSHDbID = null;
-    TagTranslator instance = null;
-    String expResult = "";
-    String result = instance.UsertoStr(OSHDbID);
+    Integer uid = 2;
+    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    String expResult = "Bob";
+    String result = instance.usertoStr(uid);
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
   @Test
   public void testKey2Int() {
-    System.out.println("Key2Int");
-    String Key = "";
-    TagTranslator instance = null;
-    Integer expResult = null;
-    Integer result = instance.Key2Int(Key);
+    String Key = "highway";
+    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    Integer expResult = 1;
+    Integer result = instance.key2Int(Key);
     assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
 }

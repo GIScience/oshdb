@@ -12,6 +12,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.junit.Test;
 
 public class GridOSHRelationsTest {
@@ -25,20 +26,20 @@ public class GridOSHRelationsTest {
     OSHNode node104 = buildHOSMNode(
         Arrays.asList(new OSMNode(104l, 1, 1l, 0l, 123, new int[] {2, 4}, 494094984l, 86809727l)));
     
-    OSHWay way200 = buildHOSMWay(Arrays.asList(new OSMWay(200, 1, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(100, 0, 0),new OSMMember(104,0,0)})),Arrays.asList(node100,node104));
-    OSHWay way202 = buildHOSMWay(Arrays.asList(new OSMWay(202, 1, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(100, 0, 0),new OSMMember(102,0,0)})),Arrays.asList(node100,node102)); 
+    OSHWay way200 = buildHOSMWay(Arrays.asList(new OSMWay(200, 1, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),new OSMMember(104, OSMType.NODE, 0)})),Arrays.asList(node100,node104));
+    OSHWay way202 = buildHOSMWay(Arrays.asList(new OSMWay(202, 1, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),new OSMMember(102, OSMType.NODE, 0)})),Arrays.asList(node100,node102));
     
 
 
 
     OSHRelation relation300 = OSHRelation.build(Arrays.asList(//
-        new OSMRelation(300, 1, 3333l, 4444l, 23, new int[] {},     new OSMMember[] {new OSMMember(100, -1, 0, null), new OSMMember(102, -1, 0, null)}), //
-        new OSMRelation(300, 2, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(100, -1, 0, null), new OSMMember(102, -1, 0, null)})), //
+        new OSMRelation(300, 1, 3333l, 4444l, 23, new int[] {},     new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null), new OSMMember(102, OSMType.NODE, 0, null)}), //
+        new OSMRelation(300, 2, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null), new OSMMember(102, OSMType.NODE, 0, null)})), //
         Arrays.asList(node100, node102), Arrays.asList());
     
     OSHRelation relation301 = OSHRelation.build(Arrays.asList(//
-        new OSMRelation(301, 1, 3333l, 4444l, 23, new int[] {},     new OSMMember[] {new OSMMember(200, -1, 1, null), new OSMMember(202, -1, 1, null)}), //
-        new OSMRelation(301, 2, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(200, -1, 1, null), new OSMMember(202, -1, 1, null)})), //
+        new OSMRelation(301, 1, 3333l, 4444l, 23, new int[] {},     new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null), new OSMMember(202, OSMType.WAY, 1, null)}), //
+        new OSMRelation(301, 2, 3333l, 4444l, 23, new int[] {1, 2}, new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null), new OSMMember(202, OSMType.WAY, 1, null)})), //
         Arrays.asList(), Arrays.asList(way200,way202));
 
     

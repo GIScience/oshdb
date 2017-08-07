@@ -14,6 +14,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Serializable {
 
@@ -81,8 +82,8 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 
 
   @Override
-  public int getType() {
-    return OSHEntity.NODE;
+  public OSMType getType() {
+    return OSMType.NODE;
   }
 
   public List<OSMNode> getVersions() {

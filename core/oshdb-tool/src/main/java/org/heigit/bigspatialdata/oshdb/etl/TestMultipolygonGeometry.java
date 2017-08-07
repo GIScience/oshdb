@@ -32,6 +32,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.Geo;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
@@ -200,7 +201,7 @@ public class TestMultipolygonGeometry {
 										if (osmEntity instanceof OSMRelation && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
 											OSMRelation rel = (OSMRelation) osmEntity;
 											for (int i = 0; i < rel.getMembers().length; i++) {
-												if (rel.getMembers()[i].getType() == OSHEntity.WAY && rel.getMembers()[i].getRoleId() == outerId) {
+												if (rel.getMembers()[i].getType() == OSMType.WAY && rel.getMembers()[i].getRoleId() == outerId) {
 													oldstyleMultipolygonOuterWay = (OSMWay) rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
 													break;
 												}

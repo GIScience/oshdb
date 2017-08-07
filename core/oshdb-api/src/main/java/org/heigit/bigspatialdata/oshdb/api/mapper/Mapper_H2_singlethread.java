@@ -7,45 +7,34 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.*;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public class Mapper_H2_singlethread<T> extends Mapper<T> {
+  private TagTranslator _tagTranslator = null;
   
   protected Mapper_H2_singlethread(OSHDB oshdb) {
     super(oshdb);
   }
   
   protected Integer getTagKeyId(String key) throws Exception {
-    PreparedStatement pstmt = ((OSHDB_H2) this._oshdbForTags).getConnection().prepareStatement("select id from KEY where txt = ?");
-    pstmt.setString(1, key);
-    ResultSet resultSet = pstmt.executeQuery();
-    if (!resultSet.next()) System.err.println("tag id not found");
-    return resultSet.getInt(1);
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    return this._tagTranslator.key2Int(key);
   }
   
   protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
-    int keyId = this.getTagKeyId(key);
-    PreparedStatement pstmt = ((OSHDB_H2) this._oshdbForTags).getConnection().prepareStatement("select valueid from KEYVALUE where keyid = ? and txt = ?");
-    pstmt.setInt(1, keyId);
-    pstmt.setString(2, value);
-    ResultSet resultSet = pstmt.executeQuery();
-    if (!resultSet.next()) System.err.println("tag id not found");
-    return new ImmutablePair(keyId, resultSet.getInt(1));
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
   
   @Override
@@ -56,7 +45,13 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
     S result = identitySupplier.get();
     for (CellId cellId : cellIds) {
       // prepare SQL statement
-      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement("(select data from grid_node where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)");
+      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
+          (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
+      );
       pstmt.setInt(1, cellId.getZoomLevel());
       pstmt.setLong(2, cellId.getId());
       
@@ -79,7 +74,7 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
             filter,
             false
         ).forEach(contribution -> {
-          rs.add(mapper.apply(new OSMContribution(new Timestamp(contribution.timestamp), new Timestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
+          rs.add(mapper.apply(new OSMContribution(new OSHDBTimestamp(contribution.timestamp), new OSHDBTimestamp(contribution.nextTimestamp), contribution.previousGeometry, contribution.geometry, contribution.previousOsmEntity, contribution.osmEntity, contribution.activities)));
         });
         
         // fold the results
@@ -90,12 +85,7 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
     }
     return result;
   }
-  
-  /*
-  @Override
-  protected <R, S> S reduceCellsOSMEntity(…) throws Exception {
-  }
-  */
+
   
   @Override
   protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
@@ -105,7 +95,13 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
     S result = identitySupplier.get();
     for (CellId cellId : cellIds) {
       // prepare SQL statement
-      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement("(select data from grid_node where level = ?1 and id = ?2) union (select data from grid_way where level = ?1 and id = ?2) union (select data from grid_relation where level = ?1 and id = ?2)");
+      PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
+          (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
+              " union all " +
+              (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
+      );
       pstmt.setInt(1, cellId.getZoomLevel());
       pstmt.setLong(2, cellId.getId());
       
@@ -128,7 +124,7 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
             filter,
             false
         ).forEach(snapshot -> snapshot.entrySet().forEach(entry -> {
-          Timestamp tstamp = new Timestamp(entry.getKey());
+          OSHDBTimestamp tstamp = new OSHDBTimestamp(entry.getKey());
           Geometry geometry = entry.getValue().getRight();
           OSMEntity entity = entry.getValue().getLeft();
           rs.add(mapper.apply(new OSMEntitySnapshot(tstamp, geometry, entity)));

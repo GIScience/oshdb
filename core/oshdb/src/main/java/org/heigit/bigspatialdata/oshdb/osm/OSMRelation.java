@@ -2,10 +2,15 @@ package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 import com.google.common.collect.Lists;
@@ -30,12 +35,24 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
 
   @Override
-  public int getType() {
-    return OSHEntity.RELATION;
+  public OSMType getType() {
+    return OSMType.RELATION;
   }
 
   public OSMMember[] getMembers() {
     return members;
+  }
+
+  public Stream<OSMEntity> getMemberEntities(long timestamp, Predicate<OSMMember> memberFilter) {
+    return Arrays.stream(this.getMembers())
+    .filter(memberFilter)
+    .map(OSMMember::getEntity)
+    .filter(Objects::nonNull)
+    .map(entity -> entity.getByTimestamp(timestamp));
+  }
+
+  public Stream<OSMEntity> getMemberEntities(long timestamp) {
+    return this.getMemberEntities(timestamp, osmMember -> true);
   }
 
   @Override
@@ -86,37 +103,21 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   private Geometry getMultiPolygonGeometry(long timestamp, TagInterpreter tagInterpreter) {
     GeometryFactory geometryFactory = new GeometryFactory();
 
-    OSMWay[] outerMembers = Arrays.stream(this.getMembers())
-    .filter(tagInterpreter::isMultipolygonOuterMember)
-    .map(OSMMember::getEntity)
-    .filter(hosm -> hosm instanceof OSHWay)
-    .map(hosm -> (OSHWay)hosm)
-    .map(hosm -> hosm.getByTimestamp(timestamp))
-    .filter(way -> way != null && way.isVisible())
-    .toArray(OSMWay[]::new);
+    Stream<OSMWay> outerMembers = this.getMemberEntities(timestamp, tagInterpreter::isMultipolygonOuterMember)
+    .map(osm -> (OSMWay)osm)
+    .filter(way -> way != null && way.isVisible());
 
-    OSMWay[] innerMembers = Arrays.stream(this.getMembers())
-    .filter(tagInterpreter::isMultipolygonInnerMember)
-    .map(OSMMember::getEntity)
-    .filter(hosm -> hosm instanceof OSHWay)
-    .map(hosm -> (OSHWay)hosm)
-    .map(hosm -> hosm.getByTimestamp(timestamp))
-    .filter(way -> way != null && way.isVisible())
-    .toArray(OSMWay[]::new);
+    Stream<OSMWay> innerMembers = this.getMemberEntities(timestamp, tagInterpreter::isMultipolygonInnerMember)
+    .map(osm -> (OSMWay)osm)
+    .filter(way -> way != null && way.isVisible());
 
-    OSMNode[][] outerLines = Arrays.stream(outerMembers)
-    .map(way -> Arrays.stream(way.getRefs())
-      .map(OSMMember::getEntity)
-      .filter(Objects::nonNull)
-      .map(oshNode -> (OSMNode)oshNode.getByTimestamp(timestamp))
+    OSMNode[][] outerLines = outerMembers
+    .map(way -> way.getRefs(timestamp)
       .filter(node -> node != null && node.isVisible())
       .toArray(OSMNode[]::new)
     ).filter(line -> line.length > 0).toArray(OSMNode[][]::new);
-    OSMNode[][] innerLines = Arrays.stream(innerMembers)
-    .map(way -> Arrays.stream(way.getRefs())
-      .map(OSMMember::getEntity)
-      .filter(Objects::nonNull)
-      .map(oshNode -> (OSMNode)oshNode.getByTimestamp(timestamp))
+    OSMNode[][] innerLines = innerMembers
+    .map(way -> way.getRefs(timestamp)
       .filter(node -> node != null && node.isVisible())
       .toArray(OSMNode[]::new)
     ).filter(line -> line.length > 0).toArray(OSMNode[][]::new);

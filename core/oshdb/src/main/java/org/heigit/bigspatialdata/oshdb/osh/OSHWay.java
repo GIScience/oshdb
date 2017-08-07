@@ -18,6 +18,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 
@@ -106,8 +107,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 
 
   @Override
-  public int getType() {
-    return OSHEntity.WAY;
+  public OSMType getType() {
+    return OSMType.WAY;
   }
 
   public List<OSMWay> getVersions() {
@@ -174,7 +175,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
                   member = null;
                   memberId = wrapper.readSInt64() + memberId;
                 }
-                members[i] = new OSMMember(memberId, NODE, -1, member);
+                members[i] = new OSMMember(memberId, OSMType.NODE, -1, member);
               }
             }
 

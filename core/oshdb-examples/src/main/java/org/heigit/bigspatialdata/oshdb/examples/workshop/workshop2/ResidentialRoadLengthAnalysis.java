@@ -54,7 +54,7 @@ public class ResidentialRoadLengthAnalysis {
     Iterable<CellId> cellIds = grid.bbox2CellIds(bbox, true);
 
     //determine timestamps to query features at
-    List<Long> timestamps = (new OSHDBTimestamps(2008, 2017, 1, 12)).getTimeStamps();
+    List<Long> timestamps = (new OSHDBTimestamps(2008, 2017, 1, 12)).getTimestamps();
     SortedMap<Long,Double> countsByTimestamp = new TreeMap<>();
 
     //iterate over all cellIds

@@ -3,21 +3,21 @@ package org.heigit.bigspatialdata.oshdb.api.mapper;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.api.objects.Timestamp;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
@@ -29,6 +29,7 @@ public abstract class Mapper<T> {
   private final List<Predicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<Predicate<OSMEntity>> _filters = new ArrayList<>();
   protected TagInterpreter _tagInterpreter = null;
+  protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
   
   protected Mapper(OSHDB oshdb) {
     this._oshdb = oshdb;
@@ -60,13 +61,10 @@ public abstract class Mapper<T> {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
-  protected <R, S> S reduceCellsOSMEntity(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntity, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
-    throw new UnsupportedOperationException("Reduce function not yet implemented");
-  }
-  
   protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Predicate<OSHEntity> preFilter, Predicate<OSMEntity> filter, Function<OSMEntitySnapshot, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
+
   
   public Mapper<T> boundingBox(BoundingBox bbox) {
     this._bbox = bbox;
@@ -75,6 +73,11 @@ public abstract class Mapper<T> {
   
   public Mapper<T> timestamps(OSHDBTimestamps tstamps) {
     this._tstamps = tstamps;
+    return this;
+  }
+
+  public Mapper<T> osmTypes(EnumSet<OSMType> typeFilter) {
+    this._typeFilter = typeFilter;
     return this;
   }
   
@@ -122,14 +125,12 @@ public abstract class Mapper<T> {
   }
 
   private List<Long> _getTimestamps() {
-    return this._tstamps.getTimeStamps();
+    return this._tstamps.getTimestamps();
   }
   
   public <R, S> S mapReduce(Function<T, R> mapper, Supplier<S> identitySupplier, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
       return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
-    } else if (this._forClass.equals(OSMEntity.class)) {
-      return this.reduceCellsOSMEntity(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntity, R>) mapper, identitySupplier, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (Function<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
@@ -139,7 +140,7 @@ public abstract class Mapper<T> {
     return this.mapReduce(f, () -> (R) (Integer) 0, (x, y) -> NumberUtils.add(x, y), (x, y) -> NumberUtils.add(x, y));
   }
 
-  // check if the `S identity` here also needs to be replaced with `Supplier<S> identitySupplier` to make it work for "complex" types of S
+  // check if the `S identity` here also needs to be replaced with `Supplier<S> identitySupplier` to make it work for "complex" osmTypes of S
   public <R, S, U> SortedMap<U, S> mapAggregate(Function<T, Pair<U, R>> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
     return this.mapReduce(mapper, () -> new TreeMap(), (SortedMap<U, S> m, Pair<U, R> r) -> {
       m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identity), r.getValue()));
@@ -157,18 +158,18 @@ public abstract class Mapper<T> {
     return this.mapAggregate(mapper, (R) (Integer) 0, (x, y) -> NumberUtils.add(x, y), (x, y) -> NumberUtils.add(x, y));
   }
 
-  public <R, S> SortedMap<Timestamp, S> mapAggregateByTimestamp(Function<T, R> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
-    SortedMap<Timestamp, S> result;
-    List<Timestamp> timestamps = this._getTimestamps().stream().map(Timestamp::new).collect(Collectors.toList());
+  public <R, S> SortedMap<OSHDBTimestamp, S> mapAggregateByTimestamp(Function<T, R> mapper, S identity, BiFunction<S, R, S> accumulator, BinaryOperator<S> combiner) throws Exception {
+    SortedMap<OSHDBTimestamp, S> result;
+    List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
     if (this._forClass.equals(OSMContribution.class)) {
-      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t -> {
+      result = this.mapAggregate((Function<T, Pair<OSHDBTimestamp, R>>) (t -> {
         int timeBinIndex = Collections.binarySearch(timestamps, ((OSMContribution) t).getTimestamp());
         if (timeBinIndex < 0) { timeBinIndex = -timeBinIndex - 2; }
         return new ImmutablePair<>(timestamps.get(timeBinIndex), mapper.apply(t));
       }), identity, accumulator, combiner);
       timestamps.remove(timestamps.size()-1); // pop last element from timestamps list, so it doesn't get nodata-filled with "0" below
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      result = this.mapAggregate((Function<T, Pair<Timestamp, R>>) (t ->
+      result = this.mapAggregate((Function<T, Pair<OSHDBTimestamp, R>>) (t ->
         new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t))
       ), identity, accumulator, combiner);
     } else throw new UnsupportedOperationException("mapAggregateByTimestamp only allowed for OSMContribution and OSMEntitySnapshot");
@@ -177,7 +178,7 @@ public abstract class Mapper<T> {
     return result;
   }
 
-  public <R extends Number> SortedMap<Timestamp, R> sumAggregateByTimestamp(Function<T, R> mapper) throws Exception {
+  public <R extends Number> SortedMap<OSHDBTimestamp, R> sumAggregateByTimestamp(Function<T, R> mapper) throws Exception {
     return this.mapAggregateByTimestamp(mapper, (R) (Integer) 0, (x, y) -> NumberUtils.add(x, y), (x, y) -> NumberUtils.add(x, y));
   }
 }

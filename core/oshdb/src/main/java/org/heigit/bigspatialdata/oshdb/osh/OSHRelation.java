@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable {
 
@@ -140,8 +141,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
 
   @Override
-  public int getType() {
-    return OSHEntity.RELATION;
+  public OSMType getType() {
+    return OSMType.RELATION;
   }
 
   public List<OSMRelation> getVersions() {
@@ -199,12 +200,12 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
               members = new OSMMember[size];
               long memberId = 0;
               int memberOffset = 0;
-              int memberType = 0;
+              OSMType memberType;
               int memberRole = 0;
               @SuppressWarnings("rawtypes")
               OSHEntity member = null;
               for (int i = 0; i < size; i++) {
-                memberType = wrapper.readUInt32();
+                memberType = OSMType.fromInt(wrapper.readUInt32());
                 switch (memberType) {
                 case NODE: {
                   memberOffset = wrapper.readUInt32();
@@ -242,9 +243,9 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
             }
             return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
                 members);
-          } catch (IOException e) {
+          } catch (Exception e) {
             e.printStackTrace();
-            // TODO: handle exception
+            // TODO: handle exception(s)
           }
           return null;
         }
@@ -367,7 +368,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
         long lastMemberId = 0;
         output.writeUInt32(members.length);
         for (OSMMember member : members) {
-          output.writeUInt32(member.getType());
+          output.writeUInt32(member.getType().intValue());
           switch (member.getType()) {
           case RELATION: {
             output.writeSInt64(member.getId() - lastMemberId);
@@ -546,7 +547,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       if (!osmRel.isVisible()) return Stream.empty();
       OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
       return Arrays.stream(osmRel.getMembers())
-      .filter(member -> member.getType() == OSHEntity.NODE || member.getType() == OSHEntity.WAY)
+      .filter(member -> member.getType() == OSMType.NODE || member.getType() == OSMType.WAY)
       .map(OSMMember::getEntity)
       .filter(Objects::nonNull)
       .flatMap(oshEntity ->
