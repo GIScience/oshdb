@@ -7,6 +7,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
@@ -46,7 +47,14 @@ public abstract class Mapper<T> {
       mapper._oshdbForTags = oshdb;
       mapper._forClass = forClass;
       return mapper;
-    } else throw new UnsupportedOperationException("No mapper implemented for your database type");
+    } else if (oshdb instanceof OSHDB_Ignite) {
+      Mapper<T> mapper = new Mapper_Ignite<T>(oshdb);
+      mapper._oshdbForTags = null;
+      mapper._forClass = forClass;
+      return mapper;
+    } else {
+      throw new UnsupportedOperationException("No mapper implemented for your database type");
+    }
   }
   
   public Mapper<T> usingForTags(OSHDB oshdb) {
@@ -79,6 +87,16 @@ public abstract class Mapper<T> {
   public Mapper<T> osmTypes(EnumSet<OSMType> typeFilter) {
     this._typeFilter = typeFilter;
     return this;
+  }
+
+  public Mapper<T> osmTypes(OSMType type1) {
+    return this.osmTypes(EnumSet.of(type1));
+  }
+  public Mapper<T> osmTypes(OSMType type1, OSMType type2) {
+    return this.osmTypes(EnumSet.of(type1, type2));
+  }
+  public Mapper<T> osmTypes(OSMType type1, OSMType type2, OSMType type3) {
+    return this.osmTypes(EnumSet.of(type1, type2, type3));
   }
   
   public Mapper<T> tagInterpreter(TagInterpreter tagInterpreter) {
