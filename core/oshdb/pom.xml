@@ -1,59 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.heigit.bigspatialdata</groupId>
-		<artifactId>bigspatialdata-core-parent</artifactId>
-		<version>0.3.0-SNAPSHOT</version>
-		<relativePath>../</relativePath>
-	</parent>
+  <parent>
+    <groupId>org.heigit.bigspatialdata</groupId>
+    <artifactId>bigspatialdata-core-parent</artifactId>
+    <version>0.3.0-SNAPSHOT</version>
+    <relativePath>../</relativePath>
+  </parent>
 
-	<artifactId>oshdb</artifactId>
+  <artifactId>oshdb</artifactId>
 
 	<properties>
 		<geotools-version>17.2</geotools-version>
 	</properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>2.6.1</version>
-		</dependency>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.6.1</version>
+    </dependency>
 
-		<dependency>
-			<groupId>org.roaringbitmap</groupId>
-			<artifactId>RoaringBitmap</artifactId>
-			<version>0.6.37</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-		</dependency>
+    <dependency>
+      <groupId>org.roaringbitmap</groupId>
+      <artifactId>RoaringBitmap</artifactId>
+      <version>0.6.37</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.5</version>
+    </dependency>
 			
 
-		<!-- Hilbert Index -->
-		<!-- <dependency> <groupId>com.google.uzaygezen</groupId> <artifactId>uzaygezen-core</artifactId> 
-			<version>0.2</version> </dependency> -->
-		<dependency>
-			<groupId>mil.nga.giat</groupId>
-			<artifactId>geowave-core-index</artifactId>
-			<version>0.9.3</version>
-		</dependency>
+    <!-- Hilbert Index -->
+    <!-- <dependency> <groupId>com.google.uzaygezen</groupId> <artifactId>uzaygezen-core</artifactId> 
+    <version>0.2</version> </dependency> -->
+    <dependency>
+      <groupId>mil.nga.giat</groupId>
+      <artifactId>geowave-core-index</artifactId>
+      <version>0.9.3</version>
+    </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
 
 		<dependency>
 			<groupId>org.geotools</groupId>
@@ -95,18 +95,18 @@
 	 </dependency>
 	</dependencies>
 
-	<repositories>
-		<repository>
-			<id>geowave-maven-release</id>
-			<name>GeoWave AWS Snapshot Repository</name>
-			<url>http://geowave-maven.s3-website-us-east-1.amazonaws.com/release</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
+  <repositories>
+    <repository>
+      <id>geowave-maven-release</id>
+      <name>GeoWave AWS Snapshot Repository</name>
+      <url>http://geowave-maven.s3-website-us-east-1.amazonaws.com/release</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
 
 		<repository>
 			<id>boundless</id>

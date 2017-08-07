@@ -12,10 +12,12 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
@@ -138,6 +140,28 @@ public abstract class OSMEntity {
   public String toString() {
     return String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s USER:%d TAGS:%S", id, getVersion(), getTimestamp(),
             getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
+  }
+
+  /**
+   * Returns a better String with translated tags.
+   *
+   * @param tagTranslator the TagTranslator to translate the Tags.
+   * @return
+   */
+  public String toString(TagTranslator tagTranslator) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s USER:%s TAGS:", this.id, getVersion(), getTimestamp(),
+            getChangeset(), isVisible(), tagTranslator.usertoStr(getUserId())));
+    sb.append("[");
+    for (int i = 0; i < this.getTags().length; i += 2) {
+      if (i > 0) {
+        sb.append(",");
+      }
+      sb.append(tagTranslator.tag2String(new ImmutablePair(this.getTags()[i], this.getTags()[i + 1])));
+    }
+    sb.append("]");
+    return sb.toString();
+
   }
 
   /**

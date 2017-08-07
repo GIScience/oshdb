@@ -1,10 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
+import java.sql.SQLException;
 import java.util.logging.Logger;
-
-import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.junit.Assert;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -212,29 +212,22 @@ public class OSMRelationTest {
 
   @Test
   public void testToString() {
-    System.out.println("toString");
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
-    OSMRelation instance = new OSMRelation(1L, 2, 1L, 1L, 1, new int[]{}, new OSMMember[]{part, part});
-    String expResult = "ID:1 V:+2+ TS:1 CS:1 VIS:true USER:1 TAGS:[]";
+    OSMRelation instance = new OSMRelation(1L, 2, 1L, 1L, 1, new int[]{1,2}, new OSMMember[]{part, part});
+    String expResult = "Relation-> ID:1 V:+2+ TS:1 CS:1 VIS:true USER:1 TAGS:[1, 2] Mem:[T:WAY ID:1 R:1, T:WAY ID:1 R:1]";
     String result = instance.toString();
     assertEquals(expResult, result);
   }
-
-  @Test
-  public void testToStringII() {
-    System.out.println("toString");
-    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2}, new OSMMember[]{});
-    String expResult = "ID:1 V:+1+ TS:1 CS:1 VIS:true USER:1 TAGS:[1, 1, 2, 2]";
-    String result = instance.toString();
+  
+    @Test
+  public void testToString_TagTranslator() throws SQLException, ClassNotFoundException {
+    int[] tags = {1, 2};
+    OSMMember[] member = {new OSMMember(2L, OSMType.WAY, 2), new OSMMember(5L, OSMType.NODE, 3)};
+    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 46, tags, member);
+    String expResult = "RELATION-> ID:1 V:+1+ TS:1 CS:1 VIS:true USER:FrankM TAGS:[(highway,footway)] Mem:[(T:Way ID:2 R:to),(T:Node ID:5 R:via)]";
+    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
     assertEquals(expResult, result);
   }
-
-  @Test
-  public void testToStringIII() {
-    System.out.println("toString");
-    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 1, new int[]{}, null);
-    String expResult = "ID:1 V:+1+ TS:1 CS:1 VIS:true USER:1 TAGS:[]";
-    String result = instance.toString();
-    assertEquals(expResult, result);
-  }
+  
+  
 }

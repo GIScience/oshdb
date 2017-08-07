@@ -5,11 +5,12 @@
  */
 package org.heigit.bigspatialdata.oshdb.osm;
 
+import java.sql.SQLException;
 import java.util.logging.Logger;
-import static org.junit.Assert.assertEquals;
-
-import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 /**
@@ -17,8 +18,9 @@ import org.junit.Test;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class OSMMemberTest {
+
   private static final Logger LOG = Logger.getLogger(OSMMemberTest.class.getName());
-  
+
   public OSMMemberTest() {
   }
 
@@ -67,14 +69,20 @@ public class OSMMemberTest {
     assertEquals(expResult, result);
   }
 
-
   @Test
   public void testToString() {
-    System.out.println("toString");
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
-    String expResult = "T:1 ID:1 R:1";
+    String expResult = "T:WAY ID:1 R:1";
     String result = instance.toString();
     assertEquals(expResult, result);
   }
-  
+
+  @Test
+  public void testToString_TragTranslator() throws SQLException, ClassNotFoundException {
+    OSMMember instance = new OSMMember(2L, OSMType.WAY, 2);
+    String expResult = "T:Way ID:2 R:to";
+    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
+    assertEquals(expResult, result);
+  }
+
 }

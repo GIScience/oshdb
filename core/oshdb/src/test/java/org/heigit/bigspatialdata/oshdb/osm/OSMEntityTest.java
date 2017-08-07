@@ -1,10 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -19,6 +22,15 @@ public class OSMEntityTest {
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, properties, 1000000000L, 1000000000L);
     String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true USER:1 TAGS:[1, 2] 100.000000:100.000000";
     String result = instance.toString();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testToString_TagTranlator() throws SQLException, ClassNotFoundException {
+    int[] properties = {1, 2};
+    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 46, properties, 1000000000L, 1000000000L);
+    String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true USER:FrankM TAGS:[(highway,footway)] 100.000000:100.000000";
+    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
     assertEquals(expResult, result);
   }
 
