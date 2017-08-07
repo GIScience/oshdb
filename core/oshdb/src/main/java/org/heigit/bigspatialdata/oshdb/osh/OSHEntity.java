@@ -308,7 +308,6 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
 
   @Override
   public String toString() {
-    System.out.println(String.format(Locale.ENGLISH,"ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size()-1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon));
-    return String.format(Locale.ENGLISH,"ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size()-1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon);
+    return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon);
   }
 }
