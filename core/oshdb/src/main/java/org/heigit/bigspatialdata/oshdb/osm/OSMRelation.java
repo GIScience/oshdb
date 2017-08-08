@@ -4,14 +4,20 @@ import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -91,10 +97,70 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     if (this.isArea(areaDecider)) {
       return getMultiPolygonGeometry(timestamp, areaDecider);
     }
+    /*
     if (this.isLine(areaDecider)) {
       return getMultiLineStringGeometry(timestamp);
     }
-    return null; // better: exception?
+     */
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Geometry[] geoms = new Geometry[getMembers().length];
+    for (int i = 0; i < getMembers().length; i++) {
+      try {
+        geoms[i] = getMembers()[i].getEntity().getByTimestamp(timestamp).getGeometry(timestamp, areaDecider);
+      } catch (NullPointerException ex) {
+        LOG.log(Level.WARNING, "No Entity in Member, Geometry could not be created.", ex);
+        return null;
+      }
+    }
+    switch (geoms[0].getGeometryType()) {
+      case "Point":
+        Point[] points = new Point[geoms.length];
+        int i = 0;
+        boolean good = true;
+        for (Geometry geo : geoms) {
+          if (!"Point".equals(geo.getGeometryType())) {
+            good = false;
+            break;
+          }
+          points[i] = geometryFactory.createPoint(geo.getCoordinate());
+          i++;
+        }
+        if (good) {
+          return geometryFactory.createMultiPoint(points);
+        }
+
+      case "LineString":
+        LineString[] lines = new LineString[geoms.length];
+        i = 0;
+        good = true;
+        for (Geometry geo : geoms) {
+          if (!"LineString".equals(geo.getGeometryType())) {
+            good = false;
+            break;
+          }
+          lines[i] = geometryFactory.createLineString(geo.getCoordinates());
+          i++;
+        }
+        if (good) {
+          return geometryFactory.createMultiLineString(lines);
+        }
+      case "Polygon":
+        Polygon[] polygons = new Polygon[geoms.length];
+        i = 0;
+        good = true;
+        for (Geometry geo : geoms) {
+          if (!"Polygon".equals(geo.getGeometryType())) {
+            good = false;
+            break;
+          }
+          polygons[i] = geometryFactory.createPolygon(geo.getCoordinates());
+          i++;
+        }
+        if (good) {
+          return geometryFactory.createMultiPolygon(polygons);
+        }
+    }
+    return geometryFactory.createGeometryCollection(geoms);
   }
 
   private Geometry getMultiPolygonGeometry(long timestamp, TagInterpreter tagInterpreter) {
@@ -119,7 +185,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
                     .toArray(OSMNode[]::new)
             ).filter(line -> line.length > 0).toArray(OSMNode[][]::new);
 
-    // construct rings from lines
+    // construct rings from polygons
     List<LinearRing> outerRings = join(outerLines).stream()
             .map(ring -> geometryFactory.createLinearRing(
                     ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude())).toArray(Coordinate[]::new)
@@ -148,7 +214,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
   // helper that joins adjacent osm ways into linear rings
   private List<List<OSMNode>> join(OSMNode[][] lines) {
-    // make a (mutable) copy of the lines array
+    // make a (mutable) copy of the polygons array
     List<List<OSMNode>> ways = new LinkedList<>();
     for (int i = 0; i < lines.length; i++) {
       ways.add(new LinkedList<>(Arrays.asList(lines[i])));
@@ -225,6 +291,38 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     sb.append("]");
 
     return sb.toString();
+  }
+
+  /**
+   * Get a GIS-compatible String version of your OSM-Object.
+   *
+   * @param timestamp The timestamp for which to create the geometry. NB: the
+   * geometry will be created for exactly that point in time (see
+   * this.getGeometry()).
+   * @param tagtranslator a connection to a database to translate the coded
+   * integer back to human readable string
+   * @param areaDecider A list of tags, that define a polygon from a linestring.
+   * A default one is available.
+   * @return A string representation of the Object in GeoJSON-format
+   * (https://tools.ietf.org/html/rfc7946#section-3.3)
+   */
+  public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
+
+    JsonArrayBuilder JSONMembers = Json.createArrayBuilder();
+    for (OSMMember mem : getMembers()) {
+      JsonObjectBuilder member = Json.createObjectBuilder();
+      member.add("type", mem.getType().toString()).add("ref", mem.getId());
+      try {
+        member.add("role", tagtranslator.role2String(mem.getRoleId()));
+      } catch (NullPointerException ex) {
+        LOG.log(Level.WARNING, "The TagTranslator could not resolve the roles. Therefore Integer values will be printed.", ex);
+        member.add("role", mem.getRoleId());
+      }
+      JSONMembers.add(member);
+    }
+
+    String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).add("members", JSONMembers).build().toString();
+    return result;
   }
 
 }

@@ -1,10 +1,19 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.LONLAT_A;
+import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.TAGS_A;
+import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.USER_A;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -213,21 +222,35 @@ public class OSMRelationTest {
   @Test
   public void testToString() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
-    OSMRelation instance = new OSMRelation(1L, 2, 1L, 1L, 1, new int[]{1,2}, new OSMMember[]{part, part});
-    String expResult = "Relation-> ID:1 V:+2+ TS:1 CS:1 VIS:true USER:1 TAGS:[1, 2] Mem:[T:WAY ID:1 R:1, T:WAY ID:1 R:1]";
+    OSMRelation instance = new OSMRelation(1L, 2, 1L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part, part});
+    String expResult = "Relation-> ID:1 V:+2+ TS:1 CS:1 VIS:true UID:1 TAGS:[1, 2] Mem:[T:WAY ID:1 R:1, T:WAY ID:1 R:1]";
     String result = instance.toString();
     assertEquals(expResult, result);
   }
-  
-    @Test
+
+  @Test
   public void testToString_TagTranslator() throws SQLException, ClassNotFoundException {
     int[] tags = {1, 2};
     OSMMember[] member = {new OSMMember(2L, OSMType.WAY, 2), new OSMMember(5L, OSMType.NODE, 3)};
     OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 46, tags, member);
-    String expResult = "RELATION-> ID:1 V:+1+ TS:1 CS:1 VIS:true USER:FrankM TAGS:[(highway,footway)] Mem:[(T:Way ID:2 R:to),(T:Node ID:5 R:via)]";
+    String expResult = "RELATION-> ID:1 V:+1+ TS:1 CS:1 VIS:true UID:46 UName:FrankM TAGS:[(highway,footway)] Mem:[(T:Way ID:2 R:to),(T:Node ID:5 R:via)]";
     String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
     assertEquals(expResult, result);
   }
-  
-  
+
+  @Test
+  public void testToGeoJSON_long_TagTranslator_TagInterpreter() throws SQLException, ClassNotFoundException, IOException, ParseException {
+    List<OSMNode> versions = new ArrayList<>();
+    versions.add(new OSMNode(123l, 1, 1l, 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    OSHNode hnode = OSHNode.build(versions);
+    OSMMember part = new OSMMember(1L, OSMType.NODE, 1, hnode);
+    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 46, new int[]{1, 2}, new OSMMember[]{part, part});
+    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection());
+    String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"highway\":\"footway\"},\"geometry\":{\"type\":\"MultiPoint\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]},\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"from\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"from\"}]}";
+
+    String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromH2(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
+    System.out.println(result);
+    assertEquals(expResult, result);
+  }
+
 }

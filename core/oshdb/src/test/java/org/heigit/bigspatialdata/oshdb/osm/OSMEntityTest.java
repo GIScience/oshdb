@@ -20,7 +20,7 @@ public class OSMEntityTest {
   public void testToString() {
     int[] properties = {1, 2};
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, properties, 1000000000L, 1000000000L);
-    String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true USER:1 TAGS:[1, 2] 100.000000:100.000000";
+    String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true UID:1 TAGS:[1, 2] 100.000000:100.000000";
     String result = instance.toString();
     assertEquals(expResult, result);
   }
@@ -29,30 +29,36 @@ public class OSMEntityTest {
   public void testToString_TagTranlator() throws SQLException, ClassNotFoundException {
     int[] properties = {1, 2};
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 46, properties, 1000000000L, 1000000000L);
-    String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true USER:FrankM TAGS:[(highway,footway)] 100.000000:100.000000";
+    String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true UID:46 UName:FrankM TAGS:[(highway,footway)] 100.000000:100.000000";
     String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testToGeoJSON_List_TagInterpreter() {
+  public void testToGeoJSON_List_TagInterpreter() throws SQLException, ClassNotFoundException {
+    int[] properties = {1, 2};
+    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 46, properties, 1000000000L, 1000000000L);
+    List<Pair<? extends OSMEntity, Long>> OSMObjects = new ArrayList<>();
+    OSMObjects.add(new ImmutablePair<>(instance, 1L));
+    OSMObjects.add(new ImmutablePair<>(instance, 2L));
+    TagInterpreter areaDecider = new TagInterpreter(1, 1, null, null, null, 1, 1, 1);
+    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection());
+    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"highway\":\"footway\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"highway\":\"footway\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
+    String result = OSMEntity.toGeoJSON(OSMObjects, tt, areaDecider);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testToGeoJSON_List_TagInterpreter_Exception() throws SQLException, ClassNotFoundException {
     int[] properties = {1, 2};
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, properties, 1000000000L, 1000000000L);
     List<Pair<? extends OSMEntity, Long>> OSMObjects = new ArrayList<>();
     OSMObjects.add(new ImmutablePair<>(instance, 1L));
     OSMObjects.add(new ImmutablePair<>(instance, 2L));
     TagInterpreter areaDecider = new TagInterpreter(1, 1, null, null, null, 1, 1, 1);
-    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":1,\"properties\":{\"version\":1,\"changeset\":1,\"timestamp\":1,\"userid\":1,\"1\":2},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":1,\"properties\":{\"version\":1,\"changeset\":1,\"timestamp\":1,\"userid\":1,\"1\":2},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
-    String result = OSMEntity.toGeoJSON(OSMObjects, areaDecider);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testToGeoJSON_long_TagInterpreter() {
-    int[] properties = {1, 2};
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, properties, 1000000000L, 1000000000L);
-    String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"version\":1,\"changeset\":1,\"timestamp\":1,\"userid\":1,\"1\":2},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}";
-    String result = instance.toGeoJSON(1L, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
+    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection());
+    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":1,\"uid\":1,\"1\":2},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":1,\"uid\":1,\"1\":2},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
+    String result = OSMEntity.toGeoJSON(OSMObjects, tt, areaDecider);
     assertEquals(expResult, result);
   }
 
