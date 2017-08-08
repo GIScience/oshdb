@@ -293,19 +293,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     return sb.toString();
   }
 
-  /**
-   * Get a GIS-compatible String version of your OSM-Object.
-   *
-   * @param timestamp The timestamp for which to create the geometry. NB: the
-   * geometry will be created for exactly that point in time (see
-   * this.getGeometry()).
-   * @param tagtranslator a connection to a database to translate the coded
-   * integer back to human readable string
-   * @param areaDecider A list of tags, that define a polygon from a linestring.
-   * A default one is available.
-   * @return A string representation of the Object in GeoJSON-format
-   * (https://tools.ietf.org/html/rfc7946#section-3.3)
-   */
+  @Override
   public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
 
     JsonArrayBuilder JSONMembers = Json.createArrayBuilder();
