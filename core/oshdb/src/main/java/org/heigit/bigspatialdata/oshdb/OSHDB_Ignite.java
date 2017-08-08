@@ -36,4 +36,8 @@ public class OSHDB_Ignite extends OSHDB {
     return this._ignite;
   }
 
+  public void close() {
+    this._ignite.close();
+  }
+
 }
