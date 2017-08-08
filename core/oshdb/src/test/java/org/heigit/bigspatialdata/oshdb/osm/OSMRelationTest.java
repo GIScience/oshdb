@@ -249,7 +249,6 @@ public class OSMRelationTest {
     String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"highway\":\"footway\"},\"geometry\":{\"type\":\"MultiPoint\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]},\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"from\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"from\"}]}";
 
     String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromH2(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
-    System.out.println(result);
     assertEquals(expResult, result);
   }
 

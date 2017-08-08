@@ -1,9 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
@@ -92,6 +96,20 @@ public class OSHNodeTest {
     OSHNode instance = OSHNode.build(versions);
     String expResult = "OSHNode ID:123 Vmax:+2+ Creation:1 BBox:(49.410283,8.675635),(49.418621,8.715334)";
     String result = instance.toString();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testToGeoJSON() throws IOException, SQLException, ClassNotFoundException {
+    List<OSMNode> versions = new ArrayList<>(2);
+
+    versions.add(new OSMNode(123l, 2, 2l, 46l, 46, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, 1l, 47l, 165, TAGS_B, LONLAT_B[0], LONLAT_B[1]));
+
+    OSHNode instance = OSHNode.build(versions);
+    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection());
+    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":123,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":46,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"highway\":\"track\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}},{\"type\":\"Feature\",\"id\":123,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":47,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"Richard\",\"uid\":165,\"building\":\"house\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.715334,49.410283]}}]}";
+    String result = instance.toGeoJSON(tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     assertEquals(expResult, result);
   }
 }

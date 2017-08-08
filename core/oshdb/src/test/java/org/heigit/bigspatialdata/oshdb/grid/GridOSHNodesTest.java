@@ -1,11 +1,15 @@
 package org.heigit.bigspatialdata.oshdb.grid;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -64,6 +68,32 @@ public class GridOSHNodesTest {
     GridOSHNodes instance = GridOSHNodes.rebase(2, 2, 100, 100000l, 86000000, 490000000, hosmNodes);
     String expResult = "Grid-Cell of OSHNodes ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
     String result = instance.toString();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testToGeoJSON() throws IOException, SQLException, ClassNotFoundException {
+    List<OSHNode> hosmNodes = new ArrayList<>();
+    for (int i = 0; i < 3; i++) {
+      List<OSMNode> versions = new ArrayList<>();
+      versions.add(new OSMNode(i + 1, 1, i, 1l, 46, new int[]{2, 2},
+              86809727l - 1000000 * i, 494094984l - 1000000 * i));
+      versions.add(new OSMNode(i + 1, 2, i, 1l, 46, new int[]{2, 2},
+              0L, 0L));
+      hosmNodes.add(OSHNode.build(versions));
+    }
+
+    GridOSHNodes instance = GridOSHNodes.rebase(2, 2, 100, 100000l, 86000000, 490000000, hosmNodes);
+    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection());
+    String expResult = "{\"type\":\"FeatureCollection\","
+            + "\"features\":[{"
+            + "\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"building\":\"house\"},"
+            + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
+            + "\"type\":\"Feature\",\"id\":2,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"building\":\"house\"},"
+            + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
+            + "\"type\":\"Feature\",\"id\":3,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"building\":\"house\"},"
+            + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}}]}";
+    String result = instance.toGeoJSON(tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     assertEquals(expResult, result);
   }
 
