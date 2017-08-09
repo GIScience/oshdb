@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import java.io.Serializable;
 import java.util.*;
+import javax.json.JsonObjectBuilder;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -113,6 +114,11 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).build().toString();
     return result;
+  }
+
+  @Override
+  public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
+    return super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
   }
 
 }

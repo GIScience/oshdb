@@ -187,8 +187,9 @@ public abstract class OSMEntity {
 
   /**
    * This is the step before actually creating a GeoJSON-String. It holds the
-   * option to interactively add some information before calling
-   * .build().toString()
+   * option to interactively add some information (e.g. Object specific
+   * statistics) before calling .build().toString() to display georeferenced
+   * information e.g. in a web layer.
    *
    * @param timestamp The timestamp for which to create the geometry. NB: the
    * geometry will be created for exactly that point in time (see
@@ -251,9 +252,7 @@ public abstract class OSMEntity {
     JsonObjectBuilder builder = Json.createObjectBuilder().add("type", "FeatureCollection");
     JsonArrayBuilder aBuilder = Json.createArrayBuilder();
     osmObjects.stream().forEach((Pair<? extends OSMEntity, Long> OSMObject) -> {
-      JsonReader jsonReader = Json.createReader(new StringReader(OSMObject.getKey().toGeoJSON(OSMObject.getValue(), tagtranslator, areaDecider)));
-      JsonObject geom = jsonReader.readObject();
-      aBuilder.add(geom);
+      aBuilder.add(OSMObject.getKey().toGeoJSONbuilder(OSMObject.getValue(), tagtranslator, areaDecider));
     });
     builder.add("features", aBuilder);
     return builder.build().toString();

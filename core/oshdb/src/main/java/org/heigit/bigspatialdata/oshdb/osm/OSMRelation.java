@@ -128,6 +128,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
         if (good) {
           return geometryFactory.createMultiPoint(points);
         }
+        break;
 
       case "LineString":
         LineString[] lines = new LineString[geoms.length];
@@ -144,6 +145,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
         if (good) {
           return geometryFactory.createMultiLineString(lines);
         }
+        break;
       case "Polygon":
         Polygon[] polygons = new Polygon[geoms.length];
         i = 0;
@@ -295,7 +297,13 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
   @Override
   public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
+    String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).build().toString();
+    return result;
+  }
 
+  @Override
+  public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
+    JsonObjectBuilder result = super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
     JsonArrayBuilder JSONMembers = Json.createArrayBuilder();
     for (OSMMember mem : getMembers()) {
       JsonObjectBuilder member = Json.createObjectBuilder();
@@ -308,8 +316,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
       }
       JSONMembers.add(member);
     }
-
-    String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).add("members", JSONMembers).build().toString();
+    result.add("members", JSONMembers);
     return result;
   }
 
