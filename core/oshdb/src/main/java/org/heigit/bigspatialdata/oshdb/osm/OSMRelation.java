@@ -112,55 +112,44 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
         return null;
       }
     }
+
+    geomswitch:
     switch (geoms[0].getGeometryType()) {
       case "Point":
         Point[] points = new Point[geoms.length];
         int i = 0;
-        boolean good = true;
         for (Geometry geo : geoms) {
           if (!"Point".equals(geo.getGeometryType())) {
-            good = false;
-            break;
+            break geomswitch;
           }
           points[i] = geometryFactory.createPoint(geo.getCoordinate());
           i++;
         }
-        if (good) {
-          return geometryFactory.createMultiPoint(points);
-        }
-        break;
+        return geometryFactory.createMultiPoint(points);
 
       case "LineString":
         LineString[] lines = new LineString[geoms.length];
         i = 0;
-        good = true;
         for (Geometry geo : geoms) {
           if (!"LineString".equals(geo.getGeometryType())) {
-            good = false;
-            break;
+            break geomswitch;
           }
           lines[i] = geometryFactory.createLineString(geo.getCoordinates());
           i++;
         }
-        if (good) {
-          return geometryFactory.createMultiLineString(lines);
-        }
-        break;
+        return geometryFactory.createMultiLineString(lines);
+
       case "Polygon":
         Polygon[] polygons = new Polygon[geoms.length];
         i = 0;
-        good = true;
         for (Geometry geo : geoms) {
           if (!"Polygon".equals(geo.getGeometryType())) {
-            good = false;
-            break;
+            break geomswitch;
           }
           polygons[i] = geometryFactory.createPolygon(geo.getCoordinates());
           i++;
         }
-        if (good) {
-          return geometryFactory.createMultiPolygon(polygons);
-        }
+        return geometryFactory.createMultiPolygon(polygons);
     }
     return geometryFactory.createGeometryCollection(geoms);
   }
