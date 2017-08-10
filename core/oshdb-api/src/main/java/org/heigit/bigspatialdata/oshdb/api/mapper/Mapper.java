@@ -175,10 +175,9 @@ public abstract class Mapper<T> {
     return this.mapReduce(f, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (SerializableBinaryOperator<R>)(x,y) -> NumberUtils.add(x,y));
   }
 
-  // todo: !!1! check if the `S identity` here also needs to be replaced with `Supplier<S> identitySupplier` to make it work for "complex" osmTypes of S
-  public <R, S, U> SortedMap<U, S> mapAggregate(SerializableFunction<T, Pair<U, R>> mapper, S identity, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  public <R, S, U> SortedMap<U, S> mapAggregate(SerializableFunction<T, Pair<U, R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     return this.mapReduce(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
-      m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identity), r.getValue()));
+      m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
       return m;
     }, (a,b) -> {
       SortedMap<U, S> combined = new TreeMap<>(a);
@@ -190,10 +189,10 @@ public abstract class Mapper<T> {
   }
 
   public <R extends Number, U> SortedMap<U, R> sumAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
-    return this.mapAggregate(mapper, (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
+    return this.mapAggregate(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
   }
 
-  public <R, S> SortedMap<OSHDBTimestamp, S> mapAggregateByTimestamp(SerializableFunction<T, R> mapper, S identity, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  public <R, S> SortedMap<OSHDBTimestamp, S> mapAggregateByTimestamp(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     SortedMap<OSHDBTimestamp, S> result;
     List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
     if (this._forClass.equals(OSMContribution.class)) {
@@ -201,19 +200,19 @@ public abstract class Mapper<T> {
         int timeBinIndex = Collections.binarySearch(timestamps, ((OSMContribution) t).getTimestamp());
         if (timeBinIndex < 0) { timeBinIndex = -timeBinIndex - 2; }
         return new ImmutablePair<>(timestamps.get(timeBinIndex), mapper.apply(t));
-      }, identity, accumulator, combiner);
+      }, identitySupplier, accumulator, combiner);
       timestamps.remove(timestamps.size()-1); // pop last element from timestamps list, so it doesn't get nodata-filled with "0" below
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       result = this.mapAggregate(t -> {
         return new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t));
-      }, identity, accumulator, combiner);
+      }, identitySupplier, accumulator, combiner);
     } else throw new UnsupportedOperationException("mapAggregateByTimestamp only allowed for OSMContribution and OSMEntitySnapshot");
     // fill nodata entries with "0"
-    timestamps.forEach(ts -> result.putIfAbsent(ts, identity));
+    timestamps.forEach(ts -> result.putIfAbsent(ts, identitySupplier.get()));
     return result;
   }
 
   public <R extends Number> SortedMap<OSHDBTimestamp, R> sumAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
-    return this.mapAggregateByTimestamp(mapper, (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
+    return this.mapAggregateByTimestamp(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
   }
 }
