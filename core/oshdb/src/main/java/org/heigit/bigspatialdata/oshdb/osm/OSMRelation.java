@@ -4,10 +4,8 @@ import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.Serializable;
 import java.util.*;
@@ -97,11 +95,9 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     if (this.isArea(areaDecider)) {
       return getMultiPolygonGeometry(timestamp, areaDecider);
     }
-    /*
-    if (this.isLine(areaDecider)) {
+    /*if (this.isLine(areaDecider)) {
       return getMultiLineStringGeometry(timestamp);
-    }
-     */
+    }*/
     GeometryFactory geometryFactory = new GeometryFactory();
     Geometry[] geoms = new Geometry[getMembers().length];
     for (int i = 0; i < getMembers().length; i++) {
@@ -111,54 +107,6 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
         LOG.log(Level.WARNING, "No Entity in Member, Geometry could not be created.", ex);
         return null;
       }
-    }
-    switch (geoms[0].getGeometryType()) {
-      case "Point":
-        Point[] points = new Point[geoms.length];
-        int i = 0;
-        boolean good = true;
-        for (Geometry geo : geoms) {
-          if (!"Point".equals(geo.getGeometryType())) {
-            good = false;
-            break;
-          }
-          points[i] = geometryFactory.createPoint(geo.getCoordinate());
-          i++;
-        }
-        if (good) {
-          return geometryFactory.createMultiPoint(points);
-        }
-
-      case "LineString":
-        LineString[] lines = new LineString[geoms.length];
-        i = 0;
-        good = true;
-        for (Geometry geo : geoms) {
-          if (!"LineString".equals(geo.getGeometryType())) {
-            good = false;
-            break;
-          }
-          lines[i] = geometryFactory.createLineString(geo.getCoordinates());
-          i++;
-        }
-        if (good) {
-          return geometryFactory.createMultiLineString(lines);
-        }
-      case "Polygon":
-        Polygon[] polygons = new Polygon[geoms.length];
-        i = 0;
-        good = true;
-        for (Geometry geo : geoms) {
-          if (!"Polygon".equals(geo.getGeometryType())) {
-            good = false;
-            break;
-          }
-          polygons[i] = geometryFactory.createPolygon(geo.getCoordinates());
-          i++;
-        }
-        if (good) {
-          return geometryFactory.createMultiPolygon(polygons);
-        }
     }
     return geometryFactory.createGeometryCollection(geoms);
   }
