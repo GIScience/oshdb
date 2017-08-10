@@ -5,10 +5,14 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.util.*;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 @SuppressWarnings("rawtypes")
 public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSHEntity>, Iterable<OSM> {
@@ -75,6 +79,10 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   public abstract List<OSM> getVersions();
+
+  public OSM getLatest() {
+    return iterator().next();
+  }
 
   /* byTimestamps is assumed to be presorted, otherwise output is undetermined */
   public SortedMap<Long, OSM> getByTimestamps(List<Long> byTimestamps) {
@@ -310,4 +318,29 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   public String toString() {
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon);
   }
+
+  /**
+   * Get a GIS-compatible String version of your OSH-Object. Note that this
+   * method uses the timestamps of the underlying OSM-Entities to construct
+   * geometries. If you desire inter-version-geometries, which are possible,
+   * please refer to
+   * {@link org.heigit.bigspatialdata.oshdb.osm.OSMEntity#toGeoJSON(java.util.List, org.heigit.bigspatialdata.oshdb.util.TagTranslator, org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter) the static method toGeoJSON of the OSMEntity}.
+   *
+   * @param tagtranslator a connection to a database to translate the coded
+   * integer back to human readable string
+   * @param areaDecider A list of tags, that define a polygon from a linestring.
+   * A default one is available.
+   * @return A string representation of the Object in GeoJSON-format
+   * (https://tools.ietf.org/html/rfc7946#section-3.3)
+   */
+  public String toGeoJSON(TagTranslator tagtranslator, TagInterpreter areaDecider) {
+    List<Pair<? extends OSMEntity, Long>> entities = new ArrayList<>();
+    Iterator<? extends OSMEntity> it = iterator();
+    while (it.hasNext()) {
+      OSMEntity obj = it.next();
+      entities.add(new ImmutablePair<>(obj, obj.getTimestamp()));
+    }
+    return OSMEntity.toGeoJSON(entities, tagtranslator, areaDecider);
+  }
+
 }

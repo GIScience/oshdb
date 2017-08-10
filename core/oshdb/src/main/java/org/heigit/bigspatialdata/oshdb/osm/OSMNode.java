@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import java.io.Serializable;
 import java.util.*;
+import javax.json.JsonObjectBuilder;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -109,22 +110,15 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
     return (Point) this.getGeometry(-1, null);
   }
 
-  /**
-   * Get a GIS-compatible String version of your OSM-Object.
-   *
-   * @param timestamp The timestamp for which to create the geometry. NB: the
-   * geometry will be created for exactly that point in time (see
-   * this.getGeometry()).
-   * @param tagtranslator a connection to a database to translate the coded
-   * integer back to human readable string
-   * @param areaDecider A list of tags, that define a polygon from a linestring.
-   * A default one is available.
-   * @return A string representation of the Object in GeoJSON-format
-   * (https://tools.ietf.org/html/rfc7946#section-3.3)
-   */
+  @Override
   public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).build().toString();
     return result;
+  }
+
+  @Override
+  public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
+    return super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
   }
 
 }

@@ -187,8 +187,9 @@ public abstract class OSMEntity {
 
   /**
    * This is the step before actually creating a GeoJSON-String. It holds the
-   * option to interactively add some information before calling
-   * .build().toString()
+   * option to interactively add some information (e.g. Object specific
+   * statistics) before calling .build().toString() to display georeferenced
+   * information e.g. in a web layer.
    *
    * @param timestamp The timestamp for which to create the geometry. NB: the
    * geometry will be created for exactly that point in time (see
@@ -256,6 +257,21 @@ public abstract class OSMEntity {
     builder.add("features", aBuilder);
     return builder.build().toString();
   }
+
+  /**
+   * Get a GIS-compatible String version of your OSM-Object.
+   *
+   * @param timestamp The timestamp for which to create the geometry. NB: the
+   * geometry will be created for exactly that point in time (see
+   * this.getGeometry()).
+   * @param tagtranslator a connection to a database to translate the coded
+   * integer back to human readable string
+   * @param areaDecider A list of tags, that define a polygon from a linestring.
+   * A default one is available.
+   * @return A string representation of the Object in GeoJSON-format
+   * (https://tools.ietf.org/html/rfc7946#section-3.3)
+   */
+  public abstract String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider);
 
   // helpers to determine underlying structure of osm objects
   // returns true if object is only used to define another object (e.g. nodes of a way without own tags)
