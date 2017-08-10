@@ -34,7 +34,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     return refs;
   }
 
-  public Stream<OSMNode> getRefs(long timestamp) {
+  public Stream<OSMNode> getRefEntities(long timestamp) {
     return Arrays.stream(this.getRefs())
             .map(OSMMember::getEntity)
             .filter(Objects::nonNull)
@@ -107,7 +107,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   public Geometry getGeometry(long timestamp, TagInterpreter areaDecider) {
     // todo: handle old-style multipolygons here???
     GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords = this.getRefs(timestamp)
+    Coordinate[] coords = this.getRefEntities(timestamp)
             .filter(node -> node != null && node.isVisible())
             .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
             .toArray(Coordinate[]::new);

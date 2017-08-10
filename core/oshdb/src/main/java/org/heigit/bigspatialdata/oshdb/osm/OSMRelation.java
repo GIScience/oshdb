@@ -166,12 +166,12 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
             .filter(way -> way != null && way.isVisible());
 
     OSMNode[][] outerLines = outerMembers
-            .map(way -> way.getRefs(timestamp)
+            .map(way -> way.getRefEntities(timestamp)
                     .filter(node -> node != null && node.isVisible())
                     .toArray(OSMNode[]::new)
             ).filter(line -> line.length > 0).toArray(OSMNode[][]::new);
     OSMNode[][] innerLines = innerMembers
-            .map(way -> way.getRefs(timestamp)
+            .map(way -> way.getRefEntities(timestamp)
                     .filter(node -> node != null && node.isVisible())
                     .toArray(OSMNode[]::new)
             ).filter(line -> line.length > 0).toArray(OSMNode[][]::new);
