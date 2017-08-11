@@ -111,11 +111,11 @@ public class HOSMDbTransform {
             hosmDbTransform.saveGrid(nodeResult, grid);
 
             //delete previous files
-            Path pN2W = Paths.get(hosmDbTransform.getTmp().toString(), n2wRelationFile);
+            Path pN2W = Paths.get(n2wRelationFile);
             if (pN2W.toFile().exists()) {
               Files.delete(pN2W);
             }
-            Path pN2R = Paths.get(hosmDbTransform.getTmp().toString(), n2rRelationFile);
+            Path pN2R = Paths.get(n2rRelationFile);
             if (pN2R.toFile().exists()) {
               Files.delete(pN2R);
             }
@@ -136,7 +136,7 @@ public class HOSMDbTransform {
           System.out.println("Saving Way Grid");
           hosmDbTransform.saveGrid(wayResults);
 
-          Path pW2R = Paths.get(hosmDbTransform.getTmp().toString(), w2rRelationFile);
+          Path pW2R = Paths.get(w2rRelationFile);
           if (pW2R.toFile().exists()) {
             Files.delete(pW2R);
           }
@@ -205,7 +205,7 @@ public class HOSMDbTransform {
     final File pbfFile = targs.baseArgs.pbfFile;
 
     final Path tmpDir = targs.baseArgs.tempDir;
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:" + targs.oshdb, "sa", "")) {
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:" + targs.oshdbarg.oshdb, "sa", "")) {
       if ((new File(targs.baseArgs.keytables.toString() + ".mv.db")).exists()) {
         try (Connection keytables = DriverManager.getConnection("jdbc:h2:" + targs.baseArgs.keytables, "sa", "")) {
           HOSMDbTransform.transform(pbfFile, conn, tmpDir, keytables);

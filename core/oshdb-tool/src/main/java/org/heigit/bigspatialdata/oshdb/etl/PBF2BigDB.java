@@ -7,10 +7,12 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-import org.apache.ignite.Ignite;
+import javax.xml.parsers.ParserConfigurationException;
+import org.apache.ignite.IgniteCheckedException;
+import org.heigit.bigspatialdata.oshdb.etl.load.OSHDB2Ignite;
 
 /**
- * Prototype of an easy class to convert PBF 2 H2 for testing users
+ * @author Prototype of an easy class to convert PBF 2 H2 for testing users
  *
  */
 public class PBF2BigDB {
@@ -52,21 +54,24 @@ public class PBF2BigDB {
   public static void toJDBC(File pbfFile, Connection connOSHDb, Path tmpDir, Connection keyTables) throws IOException, FileNotFoundException, SQLException, ClassNotFoundException {
     HOSMDbExtract.extract(pbfFile, keyTables, tmpDir);
     HOSMDbTransform.transform(pbfFile, connOSHDb, tmpDir, keyTables);
-
   }
 
-  /** Load the extracted Data into an Ignite Session. 
+  /**
+   * Load the extracted Data into an Ignite Session.
    *
-   * @param connOSHDb to the BigDB
-   * @param ignite 
+   * @param connOSHDb to the BigDB extracted and loaded e.g. by
+   * {@link #toJDBC(java.io.File, java.sql.Connection, java.nio.file.Path) toJDBC}
+   * @param igniteXML path to ignite-config.xml
+   * @throws org.apache.ignite.IgniteCheckedException
    */
-  public static void intoIgnite(Connection connOSHDb, Ignite ignite) {
-
+  public static void intoIgnite(File igniteXML, Connection connOSHDb) throws IgniteCheckedException {
+    OSHDB2Ignite.load(igniteXML, connOSHDb);
   }
 
-  public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException, SQLException {
+  public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException, SQLException, ParserConfigurationException, IgniteCheckedException {
     HOSMDbExtract.main(args);
     HOSMDbTransform.main(args);
+    OSHDB2Ignite.main(args);
   }
 
   private PBF2BigDB() {
