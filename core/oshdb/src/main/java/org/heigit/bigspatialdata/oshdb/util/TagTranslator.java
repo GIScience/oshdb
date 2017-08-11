@@ -293,8 +293,8 @@ public class TagTranslator {
       ResultSet Names = Userstmt.executeQuery();
       Names.next();
       name = Names.getString("NAME");
-      this.roleToInt.put(name, uid);
-      this.roleToString.put(uid, name);
+      this.userToInt.put(name, uid);
+      this.userToString.put(uid, name);
 
     } catch (SQLException ex) {
       LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
