@@ -5,6 +5,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -17,10 +18,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.Geo;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
@@ -205,7 +203,7 @@ public abstract class OSMEntity {
     //JSON for properties
     JsonObjectBuilder properties;
     try {
-      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(getTimestamp())).add("user", tagtranslator.usertoStr(getUserId())).add("uid", getUserId());
+      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp())).add("user", tagtranslator.usertoStr(getUserId())).add("uid", getUserId());
       for (int i = 0; i < getTags().length; i += 2) {
         @SuppressWarnings("unchecked")
         Pair<String, String> tags = tagtranslator.tag2String(new ImmutablePair(getTags()[i], getTags()[i + 1]));
@@ -213,7 +211,7 @@ public abstract class OSMEntity {
       }
     } catch (NullPointerException ex) {
       LOG.log(Level.WARNING, "The TagTranslator could not resolve the Tags. Therefore Integer values will be printed.", ex);
-      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(getTimestamp())).add("user", getUserId()).add("uid", getUserId());
+      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp())).add("user", getUserId()).add("uid", getUserId());
       for (int i = 0; i < getTags().length; i += 2) {
         properties.add(Integer.toString(getTags()[i]), getTags()[i + 1]);
       }

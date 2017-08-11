@@ -1,6 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.objects;
 
-import org.heigit.bigspatialdata.oshdb.api.utils.TimestampFormatter;
+import org.heigit.bigspatialdata.oshdb.util.TimestampFormatter;
 import java.util.Date;
 
 public class OSHDBTimestamp implements Comparable<OSHDBTimestamp> {
