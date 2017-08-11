@@ -7,6 +7,7 @@ package org.heigit.bigspatialdata.oshdb.etl;
 
 import java.io.File;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,6 +18,7 @@ import org.junit.Test;
 public class HOSMDbTransformTest {
 
   private final File oshdb = new File("./oshdb.mv.db");
+  private final File keytables = new File("./keytables.mv.db");
   private final File nodes = new File("./temp_nodesForWays.ser");
   private final File relation = new File("./temp_nodesForRelation.ser");
   private final File ways = new File("./temp_waysForRelation.ser");
@@ -37,6 +39,12 @@ public class HOSMDbTransformTest {
     if (ways.exists()) {
       ways.delete();
     }
+    if (oshdb.exists()) {
+      oshdb.delete();
+    }
+    if (!keytables.exists()) {
+      fail("Extract pbf-File first!");
+    }
   }
 
   /*//works also:
@@ -49,15 +57,14 @@ public class HOSMDbTransformTest {
     assertTrue(relation.exists());
     assertTrue(ways.exists());
   }*/
-
   @Test
   public void testMain() throws Exception {
-  String[] args = new String[]{"-pbf", "./src/test/resources/maldives.osh.pbf", "-tmp", "./", "-db", "./oshdb"};
-  HOSMDbTransform.main(args);
-  assertTrue(oshdb.exists());
-  assertTrue(nodes.exists());
-  assertTrue(relation.exists());
-  assertTrue(ways.exists());
+    String[] args = new String[]{"-pbf", "./src/test/resources/maldives.osh.pbf", "-tmp", "./", "-key", "./keytables", "-db", "./oshdb"};
+    HOSMDbTransform.main(args);
+    assertTrue(oshdb.exists());
+    assertTrue(nodes.exists());
+    assertTrue(relation.exists());
+    assertTrue(ways.exists());
   }
 
 }

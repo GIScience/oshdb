@@ -16,7 +16,7 @@ import org.junit.Test;
  */
 public class HOSMDbExtractTest {
 
-  private final File oshdb = new File("./oshdb.mv.db");
+  private final File oshdb = new File("./keytables.mv.db");
   private final File relation = new File("./temp_relations.mv.db");
   private final File meta = new File("./temp_meta.properties");
 
@@ -48,11 +48,9 @@ public class HOSMDbExtractTest {
     assertTrue(relation.exists());
     assertTrue(meta.exists());
   }*/
-  
-  
   @Test
   public void testMain() throws Exception {
-    String[] args = new String[]{"-pbf", "./src/test/resources/maldives.osh.pbf", "-tmp", "./", "-db", "./oshdb"};
+    String[] args = new String[]{"-pbf", "./src/test/resources/maldives.osh.pbf", "-tmp", "./", "-keytables", "./keytables"};
     HOSMDbExtract.main(args);
     assertTrue(oshdb.exists());
     assertTrue(relation.exists());

@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,70 +28,24 @@ import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
 
 public class HOSMDbExtract {
-
-  private final Path tmpDir;
-  private final Connection conn;
   private static final Logger LOG = Logger.getLogger(HOSMDbExtract.class.getName());
-
-  private HOSMDbExtract(final Path tmpDir, Connection conn) {
-    this.tmpDir = tmpDir;
-    this.conn = conn;
-  }
-
-  public ExtractMapper createMapper() {
-    return new ExtractMapper();
-  }
-
-  /**
-   * Extract HOSM-Data from pbf to H2. The Database will be located at
-   * ./oshdb.mvmdb. Temporary files will be stored at ./
-   *
-   * @param pbfFile Path to the pbfFile for extraction.
-   * @throws SQLException
-   * @throws java.io.IOException
-   * @throws java.io.FileNotFoundException
-   * @throws java.lang.ClassNotFoundException
-   */
-  public static void extract(File pbfFile) throws SQLException, IOException, FileNotFoundException, ClassNotFoundException {
-    Class.forName("org.h2.Driver");
-    Connection conn = DriverManager.getConnection("jdbc:h2:./oshdb;COMPRESS=TRUE", "sa", "");
-    HOSMDbExtract.extract(pbfFile, conn);
-
-  }
-
-  /**
-   * Extract HOSM-Data from pbf to H2. Temporary files will be stored at ./
-   *
-   * @param pbfFile
-   * @param conn resulting Database for transformation
-   * @throws IOException
-   * @throws FileNotFoundException
-   * @throws SQLException
-   * @throws ClassNotFoundException
-   */
-  public static void extract(File pbfFile, Connection conn) throws IOException, FileNotFoundException, SQLException, ClassNotFoundException {
-    Path tmpDir = Paths.get("./");
-    HOSMDbExtract.extract(pbfFile, conn, tmpDir);
-
-  }
-
   /**
    * Extract HOSM-Data from pbf to H2.
    *
-   * @param pbfFile
-   * @param conn
-   * @param tmpDir
+   * @param pbfFile to extract data from
+   * @param keytables database to store key mapping
+   * @param tmpDir temporary directory
    * @throws FileNotFoundException
    * @throws IOException
    * @throws SQLException
    * @throws ClassNotFoundException
    */
-  public static void extract(File pbfFile, Connection conn, Path tmpDir)
+  public static void extract(File pbfFile, Connection keytables, Path tmpDir)
           throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
 
     Class.forName("org.h2.Driver");
 
-    HOSMDbExtract hosmDbExtract = new HOSMDbExtract(tmpDir, conn);
+    HOSMDbExtract hosmDbExtract = new HOSMDbExtract(tmpDir, keytables);
 
     try (//
             final FileInputStream in = new FileInputStream(pbfFile) //
@@ -113,8 +66,35 @@ public class HOSMDbExtract {
               mapResult.getCountWays(), mapResult.getCountRelations());
 
     }
-
+    
   }
+
+  public static void main(String[] args) throws SQLException, IOException, FileNotFoundException, ClassNotFoundException {
+    Class.forName("org.h2.Driver");
+    ExtractArgs eargs = new ExtractArgs();
+    JCommander.newBuilder().addObject(eargs).build().parse(args);
+    
+    final File pbfFile = eargs.pbfFile;
+    final Path tmpDir = eargs.tempDir;
+    
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:" + eargs.keytables, "sa", "")) {
+      
+      HOSMDbExtract.extract(pbfFile, conn, tmpDir);
+    }
+  }
+
+  private final Path tmpDir;
+  private final Connection conn;
+
+  private HOSMDbExtract(final Path tmpDir, Connection conn) {
+    this.tmpDir = tmpDir;
+    this.conn = conn;
+  }
+
+  public ExtractMapper createMapper() {
+    return new ExtractMapper();
+  }
+
 
   private void storePBFMetaData(ExtractMapperResult mapResult)
           throws SQLException, IOException {
@@ -266,18 +246,5 @@ public class HOSMDbExtract {
 
   }
 
-  public static void main(String[] args) throws SQLException, IOException, FileNotFoundException, ClassNotFoundException {
-    Class.forName("org.h2.Driver");
-    ExtractArgs eargs = new ExtractArgs();
-    JCommander.newBuilder().addObject(eargs).build().parse(args);
-
-    final File pbfFile = eargs.pbfFile;
-
-    Connection conn = DriverManager.getConnection("jdbc:h2:" + eargs.oshdb, "sa", "");
-
-    final Path tmpDir = eargs.tempDir;
-
-    HOSMDbExtract.extract(pbfFile, conn, tmpDir);
-  }
 
 }

@@ -16,6 +16,6 @@ public class ExtractArgs {
   @Parameter(names = {"-tmp", "-temporyDirectory"}, description = "path to store temporary files", required = false)
   public Path tempDir = Paths.get("./");
 
-  @Parameter(names = {"-db", "-oshdb", "-outputDb"}, description = "Path to output H2. please note that this should not contain .mv.db e.g. /home/user/osh", required = false)
-  public File oshdb = new File("./oshdb");
+  @Parameter(names = {"-key", "-keytables", "-keyDb"}, description = "Path to output keytables", required = false)
+  public File keytables = new File("./oshdb");
 }
