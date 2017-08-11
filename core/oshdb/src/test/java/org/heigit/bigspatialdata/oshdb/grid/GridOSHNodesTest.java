@@ -76,22 +76,22 @@ public class GridOSHNodesTest {
     List<OSHNode> hosmNodes = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>();
-      versions.add(new OSMNode(i + 1, 1, i, 1l, 46, new int[]{2, 2},
+      versions.add(new OSMNode(i + 1, 1, i, 1l, 1, new int[]{1, 2},
               86809727l - 1000000 * i, 494094984l - 1000000 * i));
-      versions.add(new OSMNode(i + 1, 2, i, 1l, 46, new int[]{2, 2},
+      versions.add(new OSMNode(i + 1, 2, i, 1l, 1, new int[]{1, 2},
               0L, 0L));
       hosmNodes.add(OSHNode.build(versions));
     }
 
     GridOSHNodes instance = GridOSHNodes.rebase(2, 2, 100, 100000l, 86000000, 490000000, hosmNodes);
-    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection());
+    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection());
     String expResult = "{\"type\":\"FeatureCollection\","
             + "\"features\":[{"
-            + "\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"building\":\"house\"},"
+            + "\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},"
             + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
-            + "\"type\":\"Feature\",\"id\":2,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"building\":\"house\"},"
+            + "\"type\":\"Feature\",\"id\":2,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},"
             + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
-            + "\"type\":\"Feature\",\"id\":3,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"building\":\"house\"},"
+            + "\"type\":\"Feature\",\"id\":3,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},"
             + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}}]}";
     String result = instance.toGeoJSON(tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     assertEquals(expResult, result);
