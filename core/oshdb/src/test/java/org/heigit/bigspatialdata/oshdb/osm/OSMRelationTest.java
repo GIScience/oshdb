@@ -231,10 +231,10 @@ public class OSMRelationTest {
   @Test
   public void testToString_TagTranslator() throws SQLException, ClassNotFoundException {
     int[] tags = {1, 2};
-    OSMMember[] member = {new OSMMember(2L, OSMType.WAY, 2), new OSMMember(5L, OSMType.NODE, 3)};
-    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 46, tags, member);
-    String expResult = "RELATION-> ID:1 V:+1+ TS:1 CS:1 VIS:true UID:46 UName:FrankM TAGS:[(highway,footway)] Mem:[(T:Way ID:2 R:to),(T:Node ID:5 R:via)]";
-    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
+    OSMMember[] member = {new OSMMember(2L, OSMType.WAY, 3), new OSMMember(5L, OSMType.NODE, 5)};
+    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 1, tags, member);
+    String expResult = "RELATION-> ID:1 V:+1+ TS:1 CS:1 VIS:true UID:1 UName:Alice TAGS:[(highway,track)] Mem:[(T:Way ID:2 R:to),(T:Node ID:5 R:via)]";
+    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection()));
     assertEquals(expResult, result);
   }
 
@@ -243,12 +243,12 @@ public class OSMRelationTest {
     List<OSMNode> versions = new ArrayList<>();
     versions.add(new OSMNode(123l, 1, 1l, 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
-    OSMMember part = new OSMMember(1L, OSMType.NODE, 1, hnode);
-    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 46, new int[]{1, 2}, new OSMMember[]{part, part});
-    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection());
-    String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T01:00:00Z\",\"user\":\"FrankM\",\"uid\":46,\"highway\":\"footway\"},\"geometry\":{\"type\":\"MultiPoint\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]},\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"from\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"from\"}]}";
+    OSMMember part = new OSMMember(1L, OSMType.NODE, 0, hnode);
+    OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part, part});
+    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection());
+    String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]},{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}]},\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"}]}";
 
-    String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromH2(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
+    String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromH2(new OSHDB_H2("./src/test/resources/keytables").getConnection()));
     assertEquals(expResult, result);
   }
 

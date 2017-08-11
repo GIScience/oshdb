@@ -79,9 +79,9 @@ public class OSMMemberTest {
 
   @Test
   public void testToString_TragTranslator() throws SQLException, ClassNotFoundException {
-    OSMMember instance = new OSMMember(2L, OSMType.WAY, 2);
-    String expResult = "T:Way ID:2 R:to";
-    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/heidelberg-ccbysa").getConnection()));
+    OSMMember instance = new OSMMember(2L, OSMType.WAY, 0);
+    String expResult = "T:Way ID:2 R:outer";
+    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection()));
     assertEquals(expResult, result);
   }
 
