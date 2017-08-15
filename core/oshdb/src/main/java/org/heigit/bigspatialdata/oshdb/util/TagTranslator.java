@@ -117,6 +117,31 @@ public class TagTranslator {
   }
 
   /**
+   * Get Integer of a single key.
+   *
+   * @param key
+   * @return
+   */
+  public String key2String(Integer key) {
+    if (this.tagToString.containsKey(key)) {
+      return this.tagToString.get(key).getKey();
+    }
+    String keyString = null;
+    try (PreparedStatement keystmt = this.conn.prepareStatement("select TXT from KEY where KEY.ID = ?;")) {
+      keystmt.setInt(1, key);
+      ResultSet keys = keystmt.executeQuery();
+      keys.next();
+      keyString = keys.getString("TXT");
+      this.tagToString.put(key, new ImmutablePair<>(keyString, new ConcurrentHashMap<>(0)));
+      this.tagToInt.put(keyString, new ImmutablePair<>(key, new ConcurrentHashMap<>(0)));
+
+    } catch (SQLException ex) {
+      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+    }
+    return keyString;
+  }
+
+  /**
    * Get the String for your ID.
    *
    * @param tag

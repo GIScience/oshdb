@@ -108,10 +108,19 @@ public class TagTranslatorTest {
 
   @Test
   public void testKey2Int() {
-    String Key = "highway";
+    String key = "highway";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     Integer expResult = 1;
-    Integer result = instance.key2Int(Key);
+    Integer result = instance.key2Int(key);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testKey2String() {
+    Integer key = 1;
+    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    String expResult = "highway";
+    String result = instance.key2String(key);
     assertEquals(expResult, result);
   }
 
