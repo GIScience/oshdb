@@ -28,6 +28,7 @@ import org.heigit.bigspatialdata.oshdb.etl.extract.ExtractMapperResult;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.KeyValuesFrequency;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
+import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfUser;
 
 public class HOSMDbExtract {
 
@@ -233,17 +234,17 @@ public class HOSMDbExtract {
       insertKey.executeBatch();
     }
 
-//      stmt.executeUpdate(
-//          "drop table if exists user; create table if not exists user(id int primary key, name varchar)");
-//      try (PreparedStatement insertUser =
-//          conn.prepareStatement("insert into user (id, name) values (?,?)")) {
-//        for (OSMPbfUser user : mapResult.getUniqueUser()) {
-//          insertUser.setInt(1, user.getId());
-//          insertUser.setString(2, user.getName());
-//          insertUser.addBatch();
-//        }
-//        insertUser.executeBatch();
-//      }
+    stmt.executeUpdate(
+            "drop table if exists " + TableNames.E_USER.toString() + "; create table if not exists " + TableNames.E_USER.toString() + "(id int primary key, name varchar)");
+    try (PreparedStatement insertUser
+            = conn.prepareStatement("insert into " + TableNames.E_USER.toString() + " (id, name) values (?,?)")) {
+      for (OSMPbfUser user : mapResult.getUniqueUser()) {
+        insertUser.setInt(1, user.getId());
+        insertUser.setString(2, user.getName());
+        insertUser.addBatch();
+      }
+      insertUser.executeBatch();
+    }
     stmt.executeUpdate(
             "drop table if exists " + TableNames.E_ROLE.toString() + "; create table if not exists " + TableNames.E_ROLE.toString() + "(id int primary key, txt varchar)");
     try (PreparedStatement insertRole

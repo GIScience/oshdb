@@ -104,7 +104,12 @@
           <artifactId>ignite-spring</artifactId>
           <version>${ignite.version}</version>
       </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-tool</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 
   <repositories>
     <repository>

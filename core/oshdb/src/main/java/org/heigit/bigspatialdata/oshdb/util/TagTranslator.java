@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.etl.TableNames;
 
 /**
  * Easily translate your String-Keys or Values to OSHDb integer and vice versa.
@@ -61,7 +62,7 @@ public class TagTranslator {
     }
 
     //key or value is not in cache so let's go get them
-    try (PreparedStatement valstmt = this.conn.prepareStatement("select k.ID as KEYID,kv.VALUEID as VALUEID from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID WHERE k.TXT = ? and kv.TXT = ?;")) {
+    try (PreparedStatement valstmt = this.conn.prepareStatement("select k.ID as KEYID,kv.VALUEID as VALUEID from " + TableNames.E_KEYVALUE.toString() + " kv inner join " + TableNames.E_KEY.toString() + " k on k.ID = kv.KEYID WHERE k.TXT = ? and kv.TXT = ?;")) {
       valstmt.setString(1, keyString);
       valstmt.setString(2, valueString);
       ResultSet values = valstmt.executeQuery();
@@ -102,7 +103,7 @@ public class TagTranslator {
       return this.tagToInt.get(key).getKey();
     }
     Integer keyInt = null;
-    try (PreparedStatement keystmt = this.conn.prepareStatement("select ID from KEY where KEY.TXT = ?;")) {
+    try (PreparedStatement keystmt = this.conn.prepareStatement("select ID from " + TableNames.E_KEY.toString() + " where KEY.TXT = ?;")) {
       keystmt.setString(1, key);
       ResultSet keys = keystmt.executeQuery();
       keys.next();
@@ -134,7 +135,7 @@ public class TagTranslator {
     }
 
     //key or value is not in cache so let's go get them
-    try (PreparedStatement valstmt = this.conn.prepareStatement("select k.TXT as KEYTXT,kv.TXT as VALUETXT from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID WHERE k.ID = ? and kv.VALUEID = ?;")) {
+    try (PreparedStatement valstmt = this.conn.prepareStatement("select k.TXT as KEYTXT,kv.TXT as VALUETXT from " + TableNames.E_KEYVALUE.toString() + " kv inner join " + TableNames.E_KEY.toString() + " k on k.ID = kv.KEYID WHERE k.ID = ? and kv.VALUEID = ?;")) {
       valstmt.setInt(1, keyInt);
       valstmt.setInt(2, valInt);
       ResultSet values = valstmt.executeQuery();
@@ -178,7 +179,7 @@ public class TagTranslator {
     Integer keyid = this.key2Int(key);
     HashMap<String, Integer> vals = null;
     if (keyid != null) {
-      try (PreparedStatement valstmt = this.conn.prepareCall("select VALUEID,TXT from KEYVALUE where KEYID=?;")) {
+      try (PreparedStatement valstmt = this.conn.prepareCall("select VALUEID,TXT from " + TableNames.E_KEYVALUE.toString() + " where KEYID=?;")) {
         valstmt.setString(1, keyid.toString());
         ResultSet values = valstmt.executeQuery();
         //get results
@@ -207,7 +208,7 @@ public class TagTranslator {
       return this.roleToInt.get(role);
     }
     Integer roleInt = null;
-    try (PreparedStatement rolestmt = conn.prepareStatement("select ID from ROLE WHERE txt = ?;")) {
+    try (PreparedStatement rolestmt = conn.prepareStatement("select ID from " + TableNames.E_ROLE.toString() + " WHERE txt = ?;")) {
       rolestmt.setString(1, role);
       ResultSet roles = rolestmt.executeQuery();
       roles.next();
@@ -234,7 +235,7 @@ public class TagTranslator {
       return this.roleToString.get(role);
     }
     String roleString = null;
-    try (PreparedStatement Rolestmt = conn.prepareStatement("select TXT from ROLE WHERE ID = ?;")) {
+    try (PreparedStatement Rolestmt = conn.prepareStatement("select TXT from " + TableNames.E_ROLE.toString() + " WHERE ID = ?;")) {
       Rolestmt.setInt(1, role);
       ResultSet Roles = Rolestmt.executeQuery();
       Roles.next();
@@ -261,7 +262,7 @@ public class TagTranslator {
       return this.userToInt.get(name);
     }
     Integer uid = null;
-    try (PreparedStatement userstmt = conn.prepareStatement("select ID from USER WHERE NAME = ?;")) {
+    try (PreparedStatement userstmt = conn.prepareStatement("select ID from " + TableNames.E_USER.toString() + " WHERE NAME = ?;")) {
       userstmt.setString(1, name);
       ResultSet names = userstmt.executeQuery();
       names.next();
@@ -288,7 +289,7 @@ public class TagTranslator {
       return this.userToString.get(uid);
     }
     String name = null;
-    try (PreparedStatement Userstmt = conn.prepareStatement("select NAME from USER WHERE ID = ?;")) {
+    try (PreparedStatement Userstmt = conn.prepareStatement("select NAME from " + TableNames.E_USER.toString() + " WHERE ID = ?;")) {
       Userstmt.setInt(1, uid);
       ResultSet Names = Userstmt.executeQuery();
       Names.next();

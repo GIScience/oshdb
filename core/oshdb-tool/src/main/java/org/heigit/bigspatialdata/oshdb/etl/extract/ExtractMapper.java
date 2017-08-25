@@ -11,10 +11,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.KeyValuesFrequency;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.RelationMapping;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
@@ -31,28 +29,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ExtractMapper {
-  
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ExtractMapper.class);
 
   public ExtractMapperResult map(InputStream in) {
     try ( //
-        final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
+            final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
 
       final OsmPbfIterator osmIterator = new OsmPbfIterator(blockItr);
       final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
 
-      
       final SortedMap<String, KeyValuesFrequency> tagToKeyValuesFrequency = new TreeMap<>();
       final Map<String, Integer> roleToFrequency = new HashMap<>();
       final SortedSet<OSMPbfUser> uniqueUser = new TreeSet<>();
       final RelationMapping mapping = new RelationMapping();
-      
+
       final HeaderInfo headerInfo = blockItr.getHeaderInfo();
       final Map<Type, Long> pbfTypeBlockFirstPosition = new HashMap<>();
       long countNodes = 0;
       long countWays = 0;
       long countRelations = 0;
-
 
       while (oshIterator.hasNext()) {
         final List<OSMPbfEntity> versions = oshIterator.next();
@@ -67,11 +63,11 @@ public class ExtractMapper {
         if (blockPosRelative == null) {
           blockPosRelative = Long.valueOf(blockItr.getBlockPos());
         } else {
-          blockPosRelative =
-              Long.valueOf(Math.min(blockPosRelative.longValue(), blockItr.getBlockPos()));
+          blockPosRelative
+                  = Long.valueOf(Math.min(blockPosRelative.longValue(), blockItr.getBlockPos()));
         }
         pbfTypeBlockFirstPosition.put(type, blockPosRelative);
-        
+
         switch (type) {
           case NODE:
             countNodes++;
@@ -87,25 +83,19 @@ public class ExtractMapper {
         }
 
         tagKeyValues(id, type, versions, tagToKeyValuesFrequency);
-      //  users(id, type, versions,uniqueUser);
-        roles(id, type, versions,roleToFrequency);
-        relationMapping(id, type, versions,mapping);
+        users(id, type, versions, uniqueUser);
+        roles(id, type, versions, roleToFrequency);
+        relationMapping(id, type, versions, mapping);
       } // while(oshIterator.hasNext()
-      
-      
+
       return new ExtractMapperResult(tagToKeyValuesFrequency, roleToFrequency, uniqueUser, mapping, headerInfo, pbfTypeBlockFirstPosition, countNodes, countWays, countRelations);
-      
+
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return null;
   }
-  
-  
-
-
-  
 
   private void tagKeyValues(long id, Type type, List<OSMPbfEntity> versions, SortedMap<String, KeyValuesFrequency> tagToKeyValuesFrequency) {
     Set<OSMPbfTag> uniqueTags = new HashSet<>();
@@ -135,11 +125,10 @@ public class ExtractMapper {
     }
   }
 
-
-
   private void roles(long id, Type type, List<OSMPbfEntity> versions, Map<String, Integer> roleToFrequency) {
-    if (type != Type.RELATION)
+    if (type != Type.RELATION) {
       return;
+    }
 
     Set<String> uniqueRoles = new HashSet<>();
 
@@ -147,7 +136,7 @@ public class ExtractMapper {
       OSMPbfRelation relation = (OSMPbfRelation) entity;
       for (OSMMember member : relation.getMembers()) {
         String role = member.getRole().trim();
-          uniqueRoles.add(role);
+        uniqueRoles.add(role);
       }
     }
 
@@ -161,16 +150,12 @@ public class ExtractMapper {
     }
   }
 
- 
-
   private void users(long id, Type type, List<OSMPbfEntity> versions, SortedSet<OSMPbfUser> uniqueUser) {
     for (OSMPbfEntity entity : versions) {
       OSMPbfUser user = entity.getUser();
       uniqueUser.add(user);
     }
   }
-
- 
 
   private void relationMapping(long id, Type type, List<OSMPbfEntity> versions, RelationMapping mapping) {
     switch (type) {
