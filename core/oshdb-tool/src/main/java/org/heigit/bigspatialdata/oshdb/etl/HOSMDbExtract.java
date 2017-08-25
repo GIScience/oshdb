@@ -134,12 +134,12 @@ public class HOSMDbExtract {
   }
 
   private void storeRelationMapping(ExtractMapperResult mapResult) throws SQLException {
-    try (Connection tmprelconn = DriverManager.getConnection("jdbc:h2:" + tmpDir + "/temp_relations", "sa", "")) {
+    try (Connection tmprelconn = DriverManager.getConnection("jdbc:h2:" + (new File(tmpDir.toFile(), EtlFiles.E_TEMPRELATIONS.getName())).getAbsolutePath(), "sa", "")) {
       Statement stmt = tmprelconn.createStatement();
       stmt.executeUpdate(
-              "drop table if exists node2way; create table if not exists node2way(node bigint primary key, ways array)");
+              "drop table if exists " + TableNames.E_NODE2WAY.toString() + "; create table if not exists " + TableNames.E_NODE2WAY.toString() + "(node bigint primary key, ways array)");
       try (PreparedStatement insert
-              = tmprelconn.prepareStatement("insert into node2way (node,ways) values(?,?)")) {
+              = tmprelconn.prepareStatement("insert into " + TableNames.E_NODE2WAY.toString() + " (node,ways) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().nodeToWay()
                 .entrySet()) {
           insert.setLong(1, relation.getKey());
@@ -150,9 +150,9 @@ public class HOSMDbExtract {
       }
 
       stmt.executeUpdate(
-              "drop table if exists node2relation; create table if not exists node2relation(node bigint primary key, relations array)");
+              "drop table if exists " + TableNames.E_NODE2RELATION.toString() + "; create table if not exists " + TableNames.E_NODE2RELATION.toString() + "(node bigint primary key, relations array)");
       try (PreparedStatement insert
-              = tmprelconn.prepareStatement("insert into node2relation (node,relations) values(?,?)")) {
+              = tmprelconn.prepareStatement("insert into " + TableNames.E_NODE2RELATION.toString() + " (node,relations) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().nodeToRelation()
                 .entrySet()) {
           insert.setLong(1, relation.getKey());
@@ -163,9 +163,9 @@ public class HOSMDbExtract {
       }
 
       stmt.executeUpdate(
-              "drop table if exists way2relation; create table if not exists way2relation(way bigint primary key, relations array)");
+              "drop table if exists " + TableNames.E_WAY2RELATION.toString() + "; create table if not exists " + TableNames.E_WAY2RELATION.toString() + "(way bigint primary key, relations array)");
       try (PreparedStatement insert
-              = tmprelconn.prepareStatement("insert into way2relation (way,relations) values(?,?)")) {
+              = tmprelconn.prepareStatement("insert into " + TableNames.E_WAY2RELATION.toString() + " (way,relations) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().wayToRelation()
                 .entrySet()) {
           insert.setLong(1, relation.getKey());
@@ -176,9 +176,9 @@ public class HOSMDbExtract {
       }
 
       stmt.executeUpdate(
-              "drop table if exists relation2relation; create table if not exists relation2relation(relation bigint primary key, relations array)");
+              "drop table if exists " + TableNames.E_RELATION2RELATION.toString() + "; create table if not exists " + TableNames.E_RELATION2RELATION.toString() + "(relation bigint primary key, relations array)");
       try (PreparedStatement insert
-              = tmprelconn.prepareStatement("insert into relation2relation (relation,relations) values(?,?)")) {
+              = tmprelconn.prepareStatement("insert into " + TableNames.E_RELATION2RELATION.toString() + " (relation,relations) values(?,?)")) {
         for (Map.Entry<Long, SortedSet<Long>> relation : mapResult.getMapping().relationToRelation()
                 .entrySet()) {
           insert.setLong(1, relation.getKey());
@@ -194,14 +194,14 @@ public class HOSMDbExtract {
   private void storeKeyTables(ExtractMapperResult mapResult) throws SQLException {
     Statement stmt = conn.createStatement();
     stmt.executeUpdate(
-            "drop table if exists key; create table if not exists key(id int primary key, txt varchar)");
+            "drop table if exists " + TableNames.E_KEY.toString() + "; create table if not exists " + TableNames.E_KEY.toString() + "(id int primary key, txt varchar)");
     stmt.executeUpdate(
-            "drop table if exists keyvalue; create table if not exists keyvalue(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
+            "drop table if exists " + TableNames.E_KEYVALUE.toString() + "; create table if not exists " + TableNames.E_KEYVALUE.toString() + "(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
     try (//
             PreparedStatement insertKey
-            = conn.prepareStatement("insert into key (id,txt) values (?,?)");
+            = conn.prepareStatement("insert into " + TableNames.E_KEY.toString() + " (id,txt) values (?,?)");
             PreparedStatement insertValue
-            = conn.prepareStatement("insert into keyvalue ( keyId, valueId, txt ) values(?,?,?)")) {
+            = conn.prepareStatement("insert into " + TableNames.E_KEYVALUE.toString() + " ( keyId, valueId, txt ) values(?,?,?)")) {
 
       Map<String, KeyValuesFrequency> keyValuesFrequency = mapResult.getTagToKeyValuesFrequency();
 
@@ -245,9 +245,9 @@ public class HOSMDbExtract {
 //        insertUser.executeBatch();
 //      }
     stmt.executeUpdate(
-            "drop table if exists role; create table if not exists role(id int primary key, txt varchar)");
+            "drop table if exists " + TableNames.E_ROLE.toString() + "; create table if not exists " + TableNames.E_ROLE.toString() + "(id int primary key, txt varchar)");
     try (PreparedStatement insertRole
-            = conn.prepareStatement("insert into role (id,txt) values(?,?)")) {
+            = conn.prepareStatement("insert into " + TableNames.E_ROLE.toString() + " (id,txt) values(?,?)")) {
       List<Map.Entry<String, Integer>> sortedRoles
               = new ArrayList<>(mapResult.getRoleToFrequency().entrySet());
       Comparator<Map.Entry<String, Integer>> roleFrequencComparator

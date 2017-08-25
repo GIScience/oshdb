@@ -96,7 +96,7 @@ public class HOSMDbTransform {
     final String n2rRelationFile = hosmDbTransform.getTmp() + "/temp_nodesForRelation.ser";
     final String w2rRelationFile = hosmDbTransform.getTmp() + "/temp_waysForRelation.ser";
     final XYGrid grid = new XYGrid(maxZoom);
-    try (Connection tempRelations = DriverManager.getConnection("jdbc:h2:" + tempDir + "/temp_relations", "sa", "")) {
+    try (Connection tempRelations = DriverManager.getConnection("jdbc:h2:" + tempDir + "/" + EtlFiles.E_TEMPRELATIONS.getName(), "sa", "")) {
       if (true) {
         try (//
                 final FileInputStream in = new FileInputStream(pbfFile); //
@@ -251,10 +251,10 @@ public class HOSMDbTransform {
     try (Statement stmt = dbconn.createStatement()) {
 
       stmt.executeUpdate(
-              "drop table if exists grid_node; create table if not exists grid_node(level int, id bigint, data blob,  primary key(level,id))");
+              "drop table if exists " + TableNames.T_NODES.toString() + "; create table if not exists " + TableNames.T_NODES.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
 
       PreparedStatement insert
-              = dbconn.prepareStatement("insert into grid_node (level,id,data) values(?,?,?)");
+              = dbconn.prepareStatement("insert into " + TableNames.T_NODES.toString() + " (level,id,data) values(?,?,?)");
 
       //iterate over cells parsed from PBF-File
       for (CellNode cell : result.getNodeCells()) {
@@ -292,10 +292,10 @@ public class HOSMDbTransform {
     try (Statement stmt = dbconn.createStatement()) {
 
       stmt.executeUpdate(
-              "drop table if exists grid_way; create table if not exists grid_way(level int, id bigint, data blob,  primary key(level,id))");
+              "drop table if exists " + TableNames.T_WAYS.toString() + "; create table if not exists " + TableNames.T_WAYS.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
 
       PreparedStatement insert
-              = dbconn.prepareStatement("insert into grid_way (level,id,data) values(?,?,?)");
+              = dbconn.prepareStatement("insert into " + TableNames.T_WAYS.toString() + " (level,id,data) values(?,?,?)");
 
       for (CellWay cell : wayResults.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());
@@ -334,10 +334,10 @@ public class HOSMDbTransform {
     try (Statement stmt = dbconn.createStatement()) {
 
       stmt.executeUpdate(
-              "drop table if exists grid_relation; create table if not exists grid_relation(level int, id bigint, data blob,  primary key(level,id))");
+              "drop table if exists " + TableNames.T_RELATIONS.toString() + "; create table if not exists " + TableNames.T_RELATIONS.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
 
       PreparedStatement insert
-              = dbconn.prepareStatement("insert into grid_relation (level,id,data) values(?,?,?)");
+              = dbconn.prepareStatement("insert into " + TableNames.T_RELATIONS.toString() + " (level,id,data) values(?,?,?)");
 
       for (CellRelation cell : result.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());

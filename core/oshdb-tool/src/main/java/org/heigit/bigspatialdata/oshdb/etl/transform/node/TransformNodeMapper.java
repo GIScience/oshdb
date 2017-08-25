@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.heigit.bigspatialdata.oshdb.etl.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellNode;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;
@@ -90,9 +91,9 @@ public class TransformNodeMapper extends TransformMapper2 {
 
     initKeyTables(connKeyTables);
 
-    getWaysForNode = connRelations.prepareStatement("select ways from node2way where node = ?");
+    getWaysForNode = connRelations.prepareStatement("select ways from " + TableNames.E_NODE2WAY.toString() + " where node = ?");
     getRelationsForNode
-            = connRelations.prepareStatement("select relations from node2relation where node = ?");
+            = connRelations.prepareStatement("select relations from " + TableNames.E_NODE2RELATION.toString() + " where node = ?");
 
     final List<NodeRelation> nodesForWays = new ArrayList<>();
     final List<NodeRelation> nodesForRelations = new ArrayList<>();
@@ -110,9 +111,9 @@ public class TransformNodeMapper extends TransformMapper2 {
       Statement stmt = connKeyTables.createStatement();
       try (ResultSet rst = stmt.executeQuery(""
               + //
-              "select key.txt, keyvalue.txt, keyid, valueid "
+              "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString() + ".txt, keyid, valueid "
               + //
-              "from key join keyvalue on key.id = keyvalue.keyid ")) {
+              "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString() + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString() + ".keyid ")) {
         while (rst.next()) {
           Map<String, int[]> a = keyValueCache.get(rst.getString(1));
           if (a == null) {

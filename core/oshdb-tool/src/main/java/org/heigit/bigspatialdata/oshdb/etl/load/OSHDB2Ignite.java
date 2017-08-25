@@ -21,6 +21,8 @@ import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgnitionEx;
+import org.heigit.bigspatialdata.oshdb.etl.CacheNames;
+import org.heigit.bigspatialdata.oshdb.etl.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.cmdarg.LoadArgs;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
@@ -49,9 +51,9 @@ public class OSHDB2Ignite {
 
       try (Statement stmt = oshdb.createStatement()) {
 
-        OSHDB2Ignite.<GridOSHNodes>doGridImport(ignite, stmt, "grid_node");
-        OSHDB2Ignite.<GridOSHWays>doGridImport(ignite, stmt, "grid_way");
-        OSHDB2Ignite.<GridOSHRelations>doGridImport(ignite, stmt, "grid_relation");
+        OSHDB2Ignite.<GridOSHNodes>doGridImport(ignite, stmt, CacheNames.NODES);
+        OSHDB2Ignite.<GridOSHWays>doGridImport(ignite, stmt, CacheNames.WAYS);
+        OSHDB2Ignite.<GridOSHRelations>doGridImport(ignite, stmt, CacheNames.RELATIONS);
 
       } catch (SQLException ex) {
         LOG.log(Level.SEVERE, null, ex);
@@ -61,15 +63,26 @@ public class OSHDB2Ignite {
 
   }
 
-  private static <T> void doGridImport(Ignite ignite, Statement stmt, String cacheName) {
-    CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheName);
+  private static <T> void doGridImport(Ignite ignite, Statement stmt, CacheNames cacheName) {
+    CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheName.toString());
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
 
     IgniteCache<Long, T> cache = ignite.getOrCreateCache(cacheCfg);
     try (IgniteDataStreamer<Long, T> streamer = ignite.dataStreamer(cache.getName())) {
       streamer.allowOverwrite(true);
-      try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + cacheName)) {
+      String tableName = null;
+      switch (cacheName) {
+        case NODES:
+          tableName = TableNames.T_NODES.toString();
+          break;
+        case WAYS:
+          tableName = TableNames.T_WAYS.toString();
+          break;
+        case RELATIONS:
+          tableName = TableNames.T_RELATIONS.toString();
+      }
+      try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
         int cnt = 0;
         while (rst.next()) {
           final int level = rst.getInt(1);

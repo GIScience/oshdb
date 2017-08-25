@@ -22,6 +22,7 @@ import java.util.TreeSet;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import org.heigit.bigspatialdata.oshdb.etl.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellRelation;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;
@@ -104,7 +105,7 @@ public class TransformRelationMapper extends TransformMapper2 {
       initKeyTables(connKeyTables);
 
       pstmtRelationForRelation = connRelations
-              .prepareStatement("select relations from relation2relation where relation = ?");
+              .prepareStatement("select relations from " + TableNames.E_RELATION2RELATION.toString() + " where relation = ?");
 
       try ( //
               final FileInputStream fileNodeStream = new FileInputStream(nodeRelationFile);
@@ -125,9 +126,9 @@ public class TransformRelationMapper extends TransformMapper2 {
         Statement stmt = connKeyTables.createStatement();
         try (ResultSet rst = stmt.executeQuery(""
                 + //
-                "select key.txt, keyvalue.txt, keyid, valueid "
+                "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString() + ".txt, keyid, valueid "
                 + //
-                "from key join keyvalue on key.id = keyvalue.keyid ")) {
+                "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString() + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString() + ".keyid ")) {
           while (rst.next()) {
             Map<String, int[]> a = keyValueCache.get(rst.getString(1));
             if (a == null) {
