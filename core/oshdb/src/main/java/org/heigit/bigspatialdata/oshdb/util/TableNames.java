@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.etl;
+package org.heigit.bigspatialdata.oshdb.util;
 
 /**
  * Names for JDBC-Tables.

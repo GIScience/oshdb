@@ -22,7 +22,7 @@ import java.util.TreeSet;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import org.heigit.bigspatialdata.oshdb.etl.TableNames;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellRelation;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;

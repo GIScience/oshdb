@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.etl;
 
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import java.io.File;

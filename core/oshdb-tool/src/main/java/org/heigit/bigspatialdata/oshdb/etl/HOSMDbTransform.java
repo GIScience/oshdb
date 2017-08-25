@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.cmdarg.TransformArgs;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellInfo;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellNode;
