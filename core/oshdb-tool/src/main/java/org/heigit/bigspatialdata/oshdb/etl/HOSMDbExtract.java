@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.etl;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.heigit.bigspatialdata.oshdb.etl.cmdarg.ExtractArgs;
 import org.heigit.bigspatialdata.oshdb.etl.extract.ExtractMapper;
@@ -28,7 +30,9 @@ import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
 
 public class HOSMDbExtract {
+
   private static final Logger LOG = Logger.getLogger(HOSMDbExtract.class.getName());
+
   /**
    * Extract HOSM-Data from pbf to H2.
    *
@@ -66,19 +70,34 @@ public class HOSMDbExtract {
               mapResult.getCountWays(), mapResult.getCountRelations());
 
     }
-    
+
   }
 
   public static void main(String[] args) throws SQLException, IOException, FileNotFoundException, ClassNotFoundException {
     Class.forName("org.h2.Driver");
     ExtractArgs eargs = new ExtractArgs();
-    JCommander.newBuilder().addObject(eargs).build().parse(args);
-    
+    JCommander jcom = JCommander.newBuilder().addObject(eargs).build();
+    try {
+      jcom.parse(args);
+    } catch (ParameterException e) {
+      System.out.println("");
+      LOG.log(Level.SEVERE, e.getLocalizedMessage());
+      System.out.println("");
+      jcom.usage();
+
+      return;
+    }
+
+    if (eargs.help.help) {
+      jcom.usage();
+      return;
+    }
+
     final File pbfFile = eargs.pbfFile;
     final Path tmpDir = eargs.tempDir;
-    
+
     try (Connection conn = DriverManager.getConnection("jdbc:h2:" + eargs.keytables, "sa", "")) {
-      
+
       HOSMDbExtract.extract(pbfFile, conn, tmpDir);
     }
   }
@@ -94,7 +113,6 @@ public class HOSMDbExtract {
   public ExtractMapper createMapper() {
     return new ExtractMapper();
   }
-
 
   private void storePBFMetaData(ExtractMapperResult mapResult)
           throws SQLException, IOException {
@@ -245,6 +263,5 @@ public class HOSMDbExtract {
     }
 
   }
-
 
 }

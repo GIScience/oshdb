@@ -8,7 +8,9 @@ public class LoadArgs {
 
   @ParametersDelegate
   public OSHDBArg oshdbarg = new OSHDBArg();
+  @ParametersDelegate
+  public HelpArg help = new HelpArg();
 
-  @Parameter(names = {"-ignite", "-igniteConfig", "-icfg"}, description = "Path ot ignite-config.xml", required = true)
+  @Parameter(names = {"-ignite", "-igniteConfig", "-icfg"}, description = "Path ot ignite-config.xml", required = true, order = 1)
   public File ignitexml;
 }

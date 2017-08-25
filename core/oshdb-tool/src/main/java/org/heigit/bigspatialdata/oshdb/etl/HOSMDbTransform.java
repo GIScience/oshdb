@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.etl;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,6 +19,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -200,7 +202,22 @@ public class HOSMDbTransform {
           throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
     Class.forName("org.h2.Driver");
     TransformArgs targs = new TransformArgs();
-    JCommander.newBuilder().addObject(targs).build().parse(args);
+    JCommander jcom = JCommander.newBuilder().addObject(targs).build();
+    try {
+      jcom.parse(args);
+    } catch (ParameterException e) {
+      System.out.println("");
+      LOG.log(Level.SEVERE, e.getLocalizedMessage());
+      System.out.println("");
+      jcom.usage();
+
+      return;
+    }
+
+    if (targs.baseArgs.help.help) {
+      jcom.usage();
+      return;
+    }
 
     final File pbfFile = targs.baseArgs.pbfFile;
 

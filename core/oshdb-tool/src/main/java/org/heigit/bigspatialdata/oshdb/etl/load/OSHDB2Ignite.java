@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.etl.load;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -90,7 +91,22 @@ public class OSHDB2Ignite {
 
   public static void main(String[] args) throws SQLException, IgniteCheckedException {
     LoadArgs largs = new LoadArgs();
-    JCommander.newBuilder().addObject(largs).build().parse(args);
+    JCommander jcom = JCommander.newBuilder().addObject(largs).build();
+    try {
+      jcom.parse(args);
+    } catch (ParameterException e) {
+      System.out.println("");
+      LOG.log(Level.SEVERE, e.getLocalizedMessage());
+      System.out.println("");
+      jcom.usage();
+
+      return;
+    }
+
+    if (largs.help.help) {
+      jcom.usage();
+      return;
+    }
     try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdbarg.oshdb, "sa", "")) {
       OSHDB2Ignite.load(largs.ignitexml, con);
     }
