@@ -1,141 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.heigit.bigspatialdata</groupId>
-		<artifactId>bigspatialdata-core-parent</artifactId>
-		<version>0.3.0-SNAPSHOT</version>
-		<relativePath>../</relativePath>
-	</parent>
+  <parent>
+    <groupId>org.heigit.bigspatialdata</groupId>
+    <artifactId>bigspatialdata-core-parent</artifactId>
+    <version>0.3.0-SNAPSHOT</version>
+    <relativePath>../</relativePath>
+  </parent>
 
-	<artifactId>oshdb-tool</artifactId>
+  <artifactId>oshdb-tool</artifactId>
 
-	<properties>
+  <properties>
 
-	</properties>
-
-
-	<dependencies>
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>2.6.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.193</version>
-		</dependency>
-		<dependency>
-			<groupId>org.roaringbitmap</groupId>
-			<artifactId>RoaringBitmap</artifactId>
-			<version>0.6.37</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-cli</groupId>
-			<artifactId>commons-cli</artifactId>
-			<version>1.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.heigit.bigspatialdata</groupId>
-			<artifactId>oshpbf-parser</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.uzaygezen</groupId>
-			<artifactId>uzaygezen-core</artifactId>
-			<version>0.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>mil.nga.giat</groupId>
-			<artifactId>geowave-core-index</artifactId>
-			<version>0.9.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.vividsolutions</groupId>
-			<artifactId>jts-core</artifactId>
-			<version>1.14.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.googlecode.json-simple</groupId>
-			<artifactId>json-simple</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-geometry</artifactId>
-			<version>15.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.heigit.bigspatialdata</groupId>
-			<artifactId>oshdb</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.trove4j</groupId>
-			<artifactId>trove4j</artifactId>
-			<version>3.0.3</version>
-		</dependency>
-
-	</dependencies>
-
-	<repositories>
-		<repository>
-			<id>geowave-maven-release</id>
-			<name>GeoWave AWS Snapshot Repository</name>
-			<url>http://geowave-maven.s3-website-us-east-1.amazonaws.com/release</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-
-		<repository>
-			<id>boundless</id>
-			<url>https://repo.boundlessgeo.com/release/</url>
-		</repository>
-
-		<repository>
-			<id>osgeo</id>
-			<name>Open Source Geospatial Foundation Repository</name>
-			<url>http://download.osgeo.org/webdav/geotools/</url>
-		</repository>
-	</repositories>
+  </properties>
 
 
-	<profiles>
-		<profile>
-			<id>tool</id>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.193</version>
+    </dependency>
+    <dependency>
+      <groupId>org.roaringbitmap</groupId>
+      <artifactId>RoaringBitmap</artifactId>
+      <version>0.6.37</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.5</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.heigit.bigspatialdata</groupId>
+      <artifactId>oshpbf-parser</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
 
-			<build>
-			</build>
-		</profile>
-	</profiles>
+    <dependency>
+      <groupId>com.google.uzaygezen</groupId>
+      <artifactId>uzaygezen-core</artifactId>
+      <version>0.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mil.nga.giat</groupId>
+      <artifactId>geowave-core-index</artifactId>
+      <version>0.9.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vividsolutions</groupId>
+      <artifactId>jts-core</artifactId>
+      <version>1.14.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-geometry</artifactId>
+      <version>15.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.heigit.bigspatialdata</groupId>
+      <artifactId>oshdb</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>net.sf.trove4j</groupId>
+      <artifactId>trove4j</artifactId>
+      <version>3.0.3</version>
+    </dependency>
+   
+
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.72</version>
+    </dependency>
+
+
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>geowave-maven-release</id>
+      <name>GeoWave AWS Snapshot Repository</name>
+      <url>http://geowave-maven.s3-website-us-east-1.amazonaws.com/release</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
+    <repository>
+      <id>boundless</id>
+      <url>https://repo.boundlessgeo.com/release/</url>
+    </repository>
+
+    <repository>
+      <id>osgeo</id>
+      <name>Open Source Geospatial Foundation Repository</name>
+      <url>http://download.osgeo.org/webdav/geotools/</url>
+    </repository>
+  </repositories>
+
+
+  <profiles>
+    <profile>
+      <id>tool</id>
+
+      <build>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

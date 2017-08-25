@@ -5,16 +5,14 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.
@@ -207,6 +205,16 @@ public class XYGridTree {
     double maxlat = bbox.getMaxValuesPerDimension()[1] + EPSILON;
     BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
     return this.bbox2CellIds(newbbox, false);
+  }
+
+  /**
+   * Get the parent CellIds in all other zoomlevel.
+   *
+   * @param center
+   * @return
+   */
+  public Iterable<CellId> getMultiZoomParents(CellId center) {
+    return this.bbox2CellIds(this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId()), false);
   }
 
 }
