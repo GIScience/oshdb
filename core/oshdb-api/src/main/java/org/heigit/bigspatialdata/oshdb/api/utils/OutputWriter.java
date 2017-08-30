@@ -13,10 +13,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+import javafx.util.Pair;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.utils.ZKStringSerializer$;
@@ -40,27 +41,52 @@ public class OutputWriter {
   private static final ArrayList<String> kafkatopic = new ArrayList<>();
 
   /**
-   * Writes a simple CSV-File.
+   * Get the handle to a standard file.
    *
    * @param username your username. It will be part of the output.
-   * @param output The Data your want to store
-   * @throws FileNotFoundException
+   * @return
    * @throws IOException
    */
-  public static void toCSV(String username, Map<String, String> output) throws FileNotFoundException, IOException {
-
-    File file = new File("/opt/ignite/UserOutput/", username + "_" + dateFormat.format(new Date()) + ".csv");
+  public static File getFile(String username) throws IOException {
+    File file = new File("/opt/ignite/UserOutput/", username + "_" + dateFormat.format(new Date()));
     if (!file.exists()) {
       file.getParentFile().mkdir();
       file.createNewFile();
     }
+    return file;
+  }
+
+  /**
+   * Writes a simple CSV-File.
+   *
+   * @param username your username. It will be part of the output.
+   * @param output The Data your want to store. The method call forEach on the
+   * stream.
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  public static void toCSV(String username, Stream<Pair<String, String>> output) throws IOException {
+    File file = OutputWriter.getFile(username);
 
     try (PrintWriter out = new PrintWriter(file);) {
-      output.forEach((key, value) -> {
-        out.println(key + "," + value);
+      output.forEach((Pair<String, String> pair) -> {
+        out.println(pair.getKey() + "," + pair.getValue());
       });
 
     }
+  }
+
+  /**
+   * Get the handle to a standard H2-DB you can fill.
+   *
+   * @param username your username. It will be part of the output.
+   * @return
+   * @throws ClassNotFoundException
+   * @throws SQLException
+   */
+  public static Connection getH2(String username) throws ClassNotFoundException, SQLException {
+    Class.forName("org.h2.Driver");
+    return DriverManager.getConnection("jdbc:h2:/opt/ignite/UserOutput/" + username + "_" + dateFormat.format(new Date()), username, "");
   }
 
   /**
@@ -71,50 +97,15 @@ public class OutputWriter {
    * @throws ClassNotFoundException
    * @throws SQLException
    */
-  public static void toH2(String username, Map<String, String> output) throws ClassNotFoundException, SQLException {
-    Class.forName("org.h2.Driver");
-    Connection conn = DriverManager.getConnection("jdbc:h2:/opt/ignite/UserOutput/" + username + "_" + dateFormat.format(new Date()), username, "");
-    Statement stmt = conn.createStatement();
-    stmt.executeUpdate("drop table if exists result; create table if not exists result(key varchar(max), value varchar(max))");
-    try (PreparedStatement insert = conn.prepareStatement("insert into result (key,value) values(?,?)")) {
-      output.forEach((key, value) -> {
-        try {
-          insert.setString(1, key);
-          insert.setString(2, value);
-          insert.addBatch();
-        } catch (SQLException ex) {
-          Logger.getLogger(OutputWriter.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-      });
-      insert.executeBatch();
-
-    }
-  }
-
-  /**
-   * Stores the data in the PostgreSql DB on the server.
-   *
-   * @param username your username. It will be part of the output.
-   * @param output The Data your want to store
-   * @throws ClassNotFoundException
-   * @throws SQLException
-   */
-  public static void toPostgre(String username, Map<String, String> output) throws ClassNotFoundException, SQLException {
-    Class.forName("org.postgresql.Driver");
-    Date now = new Date();
-    try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/", "postgres", "HeiGit")) {
+  public static void toH2(String username, Stream<Pair<String, String>> output) throws ClassNotFoundException, SQLException {
+    try (Connection conn = OutputWriter.getH2(username)) {
       Statement stmt = conn.createStatement();
-      stmt.executeUpdate("CREATE DATABASE " + username + "_" + dateFormat.format(now));
-    }
-    try (Connection conn2 = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + username + "_" + dateFormat.format(now), "postgres", "HeiGit")) {
-      Statement stmt2 = conn2.createStatement();
-      stmt2.executeUpdate("drop table if exists result; create table if not exists result(key text, value text)");
-      try (PreparedStatement insert = conn2.prepareStatement("insert into result (key,value) values(?,?)")) {
-        output.forEach((key, value) -> {
+      stmt.executeUpdate("drop table if exists result; create table if not exists result(key varchar(max), value varchar(max))");
+      try (PreparedStatement insert = conn.prepareStatement("insert into result (key,value) values(?,?)")) {
+        output.forEach((Pair<String, String> pair) -> {
           try {
-            insert.setString(1, key);
-            insert.setString(2, value);
+            insert.setString(1, pair.getKey());
+            insert.setString(2, pair.getValue());
             insert.addBatch();
           } catch (SQLException ex) {
             Logger.getLogger(OutputWriter.class.getName()).log(Level.SEVERE, null, ex);
@@ -129,15 +120,91 @@ public class OutputWriter {
   }
 
   /**
+   * Get the handle to a standard Postgre Database, you can fill.
+   *
+   * @param username your username. It will be part of the output.
+   * @return
+   */
+  public static Connection getPostgre(String username) throws ClassNotFoundException, SQLException {
+    Class.forName("org.postgresql.Driver");
+    String usernameDate = username + "_" + dateFormat.format(new Date());
+    try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/", "postgres", "HeiGit")) {
+      Statement stmt = conn.createStatement();
+      stmt.executeUpdate("CREATE USER " + usernameDate + " WITH PASSWORD 'password'");
+      stmt.executeUpdate("CREATE DATABASE " + usernameDate);
+      stmt.executeUpdate("GRANT ALL PRIVILEGES ON DATABASE " + usernameDate + " TO " + usernameDate);
+    }
+    return DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + usernameDate, usernameDate, "password");
+  }
+
+  /**
+   * Stores the data in the PostgreSql DB on the server.
+   *
+   * @param username your username. It will be part of the output.
+   * @param output The Data your want to store
+   * @throws ClassNotFoundException
+   * @throws SQLException
+   */
+  public static void toPostgre(String username, Stream<Pair<String, String>> output) throws ClassNotFoundException, SQLException {
+    try (Connection conn2 = OutputWriter.getPostgre(username)) {
+      Statement stmt2 = conn2.createStatement();
+
+      stmt2.executeUpdate("drop table if exists result; create table if not exists result(key text, value text)");
+      try (PreparedStatement insert = conn2.prepareStatement("insert into result (key,value) values(?,?)")) {
+        output.forEach(pair -> {
+          try {
+            insert.setString(1, pair.getKey());
+            insert.setString(2, pair.getValue());
+            insert.addBatch();
+          } catch (SQLException ex) {
+            Logger.getLogger(OutputWriter.class.getName()).log(Level.SEVERE, null, ex);
+          }
+
+        });
+        insert.executeBatch();
+
+      }
+
+    }
+
+  }
+
+  /**
+   * Creates the specified topic if it does not exist and creates a new
+   * KafkaProducer containing your properties. It overwrites the
+   * "bootstrap.servers" property to make it work on the cluster. Be sure to
+   * provide all important properties (See
+   * <a href="https://kafka.apache.org/documentation/#producerconfigs"> Kafka
+   * Documentation</a>), especially the Serialiser for your given K and V.
+   *
+   * @param <K> Key Type of your producer
+   * @param <V> Value Type of your producer
+   * @param topic Topic your want to broadcast to. Is Created if it does not
+   * exist.
+   * @return
+   */
+  public static <K, V> Producer<K, V> getKafka(String topic, Properties props) {
+    //check if it was created in this instance. If not check if it still exists in the cluster. This is to prevent multiple time consuming checks on zookeeper.
+    if (!kafkatopic.contains(topic)) {
+      OutputWriter.createKafkaTopic(topic);
+    }
+    props.put("bootstrap.servers", "localhost:9092");
+    return new KafkaProducer<>(props);
+
+  }
+
+  /**
    * Promotes the result to the Kafka broker. This is especially useful if you
    * want to get intermediate results before your Task is finished.
    *
-   * @param topic Is Created if it does not exist.
+   * @param topic Topic your want to broadcast to. Is Created if it does not
+   * exist.
    * @param output The Data your want to store
    * @throws FileNotFoundException
    * @throws IOException
    */
-  public static void toKafka(String topic, Map<String, String> output) throws FileNotFoundException, IOException {
+  public static void toKafka(String topic, Stream<Pair<String, String>> output) throws FileNotFoundException, IOException {
+    //check if it was created in this instance. If not check if it still exists in the cluster. This is to prevent multiple time consuming checks on zookeeper.
     if (!kafkatopic.contains(topic)) {
       OutputWriter.createKafkaTopic(topic);
     }
@@ -153,8 +220,8 @@ public class OutputWriter {
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
     try (Producer<String, String> producer = new KafkaProducer<>(props);) {
-      output.forEach((key, value) -> {
-        producer.send(new ProducerRecord<String, String>(topic, key, value));
+      output.forEach(pair -> {
+        producer.send(new ProducerRecord<String, String>(topic, pair.getKey(), pair.getValue()));
       });
     }
   }
