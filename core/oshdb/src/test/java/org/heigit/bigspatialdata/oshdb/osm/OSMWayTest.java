@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.heigit.bigspatialdata.oshdb.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.LONLAT_A;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.TAGS_A;
