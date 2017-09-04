@@ -141,30 +141,21 @@ public class CellIterator {
               geom = Geo.clip(geom, boundingBox);
           }
 
-          if (geom == null) throw new NotImplementedException(); // todo: fix this hack!
-          if (geom.isEmpty()) throw new NotImplementedException(); // todo: fix this hack!
-          //if (!(geom.getGeometryType() == "Polygon" || geom.getGeometryType() == "MultiPolygon")) throw new NotImplementedException(); // hack! // todo: wat?
-
-          oshResult.put(timestamp, new ImmutablePair<>(osmEntity, geom));
+          if (geom != null && !geom.isEmpty()) {
+            Pair<OSMEntity, Geometry> result = new ImmutablePair<>(osmEntity, geom);
+            oshResult.put(timestamp, result);
+            // add skipped timestamps (where nothing has changed from the last timestamp) to set of results
+            for (Long additionalTimestamp : queryTs.get(timestamp)) {
+              oshResult.put(additionalTimestamp, result);
+            }
+          }
         } catch (UnsupportedOperationException err) {
           // e.g. unsupported relation types go here
-        } catch (NotImplementedException err) {
-          // todo: what to do here???
         } catch (IllegalArgumentException err) {
           System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
+          // todo: can this even happen?
           System.err.printf("Topology error at object %d at timestamp %d: %s\n", osmEntity.getId(), timestamp, err.toString());
-        }
-      }
-
-      // add skipped timestamps (where nothing has changed from the last timestamp) to set of results
-      for (Map.Entry<Long, List<Long>> entry : queryTs.entrySet()) {
-        Long key = entry.getKey();
-        if (oshResult.containsKey(key)) { // could be missing in case this version
-          Pair<OSMEntity, Geometry> existingResult = oshResult.get(key);
-          for (Long additionalTs : entry.getValue()) {
-            oshResult.put(additionalTs, existingResult);
-          }
         }
       }
 
