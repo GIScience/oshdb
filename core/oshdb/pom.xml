@@ -12,10 +12,10 @@
 
   <artifactId>oshdb</artifactId>
 
-	<properties>
-		<geotools-version>17.2</geotools-version>
-        <ignite.version>2.1.0</ignite.version>
-	</properties>
+  <properties>
+    <geotools-version>17.2</geotools-version>
+    <ignite.version>2.1.0</ignite.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -56,54 +56,48 @@
       <scope>test</scope>
     </dependency>
 
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-main</artifactId>
-			<version>${geotools-version}</version>
-		</dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-main</artifactId>
+      <version>${geotools-version}</version>
+    </dependency>
 
-		<!-- <dependency> <groupId>com.vividsolutions</groupId> <artifactId>jts-core</artifactId> 
-			<version>1.14.0</version> </dependency> -->
-		<dependency>
-			<groupId>com.googlecode.json-simple</groupId>
-			<artifactId>json-simple</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-		<!-- <dependency> <groupId>org.geotools</groupId> <artifactId>gt-geometry</artifactId> 
-			<version>15.1</version> </dependency> -->
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-			<version>1.1</version>
-			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.wololo</groupId>
-			<artifactId>jts2geojson</artifactId>
-			<version>0.10.0</version>
-			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.heigit.bigspatialdata</groupId>
-			<artifactId>oshdb-utils</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
-			<type>jar</type>
-		</dependency>
-	 <dependency>
-		<groupId>com.h2database</groupId>
-		<artifactId>h2</artifactId>
-		<version>1.4.193</version>
-	 </dependency>
-        <dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-core</artifactId>
-			<version>${ignite.version}</version>
-        </dependency>
-      <dependency>
-          <groupId>org.apache.ignite</groupId>
-          <artifactId>ignite-spring</artifactId>
-          <version>${ignite.version}</version>
-      </dependency>
+    <!-- <dependency> <groupId>com.vividsolutions</groupId> <artifactId>jts-core</artifactId> 
+    <version>1.14.0</version> </dependency> -->
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+    <!-- <dependency> <groupId>org.geotools</groupId> <artifactId>gt-geometry</artifactId> 
+    <version>15.1</version> </dependency> -->
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+      <version>1.1</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.wololo</groupId>
+      <artifactId>jts2geojson</artifactId>
+      <version>0.10.0</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.193</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-core</artifactId>
+      <version>${ignite.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-spring</artifactId>
+      <version>${ignite.version}</version>
+    </dependency>
   </dependencies>
 
   <repositories>
@@ -119,20 +113,20 @@
       </snapshots>
     </repository>
 
-		<repository>
-			<id>boundless</id>
-			<url>https://repo.boundlessgeo.com/main/</url>
-		</repository>
+    <repository>
+      <id>boundless</id>
+      <url>https://repo.boundlessgeo.com/main/</url>
+    </repository>
 		
-		 <repository>
-		     <id>geotools</id>
-		     <name>Open Source Geospatial Foundation Repository</name>
-		     <url>http://download.osgeo.org/webdav/geotools/</url>
-		     <releases>
-	           <enabled>true</enabled>
-	        </releases>
-	     </repository>
+    <repository>
+      <id>geotools</id>
+      <name>Open Source Geospatial Foundation Repository</name>
+      <url>http://download.osgeo.org/webdav/geotools/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
 		
-	</repositories>
+  </repositories>
 
 </project>

@@ -15,10 +15,8 @@
     <module>oshdb</module>
     <module>oshdb-api</module>
     <module>oshdb-h2</module>
-<!--
     <module>oshdb-tool</module>
--->
     <module>oshdb-examples</module>
-    <module>oshdb-utils</module>
+    <!-- <module>oshdb-utils</module>-->
   </modules>
 </project>
