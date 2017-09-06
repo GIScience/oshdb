@@ -31,7 +31,6 @@ import crosby.binary.Osmformat.Way;
 
 public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 
-
 	private final Iterator<Osmformat.PrimitiveBlock> source;
 
 	private PrimitiveBlock block;
@@ -52,7 +51,7 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 
 		this.osmEntities = new ArrayList<>(10_000);
 		this.osmEntitiesIterator = osmEntities.iterator();
-		
+
 		seekNext();
 	}
 
@@ -124,10 +123,14 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 
 		List<Integer> keyvals = nodes.getKeysValsList();
 
-		final int granularity = 1; // fix granularity to 1 but reduce precission to 7 decimal  digit instead to 9; block.getGranularity();
+		final int granularity = 1; // fix granularity to 1 but reduce precission
+									// to 7 decimal digit instead to 9;
+									// block.getGranularity();
 		final long lat_offset = block.getLatOffset();
 		final long lon_offset = block.getLonOffset();
-		final int date_granularity = 1; // fix timestamp to 1, osm only is second precision, block.getDateGranularity();
+		final int date_granularity = 1; // fix timestamp to 1, osm only is
+										// second precision,
+										// block.getDateGranularity();
 
 		long id = 0;
 		long lat = 0;
@@ -156,7 +159,7 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 				props.version = version;
 				props.timestamp = timestamp * date_granularity;
 				props.changeset = changeset;
-				props.visible = visibles.get(i);
+				props.visible = (visibles.size() < i) ? visibles.get(i) : true;
 
 				OSMPbfUser user = new OSMPbfUser(userid, getString(usersid));
 				props.user = user;
@@ -175,9 +178,9 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 
 			lat += nodes.getLat(i);
 			lon += nodes.getLon(i);
-			//double lonD = .000000001 * (granularity * lon + lon_offset);
-			//double latD = .000000001 * (granularity * lat + lat_offset);
-			osmEntities.add(new OSMPbfNode(props, (granularity * lon + lon_offset),(granularity * lat + lat_offset)));
+			// double lonD = .000000001 * (granularity * lon + lon_offset);
+			// double latD = .000000001 * (granularity * lat + lat_offset);
+			osmEntities.add(new OSMPbfNode(props, (granularity * lon + lon_offset), (granularity * lat + lat_offset)));
 		}
 
 	}
@@ -193,10 +196,13 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 			populateInfo(props, e.getInfo());
 			populateTags(props, e.getKeysList(), e.getValsList());
 
-			//double lon = .000000001 * (granularity * e.getLon() + lon_offset);
-			//double lat = .000000001 * (granularity * e.getLat() + lat_offset);
-		
-			osmEntities.add(new OSMPbfNode(props, (granularity * e.getLon() + lon_offset),(granularity * e.getLat() + lat_offset)));
+			// double lon = .000000001 * (granularity * e.getLon() +
+			// lon_offset);
+			// double lat = .000000001 * (granularity * e.getLat() +
+			// lat_offset);
+
+			osmEntities.add(new OSMPbfNode(props, (granularity * e.getLon() + lon_offset),
+					(granularity * e.getLat() + lat_offset)));
 		}
 	}
 
@@ -235,15 +241,15 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 				memId += memIds.get(i);
 				int type = -1;
 				switch (types.get(i)) {
-					case NODE:
-						type = OSMType.NODE.intValue();
-						break;
-					case WAY:
-						type = OSMType.WAY.intValue();
-						break;
-					case RELATION:
-						type = OSMType.RELATION.intValue();
-						break;
+				case NODE:
+					type = OSMType.NODE.intValue();
+					break;
+				case WAY:
+					type = OSMType.WAY.intValue();
+					break;
+				case RELATION:
+					type = OSMType.RELATION.intValue();
+					break;
 				}
 				OSMMember m = new OSMMember(memId, getString(role), type);
 				members.add(m);
@@ -269,7 +275,11 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 			props.version = info.getVersion();
 		}
 		if (info.hasTimestamp()) {
-			props.timestamp = info.getTimestamp() * 1; // // fix timestamp to dateGranularity = 1, osm only is second precision, block.getDateGranularity();
+			props.timestamp = info.getTimestamp() * 1; // // fix timestamp to
+														// dateGranularity = 1,
+														// osm only is second
+														// precision,
+														// block.getDateGranularity();
 		}
 		if (info.hasChangeset()) {
 			props.changeset = Long.valueOf(info.getChangeset());
