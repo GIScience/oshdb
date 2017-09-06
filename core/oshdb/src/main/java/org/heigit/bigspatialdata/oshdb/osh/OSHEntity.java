@@ -297,7 +297,6 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     allModificationTimestamps = Lists.reverse(allModificationTimestamps);
 
     Long nextChangeset = -1L;
-    //allModificationTimestamps.remove(0);
     for (Long timestamp : allModificationTimestamps) {
       Long changeset = changesetTimestamps.get(timestamp);
       if (!Objects.equals(changeset, nextChangeset)) {
