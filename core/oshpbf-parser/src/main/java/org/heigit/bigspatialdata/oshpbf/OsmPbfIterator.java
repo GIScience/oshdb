@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfChangeset;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
@@ -159,7 +157,7 @@ public class OsmPbfIterator implements Iterator<OSMPbfEntity> {
 				props.version = version;
 				props.timestamp = timestamp * date_granularity;
 				props.changeset = changeset;
-				props.visible = (visibles.size() < i) ? visibles.get(i) : true;
+				props.visible = (i < visibles.size()) ? visibles.get(i) : true;
 
 				OSMPbfUser user = new OSMPbfUser(userid, getString(usersid));
 				props.user = user;
