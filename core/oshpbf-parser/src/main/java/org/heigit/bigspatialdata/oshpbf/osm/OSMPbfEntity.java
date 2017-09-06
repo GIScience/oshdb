@@ -3,13 +3,13 @@ package org.heigit.bigspatialdata.oshpbf.osm;
 import java.util.Arrays;
 import java.util.List;
 
-public  abstract class OSMPbfEntity implements Comparable<OSMPbfEntity> {
+public abstract class OSMPbfEntity implements Comparable<OSMPbfEntity> {
 	public static class OSMCommonProperties {
 		public long id;
 		public int version;
 		public long timestamp;
 		public long changeset;
-		public Boolean visible = null;
+		public boolean visible = true;
 		public OSMPbfUser user;
 		public List<OSMPbfTag> tags;
 	}
@@ -52,7 +52,7 @@ public  abstract class OSMPbfEntity implements Comparable<OSMPbfEntity> {
 		return changeset;
 	}
 
-	public Boolean getVisible() {
+	public boolean getVisible() {
 		return visible;
 	}
 
@@ -66,8 +66,8 @@ public  abstract class OSMPbfEntity implements Comparable<OSMPbfEntity> {
 
 	@Override
 	public String toString() {
-		return String.format("ID:%10d [%3d]\n\tInfo: TS:%d CS:%d V:%s\n\tUser: %s\n\tTags: %s", id, version,
-				timestamp, changeset, visible, user, Arrays.toString(tags.toArray()));
+		return String.format("ID:%10d [%3d]\n\tInfo: TS:%d CS:%d V:%s\n\tUser: %s\n\tTags: %s", id, version, timestamp,
+				changeset, visible, user, Arrays.toString(tags.toArray()));
 	}
 
 	@Override
