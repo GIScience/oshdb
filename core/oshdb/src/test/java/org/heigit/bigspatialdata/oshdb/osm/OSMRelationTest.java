@@ -1,11 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.IOException;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.LONLAT_A;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.TAGS_A;
@@ -234,7 +234,7 @@ public class OSMRelationTest {
     OSMMember[] member = {new OSMMember(2L, OSMType.WAY, 3), new OSMMember(5L, OSMType.NODE, 5)};
     OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 1, tags, member);
     String expResult = "RELATION-> ID:1 V:+1+ TS:1 CS:1 VIS:true UID:1 UName:Alice TAGS:[(highway,track)] Mem:[(T:Way ID:2 R:to),(T:Node ID:5 R:via)]";
-    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection()));
+    String result = instance.toString(new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "")));
     assertEquals(expResult, result);
   }
 
@@ -245,10 +245,10 @@ public class OSMRelationTest {
     OSHNode hnode = OSHNode.build(versions);
     OSMMember part = new OSMMember(1L, OSMType.NODE, 0, hnode);
     OSMRelation instance = new OSMRelation(1L, 1, 1L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part, part});
-    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection());
+    TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
     String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]},{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}]},\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"}]}";
 
-    String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromH2(new OSHDB_H2("./src/test/resources/keytables").getConnection()));
+    String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromH2(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "")));
     assertEquals(expResult, result);
   }
 

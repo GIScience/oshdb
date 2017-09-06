@@ -1,11 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.IOException;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.LONLAT_A;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.TAGS_A;
@@ -92,7 +92,7 @@ public class OSMWayTest {
     OSMMember[] refs = {new OSMMember(2L, OSMType.NODE, 2), new OSMMember(5L, OSMType.NODE, 2)};
     OSMWay instance = new OSMWay(1L, 1, 1L, 1L, 1, properties, refs);
     String expResult = "WAY-> ID:1 V:+1+ TS:1 CS:1 VIS:true UID:1 UName:Alice TAGS:[(highway,track)] Refs:[2,5]";
-    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection()));
+    String result = instance.toString(new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "")));
     assertEquals(expResult, result);
   }
 
@@ -283,10 +283,10 @@ public class OSMWayTest {
     versions.add(new OSMNode(123l, 1, 1l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1, hnode);
-    OSMWay instance = new OSMWay(1L, 1, 1L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part,part});
-    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection());
+    OSMWay instance = new OSMWay(1L, 1, 1L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part, part});
+    TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
     String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]},\"refs\":[1,1]}";
-    
+
     String result = instance.toGeoJSON(1L, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     System.out.println(result);
     assertEquals(expResult, result);

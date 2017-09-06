@@ -1,10 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
 import java.io.IOException;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -107,7 +107,7 @@ public class OSHNodeTest {
     versions.add(new OSMNode(123l, 1, 1l, 47l, 2, TAGS_B, LONLAT_B[0], LONLAT_B[1]));
 
     OSHNode instance = OSHNode.build(versions);
-    TagTranslator tt = new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection());
+    TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
     String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":123,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":46,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"unclassified\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}},{\"type\":\"Feature\",\"id\":123,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":47,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Bob\",\"uid\":2,\"source\":\"digitalglobe\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.715334,49.410283]}}]}";
     String result = instance.toGeoJSON(tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     assertEquals(expResult, result);

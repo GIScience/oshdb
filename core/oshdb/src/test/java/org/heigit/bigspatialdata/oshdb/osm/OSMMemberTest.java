@@ -5,9 +5,9 @@
  */
 package org.heigit.bigspatialdata.oshdb.osm;
 
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import static org.junit.Assert.assertEquals;
@@ -81,7 +81,7 @@ public class OSMMemberTest {
   public void testToString_TragTranslator() throws SQLException, ClassNotFoundException {
     OSMMember instance = new OSMMember(2L, OSMType.WAY, 0);
     String expResult = "T:Way ID:2 R:outer";
-    String result = instance.toString(new TagTranslator(new OSHDB_H2("./src/test/resources/keytables").getConnection()));
+    String result = instance.toString(new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "")));
     assertEquals(expResult, result);
   }
 
