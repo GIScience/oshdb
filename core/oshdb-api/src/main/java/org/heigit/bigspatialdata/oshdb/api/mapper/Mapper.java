@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.function.*;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Iterators;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -78,11 +77,18 @@ public abstract class Mapper<T> {
   public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {}
   public interface SerializableBiFunction<T1, T2, R> extends BiFunction<T1, T2, R>, Serializable {}
 
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  
+  protected <R, S> S mapReduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
-  
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<List<OSMContribution>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    throw new UnsupportedOperationException("Reduce function not yet implemented");
+  }
+
+  protected <R, S> S mapReduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    throw new UnsupportedOperationException("Reduce function not yet implemented");
+  }
+  protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
 
@@ -201,10 +207,30 @@ public abstract class Mapper<T> {
   
   public <R, S> S mapReduce(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
-      return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.mapReduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.mapReduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
+  }
+
+  public <R, S> S flatMapReduceGroupedById(SerializableFunction<List<T>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    if (this._forClass.equals(OSMContribution.class)) {
+      return this.flatMapReduceCellsOSMContributionGroupedById(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<List<OSMContribution>, List<R>>) contributions -> mapper.apply((List<T>)contributions), identitySupplier, accumulator, combiner);
+    } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+      return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<List<OSMEntitySnapshot>, List<R>>) contributions -> mapper.apply((List<T>)contributions), identitySupplier, accumulator, combiner);
+    } else throw new UnsupportedOperationException("No mapper implemented for your database type");
+  }
+  public <R, S> S flatMapReduce(SerializableFunction<T, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    return this.flatMapReduceGroupedById(
+        (List<T> inputList) -> {
+          List<R> outputList = new LinkedList<>();
+          inputList.stream().map(mapper).forEach(outputList::addAll);
+          return outputList;
+        },
+        identitySupplier,
+        accumulator,
+        combiner
+    );
   }
 
   public <R extends Number> R sum(SerializableFunction<T, R> f) throws Exception {
@@ -222,6 +248,32 @@ public abstract class Mapper<T> {
       }
       return combined;
     });
+  }
+
+  public <R, S, U> SortedMap<U, S> flatMapAggregateGroupedById(SerializableFunction<List<T>, List<Pair<U, R>>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    return this.flatMapReduceGroupedById(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
+      m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
+      return m;
+    }, (a,b) -> {
+      SortedMap<U, S> combined = new TreeMap<>(a);
+      for (SortedMap.Entry<U, S> entry: b.entrySet()) {
+        combined.merge(entry.getKey(), entry.getValue(), combiner);
+      }
+      return combined;
+    });
+  }
+
+  public <R, S, U> SortedMap<U, S> flatMapAggregate(SerializableFunction<T, List<Pair<U, R>>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    return this.flatMapAggregateGroupedById(
+        inputList -> {
+          List<Pair<U, R>> outputList = new LinkedList<>();
+          inputList.stream().map(mapper).forEach(outputList::addAll);
+          return outputList;
+        },
+        identitySupplier,
+        accumulator,
+        combiner
+    );
   }
 
   public <R extends Number, U> SortedMap<U, R> sumAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
