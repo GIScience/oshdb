@@ -47,6 +47,21 @@ public class BoundingBox {
    */
   public static BoundingBox intersect(BoundingBox first, BoundingBox second) {
     return new BoundingBox(
+        Math.max(first.minLon, second.minLon),
+        Math.min(first.maxLon, second.maxLon),
+        Math.max(first.minLat, second.minLat),
+        Math.min(first.maxLat, second.maxLat)
+    );
+  }
+
+  /**
+   * calculates the union of two bounding boxes
+   * @param first the first bounding box
+   * @param second the second bounding box
+   * @return the union of the two bboxes
+   */
+  public static BoundingBox union(BoundingBox first, BoundingBox second) {
+    return new BoundingBox(
         Math.min(first.minLon, second.minLon),
         Math.max(first.maxLon, second.maxLon),
         Math.min(first.minLat, second.minLat),
