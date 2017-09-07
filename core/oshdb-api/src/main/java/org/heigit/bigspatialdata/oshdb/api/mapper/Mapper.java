@@ -2,8 +2,12 @@ package org.heigit.bigspatialdata.oshdb.api.mapper;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.List;
 import java.util.function.*;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.Iterators;
+import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -19,14 +23,43 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.Geo;
 import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
+  /*class BBoxOrPolygon {
+    private boolean _bboxOrPolygon;
+    private BoundingBox _bbox;
+    private Polygon _polygon;
+
+    public BBoxOrPolygon(BoundingBox bbox) {
+      this._bboxOrPolygon = true;
+      this._bbox = bbox;
+    }
+    public BBoxOrPolygon(Polygon polygon) {
+      this._bboxOrPolygon = false;
+      this._polygon = polygon;
+    }
+    public boolean hasBbox() {
+      return this._bboxOrPolygon;
+    }
+    public boolean hasPolygon() {
+      return !this._bboxOrPolygon;
+    }
+    public BoundingBox getBbox() {
+      return this._bbox;
+    }
+    public Polygon getPolygon() {
+      return this._polygon;
+    }
+  }*/
+
   protected OSHDB _oshdb;
   protected OSHDB _oshdbForTags;
   protected Class _forClass = null;
-  private BoundingBox _bbox = null;
+  private BoundingBox _bboxFilter = null;
+  private Polygon _polyFilter = null;
   private OSHDBTimestamps _tstamps = null;
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
@@ -72,17 +105,42 @@ public abstract class Mapper<T> {
   public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {}
   public interface SerializableBiFunction<T1, T2, R> extends BiFunction<T1, T2, R>, Serializable {}
 
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
   
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
 
-  
+
+  @Deprecated
   public Mapper<T> boundingBox(BoundingBox bbox) {
-    this._bbox = bbox;
+    return this.areaOfInterest(bbox);
+  }
+
+  public Mapper<T> areaOfInterest(BoundingBox bboxFilter) {
+    if (this._polyFilter == null) {
+      if (this._bboxFilter == null)
+        this._bboxFilter = bboxFilter;
+      else
+        this._bboxFilter = BoundingBox.intersect(bboxFilter, this._bboxFilter);
+    } else {
+      this._polyFilter = (Polygon)Geo.clip(this._polyFilter, bboxFilter);
+      this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
+    }
+    return this;
+  }
+  public Mapper<T> areaOfInterest(Polygon polygonFilter) {
+    if (this._polyFilter == null) {
+      if (this._bboxFilter == null)
+        this._polyFilter = polygonFilter;
+      else
+        this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._bboxFilter);
+    } else {
+      this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._polyFilter);
+    }
+    this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
     return this;
   }
   
@@ -156,7 +214,12 @@ public abstract class Mapper<T> {
 
   private Iterable<CellId> _getCellIds() {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
-    return grid.bbox2CellIds(this._bbox, true);
+    if (this._bboxFilter == null || (this._bboxFilter.minLon >= this._bboxFilter.maxLon || this._bboxFilter.minLat >= this._bboxFilter.maxLat)) {
+      // return an empty iterable if bbox is not set or empty
+      System.err.println("warning: area of interest not set or empty");
+      return Collections.emptyList();
+    }
+    return grid.bbox2CellIds(this._bboxFilter, true);
   }
 
   private List<Long> _getTimestamps() {
@@ -165,9 +228,9 @@ public abstract class Mapper<T> {
   
   public <R, S> S mapReduce(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
-      return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.reduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bbox, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
+      return this.reduceCellsOSMEntitySnapshot(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
   }
 

@@ -23,7 +23,7 @@ public class CellIterator {
    *
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
-   * @param boundingPolygon only entities inside or intersecting this polygon are returned, geometries are clipped to this extent. If present, the boundingBox needs to be the boundingBox of this polygon
+   * @param boundingPolygon only entities inside or intersecting this polygon are returned, geometries are clipped to this extent. If present, the supplied boundingBox must be the boundingBox of this polygon
    * @param timestamps a list of timestamps to return data for
    * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter elements. only if it returns true, its osmEntity objects can be included in the output
    * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
@@ -39,7 +39,7 @@ public class CellIterator {
    * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
    * feature geometries later on in the code.
    */
-  private static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -178,8 +178,7 @@ public class CellIterator {
     return iterateByTimestamps(cell, boundingBox, timestamps, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
   public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    Envelope bbEnvelope = boundingPolygon.getEnvelopeInternal();
-    BoundingBox boundingBox = new BoundingBox(bbEnvelope.getMinX(), bbEnvelope.getMaxX(), bbEnvelope.getMinY(), bbEnvelope.getMaxY());
+    BoundingBox boundingBox = new BoundingBox(boundingPolygon.getEnvelopeInternal());
     return iterateByTimestamps(cell, boundingBox, boundingPolygon, timestamps, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
   public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
@@ -231,7 +230,7 @@ public class CellIterator {
    *
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
-   * @param boundingPolygon only entities inside or intersecting this polygon are returned, geometries are clipped to this extent. If present, the boundingBox needs to be the boundingBox of this polygon
+   * @param boundingPolygon only entities inside or intersecting this polygon are returned, geometries are clipped to this extent. If present, the supplied boundingBox must be the boundingBox of this polygon
    * @param timeInterval time range of interest – only modifications inside this interval are included in the result
    * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter elements. only if it returns true, its osmEntity objects can be included in the output
    * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
@@ -244,7 +243,7 @@ public class CellIterator {
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp intervals.
    */
-  private static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -464,8 +463,7 @@ public class CellIterator {
     return iterateAll(cell, boundingBox, new CellIterator.TimestampInterval(), tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
   public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    Envelope bbEnvelope = boundingPolygon.getEnvelopeInternal();
-    BoundingBox boundingBox = new BoundingBox(bbEnvelope.getMinX(), bbEnvelope.getMaxX(), bbEnvelope.getMinY(), bbEnvelope.getMaxY());
+    BoundingBox boundingBox = new BoundingBox(boundingPolygon.getEnvelopeInternal());
     return iterateAll(cell, boundingBox, boundingPolygon, timeInterval, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
   public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, Polygon boundingPolygon, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {

@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapper;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
@@ -58,7 +59,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
     return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
 
-  private<R, S> S _reduceCellsOSMContributionByIgniteCache(String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
+  private<R, S> S _reduceCellsOSMContributionByIgniteCache(String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
     Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
     CacheConfiguration<Long, GridOSHEntity> cacheCfg = new CacheConfiguration<>(cacheName);
     cacheCfg.setStatisticsEnabled(true);
@@ -82,6 +83,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
           CellIterator.iterateAll(
               oshEntityCell,
               bbox,
+              poly,
               new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
               this._tagInterpreter,
               preFilter,
@@ -119,7 +121,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
     }
   }
   @Override
-  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
 
@@ -146,6 +148,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
           cellIdsList,
           tstamps,
           bbox,
+          poly,
           preFilter,
           filter,
           mapper,
@@ -157,7 +160,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
   }
 
 
-  private <R, S> S _reduceCellsOSMEntitySnapshotByIgniteCache(String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
+  private <R, S> S _reduceCellsOSMEntitySnapshotByIgniteCache(String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
     Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
     CacheConfiguration<Long, GridOSHEntity> cacheCfg = new CacheConfiguration<>(cacheName);
     cacheCfg.setStatisticsEnabled(true);
@@ -181,6 +184,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
           CellIterator.iterateByTimestamps(
               oshEntityCell,
               bbox,
+              poly,
               tstamps,
               this._tagInterpreter,
               preFilter,
@@ -211,7 +215,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
     }
   }
   @Override
-  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S reduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
 
@@ -238,6 +242,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
           cellIdsList,
           tstamps,
           bbox,
+          poly,
           preFilter,
           filter,
           mapper,

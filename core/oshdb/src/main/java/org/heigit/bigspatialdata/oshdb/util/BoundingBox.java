@@ -22,6 +22,10 @@ public class BoundingBox {
     this.maxLat = maxLat;
   }
 
+  public BoundingBox(Envelope envelope) {
+    this(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY());
+  }
+
   @Override
   public String toString() {
     return String.format(Locale.ENGLISH,"(%f,%f) (%f,%f)", minLon, minLat, maxLon, maxLat);
@@ -33,6 +37,21 @@ public class BoundingBox {
    */
   public Polygon getGeometry() {
     return JTS.toGeometry(new Envelope(minLon, maxLon, minLat, maxLon));
+  }
+
+  /**
+   * calculates the intersection of two bounding boxes
+   * @param first the first bounding box
+   * @param second the second bounding box
+   * @return the intersection of the two bboxes
+   */
+  public static BoundingBox intersect(BoundingBox first, BoundingBox second) {
+    return new BoundingBox(
+        Math.min(first.minLon, second.minLon),
+        Math.max(first.maxLon, second.maxLon),
+        Math.min(first.minLat, second.minLat),
+        Math.max(first.maxLat, second.maxLat)
+    );
   }
 
 }
