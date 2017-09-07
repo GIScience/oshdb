@@ -28,33 +28,6 @@ import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
-  /*class BBoxOrPolygon {
-    private boolean _bboxOrPolygon;
-    private BoundingBox _bbox;
-    private Polygon _polygon;
-
-    public BBoxOrPolygon(BoundingBox bbox) {
-      this._bboxOrPolygon = true;
-      this._bbox = bbox;
-    }
-    public BBoxOrPolygon(Polygon polygon) {
-      this._bboxOrPolygon = false;
-      this._polygon = polygon;
-    }
-    public boolean hasBbox() {
-      return this._bboxOrPolygon;
-    }
-    public boolean hasPolygon() {
-      return !this._bboxOrPolygon;
-    }
-    public BoundingBox getBbox() {
-      return this._bbox;
-    }
-    public Polygon getPolygon() {
-      return this._polygon;
-    }
-  }*/
-
   protected OSHDB _oshdb;
   protected OSHDB _oshdbForTags;
   protected Class _forClass = null;
