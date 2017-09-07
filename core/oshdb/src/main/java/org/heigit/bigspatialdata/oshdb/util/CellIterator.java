@@ -23,6 +23,7 @@ public class CellIterator {
    *
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
+   * @param boundingPolygon only entities inside or intersecting this polygon are returned, geometries are clipped to this extent. If present, the boundingBox needs to be the boundingBox of this polygon
    * @param timestamps a list of timestamps to return data for
    * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter elements. only if it returns true, its osmEntity objects can be included in the output
    * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
@@ -38,7 +39,7 @@ public class CellIterator {
    * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
    * feature geometries later on in the code.
    */
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  private static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -48,7 +49,7 @@ public class CellIterator {
         // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
         continue;
       }
-      boolean fullyInside = oshEntity.insideBbox(boundingBox);
+      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon != null && boundingPolygon.contains(boundingBox.getGeometry()));
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations where not needed
       SortedMap<Long, List<Long>> queryTs = new TreeMap<>();
@@ -122,9 +123,11 @@ public class CellIterator {
         try {
           Geometry geom;
           if (!isOldStyleMultipolygon) {
-            geom = fullyInside ?
-                osmEntity.getGeometry(timestamp, tagInterpreter) :
-                osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
+            geom = fullyInside
+                ? osmEntity.getGeometry(timestamp, tagInterpreter)
+                : boundingPolygon != null
+                    ? osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingPolygon)
+                    : osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then used to "fix" the
             // results obtained from calculating the geometry on the object's outer way which doesn't know about the
@@ -138,7 +141,9 @@ public class CellIterator {
               interiorRings[i] = new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
             geom = new MultiPolygon(interiorRings, gf);
             if (!fullyInside)
-              geom = Geo.clip(geom, boundingBox);
+              geom = boundingPolygon != null
+                  ? Geo.clip(geom, boundingPolygon)
+                  : Geo.clip(geom, boundingBox);
           }
 
           if (geom != null && !geom.isEmpty()) {
@@ -166,8 +171,19 @@ public class CellIterator {
     // return as an obj stream
     return results.stream();
   }
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateByTimestamps(cell, boundingBox, null, timestamps, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
+  }
   public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateByTimestamps(cell, boundingBox, timestamps, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
+  }
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    Envelope bbEnvelope = boundingPolygon.getEnvelopeInternal();
+    BoundingBox boundingBox = new BoundingBox(bbEnvelope.getMinX(), bbEnvelope.getMaxX(), bbEnvelope.getMinY(), bbEnvelope.getMaxY());
+    return iterateByTimestamps(cell, boundingBox, boundingPolygon, timestamps, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
+  }
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateByTimestamps(cell, boundingPolygon, timestamps, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
 
   public static class TimestampInterval {
@@ -215,6 +231,7 @@ public class CellIterator {
    *
    * @param cell the data cell
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are clipped to this extent
+   * @param boundingPolygon only entities inside or intersecting this polygon are returned, geometries are clipped to this extent. If present, the boundingBox needs to be the boundingBox of this polygon
    * @param timeInterval time range of interest – only modifications inside this interval are included in the result
    * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter elements. only if it returns true, its osmEntity objects can be included in the output
    * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular feature is included in the output
@@ -227,7 +244,7 @@ public class CellIterator {
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp intervals.
    */
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  private static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -240,7 +257,7 @@ public class CellIterator {
         // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
         continue;
       }
-      boolean fullyInside = oshEntity.insideBbox(boundingBox);
+      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon != null && boundingPolygon.contains(boundingBox.getGeometry()));
 
       List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
@@ -335,9 +352,11 @@ public class CellIterator {
         try {
           Geometry geom;
           if (!isOldStyleMultipolygon) {
-            geom = fullyInside ?
-                osmEntity.getGeometry(timestamp, tagInterpreter) :
-                osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
+            geom = fullyInside
+                ? osmEntity.getGeometry(timestamp, tagInterpreter)
+                : boundingPolygon != null
+                    ? osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingPolygon)
+                    : osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then used to "fix" the
             // results obtained from calculating the geometry on the object's outer way which doesn't know about the
@@ -437,13 +456,19 @@ public class CellIterator {
     // return as an obj stream
     return results.stream();
   }
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    return iterateAll(cell, boundingBox, timeInterval, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
-  }
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    return iterateAll(cell, boundingBox, new CellIterator.TimestampInterval(), tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
+
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateAll(cell, boundingBox, null, timeInterval, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
   public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateAll(cell, boundingBox, new CellIterator.TimestampInterval(), tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
+  }
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    Envelope bbEnvelope = boundingPolygon.getEnvelopeInternal();
+    BoundingBox boundingBox = new BoundingBox(bbEnvelope.getMinX(), bbEnvelope.getMaxX(), bbEnvelope.getMinY(), bbEnvelope.getMaxY());
+    return iterateAll(cell, boundingBox, boundingPolygon, timeInterval, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
+  }
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, Polygon boundingPolygon, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+    return iterateAll(cell, boundingPolygon, new CellIterator.TimestampInterval(), tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
 }
