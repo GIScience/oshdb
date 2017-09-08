@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -35,6 +36,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		);
 	}
 	public static DefaultTagInterpreter fromJDBC(Connection conn, String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile) throws SQLException, IOException, ParseException {
+		TagTranslator tt = new TagTranslator(conn);
 		// fetch list of tags/keys
 		// 1. gather list of tags which we need to fetch
 		// 1.a. hardcoded tags (area=no, type=multipolygon, …)
@@ -69,30 +71,25 @@ public class DefaultTagInterpreter extends TagInterpreter {
 					System.err.println("Warning: unable to handle type '"+type+"' in areaTagsDefinitionFile.");
 			}
 		}
-		// 2. get tag ids from H2 DB
+		// 2. get tag ids from tag-translator
 		Map<String, Map<String, Pair<Integer, Integer>>> allKeyValues = new HashMap<>();
-		PreparedStatement pstmtTagsKey = conn.prepareStatement("select ID as KEYID from KEY WHERE txt = ?;");
-		PreparedStatement pstmtTagsKeyValue = conn.prepareStatement("select k.ID as KEYID, kv.VALUEID as VALUEID from KEYVALUE kv inner join KEY k on k.ID = kv.KEYID WHERE k.txt = ? and kv.txt = ?;");
 		for (Pair<String, String> requiredTag: requiredTags) {
 			String key = requiredTag.getLeft();
 			String value = requiredTag.getRight();
-			ResultSet rstTags;
-			if (requiredTag.getRight() == null) {
-				pstmtTagsKey.setString(1, key);
-				rstTags = pstmtTagsKey.executeQuery();
+			Integer keyId;
+			Pair<Integer, Integer> tagId;
+			if (value == null) {
+				keyId = tt.key2Int(requiredTag.getLeft());
+				tagId = new ImmutablePair<>(keyId, null);
 			} else {
-				pstmtTagsKeyValue.setString(1, key);
-				pstmtTagsKeyValue.setString(2, value);
-				rstTags = pstmtTagsKeyValue.executeQuery();
+				tagId = tt.tag2Int(requiredTag);
+				keyId = tagId.getLeft();
 			}
-			if (rstTags.next()) {
-				int keyId = rstTags.getInt(1);
-				int valueId = value != null ? rstTags.getInt(2) : 0;
+			if (keyId != null) {
 				if (!allKeyValues.containsKey(key))
 					allKeyValues.put(key, new HashMap<>());
-				allKeyValues.get(key).put(value, new ImmutablePair<>(keyId, valueId));
+				allKeyValues.get(key).put(value, tagId);
 			}
-			rstTags.close();
 		}
 		// fetch role ids
 		List<String> requiredRoles = new LinkedList<>();
@@ -100,15 +97,11 @@ public class DefaultTagInterpreter extends TagInterpreter {
 		requiredRoles.add("inner");
 		requiredRoles.add("");
 		Map<String, Integer> allRoles = new HashMap<>();
-		PreparedStatement pstmtRoles = conn.prepareStatement("select ID as ROLEID from ROLE WHERE txt = ?;");
 		for (String requiredRole: requiredRoles) {
-			pstmtRoles.setString(1, requiredRole);
-			ResultSet rstRoles = pstmtRoles.executeQuery();
-			if (rstRoles.next()) {
-				int roleId = rstRoles.getInt(1);
+			Integer roleId = tt.role2Int(requiredRole);
+			if (roleId != null) {
 				allRoles.put(requiredRole, roleId);
 			}
-			rstRoles.close();
 		}
 		// return new DefaultTagInterpreter
 		return new DefaultTagInterpreter(

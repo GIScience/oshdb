@@ -84,7 +84,7 @@ public class TagTranslator {
       this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valResultString));
       this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valResultInt));
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
 
     return new ImmutablePair<>(keyInt, valInt);
@@ -111,7 +111,7 @@ public class TagTranslator {
       this.tagToString.put(keyInt, new ImmutablePair<>(key, new ConcurrentHashMap<>(0)));
 
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
     return keyInt;
   }
@@ -136,7 +136,7 @@ public class TagTranslator {
       this.tagToInt.put(keyString, new ImmutablePair<>(key, new ConcurrentHashMap<>(0)));
 
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
     return keyString;
   }
@@ -182,7 +182,7 @@ public class TagTranslator {
       this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valResultString));
       this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valResultInt));
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
 
     return new ImmutablePair<>(keyString, valueString);
@@ -213,7 +213,7 @@ public class TagTranslator {
         } //put results to cache
         this.tagToInt.put(key, new ImmutablePair<>(keyid, vals));
       } catch (SQLException ex) {
-        LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+        LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
       }
     }
 
@@ -241,7 +241,7 @@ public class TagTranslator {
       this.roleToString.put(roleInt, role);
 
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
 
     return roleInt;
@@ -268,7 +268,7 @@ public class TagTranslator {
       this.roleToString.put(role, roleString);
 
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
 
     return roleString;
@@ -295,7 +295,7 @@ public class TagTranslator {
       this.userToString.put(uid, name);
 
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
 
     return uid;
@@ -322,7 +322,7 @@ public class TagTranslator {
       this.userToString.put(uid, name);
 
     } catch (SQLException ex) {
-      LOG.log(Level.WARNING, "Either the connection faild, or there was no result", ex);
+      LOG.log(Level.WARNING, "Either the connection failed, or there was no result", ex);
     }
 
     return name;
