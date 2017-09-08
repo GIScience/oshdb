@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.mapper;
+package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.*;
 
-public class Mapper_Ignite<T> extends Mapper<T> {
-  protected Mapper_Ignite(OSHDB oshdb) {
+public class MapReducer_Ignite<T> extends MapReducer<T> {
+  protected MapReducer_Ignite(OSHDB oshdb) {
     super(oshdb);
   }
 

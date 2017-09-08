@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.mapper;
+package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.vividsolutions.jts.geom.Geometry;
 import java.io.ObjectInputStream;
@@ -20,8 +20,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 
-public class Mapper_JDBC_singlethread<T> extends Mapper<T> {
-  protected Mapper_JDBC_singlethread(OSHDB oshdb) {
+public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
+  protected MapReducer_JDBC_singlethread(OSHDB oshdb) {
     super(oshdb);
   }
   

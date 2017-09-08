@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.mapper.OSMEntitySnapshotMapper;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
@@ -18,7 +18,7 @@ public class ResidentialRoadLengthAnalysisApi {
     OSHDB_H2 oshdbKeytables = new OSHDB_H2("./keytables");
 
     // query
-    SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotMapper.using(oshdb).usingForTags(oshdbKeytables)
+    SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotView.on(oshdb).keytables(oshdbKeytables)
         .areaOfInterest(new BoundingBox(8.6528,8.7294, 49.3683,49.4376))
         .timestamps(new OSHDBTimestamps(2008, 2017, 1, 12))
         .osmTypes(OSMType.WAY)

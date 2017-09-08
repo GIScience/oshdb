@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.mapper;
+package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.io.Serializable;
 import java.util.*;
@@ -24,7 +24,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
-public abstract class Mapper<T> {
+public abstract class MapReducer<T> {
   protected OSHDB _oshdb;
   protected OSHDB_JDBC _oshdbForTags;
   protected Class _forClass = null;
@@ -37,23 +37,23 @@ public abstract class Mapper<T> {
   protected TagTranslator _tagTranslator = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
   
-  protected Mapper(OSHDB oshdb) {
+  protected MapReducer(OSHDB oshdb) {
     this._oshdb = oshdb;
   }
 
-  public static <T> Mapper<T> using(OSHDB oshdb, Class<?> forClass) {
+  public static <T> MapReducer<T> using(OSHDB oshdb, Class<?> forClass) {
     if (oshdb instanceof OSHDB_JDBC) {
-      Mapper<T> mapper;
+      MapReducer<T> mapper;
       if (((OSHDB_JDBC)oshdb).multithreading())
-        mapper = new Mapper_JDBC_multithread<T>((OSHDB_JDBC)oshdb);
+        mapper = new MapReducer_JDBC_multithread<T>((OSHDB_JDBC)oshdb);
       else
-        mapper = new Mapper_JDBC_singlethread<T>((OSHDB_JDBC)oshdb);
+        mapper = new MapReducer_JDBC_singlethread<T>((OSHDB_JDBC)oshdb);
       mapper._oshdb = oshdb;
       mapper._oshdbForTags = (OSHDB_JDBC)oshdb;
       mapper._forClass = forClass;
       return mapper;
     } else if (oshdb instanceof OSHDB_Ignite) {
-      Mapper<T> mapper = new Mapper_Ignite<T>(oshdb);
+      MapReducer<T> mapper = new MapReducer_Ignite<T>(oshdb);
       mapper._oshdbForTags = null;
       mapper._forClass = forClass;
       return mapper;
@@ -62,7 +62,7 @@ public abstract class Mapper<T> {
     }
   }
   
-  public Mapper<T> usingForTags(OSHDB_JDBC oshdb) {
+  public MapReducer<T> keytables(OSHDB_JDBC oshdb) {
     this._oshdbForTags = oshdb;
     return this;
   }
@@ -100,11 +100,11 @@ public abstract class Mapper<T> {
 
 
   @Deprecated
-  public Mapper<T> boundingBox(BoundingBox bbox) {
+  public MapReducer<T> boundingBox(BoundingBox bbox) {
     return this.areaOfInterest(bbox);
   }
 
-  public Mapper<T> areaOfInterest(BoundingBox bboxFilter) {
+  public MapReducer<T> areaOfInterest(BoundingBox bboxFilter) {
     if (this._polyFilter == null) {
       if (this._bboxFilter == null)
         this._bboxFilter = bboxFilter;
@@ -116,7 +116,7 @@ public abstract class Mapper<T> {
     }
     return this;
   }
-  public Mapper<T> areaOfInterest(Polygon polygonFilter) {
+  public MapReducer<T> areaOfInterest(Polygon polygonFilter) {
     if (this._polyFilter == null) {
       if (this._bboxFilter == null)
         this._polyFilter = polygonFilter;
@@ -129,32 +129,32 @@ public abstract class Mapper<T> {
     return this;
   }
   
-  public Mapper<T> timestamps(OSHDBTimestamps tstamps) {
+  public MapReducer<T> timestamps(OSHDBTimestamps tstamps) {
     this._tstamps = tstamps;
     return this;
   }
 
-  public Mapper<T> osmTypes(EnumSet<OSMType> typeFilter) {
+  public MapReducer<T> osmTypes(EnumSet<OSMType> typeFilter) {
     this._typeFilter = typeFilter;
     return this;
   }
 
-  public Mapper<T> osmTypes(OSMType type1) {
+  public MapReducer<T> osmTypes(OSMType type1) {
     return this.osmTypes(EnumSet.of(type1));
   }
-  public Mapper<T> osmTypes(OSMType type1, OSMType type2) {
+  public MapReducer<T> osmTypes(OSMType type1, OSMType type2) {
     return this.osmTypes(EnumSet.of(type1, type2));
   }
-  public Mapper<T> osmTypes(OSMType type1, OSMType type2, OSMType type3) {
+  public MapReducer<T> osmTypes(OSMType type1, OSMType type2, OSMType type3) {
     return this.osmTypes(EnumSet.of(type1, type2, type3));
   }
   
-  public Mapper<T> tagInterpreter(TagInterpreter tagInterpreter) {
+  public MapReducer<T> tagInterpreter(TagInterpreter tagInterpreter) {
     this._tagInterpreter = tagInterpreter;
     return this;
   }
   
-  public Mapper<T> filter(SerializablePredicate<OSMEntity> f) {
+  public MapReducer<T> filter(SerializablePredicate<OSMEntity> f) {
     this._filters.add(f);
     return this;
   }
@@ -164,14 +164,14 @@ public abstract class Mapper<T> {
     Y apply(X x) throws Exception;
   }
   
-  public Mapper<T> filterByTagKey(String key) throws Exception {
+  public MapReducer<T> filterByTagKey(String key) throws Exception {
     int keyId = this.getTagKeyId(key);
     this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
     return this;
   }
   
-  public Mapper<T> filterByTagValue(String key, String value) throws Exception {
+  public MapReducer<T> filterByTagValue(String key, String value) throws Exception {
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
     int keyId = keyValueId.getKey();
     int valueId = keyValueId.getValue();
