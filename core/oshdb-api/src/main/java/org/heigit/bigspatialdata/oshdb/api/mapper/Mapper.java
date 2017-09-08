@@ -20,10 +20,7 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.Geo;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
@@ -36,6 +33,7 @@ public abstract class Mapper<T> {
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
   protected TagInterpreter _tagInterpreter = null;
+  protected TagTranslator _tagTranslator = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
   
   protected Mapper(OSHDB oshdb) {
@@ -67,9 +65,16 @@ public abstract class Mapper<T> {
     this._oshdbForTags = oshdb;
     return this;
   }
-  
-  protected abstract Integer getTagKeyId(String key) throws Exception;
-  protected abstract Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception;
+
+  protected Integer getTagKeyId(String key) throws Exception {
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    return this._tagTranslator.key2Int(key);
+  }
+
+  protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
+  }
 
   public interface SerializableSupplier<R> extends Supplier<R>, Serializable {}
   public interface SerializablePredicate<T> extends Predicate<T>, Serializable {}

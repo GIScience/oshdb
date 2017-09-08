@@ -43,20 +43,8 @@ import java.util.function.*;
 import java.util.stream.Stream;
 
 public class Mapper_Ignite<T> extends Mapper<T> {
-  private TagTranslator _tagTranslator = null;
-
   protected Mapper_Ignite(OSHDB oshdb) {
     super(oshdb);
-  }
-  
-  protected Integer getTagKeyId(String key) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
-    return this._tagTranslator.key2Int(key);
-  }
-  
-  protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
-    return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
 
   private<R, S> S _reduceCellsOSMContributionByIgniteCache(String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {

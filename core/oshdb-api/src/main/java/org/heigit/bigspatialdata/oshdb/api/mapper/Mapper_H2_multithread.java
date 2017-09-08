@@ -26,20 +26,8 @@ import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 
 public class Mapper_H2_multithread<T> extends Mapper<T> {
-  private TagTranslator _tagTranslator = null;
-
   protected Mapper_H2_multithread(OSHDB oshdb) {
     super(oshdb);
-  }
-  
-  protected Integer getTagKeyId(String key) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
-    return this._tagTranslator.key2Int(key);
-  }
-  
-  protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
-    return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
 
   @Override
