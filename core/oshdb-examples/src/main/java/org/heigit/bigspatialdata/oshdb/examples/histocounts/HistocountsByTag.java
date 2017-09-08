@@ -6,7 +6,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
@@ -90,7 +89,7 @@ public class HistocountsByTag {
     // connect to the "Big"DB
     Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
 
-    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromJDBC(conn);
 
     final Statement stmt = conn.createStatement();
     System.out.println("Select tag key/value ids from DB");

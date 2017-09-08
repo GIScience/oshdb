@@ -121,7 +121,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
 
@@ -252,7 +252,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
 
@@ -368,7 +368,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
 
@@ -487,7 +487,7 @@ public class Mapper_Ignite<T> extends Mapper<T> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromH2(((OSHDB_H2) this._oshdbForTags).getConnection());
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
 

@@ -10,7 +10,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.*;
@@ -29,13 +28,13 @@ public class DefaultTagInterpreter extends TagInterpreter {
 	private final static String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
 	private final static String defaultUninterestingTagsDefinitionFile = "json/uninterestingTags.json";
 
-	public static DefaultTagInterpreter fromH2(Connection conn) throws SQLException, IOException, ParseException {
-		return DefaultTagInterpreter.fromH2(conn,
+	public static DefaultTagInterpreter fromJDBC(Connection conn) throws SQLException, IOException, ParseException {
+		return DefaultTagInterpreter.fromJDBC(conn,
 				defaultAreaTagsDefinitionFile,
 				defaultUninterestingTagsDefinitionFile
 		);
 	}
-	public static DefaultTagInterpreter fromH2(Connection conn, String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile) throws SQLException, IOException, ParseException {
+	public static DefaultTagInterpreter fromJDBC(Connection conn, String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile) throws SQLException, IOException, ParseException {
 		// fetch list of tags/keys
 		// 1. gather list of tags which we need to fetch
 		// 1.a. hardcoded tags (area=no, type=multipolygon, …)

@@ -248,7 +248,7 @@ public class OSMRelationTest {
     TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
     String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]},{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}]},\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"}]}";
 
-    String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromH2(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "")));
+    String result = instance.toGeoJSON(1L, tt, DefaultTagInterpreter.fromJDBC(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "")));
     assertEquals(expResult, result);
   }
 

@@ -56,7 +56,7 @@ public class HistocountUsers {
     // connect to the "Big"DB
     Connection conn = DriverManager.getConnection("jdbc:h2:./nepal","sa", "");
 
-    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromJDBC(conn);
 
     final Statement stmt = conn.createStatement();
 

@@ -12,6 +12,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
@@ -25,7 +26,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 public abstract class Mapper<T> {
   protected OSHDB _oshdb;
-  protected OSHDB _oshdbForTags;
+  protected OSHDB_JDBC _oshdbForTags;
   protected Class _forClass = null;
   private BoundingBox _bboxFilter = null;
   private Polygon _polyFilter = null;
@@ -41,14 +42,14 @@ public abstract class Mapper<T> {
   }
 
   public static <T> Mapper<T> using(OSHDB oshdb, Class<?> forClass) {
-    if (oshdb instanceof OSHDB_H2) {
+    if (oshdb instanceof OSHDB_JDBC) {
       Mapper<T> mapper;
-      if (((OSHDB_H2)oshdb).multithreading())
-        mapper = new Mapper_H2_multithread<T>((OSHDB_H2) oshdb);
+      if (((OSHDB_JDBC)oshdb).multithreading())
+        mapper = new Mapper_JDBC_multithread<T>((OSHDB_JDBC)oshdb);
       else
-        mapper = new Mapper_H2_singlethread<T>((OSHDB_H2) oshdb);
+        mapper = new Mapper_JDBC_singlethread<T>((OSHDB_JDBC)oshdb);
       mapper._oshdb = oshdb;
-      mapper._oshdbForTags = oshdb;
+      mapper._oshdbForTags = (OSHDB_JDBC)oshdb;
       mapper._forClass = forClass;
       return mapper;
     } else if (oshdb instanceof OSHDB_Ignite) {
@@ -61,7 +62,7 @@ public abstract class Mapper<T> {
     }
   }
   
-  public Mapper<T> usingForTags(OSHDB oshdb) {
+  public Mapper<T> usingForTags(OSHDB_JDBC oshdb) {
     this._oshdbForTags = oshdb;
     return this;
   }

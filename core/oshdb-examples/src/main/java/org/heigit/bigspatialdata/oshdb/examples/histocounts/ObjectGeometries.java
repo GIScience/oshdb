@@ -45,7 +45,7 @@ public class ObjectGeometries {
     // connect to the "Big"DB
     Connection conn = DriverManager.getConnection("jdbc:h2:./karlsruhe-regbez","sa", "");
 
-    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromJDBC(conn);
 
     cellIds.parallelStream().flatMap(cell -> {
       try (final PreparedStatement pstmt = conn.prepareStatement("" +

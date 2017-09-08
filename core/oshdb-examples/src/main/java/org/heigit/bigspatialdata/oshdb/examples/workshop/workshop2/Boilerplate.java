@@ -10,14 +10,11 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
@@ -36,7 +33,7 @@ public class Boilerplate {
     Connection conn = DriverManager.getConnection(databaseFile, "sa", "");
 
     //load tag interpreter helper which is later used for geometry building
-    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromJDBC(conn);
 
     //get all needed cell-ids:
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);

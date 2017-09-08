@@ -47,7 +47,7 @@ public class ResidentialRoadLengthAnalysis {
     int valueId = resultSet.getInt(1);
 
     //load tag interpreter helper which is later used for geometry building
-    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(conn);
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromJDBC(conn);
 
     //get all needed cell-ids:
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);

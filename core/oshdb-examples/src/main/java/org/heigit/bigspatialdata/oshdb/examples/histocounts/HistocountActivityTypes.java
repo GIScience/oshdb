@@ -93,7 +93,7 @@ public class HistocountActivityTypes {
     // connect to the "Big"DB
     final Connection connKT = DriverManager.getConnection("jdbc:h2:./africaKeytables","sa", "");
 
-    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromH2(connKT);
+    final TagInterpreter tagInterpreter = DefaultTagInterpreter.fromJDBC(connKT);
 
     final Statement stmtKT = connKT.createStatement();
 
