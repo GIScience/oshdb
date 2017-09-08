@@ -122,6 +122,7 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
         CellIterator.iterateAll(
             oshCellRawData,
             bbox,
+            poly,
             new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
             this._tagInterpreter,
             preFilter,
@@ -198,7 +199,6 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
           OSHDBTimestamp tstamp = new OSHDBTimestamp(entry.getKey());
           Geometry geometry = entry.getValue().getRight();
           OSMEntity entity = entry.getValue().getLeft();
-
           rs.add(mapper.apply(new OSMEntitySnapshot(tstamp, geometry, entity)));
         }));
         
@@ -242,6 +242,7 @@ public class Mapper_H2_singlethread<T> extends Mapper<T> {
         CellIterator.iterateByTimestamps(
             oshCellRawData,
             bbox,
+            poly,
             tstamps,
             this._tagInterpreter,
             preFilter,

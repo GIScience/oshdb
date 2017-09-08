@@ -66,7 +66,6 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
             return Stream.empty();
           }
         }).map(oshCell -> {
-
           // iterate over the history of all OSM objects in the current cell
           List<R> rs = new ArrayList<>();
           CellIterator.iterateAll(
@@ -140,13 +139,13 @@ public class Mapper_H2_multithread<T> extends Mapper<T> {
             return Stream.empty();
           }
         }).map(oshCell -> {
-
           // iterate over the history of all OSM objects in the current cell
           List<R> rs = new ArrayList<>();
           List<OSMContribution> contributions = new ArrayList<>();
           CellIterator.iterateAll(
               oshCell,
               bbox,
+              poly,
               new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
               this._tagInterpreter,
               preFilter,
