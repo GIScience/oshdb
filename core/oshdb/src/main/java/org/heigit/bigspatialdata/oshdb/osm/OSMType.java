@@ -21,7 +21,7 @@ public enum OSMType {
       case 2:
         return RELATION;
       default:
-    	  return UNKNOWN;
+        return UNKNOWN;
     }
     
   }
