@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfChangeset;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.OSMCommonProperties;

@@ -14,7 +14,6 @@ import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable {
 
@@ -233,6 +232,10 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
                     memberId = wrapper.readSInt64() + memberId;
                     break;
                   }
+                  default : {
+                	  memberId = wrapper.readSInt64() + memberId;
+                	  break;
+                  }
                 }
 
                 memberRole = wrapper.readUInt32();
@@ -241,7 +244,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
             }
             return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
                     members);
-          } catch (Exception e) {
+          } catch (IOException e) {
             e.printStackTrace();
             // TODO: handle exception(s)
           }
