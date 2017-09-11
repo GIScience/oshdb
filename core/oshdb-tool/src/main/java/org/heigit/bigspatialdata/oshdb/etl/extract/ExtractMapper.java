@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.KeyValuesFrequency;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.RelationMapping;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
@@ -183,7 +183,6 @@ public class ExtractMapper {
         for (OSMPbfEntity entity : versions) {
           OSMPbfRelation relation = (OSMPbfRelation) entity;
           for (OSMMember member : relation.getMembers()) {
-            try {
               switch (OSMType.fromInt(member.getType())) {
                 case NODE:
                   uniqueNodes.add(member.getMemId());
@@ -197,9 +196,6 @@ public class ExtractMapper {
                 default:
                   LOGGER.error("unknown member type");
               }
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
           }
         }
 

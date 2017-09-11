@@ -7,7 +7,7 @@ import com.vividsolutions.jts.geom.Point;
 import java.io.Serializable;
 import java.util.*;
 import javax.json.JsonObjectBuilder;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
+
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 

@@ -8,7 +8,7 @@ package org.heigit.bigspatialdata.oshdb.osm;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
+
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;

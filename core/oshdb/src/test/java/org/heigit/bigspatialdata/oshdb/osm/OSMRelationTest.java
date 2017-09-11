@@ -10,7 +10,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.LONLAT_A;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.TAGS_A;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.USER_A;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
+
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.json.simple.parser.ParseException;

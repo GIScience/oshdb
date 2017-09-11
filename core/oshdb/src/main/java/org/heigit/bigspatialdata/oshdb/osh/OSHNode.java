@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
 
 public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Serializable {
 

@@ -1,6 +1,7 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.osm;
 
 public enum OSMType {
+  UNKNOWN(-1),
   NODE(0),
   WAY(1),
   RELATION(2);
@@ -11,7 +12,7 @@ public enum OSMType {
     this.value = value;
   }
 
-  public static OSMType fromInt(final int value) throws Exception {
+  public static OSMType fromInt(final int value) {
     switch(value) {
       case 0:
         return NODE;
@@ -19,8 +20,10 @@ public enum OSMType {
         return WAY;
       case 2:
         return RELATION;
+      default:
+    	  return UNKNOWN;
     }
-    throw new Exception("invalid OSM type id: "+value);
+    
   }
 
   public final int intValue() {

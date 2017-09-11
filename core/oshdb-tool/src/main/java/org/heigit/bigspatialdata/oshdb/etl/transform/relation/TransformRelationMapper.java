@@ -33,8 +33,8 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -162,7 +162,6 @@ public class TransformRelationMapper extends TransformMapper2 {
             minTimestamp = Math.min(minTimestamp, pbfRelation.getTimestamp());
 
             for (OSMPbfRelation.OSMMember member : pbfRelation.getMembers()) {
-              try {
                 switch (OSMType.fromInt(member.getType())) {
                   case NODE: {
                     nodes.add(member.getMemId());
@@ -176,9 +175,6 @@ public class TransformRelationMapper extends TransformMapper2 {
                     break;
                   }
                 }
-              } catch (Exception e) {
-                e.printStackTrace();
-              }
             }
           }
 

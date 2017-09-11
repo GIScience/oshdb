@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 
 /**

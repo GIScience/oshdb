@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
-import org.heigit.bigspatialdata.oshdb.util.OSMType;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfRelation;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfTag;
 
@@ -120,12 +120,8 @@ public class TransformMapper2 {
   protected OSMMember[] convertMembers(List<OSMPbfRelation.OSMMember> members) {
     OSMMember[] ret = new OSMMember[members.size()];
     for (int i = 0; i < members.size(); i++) {
-      try {
         ret[i] = new OSMMember(members.get(i).getMemId(), OSMType.fromInt(members.get(i).getType()),
                 getRole(members.get(i).getRole()));
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
     }
     return ret;
   }
