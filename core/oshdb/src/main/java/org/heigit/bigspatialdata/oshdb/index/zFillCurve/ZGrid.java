@@ -1,11 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.index.zFillCurve;
 
-import org.heigit.bigspatialdata.oshdb.index.Grid;
-import org.heigit.bigspatialdata.oshdb.index.xy.XYGrid;
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 
-import java.awt.List;
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -20,10 +17,8 @@ import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
+
 
 public class ZGrid {
 	  private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(XYGrid.class.getName());
