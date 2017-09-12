@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.index.zFillCurve;
 
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -21,7 +20,7 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 
 
 public class ZGrid {
-	  private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(XYGrid.class.getName());
+	  private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(ZGrid.class.getName());
 
 	  private final int zoom;
 	  private final long zoompow;
