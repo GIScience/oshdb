@@ -4,7 +4,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 
 public class OSMContributionView extends MapperFactory {
-  public static MapReducer<OSMContribution> using(OSHDB oshdb) {
+  public static MapReducer<OSMContribution> on(OSHDB oshdb) {
     return MapReducer.<OSMContribution>using(oshdb, OSMContribution.class);
   }
 }
