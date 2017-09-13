@@ -240,10 +240,6 @@ public abstract class MapReducer<T> {
     );
   }
 
-  public <R extends Number> R sum(SerializableFunction<T, R> f) throws Exception {
-    return this.mapReduce(f, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (SerializableBinaryOperator<R>)(x,y) -> NumberUtils.add(x,y));
-  }
-
   public <R, S, U> SortedMap<U, S> mapAggregate(SerializableFunction<T, Pair<U, R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     return this.mapReduce(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
       m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
@@ -283,10 +279,6 @@ public abstract class MapReducer<T> {
     );
   }
 
-  public <R extends Number, U> SortedMap<U, R> sumAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
-    return this.mapAggregate(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
-  }
-
   public <R, S> SortedMap<OSHDBTimestamp, S> mapAggregateByTimestamp(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     SortedMap<OSHDBTimestamp, S> result;
     List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
@@ -307,7 +299,137 @@ public abstract class MapReducer<T> {
     return result;
   }
 
+  // default helper methods to use the mapreducer's functionality more easily
+  // like sum, weight, average, uniq, etc.
+
   public <R extends Number> SortedMap<OSHDBTimestamp, R> sumAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
     return this.mapAggregateByTimestamp(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
+  }
+  public SortedMap<OSHDBTimestamp, Integer> countAggregateByTimestamp() throws Exception {
+    return this.sumAggregateByTimestamp(ignored -> 1);
+  }
+  public <R extends Number> SortedMap<OSHDBTimestamp, Double> averageAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
+    return this.mapAggregateByTimestamp(
+        mapper,
+        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        (acc, cur) -> {
+          acc.num = NumberUtils.add(acc.num, cur);
+          acc.weight += 1;
+          return acc;
+        },
+        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+    ).entrySet().stream().collect(Collectors.toMap(
+        Map.Entry::getKey,
+        e -> e.getValue().num.doubleValue() / e.getValue().weight,
+        (v1, v2) -> v1,
+        TreeMap::new
+    ));
+  }
+  public <R extends Number, W extends Number> SortedMap<OSHDBTimestamp, Double> weightedAverageAggregateByTimestamp(SerializableFunction<T, Pair<R, W>> mapper) throws Exception {
+    return this.mapAggregateByTimestamp(
+        mapper,
+        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        (acc, cur) -> {
+          acc.num = NumberUtils.add(acc.num, cur.getLeft());
+          acc.weight += cur.getRight().doubleValue();
+          return acc;
+        },
+        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+    ).entrySet().stream().collect(Collectors.toMap(
+        Map.Entry::getKey,
+        e -> e.getValue().num.doubleValue() / e.getValue().weight,
+        (v1, v2) -> v1,
+        TreeMap::new
+    ));
+  }
+  public <R> SortedMap<OSHDBTimestamp, Set<R>> uniqAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
+    return this.mapAggregateByTimestamp(
+        mapper,
+        HashSet<R>::new,
+        (acc, cur) -> {
+          acc.add(cur);
+          return acc;
+        },
+        (set1, set2) -> {
+          Set<R> combinedSets = new HashSet<R>(set1);
+          combinedSets.addAll(set2);
+          return combinedSets;
+        }
+    );
+  }
+
+  public <R extends Number, U> SortedMap<U, R> sumAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
+    return this.mapAggregate(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
+  }
+  public <U> SortedMap<U, Integer> countAggregate(SerializableFunction<T, U> mapper) throws Exception {
+    return this.sumAggregate(data -> new ImmutablePair<U, Integer>(mapper.apply(data), 1));
+  }
+  public <R extends Number, U> SortedMap<U, Double> averageAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
+    return this.mapAggregate(
+        mapper,
+        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        (acc, cur) -> {
+          acc.num = NumberUtils.add(acc.num, cur);
+          acc.weight += 1;
+          return acc;
+        },
+        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+    ).entrySet().stream().collect(Collectors.toMap(
+        Map.Entry::getKey,
+        e -> e.getValue().num.doubleValue() / e.getValue().weight,
+        (v1, v2) -> v1,
+        TreeMap::new
+    ));
+  }
+  public <R extends Number, W extends Number, U> SortedMap<U, Double> weightedAverageAggregate(SerializableFunction<T, Pair<U, Pair<R, W>>> mapper) throws Exception {
+    return this.mapAggregate(
+        mapper,
+        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        (acc, cur) -> {
+          acc.num = NumberUtils.add(acc.num, cur.getLeft());
+          acc.weight += cur.getRight().doubleValue();
+          return acc;
+        },
+        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+    ).entrySet().stream().collect(Collectors.toMap(
+        Map.Entry::getKey,
+        e -> e.getValue().num.doubleValue() / e.getValue().weight,
+        (v1, v2) -> v1,
+        TreeMap::new
+    ));
+  }
+  public <R, U> SortedMap<U, Set<R>> uniqAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
+    return this.mapAggregate(
+        mapper,
+        HashSet<R>::new,
+        (acc, cur) -> {
+          acc.add(cur);
+          return acc;
+        },
+        (set1, set2) -> {
+          Set<R> combinedSets = new HashSet<R>(set1);
+          combinedSets.addAll(set2);
+          return combinedSets;
+        }
+    );
+  }
+
+  public <R extends Number> R sum(SerializableFunction<T, R> mapper) throws Exception {
+    return this.mapReduce(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (SerializableBinaryOperator<R>)(x,y) -> NumberUtils.add(x,y));
+  }
+  public Integer count() throws Exception {
+    return this.sum(ignored -> 1);
+  }
+  public <R> Set<R> uniq(SerializableFunction<T, R> mapper) throws Exception {
+    return this.uniqAggregate(data -> new ImmutablePair<>(0, mapper.apply(data))).getOrDefault(0, new HashSet<>());
+  }
+
+  private class PayloadWithWeight<X> {
+    X num;
+    double weight;
+    PayloadWithWeight(X num, double weight) {
+      this.num = num;
+      this.weight = weight;
+    }
   }
 }
