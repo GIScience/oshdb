@@ -30,9 +30,12 @@ public class CellId {
   }
 
   
+  public static long getLevelId(int zoomlevel, long id){
+    return ((long)zoomlevel) << 56 | id;
+  }
   
   public long getLevelId(){
-     return ((long)zoomlevel) << 56 | id;
+     return getLevelId(zoomlevel,id);
   }
   
   public static CellId fromLevelId(long levelId) throws cellIdExeption{
