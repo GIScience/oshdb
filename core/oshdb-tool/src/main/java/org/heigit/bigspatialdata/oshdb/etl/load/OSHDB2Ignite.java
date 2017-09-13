@@ -8,6 +8,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,7 +90,7 @@ public class OSHDB2Ignite {
       }
       try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
         int cnt = 0;
-        System.out.println("START loading " + tableName + " into " + cache.getName());
+        System.out.println(LocalDateTime.now() + " START loading " + tableName + " into " + cache.getName() + " on Ignite");
         while (rst.next()) {
           final int level = rst.getInt(1);
           final long id = rst.getLong(2);
@@ -99,7 +101,7 @@ public class OSHDB2Ignite {
           final T grid = (T) ois.readObject();
           streamer.addData(levelId, grid);
         }
-        System.out.println("FINISHED loading " + tableName + " into " + cache.getName());
+        System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into " + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException e) {
         e.printStackTrace();
       } catch (SQLException e1) {
