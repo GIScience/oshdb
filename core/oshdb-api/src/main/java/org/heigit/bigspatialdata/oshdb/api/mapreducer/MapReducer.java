@@ -139,14 +139,8 @@ public abstract class MapReducer<T> {
     return this;
   }
 
-  public MapReducer<T> osmTypes(OSMType type1) {
-    return this.osmTypes(EnumSet.of(type1));
-  }
-  public MapReducer<T> osmTypes(OSMType type1, OSMType type2) {
-    return this.osmTypes(EnumSet.of(type1, type2));
-  }
-  public MapReducer<T> osmTypes(OSMType type1, OSMType type2, OSMType type3) {
-    return this.osmTypes(EnumSet.of(type1, type2, type3));
+  public MapReducer<T> osmTypes(OSMType type1, OSMType ...otherTypes) {
+    return this.osmTypes(EnumSet.of(type1, otherTypes));
   }
   
   public MapReducer<T> tagInterpreter(TagInterpreter tagInterpreter) {
