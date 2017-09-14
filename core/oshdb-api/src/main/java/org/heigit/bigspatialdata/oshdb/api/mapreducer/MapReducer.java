@@ -10,7 +10,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
@@ -37,7 +36,7 @@ public abstract class MapReducer<T> {
   protected TagInterpreter _tagInterpreter = null;
   protected TagTranslator _tagTranslator = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
-  
+
   protected MapReducer(OSHDB oshdb) {
     this._oshdb = oshdb;
   }
@@ -325,13 +324,13 @@ public abstract class MapReducer<T> {
         TreeMap::new
     ));
   }
-  public <R extends Number, W extends Number> SortedMap<OSHDBTimestamp, Double> weightedAverageAggregateByTimestamp(SerializableFunction<T, Pair<R, W>> mapper) throws Exception {
+  public <R extends Number> SortedMap<OSHDBTimestamp, Double> weightedAverageAggregateByTimestamp(SerializableFunction<T, WeightedValue<R>> mapper) throws Exception {
     return this.mapAggregateByTimestamp(
         mapper,
         () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
         (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur.getLeft());
-          acc.weight += cur.getRight().doubleValue();
+          acc.num = NumberUtils.add(acc.num, cur.getValue());
+          acc.weight += cur.getWeight();
           return acc;
         },
         (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
@@ -381,16 +380,17 @@ public abstract class MapReducer<T> {
         TreeMap::new
     ));
   }
-  public <R extends Number, W extends Number, U> SortedMap<U, Double> weightedAverageAggregate(SerializableFunction<T, Pair<U, Pair<R, W>>> mapper) throws Exception {
+
+  public <R extends Number, U> SortedMap<U, Double> weightedAverageAggregate(SerializableFunction<T, Pair<U, WeightedValue<R>>> mapper) throws Exception {
     return this.mapAggregate(
         mapper,
-        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
+        () -> new PayloadWithWeight<>((R) (Double) 0.0, 0),
         (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur.getLeft());
-          acc.weight += cur.getRight().doubleValue();
+          acc.num = NumberUtils.add(acc.num, cur.getValue());
+          acc.weight += cur.getWeight();
           return acc;
         },
-        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight + b.weight)
     ).entrySet().stream().collect(Collectors.toMap(
         Map.Entry::getKey,
         e -> e.getValue().num.doubleValue() / e.getValue().weight,
@@ -424,6 +424,26 @@ public abstract class MapReducer<T> {
     return this.uniqAggregate(data -> new ImmutablePair<>(0, mapper.apply(data))).getOrDefault(0, new HashSet<>());
   }
 
+  // auxiliary classes
+
+  public static class WeightedValue<X extends Number> {
+    private X value;
+    private double weight;
+    
+    public WeightedValue(X value, double weight) {
+      this.value = value;
+      this.weight = weight;
+    }
+
+    public X getValue() {
+      return value;
+    }
+
+    public double getWeight() {
+      return weight;
+    }
+  }
+  // mutable version of WeightedValue type (for internal use to do faster aggregation)
   private class PayloadWithWeight<X> {
     X num;
     double weight;
