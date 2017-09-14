@@ -15,11 +15,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Default TagInterpreter
  */
 public class DefaultTagInterpreter extends TagInterpreter {
+	private static final Logger LOG = Logger.getLogger(DefaultTagInterpreter.class.getName());
 
 	private int typeKey = -1;
 	private int typeMultipolygonValue = -1;
@@ -146,7 +149,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 					key = (String)tag.get("key");
 					if (!allKeyValues.containsKey(key)) {
 						// no such tag key present in this db extract
-						System.err.printf("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key);
+						LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key));
 						continue;
 					}
 					keyValues = allKeyValues.get(key);
@@ -157,7 +160,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 						value = valuesIt.next();
 						if (!keyValues.containsKey(value)) {
 							// no such tag key/value in this db extract
-							System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", key, value);
+							LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", key, value));
 							continue;
 						}
 						valueIds.add(keyValues.get(value).getRight());
@@ -171,14 +174,14 @@ public class DefaultTagInterpreter extends TagInterpreter {
 					key = (String)tag.get("key");
 					if (!allKeyValues.containsKey(key)) {
 						// no such tag key present in this db extract
-						System.err.printf("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key);
+						LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key));
 						continue;
 					}
 					keyValues = allKeyValues.get(key);
 					Iterator<Pair<Integer,Integer>> keyValuesIt = keyValues.values().iterator();
 					if (!keyValuesIt.hasNext()) {
 						// no such tag value present int this db extract??
-						System.err.printf("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key);
+						LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key));
 						continue;
 					}
 					keyId = keyValuesIt.next().getLeft();
@@ -191,7 +194,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 					key = (String)tag.get("key");
 					if (!allKeyValues.containsKey(key)) {
 						// no such tag key present in this db extract
-						System.err.printf("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key);
+						LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", key));
 						continue;
 					}
 					keyValues = allKeyValues.get(key);
@@ -202,7 +205,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 						value = valuesIt.next();
 						if (!keyValues.containsKey(value)) {
 							// no such tag key/value in this db extract
-							System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", key, value);
+							LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", key, value));
 							continue;
 						}
 						valueIds.add(keyValues.get(value).getRight());
@@ -225,17 +228,17 @@ public class DefaultTagInterpreter extends TagInterpreter {
 			if (allKeyValues.get("type").containsKey("multipolygon"))
 				this.typeMultipolygonValue = allKeyValues.get("type").get("multipolygon").getRight();
 			else
-				System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "multipolygon");
+				LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "multipolygon"));
 			if (allKeyValues.get("type").containsKey("boundary"))
 				this.typeBoundaryValue = allKeyValues.get("type").get("boundary").getRight();
 			else
-				System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "boundary");
+				LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "boundary"));
 			if (allKeyValues.get("type").containsKey("route"))
 				this.typeRouteValue = allKeyValues.get("type").get("route").getRight();
 			else
-				System.err.printf("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "route");
+				LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract\n", "type", "route"));
 		} else {
-			System.err.printf("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", "type");
+			LOG.log(Level.INFO, String.format("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", "type"));
 		}
 		// we still need to also store relation area tags for isOldStyleMultipolygon() functionality!
 		Map<Integer, Set<Integer>> relAreaTags = new TreeMap<>();
