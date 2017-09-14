@@ -29,6 +29,21 @@ public class CellId {
     this.id = id;
   }
 
+  
+  public static long getLevelId(int zoomlevel, long id){
+    return ((long)zoomlevel) << 56 | id;
+  }
+  
+  public long getLevelId(){
+     return getLevelId(zoomlevel,id);
+  }
+  
+  public static CellId fromLevelId(long levelId) throws cellIdExeption{
+     final long id = levelId & 0x00FFFFFFFFFFFFFFL;
+     final int zoomlevel = (int) (levelId >>> 56);
+     return new CellId(zoomlevel, id);
+  }
+  
   /**
    *
    * @return
