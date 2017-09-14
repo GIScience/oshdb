@@ -188,7 +188,7 @@ public class OSMEntitySnapshotViewTestH2Singlethread {
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
-        .weightedAverageAggregateByTimestamp(snapshot -> new ImmutablePair<>(snapshot.getEntity().getId() % 2,snapshot.getEntity().getId() % 2));
+        .weightedAverageAggregateByTimestamp(snapshot -> new MapReducer.WeightedValue<>(snapshot.getEntity().getId() % 2,snapshot.getEntity().getId() % 2));
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(1.0, result1.get(result1.firstKey()).doubleValue(), DELTA);
@@ -198,7 +198,7 @@ public class OSMEntitySnapshotViewTestH2Singlethread {
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
-        .weightedAverageAggregateByTimestamp(snapshot -> new ImmutablePair<>(snapshot.getEntity().getId() % 2,snapshot.getEntity().getId() % 2));
+        .weightedAverageAggregateByTimestamp(snapshot -> new MapReducer.WeightedValue<>(snapshot.getEntity().getId() % 2,snapshot.getEntity().getId() % 2));
 
     assertEquals(72, result2.entrySet().size());
     assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
@@ -209,7 +209,7 @@ public class OSMEntitySnapshotViewTestH2Singlethread {
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
-        .weightedAverageAggregate(snapshot -> new ImmutablePair<>(snapshot.getEntity().getId() % 2 == 0, new ImmutablePair<>(snapshot.getEntity().getId() % 2, snapshot.getEntity().getId() % 2)));
+        .weightedAverageAggregate(snapshot -> new ImmutablePair<>(snapshot.getEntity().getId() % 2 == 0, new MapReducer.WeightedValue<>(snapshot.getEntity().getId() % 2, snapshot.getEntity().getId() % 2)));
 
     assertEquals(Double.NaN, result4.get(true).doubleValue(), DELTA);
     assertEquals(1.0, result4.get(false).doubleValue(), DELTA);
