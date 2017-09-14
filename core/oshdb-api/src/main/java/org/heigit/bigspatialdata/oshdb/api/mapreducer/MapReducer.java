@@ -311,7 +311,7 @@ public abstract class MapReducer<T> {
   public <R extends Number> SortedMap<OSHDBTimestamp, Double> averageAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
     return this.mapAggregateByTimestamp(
         mapper,
-        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
         (acc, cur) -> {
           acc.num = NumberUtils.add(acc.num, cur);
           acc.weight += 1;
@@ -328,7 +328,7 @@ public abstract class MapReducer<T> {
   public <R extends Number, W extends Number> SortedMap<OSHDBTimestamp, Double> weightedAverageAggregateByTimestamp(SerializableFunction<T, Pair<R, W>> mapper) throws Exception {
     return this.mapAggregateByTimestamp(
         mapper,
-        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
         (acc, cur) -> {
           acc.num = NumberUtils.add(acc.num, cur.getLeft());
           acc.weight += cur.getRight().doubleValue();
@@ -367,7 +367,7 @@ public abstract class MapReducer<T> {
   public <R extends Number, U> SortedMap<U, Double> averageAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
     return this.mapAggregate(
         mapper,
-        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
         (acc, cur) -> {
           acc.num = NumberUtils.add(acc.num, cur);
           acc.weight += 1;
@@ -384,7 +384,7 @@ public abstract class MapReducer<T> {
   public <R extends Number, W extends Number, U> SortedMap<U, Double> weightedAverageAggregate(SerializableFunction<T, Pair<U, Pair<R, W>>> mapper) throws Exception {
     return this.mapAggregate(
         mapper,
-        () -> new PayloadWithWeight<>((R) (Integer) 0,0),
+        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
         (acc, cur) -> {
           acc.num = NumberUtils.add(acc.num, cur.getLeft());
           acc.weight += cur.getRight().doubleValue();
