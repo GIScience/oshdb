@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.etl.load;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -10,8 +8,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCheckedException;
@@ -22,11 +24,15 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgnitionEx;
 import org.heigit.bigspatialdata.oshdb.etl.CacheNames;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.cmdarg.LoadArgs;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 
 /**
  * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
@@ -84,14 +90,18 @@ public class OSHDB2Ignite {
       }
       try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
         int cnt = 0;
+        System.out.println(LocalDateTime.now() + " START loading " + tableName + " into " + cache.getName() + " on Ignite");
         while (rst.next()) {
           final int level = rst.getInt(1);
           final long id = rst.getLong(2);
+          final long levelId = CellId.getLevelId(level, id);
+          
           final ObjectInputStream ois = new ObjectInputStream(rst.getBinaryStream(3));
-          System.out.printf("level:%d, id:%d\n", level, id);
+//          System.out.printf("level:%d, id:%d -> LevelId:%16s%n", level, id, Long.toHexString(levelId));
           final T grid = (T) ois.readObject();
-          streamer.addData(id, grid);
+          streamer.addData(levelId, grid);
         }
+        System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into " + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException e) {
         e.printStackTrace();
       } catch (SQLException e1) {
