@@ -24,6 +24,12 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
+/**
+ * Main class of oshdb's "functional programming" API.
+ * Takes some settings and filters and exposes a different map-reduce/aggregate functions.
+ *
+ * @param <T> the type that is used to iterate over. The `mapper` function get called with an object of this type
+ */
 public abstract class MapReducer<T> {
   protected OSHDB _oshdb;
   protected OSHDB_JDBC _oshdbForTags;
@@ -41,6 +47,14 @@ public abstract class MapReducer<T> {
     this._oshdb = oshdb;
   }
 
+  /**
+   * Factory function that creates the mapReducer object of the appropriate class for the chosen backend (e.g. JDBC based database or Ignite)
+   *
+   * @param oshdb the database backend (and potentially computation grid) to use for fetching and processing the data
+   * @param forClass the class (same as template parameter &lt;T&gt;) to iterate over in the `mapping` function
+   * @param <T> the type that is used to iterate over in the `mapper` function
+   * @return
+   */
   public static <T> MapReducer<T> using(OSHDB oshdb, Class<?> forClass) {
     if (oshdb instanceof OSHDB_JDBC) {
       MapReducer<T> mapper;
@@ -61,29 +75,229 @@ public abstract class MapReducer<T> {
       throw new UnsupportedOperationException("No mapper implemented for your database type");
     }
   }
-  
+
+  /**
+   * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles) into internally used identifiers.
+   * If this function is never called, the main database (specified during the construction of this object) is used for this.
+   *
+   * @param oshdb the database to use for resolving strings into internal identifiers
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
   public MapReducer<T> keytables(OSHDB_JDBC oshdb) {
     this._oshdbForTags = oshdb;
     return this;
   }
 
+  /**
+   * Helper that resolves an OSM tag key string into an internal identifier (using the keytables database).
+   *
+   * @param key the osm tag key string (e.g. "building")
+   * @return the identifier of this tag key
+   * @throws Exception
+   */
   protected Integer getTagKeyId(String key) throws Exception {
     if (this._tagTranslator == null) this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
     return this._tagTranslator.key2Int(key);
   }
 
+  /**
+   * Helper that resolves an OSM tag (key and value) string into an internal identifier (using the keytables database).
+   *
+   * @param key the osm tag key string (e.g. "highway")
+   * @param value the osm tag value string (e.g. "residential")
+   * @return the key's and value's identifiers of this tag key and value respectively
+   * @throws Exception
+   */
   protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
     if (this._tagTranslator == null) this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
     return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
 
-  public interface SerializableSupplier<R> extends Supplier<R>, Serializable {}
-  public interface SerializablePredicate<T> extends Predicate<T>, Serializable {}
-  public interface SerializableBinaryOperator<T> extends BinaryOperator<T>, Serializable {}
-  public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {}
-  public interface SerializableBiFunction<T1, T2, R> extends BiFunction<T1, T2, R>, Serializable {}
+  /**
+   * Sets the tagInterpreter to use in the analysis.
+   * The tagInterpreter is used internally to determine the geometry type of osm entities (e.g. an osm way can become either
+   * a LineString or a Polygon, depending on its tags).
+   * Normally, this is generated automatically for the user. But for example, if  one doesn't want to use the DefaultTagInterpreter,
+   * it is possible to use this function to supply their own tagInterpreter.
+   *
+   * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<T> tagInterpreter(TagInterpreter tagInterpreter) {
+    this._tagInterpreter = tagInterpreter;
+    return this;
+  }
 
-  
+  /**
+   * Set the area of interest to the given bounding box. Deprecated, use `areaOfInterest()` instead (w/ same semantics).
+   *
+   * @param bbox the bounding box to query the data in
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  @Deprecated
+  public MapReducer<T> boundingBox(BoundingBox bbox) {
+    return this.areaOfInterest(bbox);
+  }
+
+  /**
+   * Set the area of interest to the given bounding box.
+   * Only objects inside or clipped by this bbox will be passed on to the analysis' `mapper` function.
+   *
+   * @param bboxFilter the bounding box to query the data in
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<T> areaOfInterest(BoundingBox bboxFilter) {
+    if (this._polyFilter == null) {
+      if (this._bboxFilter == null)
+        this._bboxFilter = bboxFilter;
+      else
+        this._bboxFilter = BoundingBox.intersect(bboxFilter, this._bboxFilter);
+    } else {
+      this._polyFilter = (Polygon)Geo.clip(this._polyFilter, bboxFilter);
+      this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
+    }
+    return this;
+  }
+
+  /**
+   * Set the area of interest to the given polygon.
+   * Only objects inside or clipped by this polygon will be passed on to the analysis' `mapper` function.
+   *
+   * @param polygonFilter the bounding box to query the data in
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<T> areaOfInterest(Polygon polygonFilter) {
+    if (this._polyFilter == null) {
+      if (this._bboxFilter == null)
+        this._polyFilter = polygonFilter;
+      else
+        this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._bboxFilter);
+    } else {
+      this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._polyFilter);
+    }
+    this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
+    return this;
+  }
+
+  /**
+   * Set the timestamps for which to perform the analysis.
+   * Depending on the *View*, this has slightly different semantics:
+   * * For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
+   * * For the OSMContributionView it will set the time interval in which to look for osm contributions (only the first and last
+   *   timestamp of this list are contributing). Additionally, the timestamps are used in some of the `*aggregateByTimestamps` functions.
+   *
+   * @param tstamps the timestamps to do the analysis for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<T> timestamps(OSHDBTimestamps tstamps) {
+    this._tstamps = tstamps;
+    return this;
+  }
+
+  /**
+   * Limits the analysis to the given osm entity types.
+   *
+   * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<T> osmTypes(EnumSet<OSMType> typeFilter) {
+    this._typeFilter = typeFilter;
+    return this;
+  }
+
+  /**
+   * Limits the analysis to the given osm entity types.
+   *
+   * @param type1 the set of osm types to filter (e.g. `OSMType.NODE`)
+   * @param otherTypes more osm types which should be analyzed
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<T> osmTypes(OSMType type1, OSMType ...otherTypes) {
+    return this.osmTypes(EnumSet.of(type1, otherTypes));
+  }
+
+  /**
+   * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it should be considered for this analyis or not.
+   *
+   * @param f the filter function to call for each osm entity
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<T> filter(SerializablePredicate<OSMEntity> f) {
+    this._filters.add(f);
+    return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapReducer<T> filterByTagKey(String key) throws Exception {
+    int keyId = this.getTagKeyId(key);
+    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
+    return this;
+  }
+
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @param value the tag value to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapReducer<T> filterByTagValue(String key, String value) throws Exception {
+    Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
+    int keyId = keyValueId.getKey();
+    int valueId = keyValueId.getValue();
+    this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
+    return this;
+  }
+
+  // some helper methods for internal use in the mapReduce functions
+
+  // Helper that chains multiple oshEntity filters together
+  private SerializablePredicate<OSHEntity> _getPreFilter() {
+    return (this._preFilters.isEmpty()) ? (oshEntity -> true) : (oshEntity -> {
+      for (SerializablePredicate<OSHEntity> filter : this._preFilters)
+        if (!filter.test(oshEntity))
+          return false;
+      return true;
+    });
+  }
+
+  // Helper that chains multiple osmEntity filters together
+  private SerializablePredicate<OSMEntity> _getFilter() {
+    return (this._filters.isEmpty()) ? (osmEntity -> true) : (osmEntity -> {
+      for (SerializablePredicate<OSMEntity> filter : this._filters)
+        if (!filter.test(osmEntity))
+          return false;
+      return true;
+    });
+  }
+
+  // get all cell ids covered by the current area of interest's bounding box
+  private Iterable<CellId> _getCellIds() {
+    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
+    if (this._bboxFilter == null || (this._bboxFilter.minLon >= this._bboxFilter.maxLon || this._bboxFilter.minLat >= this._bboxFilter.maxLat)) {
+      // return an empty iterable if bbox is not set or empty
+      System.err.println("warning: area of interest not set or empty");
+      return Collections.emptyList();
+    }
+    return grid.bbox2CellIds(this._bboxFilter, true);
+  }
+
+  // get lists of timestamps from the OSHTimestamps object
+  private List<Long> _getTimestamps() {
+    return this._tstamps.getTimestamps();
+  }
+
+  // generic map-reduce functions (need to be implemented by the actual db/processing backend!
+
   protected <R, S> S mapReduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
@@ -98,113 +312,8 @@ public abstract class MapReducer<T> {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
 
+  // exposed map-reduce and map-aggregate functions, to be used by experienced users of the api
 
-  @Deprecated
-  public MapReducer<T> boundingBox(BoundingBox bbox) {
-    return this.areaOfInterest(bbox);
-  }
-
-  public MapReducer<T> areaOfInterest(BoundingBox bboxFilter) {
-    if (this._polyFilter == null) {
-      if (this._bboxFilter == null)
-        this._bboxFilter = bboxFilter;
-      else
-        this._bboxFilter = BoundingBox.intersect(bboxFilter, this._bboxFilter);
-    } else {
-      this._polyFilter = (Polygon)Geo.clip(this._polyFilter, bboxFilter);
-      this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
-    }
-    return this;
-  }
-  public MapReducer<T> areaOfInterest(Polygon polygonFilter) {
-    if (this._polyFilter == null) {
-      if (this._bboxFilter == null)
-        this._polyFilter = polygonFilter;
-      else
-        this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._bboxFilter);
-    } else {
-      this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._polyFilter);
-    }
-    this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
-    return this;
-  }
-  
-  public MapReducer<T> timestamps(OSHDBTimestamps tstamps) {
-    this._tstamps = tstamps;
-    return this;
-  }
-
-  public MapReducer<T> osmTypes(EnumSet<OSMType> typeFilter) {
-    this._typeFilter = typeFilter;
-    return this;
-  }
-
-  public MapReducer<T> osmTypes(OSMType type1, OSMType ...otherTypes) {
-    return this.osmTypes(EnumSet.of(type1, otherTypes));
-  }
-  
-  public MapReducer<T> tagInterpreter(TagInterpreter tagInterpreter) {
-    this._tagInterpreter = tagInterpreter;
-    return this;
-  }
-  
-  public MapReducer<T> filter(SerializablePredicate<OSMEntity> f) {
-    this._filters.add(f);
-    return this;
-  }
-  
-  @FunctionalInterface
-  public interface ExceptionFunction<X, Y> {
-    Y apply(X x) throws Exception;
-  }
-  
-  public MapReducer<T> filterByTagKey(String key) throws Exception {
-    int keyId = this.getTagKeyId(key);
-    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
-    return this;
-  }
-  
-  public MapReducer<T> filterByTagValue(String key, String value) throws Exception {
-    Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
-    int keyId = keyValueId.getKey();
-    int valueId = keyValueId.getValue();
-    this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
-    return this;
-  }
-
-  private SerializablePredicate<OSHEntity> _getPreFilter() {
-    return (this._preFilters.isEmpty()) ? (oshEntity -> true) : (oshEntity -> {
-      for (SerializablePredicate<OSHEntity> filter : this._preFilters)
-        if (!filter.test(oshEntity))
-          return false;
-      return true;
-    });
-  }
-
-  private SerializablePredicate<OSMEntity> _getFilter() {
-    return (this._filters.isEmpty()) ? (osmEntity -> true) : (osmEntity -> {
-      for (SerializablePredicate<OSMEntity> filter : this._filters)
-        if (!filter.test(osmEntity))
-          return false;
-      return true;
-    });
-  }
-
-  private Iterable<CellId> _getCellIds() {
-    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
-    if (this._bboxFilter == null || (this._bboxFilter.minLon >= this._bboxFilter.maxLon || this._bboxFilter.minLat >= this._bboxFilter.maxLat)) {
-      // return an empty iterable if bbox is not set or empty
-      System.err.println("warning: area of interest not set or empty");
-      return Collections.emptyList();
-    }
-    return grid.bbox2CellIds(this._bboxFilter, true);
-  }
-
-  private List<Long> _getTimestamps() {
-    return this._tstamps.getTimestamps();
-  }
-  
   public <R, S> S mapReduce(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
       return this.mapReduceCellsOSMContribution(this._getCellIds(), this._getTimestamps(), this._bboxFilter, this._polyFilter, this._getPreFilter(), this._getFilter(), (SerializableFunction<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
@@ -418,8 +527,20 @@ public abstract class MapReducer<T> {
     return this.uniqAggregate(data -> new ImmutablePair<>(0, mapper.apply(data))).getOrDefault(0, new HashSet<>());
   }
 
-  // auxiliary classes
+  // auxiliary classes and interfaces
 
+  // interfaces of some generic lambda functions used here, to make them serializable
+  public interface SerializableSupplier<R> extends Supplier<R>, Serializable {}
+  public interface SerializablePredicate<T> extends Predicate<T>, Serializable {}
+  public interface SerializableBinaryOperator<T> extends BinaryOperator<T>, Serializable {}
+  public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {}
+  public interface SerializableBiFunction<T1, T2, R> extends BiFunction<T1, T2, R>, Serializable {}
+
+  /**
+   * Immutable object that stores a numeric value and an associated weight.
+   * Used to specify data input for the calculation of weighted averages.
+   * @param <X> A numeric data type for the value.
+   */
   public static class WeightedValue<X extends Number> {
     private X value;
     private double weight;
@@ -429,14 +550,21 @@ public abstract class MapReducer<T> {
       this.weight = weight;
     }
 
+    /**
+     * @return the stored numeric value
+     */
     public X getValue() {
       return value;
     }
 
+    /**
+     * @return the value's associated weight
+     */
     public double getWeight() {
       return weight;
     }
   }
+
   // mutable version of WeightedValue type (for internal use to do faster aggregation)
   private class PayloadWithWeight<X> {
     X num;
