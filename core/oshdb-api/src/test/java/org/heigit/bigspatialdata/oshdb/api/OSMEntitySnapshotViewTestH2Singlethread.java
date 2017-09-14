@@ -32,7 +32,7 @@ public class OSMEntitySnapshotViewTestH2Singlethread {
 
   private static final Logger LOG = Logger.getLogger(OSMEntitySnapshotViewTestH2Singlethread.class.getName());
 
-  private final MapReducer<OSMEntitySnapshot> mapReducer;
+  MapReducer<OSMEntitySnapshot> mapReducer;
 
   private final BoundingBox bbox1 = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps(2014, 2014, 1, 1);
