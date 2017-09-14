@@ -46,9 +46,9 @@ public abstract class MapReducer<T> {
     if (oshdb instanceof OSHDB_JDBC) {
       MapReducer<T> mapper;
       if (((OSHDB_JDBC)oshdb).multithreading())
-        mapper = new MapReducer_JDBC_multithread<T>((OSHDB_JDBC)oshdb);
+        mapper = new MapReducer_JDBC_multithread<T>(oshdb);
       else
-        mapper = new MapReducer_JDBC_singlethread<T>((OSHDB_JDBC)oshdb);
+        mapper = new MapReducer_JDBC_singlethread<T>(oshdb);
       mapper._oshdb = oshdb;
       mapper._oshdbForTags = (OSHDB_JDBC)oshdb;
       mapper._forClass = forClass;
@@ -69,12 +69,12 @@ public abstract class MapReducer<T> {
   }
 
   protected Integer getTagKeyId(String key) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
     return this._tagTranslator.key2Int(key);
   }
 
   protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator(((OSHDB_H2) this._oshdbForTags).getConnection());
+    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
     return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
 
