@@ -8,14 +8,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Polygon;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
@@ -27,12 +25,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
   }
   
   @Override
-  protected <R, S> S mapReduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     S result = identitySupplier.get();
-    for (CellId cellId : cellIds) {
+    for (CellId cellId : this._getCellIds()) {
       // prepare SQL statement
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
           (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
@@ -56,12 +54,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
         List<R> rs = new ArrayList<>();
         CellIterator.iterateAll(
             oshCellRawData,
-            bbox,
-            poly,
-            new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
+            this._bboxFilter,
+            this._polyFilter,
+            new CellIterator.TimestampInterval(this._getTimestamps().get(0), this._getTimestamps().get(this._getTimestamps().size()-1)),
             this._tagInterpreter,
-            preFilter,
-            filter,
+            this._getPreFilter(),
+            this._getFilter(),
             false
         ).forEach(contribution -> rs.add(
             mapper.apply(
@@ -87,12 +85,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
   }
 
   @Override
-  protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<List<OSMContribution>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(SerializableFunction<List<OSMContribution>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     S result = identitySupplier.get();
-    for (CellId cellId : cellIds) {
+    for (CellId cellId : this._getCellIds()) {
       // prepare SQL statement
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
           (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
@@ -117,12 +115,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
         List<OSMContribution> contributions = new ArrayList<>();
         CellIterator.iterateAll(
             oshCellRawData,
-            bbox,
-            poly,
-            new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
+            this._bboxFilter,
+            this._polyFilter,
+            new CellIterator.TimestampInterval(this._getTimestamps().get(0), this._getTimestamps().get(this._getTimestamps().size()-1)),
             this._tagInterpreter,
-            preFilter,
-            filter,
+            this._getPreFilter(),
+            this._getFilter(),
             false
         ).forEach(contribution -> {
           OSMContribution thisContribution = new OSMContribution(
@@ -155,12 +153,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
 
   
   @Override
-  protected <R, S> S mapReduceCellsOSMEntitySnapshot(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S mapReduceCellsOSMEntitySnapshot(SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     S result = identitySupplier.get();
-    for (CellId cellId : cellIds) {
+    for (CellId cellId : this._getCellIds()) {
       // prepare SQL statement
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
           (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
@@ -184,12 +182,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
         List<R> rs = new LinkedList<>();
         CellIterator.iterateByTimestamps(
             oshCellRawData,
-            bbox,
-            poly,
-            tstamps,
+            this._bboxFilter,
+            this._polyFilter,
+            this._getTimestamps(),
             this._tagInterpreter,
-            preFilter,
-            filter,
+            this._getPreFilter(),
+            this._getFilter(),
             false
         ).forEach(snapshots -> snapshots.entrySet().forEach(entry -> {
           OSHDBTimestamp tstamp = new OSHDBTimestamp(entry.getKey());
@@ -208,12 +206,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
   }
 
   @Override
-  protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
     S result = identitySupplier.get();
-    for (CellId cellId : cellIds) {
+    for (CellId cellId : this._getCellIds()) {
       // prepare SQL statement
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
           (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
@@ -237,12 +235,12 @@ public class MapReducer_JDBC_singlethread<T> extends MapReducer<T> {
         List<R> rs = new LinkedList<>();
         CellIterator.iterateByTimestamps(
             oshCellRawData,
-            bbox,
-            poly,
-            tstamps,
+            this._bboxFilter,
+            this._polyFilter,
+            this._getTimestamps(),
             this._tagInterpreter,
-            preFilter,
-            filter,
+            this._getPreFilter(),
+            this._getFilter(),
             false
         ).forEach(snapshots -> {
           List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());

@@ -110,12 +110,6 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
   }
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(
-      Iterable<CellId> cellIds,
-      List<Long> tstamps,
-      BoundingBox bbox,
-      Polygon poly,
-      SerializablePredicate<OSHEntity> preFilter,
-      SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
@@ -124,7 +118,7 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
       String cacheName;
@@ -145,11 +139,11 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
       return this._mapReduceCellsOSMContributionOnIgniteCache(
           cacheName,
           cellIdsList,
-          tstamps,
-          bbox,
-          poly,
-          preFilter,
-          filter,
+          this._getTimestamps(),
+          this._bboxFilter,
+          this._polyFilter,
+          this._getPreFilter(),
+          this._getFilter(),
           mapper,
           identitySupplier,
           accumulator,
@@ -241,12 +235,6 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
   }
   @Override
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
-      Iterable<CellId> cellIds,
-      List<Long> tstamps,
-      BoundingBox bbox,
-      Polygon poly,
-      SerializablePredicate<OSHEntity> preFilter,
-      SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
@@ -255,7 +243,7 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
       String cacheName;
@@ -276,11 +264,11 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
       return this._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
           cacheName,
           cellIdsList,
-          tstamps,
-          bbox,
-          poly,
-          preFilter,
-          filter,
+          this._getTimestamps(),
+          this._bboxFilter,
+          this._polyFilter,
+          this._getPreFilter(),
+          this._getFilter(),
           mapper,
           identitySupplier,
           accumulator,
@@ -358,11 +346,6 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
   }
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      Iterable<CellId> cellIds,
-      List<Long> tstamps,
-      BoundingBox bbox, Polygon poly,
-      SerializablePredicate<OSHEntity> preFilter,
-      SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
@@ -371,7 +354,7 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
       String cacheName;
@@ -392,11 +375,11 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
       return this._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
           cacheName,
           cellIdsList,
-          tstamps,
-          bbox,
-          poly,
-          preFilter,
-          filter,
+          this._getTimestamps(),
+          this._bboxFilter,
+          this._polyFilter,
+          this._getPreFilter(),
+          this._getFilter(),
           mapper,
           identitySupplier,
           accumulator,
@@ -476,12 +459,6 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
   }
   @Override
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      Iterable<CellId> cellIds,
-      List<Long> tstamps,
-      BoundingBox bbox,
-      Polygon poly,
-      SerializablePredicate<OSHEntity> preFilter,
-      SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
@@ -490,7 +467,7 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
     //load tag interpreter helper which is later used for geometry building
     if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(cellIds);
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
       String cacheName;
@@ -511,11 +488,11 @@ public class MapReducer_Ignite<T> extends MapReducer<T> {
       return this._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
           cacheName,
           cellIdsList,
-          tstamps,
-          bbox,
-          poly,
-          preFilter,
-          filter,
+          this._getTimestamps(),
+          this._bboxFilter,
+          this._polyFilter,
+          this._getPreFilter(),
+          this._getFilter(),
           mapper,
           identitySupplier,
           accumulator,
