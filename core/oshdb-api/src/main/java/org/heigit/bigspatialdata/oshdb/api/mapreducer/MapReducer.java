@@ -401,15 +401,54 @@ public abstract class MapReducer<T> {
     return result;
   }
 
-  // default helper methods to use the mapreducer's functionality more easily
-  // like sum, weight, average, uniq, etc.
+  // -------------------------------------------------------------------------------------------------------------------
+  // "Quality of life" helper methods to use the map-reduce functionality more directly and easily for typical queries.
+  // Available are: sum, count, average, weightedAverage and uniq.
+  // Each one can be used to get results aggregated by timestamp, aggregated by a custom index and not aggregated totals.
+  // -------------------------------------------------------------------------------------------------------------------
 
+  /**
+   * Sums up the results provided by the `mapper` function for each timestamp (or in timestamp bins).
+   * This is especially useful in combination with the OSMEntitySnapshotView, where it can be used to sum up a specific
+   * property of certain OSM features at each timestamp, e.g. to calculate the total road length over time.
+   *
+   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "0" value in the output.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to sum up
+   * @param <R> the numeric type that is returned by the `mapper` function
+   * @return the summed up results per timestamp, as a sorted Map object of numbers
+   * @throws Exception
+   */
   public <R extends Number> SortedMap<OSHDBTimestamp, R> sumAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
     return this.mapAggregateByTimestamp(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
   }
+
+  /**
+   * Counts up the numer of elements (as returned by the respective data view) for each timestamp (or in timestamp bins).
+   * For the OSMEntitySnapshotView, this will result in the number of features matching the filters at each timestamp (so called "histocounts"),
+   * for the OSMContributionView it will give the number of modifications to such features during each timestamp bin.
+   *
+   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "0" value in the output.
+   *
+   * @return the counts per timestamp, as a sorted Map object of Integers
+   * @throws Exception
+   */
   public SortedMap<OSHDBTimestamp, Integer> countAggregateByTimestamp() throws Exception {
     return this.sumAggregateByTimestamp(ignored -> 1);
   }
+
+  /**
+   * Calculates the averages of the results provided by the `mapper` function for each timestamp (or timestamp bin).
+   * In combination with the OSMEntitySnapshotView this can be used to get the average of a specific property of certain
+   * OSM features at each timestamp, e.g. the proportion of buildings with a housenumber tag over time
+   *
+   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "NaN" value in the output.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to average
+   * @param <R> the numeric type that is returned by the `mapper` function
+   * @return the averages per timestamp, as a sorted Map object of Double values
+   * @throws Exception
+   */
   public <R extends Number> SortedMap<OSHDBTimestamp, Double> averageAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
     return this.mapAggregateByTimestamp(
         mapper,
@@ -427,6 +466,19 @@ public abstract class MapReducer<T> {
         TreeMap::new
     ));
   }
+
+  /**
+   * Calculates weighted averages of the results provided by the `mapper` function for each timestamp (or timestamp bin).
+   * In combination with the OSMEntitySnapshotView this can be used to get the average of a specific property of certain
+   * OSM features at each timestamp, e.g. the proportion of road kilometers with a maxspeed tag over time
+   *
+   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "NaN" value in the output.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to average as well as the weights to be considered in the averaging
+   * @param <R> the numeric type that is returned by the `mapper` function
+   * @return the weighted averages per timestamp, as a sorted Map object of Double values
+   * @throws Exception
+   */
   public <R extends Number> SortedMap<OSHDBTimestamp, Double> weightedAverageAggregateByTimestamp(SerializableFunction<T, WeightedValue<R>> mapper) throws Exception {
     return this.mapAggregateByTimestamp(
         mapper,
@@ -444,6 +496,18 @@ public abstract class MapReducer<T> {
         TreeMap::new
     ));
   }
+
+  /**
+   * Calculates the set of unique values of the results provided by the `mapper` function for each timestamp (or in each timestamp bin).
+   * In combination with the OSMContributionView this can be used to get (for example) the total number of unique users editing certain features.
+   *
+   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will be represented as an empty Set in the output.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification
+   * @param <R> the arbitrary type that is returned by the `mapper` function
+   * @return the unique values returned by the mapper function per timestamp, as a sorted Map object of Set objects
+   * @throws Exception
+   */
   public <R> SortedMap<OSHDBTimestamp, Set<R>> uniqAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
     return this.mapAggregateByTimestamp(
         mapper,
@@ -460,12 +524,40 @@ public abstract class MapReducer<T> {
     );
   }
 
+  /**
+   * Similar to `sumAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value to sum up
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @param <R> the numeric type that is returned by the `mapper` function, used for the values to add up
+   * @return the summed up results per index value, as a sorted Map object
+   * @throws Exception
+   */
   public <R extends Number, U> SortedMap<U, R> sumAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
     return this.mapAggregate(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
   }
+
+  /**
+   * Similar to `countAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification, returns the index for which to count the results for
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @return the counted up results per index value, as a sorted Map object of Integers
+   * @throws Exception
+   */
   public <U> SortedMap<U, Integer> countAggregate(SerializableFunction<T, U> mapper) throws Exception {
     return this.sumAggregate(data -> new ImmutablePair<U, Integer>(mapper.apply(data), 1));
   }
+
+  /**
+   * Similar to `averageAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value to average
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @param <R> the numeric type that is returned by the `mapper` function, used for the values to average
+   * @return the averages per index value, as a sorted Map object of Double values
+   * @throws Exception
+   */
   public <R extends Number, U> SortedMap<U, Double> averageAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
     return this.mapAggregate(
         mapper,
@@ -484,6 +576,15 @@ public abstract class MapReducer<T> {
     ));
   }
 
+  /**
+   * Similar to `weightedAverageAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value+weight combination to average
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @param <R> the numeric type that is returned by the `mapper` function, used for the values to average
+   * @return the weighted averages per index value, as a sorted Map object of Double values
+   * @throws Exception
+   */
   public <R extends Number, U> SortedMap<U, Double> weightedAverageAggregate(SerializableFunction<T, Pair<U, WeightedValue<R>>> mapper) throws Exception {
     return this.mapAggregate(
         mapper,
@@ -501,6 +602,16 @@ public abstract class MapReducer<T> {
         TreeMap::new
     ));
   }
+
+  /**
+   * Similar to `uniqAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value to get the set of unique values for
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @param <R> the arbitrary type that is returned by the `mapper` function, which will be determined the set of unique values for
+   * @return the sets of unique results per index value, as a sorted Map object of Set objects
+   * @throws Exception
+   */
   public <R, U> SortedMap<U, Set<R>> uniqAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
     return this.mapAggregate(
         mapper,
@@ -517,12 +628,44 @@ public abstract class MapReducer<T> {
     );
   }
 
+  /**
+   * Sums up the results provided by a `mapper` function. Doesn't do any aggregation at all.
+   *
+   * When used with the OSMEntitySnapshotView it makes sense to use this function when one only wants to look at a single timestamp.
+   * Or when used with the OSMContributionView, this could be used to get the total amount of edits to the filtered osm entities.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to sum up
+   * @param <R> the numeric type that is returned by the `mapper` function
+   * @return the summed up results of the `mapper` function
+   * @throws Exception
+   */
   public <R extends Number> R sum(SerializableFunction<T, R> mapper) throws Exception {
     return this.mapReduce(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (SerializableBinaryOperator<R>)(x,y) -> NumberUtils.add(x,y));
   }
+
+  /**
+   * Counts the number of features or modifications over all timestamps. Doesn't do any aggregation at all.
+   *
+   * When used with the OSMEntitySnapshotView it makes sense to use this function when one only wants to look at a single timestamp.
+   * Or when used with the OSMContributionView, this could be used to get the total number of edits to the filtered osm entities.
+   *
+   * @return the total count of features or modifications, summed up over all timestamps
+   * @throws Exception
+   */
   public Integer count() throws Exception {
     return this.sum(ignored -> 1);
   }
+
+  /**
+   * Gets all unique values of the results provided by a `mapper` function. Doesn't do any aggregation at all.
+   *
+   * This can be used together with the OSMContributionView to get the total amount of unique users editing specific feature types.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification and returns an arbitrary value
+   * @param <R> the arbitrary type that is returned by the `mapper` function
+   * @return the set of unique values of returned by the `mapper` function
+   * @throws Exception
+   */
   public <R> Set<R> uniq(SerializableFunction<T, R> mapper) throws Exception {
     return this.uniqAggregate(data -> new ImmutablePair<>(0, mapper.apply(data))).getOrDefault(0, new HashSet<>());
   }
