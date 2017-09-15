@@ -76,6 +76,10 @@ public abstract class MapReducer<T> {
     }
   }
 
+  // -------------------------------------------------------------------------------------------------------------------
+  // "Setting" methods and associated internal helpers
+  // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles) into internally used identifiers.
    * If this function is never called, the main database (specified during the construction of this object) is used for this.
@@ -127,6 +131,10 @@ public abstract class MapReducer<T> {
     this._tagInterpreter = tagInterpreter;
     return this;
   }
+
+  // -------------------------------------------------------------------------------------------------------------------
+  // Filtering methods
+  // -------------------------------------------------------------------------------------------------------------------
 
   /**
    * Set the area of interest to the given bounding box. Deprecated, use `areaOfInterest()` instead (w/ same semantics).
@@ -241,7 +249,6 @@ public abstract class MapReducer<T> {
     return this;
   }
 
-
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
    *
@@ -258,7 +265,9 @@ public abstract class MapReducer<T> {
     return this;
   }
 
-  // some helper methods for internal use in the mapReduce functions
+  // -------------------------------------------------------------------------------------------------------------------
+  // Some helper methods for internal use in the mapReduce functions
+  // -------------------------------------------------------------------------------------------------------------------
 
   // Helper that chains multiple oshEntity filters together
   private SerializablePredicate<OSHEntity> _getPreFilter() {
@@ -296,7 +305,10 @@ public abstract class MapReducer<T> {
     return this._tstamps.getTimestamps();
   }
 
-  // generic map-reduce functions (need to be implemented by the actual db/processing backend!
+  // -------------------------------------------------------------------------------------------------------------------
+  // Generic map-reduce functions (internal).
+  // These need to be implemented by the actual db/processing backend!
+  // -------------------------------------------------------------------------------------------------------------------
 
   protected <R, S> S mapReduceCellsOSMContribution(Iterable<CellId> cellIds, List<Long> tstamps, BoundingBox bbox, Polygon poly, SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
@@ -312,7 +324,11 @@ public abstract class MapReducer<T> {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
 
-  // exposed map-reduce and map-aggregate functions, to be used by experienced users of the api
+  // -------------------------------------------------------------------------------------------------------------------
+  // Exposed generic map-reduce and map-aggregate functions.
+  // Can be used by experienced users of the api to implement complex queries.
+  // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
+  // -------------------------------------------------------------------------------------------------------------------
 
   public <R, S> S mapReduce(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     if (this._forClass.equals(OSMContribution.class)) {
@@ -670,7 +686,9 @@ public abstract class MapReducer<T> {
     return this.uniqAggregate(data -> new ImmutablePair<>(0, mapper.apply(data))).getOrDefault(0, new HashSet<>());
   }
 
-  // auxiliary classes and interfaces
+  // -------------------------------------------------------------------------------------------------------------------
+  // Auxiliary classes and interfaces
+  // -------------------------------------------------------------------------------------------------------------------
 
   // interfaces of some generic lambda functions used here, to make them serializable
   public interface SerializableSupplier<R> extends Supplier<R>, Serializable {}
