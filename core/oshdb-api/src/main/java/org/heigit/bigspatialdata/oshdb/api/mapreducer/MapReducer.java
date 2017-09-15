@@ -326,7 +326,7 @@ public abstract class MapReducer<T> {
    * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
    * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function; individual result for a single OSMContribution
+   * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
@@ -353,7 +353,7 @@ public abstract class MapReducer<T> {
    * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
    * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function; individual result for a single OSMContribution
+   * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
@@ -378,7 +378,7 @@ public abstract class MapReducer<T> {
    * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
    * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function; individual result for a single OSMContribution
+   * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
@@ -405,7 +405,7 @@ public abstract class MapReducer<T> {
    * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
    * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function; individual result for a single OSMContribution
+   * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
@@ -436,7 +436,7 @@ public abstract class MapReducer<T> {
    * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
    * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function; individual result for a single OSMContribution
+   * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
@@ -467,7 +467,7 @@ public abstract class MapReducer<T> {
    * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
    * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function; individual result for a single OSMContribution
+   * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
@@ -506,7 +506,7 @@ public abstract class MapReducer<T> {
    * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
    * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function; individual result for a single OSMContribution
+   * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
@@ -519,6 +519,30 @@ public abstract class MapReducer<T> {
     } else throw new UnsupportedOperationException("No mapper implemented for your database type");
   }
 
+  /**
+   * Map-reduce routine with built-in aggregation by an arbitrary index
+   *
+   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately according to some custom index value.
+   *
+   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
+   * <ul>
+   *   <li>the accumulator and combiner functions need to be associative,</li>
+   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
+   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
+   * </ul>
+   *
+   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
+   *
+   * @param mapper a function that's called for each osm entity snapshot or modification; returns a pair of two values: first is the index for which to aggregate the results for, and the second is the result value to reduce
+   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
+   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
+   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
+   * @param <R> the type of the data values returned `mapper` function
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
+   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
+   * @throws Exception
+   */
   public <R, S, U> SortedMap<U, S> mapAggregate(SerializableFunction<T, Pair<U, R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     return this.mapReduce(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
       m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
@@ -532,19 +556,32 @@ public abstract class MapReducer<T> {
     });
   }
 
-  public <R, S, U> SortedMap<U, S> flatMapAggregateGroupedById(SerializableFunction<List<T>, List<Pair<U, R>>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.flatMapReduceGroupedById(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
-      m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
-      return m;
-    }, (a,b) -> {
-      SortedMap<U, S> combined = new TreeMap<>(a);
-      for (SortedMap.Entry<U, S> entry: b.entrySet()) {
-        combined.merge(entry.getKey(), entry.getValue(), combiner);
-      }
-      return combined;
-    });
-  }
-
+  /**
+   * FlatMap-reduce routine with built-in aggregation by an arbitrary index
+   *
+   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately according to some custom index value.
+   *
+   * Contrary to the "normal" `mapAggregate`, the "flat" version adds the possibility to return any number of results in the `mapper` function.
+   *
+   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
+   * <ul>
+   *   <li>the accumulator and combiner functions need to be associative,</li>
+   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
+   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
+   * </ul>
+   *
+   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
+   *
+   * @param mapper a function that's called for each osm entity snapshot or modification; returns a list of pairs of two values: first is the index for which to aggregate the results for, and the second is the result value to reduce
+   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
+   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
+   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
+   * @param <R> the type of the data values returned `mapper` function
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
+   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
+   * @throws Exception
+   */
   public <R, S, U> SortedMap<U, S> flatMapAggregate(SerializableFunction<T, List<Pair<U, R>>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     return this.flatMapAggregateGroupedById(
         inputList -> {
@@ -558,6 +595,71 @@ public abstract class MapReducer<T> {
     );
   }
 
+  /**
+   * FlatMap-reduce routine with built-in aggregation by an arbitrary index
+   *
+   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately according to some custom index value.
+   *
+   * Contrary to the "normal" `mapAggregate`, the "flat" version adds the possibility to return any number of results in the `mapper` function.
+   *
+   * Also, this interface provides the `mapper` function with a list of all snapshots or modifications of a particular OSM entity at once.
+   * This can be used to implement more complex analyses that require the full list of snapshots of the respective OSM entities as input.
+   *
+   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
+   * <ul>
+   *   <li>the accumulator and combiner functions need to be associative,</li>
+   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
+   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
+   * </ul>
+   *
+   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
+   *
+   * @param mapper a function that's called for all snapshots or modifications of a particular OSM entity; returns a list of pairs of two values: first is the index for which to aggregate the results for, and the second is the result value to reduce
+   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
+   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
+   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
+   * @param <R> the type of the data values returned `mapper` function
+   * @param <U> the type of the index values returned by the `mapper function`, used to group results
+   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
+   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
+   * @throws Exception
+   */
+  public <R, S, U> SortedMap<U, S> flatMapAggregateGroupedById(SerializableFunction<List<T>, List<Pair<U, R>>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    return this.flatMapReduceGroupedById(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
+      m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
+      return m;
+    }, (a,b) -> {
+      SortedMap<U, S> combined = new TreeMap<>(a);
+      for (SortedMap.Entry<U, S> entry: b.entrySet()) {
+        combined.merge(entry.getKey(), entry.getValue(), combiner);
+      }
+      return combined;
+    });
+  }
+
+  /**
+   * Map-reduce routine with built-in aggregation by timestamps (or timestamp bins)
+   *
+   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately by timestamps
+   *
+   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
+   * <ul>
+   *   <li>the accumulator and combiner functions need to be associative,</li>
+   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
+   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
+   * </ul>
+   *
+   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
+   *
+   * @param mapper a function that's called for each osm entity snapshot or modification; the results of the calls to this function will be aggregated separately by the timestamp of the osm entity's snapshot date or modification timestamp
+   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
+   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
+   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
+   * @param <R> the type of the data values returned `mapper` function
+   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
+   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
+   * @throws Exception
+   */
   public <R, S> SortedMap<OSHDBTimestamp, S> mapAggregateByTimestamp(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     SortedMap<OSHDBTimestamp, S> result;
     List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
