@@ -49,7 +49,7 @@ public class CellIterator {
         // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
         continue;
       }
-      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon != null && boundingPolygon.contains(boundingBox.getGeometry()));
+      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon == null || boundingPolygon.contains(boundingBox.getGeometry()));
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations where not needed
       SortedMap<Long, List<Long>> queryTs = new TreeMap<>();
@@ -256,7 +256,7 @@ public class CellIterator {
         // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
         continue;
       }
-      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon != null && boundingPolygon.contains(boundingBox.getGeometry()));
+      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon == null || boundingPolygon.contains(boundingBox.getGeometry()));
 
       List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
