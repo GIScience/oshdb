@@ -36,7 +36,7 @@ public class BoundingBox {
    * @return com.vividsolutions.jts.geom.Geometry
    */
   public Polygon getGeometry() {
-    return JTS.toGeometry(new Envelope(minLon, maxLon, minLat, maxLon));
+    return JTS.toGeometry(new Envelope(minLon, maxLon, minLat, maxLat));
   }
 
   /**
