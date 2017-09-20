@@ -43,7 +43,7 @@ public class HelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testSumBBox() throws Exception {
+  public void testSum() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Number> result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -84,7 +84,7 @@ public class HelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testCountBBox() throws Exception {
+  public void testCount() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -127,7 +127,7 @@ public class HelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testAverageBBox() throws Exception {
+  public void testAverage() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Double> result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -161,7 +161,7 @@ public class HelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testWeightedAverageBBox() throws Exception {
+  public void testWeightedAverage() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Double> result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -195,7 +195,7 @@ public class HelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testUniqBBox() throws Exception {
+  public void testUniq() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps1)
