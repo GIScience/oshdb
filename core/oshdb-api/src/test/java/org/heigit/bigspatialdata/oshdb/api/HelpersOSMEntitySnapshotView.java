@@ -5,12 +5,11 @@
  */
 package org.heigit.bigspatialdata.oshdb.api;
 
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.junit.Test;
 
-import java.io.*;
-import java.sql.*;
 import java.util.*;
-import java.util.logging.Logger;
+
 import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -22,44 +21,39 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.json.simple.parser.ParseException;
 
 /**
  *
  */
 public class HelpersOSMEntitySnapshotView {
+  private final OSHDB oshdb;
 
-  private static final Logger LOG = Logger.getLogger(HelpersOSMEntitySnapshotView.class.getName());
-
-  MapReducer<OSMEntitySnapshot> mapReducer;
-
-  private final BoundingBox bbox1 = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
+  private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps(2014, 2014, 1, 1);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps(2010, 2015, 1, 12);
 
   private final double DELTA = 1e-8;
 
-  public HelpersOSMEntitySnapshotView() throws SQLException, ClassNotFoundException, IOException, ParseException {
-    mapReducer = OSMEntitySnapshotView.on(new OSHDB_H2("./src/test/resources/test-data"));
+  public HelpersOSMEntitySnapshotView() throws Exception {
+    oshdb = new OSHDB_H2("./src/test/resources/test-data");
+  }
+
+  private MapReducer<OSMEntitySnapshot> createMapReducer() throws Exception {
+    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.WAY).filterByTagValue("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
   public void testSumBBox() throws Exception {
-    // set area of interest
-    mapReducer.areaOfInterest(bbox1);
-
     // single timestamp
-    SortedMap<OSHDBTimestamp, Number> result1 = mapReducer
+    SortedMap<OSHDBTimestamp, Number> result1 = this.createMapReducer()
         .timestamps(timestamps1)
-        .osmTypes(OSMType.WAY)
-        .filterByTagValue("building", "yes")
         .sumAggregateByTimestamp(snapshot -> 1);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(42, result1.get(result1.firstKey()));
 
     // many timestamps
-    SortedMap<OSHDBTimestamp, Number> result2 = mapReducer
+    SortedMap<OSHDBTimestamp, Number> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -70,7 +64,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result2.get(result2.lastKey()));
 
     // total
-    Number result3 = mapReducer
+    Number result3 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -79,7 +73,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result3);
 
     // custom aggregation identifier
-    SortedMap<Boolean, Number> result4 = mapReducer
+    SortedMap<Boolean, Number> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -91,11 +85,8 @@ public class HelpersOSMEntitySnapshotView {
 
   @Test
   public void testCountBBox() throws Exception {
-    // set area of interest
-    mapReducer.areaOfInterest(bbox1);
-
     // single timestamp
-    SortedMap<OSHDBTimestamp, Integer> result1 = mapReducer
+    SortedMap<OSHDBTimestamp, Integer> result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -105,7 +96,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result1.get(result1.firstKey()).intValue());
 
     // many timestamps
-    SortedMap<OSHDBTimestamp, Integer> result2 = mapReducer
+    SortedMap<OSHDBTimestamp, Integer> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -116,7 +107,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result2.get(result2.lastKey()).intValue());
 
     // total
-    Integer result3 = mapReducer
+    Integer result3 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -125,7 +116,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result3.intValue());
 
     // custom aggregation identifier
-    SortedMap<Boolean, Integer> result4 = mapReducer
+    SortedMap<Boolean, Integer> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -137,11 +128,8 @@ public class HelpersOSMEntitySnapshotView {
 
   @Test
   public void testAverageBBox() throws Exception {
-    // set area of interest
-    mapReducer.areaOfInterest(bbox1);
-
     // single timestamp
-    SortedMap<OSHDBTimestamp, Double> result1 = mapReducer
+    SortedMap<OSHDBTimestamp, Double> result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -151,7 +139,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(0.5, result1.get(result1.firstKey()).doubleValue(), DELTA);
 
     // many timestamps
-    SortedMap<OSHDBTimestamp, Double> result2 = mapReducer
+    SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -162,7 +150,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(0.5, result2.get(result2.lastKey()).doubleValue(), DELTA);
 
     // custom aggregation identifier
-    SortedMap<Boolean, Double> result4 = mapReducer
+    SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -174,11 +162,8 @@ public class HelpersOSMEntitySnapshotView {
 
   @Test
   public void testWeightedAverageBBox() throws Exception {
-    // set area of interest
-    mapReducer.areaOfInterest(bbox1);
-
     // single timestamp
-    SortedMap<OSHDBTimestamp, Double> result1 = mapReducer
+    SortedMap<OSHDBTimestamp, Double> result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -188,7 +173,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(1.0, result1.get(result1.firstKey()).doubleValue(), DELTA);
 
     // many timestamps
-    SortedMap<OSHDBTimestamp, Double> result2 = mapReducer
+    SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -199,7 +184,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(1.0, result2.get(result2.lastKey()).doubleValue(), DELTA);
 
     // custom aggregation identifier
-    SortedMap<Boolean, Double> result4 = mapReducer
+    SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -211,11 +196,8 @@ public class HelpersOSMEntitySnapshotView {
 
   @Test
   public void testUniqBBox() throws Exception {
-    // set area of interest
-    mapReducer.areaOfInterest(bbox1);
-
     // single timestamp
-    SortedMap<OSHDBTimestamp, Set<Long>> result1 = mapReducer
+    SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -225,7 +207,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result1.get(result1.firstKey()).size());
 
     // many timestamps
-    SortedMap<OSHDBTimestamp, Set<Long>> result2 = mapReducer
+    SortedMap<OSHDBTimestamp, Set<Long>> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -236,7 +218,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result2.get(result2.lastKey()).size());
 
     // total
-    Set<Long> result3 = mapReducer
+    Set<Long> result3 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
@@ -245,7 +227,7 @@ public class HelpersOSMEntitySnapshotView {
     assertEquals(42, result3.size());
 
     // custom aggregation identifier
-    SortedMap<Boolean, Set<Long>> result4 = mapReducer
+    SortedMap<Boolean, Set<Long>> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .filterByTagValue("building", "yes")
