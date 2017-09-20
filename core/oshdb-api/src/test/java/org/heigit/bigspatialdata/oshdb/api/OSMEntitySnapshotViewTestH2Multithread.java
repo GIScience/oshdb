@@ -9,10 +9,9 @@ import java.sql.SQLException;
 
 public class OSMEntitySnapshotViewTestH2Multithread extends OSMEntitySnapshotViewTestH2Singlethread {
   public OSMEntitySnapshotViewTestH2Multithread() throws SQLException, ClassNotFoundException, IOException, ParseException {
-    OSHDB_H2 oshdb = new OSHDB_H2("./src/test/resources/hd");
-    oshdb.multithreading(true);
-    OSHDB_H2 keytables = new OSHDB_H2("./src/test/resources/keytables");
+    OSHDB_H2 oshdb = new OSHDB_H2("./src/test/resources/test-data");
+    oshdb.multithreading(false);
 
-    this.mapReducer = OSMEntitySnapshotView.on(oshdb).keytables(keytables);
+    mapReducer = OSMEntitySnapshotView.on(oshdb);
   }
 }

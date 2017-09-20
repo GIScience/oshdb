@@ -5,12 +5,20 @@
  */
 package org.heigit.bigspatialdata.oshdb.api;
 
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Set;
-import java.util.SortedMap;
+import java.io.*;
+import java.sql.*;
+import java.util.*;
 import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 
@@ -41,12 +49,10 @@ public class OSMEntitySnapshotViewTestH2Singlethread {
   private final double DELTA = 1e-8;
 
   public OSMEntitySnapshotViewTestH2Singlethread() throws SQLException, ClassNotFoundException, IOException, ParseException {
-    OSHDB_H2 oshdb = new OSHDB_H2("./src/test/resources/hd");
+    OSHDB_H2 oshdb = new OSHDB_H2("./src/test/resources/test-data");
     oshdb.multithreading(false);
-    OSHDB_H2 keytables = new OSHDB_H2("./src/test/resources/keytables");
 
-    mapReducer = OSMEntitySnapshotView.on(oshdb).keytables(keytables);
-    //mapReducer.tagInterpreter(DefaultTagInterpreter.fromJDBC(keytables.getConnection()));
+    mapReducer = OSMEntitySnapshotView.on(oshdb);
   }
 
   @Test
