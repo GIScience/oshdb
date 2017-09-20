@@ -5,15 +5,6 @@
  */
 package org.heigit.bigspatialdata.oshdb.api;
 
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
-import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
-import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
-import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
-import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.junit.Test;
 
 import java.io.*;
@@ -36,9 +27,9 @@ import org.json.simple.parser.ParseException;
 /**
  *
  */
-public class OSMEntitySnapshotViewTestH2Singlethread {
+public class HelpersOSMEntitySnapshotView {
 
-  private static final Logger LOG = Logger.getLogger(OSMEntitySnapshotViewTestH2Singlethread.class.getName());
+  private static final Logger LOG = Logger.getLogger(HelpersOSMEntitySnapshotView.class.getName());
 
   MapReducer<OSMEntitySnapshot> mapReducer;
 
@@ -48,11 +39,8 @@ public class OSMEntitySnapshotViewTestH2Singlethread {
 
   private final double DELTA = 1e-8;
 
-  public OSMEntitySnapshotViewTestH2Singlethread() throws SQLException, ClassNotFoundException, IOException, ParseException {
-    OSHDB_H2 oshdb = new OSHDB_H2("./src/test/resources/test-data");
-    oshdb.multithreading(false);
-
-    mapReducer = OSMEntitySnapshotView.on(oshdb);
+  public HelpersOSMEntitySnapshotView() throws SQLException, ClassNotFoundException, IOException, ParseException {
+    mapReducer = OSMEntitySnapshotView.on(new OSHDB_H2("./src/test/resources/test-data"));
   }
 
   @Test
