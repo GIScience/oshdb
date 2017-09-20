@@ -38,7 +38,7 @@ public class HelpersOSMContributionView {
   private final double DELTA = 1e-8;
 
   public HelpersOSMContributionView() throws Exception {
-    oshdb = new OSHDB_H2("./src/test/resources/test-data");
+    oshdb = new OSHDB_H2("./src/test/resources/test-data;ACCESS_MODE_DATA=r");
   }
 
   private MapReducer<OSMContribution> createMapReducer() throws Exception {
