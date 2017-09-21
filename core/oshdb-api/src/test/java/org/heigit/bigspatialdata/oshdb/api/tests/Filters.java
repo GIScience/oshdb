@@ -19,6 +19,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -123,7 +124,7 @@ public class Filters {
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)
         .uniq(snapshot -> snapshot.getEntity().getVersion());
-    assertEquals(2, result.size());
+    assertEquals(4, result.stream().max(Comparator.reverseOrder()).orElse(-1).intValue());
   }
 
 
