@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.objects;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,8 +23,6 @@ public class OSHDBTimestamps {
   private int startDay;
   private int endDay;
 
-  private final SimpleDateFormat formatter;
-
 
   public OSHDBTimestamps(int startYear, int endYear, int startMonth, int endMonth, int startDay, int endDay) {
     super();
@@ -33,7 +32,6 @@ public class OSHDBTimestamps {
     this.endMonth = endMonth;
     this.startDay = startDay;
     this.endDay = endDay;
-    this.formatter = new SimpleDateFormat("yyyyMMdd");
   }
 
   public OSHDBTimestamps(int startYear, int endYear, int startMonth, int endMonth) {
@@ -45,6 +43,7 @@ public class OSHDBTimestamps {
   }
 
   public List<Long> getTimestamps() {
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
     List<Long> timestamps = new ArrayList<>();
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     for (int year = startYear; year <= endYear; year++) {
@@ -52,8 +51,9 @@ public class OSHDBTimestamps {
         for (int day = startDay; day <= endDay; day++) {
           try {
             timestamps.add(formatter.parse(String.format("%d%02d%02d", year, month, day)).getTime() / 1000);
-          } catch (java.text.ParseException e) {
-            System.err.println("error, please check your code!");
+          } catch (Exception e) {
+            System.err.println("error while parsing date in OSHDBTimestamps!");
+            e.printStackTrace();
           }
         }
       }
