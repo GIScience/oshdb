@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.heigit.bigspatialdata.oshdb.api;
+package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class MapAggregate {
+public class FlatMapReduce {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
@@ -32,7 +32,7 @@ public class MapAggregate {
 
   private final double DELTA = 1e-8;
 
-  public MapAggregate() throws Exception {
+  public FlatMapReduce() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data;ACCESS_MODE_DATA=r");
   }
 
@@ -42,18 +42,23 @@ public class MapAggregate {
 
   @Test
   public void test() throws Exception {
-    SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
+    Set<Pair<Integer, Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .filter(entity -> entity.getId() == 617308093)
-        .mapAggregate(
-            contribution -> new ImmutablePair<>(contribution.getEntityAfter().getId(), contribution.getContributorUserId()),
+        .flatMapReduce(
+            contribution -> {
+              if (contribution.getEntityAfter().getId() != 617308093)
+                return new ArrayList<>();
+              List<Pair<Integer, Integer>> ret = new ArrayList<>();
+              int[] tags = contribution.getEntityAfter().getTags();
+              for (int i=0; i<tags.length; i+=2)
+                ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
+              return ret;
+            },
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
-            (x,y) -> { Set<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
+            (x,y) -> { HashSet<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
         );
 
-    assertEquals(1, result.entrySet().size());
-    /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
-    assertEquals(5, result.get(617308093L).size());
+    assertEquals(2, result.size());
   }
 }

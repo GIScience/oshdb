@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.heigit.bigspatialdata.oshdb.api;
+package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.heigit.bigspatialdata.oshdb.api;
+package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,19 +15,16 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
-public class FlatMapReduceGroupedById {
+public class MapAggregate {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
@@ -35,7 +32,7 @@ public class FlatMapReduceGroupedById {
 
   private final double DELTA = 1e-8;
 
-  public FlatMapReduceGroupedById() throws Exception {
+  public MapAggregate() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data;ACCESS_MODE_DATA=r");
   }
 
@@ -45,22 +42,18 @@ public class FlatMapReduceGroupedById {
 
   @Test
   public void test() throws Exception {
-    Integer result = createMapReducerOSMContribution()
+    SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMapReduceGroupedById(
-            contributions -> {
-              if (contributions.get(0).getEntityAfter().getId() != 617308093)
-                return new ArrayList<>();
-              List<Integer> ret = new ArrayList<>();
-              ret.add((int)contributions.stream().filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE)).count());
-              ret.add(2);
-              return ret;
-            },
-            () -> 0,
-            (x,y) -> x + y,
-            (x,y) -> x + y
+        .filter(entity -> entity.getId() == 617308093)
+        .mapAggregate(
+            contribution -> new ImmutablePair<>(contribution.getEntityAfter().getId(), contribution.getContributorUserId()),
+            HashSet::new,
+            (x,y) -> { x.add(y); return x; },
+            (x,y) -> { Set<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
         );
 
-    assertEquals(5+2, result.intValue());
+    assertEquals(1, result.entrySet().size());
+    /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
+    assertEquals(5, result.get(617308093L).size());
   }
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.heigit.bigspatialdata.oshdb.api;
+package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,16 +15,20 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
-public class FlatMapReduce {
+public class FlatMapAggregateGroupedById {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
@@ -32,7 +36,7 @@ public class FlatMapReduce {
 
   private final double DELTA = 1e-8;
 
-  public FlatMapReduce() throws Exception {
+  public FlatMapAggregateGroupedById() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data;ACCESS_MODE_DATA=r");
   }
 
@@ -42,23 +46,29 @@ public class FlatMapReduce {
 
   @Test
   public void test() throws Exception {
-    Set<Pair<Integer, Integer>> result = createMapReducerOSMContribution()
+    SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMapReduce(
-            contribution -> {
-              if (contribution.getEntityAfter().getId() != 617308093)
+        .flatMapAggregateGroupedById(
+            contributions -> {
+              if (contributions.get(0).getEntityAfter().getId() != 617308093)
                 return new ArrayList<>();
-              List<Pair<Integer, Integer>> ret = new ArrayList<>();
-              int[] tags = contribution.getEntityAfter().getTags();
-              for (int i=0; i<tags.length; i+=2)
-                ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
+              List<Pair<Long, Integer>> ret = new ArrayList<>();
+              ret.add(new ImmutablePair<>(
+                  contributions.get(0).getEntityAfter().getId(),
+                  (int)contributions.stream().filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE)).count()
+              ));
+              ret.add(new ImmutablePair<>(
+                  contributions.get(0).getEntityAfter().getId(),
+                  2
+              ));
               return ret;
             },
-            HashSet::new,
-            (x,y) -> { x.add(y); return x; },
-            (x,y) -> { HashSet<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
+            () -> 0,
+            (x,y) -> x + y,
+            (x,y) -> x + y
         );
 
-    assertEquals(2, result.size());
+    assertEquals(1, result.entrySet().size());
+    assertEquals(5+2, result.get(617308093L).intValue());
   }
 }
