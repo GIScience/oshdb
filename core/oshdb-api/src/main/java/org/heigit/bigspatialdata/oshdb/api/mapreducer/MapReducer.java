@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.List;
 import java.util.function.*;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -959,11 +959,110 @@ public abstract class MapReducer<T> {
   }
 
   // -------------------------------------------------------------------------------------------------------------------
+  // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
+  // -------------------------------------------------------------------------------------------------------------------
+
+  /**
+   * Iterates over each entity snapshot or contribution, and performs a single `action` on each one of them.
+   *
+   * This method can be handy for testing purposes. But note that as the `action` doesn't produce a return value, it must facilitate its own way of producing output.
+   *
+   * @param action function that gets called for each entity snapshot or modification
+   * @throws Exception
+   */
+  @Deprecated
+  public void forEach(SerializableConsumer<T> action) throws Exception {
+    this.mapReduce(data -> { action.accept(data); return null; }, () -> null, (ignored, ignored2) -> null, (ignored, ignored2) -> null);
+  }
+
+  /**
+   * Iterates over each entity's snapshot or contribution, and performs a single `action` on each entity.
+   *
+   * This method can be handy for testing purposes. But note that as the `action` doesn't produce a return value, it must facilitate its own way of producing output.
+   *
+   * @param action function that gets called for each entity with a list of all respective snapshots or modifications
+   * @throws Exception
+   */
+  @Deprecated
+  public void forEachGroupedById(SerializableConsumer<List<T>> action) throws Exception {
+    this.flatMapReduceGroupedById(data -> { action.accept(data); return Collections.emptyList(); }, () -> null, (ignored, ignored2) -> null, (ignored, ignored2) -> null);
+  }
+
+  /**
+   * Collects all results produced by a `mapper` function performed on each entity snapshot or contribution
+   *
+   * @param mapper function that gets called for each entity snapshot or modification and returns the values to collect
+   * @param <R> the arbitrary type that is returned by the `mapper` function
+   * @return a list with all results returned by the `mapper` function
+   * @throws Exception
+   */
+  public <R> List<R> mapCollect(SerializableFunction<T, R> mapper) throws Exception {
+    return this.mapReduce(
+        mapper,
+        LinkedList::new,
+        (acc, cur) -> { acc.add(cur); return acc; },
+        (list1, list2) -> { LinkedList<R> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
+    );
+  }
+
+  /**
+   * Collects all results produced by a `mapper` function performed on each entity snapshot or contribution
+   *
+   * @param mapper function that gets called for each entity snapshot or modification and returns a list of values to collect
+   * @param <R> the arbitrary type that is returned by the `mapper` function
+   * @return a list with the combined results returned by the `mapper` function
+   * @throws Exception
+   */
+  public <R> List<R> flatMapCollect(SerializableFunction<T, List<R>> mapper) throws Exception {
+    return this.mapReduce(
+        mapper,
+        LinkedList::new,
+        (acc, cur) -> { acc.addAll(cur); return acc; },
+        (list1, list2) -> { LinkedList<R> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
+    );
+  }
+
+  /**
+   * Collects all results produced by a `mapper` function performed on each set of entity's snapshots or contributions
+   *
+   * @param mapper function that gets called with a list of all snapshots or modifications of each entity and returns a list of values to collect
+   * @param <R> the arbitrary type that is returned by the `mapper` function
+   * @return a list with the combined results returned by the `mapper` function
+   * @throws Exception
+   */
+  public <R> List<R> flatMapCollectGroupedById(SerializableFunction<List<T>, List<R>> mapper) throws Exception {
+    return this.flatMapReduceGroupedById(
+        mapper,
+        LinkedList::new,
+        (acc, cur) -> { acc.add(cur); return acc; },
+        (list1, list2) -> { LinkedList<R> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
+    );
+  }
+
+  /**
+   * Collects all entity snapshot or contribution.
+   *
+   * This method can be handy for testing purposes.
+   *
+   * @return a list with all entity snapshot or contribution
+   * @throws Exception
+   */
+  public List<T> collect() throws Exception {
+    return this.mapReduce(
+        data -> data,
+        LinkedList::new,
+        (acc, cur) -> { acc.add(cur); return acc; },
+        (list1, list2) -> { LinkedList<T> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
+    );
+  }
+
+  // -------------------------------------------------------------------------------------------------------------------
   // Auxiliary classes and interfaces
   // -------------------------------------------------------------------------------------------------------------------
 
   // interfaces of some generic lambda functions used here, to make them serializable
   public interface SerializableSupplier<R> extends Supplier<R>, Serializable {}
+  public interface SerializableConsumer<T> extends Consumer<T>, Serializable {}
   public interface SerializablePredicate<T> extends Predicate<T>, Serializable {}
   public interface SerializableBinaryOperator<T> extends BinaryOperator<T>, Serializable {}
   public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {}
