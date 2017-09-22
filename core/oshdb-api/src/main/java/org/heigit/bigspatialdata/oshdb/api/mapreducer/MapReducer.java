@@ -251,11 +251,25 @@ public abstract class MapReducer<T> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<T> filterByTagKey(String key) throws Exception {
+  public MapReducer<T> filterByTag(String key) throws Exception {
     int keyId = this.getTagKeyId(key);
     this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
     return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   *
+   * Deprecated, use `filterByTag(key)` instead.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  @Deprecated
+  public MapReducer<T> filterByTagKey(String key) throws Exception {
+    return this.filterByTag(key);
   }
 
   /**
@@ -266,12 +280,27 @@ public abstract class MapReducer<T> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<T> filterByTagValue(String key, String value) throws Exception {
+  public MapReducer<T> filterByTag(String key, String value) throws Exception {
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
     int keyId = keyValueId.getKey();
     int valueId = keyValueId.getValue();
     this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
     return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
+   *
+   * Deprecated, use `filterByTag(key, value)` instead.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @param value the tag value to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  @Deprecated
+  public MapReducer<T> filterByTagValue(String key, String value) throws Exception {
+    return this.filterByTag(key, value);
   }
 
   // -------------------------------------------------------------------------------------------------------------------
