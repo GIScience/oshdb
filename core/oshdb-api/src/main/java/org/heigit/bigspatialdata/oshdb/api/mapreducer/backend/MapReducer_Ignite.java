@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.mapreducer;
+package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
@@ -12,6 +12,7 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
@@ -30,7 +31,7 @@ import java.util.Set;
 import java.util.function.*;
 
 public class MapReducer_Ignite<T> extends MapReducer<T> {
-  protected MapReducer_Ignite(OSHDB oshdb) {
+  public MapReducer_Ignite(OSHDB oshdb) {
     super(oshdb);
   }
 

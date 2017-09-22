@@ -13,6 +13,9 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_multithread;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_singlethread;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
@@ -33,16 +36,22 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 public abstract class MapReducer<T> {
   protected OSHDB _oshdb;
   protected OSHDB_JDBC _oshdbForTags;
-  protected Class _forClass = null;
+
+  private Class _forClass = null;
+
+  // utility objects
+  private TagTranslator _tagTranslator = null;
+  protected TagInterpreter _tagInterpreter = null;
+
+  // settings and filters
+  private OSHDBTimestamps _tstamps = null;
   protected BoundingBox _bboxFilter = null;
   protected Polygon _polyFilter = null;
-  private OSHDBTimestamps _tstamps = null;
-  protected final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
-  protected final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
-  protected TagInterpreter _tagInterpreter = null;
-  protected TagTranslator _tagTranslator = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
+  private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
+  private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
 
+  // basic constructor
   protected MapReducer(OSHDB oshdb) {
     this._oshdb = oshdb;
   }
