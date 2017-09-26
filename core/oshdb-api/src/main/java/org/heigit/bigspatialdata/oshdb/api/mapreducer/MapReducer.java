@@ -1,21 +1,20 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.List;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
-import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
+import org.heigit.bigspatialdata.oshdb.api.generic.*;
+import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_multithread;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_singlethread;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
@@ -29,15 +28,38 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 /**
  * Main class of oshdb's "functional programming" API.
- * Takes some settings and filters and exposes a different map-reduce/aggregate functions.
  *
- * @param <T> the type that is used to iterate over. The `mapper` function get called with an object of this type
+ * It accepts a list of filters, transformation `map` functions a produces a result when calling the `reduce` method (or one of its shorthand versions like `sum`, `count`, etc.).
+ *
+ * You can set a list of filters that are applied on the raw OSM data, for example you can filter:
+ * <ul>
+ *   <li>geometrically by an area of interest (bbox or polygon)</li>
+ *   <li>by osm tags (key only or key/value)</li>
+ *   <li>by OSM type</li>
+ *   <li>custom filter callback</li>
+ * </ul>
+ *
+ * Depending on the used data "view", the MapReducer produces either "snapshots" or evaluated all modifications ("contributions") of the matching raw OSM data.
+ *
+ * These data can then be transformed arbitrarily by user defined `map` functions (which take one of these entity snapshots or modifications as input an produce an arbitrary output) or `flatMap` functions (which can return an arbitrary number of results per entity snapshot/contribution).
+ * It is possible to chain together any number of transformation functions.
+ *
+ * Finally, one can either use one of the pre-defined result-generating functions (e.g. `sum`, `count`, `average`, `uniq`), or specify a custom `reduce` procedure.
+ *
+ * If one wants to get results that are aggregated by timestamp (or some other index), one can use the `aggregateByTimestamp` or `aggregate` functionality that automatically handles the grouping of the output data.
+ *
+ * For more complex analyses, it is also possible to enable the grouping of the input data by the respective OSM ID. This can be used to view at the whole history of entities at once.
+ *
+ * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public abstract class MapReducer<T> {
+public abstract class MapReducer<X> {
   protected OSHDB _oshdb;
   protected OSHDB_JDBC _oshdbForTags;
 
-  private Class _forClass = null;
+  // internal state
+  Class _forClass = null;
+  private enum Grouping { NONE, BY_ID }
+  private Grouping _grouping = Grouping.NONE;
 
   // utility objects
   private TagTranslator _tagTranslator = null;
@@ -50,6 +72,8 @@ public abstract class MapReducer<T> {
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
+  private List<SerializableFunction> _mappers = new LinkedList<>();
+  private Set<SerializableFunction> _flatMappers = new HashSet<>();
 
   // basic constructor
   protected MapReducer(OSHDB oshdb) {
@@ -61,25 +85,24 @@ public abstract class MapReducer<T> {
    *
    * @param oshdb the database backend (and potentially computation grid) to use for fetching and processing the data
    * @param forClass the class (same as template parameter &lt;T&gt;) to iterate over in the `mapping` function
-   * @param <T> the type that is used to iterate over in the `mapper` function
    * @return
    */
-  public static <T> MapReducer<T> using(OSHDB oshdb, Class<?> forClass) {
+  public static <X> MapReducer<X> using(OSHDB oshdb, Class<?> forClass) {
     if (oshdb instanceof OSHDB_JDBC) {
-      MapReducer<T> mapper;
+      MapReducer<X> mapReducer;
       if (((OSHDB_JDBC)oshdb).multithreading())
-        mapper = new MapReducer_JDBC_multithread<T>(oshdb);
+        mapReducer = new MapReducer_JDBC_multithread<X>(oshdb);
       else
-        mapper = new MapReducer_JDBC_singlethread<T>(oshdb);
-      mapper._oshdb = oshdb;
-      mapper._oshdbForTags = (OSHDB_JDBC)oshdb;
-      mapper._forClass = forClass;
-      return mapper;
+        mapReducer = new MapReducer_JDBC_singlethread<X>(oshdb);
+      mapReducer._oshdb = oshdb;
+      mapReducer._oshdbForTags = (OSHDB_JDBC)oshdb;
+      mapReducer._forClass = forClass;
+      return mapReducer;
     } else if (oshdb instanceof OSHDB_Ignite) {
-      MapReducer<T> mapper = new MapReducer_Ignite<T>(oshdb);
-      mapper._oshdbForTags = null;
-      mapper._forClass = forClass;
-      return mapper;
+      MapReducer<X> mapReducer = new MapReducer_Ignite<X>(oshdb);
+      mapReducer._oshdbForTags = null;
+      mapReducer._forClass = forClass;
+      return mapReducer;
     } else {
       throw new UnsupportedOperationException("No mapper implemented for your database type");
     }
@@ -96,7 +119,7 @@ public abstract class MapReducer<T> {
    * @param oshdb the database to use for resolving strings into internal identifiers
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> keytables(OSHDB_JDBC oshdb) {
+  public MapReducer<X> keytables(OSHDB_JDBC oshdb) {
     this._oshdbForTags = oshdb;
     return this;
   }
@@ -136,7 +159,7 @@ public abstract class MapReducer<T> {
    * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> tagInterpreter(TagInterpreter tagInterpreter) {
+  public MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter) {
     this._tagInterpreter = tagInterpreter;
     return this;
   }
@@ -152,7 +175,7 @@ public abstract class MapReducer<T> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   @Deprecated
-  public MapReducer<T> boundingBox(BoundingBox bbox) {
+  public MapReducer<X> boundingBox(BoundingBox bbox) {
     return this.areaOfInterest(bbox);
   }
 
@@ -163,7 +186,7 @@ public abstract class MapReducer<T> {
    * @param bboxFilter the bounding box to query the data in
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> areaOfInterest(BoundingBox bboxFilter) {
+  public MapReducer<X> areaOfInterest(BoundingBox bboxFilter) {
     if (this._polyFilter == null) {
       if (this._bboxFilter == null)
         this._bboxFilter = bboxFilter;
@@ -183,7 +206,7 @@ public abstract class MapReducer<T> {
    * @param polygonFilter the bounding box to query the data in
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> areaOfInterest(Polygon polygonFilter) {
+  public MapReducer<X> areaOfInterest(Polygon polygonFilter) {
     if (this._polyFilter == null) {
       if (this._bboxFilter == null)
         this._polyFilter = polygonFilter;
@@ -201,12 +224,12 @@ public abstract class MapReducer<T> {
    * Depending on the *View*, this has slightly different semantics:
    * * For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
    * * For the OSMContributionView it will set the time interval in which to look for osm contributions (only the first and last
-   *   timestamp of this list are contributing). Additionally, the timestamps are used in some of the `*aggregateByTimestamps` functions.
+   *   timestamp of this list are contributing). Additionally, the timestamps are used in the `aggregateByTimestamps` functionality.
    *
    * @param tstamps the timestamps to do the analysis for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> timestamps(OSHDBTimestamps tstamps) {
+  public MapReducer<X> timestamps(OSHDBTimestamps tstamps) {
     this._tstamps = tstamps;
     return this;
   }
@@ -217,7 +240,7 @@ public abstract class MapReducer<T> {
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> osmTypes(EnumSet<OSMType> typeFilter) {
+  public MapReducer<X> osmTypes(EnumSet<OSMType> typeFilter) {
     this._typeFilter = typeFilter;
     return this;
   }
@@ -229,7 +252,7 @@ public abstract class MapReducer<T> {
    * @param otherTypes more osm types which should be analyzed
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> osmTypes(OSMType type1, OSMType ...otherTypes) {
+  public MapReducer<X> osmTypes(OSMType type1, OSMType ...otherTypes) {
     return this.osmTypes(EnumSet.of(type1, otherTypes));
   }
 
@@ -239,7 +262,7 @@ public abstract class MapReducer<T> {
    * @param f the filter function to call for each osm entity
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<T> filter(SerializablePredicate<OSMEntity> f) {
+  public MapReducer<X> filter(SerializablePredicate<OSMEntity> f) {
     this._filters.add(f);
     return this;
   }
@@ -251,7 +274,7 @@ public abstract class MapReducer<T> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<T> filterByTag(String key) throws Exception {
+  public MapReducer<X> filterByTag(String key) throws Exception {
     int keyId = this.getTagKeyId(key);
     this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
@@ -268,7 +291,7 @@ public abstract class MapReducer<T> {
    * @throws Exception
    */
   @Deprecated
-  public MapReducer<T> filterByTagKey(String key) throws Exception {
+  public MapReducer<X> filterByTagKey(String key) throws Exception {
     return this.filterByTag(key);
   }
 
@@ -280,7 +303,7 @@ public abstract class MapReducer<T> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<T> filterByTag(String key, String value) throws Exception {
+  public MapReducer<X> filterByTag(String key, String value) throws Exception {
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
     int keyId = keyValueId.getKey();
     int valueId = keyValueId.getValue();
@@ -299,48 +322,376 @@ public abstract class MapReducer<T> {
    * @throws Exception
    */
   @Deprecated
-  public MapReducer<T> filterByTagValue(String key, String value) throws Exception {
+  public MapReducer<X> filterByTagValue(String key, String value) throws Exception {
     return this.filterByTag(key, value);
   }
 
   // -------------------------------------------------------------------------------------------------------------------
-  // Some helper methods for internal use in the mapReduce functions
+  // "map", "flatMap" transformation methods
   // -------------------------------------------------------------------------------------------------------------------
 
-  // Helper that chains multiple oshEntity filters together
-  protected SerializablePredicate<OSHEntity> _getPreFilter() {
-    return (this._preFilters.isEmpty()) ? (oshEntity -> true) : (oshEntity -> {
-      for (SerializablePredicate<OSHEntity> filter : this._preFilters)
-        if (!filter.test(oshEntity))
-          return false;
-      return true;
-    });
+  /**
+   * Set an arbitrary `map` transformation function.
+   *
+   * @param mapper function that will be applied to each data entry (osm entity snapshot or contribution)
+   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
+   * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
+   */
+  public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
+    this._mappers.add(mapper);
+    return (MapReducer<R>)this;
   }
 
-  // Helper that chains multiple osmEntity filters together
-  protected SerializablePredicate<OSMEntity> _getFilter() {
-    return (this._filters.isEmpty()) ? (osmEntity -> true) : (osmEntity -> {
-      for (SerializablePredicate<OSMEntity> filter : this._filters)
-        if (!filter.test(osmEntity))
-          return false;
-      return true;
-    });
+  /**
+   * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number of results per input data entry.
+   * The results of this function will be "flattened", meaning that they can be for example transformed again by setting additional `map` functions.
+   *
+   * @param flatMapper function that will be applied to each data entry (osm entity snapshot or contribution) and returns a list of results
+   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
+   * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
+   */
+  public <R> MapReducer<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
+    this._mappers.add(flatMapper);
+    this._flatMappers.add(flatMapper);
+    return (MapReducer<R>)this;
   }
 
-  // get all cell ids covered by the current area of interest's bounding box
-  protected Iterable<CellId> _getCellIds() {
-    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
-    if (this._bboxFilter == null || (this._bboxFilter.minLon >= this._bboxFilter.maxLon || this._bboxFilter.minLat >= this._bboxFilter.maxLat)) {
-      // return an empty iterable if bbox is not set or empty
-      System.err.println("warning: area of interest not set or empty");
-      return Collections.emptyList();
+  // -------------------------------------------------------------------------------------------------------------------
+  // Grouping and Aggregation
+  // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
+  // -------------------------------------------------------------------------------------------------------------------
+
+  /**
+   * Groups the input data (osm entity snapshot or contributions) by their respective entity's ids before feeding them into further transformation functions.
+   * This can be used to do more complex analysis on the osm data, that requires one to know about the full editing history of individual osm entities.
+   *
+   * This needs to be called before any `map` or `flatMap` transformation functions have been set. Otherwise a runtime exception will be thrown.
+   *
+   * @return the MapReducer object which applies its transformations on (by entity id grouped) lists of the input data
+   * @throws UnsupportedOperationException if this is called after some map (or flatMap) functions have already been set
+   */
+  public MapReducer<List<X>> groupById() throws UnsupportedOperationException {
+    if (!this._mappers.isEmpty())
+      throw new UnsupportedOperationException("groupById() must be called before any `map` or `flatMap` transformation functions have been set");
+    this._grouping = Grouping.BY_ID;
+    return (MapReducer<List<X>>)(this);
+  }
+
+  /**
+   * Sets a custom aggregation function that is used to group output results into.
+   *
+   * @param indexer a function that will be called for each input element and returns a value that will be used to group the results by
+   * @param <U> the data type of the values used to aggregate the output. has to be a comparable type
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
+   */
+  public <U extends Comparable> MapAggregator<U, X> aggregate(SerializableFunction<X, U> indexer) {
+    return new MapAggregator<U, X>(this, indexer);
+  }
+
+  /**
+   * Sets up aggregation by timestamp.
+   *
+   * In the OSMEntitySnapshotView, the snapshots' timestamp will be used directly to aggregate results into.
+   * In the OSMContributionView, the timestamps of the respective data modifications will be matched to corresponding time intervals (that are defined by the `timestamps` setting here).
+   *
+   * Cannot be used together with the `groupById()` setting enabled.
+   *
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
+   * @throws UnsupportedOperationException if this is called when the `groupById()` mode has been activated
+   */
+  public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp() throws UnsupportedOperationException {
+    if (this._grouping != Grouping.NONE)
+      throw new UnsupportedOperationException("aggregateByTimestamp cannot be used together with the groupById() functionality");
+
+    final List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
+
+    // by timestamp indexing function -> for some data views we need to match the input data to the list
+    SerializableFunction<X, OSHDBTimestamp> indexer;
+    if (this._forClass.equals(OSMContribution.class)) {
+      indexer = data -> {
+        int timeBinIndex = Collections.binarySearch(timestamps, ((OSMContribution)data).getTimestamp());
+        if (timeBinIndex < 0) { timeBinIndex = -timeBinIndex - 2; }
+        return timestamps.get(timeBinIndex);
+      };
+    } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+      switch (this._grouping) {
+        case BY_ID:
+          indexer = data -> ((List<OSMEntitySnapshot>)data).get(0).getTimestamp();
+          break;
+        case NONE:
+        default:
+          indexer = data -> ((OSMEntitySnapshot)data).getTimestamp();
+          break;
+      }
+    } else throw new UnsupportedOperationException("aggregateByTimestamp only implemented for OSMContribution and OSMEntitySnapshot");
+
+    if (this._mappers.size() > 0) {
+      // for convenience we allow one to set this function even after some map functions were set.
+      // if some map / flatMap functions were alredy set:
+      // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions accordingly
+      List<SerializableFunction> mappers = new LinkedList<>(this._mappers);
+      Set<SerializableFunction> flatMappers = new HashSet<>(this._flatMappers);
+      this._mappers.clear();
+      this._flatMappers.clear();
+      MapAggregatorByTimestamps<X> mapAggregator = new MapAggregatorByTimestamps<X>(this, indexer);
+      mappers.forEach(action -> {
+        if (flatMappers.contains(action))
+          mapAggregator.flatMap(action);
+        else
+          mapAggregator.map(action);
+      });
+      return mapAggregator;
+    } else {
+      return new MapAggregatorByTimestamps<X>(this, indexer);
     }
-    return grid.bbox2CellIds(this._bboxFilter, true);
   }
 
-  // get lists of timestamps from the OSHTimestamps object
-  protected List<Long> _getTimestamps() {
-    return this._tstamps.getTimestamps();
+  // -------------------------------------------------------------------------------------------------------------------
+  // Exposed generic reduce.
+  // Can be used by experienced users of the api to implement complex queries.
+  // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
+  // -------------------------------------------------------------------------------------------------------------------
+
+  /**
+   * Generic map-reduce routine
+   *
+   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
+   * <ul>
+   *   <li>the accumulator and combiner functions need to be associative,</li>
+   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
+   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
+   * </ul>
+   *
+   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
+   *
+   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
+   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
+   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
+   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
+   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
+   * @throws Exception
+   */
+  public <S> S reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    switch (this._grouping) {
+      case NONE:
+        if (this._flatMappers.size() == 0) {
+          final SerializableFunction<Object, X> mapper = this._getMapper();
+          if (this._forClass.equals(OSMContribution.class)) {
+            return this.mapReduceCellsOSMContribution((SerializableFunction<OSMContribution, X>)mapper::apply, identitySupplier, accumulator, combiner);
+          } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+            return this.mapReduceCellsOSMEntitySnapshot((SerializableFunction<OSMEntitySnapshot, X>)mapper::apply, identitySupplier, accumulator, combiner);
+          } else throw new UnsupportedOperationException("Unimplemented data view: " + this._forClass.toString());
+        } else {
+          final SerializableFunction<Object, List<X>> flatMapper = this._getFlatMapper();
+          if (this._forClass.equals(OSMContribution.class)) {
+            return this.flatMapReduceCellsOSMContributionGroupedById((List<OSMContribution> inputList) -> {
+              List<X> outputList = new LinkedList<>();
+              inputList.stream().map((SerializableFunction<OSMContribution, List<X>>)flatMapper::apply).forEach(outputList::addAll);
+              return outputList;
+            }, identitySupplier, accumulator, combiner);
+          } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+            return this.flatMapReduceCellsOSMEntitySnapshotGroupedById((List<OSMEntitySnapshot> inputList) -> {
+              List<X> outputList = new LinkedList<>();
+              inputList.stream().map((SerializableFunction<OSMEntitySnapshot, List<X>>)flatMapper::apply).forEach(outputList::addAll);
+              return outputList;
+            }, identitySupplier, accumulator, combiner);
+          } else throw new UnsupportedOperationException("Unimplemented data view: " + this._forClass.toString());
+        }
+      case BY_ID:
+        final SerializableFunction<Object, List<X>> flatMapper;
+        if (this._flatMappers.size() == 0) {
+          final SerializableFunction<Object, X> mapper = this._getMapper();
+          flatMapper = data -> Collections.singletonList(mapper.apply(data)); // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in this case? should we add this as optimization case to getFlatMapper()??
+        } else {
+          flatMapper = this._getFlatMapper();
+        }
+        if (this._forClass.equals(OSMContribution.class)) {
+          return this.flatMapReduceCellsOSMContributionGroupedById((SerializableFunction<List<OSMContribution>, List<X>>)flatMapper::apply, identitySupplier, accumulator, combiner);
+        } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+          return this.flatMapReduceCellsOSMEntitySnapshotGroupedById((SerializableFunction<List<OSMEntitySnapshot>, List<X>>)flatMapper::apply, identitySupplier, accumulator, combiner);
+        } else throw new UnsupportedOperationException("Unimplemented data view: " + this._forClass.toString());
+      default:
+        throw new UnsupportedOperationException("Unsupported grouping: " + this._grouping.toString());
+    }
+  }
+
+  // -------------------------------------------------------------------------------------------------------------------
+  // "Quality of life" helper methods to use the map-reduce functionality more directly and easily for typical queries.
+  // Available are: sum, count, average, weightedAverage and uniq.
+  // Each one can be used to get results aggregated by timestamp, aggregated by a custom index and not aggregated totals.
+  // -------------------------------------------------------------------------------------------------------------------
+
+  /**
+   * Sums up the results.
+   *
+   * The current data values need to be numeric (castable to "Number" type), otherwise a runtime exception will be thrown.
+   *
+   * @return the sum of the current data
+   * @throws UnsupportedOperationException if the data cannot be cast to numbers
+   * @throws Exception
+   */
+  public Number sum() throws Exception {
+    return this
+        .makeNumeric()
+        .reduce(
+            () -> 0,
+            (SerializableBiFunction<Number, Number, Number>) (x, y) -> NumberUtils.add(x, y),
+            (SerializableBinaryOperator<Number>) (x, y) -> NumberUtils.add(x, y)
+        );
+  }
+
+  /**
+   * Sums up the results provided by a given `mapper` function.
+   *
+   * This is a shorthand for `.map(mapper).sum()`, with the difference that here the numerical return type of the `mapper` is ensured.
+   *
+   * @param mapper function that returns the numbers to sum up
+   * @param <R> the numeric type that is returned by the `mapper` function
+   * @return the summed up results of the `mapper` function
+   * @throws Exception
+   */
+  public <R extends Number> R sum(SerializableFunction<X, R> mapper) throws Exception {
+    return this
+        .map(mapper)
+        .reduce(
+            () -> (R) (Integer) 0,
+            (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y),
+            (SerializableBinaryOperator<R>)(x,y) -> NumberUtils.add(x,y)
+        );
+  }
+
+  /**
+   * Counts the number of results.
+   *
+   * @return the total count of features or modifications, summed up over all timestamps
+   * @throws Exception
+   */
+  public Integer count() throws Exception {
+    return this.sum(ignored -> 1);
+  }
+
+  /**
+   * Gets all unique values of the results.
+   *
+   * For example, this can be used together with the OSMContributionView to get the total amount of unique users editing specific feature types.
+   *
+   * @return the set of distinct values
+   * @throws Exception
+   */
+  public Set<X> uniq() throws Exception {
+    return this
+        .reduce(
+            HashSet::new,
+            (acc, cur) -> { acc.add(cur); return acc; },
+            (a,b) -> { HashSet<X> result = new HashSet<>(a); result.addAll(b); return result; }
+        );
+  }
+
+  /**
+   * Gets all unique values of the results provided by a given mapper function.
+   *
+   * This is a shorthand for `.map(mapper).uniq()`.
+   *
+   * @param mapper function that returns some values
+   * @param <R> the type that is returned by the `mapper` function
+   * @return a set of distinct values returned by the `mapper` function
+   * @throws UnsupportedOperationException if the data cannot be cast to numbers
+   * @throws Exception
+   */
+  public <R> Set<R> uniq(SerializableFunction<X, R> mapper) throws Exception {
+    return this.map(mapper).uniq();
+  }
+
+  /**
+   * Calculates the averages of the results.
+   *
+   * The current data values need to be numeric (castable to "Number" type), otherwise a runtime exception will be thrown.
+   *
+   * @return the average of the current data
+   * @throws Exception
+   */
+  public Double average() throws Exception {
+    return this
+        .makeNumeric()
+        .average(n -> n);
+  }
+
+  /**
+   * Calculates the average of the results provided by a given `mapper` function.
+   *
+   * @param mapper function that returns the numbers to average
+   * @param <R> the numeric type that is returned by the `mapper` function
+   * @return the average of the numbers returned by the `mapper` function
+   * @throws Exception
+   */
+  public <R extends Number> Double average(SerializableFunction<X, R> mapper) throws Exception {
+    PayloadWithWeight<Double> runningSums = this
+        .map(mapper)
+        .reduce(
+            () -> new PayloadWithWeight<Double>(0.0,0.0),
+            (acc, cur) -> {
+              acc.num = NumberUtils.add(acc.num, cur.doubleValue());
+              acc.weight += 1;
+              return acc;
+            },
+            (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+        );
+    return runningSums.num / runningSums.weight;
+  }
+
+  /**
+   * Calculates the weighted average of the results provided by the `mapper` function.
+   *
+   * The mapper must return an object of the type `WeightedValue` which contains a numeric value associated with a (floating point) weight.
+   *
+   * @param mapper function that gets called for each entity snapshot or modification, needs to return the value and weight combination of numbers to average
+   * @return the weighted average of the numbers returned by the `mapper` function
+   * @throws Exception
+   */
+  public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
+    PayloadWithWeight<Double> runningSums = this
+        .map(mapper)
+        .reduce(
+            () -> new PayloadWithWeight<>(0.0,0.0),
+            (acc, cur) -> {
+              acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue());
+              acc.weight += cur.getWeight();
+              return acc;
+            },
+            (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+        );
+    return runningSums.num / runningSums.weight;
+  }
+
+  // -------------------------------------------------------------------------------------------------------------------
+  // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
+  // -------------------------------------------------------------------------------------------------------------------
+
+  /**
+   * Iterates over each entity snapshot or contribution, and performs a single `action` on each one of them.
+   *
+   * This method can be handy for testing purposes. But note that since the `action` doesn't produce a return value, it must facilitate its own way of producing output.
+   *
+   * @param action function that gets called for each transformed data entry
+   * @throws Exception
+   */
+  @Deprecated
+  public void forEach(SerializableConsumer<X> action) throws Exception {
+    this.map(data -> { action.accept(data); return null; }).reduce(() -> null, (ignored, ignored2) -> null, (ignored, ignored2) -> null);
+  }
+
+  /**
+   * Collects all results into a List
+   *
+   * @return a list with all results returned by the `mapper` function
+   * @throws Exception
+   */
+  public List<X> collect() throws Exception {
+    return this.reduce(
+        LinkedList::new,
+        (acc, cur) -> { acc.add(cur); return acc; },
+        (list1, list2) -> { LinkedList<X> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
+    );
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -453,686 +804,100 @@ public abstract class MapReducer<T> {
   }
 
   // -------------------------------------------------------------------------------------------------------------------
-  // Exposed generic map-reduce and map-aggregate functions.
-  // Can be used by experienced users of the api to implement complex queries.
-  // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
+  // Some helper methods for internal use in the mapReduce functions
   // -------------------------------------------------------------------------------------------------------------------
 
-  /**
-   * Generic map-reduce routine
-   *
-   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
-   * <ul>
-   *   <li>the accumulator and combiner functions need to be associative,</li>
-   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
-   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
-   * </ul>
-   *
-   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
-   *
-   * @param mapper a function that's called for each osm entity snapshot or modification
-   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
-   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function
-   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
-   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
-   */
-  public <R, S> S mapReduce(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    if (this._forClass.equals(OSMContribution.class)) {
-      return this.mapReduceCellsOSMContribution((SerializableFunction<OSMContribution, R>) mapper, identitySupplier, accumulator, combiner);
-    } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      return this.mapReduceCellsOSMEntitySnapshot((SerializableFunction<OSMEntitySnapshot, R>) mapper, identitySupplier, accumulator, combiner);
-    } else throw new UnsupportedOperationException("No mapper implemented for your database type");
-  }
-
-  /**
-   * Generic flatMap-reduce routine
-   *
-   * Contrary to the "normal" map-reduce, the "flat" version adds the possibility to return any number of results in the `mapper` function.
-   *
-   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
-   * <ul>
-   *   <li>the accumulator and combiner functions need to be associative,</li>
-   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
-   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
-   * </ul>
-   *
-   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
-   *
-   * @param mapper a function that's called for each osm entity snapshot or modification; returns a list of results (which can have any number of entries)
-   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
-   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function
-   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
-   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
-   */
-  public <R, S> S flatMapReduce(SerializableFunction<T, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.flatMapReduceGroupedById(
-        (List<T> inputList) -> {
-          List<R> outputList = new LinkedList<>();
-          inputList.stream().map(mapper).forEach(outputList::addAll);
-          return outputList;
-        },
-        identitySupplier,
-        accumulator,
-        combiner
-    );
-  }
-
-  /**
-   * Generic flatMap-reduce routine, with by-osm-id grouped input to the `mapper` function
-   *
-   * Contrary to the "normal" map-reduce, the "flat" version adds the possibility to return any number of results in the `mapper` function.
-   *
-   * Also, this interface provides the `mapper` function with a list of all snapshots or modifications of a particular OSM entity at once.
-   * This can be used to implement more complex analyses that require the full list of snapshots of the respective OSM entities as input.
-   *
-   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
-   * <ul>
-   *   <li>the accumulator and combiner functions need to be associative,</li>
-   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
-   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
-   * </ul>
-   *
-   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
-   *
-   * @param mapper a function that's called for all snapshots or modifications of a particular OSM entity; returns a list of results (which can have any number of entries)
-   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
-   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the data type returned by the `mapper` function
-   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
-   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
-   */
-  public <R, S> S flatMapReduceGroupedById(SerializableFunction<List<T>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    if (this._forClass.equals(OSMContribution.class)) {
-      return this.flatMapReduceCellsOSMContributionGroupedById((SerializableFunction<List<OSMContribution>, List<R>>) contributions -> mapper.apply((List<T>)contributions), identitySupplier, accumulator, combiner);
-    } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      return this.flatMapReduceCellsOSMEntitySnapshotGroupedById((SerializableFunction<List<OSMEntitySnapshot>, List<R>>) contributions -> mapper.apply((List<T>)contributions), identitySupplier, accumulator, combiner);
-    } else throw new UnsupportedOperationException("No mapper implemented for your database type");
-  }
-
-  /**
-   * Map-reduce routine with built-in aggregation by an arbitrary index
-   *
-   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately according to some custom index value.
-   *
-   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
-   * <ul>
-   *   <li>the accumulator and combiner functions need to be associative,</li>
-   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
-   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
-   * </ul>
-   *
-   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
-   *
-   * @param mapper a function that's called for each osm entity snapshot or modification; returns a pair of two values: first is the index for which to aggregate the results for, and the second is the result value to reduce
-   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
-   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the type of the data values returned `mapper` function
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
-   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
-   */
-  public <R, S, U> SortedMap<U, S> mapAggregate(SerializableFunction<T, Pair<U, R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.mapReduce(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
-      m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
-      return m;
-    }, (a,b) -> {
-      SortedMap<U, S> combined = new TreeMap<>(a);
-      for (SortedMap.Entry<U, S> entry: b.entrySet()) {
-        combined.merge(entry.getKey(), entry.getValue(), combiner);
-      }
-      return combined;
+  // Helper that chains multiple oshEntity filters together
+  protected SerializablePredicate<OSHEntity> _getPreFilter() {
+    return (this._preFilters.isEmpty()) ? (oshEntity -> true) : (oshEntity -> {
+      for (SerializablePredicate<OSHEntity> filter : this._preFilters)
+        if (!filter.test(oshEntity))
+          return false;
+      return true;
     });
   }
 
-  /**
-   * FlatMap-reduce routine with built-in aggregation by an arbitrary index
-   *
-   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately according to some custom index value.
-   *
-   * Contrary to the "normal" `mapAggregate`, the "flat" version adds the possibility to return any number of results in the `mapper` function.
-   *
-   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
-   * <ul>
-   *   <li>the accumulator and combiner functions need to be associative,</li>
-   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
-   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
-   * </ul>
-   *
-   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
-   *
-   * @param mapper a function that's called for each osm entity snapshot or modification; returns a list of pairs of two values: first is the index for which to aggregate the results for, and the second is the result value to reduce
-   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
-   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the type of the data values returned `mapper` function
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
-   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
-   */
-  public <R, S, U> SortedMap<U, S> flatMapAggregate(SerializableFunction<T, List<Pair<U, R>>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.flatMapAggregateGroupedById(
-        inputList -> {
-          List<Pair<U, R>> outputList = new LinkedList<>();
-          inputList.stream().map(mapper).forEach(outputList::addAll);
-          return outputList;
-        },
-        identitySupplier,
-        accumulator,
-        combiner
-    );
-  }
-
-  /**
-   * FlatMap-reduce routine with built-in aggregation by an arbitrary index
-   *
-   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately according to some custom index value.
-   *
-   * Contrary to the "normal" `mapAggregate`, the "flat" version adds the possibility to return any number of results in the `mapper` function.
-   *
-   * Also, this interface provides the `mapper` function with a list of all snapshots or modifications of a particular OSM entity at once.
-   * This can be used to implement more complex analyses that require the full list of snapshots of the respective OSM entities as input.
-   *
-   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
-   * <ul>
-   *   <li>the accumulator and combiner functions need to be associative,</li>
-   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
-   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
-   * </ul>
-   *
-   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
-   *
-   * @param mapper a function that's called for all snapshots or modifications of a particular OSM entity; returns a list of pairs of two values: first is the index for which to aggregate the results for, and the second is the result value to reduce
-   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
-   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the type of the data values returned `mapper` function
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
-   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
-   */
-  public <R, S, U> SortedMap<U, S> flatMapAggregateGroupedById(SerializableFunction<List<T>, List<Pair<U, R>>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.flatMapReduceGroupedById(mapper, TreeMap::new, (SortedMap<U, S> m, Pair<U, R> r) -> {
-      m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()), r.getValue()));
-      return m;
-    }, (a,b) -> {
-      SortedMap<U, S> combined = new TreeMap<>(a);
-      for (SortedMap.Entry<U, S> entry: b.entrySet()) {
-        combined.merge(entry.getKey(), entry.getValue(), combiner);
-      }
-      return combined;
+  // Helper that chains multiple osmEntity filters together
+  protected SerializablePredicate<OSMEntity> _getFilter() {
+    return (this._filters.isEmpty()) ? (osmEntity -> true) : (osmEntity -> {
+      for (SerializablePredicate<OSMEntity> filter : this._filters)
+        if (!filter.test(osmEntity))
+          return false;
+      return true;
     });
   }
 
-  /**
-   * Map-reduce routine with built-in aggregation by timestamps (or timestamp bins)
-   *
-   * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately by timestamps
-   *
-   * The combination of the used types and identity/reducer functions must make "mathematical" sense:
-   * <ul>
-   *   <li>the accumulator and combiner functions need to be associative,</li>
-   *   <li>values generated by the identitySupplier factory must be an identity for the combiner function: `combiner(identitySupplier(),x)` must be equal to `x`,</li>
-   *   <li>the combiner function must be compatible with the accumulator function: `combiner(u, accumulator(identitySupplier(), t)) == accumulator.apply(u, t)`</li>
-   * </ul>
-   *
-   * Functionally, this interface is similar to Java8 Stream's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a> interface.
-   *
-   * @param mapper a function that's called for each osm entity snapshot or modification; the results of the calls to this function will be aggregated separately by the timestamp of the osm entity's snapshot date or modification timestamp
-   * @param identitySupplier a factory function that returns a new starting value to reduce results into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;R&gt;) and an accumulation value (type &lt;S&gt;, e.g. the result of `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this function is allowed to alter (mutate) the state of the accumulation value (e.g. directly adding new values to an existing Set object)
-   * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
-   * @param <R> the type of the data values returned `mapper` function
-   * @param <S> the data type used to contain the "reduced" (intermediate and final) results
-   * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
-   */
-  public <R, S> SortedMap<OSHDBTimestamp, S> mapAggregateByTimestamp(SerializableFunction<T, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    SortedMap<OSHDBTimestamp, S> result;
-    List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
-    if (this._forClass.equals(OSMContribution.class)) {
-      result = this.mapAggregate(t -> {
-        int timeBinIndex = Collections.binarySearch(timestamps, ((OSMContribution) t).getTimestamp());
-        if (timeBinIndex < 0) { timeBinIndex = -timeBinIndex - 2; }
-        return new ImmutablePair<>(timestamps.get(timeBinIndex), mapper.apply(t));
-      }, identitySupplier, accumulator, combiner);
-      timestamps.remove(timestamps.size()-1); // pop last element from timestamps list, so it doesn't get nodata-filled with "0" below
-    } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      result = this.mapAggregate(t -> {
-        return new ImmutablePair<>(((OSMEntitySnapshot) t).getTimestamp(), mapper.apply(t));
-      }, identitySupplier, accumulator, combiner);
-    } else throw new UnsupportedOperationException("mapAggregateByTimestamp only allowed for OSMContribution and OSMEntitySnapshot");
-    // fill nodata entries with "0"
-    timestamps.forEach(ts -> result.putIfAbsent(ts, identitySupplier.get()));
-    return result;
+  // get all cell ids covered by the current area of interest's bounding box
+  protected Iterable<CellId> _getCellIds() {
+    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
+    if (this._bboxFilter == null || (this._bboxFilter.minLon >= this._bboxFilter.maxLon || this._bboxFilter.minLat >= this._bboxFilter.maxLat)) {
+      // return an empty iterable if bbox is not set or empty
+      System.err.println("warning: area of interest not set or empty");
+      return Collections.emptyList();
+    }
+    return grid.bbox2CellIds(this._bboxFilter, true);
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
-  // "Quality of life" helper methods to use the map-reduce functionality more directly and easily for typical queries.
-  // Available are: sum, count, average, weightedAverage and uniq.
-  // Each one can be used to get results aggregated by timestamp, aggregated by a custom index and not aggregated totals.
-  // -------------------------------------------------------------------------------------------------------------------
-
-  /**
-   * Sums up the results provided by the `mapper` function for each timestamp (or in timestamp bins).
-   * This is especially useful in combination with the OSMEntitySnapshotView, where it can be used to sum up a specific
-   * property of certain OSM features at each timestamp, e.g. to calculate the total road length over time.
-   *
-   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "0" value in the output.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to sum up
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the summed up results per timestamp, as a sorted Map object of numbers
-   * @throws Exception
-   */
-  public <R extends Number> SortedMap<OSHDBTimestamp, R> sumAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
-    return this.mapAggregateByTimestamp(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
+  // get lists of timestamps from the OSHTimestamps object
+  protected List<Long> _getTimestamps() {
+    return this._tstamps.getTimestamps();
   }
 
-  /**
-   * Counts up the numer of elements (as returned by the respective data view) for each timestamp (or in timestamp bins).
-   * For the OSMEntitySnapshotView, this will result in the number of features matching the filters at each timestamp (so called "histocounts"),
-   * for the OSMContributionView it will give the number of modifications to such features during each timestamp bin.
-   *
-   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "0" value in the output.
-   *
-   * @return the counts per timestamp, as a sorted Map object of Integers
-   * @throws Exception
-   */
-  public SortedMap<OSHDBTimestamp, Integer> countAggregateByTimestamp() throws Exception {
-    return this.sumAggregateByTimestamp(ignored -> 1);
-  }
-
-  /**
-   * Calculates the averages of the results provided by the `mapper` function for each timestamp (or timestamp bin).
-   * In combination with the OSMEntitySnapshotView this can be used to get the average of a specific property of certain
-   * OSM features at each timestamp, e.g. the proportion of buildings with a housenumber tag over time
-   *
-   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "NaN" value in the output.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to average
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the averages per timestamp, as a sorted Map object of Double values
-   * @throws Exception
-   */
-  public <R extends Number> SortedMap<OSHDBTimestamp, Double> averageAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
-    return this.mapAggregateByTimestamp(
-        mapper,
-        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
-        (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur);
-          acc.weight += 1;
-          return acc;
-        },
-        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
-    ).entrySet().stream().collect(Collectors.toMap(
-        Map.Entry::getKey,
-        e -> e.getValue().num.doubleValue() / e.getValue().weight,
-        (v1, v2) -> v1,
-        TreeMap::new
-    ));
-  }
-
-  /**
-   * Calculates weighted averages of the results provided by the `mapper` function for each timestamp (or timestamp bin).
-   * In combination with the OSMEntitySnapshotView this can be used to get the average of a specific property of certain
-   * OSM features at each timestamp, e.g. the proportion of road kilometers with a maxspeed tag over time
-   *
-   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will contain a "NaN" value in the output.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to average as well as the weights to be considered in the averaging
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the weighted averages per timestamp, as a sorted Map object of Double values
-   * @throws Exception
-   */
-  public <R extends Number> SortedMap<OSHDBTimestamp, Double> weightedAverageAggregateByTimestamp(SerializableFunction<T, WeightedValue<R>> mapper) throws Exception {
-    return this.mapAggregateByTimestamp(
-        mapper,
-        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
-        (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur.getValue());
-          acc.weight += cur.getWeight();
-          return acc;
-        },
-        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
-    ).entrySet().stream().collect(Collectors.toMap(
-        Map.Entry::getKey,
-        e -> e.getValue().num.doubleValue() / e.getValue().weight,
-        (v1, v2) -> v1,
-        TreeMap::new
-    ));
-  }
-
-  /**
-   * Calculates the set of unique values of the results provided by the `mapper` function for each timestamp (or in each timestamp bin).
-   * In combination with the OSMContributionView this can be used to get (for example) the total number of unique users editing certain features.
-   *
-   * Timestamps for which no data is returned during the analysis (e.g. because no features existed at that time) will be represented as an empty Set in the output.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification
-   * @param <R> the arbitrary type that is returned by the `mapper` function
-   * @return the unique values returned by the mapper function per timestamp, as a sorted Map object of Set objects
-   * @throws Exception
-   */
-  public <R> SortedMap<OSHDBTimestamp, Set<R>> uniqAggregateByTimestamp(SerializableFunction<T, R> mapper) throws Exception {
-    return this.mapAggregateByTimestamp(
-        mapper,
-        HashSet<R>::new,
-        (acc, cur) -> {
-          acc.add(cur);
-          return acc;
-        },
-        (set1, set2) -> {
-          Set<R> combinedSets = new HashSet<R>(set1);
-          combinedSets.addAll(set2);
-          return combinedSets;
+  // concatenates all applied `map` functions
+  private SerializableFunction<Object, X> _getMapper() {
+    // todo: maybe we can somehow optimize this?? at least for special cases like this._mappers.size() == 1
+    return (SerializableFunction<Object, X>)(data -> {
+      Object result = data;
+      for (SerializableFunction mapper: this._mappers) {
+        if (this._flatMappers.contains(mapper)) {
+          throw new UnsupportedOperationException("cannot flat map this");
+        } else {
+          result = mapper.apply(result);
         }
-    );
+      }
+      return (X)result;
+    });
   }
 
-  /**
-   * Similar to `sumAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value to sum up
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @param <R> the numeric type that is returned by the `mapper` function, used for the values to add up
-   * @return the summed up results per index value, as a sorted Map object
-   * @throws Exception
-   */
-  public <R extends Number, U> SortedMap<U, R> sumAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
-    return this.mapAggregate(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (x,y) -> NumberUtils.add(x,y));
-  }
-
-  /**
-   * Similar to `countAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification, returns the index for which to count the results for
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @return the counted up results per index value, as a sorted Map object of Integers
-   * @throws Exception
-   */
-  public <U> SortedMap<U, Integer> countAggregate(SerializableFunction<T, U> mapper) throws Exception {
-    return this.sumAggregate(data -> new ImmutablePair<U, Integer>(mapper.apply(data), 1));
-  }
-
-  /**
-   * Similar to `averageAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value to average
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @param <R> the numeric type that is returned by the `mapper` function, used for the values to average
-   * @return the averages per index value, as a sorted Map object of Double values
-   * @throws Exception
-   */
-  public <R extends Number, U> SortedMap<U, Double> averageAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
-    return this.mapAggregate(
-        mapper,
-        () -> new PayloadWithWeight<>((R) (Double) 0.0,0),
-        (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur);
-          acc.weight += 1;
-          return acc;
-        },
-        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
-    ).entrySet().stream().collect(Collectors.toMap(
-        Map.Entry::getKey,
-        e -> e.getValue().num.doubleValue() / e.getValue().weight,
-        (v1, v2) -> v1,
-        TreeMap::new
-    ));
-  }
-
-  /**
-   * Similar to `weightedAverageAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value+weight combination to average
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @param <R> the numeric type that is returned by the `mapper` function, used for the values to average
-   * @return the weighted averages per index value, as a sorted Map object of Double values
-   * @throws Exception
-   */
-  public <R extends Number, U> SortedMap<U, Double> weightedAverageAggregate(SerializableFunction<T, Pair<U, WeightedValue<R>>> mapper) throws Exception {
-    return this.mapAggregate(
-        mapper,
-        () -> new PayloadWithWeight<>((R) (Double) 0.0, 0),
-        (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur.getValue());
-          acc.weight += cur.getWeight();
-          return acc;
-        },
-        (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight + b.weight)
-    ).entrySet().stream().collect(Collectors.toMap(
-        Map.Entry::getKey,
-        e -> e.getValue().num.doubleValue() / e.getValue().weight,
-        (v1, v2) -> v1,
-        TreeMap::new
-    ));
-  }
-
-  /**
-   * Similar to `uniqAggregateByTimestamp`, but where aggregation is done for an arbitrary index instead of the snapshot's/modification's timestamp.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification, needs to return a pair of two values: first is the index for which to aggregate the results for, and the second is the value to get the set of unique values for
-   * @param <U> the type of the index values returned by the `mapper function`, used to group results
-   * @param <R> the arbitrary type that is returned by the `mapper` function, which will be determined the set of unique values for
-   * @return the sets of unique results per index value, as a sorted Map object of Set objects
-   * @throws Exception
-   */
-  public <R, U> SortedMap<U, Set<R>> uniqAggregate(SerializableFunction<T, Pair<U, R>> mapper) throws Exception {
-    return this.mapAggregate(
-        mapper,
-        HashSet<R>::new,
-        (acc, cur) -> {
-          acc.add(cur);
-          return acc;
-        },
-        (set1, set2) -> {
-          Set<R> combinedSets = new HashSet<R>(set1);
-          combinedSets.addAll(set2);
-          return combinedSets;
+  // concatenates all applied `flatMap` and `map` functions
+  private SerializableFunction<Object, List<X>> _getFlatMapper() {
+    // todo: maybe we can somehow optimize this?? at least for special cases like this._mappers.size() == 1
+    return (SerializableFunction<Object, List<X>>)(data -> {
+      List<Object> results = new LinkedList<>();
+      results.add(data);
+      for (SerializableFunction mapper: this._mappers) {
+        List<Object> newResults = new LinkedList<>();
+        if (this._flatMappers.contains(mapper)) {
+          results.forEach(result -> newResults.addAll((List<Object>)mapper.apply(result)));
+        } else {
+          results.forEach(result -> newResults.add(mapper.apply(result)));
         }
-    );
+        results = newResults;
+      }
+      return (List<X>)results;
+    });
   }
 
-  /**
-   * Sums up the results provided by a `mapper` function. Doesn't do any aggregation at all.
-   *
-   * When used with the OSMEntitySnapshotView it makes sense to use this function when one only wants to look at a single timestamp.
-   * Or when used with the OSMContributionView, this could be used to get the total amount of edits to the filtered osm entities.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification and returns the numbers to sum up
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the summed up results of the `mapper` function
-   * @throws Exception
-   */
-  public <R extends Number> R sum(SerializableFunction<T, R> mapper) throws Exception {
-    return this.mapReduce(mapper, () -> (R) (Integer) 0, (SerializableBiFunction<R, R, R>)(x,y) -> NumberUtils.add(x,y), (SerializableBinaryOperator<R>)(x,y) -> NumberUtils.add(x,y));
+  // casts current results to a numeric type, for summing and averaging
+  private MapReducer<Number> makeNumeric() {
+    return this.map(x -> {
+      if (!Number.class.isInstance(x)) // todo: slow??
+        throw new UnsupportedOperationException("Cannot convert to non-numeric values of type: " + x.getClass().toString());
+      return (Number)x;
+    });
   }
+}
 
-  /**
-   * Counts the number of features or modifications over all timestamps. Doesn't do any aggregation at all.
-   *
-   * When used with the OSMEntitySnapshotView it makes sense to use this function when one only wants to look at a single timestamp.
-   * Or when used with the OSMContributionView, this could be used to get the total number of edits to the filtered osm entities.
-   *
-   * @return the total count of features or modifications, summed up over all timestamps
-   * @throws Exception
-   */
-  public Integer count() throws Exception {
-    return this.sum(ignored -> 1);
-  }
+// -------------------------------------------------------------------------------------------------------------------
+// Auxiliary classes and interfaces
+// -------------------------------------------------------------------------------------------------------------------
 
-  /**
-   * Gets all unique values of the results provided by a `mapper` function. Doesn't do any aggregation at all.
-   *
-   * This can be used together with the OSMContributionView to get the total amount of unique users editing specific feature types.
-   *
-   * @param mapper function that gets called for each entity snapshot or modification and returns an arbitrary value
-   * @param <R> the arbitrary type that is returned by the `mapper` function
-   * @return the set of unique values of returned by the `mapper` function
-   * @throws Exception
-   */
-  public <R> Set<R> uniq(SerializableFunction<T, R> mapper) throws Exception {
-    return this.uniqAggregate(data -> new ImmutablePair<>(0, mapper.apply(data))).getOrDefault(0, new HashSet<>());
-  }
-
-  // -------------------------------------------------------------------------------------------------------------------
-  // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
-  // -------------------------------------------------------------------------------------------------------------------
-
-  /**
-   * Iterates over each entity snapshot or contribution, and performs a single `action` on each one of them.
-   *
-   * This method can be handy for testing purposes. But note that as the `action` doesn't produce a return value, it must facilitate its own way of producing output.
-   *
-   * @param action function that gets called for each entity snapshot or modification
-   * @throws Exception
-   */
-  @Deprecated
-  public void forEach(SerializableConsumer<T> action) throws Exception {
-    this.mapReduce(data -> { action.accept(data); return null; }, () -> null, (ignored, ignored2) -> null, (ignored, ignored2) -> null);
-  }
-
-  /**
-   * Iterates over each entity's snapshot or contribution, and performs a single `action` on each entity.
-   *
-   * This method can be handy for testing purposes. But note that as the `action` doesn't produce a return value, it must facilitate its own way of producing output.
-   *
-   * @param action function that gets called for each entity with a list of all respective snapshots or modifications
-   * @throws Exception
-   */
-  @Deprecated
-  public void forEachGroupedById(SerializableConsumer<List<T>> action) throws Exception {
-    this.flatMapReduceGroupedById(data -> { action.accept(data); return Collections.emptyList(); }, () -> null, (ignored, ignored2) -> null, (ignored, ignored2) -> null);
-  }
-
-  /**
-   * Collects all results produced by a `mapper` function performed on each entity snapshot or contribution
-   *
-   * @param mapper function that gets called for each entity snapshot or modification and returns the values to collect
-   * @param <R> the arbitrary type that is returned by the `mapper` function
-   * @return a list with all results returned by the `mapper` function
-   * @throws Exception
-   */
-  public <R> List<R> mapCollect(SerializableFunction<T, R> mapper) throws Exception {
-    return this.mapReduce(
-        mapper,
-        LinkedList::new,
-        (acc, cur) -> { acc.add(cur); return acc; },
-        (list1, list2) -> { LinkedList<R> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
-    );
-  }
-
-  /**
-   * Collects all results produced by a `mapper` function performed on each entity snapshot or contribution
-   *
-   * @param mapper function that gets called for each entity snapshot or modification and returns a list of values to collect
-   * @param <R> the arbitrary type that is returned by the `mapper` function
-   * @return a list with the combined results returned by the `mapper` function
-   * @throws Exception
-   */
-  public <R> List<R> flatMapCollect(SerializableFunction<T, List<R>> mapper) throws Exception {
-    return this.mapReduce(
-        mapper,
-        LinkedList::new,
-        (acc, cur) -> { acc.addAll(cur); return acc; },
-        (list1, list2) -> { LinkedList<R> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
-    );
-  }
-
-  /**
-   * Collects all results produced by a `mapper` function performed on each set of entity's snapshots or contributions
-   *
-   * @param mapper function that gets called with a list of all snapshots or modifications of each entity and returns a list of values to collect
-   * @param <R> the arbitrary type that is returned by the `mapper` function
-   * @return a list with the combined results returned by the `mapper` function
-   * @throws Exception
-   */
-  public <R> List<R> flatMapCollectGroupedById(SerializableFunction<List<T>, List<R>> mapper) throws Exception {
-    return this.flatMapReduceGroupedById(
-        mapper,
-        LinkedList::new,
-        (acc, cur) -> { acc.add(cur); return acc; },
-        (list1, list2) -> { LinkedList<R> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
-    );
-  }
-
-  /**
-   * Collects all entity snapshot or contribution.
-   *
-   * This method can be handy for testing purposes.
-   *
-   * @return a list with all entity snapshot or contribution
-   * @throws Exception
-   */
-  public List<T> collect() throws Exception {
-    return this.mapReduce(
-        data -> data,
-        LinkedList::new,
-        (acc, cur) -> { acc.add(cur); return acc; },
-        (list1, list2) -> { LinkedList<T> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
-    );
-  }
-
-  // -------------------------------------------------------------------------------------------------------------------
-  // Auxiliary classes and interfaces
-  // -------------------------------------------------------------------------------------------------------------------
-
-  // interfaces of some generic lambda functions used here, to make them serializable
-  public interface SerializableSupplier<R> extends Supplier<R>, Serializable {}
-  public interface SerializableConsumer<T> extends Consumer<T>, Serializable {}
-  public interface SerializablePredicate<T> extends Predicate<T>, Serializable {}
-  public interface SerializableBinaryOperator<T> extends BinaryOperator<T>, Serializable {}
-  public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {}
-  public interface SerializableBiFunction<T1, T2, R> extends BiFunction<T1, T2, R>, Serializable {}
-
-  /**
-   * Immutable object that stores a numeric value and an associated weight.
-   * Used to specify data input for the calculation of weighted averages.
-   * @param <X> A numeric data type for the value.
-   */
-  public static class WeightedValue<X extends Number> {
-    private X value;
-    private double weight;
-    
-    public WeightedValue(X value, double weight) {
-      this.value = value;
-      this.weight = weight;
-    }
-
-    /**
-     * @return the stored numeric value
-     */
-    public X getValue() {
-      return value;
-    }
-
-    /**
-     * @return the value's associated weight
-     */
-    public double getWeight() {
-      return weight;
-    }
-  }
-
-  // mutable version of WeightedValue type (for internal use to do faster aggregation)
-  private class PayloadWithWeight<X> {
-    X num;
-    double weight;
-    PayloadWithWeight(X num, double weight) {
-      this.num = num;
-      this.weight = weight;
-    }
+// mutable version of WeightedValue type (for internal use to do faster aggregation)
+class PayloadWithWeight<X> {
+  X num;
+  double weight;
+  PayloadWithWeight(X num, double weight) {
+    this.num = num;
+    this.weight = weight;
   }
 }

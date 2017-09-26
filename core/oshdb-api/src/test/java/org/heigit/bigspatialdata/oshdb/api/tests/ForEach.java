@@ -5,8 +5,6 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -17,10 +15,6 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertEquals;
@@ -39,7 +33,7 @@ public class ForEach {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).filterByTagValue("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).filterByTag("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
@@ -58,7 +52,22 @@ public class ForEach {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .forEachGroupedById(contributions -> {
+        .groupById()
+        .forEach(contributions -> {
+          contributions.forEach(contribution -> {
+            result.put(contribution.getEntityAfter().getId(), true);
+          });
+        });
+    assertEquals(42, result.entrySet().size());
+  }
+
+  @Test
+  public void testForEachAggregatedByTimestamp() throws Exception {
+    ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
+    this.createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp()
+        .forEach((ts, contributions) -> {
           contributions.forEach(contribution -> {
             result.put(contribution.getEntityAfter().getId(), true);
           });

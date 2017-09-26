@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 
 import static org.junit.Assert.assertEquals;
@@ -39,30 +38,32 @@ public class FlatMapAggregateGroupedById {
   public FlatMapAggregateGroupedById() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data;ACCESS_MODE_DATA=r");
   }
-
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTagKey("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTag("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void test() throws Exception {
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMapAggregateGroupedById(
-            contributions -> {
-              if (contributions.get(0).getEntityAfter().getId() != 617308093)
-                return new ArrayList<>();
-              List<Pair<Long, Integer>> ret = new ArrayList<>();
-              ret.add(new ImmutablePair<>(
-                  contributions.get(0).getEntityAfter().getId(),
-                  (int)contributions.stream().filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE)).count()
-              ));
-              ret.add(new ImmutablePair<>(
-                  contributions.get(0).getEntityAfter().getId(),
-                  2
-              ));
-              return ret;
-            },
+        .groupById()
+        .flatMap(contributions -> {
+            if (contributions.get(0).getEntityAfter().getId() != 617308093)
+              return new ArrayList<>();
+            List<Pair<Long, Integer>> ret = new ArrayList<>();
+            ret.add(new ImmutablePair<>(
+                contributions.get(0).getEntityAfter().getId(),
+                (int)contributions.stream().filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE)).count()
+            ));
+            ret.add(new ImmutablePair<>(
+                contributions.get(0).getEntityAfter().getId(),
+                2
+            ));
+            return ret;
+        })
+        .aggregate(Pair::getKey)
+        .map(Pair::getValue)
+        .reduce(
             () -> 0,
             (x,y) -> x + y,
             (x,y) -> x + y

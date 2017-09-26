@@ -5,7 +5,6 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -17,7 +16,6 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 import org.junit.Test;
 
 import java.util.*;
@@ -42,10 +40,10 @@ public class MapAggregateByTimestamp {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).filterByTagValue("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).filterByTag("building", "yes").areaOfInterest(bbox);
   }
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.WAY).filterByTagValue("building", "yes").areaOfInterest(bbox);
+    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.WAY).filterByTag("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
@@ -53,24 +51,16 @@ public class MapAggregateByTimestamp {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = createMapReducerOSMContribution()
         .timestamps(timestamps2)
-        .mapAggregateByTimestamp(
-            contribution -> 1,
-            () -> 0,
-            (x,y) -> x + y,
-            (x,y) -> x + y
-        );
+        .aggregateByTimestamp()
+        .sum(contribution -> 1);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(14, result1.get(result1.firstKey()).intValue());
     // multiple timestamps
     SortedMap<OSHDBTimestamp, Integer> result2 = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .mapAggregateByTimestamp(
-            contribution -> 1,
-            () -> 0,
-            (x,y) -> x + y,
-            (x,y) -> x + y
-        );
+        .aggregateByTimestamp()
+        .sum(contribution -> 1);
 
     assertEquals(71, result2.entrySet().size());
     assertEquals(0, result2.get(result2.firstKey()).intValue());
@@ -83,24 +73,16 @@ public class MapAggregateByTimestamp {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
-        .mapAggregateByTimestamp(
-            snapshot -> 1,
-            () -> 0,
-            (x,y) -> x + y,
-            (x,y) -> x + y
-        );
+        .aggregateByTimestamp()
+        .sum(snapshot -> 1);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(42, result1.get(result1.firstKey()).intValue());
     // multiple timestamps
     SortedMap<OSHDBTimestamp, Integer> result2 = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .mapAggregateByTimestamp(
-            snapshot -> 1,
-            () -> 0,
-            (x,y) -> x + y,
-            (x,y) -> x + y
-        );
+        .aggregateByTimestamp()
+        .sum(snapshot -> 1);
 
     assertEquals(72, result2.entrySet().size());
     assertEquals(0, result2.get(result2.firstKey()).intValue());

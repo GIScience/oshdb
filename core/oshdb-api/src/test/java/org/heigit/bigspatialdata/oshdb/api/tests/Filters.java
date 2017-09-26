@@ -5,13 +5,11 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
@@ -78,10 +76,11 @@ public class Filters {
   @Test
   public void tagKey() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
-        .filterByTagKey("building")
+        .filterByTag("building")
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)
-        .countAggregate(snapshot -> snapshot.getEntity().getType());
+        .aggregate(snapshot -> snapshot.getEntity().getType())
+        .count();
     assertEquals(1, result.get(OSMType.RELATION).intValue());
     assertEquals(42, result.get(OSMType.WAY).intValue());
   }
@@ -89,7 +88,7 @@ public class Filters {
   @Test
   public void tagKeyValue() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .filterByTagValue("highway", "residential")
+        .filterByTag("highway", "residential")
         .osmTypes(OSMType.WAY)
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)
@@ -100,8 +99,8 @@ public class Filters {
   @Test
   public void tagMultiple() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
-        .filterByTagKey("name")
-        .filterByTagKey("highway")
+        .filterByTag("name")
+        .filterByTag("highway")
         .osmTypes(OSMType.WAY)
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)

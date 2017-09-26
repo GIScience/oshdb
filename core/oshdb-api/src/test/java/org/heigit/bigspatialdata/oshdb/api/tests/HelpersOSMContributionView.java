@@ -5,9 +5,9 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
@@ -42,7 +42,7 @@ public class HelpersOSMContributionView {
   }
 
   private MapReducer<OSMContribution> createMapReducer() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).filterByTagValue("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).filterByTag("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
@@ -50,7 +50,8 @@ public class HelpersOSMContributionView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Number> result1 = this.createMapReducer()
         .timestamps(timestamps2)
-        .sumAggregateByTimestamp(contribution -> contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0);
+        .aggregateByTimestamp()
+        .sum(contribution -> contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(14, result1.get(result1.firstKey()));
@@ -58,7 +59,8 @@ public class HelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Number> result2 = this.createMapReducer()
         .timestamps(timestamps72)
-        .sumAggregateByTimestamp(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0);
+        .aggregateByTimestamp()
+        .sum(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0);
 
     assertEquals(71, result2.entrySet().size());
     assertEquals(42, result2.values().stream().reduce(0, (acc, num) -> acc.intValue()+num.intValue()));
@@ -74,8 +76,9 @@ public class HelpersOSMContributionView {
     SortedMap<String, Number> result4 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
-        .filterByTagValue("building", "yes")
-        .sumAggregate(contribution -> new ImmutablePair<>(contribution.getContributionTypes().toString(), 1));
+        .filterByTag("building", "yes")
+        .aggregate(contribution -> contribution.getContributionTypes().toString())
+        .sum(contribution -> 1);
 
     assertEquals(42, result4.get(EnumSet.of(ContributionType.CREATION).toString()));
     assertEquals(null, result4.get(EnumSet.of(ContributionType.DELETION).toString()));
@@ -86,7 +89,8 @@ public class HelpersOSMContributionView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = this.createMapReducer()
         .timestamps(timestamps2)
-        .countAggregateByTimestamp();
+        .aggregateByTimestamp()
+        .count();
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(14, result1.get(result1.firstKey()).intValue());
@@ -94,7 +98,8 @@ public class HelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Integer> result2 = this.createMapReducer()
         .timestamps(timestamps72)
-        .countAggregateByTimestamp();
+        .aggregateByTimestamp()
+        .count();
 
     assertEquals(71, result2.entrySet().size());
     assertEquals(0, result2.get(result2.firstKey()).intValue());
@@ -110,7 +115,8 @@ public class HelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Integer> result4 = this.createMapReducer()
         .timestamps(timestamps2)
-        .countAggregate(contribution -> contribution.getEntityAfter().getId() % 2 == 0);
+        .aggregate(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
+        .count();
 
     assertEquals(4, result4.get(true).intValue());
     assertEquals(10, result4.get(false).intValue());
@@ -119,17 +125,19 @@ public class HelpersOSMContributionView {
   @Test
   public void testAverage() throws Exception {
     // single timestamp
-    SortedMap<OSHDBTimestamp, Double> result1 = this.createMapReducer()
+    Double result1 = this.createMapReducer()
         .timestamps(timestamps2)
-        .averageAggregateByTimestamp(contribution -> contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0);
+        .map(contribution -> contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0)
+        .average();
 
-    assertEquals(1, result1.entrySet().size());
-    assertEquals(1.0, result1.get(result1.firstKey()).doubleValue(), DELTA);
+    assertEquals(1.0, result1.doubleValue(), DELTA);
 
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
-        .averageAggregateByTimestamp(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0);
+        .aggregateByTimestamp()
+        .map(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
+        .average();
 
     assertEquals(71, result2.entrySet().size());
     assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
@@ -138,7 +146,8 @@ public class HelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .averageAggregate(contribution -> new ImmutablePair<>(contribution.getContributionTypes().contains(ContributionType.CREATION), contribution.getEntityAfter().getId() % 2));
+        .aggregate(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION))
+        .average(contribution -> contribution.getEntityAfter().getId() % 2);
 
     assertEquals(0.5, result4.get(true).doubleValue(), DELTA);
   }
@@ -146,17 +155,17 @@ public class HelpersOSMContributionView {
   @Test
   public void testWeightedAverage() throws Exception {
     // single timestamp
-    SortedMap<OSHDBTimestamp, Double> result1 = this.createMapReducer()
+    Double result1 = this.createMapReducer()
         .timestamps(timestamps2)
-        .weightedAverageAggregateByTimestamp(contribution -> new MapReducer.WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0,contribution.getEntityAfter().getId() % 2));
+        .weightedAverage(contribution -> new WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0,contribution.getEntityAfter().getId() % 2));
 
-    assertEquals(1, result1.entrySet().size());
-    assertEquals(1.4, result1.get(result1.firstKey()).doubleValue(), DELTA);
+    assertEquals(1.4, result1.doubleValue(), DELTA);
 
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
-        .weightedAverageAggregateByTimestamp(contribution -> new MapReducer.WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0,contribution.getEntityAfter().getId() % 2));
+        .aggregateByTimestamp()
+        .weightedAverage(contribution -> new WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0,contribution.getEntityAfter().getId() % 2));
 
     assertEquals(71, result2.entrySet().size());
     assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
@@ -165,7 +174,8 @@ public class HelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .weightedAverageAggregate(contribution -> new ImmutablePair<>(contribution.getContributionTypes().contains(ContributionType.CREATION), new MapReducer.WeightedValue<>(contribution.getEntityAfter().getId() % 2, contribution.getEntityAfter().getId() % 2)));
+        .aggregate(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION))
+        .weightedAverage(contribution -> new WeightedValue<>(contribution.getEntityAfter().getId() % 2, contribution.getEntityAfter().getId() % 2));
 
     assertEquals(1.0, result4.get(true).doubleValue(), DELTA);
   }
@@ -175,7 +185,8 @@ public class HelpersOSMContributionView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps2)
-        .uniqAggregateByTimestamp(contribution -> contribution.getEntityAfter().getId());
+        .aggregateByTimestamp()
+        .uniq(contribution -> contribution.getEntityAfter().getId());
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(14, result1.get(result1.firstKey()).size());
@@ -183,7 +194,8 @@ public class HelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Set<Long>> result2 = this.createMapReducer()
         .timestamps(timestamps72)
-        .uniqAggregateByTimestamp(contribution -> contribution.getEntityAfter().getId());
+        .aggregateByTimestamp()
+        .uniq(contribution -> contribution.getEntityAfter().getId());
 
     assertEquals(71, result2.entrySet().size());
     assertEquals(0, result2.get(result2.firstKey()).size());
@@ -203,7 +215,8 @@ public class HelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Set<Long>> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .uniqAggregate(contribution -> new ImmutablePair<>(contribution.getEntityAfter().getId() % 2 == 0, contribution.getEntityAfter().getId()));
+        .aggregate(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
+        .uniq(contribution -> contribution.getEntityAfter().getId());
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());

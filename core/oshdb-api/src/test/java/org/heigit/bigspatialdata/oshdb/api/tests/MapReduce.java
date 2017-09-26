@@ -36,11 +36,11 @@ abstract class MapReduce {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTagKey("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTag("highway").areaOfInterest(bbox);
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.NODE).filterByTagKey("highway").areaOfInterest(bbox);
+    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.NODE).filterByTag("highway").areaOfInterest(bbox);
   }
 
   @Test
@@ -48,8 +48,8 @@ abstract class MapReduce {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter(entity -> entity.getId() == 617308093)
-        .mapReduce(
-            OSMContribution::getContributorUserId,
+        .map(OSMContribution::getContributorUserId)
+        .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
             (x,y) -> { HashSet<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
@@ -64,8 +64,8 @@ abstract class MapReduce {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .filter(entity -> entity.getId() == 617308093)
-        .mapReduce(
-            snapshot -> snapshot.getEntity().getUserId(),
+        .map(snapshot -> snapshot.getEntity().getUserId())
+        .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
             (x,y) -> { HashSet<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }

@@ -15,7 +15,6 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 import org.junit.Test;
 
 import java.util.*;
@@ -38,14 +37,14 @@ public class FlatMapAggregate {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTagKey("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTag("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void test() throws Exception {
     SortedMap<Long, Set<Pair<Integer, Integer>>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMapAggregate(
+        .flatMap(
             contribution -> {
               if (contribution.getEntityAfter().getId() != 617308093)
                 return new ArrayList<>();
@@ -57,7 +56,11 @@ public class FlatMapAggregate {
                     new ImmutablePair<>(tags[i], tags[i+1])
                 ));
               return ret;
-            },
+            }
+        )
+        .aggregate(Pair::getKey)
+        .map(Pair::getValue)
+        .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
             (x,y) -> { Set<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }

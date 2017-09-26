@@ -35,23 +35,23 @@ public class FlatMapReduce {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTagKey("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTag("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void test() throws Exception {
     Set<Pair<Integer, Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMapReduce(
-            contribution -> {
-              if (contribution.getEntityAfter().getId() != 617308093)
-                return new ArrayList<>();
-              List<Pair<Integer, Integer>> ret = new ArrayList<>();
-              int[] tags = contribution.getEntityAfter().getTags();
-              for (int i=0; i<tags.length; i+=2)
-                ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
-              return ret;
-            },
+        .flatMap(contribution -> {
+          if (contribution.getEntityAfter().getId() != 617308093)
+            return new ArrayList<>();
+          List<Pair<Integer, Integer>> ret = new ArrayList<>();
+          int[] tags = contribution.getEntityAfter().getTags();
+          for (int i=0; i<tags.length; i+=2)
+            ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
+          return ret;
+        })
+        .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
             (x,y) -> { HashSet<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
