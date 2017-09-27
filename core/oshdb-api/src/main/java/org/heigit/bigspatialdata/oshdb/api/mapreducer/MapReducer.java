@@ -369,10 +369,13 @@ public abstract class MapReducer<X> {
    *
    * @return the MapReducer object which applies its transformations on (by entity id grouped) lists of the input data
    * @throws UnsupportedOperationException if this is called after some map (or flatMap) functions have already been set
+   * @throws UnsupportedOperationException if this is called when a grouping has already been activated
    */
   public MapReducer<List<X>> groupById() throws UnsupportedOperationException {
     if (!this._mappers.isEmpty())
       throw new UnsupportedOperationException("groupById() must be called before any `map` or `flatMap` transformation functions have been set");
+    if (this._grouping != Grouping.NONE)
+      throw new UnsupportedOperationException("A grouping is already active on this MapReducer");
     this._grouping = Grouping.BY_ID;
     return (MapReducer<List<X>>)(this);
   }
