@@ -84,7 +84,7 @@ public class TagTranslator {
       this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valResultString));
       this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valResultInt));
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag \"{}\"=\"{}\" in keytables. Either the connection failed, or there simply was no result:", tag.getKey(), tag.getValue(), ex);
+      LOG.info("Unable to find tag \"{}\"=\"{}\" in keytables.", tag.getKey(), tag.getValue());
     }
 
     return new ImmutablePair<>(keyInt, valInt);
@@ -111,7 +111,7 @@ public class TagTranslator {
       this.tagToString.put(keyInt, new ImmutablePair<>(key, new ConcurrentHashMap<>(0)));
 
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag key \"{}\" in keytables. Either the connection failed, or there simply was no result:", key, ex);
+      LOG.info("Unable to find tag key \"{}\" in keytables.", key);
     }
     return keyInt;
   }
@@ -136,7 +136,7 @@ public class TagTranslator {
       this.tagToInt.put(keyString, new ImmutablePair<>(key, new ConcurrentHashMap<>(0)));
 
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag key id \"{}\" in keytables. Either the connection failed, or there simply was no result:", key, ex);
+      LOG.info("Unable to find tag key id \"{}\" in keytables.", key);
     }
     return keyString;
   }
@@ -182,7 +182,7 @@ public class TagTranslator {
       this.tagToInt.put(keyString, new ImmutablePair<>(keyInt, valResultString));
       this.tagToString.put(keyInt, new ImmutablePair<>(keyString, valResultInt));
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag id \"{}\"=\"{}\" in keytables. Either the connection failed, or there simply was no result:", tag.getKey(), tag.getValue(), ex);
+      LOG.info("Unable to find tag id \"{}\"=\"{}\" in keytables.", tag.getKey(), tag.getValue());
     }
 
     return new ImmutablePair<>(keyString, valueString);
@@ -213,7 +213,7 @@ public class TagTranslator {
         } //put results to cache
         this.tagToInt.put(key, new ImmutablePair<>(keyid, vals));
       } catch (SQLException ex) {
-        LOG.warn("Unable to find tag key \"{}\" in keytables. Either the connection failed, or there simply was no result:", key, ex);
+        LOG.info("Unable to find tag key \"{}\" in keytables.", key);
       }
     }
 
@@ -241,7 +241,7 @@ public class TagTranslator {
       this.roleToString.put(roleInt, role);
 
     } catch (SQLException ex) {
-      LOG.warn("Unable to find role \"{}\" in keytables. Either the connection failed, or there simply was no result:", role, ex);
+      LOG.info("Unable to find role \"{}\" in keytables.", role);
     }
 
     return roleInt;
@@ -268,7 +268,7 @@ public class TagTranslator {
       this.roleToString.put(role, roleString);
 
     } catch (SQLException ex) {
-      LOG.warn("Unable to find role id \"{}\" in keytables. Either the connection failed, or there simply was no result:", role, ex);
+      LOG.info("Unable to find role id \"{}\" in keytables.", role);
     }
 
     return roleString;
@@ -295,7 +295,7 @@ public class TagTranslator {
       this.userToString.put(uid, name);
 
     } catch (SQLException ex) {
-      LOG.warn("Unable to find user \"{}\" in keytables. Either the connection failed, or there simply was no result:", name, ex);
+      LOG.info("Unable to find user \"{}\" in keytables.", name);
     }
 
     return uid;
@@ -322,7 +322,7 @@ public class TagTranslator {
       this.userToString.put(uid, name);
 
     } catch (SQLException ex) {
-      LOG.warn("Unable to find user id \"{}\" in keytables. Either the connection failed, or there simply was no result:", uid, ex);
+      LOG.info("Unable to find user id \"{}\" in keytables.", uid);
     }
 
     return name;
