@@ -13,7 +13,7 @@
   <artifactId>oshdb-api</artifactId>
 
   <properties>
-
+    <geotools-version>18-RC1</geotools-version>
   </properties>
 
 
@@ -69,12 +69,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.vividsolutions</groupId>
-      <artifactId>jts-core</artifactId>
-      <version>1.14.0</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
       <version>1.1.1</version>
@@ -83,7 +77,7 @@
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-geometry</artifactId>
-      <version>15.1</version>
+      <version>${geotools-version}</version>
     </dependency>
     <dependency>
       <groupId>org.heigit.bigspatialdata</groupId>

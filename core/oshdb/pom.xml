@@ -13,7 +13,7 @@
   <artifactId>oshdb</artifactId>
 
   <properties>
-    <geotools-version>17.2</geotools-version>
+    <geotools-version>18-RC1</geotools-version>
     <ignite.version>2.1.0</ignite.version>
   </properties>
 
@@ -29,6 +29,7 @@
       <artifactId>RoaringBitmap</artifactId>
       <version>0.6.37</version>
     </dependency>
+    
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
