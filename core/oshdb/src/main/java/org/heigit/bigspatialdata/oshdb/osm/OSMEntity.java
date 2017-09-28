@@ -22,7 +22,7 @@ import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
 
 public abstract class OSMEntity {
-  protected static final Logger LOG = LoggerFactory.getLogger(OSMEntity.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OSMEntity.class);
 
   protected final long id;
 
@@ -203,12 +203,11 @@ public abstract class OSMEntity {
     try {
       properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp())).add("user", tagtranslator.usertoStr(getUserId())).add("uid", getUserId());
       for (int i = 0; i < getTags().length; i += 2) {
-        @SuppressWarnings("unchecked")
-        Pair<String, String> tags = tagtranslator.tag2String(new ImmutablePair(getTags()[i], getTags()[i + 1]));
+        Pair<String, String> tags = tagtranslator.tag2String(new ImmutablePair<>(getTags()[i], getTags()[i + 1]));
         properties.add(tags.getKey(), tags.getValue());
       }
     } catch (NullPointerException ex) {
-      LOG.warn("The TagTranslator could not resolve the Tags. Therefore Integer values will be printed: {}", ex);
+      LOG.warn("The TagTranslator could not resolve (some of) the tags of entity {}/{}", this.getType().toString().toLowerCase(), this.getId());
       properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp())).add("user", getUserId()).add("uid", getUserId());
       for (int i = 0; i < getTags().length; i += 2) {
         properties.add(Integer.toString(getTags()[i]), getTags()[i + 1]);
@@ -223,7 +222,7 @@ public abstract class OSMEntity {
       JsonObject geom = jsonReader.readObject();
       return Json.createObjectBuilder().add("type", "Feature").add("id", getId()).add("properties", properties).add("geometry", geom);
     } catch (NullPointerException ex) {
-      LOG.warn("The geometry could not be built. Therefore it will not be part of the resulting JSON. {}", ex);
+      LOG.warn("Could not build the geometry of entity {}/{}", this.getType().toString().toLowerCase(), this.getId());
       return Json.createObjectBuilder().add("type", "Feature").add("id", getId()).add("properties", properties);
     }
   }

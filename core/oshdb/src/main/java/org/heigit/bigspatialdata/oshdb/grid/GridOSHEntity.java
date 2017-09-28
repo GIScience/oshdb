@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
@@ -16,9 +14,12 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("rawtypes")
 public abstract class GridOSHEntity<HOSM extends OSHEntity> implements Iterable<HOSM>, Serializable {
+  private static final Logger LOG = LoggerFactory.getLogger(GridOSHEntity.class);
 
   private static final long serialVersionUID = 1L;
   protected final long id;
@@ -64,7 +65,7 @@ public abstract class GridOSHEntity<HOSM extends OSHEntity> implements Iterable<
       BoundingBox bbox = XYGrid.getBoundingBox(new CellId((int) id, level));
       return String.format(Locale.ENGLISH, "ID:%d Level:%d BBox:(%f,%f),(%f,%f)", id, level, bbox.minLat, bbox.minLon, bbox.maxLat, bbox.maxLon);
     } catch (CellId.cellIdExeption ex) {
-      Logger.getLogger(GridOSHEntity.class.getName()).log(Level.WARNING, null, ex);
+      LOG.warn("", ex);
       return String.format(Locale.ENGLISH, "ID:%d Level:%d", id, level);
     }
   }

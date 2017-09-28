@@ -5,18 +5,19 @@
  */
 package org.heigit.bigspatialdata.oshdb.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class CellIdTest {
+  private static final Logger LOG = LoggerFactory.getLogger(CellIdTest.class);
   
   public CellIdTest() {
   }
@@ -30,7 +31,7 @@ public class CellIdTest {
       long result = instance.getId();
       assertEquals(expResult, result);
     } catch (CellId.cellIdExeption ex) {
-      Logger.getLogger(CellIdTest.class.getName()).log(Level.SEVERE, null, ex);
+      LOG.error("", ex);
     }
   }
 
@@ -43,7 +44,7 @@ public class CellIdTest {
       int result = instance.getZoomLevel();
       assertEquals(expResult, result);
     } catch (CellId.cellIdExeption ex) {
-      Logger.getLogger(CellIdTest.class.getName()).log(Level.SEVERE, null, ex);
+      LOG.error("", ex);
     }
   }
   

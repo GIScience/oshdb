@@ -3,8 +3,6 @@ package org.heigit.bigspatialdata.oshdb.index;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
@@ -13,6 +11,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.
@@ -20,8 +20,8 @@ import org.heigit.bigspatialdata.oshdb.util.CellId;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class XYGridTree {
+  private static final Logger LOG = LoggerFactory.getLogger(XYGridTree.class);
 
-  private static final Logger LOG = Logger.getLogger(XYGridTree.class.getName());
   private static final double EPSILON = 1e-11;
   private final int maxLevel;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
@@ -70,7 +70,7 @@ public class XYGridTree {
               level--;
               return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
             } catch (CellId.cellIdExeption ex) {
-              LOG.log(Level.SEVERE, ex.getMessage());
+              LOG.error(ex.getMessage());
               return null;
             }
           }
@@ -97,7 +97,7 @@ public class XYGridTree {
         }
         return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
       } catch (CellId.cellIdExeption ex) {
-        LOG.log(Level.SEVERE, ex.getMessage());
+        LOG.error(ex.getMessage());
         return null;
       }
     }
@@ -166,7 +166,7 @@ public class XYGridTree {
               maxID = row.getRight();
               return new CellId(level, currID);
             } catch (CellId.cellIdExeption ex) {
-              LOG.log(Level.SEVERE, ex.getMessage());
+              LOG.error(ex.getMessage());
               return null;
             }
           }

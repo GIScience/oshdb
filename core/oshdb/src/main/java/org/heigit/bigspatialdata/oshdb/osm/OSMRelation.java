@@ -10,7 +10,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.json.Json;
@@ -19,8 +18,11 @@ import javax.json.JsonObjectBuilder;
 
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, Serializable {
+  private static final Logger LOG = LoggerFactory.getLogger(OSMRelation.class);
 
   private static final long serialVersionUID = 1L;
   private final OSMMember[] members;
@@ -104,7 +106,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
       try {
         geoms[i] = getMembers()[i].getEntity().getByTimestamp(timestamp).getGeometry(timestamp, areaDecider);
       } catch (NullPointerException ex) {
-        LOG.warn("No Entity in Relation Member, Geometry could not be created. {}", ex);
+        LOG.warn("Relation member entity missing, geometry could not be created.");
         return null;
       }
     }
@@ -257,7 +259,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
       try {
         member.add("role", tagtranslator.role2String(mem.getRoleId()));
       } catch (NullPointerException ex) {
-        LOG.warn("The TagTranslator could not resolve the member role {}. Therefore Integer values will be printed. {}", mem.getRoleId(), ex);
+        LOG.warn("The TagTranslator could not resolve the member role {} of a member of relation/{}", mem.getRoleId());
         member.add("role", mem.getRoleId());
       }
       JSONMembers.add(member);
