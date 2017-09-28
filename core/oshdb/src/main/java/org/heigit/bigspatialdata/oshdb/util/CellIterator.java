@@ -9,6 +9,8 @@ import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
@@ -17,6 +19,7 @@ import java.util.stream.Stream;
 
 
 public class CellIterator {
+  private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
 
   /**
    * Helper method to easily iterate over all entities in a cell that match a given condition/filter as they existed at the given timestamps.
@@ -157,10 +160,10 @@ public class CellIterator {
         } catch (UnsupportedOperationException err) {
           // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
-          System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
+          LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}", osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
           // todo: can this even happen?
-          System.err.printf("Topology error at object %d at timestamp %d: %s\n", osmEntity.getId(), timestamp, err.toString());
+          LOG.info("Topology error with entity {}/{} at timestamp {}: {}", osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp, err.toString());
         }
       }
 
@@ -445,9 +448,9 @@ public class CellIterator {
         } catch (UnsupportedOperationException err) {
           // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
-          System.err.printf("Relation %d skipped because of invalid geometry at timestamp %d\n", osmEntity.getId(), timestamp);
+          LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}", osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
-          System.err.printf("Topology error at object %d at timestamp %d: %s\n", osmEntity.getId(), timestamp, err.toString());
+          LOG.info("Topology error with entity {}/{} at timestamp {}: {}", osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp, err.toString());
         }
       }
     }
