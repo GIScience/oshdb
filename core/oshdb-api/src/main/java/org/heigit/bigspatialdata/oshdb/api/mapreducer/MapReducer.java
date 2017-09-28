@@ -279,7 +279,13 @@ public abstract class MapReducer<X> {
    * @throws Exception
    */
   public MapReducer<X> filterByTag(String key) throws Exception {
-    int keyId = this.getTagKeyId(key);
+    Integer keyId = this.getTagKeyId(key);
+    if (keyId == null) {
+      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+      this._preFilters.add(ignored -> false);
+      this._filters.add(ignored -> false);
+      return this;
+    }
     this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
     return this;
@@ -309,6 +315,12 @@ public abstract class MapReducer<X> {
    */
   public MapReducer<X> filterByTag(String key, String value) throws Exception {
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
+    if (keyValueId == null) {
+      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+      this._preFilters.add(ignored -> false);
+      this._filters.add(ignored -> false);
+      return this;
+    }
     int keyId = keyValueId.getKey();
     int valueId = keyValueId.getValue();
     this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
