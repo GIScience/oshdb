@@ -14,8 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TagTranslatorTest {
-
-  private static final Logger LOG = Logger.getLogger(TagTranslatorTest.class.getName());
   private static Connection conn;
 
   @BeforeClass

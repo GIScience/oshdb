@@ -12,8 +12,6 @@ import org.junit.Test;
  */
 public class LongRoaringBitmapTest {
 
-  private static final Logger LOG = Logger.getLogger(LongRoaringBitmapTest.class.getName());
-
   public LongRoaringBitmapTest() {
   }
 

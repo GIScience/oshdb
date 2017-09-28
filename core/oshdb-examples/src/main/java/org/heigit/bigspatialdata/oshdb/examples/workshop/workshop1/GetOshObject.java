@@ -9,14 +9,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 
 public class GetOshObject {
-	private static final Logger LOG = Logger.getLogger(GetHosmCell.class.getName());
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		Class.forName("org.h2.Driver");

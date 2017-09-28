@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.junit.Assert;
@@ -17,14 +16,11 @@ import org.junit.Test;
  */
 public class OSMNodeTest {
 
-  private static final Logger LOG = Logger.getLogger(OSMNodeTest.class.getName());
-
   public OSMNodeTest() {
   }
 
   @Test
   public void testGetLongitude() {
-    System.out.println("getLongitude");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1L);
     double expResult = 100.0;
     double result = instance.getLongitude();
@@ -33,7 +29,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetLatitude() {
-    System.out.println("getLatitude");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     double expResult = 100.0;
     double result = instance.getLatitude();
@@ -42,7 +37,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetLon() {
-    System.out.println("getLon");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     long expResult = 1000000000L;
     long result = instance.getLon();
@@ -51,7 +45,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetLat() {
-    System.out.println("getLat");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     long expResult = 1000000000L;
     long result = instance.getLat();
@@ -77,7 +70,6 @@ public class OSMNodeTest {
 
   @Test
   public void testEqualsTo() {
-    System.out.println("equalsTo");
     OSMNode o = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     boolean expResult = true;
@@ -87,7 +79,6 @@ public class OSMNodeTest {
 
   @Test
   public void testEqualsToII() {
-    System.out.println("equalsTo");
     OSMNode o = new OSMNode(2L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     boolean expResult = false;
@@ -97,40 +88,27 @@ public class OSMNodeTest {
 
   @Test
   public void testCompareTo() {
-    System.out.println("compareTo");
     OSMNode o = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     assertTrue(instance.compareTo(o) == 0);
-  }
 
-  @Test
-  public void testCompareToII() {
-    System.out.println("compareTo");
-    OSMNode o = new OSMNode(1L, 3, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    o = new OSMNode(1L, 3, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     assertTrue(instance.compareTo(o) < 0);
-  }
 
-  @Test
-  public void testCompareToIII() {
-    System.out.println("compareTo");
-    OSMNode o = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
-    OSMNode instance = new OSMNode(1L, 3, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    o = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    instance = new OSMNode(1L, 3, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     assertTrue(instance.compareTo(o) > 0);
-  }
 
-  @Test
-  public void testCompareToIV() {
-    System.out.println("compareTo");
-    OSMNode o = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
-    OSMNode instance = new OSMNode(1L, -6, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    o = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    instance = new OSMNode(1L, -6, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     assertTrue(instance.compareTo(o) > 0);
   }
 
   //-------------------
+
   @Test
   public void testGetId() {
-    System.out.println("getId");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     long expResult = 1L;
     long result = instance.getId();
@@ -139,7 +117,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetVersion() {
-    System.out.println("getVersion");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     int expResult = 1;
     int result = instance.getVersion();
@@ -148,7 +125,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetTimestamp() {
-    System.out.println("getTimestamp");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     long expResult = 1L;
     long result = instance.getTimestamp();
@@ -157,7 +133,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetChangeset() {
-    System.out.println("getChangeset");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     long expResult = 1L;
     long result = instance.getChangeset();
@@ -166,7 +141,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetUserId() {
-    System.out.println("getUserId");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     int expResult = 1;
     int result = instance.getUserId();
@@ -175,7 +149,6 @@ public class OSMNodeTest {
 
   @Test
   public void testisVisible() {
-    System.out.println("isVisible");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     boolean expResult = true;
     boolean result = instance.isVisible();
@@ -184,7 +157,6 @@ public class OSMNodeTest {
 
   @Test
   public void testisVisibleII() {
-    System.out.println("isVisible");
     OSMNode instance = new OSMNode(1L, -1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     boolean expResult = false;
     boolean result = instance.isVisible();
@@ -193,7 +165,6 @@ public class OSMNodeTest {
 
   @Test
   public void testGetTags() {
-    System.out.println("getTags");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     int[] expResult = new int[]{};
     int[] result = instance.getTags();
@@ -202,71 +173,49 @@ public class OSMNodeTest {
 
   @Test
   public void testHasTagKey() {
-    System.out.println("hasTagKey");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{}, 1000000000L, 1000000000L);
     boolean expResult = false;
     boolean result = instance.hasTagKey(1);
     assertEquals(expResult, result);
-  }
 
-  @Test
-  public void testHasTagKeyII() {
-    System.out.println("hasTagKey");
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
-    boolean expResult = true;
-    boolean result = instance.hasTagKey(1);
+    instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    expResult = true;
+    result = instance.hasTagKey(1);
     assertEquals(expResult, result);
-  }
 
-  @Test
-  public void testHasTagKeyIII() {
-    System.out.println("hasTagKey");
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 2, 2, 2, 3, 3}, 1000000000L, 1000000000L);
-    boolean expResult = false;
-    boolean result = instance.hasTagKey(1, new int[]{2, 3});
+    instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 2, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    expResult = false;
+    result = instance.hasTagKey(1, new int[]{2, 3});
     assertEquals(expResult, result);
-  }
 
-  @Test
-  public void testHasTagKeyIV() {
-    System.out.println("hasTagKey");
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
-    boolean expResult = true;
-    boolean result = instance.hasTagKey(1, new int[]{2, 3});
+    instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
+    expResult = true;
+    result = instance.hasTagKey(1, new int[]{2, 3});
     assertEquals(expResult, result);
-  }
 
-  @Test
-  public void testHasTagKeyV() {
-    System.out.println("hasTagKey");
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{2, 1, 3, 3}, 1000000000L, 1000000000L);
-    boolean expResult = false;
-    boolean result = instance.hasTagKey(1, new int[]{1, 3});
+    instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{2, 1, 3, 3}, 1000000000L, 1000000000L);
+    expResult = false;
+    result = instance.hasTagKey(1, new int[]{1, 3});
     assertEquals(expResult, result);
   }
 
   @Test
   public void testHasTagValue() {
-    System.out.println("hasTagValue");
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 2, 2, 3}, 1000000000L, 1000000000L);
     boolean expResult = false;
     boolean result = instance.hasTagValue(1, 1);
     assertEquals(expResult, result);
-  }
 
-  @Test
-  public void testHasTagValueII() {
-    System.out.println("hasTagValue");
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 3}, 1000000000L, 1000000000L);
-    boolean expResult = true;
-    boolean result = instance.hasTagValue(1, 1);
+    instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 3}, 1000000000L, 1000000000L);
+    expResult = true;
+    result = instance.hasTagValue(1, 1);
     assertEquals(expResult, result);
   }
 
   //--------------------
+
   @Test
   public void testEqualsToOSMNode() {
-
     long id = 123;
     int version = 1;
     long timestamp = 310172400000l;
@@ -299,7 +248,6 @@ public class OSMNodeTest {
     b = new OSMNode(id, version + 2, timestamp, changeset, userId, tags, longitude, latitude);
 
     assertTrue(a.compareTo(b) < 0);
-
   }
 
   @Test

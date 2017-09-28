@@ -5,10 +5,7 @@
  */
 package org.heigit.bigspatialdata.oshdb.util;
 
-import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
-
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
 /**
@@ -16,8 +13,6 @@ import org.junit.Test;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class BoundingBoxTest {
-
-  private static final Logger LOG = Logger.getLogger(BoundingBoxTest.class.getName());
 
   public BoundingBoxTest() {
   }

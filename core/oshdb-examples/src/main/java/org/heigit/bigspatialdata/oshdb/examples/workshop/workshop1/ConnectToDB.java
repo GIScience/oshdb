@@ -5,10 +5,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Logger;
 
 public class ConnectToDB {
-	private static final Logger LOG = Logger.getLogger(ConnectToDB.class.getName());
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		// load H2-support
 		Class.forName("org.h2.Driver");

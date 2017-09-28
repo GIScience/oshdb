@@ -3,13 +3,9 @@ package org.heigit.bigspatialdata.oshdb.osm;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.StringReader;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -20,10 +16,13 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
 
 public abstract class OSMEntity {
+  protected static final Logger LOG = LoggerFactory.getLogger(OSMEntity.class);
 
   protected final long id;
 
@@ -32,7 +31,6 @@ public abstract class OSMEntity {
   protected final long changeset;
   protected final int userId;
   protected final int[] tags;
-  static final Logger LOG = Logger.getLogger(OSMEntity.class.getName());
 
   /**
    * Constructor for a OSMEntity. Holds the basic information, every OSM-Object
@@ -210,7 +208,7 @@ public abstract class OSMEntity {
         properties.add(tags.getKey(), tags.getValue());
       }
     } catch (NullPointerException ex) {
-      LOG.log(Level.WARNING, "The TagTranslator could not resolve the Tags. Therefore Integer values will be printed.", ex);
+      LOG.warn("The TagTranslator could not resolve the Tags. Therefore Integer values will be printed: {}", ex);
       properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp())).add("user", getUserId()).add("uid", getUserId());
       for (int i = 0; i < getTags().length; i += 2) {
         properties.add(Integer.toString(getTags()[i]), getTags()[i + 1]);
@@ -225,7 +223,7 @@ public abstract class OSMEntity {
       JsonObject geom = jsonReader.readObject();
       return Json.createObjectBuilder().add("type", "Feature").add("id", getId()).add("properties", properties).add("geometry", geom);
     } catch (NullPointerException ex) {
-      LOG.log(Level.WARNING, "The geometry could not be built. Therefore it will not be part of the resulting JSON", ex);
+      LOG.warn("The geometry could not be built. Therefore it will not be part of the resulting JSON. {}", ex);
       return Json.createObjectBuilder().add("type", "Feature").add("id", getId()).add("properties", properties);
     }
   }

@@ -7,8 +7,6 @@ import java.util.logging.Logger;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class CellId {
-
-  private static final Logger LOG = Logger.getLogger(CellId.class.getName());
   private final int zoomlevel;
   private final long id;
 

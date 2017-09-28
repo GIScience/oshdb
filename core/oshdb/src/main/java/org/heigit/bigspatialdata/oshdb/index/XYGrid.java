@@ -10,6 +10,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * XYGrid spans an equal degree grid over the world.
@@ -42,8 +44,7 @@ import org.heigit.bigspatialdata.oshdb.util.CellId;
  *
  */
 public class XYGrid {
-
-  private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(XYGrid.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
 
   private final int zoom;
   private final long zoompow;
@@ -57,11 +58,10 @@ public class XYGrid {
    */
   public XYGrid(final int zoom) {
     if (zoom > 30) {
-      LOG.warning(
-              "Zoom is too big, maximum number of tiles exceeds biggest possible Long. The maximum zoom of 30 is used instead.");
+      LOG.warn("Zoom is too big, maximum number of tiles exceeds biggest possible Long. The maximum zoom of 30 is used instead.");
       this.zoom = 30;
     } else if (zoom < 0) {
-      LOG.warning("Zoom is too small. The minimum zoom of 0 (equals 1 tile) is used instead.");
+      LOG.warn("Zoom is too small. The minimum zoom of 0 (equals 1 tile) is used instead.");
       this.zoom = 0;
     } else {
       this.zoom = zoom;
@@ -253,7 +253,7 @@ public class XYGrid {
     double maxlat = bbox.getMaxValuesPerDimension()[1];
 
     if (minlat > maxlat) {
-      LOG.warning("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
+      LOG.warn("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
       return null;
     }
 

@@ -7,7 +7,6 @@ package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import static org.junit.Assert.assertEquals;
@@ -19,14 +18,11 @@ import org.junit.Test;
  */
 public class OSMMemberTest {
 
-  private static final Logger LOG = Logger.getLogger(OSMMemberTest.class.getName());
-
   public OSMMemberTest() {
   }
 
   @Test
   public void testGetId() {
-    System.out.println("getId");
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     long expResult = 1L;
     long result = instance.getId();
@@ -35,7 +31,6 @@ public class OSMMemberTest {
 
   @Test
   public void testGetType() {
-    System.out.println("getType");
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     OSMType expResult = OSMType.WAY;
     OSMType result = instance.getType();
@@ -44,7 +39,6 @@ public class OSMMemberTest {
 
   @Test
   public void testGetRoleId() {
-    System.out.println("getRoleId");
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     int expResult = 1;
     int result = instance.getRoleId();
@@ -53,7 +47,7 @@ public class OSMMemberTest {
 
   @Test
   public void testGetData() {
-    System.out.println("getEntity (explicit null)");
+    // getEntity (explicit null)
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1, null);
     Object expResult = null;
     Object result = instance.getEntity();
@@ -62,7 +56,7 @@ public class OSMMemberTest {
 
   @Test
   public void testGetDataII() {
-    System.out.println("getEntity (implicit null)");
+    // getEntity (implicit null)
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     Object expResult = null;
     Object result = instance.getEntity();

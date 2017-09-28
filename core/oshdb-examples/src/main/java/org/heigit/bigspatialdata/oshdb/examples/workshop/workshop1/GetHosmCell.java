@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
@@ -17,7 +16,6 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 
 public class GetHosmCell {
-	private static final Logger LOG = Logger.getLogger(GetHosmCell.class.getName());
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		// load H2-support
 		Class.forName("org.h2.Driver");

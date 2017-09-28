@@ -4,7 +4,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
@@ -13,8 +12,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class OSMEntityTest {
-
-  private static final Logger LOG = Logger.getLogger(OSMEntityTest.class.getName());
 
   @Test
   public void testToString() {

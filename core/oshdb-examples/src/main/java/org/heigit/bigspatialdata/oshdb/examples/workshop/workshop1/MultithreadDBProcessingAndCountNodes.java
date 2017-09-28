@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
@@ -18,10 +16,11 @@ import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MultithreadDBProcessingAndCountNodes {
-
-	private static final Logger LOG = Logger.getLogger(MultithreadDBProcessingAndCountNodes.class.getName());
+	private static final Logger LOG = LoggerFactory.getLogger(MultithreadDBProcessingAndCountNodes.class);
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		// load H2-support
@@ -55,10 +54,10 @@ public class MultithreadDBProcessingAndCountNodes {
 
 						}
 					} catch (IOException | ClassNotFoundException ex) {
-						Logger.getLogger(MultithreadDBProcessingAndCountNodes.class.getName()).log(Level.SEVERE, null, ex);
+						LOG.error(ex.toString());
 					}
 				} catch (SQLException ex) {
-					Logger.getLogger(MultithreadDBProcessingAndCountNodes.class.getName()).log(Level.SEVERE, null, ex);
+					LOG.error(ex.toString());
 				}
 				return null;
 

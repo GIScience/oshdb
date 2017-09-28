@@ -3,8 +3,6 @@ package org.heigit.bigspatialdata.oshdb.index;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
@@ -23,8 +21,6 @@ import org.junit.Test;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class XYGridTest {
-
-  private static final Logger LOG = Logger.getLogger(XYGridTest.class.getName());
   private static final int MAXZOOM = OSHDB.MAXZOOM;
   private XYGrid zero;
   private XYGrid two;
@@ -50,7 +46,7 @@ public class XYGridTest {
 
   @Test
   public void testnegneg181_neg91_2() {
-    LOG.log(Level.INFO, "Testing Coordinates: -181, -91, zoom 2");
+    // Testing Coordinates: -181, -91, zoom 2
     double longitude = -181.0;
     double latitude = -91.0;
 
@@ -61,7 +57,7 @@ public class XYGridTest {
 
   @Test
   public void testneg180_neg90_0() {
-    LOG.log(Level.INFO, "Testing Coordinates: -180, -90, zoom 0");
+    // Testing Coordinates: -180, -90, zoom 0
     double longitude = -180.0;
     double latitude = -90.0;
 
@@ -72,7 +68,7 @@ public class XYGridTest {
 
   @Test
   public void test180_90_0() {
-    LOG.log(Level.INFO, "Testing Coordinates: 180, 90, zoom 0");
+    // Testing Coordinates: 180, 90, zoom 0
     double longitude = 180.0;
     double latitude = 90.0;
 
@@ -83,7 +79,7 @@ public class XYGridTest {
 
   @Test
   public void test179_90_0() {
-    LOG.log(Level.INFO, "Testing Coordinates: 179, 90, zoom 0");
+    // Testing Coordinates: 179, 90, zoom 0
     double longitude = 179.0;
     double latitude = 90.0;
 
@@ -94,7 +90,7 @@ public class XYGridTest {
 
   @Test
   public void testneg180_neg90_2() {
-    LOG.log(Level.INFO, "Testing Coordinates: -180, -90, zoom 2");
+    // Testing Coordinates: -180, -90, zoom 2
     double longitude = -180.0;
     double latitude = -90.0;
 
@@ -105,7 +101,7 @@ public class XYGridTest {
 
   @Test
   public void test180_90_2() {
-    LOG.log(Level.INFO, "Testing Coordinates: 180, 90, zoom 2");
+    // Testing Coordinates: 180, 90, zoom 2
     double longitude = 180.0;
     double latitude = 90.0;
 
@@ -116,7 +112,7 @@ public class XYGridTest {
 
   @Test
   public void test179_90_2() {
-    LOG.log(Level.INFO, "Testing Coordinates: 179, 90, zoom 2");
+    // Testing Coordinates: 179, 90, zoom 2
     double longitude = 179.99999999999;
     double latitude = 90.0;
 
@@ -127,7 +123,7 @@ public class XYGridTest {
 
   @Test
   public void testneg180_neg90_31() {
-    LOG.log(Level.INFO, "Testing Coordinates: -180, -90, zoom 31");
+    // Testing Coordinates: -180, -90, zoom 31
     double longitude = -180.0;
     double latitude = -90.0;
     int zoom = 31;
@@ -140,7 +136,7 @@ public class XYGridTest {
 
   @Test
   public void test180_90_neg1() {
-    LOG.log(Level.INFO, "Testing Coordinates: 180, 90, zoom -1");
+    // Testing Coordinates: 180, 90, zoom -1
     double longitude = 180.0;
     double latitude = 90.0;
     int zoom = -1;
@@ -153,7 +149,7 @@ public class XYGridTest {
 
   @Test
   public void testneg180_neg90_30() {
-    LOG.log(Level.INFO, "Testing Coordinates: -180, -90, zoom 30");
+    // Testing Coordinates: -180, -90, zoom 30
     double longitude = -180.0;
     double latitude = -90.0;
 
@@ -164,7 +160,7 @@ public class XYGridTest {
 
   @Test
   public void test180_90_30() {
-    LOG.log(Level.INFO, "Testing Coordinates: 180, 90, zoom 30");
+    // Testing Coordinates: 180, 90, zoom 30
     double longitude = 180.0;
     double latitude = 90.0;
 
@@ -175,7 +171,7 @@ public class XYGridTest {
 
   @Test
   public void test179_90_30() {
-    LOG.log(Level.INFO, "Testing Coordinates: 179, 90, zoom 30");
+    // Testing Coordinates: 179, 90, zoom 30
     double longitude = 179.999999999;
     double latitude = 90.0;
 

@@ -14,8 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
@@ -27,6 +25,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class aims at providing your with the basic functions to store your
@@ -35,8 +35,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
  * ClusterAdmins will know how to provide your with your results.
  */
 public class OutputWriter {
+  private static final Logger LOG = LoggerFactory.getLogger(OutputWriter.class);
 
-  private static final Logger LOG = Logger.getLogger(OutputWriter.class.getName());
   private static final DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
   private static final ArrayList<String> kafkatopic = new ArrayList<>();
 
@@ -108,7 +108,7 @@ public class OutputWriter {
             insert.setString(2, pair.getValue());
             insert.addBatch();
           } catch (SQLException ex) {
-            Logger.getLogger(OutputWriter.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error(ex.toString());
           }
 
         });
@@ -157,7 +157,7 @@ public class OutputWriter {
             insert.setString(2, pair.getValue());
             insert.addBatch();
           } catch (SQLException ex) {
-            Logger.getLogger(OutputWriter.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error(ex.toString());
           }
 
         });
