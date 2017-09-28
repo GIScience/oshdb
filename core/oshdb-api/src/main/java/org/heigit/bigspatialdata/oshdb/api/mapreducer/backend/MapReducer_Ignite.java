@@ -23,6 +23,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.cache.Cache;
 import java.io.Serializable;
@@ -32,6 +34,8 @@ import java.util.Set;
 import java.util.function.*;
 
 public class MapReducer_Ignite<X> extends MapReducer<X> {
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite.class);
+
   public MapReducer_Ignite(OSHDB oshdb) {
     super(oshdb);
   }
@@ -135,7 +139,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cacheName = "gid_relations";
           break;
         default:
-          System.err.println("unhandled osm type: " + osmType.toString());
+          LOG.warn("unhandled osm type: " + osmType.toString());
           return identitySupplier.get();
       }
       return this._mapReduceCellsOSMContributionOnIgniteCache(
@@ -260,7 +264,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cacheName = "gid_relations";
           break;
         default:
-          System.err.println("unhandled osm type: " + osmType.toString());
+          LOG.warn("unhandled osm type: " + osmType.toString());
           return identitySupplier.get();
       }
       return this._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
@@ -371,7 +375,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cacheName = "gid_relations";
           break;
         default:
-          System.err.println("unhandled osm type: " + osmType.toString());
+          LOG.warn("unhandled osm type: " + osmType.toString());
           return identitySupplier.get();
       }
       return this._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
@@ -484,7 +488,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cacheName = "gid_relations";
           break;
         default:
-          System.err.println("unhandled osm type: " + osmType.toString());
+          LOG.warn("unhandled osm type: " + osmType.toString());
           return identitySupplier.get();
       }
       return this._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(

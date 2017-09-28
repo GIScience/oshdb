@@ -25,6 +25,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main class of oshdb's "functional programming" API.
@@ -53,6 +55,8 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
 public abstract class MapReducer<X> {
+	private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
+
   protected OSHDB _oshdb;
   protected OSHDB_JDBC _oshdbForTags;
 
@@ -835,7 +839,7 @@ public abstract class MapReducer<X> {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
     if (this._bboxFilter == null || (this._bboxFilter.minLon >= this._bboxFilter.maxLon || this._bboxFilter.minLat >= this._bboxFilter.maxLat)) {
       // return an empty iterable if bbox is not set or empty
-      System.err.println("warning: area of interest not set or empty");
+      LOG.warn("area of interest not set or empty");
       return Collections.emptyList();
     }
     return grid.bbox2CellIds(this._bboxFilter, true);
