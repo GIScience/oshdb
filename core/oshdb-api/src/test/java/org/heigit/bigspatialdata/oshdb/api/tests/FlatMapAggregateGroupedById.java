@@ -36,7 +36,7 @@ public class FlatMapAggregateGroupedById {
   private final double DELTA = 1e-8;
 
   public FlatMapAggregateGroupedById() throws Exception {
-    oshdb = new OSHDB_H2("./src/test/resources/test-data;ACCESS_MODE_DATA=r");
+    oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTag("highway").areaOfInterest(bbox);

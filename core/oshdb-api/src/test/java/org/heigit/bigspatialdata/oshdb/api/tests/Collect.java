@@ -34,7 +34,7 @@ public class Collect {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps(2010, 2015, 1, 12);
 
   public Collect() throws Exception {
-    oshdb = new OSHDB_H2("./src/test/resources/test-data;ACCESS_MODE_DATA=r");
+    oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
