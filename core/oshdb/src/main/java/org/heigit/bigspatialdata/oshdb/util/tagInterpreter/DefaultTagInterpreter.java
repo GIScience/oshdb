@@ -149,7 +149,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 					key = (String)tag.get("key");
 					if (!allKeyValues.containsKey(key)) {
 						// no such tag key present in this db extract
-						LOG.info("DefaultTagInterpreter: key \"%s\" not found in this db extract", key);
+						LOG.info("DefaultTagInterpreter: key \"{}\" not found in this db extract", key);
 						continue;
 					}
 					keyValues = allKeyValues.get(key);
@@ -160,7 +160,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 						value = valuesIt.next();
 						if (!keyValues.containsKey(value)) {
 							// no such tag key/value in this db extract
-							LOG.info("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract", key, value);
+							LOG.info("DefaultTagInterpreter: key/value \"{}\"=\"{}\" not found in this db extract", key, value);
 							continue;
 						}
 						valueIds.add(keyValues.get(value).getRight());
@@ -174,14 +174,14 @@ public class DefaultTagInterpreter extends TagInterpreter {
 					key = (String)tag.get("key");
 					if (!allKeyValues.containsKey(key)) {
 						// no such tag key present in this db extract
-						LOG.info("DefaultTagInterpreter: key \"%s\" not found in this db extract", key);
+						LOG.info("DefaultTagInterpreter: key \"{}\" not found in this db extract", key);
 						continue;
 					}
 					keyValues = allKeyValues.get(key);
 					Iterator<Pair<Integer,Integer>> keyValuesIt = keyValues.values().iterator();
 					if (!keyValuesIt.hasNext()) {
 						// no such tag value present int this db extract??
-						LOG.info("DefaultTagInterpreter: key \"%s\" not found in this db extract", key);
+						LOG.info("DefaultTagInterpreter: key \"{}\" not found in this db extract", key);
 						continue;
 					}
 					keyId = keyValuesIt.next().getLeft();
@@ -194,7 +194,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 					key = (String)tag.get("key");
 					if (!allKeyValues.containsKey(key)) {
 						// no such tag key present in this db extract
-						LOG.info("DefaultTagInterpreter: key \"%s\" not found in this db extract", key);
+						LOG.info("DefaultTagInterpreter: key \"{}\" not found in this db extract", key);
 						continue;
 					}
 					keyValues = allKeyValues.get(key);
@@ -205,7 +205,7 @@ public class DefaultTagInterpreter extends TagInterpreter {
 						value = valuesIt.next();
 						if (!keyValues.containsKey(value)) {
 							// no such tag key/value in this db extract
-							LOG.info("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract", key, value);
+							LOG.info("DefaultTagInterpreter: key/value \"{}\"=\"{}\" not found in this db extract", key, value);
 							continue;
 						}
 						valueIds.add(keyValues.get(value).getRight());
@@ -228,17 +228,17 @@ public class DefaultTagInterpreter extends TagInterpreter {
 			if (allKeyValues.get("type").containsKey("multipolygon"))
 				this.typeMultipolygonValue = allKeyValues.get("type").get("multipolygon").getRight();
 			else
-				LOG.info("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract", "type", "multipolygon");
+				LOG.info("DefaultTagInterpreter: key/value \"{}\"=\"{}\" not found in this db extract", "type", "multipolygon");
 			if (allKeyValues.get("type").containsKey("boundary"))
 				this.typeBoundaryValue = allKeyValues.get("type").get("boundary").getRight();
 			else
-				LOG.info("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract", "type", "boundary");
+				LOG.info("DefaultTagInterpreter: key/value \"{}\"=\"{}\" not found in this db extract", "type", "boundary");
 			if (allKeyValues.get("type").containsKey("route"))
 				this.typeRouteValue = allKeyValues.get("type").get("route").getRight();
 			else
-				LOG.info("DefaultTagInterpreter: key/value \"%s\"=\"%s\" not found in this db extract", "type", "route");
+				LOG.info("DefaultTagInterpreter: key/value \"{}\"=\"{}\" not found in this db extract", "type", "route");
 		} else {
-			LOG.info("DefaultTagInterpreter: key \"%s\" not found in this db extract\n", "type");
+			LOG.info("DefaultTagInterpreter: key \"{}\" not found in this db extract\n", "type");
 		}
 		// we still need to also store relation area tags for isOldStyleMultipolygon() functionality!
 		Map<Integer, Set<Integer>> relAreaTags = new TreeMap<>();
