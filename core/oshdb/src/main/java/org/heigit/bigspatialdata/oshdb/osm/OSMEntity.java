@@ -105,6 +105,11 @@ public abstract class OSMEntity {
     return false;
   }
 
+  public boolean hasTagKey(String key, TagTranslator tagTranslator) {
+    Integer keyId = tagTranslator.key2Int(key);
+    return keyId != null && this.hasTagKey(keyId);
+  }
+
   /**
    * Tests if any a given key is present but ignores certain values. Useful when
    * looking for example "TagKey" != "no"
@@ -146,6 +151,11 @@ public abstract class OSMEntity {
       }
     }
     return false;
+  }
+
+  public boolean hasTagValue(String key, String value, TagTranslator tagTranslator) {
+    Pair<Integer, Integer> tagId = tagTranslator.tag2Int(key, value);
+    return tagId != null && this.hasTagValue(tagId.getKey(), tagId.getValue());
   }
 
   public boolean equalsTo(OSMEntity o) {

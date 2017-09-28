@@ -44,10 +44,21 @@ public class TagTranslator {
   }
 
   /**
-   * Get the ID for your tag.
+   * Get the IDs of a tag (key=value pair).
    *
-   * @param tag A Key-Value-Pair
-   * @return The correspondent Key-Value-Pair as Integer
+   * @param key the key of the tag
+   * @param value the value of the tag
+   * @return the corresponding key-value ID (integer) Pair, or null if it cannot be found
+   */
+  public Pair<Integer, Integer> tag2Int(String key, String value) {
+    return this.tag2Int(new ImmutablePair<>(key, value));
+  }
+
+  /**
+   * Get the IDs of a tag (key=value pair).
+   *
+   * @param tag a key-value pair
+   * @return the corresponding key-value ID (integer) Pair, or null if it cannot be found
    */
   public Pair<Integer, Integer> tag2Int(Pair<String, String> tag) {
     String keyString = tag.getKey();
@@ -92,10 +103,10 @@ public class TagTranslator {
   }
 
   /**
-   * Get Integer of a single key.
+   * Get ID (integer) of a tag key.
    *
-   * @param key
-   * @return
+   * @param key the tag key
+   * @return the corresponding integer ID of this key, or null if it cannot be found
    */
   public Integer key2Int(String key) {
     if (this.tagToInt.containsKey(key)) {
@@ -117,10 +128,10 @@ public class TagTranslator {
   }
 
   /**
-   * Get Integer of a single key.
+   * Get a tag key text (string) of a single key ID.
    *
-   * @param key
-   * @return
+   * @param key the ID (integer) of the tag key to fetch
+   * @return the text (string) of the corresponding tag key, or null if it cannot be found
    */
   public String key2String(Integer key) {
     if (this.tagToString.containsKey(key)) {
@@ -142,10 +153,21 @@ public class TagTranslator {
   }
 
   /**
-   * Get the String for your ID.
+   * Get a tags text from a key-value ID pair.
    *
-   * @param tag
-   * @return
+   * @param key the key of the tag (integer) to fetch
+   * @param value the value of the tag (integer) to fetch
+   * @return the key-value pair (of strings) of the corresponding tag, or null if it cannot be found
+   */
+  public Pair<String, String> tag2String(int key, int value) {
+    return this.tag2String(new ImmutablePair<>(key, value));
+  }
+
+  /**
+   * Get a tags text from a key-value ID pair.
+   *
+   * @param tag the key-value pair (of integers) to fetch
+   * @return the key-value pair (of strings) of the corresponding tag, or null if it cannot be found
    */
   public Pair<String, String> tag2String(Pair<Integer, Integer> tag) {
     String keyString = null;
@@ -196,8 +218,9 @@ public class TagTranslator {
    *
    * @param key The key to query all values for
    * @return a pair that holds the ID of the given key and all values with their
-   * respective string and integer
+   * respective string and integer, or null if it cannot be found
    */
+  @Deprecated
   public Pair<Integer, Map<String, Integer>> getAllValues(String key) {
     //search keyID
     Integer keyid = this.key2Int(key);
@@ -218,14 +241,13 @@ public class TagTranslator {
     }
 
     return new ImmutablePair<>(keyid, vals);
-
   }
 
   /**
-   * Get the ID for your Role.
+   * Get the ID for a role.
    *
-   * @param role
-   * @return
+   * @param role the role string to fetch
+   * @return the integer ID of this role, or null if it cannot be found
    */
   public Integer role2Int(String role) {
     if (this.roleToInt.containsKey(role)) {
@@ -249,10 +271,10 @@ public class TagTranslator {
   }
 
   /**
-   * Get the String for your Role.
+   * Get the string for a role ID.
    *
-   * @param role
-   * @return
+   * @param role the role ID (integer) to fetch
+   * @return the role's text (string), or null if it cannot be found
    */
   public String role2String(Integer role) {
     if (this.roleToString.containsKey(role)) {
