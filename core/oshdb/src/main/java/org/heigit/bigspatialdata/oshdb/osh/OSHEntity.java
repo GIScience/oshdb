@@ -147,6 +147,11 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     return result;
   }
 
+  public boolean hasTagKey(String key, TagTranslator tagTranslator) {
+    Integer keyId = tagTranslator.key2Int(key);
+    return keyId != null && this.hasTagKey(keyId);
+  }
+
   public boolean hasTagKey(int key) {
     // todo: replace with binary search (keys are sorted)
     for (int i = 0; i < keys.length; i++) {
