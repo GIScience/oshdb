@@ -47,7 +47,7 @@ public class OSHDB2IgniteTest implements Runnable {
     assertArrayEquals(caches.toArray(), ignite.cacheNames().toArray());
   }
    */
-  @Test
+  //@Test
   public void testMain() throws Exception {
     //At one point the config should point to a cluster that is seperate from already running clusters on the machine
     String[] args = new String[]{"-db", "./oshdb", "-ignite", "../../ignite-config.xml"};
