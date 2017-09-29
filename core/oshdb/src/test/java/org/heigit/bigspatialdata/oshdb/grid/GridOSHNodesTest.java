@@ -45,7 +45,7 @@ public class GridOSHNodesTest {
         countHNodes++;
       }
 
-      System.out.printf("hnodes:%d nodes:%d\n", countHNodes, countNodes);
+      //System.out.printf("hnodes:%d nodes:%d\n", countHNodes, countNodes);
 
     } catch (IOException e) {
       // TODO Auto-generated catch block

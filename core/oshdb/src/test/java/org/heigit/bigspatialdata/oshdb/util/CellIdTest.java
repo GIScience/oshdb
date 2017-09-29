@@ -25,7 +25,6 @@ public class CellIdTest {
   @Test
   public void testGetid() {
     try {
-      System.out.println("getid");
       CellId instance = new CellId(1,1L);
       long expResult = 1L;
       long result = instance.getId();
@@ -38,7 +37,6 @@ public class CellIdTest {
   @Test
   public void testGetzoomlevel() {
     try {
-      System.out.println("getzoomlevel");
       CellId instance = new CellId(1,1L);
       int expResult = 1;
       int result = instance.getZoomLevel();

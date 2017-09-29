@@ -223,7 +223,6 @@ public class OSMWayTest {
     String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]},\"refs\":[1,1]}";
 
     String result = instance.toGeoJSON(1L, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
-    System.out.println(result);
     assertEquals(expResult, result);
   }
 

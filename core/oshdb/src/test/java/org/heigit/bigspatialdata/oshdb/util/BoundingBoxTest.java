@@ -19,9 +19,7 @@ public class BoundingBoxTest {
 
   @Test
   public void testToString() {
-    System.out.println("toString");
     BoundingBox instance = new BoundingBox(0.0, 0.0, 90.0, 90.0);
-    System.out.println(instance.toString());
     String expResult = "(0.000000,90.000000) (0.000000,90.000000)";
     String result = instance.toString();
     assertEquals(expResult, result);

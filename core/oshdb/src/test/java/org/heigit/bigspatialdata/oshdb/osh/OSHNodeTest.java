@@ -56,10 +56,8 @@ public class OSHNodeTest {
     versions.add(new OSMNode(3718143950l, 1, 1440747974000l / 1000, 33637224, 3191558, new int[0], 85391416000l / 100, 27676640000l / 100));
 
     OSHNode hosm = OSHNode.build(versions);
-    for (OSMNode osm : hosm) {
-      System.out.println(osm);
-    }
 
+    /*
     System.out.println("Datasize:" + hosm.getData().length);
 
     hosm = hosm.rebase(0, 0, baseLongitude, baseLatitude);
@@ -67,6 +65,9 @@ public class OSHNodeTest {
     for (OSMNode osm : hosm) {
       System.out.println(osm);
     }
+    */
+
+    // todo: actually assert something in this test
 
   }
 

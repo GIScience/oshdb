@@ -46,17 +46,16 @@ public class GridOSHRelationsTest {
 
     GridOSHRelations hosmCell = GridOSHRelations.compact(cellId, cellLevel, baseId, 0, 0, 0, Arrays.asList(relation300, relation301));
 
-    hosmCell.forEach(osh -> {
+    /*hosmCell.forEach(osh -> {
       OSHRelation oshRelation = (OSHRelation) osh;
       try {
         System.out.printf("%d (%s) %d\n", oshRelation.getId(), print((List<OSHEntity>) (List) oshRelation.getNodes()), oshRelation.getWays().size());
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
+    });*/
 
-    });
-
+    // todo: actually assert something in this test
   }
 
   private String print(List<OSHEntity> entity) {

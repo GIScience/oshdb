@@ -25,7 +25,6 @@ public class XYGridTreeTest {
 
   @Test
   public void testGetIds() throws CellId.cellIdExeption {
-    System.out.println("getIds");
     double longitude = 0.0;
     double latitude = 0.0;
     XYGridTree instance = new XYGridTree(4);
@@ -48,7 +47,6 @@ public class XYGridTreeTest {
 
   @Test
   public void testGetInsertId() throws CellId.cellIdExeption {
-    System.out.println("getInsertId");
     BoundingBox bbox = new BoundingBox(0.0, 179.0, -90.0, 90.0);
     XYGridTree instance = new XYGridTree(4);
     CellId expResult = new CellId(2, 2L);
@@ -59,7 +57,6 @@ public class XYGridTreeTest {
 
   @Test
   public void testBbox2CellIds_MultiDimensionalNumericData_boolean() throws CellId.cellIdExeption {
-    System.out.println("bbox2CellIds");
     MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(0.0, 44.9), new NumericRange(0.0, 44.9)});
     boolean enlarge = false;
     XYGridTree instance = new XYGridTree(3);
@@ -81,7 +78,6 @@ public class XYGridTreeTest {
 
   @Test
   public void testBbox2CellIds_BoundingBox_boolean() throws CellId.cellIdExeption {
-    System.out.println("bbox2CellIds");
     BoundingBox bbox = new BoundingBox(0.0, 89, 0.0, 89);
     boolean enlarge = true;
     XYGridTree instance = new XYGridTree(3);
@@ -113,7 +109,6 @@ public class XYGridTreeTest {
 
   @Test
   public void testGetMultiZoomNeighbours() throws CellId.cellIdExeption {
-    System.out.println("getMultiZoomNeighbours");
     CellId center = new CellId(2, 6L);
     XYGridTree instance = new XYGridTree(3);
     Iterator<CellId> result = instance.getMultiZoomNeighbours(center).iterator();
@@ -145,7 +140,6 @@ public class XYGridTreeTest {
 
     while (result.hasNext()) {
       CellId now = result.next();
-      System.out.println(now);
       assertEquals(true, expectedCellIds.remove(now));
     }
     assertEquals(0, expectedCellIds.size());
