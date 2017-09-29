@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class FlatMapAggregateGroupedById {
+public class TestFlatMapAggregateGroupedById {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
@@ -35,7 +35,7 @@ public class FlatMapAggregateGroupedById {
 
   private final double DELTA = 1e-8;
 
-  public FlatMapAggregateGroupedById() throws Exception {
+  public TestFlatMapAggregateGroupedById() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {

@@ -25,7 +25,7 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 /**
  *
  */
-public class HelpersOSMEntitySnapshotView {
+public class TestHelpersOSMEntitySnapshotView {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
@@ -34,7 +34,7 @@ public class HelpersOSMEntitySnapshotView {
 
   private final double DELTA = 1e-8;
 
-  public HelpersOSMEntitySnapshotView() throws Exception {
+  public TestHelpersOSMEntitySnapshotView() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 

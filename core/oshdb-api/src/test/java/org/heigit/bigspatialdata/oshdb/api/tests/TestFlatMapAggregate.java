@@ -24,13 +24,15 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class FlatMapReduce {
+public class TestFlatMapAggregate {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps(2010, 2015, 1, 12);
 
-  public FlatMapReduce() throws Exception {
+  private final double DELTA = 1e-8;
+
+  public TestFlatMapAggregate() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 
@@ -40,23 +42,31 @@ public class FlatMapReduce {
 
   @Test
   public void test() throws Exception {
-    Set<Pair<Integer, Integer>> result = createMapReducerOSMContribution()
+    SortedMap<Long, Set<Pair<Integer, Integer>>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMap(contribution -> {
-          if (contribution.getEntityAfter().getId() != 617308093)
-            return new ArrayList<>();
-          List<Pair<Integer, Integer>> ret = new ArrayList<>();
-          int[] tags = contribution.getEntityAfter().getTags();
-          for (int i=0; i<tags.length; i+=2)
-            ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
-          return ret;
-        })
+        .flatMap(
+            contribution -> {
+              if (contribution.getEntityAfter().getId() != 617308093)
+                return new ArrayList<>();
+              List<Pair<Long, Pair<Integer, Integer>>> ret = new ArrayList<>();
+              int[] tags = contribution.getEntityAfter().getTags();
+              for (int i=0; i<tags.length; i+=2)
+                ret.add(new ImmutablePair<>(
+                    contribution.getEntityAfter().getId(),
+                    new ImmutablePair<>(tags[i], tags[i+1])
+                ));
+              return ret;
+            }
+        )
+        .aggregate(Pair::getKey)
+        .map(Pair::getValue)
         .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
-            (x,y) -> { HashSet<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
+            (x,y) -> { Set<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
         );
 
-    assertEquals(2, result.size());
+    assertEquals(1, result.entrySet().size());
+    assertEquals(2, result.get(617308093L).size());
   }
 }

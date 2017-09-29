@@ -5,8 +5,6 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -24,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class FlatMapAggregate {
+public class TestMapAggregate {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
@@ -32,7 +30,7 @@ public class FlatMapAggregate {
 
   private final double DELTA = 1e-8;
 
-  public FlatMapAggregate() throws Exception {
+  public TestMapAggregate() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 
@@ -42,31 +40,19 @@ public class FlatMapAggregate {
 
   @Test
   public void test() throws Exception {
-    SortedMap<Long, Set<Pair<Integer, Integer>>> result = createMapReducerOSMContribution()
+    SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMap(
-            contribution -> {
-              if (contribution.getEntityAfter().getId() != 617308093)
-                return new ArrayList<>();
-              List<Pair<Long, Pair<Integer, Integer>>> ret = new ArrayList<>();
-              int[] tags = contribution.getEntityAfter().getTags();
-              for (int i=0; i<tags.length; i+=2)
-                ret.add(new ImmutablePair<>(
-                    contribution.getEntityAfter().getId(),
-                    new ImmutablePair<>(tags[i], tags[i+1])
-                ));
-              return ret;
-            }
-        )
-        .aggregate(Pair::getKey)
-        .map(Pair::getValue)
+        .filter(entity -> entity.getId() == 617308093)
+        .aggregate(contribution -> contribution.getEntityAfter().getId())
+        .map(contribution -> contribution.getContributorUserId())
         .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
-            (x,y) -> { Set<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
+            (x,y) -> { Set<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
         );
 
     assertEquals(1, result.entrySet().size());
-    assertEquals(2, result.get(617308093L).size());
+    // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids
+    assertEquals(5, result.get(617308093L).size());
   }
 }

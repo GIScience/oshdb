@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class HelpersOSMContributionView {
+public class TestHelpersOSMContributionView {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
@@ -37,7 +37,7 @@ public class HelpersOSMContributionView {
 
   private final double DELTA = 1e-8;
 
-  public HelpersOSMContributionView() throws Exception {
+  public TestHelpersOSMContributionView() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 

@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class MapAggregateByTimestamp {
+public class TestMapAggregateByTimestamp {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
@@ -35,7 +35,7 @@ public class MapAggregateByTimestamp {
 
   private final double DELTA = 1e-8;
 
-  public MapAggregateByTimestamp() throws Exception {
+  public TestMapAggregateByTimestamp() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 

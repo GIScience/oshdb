@@ -27,13 +27,13 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class Collect {
+public class TestCollect {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps(2010, 2015, 1, 12);
 
-  public Collect() throws Exception {
+  public TestCollect() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 
