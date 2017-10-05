@@ -13,6 +13,7 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 import org.junit.Test;
 
 import java.util.*;
@@ -35,16 +36,16 @@ public class TestMapAggregate {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).filterByTag("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void test() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .filter(entity -> entity.getId() == 617308093)
+        .where(entity -> entity.getId() == 617308093)
         .aggregate(contribution -> contribution.getEntityAfter().getId())
-        .map(contribution -> contribution.getContributorUserId())
+        .map(OSMContribution::getContributorUserId)
         .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },

@@ -6,71 +6,66 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.ContributionType;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedMap;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
-abstract class TestMapReduce {
+public class TestFilter {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
-  private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps(2010, 2015, 1, 1);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps(2010, 2015, 1, 12);
 
-  TestMapReduce(OSHDB oshdb) throws Exception {
-    this.oshdb = oshdb;
+  private final double DELTA = 1e-8;
+
+  public TestFilter() throws Exception {
+    oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
   }
 
-  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
-  }
-
   @Test
-  public void testOSMContributionView() throws Exception {
+  public void testFilter() throws Exception {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .where(entity -> entity.getId() == 617308093)
+        .filter(contribution -> contribution.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)
-        .reduce(
-            HashSet::new,
-            (x,y) -> { x.add(y); return x; },
-            (x,y) -> { HashSet<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
-        );
+        .uniq();
 
-    /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
-    assertEquals(5, result.size());
+    // should be 3: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids, but last two didn't modify the node's coordinates
+    assertEquals(3, result.size());
   }
 
   @Test
-  public void testOSMEntitySnapshotView() throws Exception {
-    Set<Integer> result = createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps6)
+  public void testAggregateFilter() throws Exception {
+    SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
         .where(entity -> entity.getId() == 617308093)
-        .map(snapshot -> snapshot.getEntity().getUserId())
-        .reduce(
-            HashSet::new,
-            (x,y) -> { x.add(y); return x; },
-            (x,y) -> { HashSet<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
-        );
+        .aggregate(contribution -> contribution.getEntityAfter().getId())
+        .filter(contribution -> contribution.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
+        .map(OSMContribution::getContributorUserId)
+        .uniq();
 
-    assertEquals(3, result.size());
+    assertEquals(1, result.entrySet().size());
+    // should be 3: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids, but last two didn't modify the node's coordinates
+    assertEquals(3, result.get(617308093L).size());
   }
 }

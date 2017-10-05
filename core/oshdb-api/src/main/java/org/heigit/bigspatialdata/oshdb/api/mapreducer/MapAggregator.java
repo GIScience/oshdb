@@ -116,9 +116,23 @@ public class MapAggregator<U extends Comparable, X> {
    * @param f the filter function to call for each osm entity
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapAggregator<U, X> filter(SerializablePredicate<OSMEntity> f) {
-    this._mapReducer.filter(f);
+  public MapAggregator<U, X> where(SerializablePredicate<OSMEntity> f) {
+    this._mapReducer.where(f);
     return this;
+  }
+
+  /**
+   * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it should be considered for this analyis or not.
+   *
+   * Deprecated, use `where(f)` instead.
+   *
+   * @param f the filter function to call for each osm entity
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use `where(f)` instead
+   */
+  @Deprecated
+  public MapAggregator<U, X> filterByOSMEntity(SerializablePredicate<OSMEntity> f) {
+    return this.where(f);
   }
 
   /**
@@ -128,8 +142,8 @@ public class MapAggregator<U extends Comparable, X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapAggregator<U, X> filterByTag(String key) throws Exception {
-    this._mapReducer.filterByTag(key);
+  public MapAggregator<U, X> where(String key) throws Exception {
+    this._mapReducer.where(key);
     return this;
   }
 
@@ -141,9 +155,39 @@ public class MapAggregator<U extends Comparable, X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapAggregator<U, X> filterByTag(String key, String value) throws Exception {
-    this._mapReducer.filterByTag(key, value);
+  public MapAggregator<U, X> where(String key, String value) throws Exception {
+    this._mapReducer.where(key, value);
     return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   *
+   * Deprecated, use `where(key)` instead.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   * @deprecated use `where(key)` instead
+   */
+  @Deprecated
+  public MapAggregator<U, X> filterByTag(String key) throws Exception {
+    return this.where(key);
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   *
+   * Deprecated, use `where(key,value)` instead.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   * @deprecated use `where(key,value)` instead
+   */
+  @Deprecated
+  public MapAggregator<U, X> filterByTag(String key, String value) throws Exception {
+    return this.where(key, value);
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -357,6 +401,17 @@ public class MapAggregator<U extends Comparable, X> {
       return results;
     });
     return (MapAggregator<U, R>)this;
+  }
+
+  /**
+   * Adds a custom arbitrary filter that gets executed in the current transformation chain.
+   *
+   * @param f the filter function that determines if the respective data should be passed on (when f returns true) or discarded (when f returns false)
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapAggregator<U, X> filter(SerializablePredicate<X> f) {
+    this._mapReducer.filter(data -> f.test(data.getValue()));
+    return this;
   }
 
   // -------------------------------------------------------------------------------------------------------------------

@@ -33,7 +33,7 @@ public class TestForEach {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).filterByTag("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).where("building", "yes").areaOfInterest(bbox);
   }
 
   @Test

@@ -266,9 +266,23 @@ public abstract class MapReducer<X> {
    * @param f the filter function to call for each osm entity
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<X> filter(SerializablePredicate<OSMEntity> f) {
+  public MapReducer<X> where(SerializablePredicate<OSMEntity> f) {
     this._filters.add(f);
     return this;
+  }
+
+  /**
+   * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it should be considered for this analyis or not.
+   *
+   * Deprecated, use `where(f)` instead
+   *
+   * @param f the filter function to call for each osm entity
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated
+   */
+  @Deprecated
+  public MapReducer<X> filterByOSMEntity(SerializablePredicate<OSMEntity> f) {
+    return this.where(f);
   }
 
   /**
@@ -278,7 +292,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<X> filterByTag(String key) throws Exception {
+  public MapReducer<X> where(String key) throws Exception {
     Integer keyId = this.getTagKeyId(key);
     if (keyId == null) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
@@ -294,15 +308,31 @@ public abstract class MapReducer<X> {
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
    *
-   * Deprecated, use `filterByTag(key)` instead.
+   * Deprecated, use `where(key)` instead.
    *
    * @param key the tag key to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
+   * @deprecated
+   */
+  @Deprecated
+  public MapReducer<X> filterByTag(String key) throws Exception {
+    return this.where(key);
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   *
+   * Deprecated, use `where(key)` instead.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   * @deprecated
    */
   @Deprecated
   public MapReducer<X> filterByTagKey(String key) throws Exception {
-    return this.filterByTag(key);
+    return this.where(key);
   }
 
   /**
@@ -312,6 +342,31 @@ public abstract class MapReducer<X> {
    * @param value the tag value to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
+   */
+  public MapReducer<X> where(String key, String value) throws Exception {
+    Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
+    if (keyValueId == null) {
+      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+      this._preFilters.add(ignored -> false);
+      this._filters.add(ignored -> false);
+      return this;
+    }
+    int keyId = keyValueId.getKey();
+    int valueId = keyValueId.getValue();
+    this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
+    return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
+   *
+   * Deprecated, use `where(key, value)` instead.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @param value the tag value to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   * @deprecated
    */
   public MapReducer<X> filterByTag(String key, String value) throws Exception {
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
@@ -330,16 +385,17 @@ public abstract class MapReducer<X> {
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
    *
-   * Deprecated, use `filterByTag(key, value)` instead.
+   * Deprecated, use `where(key, value)` instead.
    *
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
+   * @deprecated
    */
   @Deprecated
   public MapReducer<X> filterByTagValue(String key, String value) throws Exception {
-    return this.filterByTag(key, value);
+    return this.where(key, value);
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -370,6 +426,19 @@ public abstract class MapReducer<X> {
     this._mappers.add(flatMapper);
     this._flatMappers.add(flatMapper);
     return (MapReducer<R>)this;
+  }
+
+  /**
+   * Adds a custom arbitrary filter that gets executed in the current transformation chain.
+   *
+   * @param f the filter function that determines if the respective data should be passed on (when f returns true) or discarded (when f returns false)
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<X> filter(SerializablePredicate<X> f) {
+    return this.flatMap(data -> f.test(data)
+        ? Collections.singletonList(data)
+        : Collections.emptyList()
+    );
   }
 
   // -------------------------------------------------------------------------------------------------------------------

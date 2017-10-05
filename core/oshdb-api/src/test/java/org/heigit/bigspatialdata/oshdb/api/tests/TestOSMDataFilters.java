@@ -18,7 +18,6 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -27,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class TestFilters {
+public class TestOSMDataFilters {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
@@ -37,7 +36,7 @@ public class TestFilters {
 
   private final double DELTA = 1e-8;
 
-  public TestFilters() throws Exception {
+  public TestOSMDataFilters() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 
@@ -76,7 +75,7 @@ public class TestFilters {
   @Test
   public void tagKey() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
-        .filterByTag("building")
+        .where("building")
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)
         .aggregate(snapshot -> snapshot.getEntity().getType())
@@ -88,7 +87,7 @@ public class TestFilters {
   @Test
   public void tagKeyValue() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .filterByTag("highway", "residential")
+        .where("highway", "residential")
         .osmTypes(OSMType.WAY)
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)
@@ -99,8 +98,8 @@ public class TestFilters {
   @Test
   public void tagMultiple() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
-        .filterByTag("name")
-        .filterByTag("highway")
+        .where("name")
+        .where("highway")
         .osmTypes(OSMType.WAY)
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)
@@ -118,7 +117,7 @@ public class TestFilters {
   @Test
   public void custom() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
-        .filter(entity -> entity.getVersion() > 2)
+        .where(entity -> entity.getVersion() > 2)
         .osmTypes(OSMType.WAY)
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)

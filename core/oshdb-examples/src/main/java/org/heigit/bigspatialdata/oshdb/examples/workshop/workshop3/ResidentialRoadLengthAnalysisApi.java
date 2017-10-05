@@ -22,8 +22,8 @@ public class ResidentialRoadLengthAnalysisApi {
         .areaOfInterest(new BoundingBox(8.6528,8.7294, 49.3683,49.4376))
         .timestamps(new OSHDBTimestamps(2008, 2017, 1, 12))
         .osmTypes(OSMType.WAY)
-        .filterByTag("highway", "residential")
-        .filterByTag("maxspeed")
+        .where("highway", "residential")
+        .where("maxspeed")
         .aggregateByTimestamp()
         .sum(snapshot -> Geo.lengthOf(snapshot.getGeometry()));
 
