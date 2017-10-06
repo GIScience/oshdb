@@ -29,9 +29,9 @@ public class TestMapAggregateByTimestamp {
   private final OSHDB oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
-  private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps(2014, 2014, 1, 1);
-  private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps(2014, 2015, 1, 1);
-  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps(2010, 2015, 1, 12);
+  private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
+  private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2015-01-01");
+  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
   private final double DELTA = 1e-8;
 

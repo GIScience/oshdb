@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -19,6 +18,8 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.api.utils.ISODateTimeParser;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -70,7 +71,7 @@ public abstract class MapReducer<X> {
   protected TagInterpreter _tagInterpreter = null;
 
   // settings and filters
-  private OSHDBTimestamps _tstamps = null;
+  protected OSHDBTimestampList _tstamps = new OSHDBTimestamps("2008-01-01", (new OSHDBTimestamp((new Date()).getTime()/1000)).formatIsoDateTime(), OSHDBTimestamps.Interval.MONTHLY);
   protected BoundingBox _bboxFilter = null;
   protected Polygon _polyFilter = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
@@ -81,6 +82,7 @@ public abstract class MapReducer<X> {
 
   // basic constructor
   protected MapReducer(OSHDB oshdb) {
+    System.out.println((new OSHDBTimestamp((new Date()).getTime()/1000)).formatIsoDateTime());
     this._oshdb = oshdb;
   }
 
@@ -225,16 +227,87 @@ public abstract class MapReducer<X> {
 
   /**
    * Set the timestamps for which to perform the analysis.
+   *
    * Depending on the *View*, this has slightly different semantics:
    * * For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
    * * For the OSMContributionView it will set the time interval in which to look for osm contributions (only the first and last
    *   timestamp of this list are contributing). Additionally, the timestamps are used in the `aggregateByTimestamps` functionality.
    *
-   * @param tstamps the timestamps to do the analysis for
+   * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the timestamps to do the analysis for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<X> timestamps(OSHDBTimestamps tstamps) {
+  public MapReducer<X> timestamps(OSHDBTimestampList tstamps) {
     this._tstamps = tstamps;
+    return this;
+  }
+
+  /**
+   * Set the timestamps for which to perform the analysis in a regular interval between a start and end date.
+   *
+   * See {@link #timestamps(OSHDBTimestampList)} for further information.
+   *
+   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
+   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
+   * @param isoDateStart an ISO 8601 period string representing the (regular) interval between the timestamps to be used in the analysis; for example "P1M" can be used for a monthly interval
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd, String isoPeriod) {
+    this._tstamps = new OSHDBTimestamps(isoDateStart, isoDateEnd, isoPeriod);
+    return this;
+  }
+
+  /**
+   * Set the timestamps for which to perform the analysis in a regular interval between a start and end date.
+   *
+   * See {@link #timestamps(OSHDBTimestampList)} for further information.
+   *
+   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
+   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
+   * @param isoDateStart the interval between the timestamps to be used in the analysis
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd, OSHDBTimestamps.Interval interval) {
+    this._tstamps = new OSHDBTimestamps(isoDateStart, isoDateEnd, interval);
+    return this;
+  }
+
+  /**
+   * Sets two timestamps (start and end date) for which to perform the analysis.
+   *
+   * Useful in combination with the OSMContributionView when not performing further aggregation by timestamp.
+   *
+   * See {@link #timestamps(OSHDBTimestampList)} for further information.
+   *
+   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
+   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd) {
+    this._tstamps = new OSHDBTimestamps(isoDateStart, isoDateEnd);
+    return this;
+  }
+
+  /**
+   * Sets multiple arbitrary timestamps for which to perform the analysis.
+   *
+   * See {@link #timestamps(OSHDBTimestampList)} for further information.
+   *
+   * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
+   * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the analysis
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  public MapReducer<X> timestamps(String isoDateFirst, String... isoDateMore) {
+    List<Long> timestamps = new ArrayList<>(2 + isoDateMore.length);
+    try {
+      timestamps.add(ISODateTimeParser.parseISODateTime(isoDateFirst).toEpochSecond());
+      for (String isoDate : isoDateMore) {
+        timestamps.add(ISODateTimeParser.parseISODateTime(isoDate).toEpochSecond());
+      }
+    } catch(Exception e) {
+      LOG.error("unable to parse ISO date string: " + e.getMessage());
+    }
+    Collections.sort(timestamps);
+    this._tstamps = () -> timestamps;
     return this;
   }
 
@@ -491,7 +564,7 @@ public abstract class MapReducer<X> {
     if (this._grouping != Grouping.NONE)
       throw new UnsupportedOperationException("aggregateByTimestamp cannot be used together with the groupById() functionality");
 
-    final List<OSHDBTimestamp> timestamps = this._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
+    final List<OSHDBTimestamp> timestamps = this._tstamps.getOSHDBTimestamps();
 
     // by timestamp indexing function -> for some data views we need to match the input data to the list
     SerializableFunction<X, OSHDBTimestamp> indexer;
@@ -924,11 +997,6 @@ public abstract class MapReducer<X> {
       return Collections.emptyList();
     }
     return grid.bbox2CellIds(this._bboxFilter, true);
-  }
-
-  // get lists of timestamps from the OSHTimestamps object
-  protected List<Long> _getTimestamps() {
-    return this._tstamps.getTimestamps();
   }
 
   // concatenates all applied `map` functions

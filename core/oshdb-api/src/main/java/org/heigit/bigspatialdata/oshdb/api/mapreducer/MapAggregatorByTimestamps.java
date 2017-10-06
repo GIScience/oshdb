@@ -56,7 +56,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
   public <S> SortedMap<OSHDBTimestamp, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     SortedMap<OSHDBTimestamp, S> result = super.reduce(identitySupplier, accumulator, combiner);
     // fill nodata entries with "0"
-    final List<OSHDBTimestamp> timestamps = this._mapReducer._getTimestamps().stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
+    final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.getOSHDBTimestamps();
     // pop last element from timestamps list if we're dealing with OSMContributions (where the timestamps list defines n-1 time intervals)
     if (this._mapReducer._forClass.equals(OSMContribution.class))
       timestamps.remove(timestamps.size()-1);

@@ -145,7 +145,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       return this._mapReduceCellsOSMContributionOnIgniteCache(
           cacheName,
           cellIdsList,
-          this._getTimestamps(),
+          this._tstamps.getTimestamps(),
           this._bboxFilter,
           this._polyFilter,
           this._getPreFilter(),
@@ -270,7 +270,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       return this._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
           cacheName,
           cellIdsList,
-          this._getTimestamps(),
+          this._tstamps.getTimestamps(),
           this._bboxFilter,
           this._polyFilter,
           this._getPreFilter(),
@@ -381,7 +381,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       return this._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
           cacheName,
           cellIdsList,
-          this._getTimestamps(),
+          this._tstamps.getTimestamps(),
           this._bboxFilter,
           this._polyFilter,
           this._getPreFilter(),
@@ -494,7 +494,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       return this._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
           cacheName,
           cellIdsList,
-          this._getTimestamps(),
+          this._tstamps.getTimestamps(),
           this._bboxFilter,
           this._polyFilter,
           this._getPreFilter(),

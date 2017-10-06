@@ -33,47 +33,46 @@ public class ISODateTimeParser {
    * @throws Exception
    */
   public static ZonedDateTime parseISODateTime(String isoDateTimeString) throws Exception{
-    
     ZonedDateTime zdt = null;
     int length = isoDateTimeString.length();
     
     switch (length) {
     case 4:
-//      pattern = "uuuu";
+      // pattern = "uuuu";
       zdt = Year.parse(isoDateTimeString).atDay(1).atStartOfDay(ZoneId.of("Z"));
       
       break;
     case 6:
-      //pattern = "uuuuMM";
+      // pattern = "uuuuMM";
       zdt = LocalDate.parse(isoDateTimeString+"01", DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay(ZoneId.of("Z"));
       break;
     case 7:
-//      pattern = "uuuu-MM";
+      // pattern = "uuuu-MM";
       zdt = YearMonth.parse(isoDateTimeString).atDay(1).atStartOfDay(ZoneId.of("Z"));
       break;
     case 8:
-//      pattern = "uuuuMMDD";
+      // pattern = "uuuuMMDD";
       zdt = LocalDate.parse(isoDateTimeString, DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay(ZoneId.of("Z"));;
       break;
     case 10:
-//      pattern = "uuuu-MM-DD";
+      // pattern = "uuuu-MM-DD";
       zdt = LocalDate.parse(isoDateTimeString, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneId.of("Z"));
       break;
-    //with time
+      //with time
     case 13:
-//      pattern = "uuuu-MM-DDTHH";
+      // pattern = "uuuu-MM-DDTHH";
       zdt = LocalDateTime.parse(isoDateTimeString+":00:00Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
       break;
     case 16:
-//      pattern = "uuuu-MM-DDTHH:MM";
+      // pattern = "uuuu-MM-DDTHH:MM";
       zdt = LocalDateTime.parse(isoDateTimeString+":00Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
       break;
     case 19:
-//      pattern = "uuuu-MM-DDTHH:MM:ss";
+      // pattern = "uuuu-MM-DDTHH:MM:ss";
       zdt = LocalDateTime.parse(isoDateTimeString+"Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
       break;
     case 20:
-//      pattern = "uuuu-MM-DDTHH:MM:ssZ";
+      // pattern = "uuuu-MM-DDTHH:MM:ssZ";
       zdt = ZonedDateTime.parse(isoDateTimeString, DateTimeFormatter.ISO_DATE_TIME);
       break;
     default:
@@ -81,7 +80,6 @@ public class ISODateTimeParser {
     }
     
     return zdt;
-     
   }
 
     /**
@@ -102,12 +100,12 @@ public class ISODateTimeParser {
      * @return HashMap with a Period object and a Duration object
      * @throws Exception
      */
-    public static Map<String, Object> parseISOPeriod (String isoPeriodString) throws Exception{
+    public static Map<String, Object> parseISOPeriod(String isoPeriodString) throws Exception{
       
       Period period = Period.ZERO;
       Duration duration = Duration.ZERO;
       
-      //  isoPeriod should follow the ISO 8601 period notation without startdate 
+      //  isoPeriod should follow the ISO 8601 period notation without startdate
       // P ^= Period
       // Y =  Years
       // M =  Month
@@ -132,26 +130,17 @@ public class ISODateTimeParser {
       boolean isValid = matcher.matches();
       
       if (!isValid) {
-        throw new Exception("isoPeriodString is not valid: " + isoPeriodString +"\n" +
-                            "Format: P[yY][mM][dD][T[hH][mM][sS]]");
+        throw new Exception("isoPeriodString is not valid: " + isoPeriodString + " (Format: P[yY][mM][dD][T[hH][mM][sS]])");
       }
-                                       
-      
-      System.out.println(isoPeriodString + " isValid: " + isValid);
       
       boolean hasDateAndTimeComponent = Pattern.matches("P.+T.+", isoPeriodString);
       boolean hasOnlyTimeComponent = isoPeriodString.startsWith("PT");
-      
-      System.out.println("hasDateAndTimeComponent: " + hasDateAndTimeComponent);
-      System.out.println("hasOnlyTimeComponent: " + hasOnlyTimeComponent);
-      System.out.println("hasOnlyDateComponent: " + (!hasOnlyTimeComponent && !hasDateAndTimeComponent));
       
       if (hasDateAndTimeComponent){
         String[] periodParts = isoPeriodString.split("T");
         period = Period.parse(periodParts[0]);
         duration = Duration.parse("PT"+periodParts[1]);
-      }
-      else if (hasOnlyTimeComponent) {
+      } else if (hasOnlyTimeComponent) {
         duration = Duration.parse(isoPeriodString);
       } else { //hasOnlyDateComponent
         period = Period.parse(isoPeriodString);
@@ -162,12 +151,10 @@ public class ISODateTimeParser {
         throw new Exception("the specified period has a lenght of ZERO: " + isoPeriodString);
       }
       
-      Map<String, Object> result = new HashMap<String,Object>();
+      Map<String, Object> result = new HashMap<>();
       result.put("period", period);
       result.put("duration", duration);
       
       return result;
-      
     }
-  
 }

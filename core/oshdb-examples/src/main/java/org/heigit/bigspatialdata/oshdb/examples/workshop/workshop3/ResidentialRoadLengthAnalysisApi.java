@@ -20,7 +20,7 @@ public class ResidentialRoadLengthAnalysisApi {
     // query
     SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotView.on(oshdb).keytables(oshdbKeytables)
         .areaOfInterest(new BoundingBox(8.6528,8.7294, 49.3683,49.4376))
-        .timestamps(new OSHDBTimestamps(2008, 2017, 1, 12))
+        .timestamps("2008-01-01", "2017-12-01", OSHDBTimestamps.Interval.MONTHLY)
         .osmTypes(OSMType.WAY)
         .where("highway", "residential")
         .where("maxspeed")

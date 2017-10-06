@@ -6,6 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -70,21 +71,6 @@ public class MapAggregator<U extends Comparable, X> {
    */
   public MapAggregator<U, X> areaOfInterest(Polygon polygonFilter) {
     this._mapReducer.areaOfInterest(polygonFilter);
-    return this;
-  }
-
-  /**
-   * Set the timestamps for which to perform the analysis.
-   * Depending on the *View*, this has slightly different semantics:
-   * * For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
-   * * For the OSMContributionView it will set the time interval in which to look for osm contributions (only the first and last
-   *   timestamp of this list are contributing). Additionally, the timestamps are used in some of the `*aggregateByTimestamps` functions.
-   *
-   * @param tstamps the timestamps to do the analysis for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   */
-  public MapAggregator<U, X> timestamps(OSHDBTimestamps tstamps) {
-    this._mapReducer.timestamps(tstamps);
     return this;
   }
 
