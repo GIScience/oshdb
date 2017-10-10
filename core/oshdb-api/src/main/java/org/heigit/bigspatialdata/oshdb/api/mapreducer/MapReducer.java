@@ -82,7 +82,6 @@ public abstract class MapReducer<X> {
 
   // basic constructor
   protected MapReducer(OSHDB oshdb) {
-    System.out.println((new OSHDBTimestamp((new Date()).getTime()/1000)).formatIsoDateTime());
     this._oshdb = oshdb;
   }
 
