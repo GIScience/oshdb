@@ -814,7 +814,7 @@ public abstract class MapReducer<X> {
         .reduce(
             () -> new PayloadWithWeight<>(0.0,0.0),
             (acc, cur) -> {
-              acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue());
+              acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue()*cur.getWeight());
               acc.weight += cur.getWeight();
               return acc;
             },
