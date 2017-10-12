@@ -78,7 +78,7 @@ public class TestOSMDataFilters {
         .where("building")
         .areaOfInterest(bbox.getGeometry())
         .timestamps(timestamps1)
-        .aggregate(snapshot -> snapshot.getEntity().getType())
+        .aggregateBy(snapshot -> snapshot.getEntity().getType())
         .count();
     assertEquals(1, result.get(OSMType.RELATION).intValue());
     assertEquals(42, result.get(OSMType.WAY).intValue());

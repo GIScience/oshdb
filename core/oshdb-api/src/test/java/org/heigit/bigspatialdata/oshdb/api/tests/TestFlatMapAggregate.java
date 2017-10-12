@@ -58,7 +58,7 @@ public class TestFlatMapAggregate {
               return ret;
             }
         )
-        .aggregate(Pair::getKey)
+        .aggregateBy(Pair::getKey)
         .map(Pair::getValue)
         .reduce(
             HashSet::new,

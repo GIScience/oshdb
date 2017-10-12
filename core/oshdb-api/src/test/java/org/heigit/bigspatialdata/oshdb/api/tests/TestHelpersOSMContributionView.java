@@ -77,7 +77,7 @@ public class TestHelpersOSMContributionView {
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
         .where("building", "yes")
-        .aggregate(contribution -> contribution.getContributionTypes().toString())
+        .aggregateBy(contribution -> contribution.getContributionTypes().toString())
         .sum(contribution -> 1);
 
     assertEquals(42, result4.get(EnumSet.of(ContributionType.CREATION).toString()));
@@ -115,7 +115,7 @@ public class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Integer> result4 = this.createMapReducer()
         .timestamps(timestamps2)
-        .aggregate(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
+        .aggregateBy(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
         .count();
 
     assertEquals(4, result4.get(true).intValue());
@@ -146,7 +146,7 @@ public class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .aggregate(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION))
+        .aggregateBy(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION))
         .average(contribution -> contribution.getEntityAfter().getId() % 2);
 
     assertEquals(0.5, result4.get(true).doubleValue(), DELTA);
@@ -174,7 +174,7 @@ public class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .aggregate(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION))
+        .aggregateBy(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION))
         .weightedAverage(contribution -> new WeightedValue<>(contribution.getEntityAfter().getId() % 2, contribution.getEntityAfter().getId() % 2));
 
     assertEquals(1.0, result4.get(true).doubleValue(), DELTA);
@@ -215,7 +215,7 @@ public class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Set<Long>> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .aggregate(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
+        .aggregateBy(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
         .uniq(contribution -> contribution.getEntityAfter().getId());
 
     assertEquals(21, result4.get(true).size());

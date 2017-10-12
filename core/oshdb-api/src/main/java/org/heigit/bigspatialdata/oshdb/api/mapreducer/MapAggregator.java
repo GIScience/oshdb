@@ -5,8 +5,6 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -44,6 +42,11 @@ public class MapAggregator<U extends Comparable, X> {
         data
     ));
   }
+
+  /**
+   * empty dummy constructor, used by MapBiAggregatorByTimestamps (which sets the _mapReducer property by itself)
+   */
+  MapAggregator() {}
 
   // -------------------------------------------------------------------------------------------------------------------
   // Filtering methods

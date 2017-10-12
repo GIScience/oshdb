@@ -79,7 +79,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .where("building", "yes")
-        .aggregate(snapshot -> snapshot.getEntity().getId() % 2 == 0)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .sum(snapshot -> 1);
 
     assertEquals(21, result4.get(true));
@@ -125,7 +125,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .where("building", "yes")
-        .aggregate(snapshot -> snapshot.getEntity().getId() % 2 == 0)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .count();
 
     assertEquals(21, result4.get(true).intValue());
@@ -162,7 +162,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .where("building", "yes")
-        .aggregate(snapshot -> snapshot.getEntity().getId() % 2 == 0)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .average(snapshot -> snapshot.getEntity().getId() % 2);
 
     assertEquals(0.0, result4.get(true).doubleValue(), DELTA);
@@ -197,7 +197,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .where("building", "yes")
-        .aggregate(snapshot -> snapshot.getEntity().getId() % 2 == 0)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .weightedAverage(snapshot -> new WeightedValue<>(snapshot.getEntity().getId() % 2, 2 * (snapshot.getEntity().getId() % 2)));
 
     assertEquals(Double.NaN, result4.get(true).doubleValue(), DELTA);
@@ -243,7 +243,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
         .where("building", "yes")
-        .aggregate(snapshot -> snapshot.getEntity().getId() % 2 == 0)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .uniq(snapshot -> snapshot.getEntity().getId());
 
     assertEquals(21, result4.get(true).size());
