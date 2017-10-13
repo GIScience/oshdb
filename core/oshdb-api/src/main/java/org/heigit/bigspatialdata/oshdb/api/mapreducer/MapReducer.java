@@ -20,7 +20,6 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.ISODateTimeParser;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestampList;
-import org.heigit.bigspatialdata.oshdb.api.utils.tilings.TileId;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
