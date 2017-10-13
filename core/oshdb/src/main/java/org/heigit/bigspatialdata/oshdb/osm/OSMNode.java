@@ -1,19 +1,23 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Locale;
+import java.util.Set;
+
 import javax.json.JsonObjectBuilder;
 
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
-  public static final double GEOM_PRECISION = .0000001; // osm only support 7 decimals
+  public static final double GEOM_PRECISION       =  .0000001; // osm only support 7 decimals
+  public static final long GEOM_PRECISION_TO_LONG = 1_0000000L;
 
   private static final long serialVersionUID = 1L;
 
