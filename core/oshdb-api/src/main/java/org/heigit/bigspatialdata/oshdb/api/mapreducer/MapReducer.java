@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *
  * Finally, one can either use one of the pre-defined result-generating functions (e.g. `sum`, `count`, `average`, `uniq`), or specify a custom `reduce` procedure.
  *
- * If one wants to get results that are aggregated by timestamp (or some other index), one can use the `aggregateByTimestamp` or `aggregate` functionality that automatically handles the grouping of the output data.
+ * If one wants to get results that are aggregated by timestamp (or some other index), one can use the `aggregateByTimestamp` or `aggregateBy` functionality that automatically handles the grouping of the output data.
  *
  * For more complex analyses, it is also possible to enable the grouping of the input data by the respective OSM ID. This can be used to view at the whole history of entities at once.
  *
@@ -544,6 +544,21 @@ public abstract class MapReducer<X> {
    * @param <U> the data type of the values used to aggregate the output. has to be a comparable type
    * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
    */
+  public <U extends Comparable> MapAggregator<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
+    return new MapAggregator<U, X>(this, indexer);
+  }
+
+  /**
+   * Sets a custom aggregation function that is used to group output results into.
+   *
+   * Deprecated, use `aggregateBy` instead.
+   *
+   * @param indexer a function that will be called for each input element and returns a value that will be used to group the results by
+   * @param <U> the data type of the values used to aggregate the output. has to be a comparable type
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
+   * @deprecated use `aggregateBy` instead.
+   */
+  @Deprecated
   public <U extends Comparable> MapAggregator<U, X> aggregate(SerializableFunction<X, U> indexer) {
     return new MapAggregator<U, X>(this, indexer);
   }
@@ -559,7 +574,8 @@ public abstract class MapReducer<X> {
    * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
    * @throws UnsupportedOperationException if this is called when the `groupById()` mode has been activated
    */
-  public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp() throws UnsupportedOperationException {
+  //public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp() throws UnsupportedOperationException {
+  public MapAggregatorByTimestamps<X> aggregateByTimestamp() throws UnsupportedOperationException {
     if (this._grouping != Grouping.NONE)
       throw new UnsupportedOperationException("aggregateByTimestamp cannot be used together with the groupById() functionality");
 
@@ -605,6 +621,10 @@ public abstract class MapReducer<X> {
       return new MapAggregatorByTimestamps<X>(this, indexer);
     }
   }
+
+  /*public MapAggregator<TileId, X> aggregateByTiles(SerializableFunction<Geometry>) {
+
+  }*/
 
   // -------------------------------------------------------------------------------------------------------------------
   // Exposed generic reduce.
@@ -814,7 +834,7 @@ public abstract class MapReducer<X> {
         .reduce(
             () -> new PayloadWithWeight<>(0.0,0.0),
             (acc, cur) -> {
-              acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue());
+              acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue()*cur.getWeight());
               acc.weight += cur.getWeight();
               return acc;
             },

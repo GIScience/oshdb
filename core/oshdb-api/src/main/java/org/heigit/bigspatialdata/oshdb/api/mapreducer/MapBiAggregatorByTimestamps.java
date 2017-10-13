@@ -1,32 +1,38 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 
 import java.util.*;
 
 /**
- * A special variant of a MapAggregator, with improved handling of timestamp-based aggregation:
+ * A special variant of a MapAggregator, that does aggregation by two indexes: one timestamp index and another, arbitrary one.
  *
- * It automatically fills timestamps with no data with "zero"s (which for example results in 0's in the case os `sum()` or `count()`, or `NaN` when using `average()`).
+ * Like MapAggregateByTimestamp, this one can also automatically fill timestamps with no data with "zero" values (which for example results in actual 0's in the case os `sum()` or `count()` operations, or `NaN` when using `average()`).
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
+ * @param <U> the type of the second index used to group results
  */
-public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> {
+public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<TimestampAndOtherIndex<U>, X> {
   private boolean _zerofill = true;
 
   /**
-   * basic constructor
+   * constructor that takes an existing mapAggregatorByTimestamps object and adds a second index to it.
    *
-   * @param mapReducer mapReducer object which will be doing all actual calculations
-   * @param indexer function that returns the timestamp value into which to aggregate the respective result
+   * @param timeMapAggregator already existing mapAggregatorByTimestamps object that should be aggregated by another index as well
+   * @param indexer function that returns the index value by which to aggregate the results as well
    */
-  MapAggregatorByTimestamps(MapReducer<X> mapReducer, SerializableFunction<X, OSHDBTimestamp> indexer) {
-    super(mapReducer, indexer);
+  MapBiAggregatorByTimestamps(MapAggregatorByTimestamps<X> timeMapAggregator, SerializableFunction<X, U> indexer) {
+    super();
+    this._mapReducer = timeMapAggregator._mapReducer.map(data -> new MutablePair<TimestampAndOtherIndex<U>, X>(
+        new TimestampAndOtherIndex<U>(
+            data.getKey(),
+            indexer.apply(data.getValue())
+        ),
+        data.getValue()
+    ));
   }
 
   /**
@@ -37,7 +43,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * @param zerofill the enabled/disabled state of the zero-filling feature
    * @return this mapAggregator object
    */
-  public MapAggregatorByTimestamps<X> zerofill(boolean zerofill) {
+  public MapBiAggregatorByTimestamps<U, X> zerofill(boolean zerofill) {
     this._zerofill = zerofill;
     return this;
   }
@@ -66,26 +72,43 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * @throws Exception
    */
   @Override
-  public <S> SortedMap<OSHDBTimestamp, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    SortedMap<OSHDBTimestamp, S> result = super.reduce(identitySupplier, accumulator, combiner);
+  public <S> SortedMap<TimestampAndOtherIndex<U>, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    SortedMap<TimestampAndOtherIndex<U>, S> result = super.reduce(identitySupplier, accumulator, combiner);
     if (!this._zerofill) return result;
     // fill nodata entries with "0"
     final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.getOSHDBTimestamps();
     // pop last element from timestamps list if we're dealing with OSMContributions (where the timestamps list defines n-1 time intervals)
     if (this._mapReducer._forClass.equals(OSMContribution.class))
       timestamps.remove(timestamps.size()-1);
-    timestamps.forEach(ts -> result.putIfAbsent(ts, identitySupplier.get()));
+    HashSet<U> seen = new HashSet<>();
+    (new TreeSet<>(result.keySet())).forEach(index -> {
+      if (!seen.contains(index.getOtherIndex())) {
+        timestamps.forEach(ts -> {
+          TimestampAndOtherIndex<U> potentiallyMissingIndex = new TimestampAndOtherIndex<>(ts, index.getOtherIndex());
+          result.putIfAbsent(potentiallyMissingIndex, identitySupplier.get());
+        });
+        seen.add(index.getOtherIndex());
+      }
+    });
     return result;
   }
 
   /**
-   * Aggregates the results by a second index as well, in addition to the timestamps.
+   * Helper function that converts the dual-index data structure returned by aggregation operations on this object to a nested Map structure,
+   * which can be easier to process further on.
    *
-   * @param indexer a function the returns the values that should be used as an additional index on the aggregated results
-   * @param <U> the (arbitrary) data type of this index
-   * @return a special MapAggregator object that performs aggregation by two separate indices
+   * @param result the "flat" result data structure that should be converted to a nested structure
+   * @param <A> an arbitrary data type, used for the data value items
+   * @param <U> an arbitrary data type, used for the index'es key items
+   * @return a nested data structure, where for each index part there is a separate level of nested maps
    */
-  public <U extends Comparable> MapBiAggregatorByTimestamps<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
-    return new MapBiAggregatorByTimestamps<U, X>(this, indexer);
+  public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest(SortedMap<TimestampAndOtherIndex<U>, A> result) {
+    TreeMap<U, SortedMap<OSHDBTimestamp, A>> ret = new TreeMap<>();
+    result.forEach((index, data) -> {
+      if (!ret.containsKey(index.getOtherIndex()))
+        ret.put(index.getOtherIndex(), new TreeMap<OSHDBTimestamp, A>());
+      ret.get(index.getOtherIndex()).put(index.getTimeIndex(), data);
+    });
+    return ret;
   }
 }

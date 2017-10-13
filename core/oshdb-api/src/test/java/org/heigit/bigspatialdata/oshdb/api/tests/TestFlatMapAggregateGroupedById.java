@@ -61,7 +61,7 @@ public class TestFlatMapAggregateGroupedById {
             ));
             return ret;
         })
-        .aggregate(Pair::getKey)
+        .aggregateBy(Pair::getKey)
         .map(Pair::getValue)
         .reduce(
             () -> 0,
