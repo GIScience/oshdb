@@ -157,15 +157,15 @@ public class TestHelpersOSMContributionView {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps2)
-        .weightedAverage(contribution -> new WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0,contribution.getEntityAfter().getId() % 2));
+        .weightedAverage(contribution -> new WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0,2 * (contribution.getEntityAfter().getId() % 2)));
 
-    assertEquals(1.4, result1.doubleValue(), DELTA);
+    assertEquals(1.0, result1.doubleValue(), DELTA);
 
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .aggregateByTimestamp()
-        .weightedAverage(contribution -> new WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0,contribution.getEntityAfter().getId() % 2));
+        .weightedAverage(contribution -> new WeightedValue<>(contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0,2 * (contribution.getEntityAfter().getId() % 2)));
 
     assertEquals(71, result2.entrySet().size());
     assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
@@ -175,7 +175,7 @@ public class TestHelpersOSMContributionView {
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps72)
         .aggregateBy(contribution -> contribution.getContributionTypes().contains(ContributionType.CREATION))
-        .weightedAverage(contribution -> new WeightedValue<>(contribution.getEntityAfter().getId() % 2, contribution.getEntityAfter().getId() % 2));
+        .weightedAverage(contribution -> new WeightedValue<>(contribution.getEntityAfter().getId() % 2, 2 * (contribution.getEntityAfter().getId() % 2)));
 
     assertEquals(1.0, result4.get(true).doubleValue(), DELTA);
   }
