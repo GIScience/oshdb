@@ -62,6 +62,15 @@ public class ZGrid {
     return zId & ID_MASK;
   }
   
+  public static long getParent(long zId) {
+    final long zoom = getZoom(zId);
+    if (zoom > 0) {
+      final long parentId = getIdWithoutZoom(zId) >>> 2;
+      return parentId + (zoom-1)*ZOOM_FACTOR;
+    }
+    return 0;
+  }
+  
   public Iterable<Long> iterableDF(LongBoundingBox search) {
     final ZGrid zGrid = this;
     return new Iterable<Long>() {
@@ -132,20 +141,6 @@ public class ZGrid {
   }
 
   
-
-  public void bla(LongBoundingBox bbox) {
-    final long[][] b = new long[maxZoom][4];
-    long zoomPow = 1;
-    for (int z = 1; z < maxZoom; z++) {
-      long cellWidth = space / zoomPow;
-      b[z][0] = bbox.minLon / cellWidth;
-      b[z][1] = bbox.maxLon / cellWidth;
-      b[z][2] = bbox.minLat / cellWidth;
-      b[z][3] = bbox.maxLat / cellWidth;
-      zoomPow <<= 1;
-    }
-  }
-
   public static final Comparator<Long> ORDER_DFS = (a, b) -> {
     final long aZ = getZoom(a);
     final long bZ = getZoom(b);
