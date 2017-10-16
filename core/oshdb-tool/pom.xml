@@ -15,7 +15,6 @@
   <properties>
 		<osmosis.version>0.45</osmosis.version>
 		<guava.version>22.0</guava.version>
-		<oshdb.version>0.3.0-SNAPSHOT</oshdb.version>
 		<protobuf.version>2.6.1</protobuf.version>
 		<fastutil.version>7.2.0</fastutil.version>
 		<lz4.version>1.3.0</lz4.version>
@@ -67,9 +66,9 @@
       <version>1.3</version>
     </dependency>
     <dependency>
-      <groupId>org.heigit.bigspatialdata</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>oshpbf-parser</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -109,9 +108,9 @@
       <version>15.1</version>
     </dependency>
     <dependency>
-      <groupId>org.heigit.bigspatialdata</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>oshdb</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -168,9 +167,9 @@
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>org.heigit.bigspatialdata</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>oshdb-api</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>${project.version}</version>
       <type>jar</type>
     </dependency>
   </dependencies>
