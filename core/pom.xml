@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-parent</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.3.0-RC1</version>
     <relativePath>../</relativePath>
   </parent>
   <artifactId>bigspatialdata-core-parent</artifactId>
