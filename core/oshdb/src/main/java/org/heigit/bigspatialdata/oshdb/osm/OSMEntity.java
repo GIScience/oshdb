@@ -211,14 +211,14 @@ public abstract class OSMEntity {
     //JSON for properties
     JsonObjectBuilder properties;
     try {
-      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp())).add("user", tagtranslator.usertoStr(getUserId())).add("uid", getUserId());
+      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().osmTimestamp(getTimestamp())).add("user", tagtranslator.usertoStr(getUserId())).add("uid", getUserId());
       for (int i = 0; i < getTags().length; i += 2) {
         Pair<String, String> tags = tagtranslator.tag2String(new ImmutablePair<>(getTags()[i], getTags()[i + 1]));
         properties.add(tags.getKey(), tags.getValue());
       }
     } catch (NullPointerException ex) {
       LOG.warn("The TagTranslator could not resolve (some of) the tags of entity {}/{}", this.getType().toString().toLowerCase(), this.getId());
-      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp())).add("user", getUserId()).add("uid", getUserId());
+      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().osmTimestamp(getTimestamp())).add("user", getUserId()).add("uid", getUserId());
       for (int i = 0; i < getTags().length; i += 2) {
         properties.add(Integer.toString(getTags()[i]), getTags()[i + 1]);
       }

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class TimestampFormatter {
+
   private static TimestampFormatter _instance;
   private final SimpleDateFormat _formatDate = new SimpleDateFormat("yyyy-MM-dd");
   private final SimpleDateFormat _formatIsoDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -15,7 +16,9 @@ public class TimestampFormatter {
   }
 
   public static TimestampFormatter getInstance() {
-    if (_instance == null) _instance = new TimestampFormatter();
+    if (_instance == null) {
+      _instance = new TimestampFormatter();
+    }
     return _instance;
   }
 
@@ -26,7 +29,12 @@ public class TimestampFormatter {
   public String isoDateTime(Date date) {
     return _formatIsoDateTime.format(date);
   }
+
   public String isoDateTime(long date) {
     return _formatIsoDateTime.format(date);
+  }
+
+  public String osmTimestamp(long osmTimestamp) {
+    return _instance.isoDateTime(osmTimestamp * 1000);
   }
 }
