@@ -134,8 +134,14 @@ public class OSMContribution {
       // if the entity is a way or relation, and in this contribution *only* the geometry has been changed, we can't out
       // the respective user only by looking at the entity alone – instead, we need to iterate over all the element's
       // children to find the corresponding contributor's user id.
-      if (this.getContributionTypes().size() == 1 && this.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE)) {
-        if (entity.getTimestamp() != contributionTimestamp) // search children for actual contributor's userId
+      if (!(
+          this.getContributionTypes().contains(ContributionType.TAG_CHANGE) ||
+          this.getContributionTypes().contains(ContributionType.MEMBERLIST_CHANGE) ||
+          this.getContributionTypes().contains(ContributionType.CREATION) ||
+          this.getContributionTypes().contains(ContributionType.DELETION)
+      )) {
+        if (entity.getTimestamp() != contributionTimestamp) {
+          // search children for actual contributor's userId
           if (entity instanceof OSMWay) {
             userId = ((OSMWay)entity).getRefEntities(contributionTimestamp)
                 .filter(Objects::nonNull)
@@ -161,7 +167,8 @@ public class OSMContribution {
                         .orElse(-1) // possible "rare" race condition, caused by not properly ordered timestaps (t_x > t_{x+1}) // todo: what to do here??
                 );
           }
-      }
+        }
+      //}
     }
     return userId;
   }
