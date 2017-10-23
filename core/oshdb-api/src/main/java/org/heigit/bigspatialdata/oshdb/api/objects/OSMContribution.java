@@ -121,7 +121,11 @@ public class OSMContribution {
   /**
    * Returns the user id of the osm contributor responsible for this data modification.
    * This user id can be different from what one gets by calling `.getEntityAfter().getUserId()` if the contribution
-   * is a pure geometry change (i.e. the entity itself has not ben modified, but one or more of its child entities).
+   * is a pure geometry change (i.e. the entity itself has not ben modified, but one or more of its child entities):
+   *
+   * If the entity is a way or relation, and in a contribution *"only"* the geometry has been changed, we can't find
+   * out the respective contributor's user id only by looking at the entity alone – instead, we need to iterate over
+   * all the entity's children to find the actual contributor's user id.
    *
    * @return returns the user id of the contributor who made this modification
    */
@@ -129,46 +133,43 @@ public class OSMContribution {
     // todo: optimizable if done directly in CellIterator??
     OSMEntity entity = this.getEntityAfter();
     long contributionTimestamp = this.getTimestamp().toLong();
-    int userId = entity.getUserId();
-    if (!(entity instanceof OSMNode)) {
-      // if the entity is a way or relation, and in this contribution *only* the geometry has been changed, we can't out
-      // the respective user only by looking at the entity alone – instead, we need to iterate over all the element's
-      // children to find the corresponding contributor's user id.
-      if (!(
-          this.getContributionTypes().contains(ContributionType.TAG_CHANGE) ||
-          this.getContributionTypes().contains(ContributionType.MEMBERLIST_CHANGE) ||
-          this.getContributionTypes().contains(ContributionType.CREATION) ||
-          this.getContributionTypes().contains(ContributionType.DELETION)
-      )) {
-        if (entity.getTimestamp() != contributionTimestamp) {
-          // search children for actual contributor's userId
-          if (entity instanceof OSMWay) {
-            userId = ((OSMWay)entity).getRefEntities(contributionTimestamp)
-                .filter(Objects::nonNull)
-                .filter(n -> n.getTimestamp() == contributionTimestamp)
-                .findFirst()
-                .map(OSMEntity::getUserId)
-                .orElse(-1); // "rare" race condition, caused by not properly ordered timestaps (t_x > t_{x+1}) // todo: what to do here??
-          } else if (entity instanceof OSMRelation) {
-            userId = ((OSMRelation) entity).getMemberEntities(contributionTimestamp)
-                .filter(Objects::nonNull)
-                .filter(_e -> _e.getTimestamp() == contributionTimestamp)
-                .findFirst()
-                .map(OSMEntity::getUserId)
-                .orElseGet(() ->
-                    ((OSMRelation) entity).getMemberEntities(contributionTimestamp)
-                        .filter(Objects::nonNull)
-                        .filter(_e -> _e instanceof OSMWay)
-                        .map(_e -> (OSMWay) _e)
-                        .flatMap(_w -> _w.getRefEntities(contributionTimestamp))
-                        .filter(n -> n.getTimestamp() == contributionTimestamp)
-                        .findFirst()
-                        .map(OSMEntity::getUserId)
-                        .orElse(-1) // possible "rare" race condition, caused by not properly ordered timestaps (t_x > t_{x+1}) // todo: what to do here??
-                );
-          }
-        }
-      //}
+    EnumSet<ContributionType> contributionTypes = this.getContributionTypes();
+    // if the entity itself was modified at this exact timestamp, or we know from the contribution type that the entity
+    // must also have been modified, we can just return the uid directly
+    if (contributionTimestamp == entity.getTimestamp() ||
+        contributionTypes.contains(ContributionType.CREATION) ||
+        contributionTypes.contains(ContributionType.TAG_CHANGE) ||
+        contributionTypes.contains(ContributionType.MEMBERLIST_CHANGE) ||
+        contributionTypes.contains(ContributionType.DELETION)
+    ) {
+      return entity.getUserId();
+    }
+    int userId = -1;
+    // search children for actual contributor's userId
+    if (entity instanceof OSMWay) {
+      userId = ((OSMWay)entity).getRefEntities(contributionTimestamp)
+          .filter(Objects::nonNull)
+          .filter(n -> n.getTimestamp() == contributionTimestamp)
+          .findFirst()
+          .map(OSMEntity::getUserId)
+          .orElse(-1); // "rare" race condition, caused by not properly ordered timestamps (t_x > t_{x+1}) // todo: what to do here??
+    } else if (entity instanceof OSMRelation) {
+      userId = ((OSMRelation) entity).getMemberEntities(contributionTimestamp)
+          .filter(Objects::nonNull)
+          .filter(e -> e.getTimestamp() == contributionTimestamp)
+          .findFirst()
+          .map(OSMEntity::getUserId)
+          .orElseGet(() ->
+              ((OSMRelation) entity).getMemberEntities(contributionTimestamp)
+                  .filter(Objects::nonNull)
+                  .filter(e -> e instanceof OSMWay) // todo: what to do with relation->node member changes or relation->relation[->*] changes?
+                  .map(e -> (OSMWay)e)
+                  .flatMap(w -> w.getRefEntities(contributionTimestamp))
+                  .filter(n -> n.getTimestamp() == contributionTimestamp)
+                  .findFirst()
+                  .map(OSMEntity::getUserId)
+                  .orElse(-1) // possible "rare" race condition, caused by not properly ordered timestamps (t_x > t_{x+1}) // todo: what to do here??
+          );
     }
     return userId;
   }
