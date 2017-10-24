@@ -1,5 +1,13 @@
 ### 0.3.0 SNAPSHOT (current master)
 
+### 0.3.0-RC2
+
+* fix bug in getContributorUserId (of OSMContributorView)
+
+### 0.3.0-RC1
+
+first release candidate of 0.3
+
 * added a new easy to use API abstraction level
 	* OSMEntitySnapshotMapper – iterates over entity "snapshots" at given timestamps
 	* OSMContributionMapper – iterates over all OSM contributions for each entity (i.e. creation, modifications, deletion)
@@ -12,7 +20,6 @@
 * extend unit test coverage
 * switch logging to slf4j
 * bugfixes
-* …
 
 
 ### 0.2.0
