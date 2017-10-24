@@ -9,7 +9,6 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.LONLAT_A;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.TAGS_A;
 import static org.heigit.bigspatialdata.oshdb.osh.OSHNodeTest.USER_A;
-
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.junit.Assert;
@@ -215,10 +214,10 @@ public class OSMWayTest {
   @Test
   public void testToGeoJSON_long_TagTranslator_TagInterpreter() throws SQLException, ClassNotFoundException, IOException {
     List<OSMNode> versions = new ArrayList<>();
-    versions.add(new OSMNode(123l, 1, 1l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, 0l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1, hnode);
-    OSMWay instance = new OSMWay(1L, 1, 1L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part, part});
+    OSMWay instance = new OSMWay(1L, 1, 0L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part, part});
     TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
     String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]},\"refs\":[1,1]}";
 

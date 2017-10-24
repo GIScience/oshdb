@@ -104,8 +104,8 @@ public class OSHNodeTest {
   public void testToGeoJSON() throws IOException, SQLException, ClassNotFoundException {
     List<OSMNode> versions = new ArrayList<>(2);
 
-    versions.add(new OSMNode(123l, 2, 2l, 46l, 1, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-    versions.add(new OSMNode(123l, 1, 1l, 47l, 2, TAGS_B, LONLAT_B[0], LONLAT_B[1]));
+    versions.add(new OSMNode(123l, 2, 0l, 46l, 1, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, 0l, 47l, 2, TAGS_B, LONLAT_B[0], LONLAT_B[1]));
 
     OSHNode instance = OSHNode.build(versions);
 

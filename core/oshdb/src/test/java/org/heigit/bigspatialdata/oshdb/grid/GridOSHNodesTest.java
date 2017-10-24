@@ -76,9 +76,9 @@ public class GridOSHNodesTest {
     List<OSHNode> hosmNodes = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>();
-      versions.add(new OSMNode(i + 1, 1, i, 1l, 1, new int[]{1, 2},
+      versions.add(new OSMNode(i + 1, 1, 0, 1l, 1, new int[]{1, 2},
               86809727l - 1000000 * i, 494094984l - 1000000 * i));
-      versions.add(new OSMNode(i + 1, 2, i, 1l, 1, new int[]{1, 2},
+      versions.add(new OSMNode(i + 1, 2, 0, 1l, 1, new int[]{1, 2},
               0L, 0L));
       hosmNodes.add(OSHNode.build(versions));
     }

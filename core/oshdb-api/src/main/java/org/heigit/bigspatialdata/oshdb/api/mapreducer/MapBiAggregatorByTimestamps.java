@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndOtherIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
@@ -15,7 +16,7 @@ import java.util.*;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the second index used to group results
  */
-public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<TimestampAndOtherIndex<U>, X> {
+public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimestampAndOtherIndex<U>, X> {
   private boolean _zerofill = true;
 
   /**
@@ -26,8 +27,8 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<TimestampAn
    */
   MapBiAggregatorByTimestamps(MapAggregatorByTimestamps<X> timeMapAggregator, SerializableFunction<X, U> indexer) {
     super();
-    this._mapReducer = timeMapAggregator._mapReducer.map(data -> new MutablePair<TimestampAndOtherIndex<U>, X>(
-        new TimestampAndOtherIndex<U>(
+    this._mapReducer = timeMapAggregator._mapReducer.map(data -> new MutablePair<OSHDBTimestampAndOtherIndex<U>, X>(
+        new OSHDBTimestampAndOtherIndex<U>(
             data.getKey(),
             indexer.apply(data.getValue())
         ),
@@ -72,8 +73,8 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<TimestampAn
    * @throws Exception
    */
   @Override
-  public <S> SortedMap<TimestampAndOtherIndex<U>, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    SortedMap<TimestampAndOtherIndex<U>, S> result = super.reduce(identitySupplier, accumulator, combiner);
+  public <S> SortedMap<OSHDBTimestampAndOtherIndex<U>, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    SortedMap<OSHDBTimestampAndOtherIndex<U>, S> result = super.reduce(identitySupplier, accumulator, combiner);
     if (!this._zerofill) return result;
     // fill nodata entries with "0"
     final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.getOSHDBTimestamps();
@@ -84,7 +85,7 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<TimestampAn
     (new TreeSet<>(result.keySet())).forEach(index -> {
       if (!seen.contains(index.getOtherIndex())) {
         timestamps.forEach(ts -> {
-          TimestampAndOtherIndex<U> potentiallyMissingIndex = new TimestampAndOtherIndex<>(ts, index.getOtherIndex());
+          OSHDBTimestampAndOtherIndex<U> potentiallyMissingIndex = new OSHDBTimestampAndOtherIndex<>(ts, index.getOtherIndex());
           result.putIfAbsent(potentiallyMissingIndex, identitySupplier.get());
         });
         seen.add(index.getOtherIndex());
@@ -102,12 +103,22 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<TimestampAn
    * @param <U> an arbitrary data type, used for the index'es key items
    * @return a nested data structure, where for each index part there is a separate level of nested maps
    */
-  public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest(SortedMap<TimestampAndOtherIndex<U>, A> result) {
+  public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest(SortedMap<OSHDBTimestampAndOtherIndex<U>, A> result) {
     TreeMap<U, SortedMap<OSHDBTimestamp, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
       if (!ret.containsKey(index.getOtherIndex()))
         ret.put(index.getOtherIndex(), new TreeMap<OSHDBTimestamp, A>());
       ret.get(index.getOtherIndex()).put(index.getTimeIndex(), data);
+    });
+    return ret;
+  }
+
+  public static <A,U> SortedMap<OSHDBTimestamp, SortedMap<U, A>> nest2(SortedMap<OSHDBTimestampAndOtherIndex<U>, A> result) {
+    TreeMap<OSHDBTimestamp, SortedMap<U, A>> ret = new TreeMap<>();
+    result.forEach((index, data) -> {
+      if (!ret.containsKey(index.getTimeIndex()))
+        ret.put(index.getTimeIndex(), new TreeMap<U, A>());
+      ret.get(index.getTimeIndex()).put(index.getOtherIndex(), data);
     });
     return ret;
   }

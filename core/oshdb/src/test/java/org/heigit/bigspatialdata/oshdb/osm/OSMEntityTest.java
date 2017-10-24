@@ -34,13 +34,13 @@ public class OSMEntityTest {
   @Test
   public void testToGeoJSON_List_TagInterpreter() throws SQLException, ClassNotFoundException {
     int[] properties = {1, 2};
-    OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, properties, 1000000000L, 1000000000L);
+    OSMNode instance = new OSMNode(1L, 1, 1415538449L, 1L, 1, properties, 1000000000L, 1000000000L);
     List<Pair<? extends OSMEntity, Long>> OSMObjects = new ArrayList<>();
     OSMObjects.add(new ImmutablePair<>(instance, 1L));
     OSMObjects.add(new ImmutablePair<>(instance, 2L));
     TagInterpreter areaDecider = new TagInterpreter(1, 1, null, null, null, 1, 1, 1);
     TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
-    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
+    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"2014-11-09T13:07:29Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"2014-11-09T13:07:29Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
     String result = OSMEntity.toGeoJSON(OSMObjects, tt, areaDecider);
     assertEquals(expResult, result);
   }
