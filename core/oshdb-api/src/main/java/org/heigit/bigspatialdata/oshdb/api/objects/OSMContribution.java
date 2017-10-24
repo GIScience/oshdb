@@ -165,6 +165,7 @@ public class OSMContribution {
                   .filter(e -> e instanceof OSMWay) // todo: what to do with relation->node member changes or relation->relation[->*] changes?
                   .map(e -> (OSMWay)e)
                   .flatMap(w -> w.getRefEntities(contributionTimestamp))
+                  .filter(Objects::nonNull)
                   .filter(n -> n.getTimestamp() == contributionTimestamp)
                   .findFirst()
                   .map(OSMEntity::getUserId)
