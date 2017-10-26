@@ -5,6 +5,9 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -65,6 +68,17 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTypes(OSMType.NODE)
         .areaOfInterest(bbox.getGeometry())
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(2, result.intValue());
+  }
+
+  @Test
+  public void multiPolygon() throws Exception {
+    GeometryFactory gf = new GeometryFactory();
+    Integer result = createMapReducerOSMEntitySnapshot()
+        .osmTypes(OSMType.NODE)
+        .areaOfInterest(gf.createMultiPolygon(new Polygon[] {bbox.getGeometry()}))
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());

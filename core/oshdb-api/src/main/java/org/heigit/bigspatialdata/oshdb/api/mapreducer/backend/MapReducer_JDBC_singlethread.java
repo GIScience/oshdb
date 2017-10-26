@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Polygonal;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
@@ -60,7 +62,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         CellIterator.iterateAll(
             oshCellRawData,
             this._bboxFilter,
-            this._polyFilter,
+            this._getPolyFilter(),
             new CellIterator.TimestampInterval(this._tstamps.getTimestamps().get(0), this._tstamps.getTimestamps().get(this._tstamps.getTimestamps().size()-1)),
             this._tagInterpreter,
             this._getPreFilter(),
@@ -121,7 +123,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         CellIterator.iterateAll(
             oshCellRawData,
             this._bboxFilter,
-            this._polyFilter,
+            this._getPolyFilter(),
             new CellIterator.TimestampInterval(this._tstamps.getTimestamps().get(0), this._tstamps.getTimestamps().get(this._tstamps.getTimestamps().size()-1)),
             this._tagInterpreter,
             this._getPreFilter(),
@@ -188,7 +190,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         CellIterator.iterateByTimestamps(
             oshCellRawData,
             this._bboxFilter,
-            this._polyFilter,
+            this._getPolyFilter(),
             this._tstamps.getTimestamps(),
             this._tagInterpreter,
             this._getPreFilter(),
@@ -241,7 +243,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         CellIterator.iterateByTimestamps(
             oshCellRawData,
             this._bboxFilter,
-            this._polyFilter,
+            this._getPolyFilter(),
             this._tstamps.getTimestamps(),
             this._tagInterpreter,
             this._getPreFilter(),

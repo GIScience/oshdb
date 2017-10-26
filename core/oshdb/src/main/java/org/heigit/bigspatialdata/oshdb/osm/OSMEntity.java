@@ -12,6 +12,8 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+
+import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.*;
@@ -302,7 +304,7 @@ public abstract class OSMEntity {
     return Geo.clip(geom, clipBbox);
   }
 
-  public Geometry getGeometryClipped(long timestamp, TagInterpreter areaDecider, Polygon clipPoly) {
+  public <P extends Geometry & Polygonal> Geometry getGeometryClipped(long timestamp, TagInterpreter areaDecider, P clipPoly) {
     Geometry geom = this.getGeometry(timestamp, areaDecider);
     if (geom == null) {
       return null;

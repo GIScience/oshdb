@@ -149,7 +149,7 @@ public class Geo {
 		return obj.intersection(JTS.toGeometry(envelope));
 	}
 
-	public static Geometry clip(Geometry obj, Polygon poly) {
+	public static <P extends Geometry & Polygonal> Geometry clip(Geometry obj, P poly) {
 		return obj.intersection(poly);
 	}
 }

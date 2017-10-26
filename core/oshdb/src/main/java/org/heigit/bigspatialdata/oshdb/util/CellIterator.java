@@ -42,7 +42,7 @@ public class CellIterator {
    * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
    * feature geometries later on in the code.
    */
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static <P extends Geometry & Polygonal> Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, P boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -246,7 +246,7 @@ public class CellIterator {
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp intervals.
    */
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static <P extends Geometry & Polygonal> Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, P boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -259,7 +259,7 @@ public class CellIterator {
         // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
         continue;
       }
-      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon == null || boundingPolygon.contains(boundingBox.getGeometry()));
+      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon == null || (boundingPolygon.contains(boundingBox.getGeometry())));
 
       List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 

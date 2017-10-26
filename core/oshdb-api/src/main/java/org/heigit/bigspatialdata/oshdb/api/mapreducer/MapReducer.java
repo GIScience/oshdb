@@ -3,7 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 import java.util.*;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -73,7 +73,7 @@ public abstract class MapReducer<X> {
   // settings and filters
   protected OSHDBTimestampList _tstamps = new OSHDBTimestamps("2008-01-01", (new OSHDBTimestamp((new Date()).getTime()/1000)).formatIsoDateTime(), OSHDBTimestamps.Interval.MONTHLY);
   protected BoundingBox _bboxFilter = null;
-  protected Polygon _polyFilter = null;
+  private Geometry _polyFilter = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
@@ -198,7 +198,7 @@ public abstract class MapReducer<X> {
       else
         this._bboxFilter = BoundingBox.intersect(bboxFilter, this._bboxFilter);
     } else {
-      this._polyFilter = (Polygon)Geo.clip(this._polyFilter, bboxFilter);
+      this._polyFilter = Geo.clip(this._polyFilter, bboxFilter);
       this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
     }
     return this;
@@ -211,14 +211,14 @@ public abstract class MapReducer<X> {
    * @param polygonFilter the bounding box to query the data in
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapReducer<X> areaOfInterest(Polygon polygonFilter) {
+  public <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(P polygonFilter) {
     if (this._polyFilter == null) {
       if (this._bboxFilter == null)
         this._polyFilter = polygonFilter;
       else
-        this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._bboxFilter);
+        this._polyFilter = Geo.clip(polygonFilter, this._bboxFilter);
     } else {
-      this._polyFilter = (Polygon)Geo.clip(polygonFilter, this._polyFilter);
+      this._polyFilter = Geo.clip(polygonFilter, this._getPolyFilter());
     }
     this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
     return this;
@@ -1016,6 +1016,11 @@ public abstract class MapReducer<X> {
       return Collections.emptyList();
     }
     return grid.bbox2CellIds(this._bboxFilter, true);
+  }
+
+  // hack, so that we can use a variable that is of both Geometry and implements Polygonal (i.e. Polygon or MultiPolygon) as required in further processing steps
+  protected <P extends Geometry & Polygonal> P _getPolyFilter() {
+    return (P)this._polyFilter;
   }
 
   // concatenates all applied `map` functions

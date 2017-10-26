@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.cache.CacheMode;
@@ -40,12 +41,12 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
     super(oshdb);
   }
 
-  private<R, S> S _mapReduceCellsOSMContributionOnIgniteCache(
+  private<R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps,
       BoundingBox bbox,
-      Polygon poly,
+      P poly,
       SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMContribution, R> mapper,
@@ -147,7 +148,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,
-          this._polyFilter,
+          this._getPolyFilter(),
           this._getPreFilter(),
           this._getFilter(),
           mapper,
@@ -158,12 +159,12 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
     }).reduce(identitySupplier.get(), combiner);
   }
 
-  private<R, S> S _flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+  private<R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps,
       BoundingBox bbox,
-      Polygon poly,
+      P poly,
       SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
@@ -272,7 +273,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,
-          this._polyFilter,
+          this._getPolyFilter(),
           this._getPreFilter(),
           this._getFilter(),
           mapper,
@@ -284,12 +285,12 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
   }
 
 
-  private <R, S> S _mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+  private <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMEntitySnapshotOnIgniteCache(
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps,
       BoundingBox bbox,
-      Polygon poly,
+      P poly,
       SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
@@ -383,7 +384,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,
-          this._polyFilter,
+          this._getPolyFilter(),
           this._getPreFilter(),
           this._getFilter(),
           mapper,
@@ -394,11 +395,11 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
     }).reduce(identitySupplier.get(), combiner);
   }
 
-  private <R, S> S _flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+  private <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps, BoundingBox bbox,
-      Polygon poly,
+      P poly,
       SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
@@ -496,7 +497,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,
-          this._polyFilter,
+          this._getPolyFilter(),
           this._getPreFilter(),
           this._getFilter(),
           mapper,

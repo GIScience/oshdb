@@ -72,7 +72,7 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
           CellIterator.iterateAll(
               oshCell,
               this._bboxFilter,
-              this._polyFilter,
+              this._getPolyFilter(),
               new CellIterator.TimestampInterval(this._tstamps.getTimestamps().get(0), this._tstamps.getTimestamps().get(this._tstamps.getTimestamps().size()-1)),
               this._tagInterpreter,
               this._getPreFilter(),
@@ -146,7 +146,7 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
           CellIterator.iterateAll(
               oshCell,
               this._bboxFilter,
-              this._polyFilter,
+              this._getPolyFilter(),
               new CellIterator.TimestampInterval(this._tstamps.getTimestamps().get(0), this._tstamps.getTimestamps().get(this._tstamps.getTimestamps().size()-1)),
               this._tagInterpreter,
               this._getPreFilter(),
@@ -227,7 +227,7 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
       CellIterator.iterateByTimestamps(
           oshCell,
           this._bboxFilter,
-          this._polyFilter,
+          this._getPolyFilter(),
           this._tstamps.getTimestamps(),
           this._tagInterpreter,
           this._getPreFilter(),
@@ -294,7 +294,7 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
           CellIterator.iterateByTimestamps(
               oshCell,
               this._bboxFilter,
-              this._polyFilter,
+              this._getPolyFilter(),
               this._tstamps.getTimestamps(),
               this._tagInterpreter,
               this._getPreFilter(),

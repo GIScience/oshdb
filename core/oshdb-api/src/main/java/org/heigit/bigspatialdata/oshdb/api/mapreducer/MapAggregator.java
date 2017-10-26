@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
@@ -72,7 +73,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @param polygonFilter the bounding box to query the data in
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  public MapAggregator<U, X> areaOfInterest(Polygon polygonFilter) {
+  public <P extends Geometry & Polygonal> MapAggregator<U, X> areaOfInterest(P polygonFilter) {
     this._mapReducer.areaOfInterest(polygonFilter);
     return this;
   }
