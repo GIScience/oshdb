@@ -441,17 +441,7 @@ public abstract class MapReducer<X> {
    * @deprecated
    */
   public MapReducer<X> filterByTag(String key, String value) throws Exception {
-    Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
-    if (keyValueId == null) {
-      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
-      this._preFilters.add(ignored -> false);
-      this._filters.add(ignored -> false);
-      return this;
-    }
-    int keyId = keyValueId.getKey();
-    int valueId = keyValueId.getValue();
-    this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
-    return this;
+    return this.where(key, value);
   }
 
   /**
