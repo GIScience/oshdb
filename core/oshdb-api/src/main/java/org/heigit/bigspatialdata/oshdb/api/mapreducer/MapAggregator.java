@@ -44,6 +44,24 @@ public class MapAggregator<U extends Comparable, X> {
     ));
   }
 
+  // "copy/transform" constructor
+  MapAggregator(MapReducer<Pair<U, X>> mapReducer) {
+    this._mapReducer = mapReducer;
+  }
+
+  /**
+   * Creates new mapAggregator object for a specific mapReducer that already contains an aggregation index.
+   *
+   * Used internally for returning type safe copies of the current mapAggregator object after map/flatMap/filter operations.
+   *
+   * @param mapReducer
+   * @param <R>
+   * @return
+   */
+  protected <R> MapAggregator<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer) {
+    return new MapAggregator<>(mapReducer);
+  }
+
   /**
    * empty dummy constructor, used by MapBiAggregatorByTimestamps (which sets the _mapReducer property by itself)
    */
@@ -62,8 +80,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapAggregator<U, X> areaOfInterest(BoundingBox bboxFilter) {
-    this._mapReducer.areaOfInterest(bboxFilter);
-    return this;
+    return this.copyTransform(this._mapReducer.areaOfInterest(bboxFilter));
   }
 
   /**
@@ -74,8 +91,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public <P extends Geometry & Polygonal> MapAggregator<U, X> areaOfInterest(P polygonFilter) {
-    this._mapReducer.areaOfInterest(polygonFilter);
-    return this;
+    return this.copyTransform(this._mapReducer.areaOfInterest(polygonFilter));
   }
 
   /**
@@ -85,8 +101,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapAggregator<U, X> osmTypes(EnumSet<OSMType> typeFilter) {
-    this._mapReducer.osmTypes(typeFilter);
-    return this;
+    return this.copyTransform(this._mapReducer.osmTypes(typeFilter));
   }
 
   /**
@@ -107,8 +122,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapAggregator<U, X> where(SerializablePredicate<OSMEntity> f) {
-    this._mapReducer.where(f);
-    return this;
+    return this.copyTransform(this._mapReducer.where(f));
   }
 
   /**
@@ -133,8 +147,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @throws Exception
    */
   public MapAggregator<U, X> where(String key) throws Exception {
-    this._mapReducer.where(key);
-    return this;
+    return this.copyTransform(this._mapReducer.where(key));
   }
 
   /**
@@ -146,8 +159,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @throws Exception
    */
   public MapAggregator<U, X> where(String key, String value) throws Exception {
-    this._mapReducer.where(key, value);
-    return this;
+    return this.copyTransform(this._mapReducer.where(key, value));
   }
 
   /**
@@ -330,8 +342,11 @@ public class MapAggregator<U extends Comparable, X> {
    *
    * This method can be handy for testing purposes. But note that since the `action` doesn't produce a return value, it must facilitate its own way of producing output.
    *
+   * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()` instead.
+   *
    * @param action function that gets called for each transformed data entry
    * @throws Exception
+   * @deprecated only for testing purposes
    */
   @Deprecated
   public void forEach(SerializableBiConsumer<U, List<X>> action) throws Exception {
@@ -364,11 +379,11 @@ public class MapAggregator<U extends Comparable, X> {
    * @return the MapAggregator object operating on the transformed type (&lt;R&gt;)
    */
   public <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper) {
-    this._mapReducer.map(data -> {
-      data.setValue((X)mapper.apply(data.getValue()));
-      return data;
-    });
-    return (MapAggregator<U, R>)this;
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U,R> outData = (Pair<U,R>)inData;
+      outData.setValue(mapper.apply(inData.getValue()));
+      return outData;
+    }));
   }
 
   /**
@@ -380,17 +395,16 @@ public class MapAggregator<U extends Comparable, X> {
    * @return the MapAggregator object operating on the transformed type (&lt;R&gt;)
    */
   public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
-    this._mapReducer.flatMap(data -> {
-      List<Pair<U, R>> results = new LinkedList<>();
-      flatMapper.apply(data.getValue()).forEach(flatMappedData ->
-          results.add(new MutablePair<U, R>(
-              data.getKey(),
+    return this.copyTransform(this._mapReducer.flatMap(inData -> {
+      List<Pair<U, R>> outData = new LinkedList<>();
+      flatMapper.apply(inData.getValue()).forEach(flatMappedData ->
+          outData.add(new MutablePair<U, R>(
+              inData.getKey(),
               flatMappedData
           ))
       );
-      return results;
-    });
-    return (MapAggregator<U, R>)this;
+      return outData;
+    }));
   }
 
   /**
@@ -400,8 +414,9 @@ public class MapAggregator<U extends Comparable, X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapAggregator<U, X> filter(SerializablePredicate<X> f) {
-    this._mapReducer.filter(data -> f.test(data.getValue()));
-    return this;
+    return this.copyTransform(this._mapReducer.filter(data ->
+      f.test(data.getValue())
+    ));
   }
 
   // -------------------------------------------------------------------------------------------------------------------

@@ -77,12 +77,33 @@ public abstract class MapReducer<X> {
   protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
-  private List<SerializableFunction> _mappers = new LinkedList<>();
-  private Set<SerializableFunction> _flatMappers = new HashSet<>();
+  private final List<SerializableFunction> _mappers = new LinkedList<>();
+  private final Set<SerializableFunction> _flatMappers = new HashSet<>();
 
   // basic constructor
   protected MapReducer(OSHDB oshdb) {
     this._oshdb = oshdb;
+  }
+
+  // copy constructor
+  protected MapReducer(MapReducer obj) {
+    this._oshdb = obj._oshdb;
+    this._oshdbForTags = obj._oshdbForTags;
+
+    this._forClass = obj._forClass;
+    this._grouping = obj._grouping;
+
+    this._tagTranslator = obj._tagTranslator;
+    this._tagInterpreter = obj._tagInterpreter;
+
+    this._tstamps = obj._tstamps;
+    this._bboxFilter = obj._bboxFilter;
+    this._polyFilter = obj._polyFilter;
+    this._typeFilter = obj._typeFilter.clone();
+    this._preFilters.addAll(obj._preFilters);
+    this._filters.addAll(obj._filters);
+    this._mappers.addAll(obj._mappers);
+    this._flatMappers.addAll(obj._flatMappers);
   }
 
   /**
@@ -109,8 +130,18 @@ public abstract class MapReducer<X> {
       mapReducer._forClass = forClass;
       return mapReducer;
     } else {
-      throw new UnsupportedOperationException("No mapper implemented for your database type");
+      throw new UnsupportedOperationException("Backend not implemented for this database type.");
     }
+  }
+
+  private MapReducer<X> copy() {
+    if (this instanceof MapReducer_JDBC_singlethread)
+      return new MapReducer_JDBC_singlethread<X>((MapReducer_JDBC_singlethread)this);
+    if (this instanceof MapReducer_JDBC_multithread)
+      return new MapReducer_JDBC_multithread<X>((MapReducer_JDBC_multithread)this);
+    if (this instanceof MapReducer_Ignite)
+      return new MapReducer_Ignite<X>((MapReducer_Ignite)this);
+    throw new UnsupportedOperationException("Clone not implemented for this backend type: " + this.getClass().toString());
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -192,16 +223,17 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> areaOfInterest(BoundingBox bboxFilter) {
+    MapReducer<X> ret = this.copy();
     if (this._polyFilter == null) {
       if (this._bboxFilter == null)
-        this._bboxFilter = bboxFilter;
+        ret._bboxFilter = bboxFilter;
       else
-        this._bboxFilter = BoundingBox.intersect(bboxFilter, this._bboxFilter);
+        ret._bboxFilter = BoundingBox.intersect(bboxFilter, this._bboxFilter);
     } else {
-      this._polyFilter = Geo.clip(this._polyFilter, bboxFilter);
-      this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
+      ret._polyFilter = Geo.clip(this._polyFilter, bboxFilter);
+      ret._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
     }
-    return this;
+    return ret;
   }
 
   /**
@@ -212,15 +244,16 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(P polygonFilter) {
+    MapReducer<X> ret = this.copy();
     if (this._polyFilter == null) {
       if (this._bboxFilter == null)
-        this._polyFilter = polygonFilter;
+        ret._polyFilter = polygonFilter;
       else
-        this._polyFilter = Geo.clip(polygonFilter, this._bboxFilter);
+        ret._polyFilter = Geo.clip(polygonFilter, this._bboxFilter);
     } else {
-      this._polyFilter = Geo.clip(polygonFilter, this._getPolyFilter());
+      ret._polyFilter = Geo.clip(polygonFilter, this._getPolyFilter());
     }
-    this._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
+    ret._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
     return this;
   }
 
@@ -236,8 +269,9 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> timestamps(OSHDBTimestampList tstamps) {
-    this._tstamps = tstamps;
-    return this;
+    MapReducer<X> ret = this.copy();
+    ret._tstamps = tstamps;
+    return ret;
   }
 
   /**
@@ -251,8 +285,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd, String isoPeriod) {
-    this._tstamps = new OSHDBTimestamps(isoDateStart, isoDateEnd, isoPeriod);
-    return this;
+    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, isoPeriod));
   }
 
   /**
@@ -266,8 +299,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd, OSHDBTimestamps.Interval interval) {
-    this._tstamps = new OSHDBTimestamps(isoDateStart, isoDateEnd, interval);
-    return this;
+    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
   }
 
   /**
@@ -282,8 +314,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd) {
-    this._tstamps = new OSHDBTimestamps(isoDateStart, isoDateEnd);
-    return this;
+    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd));
   }
 
   /**
@@ -306,8 +337,7 @@ public abstract class MapReducer<X> {
       LOG.error("unable to parse ISO date string: " + e.getMessage());
     }
     Collections.sort(timestamps);
-    this._tstamps = () -> timestamps;
-    return this;
+    return this.timestamps(() -> timestamps);
   }
 
   /**
@@ -317,8 +347,9 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> osmTypes(EnumSet<OSMType> typeFilter) {
-    this._typeFilter = typeFilter;
-    return this;
+    MapReducer<X> ret = this.copy();
+    ret._typeFilter = typeFilter;
+    return ret;
   }
 
   /**
@@ -339,8 +370,9 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> where(SerializablePredicate<OSMEntity> f) {
-    this._filters.add(f);
-    return this;
+    MapReducer<X> ret = this.copy();
+    ret._filters.add(f);
+    return ret;
   }
 
   /**
@@ -365,16 +397,17 @@ public abstract class MapReducer<X> {
    * @throws Exception
    */
   public MapReducer<X> where(String key) throws Exception {
+    MapReducer<X> ret = this.copy();
     Integer keyId = this.getTagKeyId(key);
     if (keyId == null) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
-      this._preFilters.add(ignored -> false);
-      this._filters.add(ignored -> false);
-      return this;
+      ret._preFilters.add(ignored -> false);
+      ret._filters.add(ignored -> false);
+      return ret;
     }
-    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    this._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
-    return this;
+    ret._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    ret._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
+    return ret;
   }
 
   /**
@@ -416,17 +449,18 @@ public abstract class MapReducer<X> {
    * @throws Exception
    */
   public MapReducer<X> where(String key, String value) throws Exception {
+    MapReducer<X> ret = this.copy();
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
     if (keyValueId == null) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
-      this._preFilters.add(ignored -> false);
-      this._filters.add(ignored -> false);
-      return this;
+      ret._preFilters.add(ignored -> false);
+      ret._filters.add(ignored -> false);
+      return ret;
     }
     int keyId = keyValueId.getKey();
     int valueId = keyValueId.getValue();
-    this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
-    return this;
+    ret._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
+    return ret;
   }
 
   /**
@@ -441,17 +475,7 @@ public abstract class MapReducer<X> {
    * @deprecated
    */
   public MapReducer<X> filterByTag(String key, String value) throws Exception {
-    Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
-    if (keyValueId == null) {
-      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
-      this._preFilters.add(ignored -> false);
-      this._filters.add(ignored -> false);
-      return this;
-    }
-    int keyId = keyValueId.getKey();
-    int valueId = keyValueId.getValue();
-    this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
-    return this;
+    return this.where(key, value);
   }
 
   /**
@@ -482,8 +506,9 @@ public abstract class MapReducer<X> {
    * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
    */
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
-    this._mappers.add(mapper);
-    return (MapReducer<R>)this;
+    MapReducer<X> ret = this.copy();
+    ret._mappers.add(mapper);
+    return (MapReducer<R>)ret;
   }
 
   /**
@@ -495,9 +520,10 @@ public abstract class MapReducer<X> {
    * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
    */
   public <R> MapReducer<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
-    this._mappers.add(flatMapper);
-    this._flatMappers.add(flatMapper);
-    return (MapReducer<R>)this;
+    MapReducer<X> ret = this.copy();
+    ret._mappers.add(flatMapper);
+    ret._flatMappers.add(flatMapper);
+    return (MapReducer<R>)ret;
   }
 
   /**
@@ -533,8 +559,9 @@ public abstract class MapReducer<X> {
       throw new UnsupportedOperationException("groupById() must be called before any `map` or `flatMap` transformation functions have been set");
     if (this._grouping != Grouping.NONE)
       throw new UnsupportedOperationException("A grouping is already active on this MapReducer");
-    this._grouping = Grouping.BY_ID;
-    return (MapReducer<List<X>>)(this);
+    MapReducer<X> ret = this.copy();
+    ret._grouping = Grouping.BY_ID;
+    return (MapReducer<List<X>>)(ret);
   }
 
   /**
@@ -560,7 +587,7 @@ public abstract class MapReducer<X> {
    */
   @Deprecated
   public <U extends Comparable> MapAggregator<U, X> aggregate(SerializableFunction<X, U> indexer) {
-    return new MapAggregator<U, X>(this, indexer);
+    return this.aggregateBy(indexer);
   }
 
   /**
@@ -605,11 +632,12 @@ public abstract class MapReducer<X> {
       // for convenience we allow one to set this function even after some map functions were set.
       // if some map / flatMap functions were alredy set:
       // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions accordingly
-      List<SerializableFunction> mappers = new LinkedList<>(this._mappers);
-      Set<SerializableFunction> flatMappers = new HashSet<>(this._flatMappers);
-      this._mappers.clear();
-      this._flatMappers.clear();
-      MapAggregatorByTimestamps<X> mapAggregator = new MapAggregatorByTimestamps<X>(this, indexer);
+      MapReducer<X> ret = this.copy();
+      List<SerializableFunction> mappers = new LinkedList<>(ret._mappers);
+      Set<SerializableFunction> flatMappers = new HashSet<>(ret._flatMappers);
+      ret._mappers.clear();
+      ret._flatMappers.clear();
+      MapAggregatorByTimestamps<X> mapAggregator = new MapAggregatorByTimestamps<X>(ret, indexer);
       mappers.forEach(action -> {
         if (flatMappers.contains(action))
           mapAggregator.flatMap(action);
@@ -852,8 +880,11 @@ public abstract class MapReducer<X> {
    *
    * This method can be handy for testing purposes. But note that since the `action` doesn't produce a return value, it must facilitate its own way of producing output.
    *
+   * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()` instead.
+   *
    * @param action function that gets called for each transformed data entry
    * @throws Exception
+   * @deprecated only for testing purposes
    */
   @Deprecated
   public void forEach(SerializableConsumer<X> action) throws Exception {

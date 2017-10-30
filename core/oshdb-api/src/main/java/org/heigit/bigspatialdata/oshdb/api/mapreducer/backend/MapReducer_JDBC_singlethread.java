@@ -30,7 +30,12 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
   public MapReducer_JDBC_singlethread(OSHDB oshdb) {
     super(oshdb);
   }
-  
+
+  // copy constructor
+  public MapReducer_JDBC_singlethread(MapReducer_JDBC_singlethread obj) {
+    super(obj);
+  }
+
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building

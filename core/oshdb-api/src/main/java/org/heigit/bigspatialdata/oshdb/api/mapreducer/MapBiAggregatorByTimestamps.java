@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndOtherIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
@@ -34,6 +35,17 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
         ),
         data.getValue()
     ));
+  }
+
+  // "copy/transform" constructor
+  private MapBiAggregatorByTimestamps(MapBiAggregatorByTimestamps obj, MapReducer<Pair<OSHDBTimestampAndOtherIndex<U>, X>> mapReducer) {
+    super(mapReducer);
+    this._zerofill = obj._zerofill;
+  }
+
+  @Override
+  protected <R> MapBiAggregatorByTimestamps<U, R> copyTransform(MapReducer<Pair<OSHDBTimestampAndOtherIndex<U>, R>> mapReducer) {
+    return new MapBiAggregatorByTimestamps<>(this, mapReducer);
   }
 
   /**

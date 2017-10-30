@@ -31,6 +31,11 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     super(oshdb);
   }
 
+  // copy constructor
+  public MapReducer_JDBC_multithread(MapReducer_JDBC_multithread obj) {
+    super(obj);
+  }
+
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     //load tag interpreter helper which is later used for geometry building

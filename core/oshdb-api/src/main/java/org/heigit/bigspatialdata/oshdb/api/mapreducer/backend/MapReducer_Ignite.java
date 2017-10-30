@@ -41,6 +41,11 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
     super(oshdb);
   }
 
+  // copy constructor
+  public MapReducer_Ignite(MapReducer_Ignite obj) {
+    super(obj);
+  }
+
   private<R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
       String cacheName,
       Set<CellId> cellIdsList,
