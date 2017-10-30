@@ -71,7 +71,7 @@ public class Country {
         return null;
       }
     }
-    return Country.getFeatures(type, name, null);
+    return Country.getFeatures(type, name);
 
   }
 
@@ -80,8 +80,7 @@ public class Country {
    * {@link #getGeometry(org.heigit.missingmaps.nepalanalyses.geometries.CountryCodeType, java.lang.String) getGeometry}
    * but returns the bounding box. To keep you from creating large bounding
    * boxes this function is limited to
-   * {@link org.heigit.missingmaps.nepalanalyses.geometries.CountryCodeType#ADMIN ADMIN}
-   * and will only return the bbx of regions with scalerank 0.
+   * {@link org.heigit.missingmaps.nepalanalyses.geometries.CountryCodeType#GEOUNIT GEOUNIT}.
    *
    * @param name the
    * {@link org.heigit.missingmaps.nepalanalyses.geometries.CountryCodeType#ADMIN ADMIN}
@@ -90,7 +89,7 @@ public class Country {
    * @throws IOException
    */
   public static BoundingBox getBBX(String name) throws IOException {
-    MultiPolygon mp = Country.getFeatures(CountryCodeType.ADMIN, name, 0);
+    MultiPolygon mp = Country.getFeatures(CountryCodeType.GEOUNIT, name);
     if (mp == null) {
       return null;
     }
@@ -99,7 +98,7 @@ public class Country {
 
   }
 
-  private static MultiPolygon getFeatures(CountryCodeType type, String name, Integer scalerank) throws IOException {
+  private static MultiPolygon getFeatures(CountryCodeType type, String name) throws IOException {
     FeatureSource<SimpleFeatureType, SimpleFeature> source = Country.getFeatureSource();
     FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures();
     GeometryFactory gf = new GeometryFactory();
@@ -109,14 +108,8 @@ public class Country {
       while (features.hasNext()) {
         SimpleFeature feature = features.next();
         if (feature.getAttribute(type.toString()).equals(name)) {
-
-          if (scalerank == null) {
-            Geometry geom = (Geometry) feature.getDefaultGeometry();
-            poligonArr.add(geom);
-          } else if (feature.getAttribute("scalerank") == scalerank) {
-            Geometry geom = (Geometry) feature.getDefaultGeometry();
-            poligonArr.add(geom);
-          }
+          Geometry geom = (Geometry) feature.getDefaultGeometry();
+          poligonArr.add(geom);
         }
       }
       GeometryCollection geometryCollection = (GeometryCollection) gf.buildGeometry(poligonArr);
@@ -124,7 +117,7 @@ public class Country {
         LOG.log(Level.WARNING, "No feature was found");
         return null;
       }
-      
+
       if (geometryCollection.getNumGeometries() > 1) {
         return (MultiPolygon) geometryCollection.union();
       } else {

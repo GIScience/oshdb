@@ -17,8 +17,8 @@ public enum CountryCodeType {
    */
   SOVEREIGNT,
   /**
-   * Name of the administrative unit. This will return separate results for
-   * Coral Sea Islands and Australia.
+   * Name of the geographical unit. This will return separate results for Coral
+   * Sea Islands and Australia.
    */
-  ADMIN;
+  GEOUNIT;
 }

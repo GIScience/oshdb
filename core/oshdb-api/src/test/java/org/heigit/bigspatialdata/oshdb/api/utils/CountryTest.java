@@ -12,7 +12,7 @@ public class CountryTest {
 
   @Test
   public void testGetGeometry() throws Exception {
-    CountryCodeType type = CountryCodeType.ADMIN;
+    CountryCodeType type = CountryCodeType.GEOUNIT;
     String name = "Andorra";
     String expResult = getAndorra();
     MultiPolygon result = Country.getGeometry(type, name);
@@ -22,7 +22,8 @@ public class CountryTest {
   @Test
   public void testGetBBX() throws Exception {
     String name = "France";
-    BoundingBox expResult = new BoundingBox(-54.615292, 9.559581, 2.110673, 51.087541);
+    BoundingBox expResult = new BoundingBox(-5.132802, 9.559581, 41.365912, 51.087541);
+
     BoundingBox result = Country.getBBX(name);
     assertEquals(expResult.toString(), result.toString());
   }
