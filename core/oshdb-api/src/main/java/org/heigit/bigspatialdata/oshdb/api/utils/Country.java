@@ -44,7 +44,7 @@ public class Country {
    * @throws IOException
    */
   public static FeatureSource<SimpleFeatureType, SimpleFeature> getFeatureSource() throws IOException {
-    File shp = new File("./src/main/resources/ne_10m_admin_0_map_units/ne_10m_admin_0_map_units.shp");
+    File shp = new File("src/main/resources/ne_10m_admin_0_map_units/ne_10m_admin_0_map_units.shp");
     Map<String, Object> map = new HashMap<>(1);
     map.put("url", shp.toURI().toURL());
 
@@ -124,7 +124,13 @@ public class Country {
         LOG.log(Level.WARNING, "No feature was found");
         return null;
       }
-      return (MultiPolygon) geometryCollection.union();
+      
+      if (geometryCollection.getNumGeometries() > 1) {
+        return (MultiPolygon) geometryCollection.union();
+      } else {
+        return (MultiPolygon) geometryCollection.getGeometryN(0);
+      }
+
     }
   }
 
