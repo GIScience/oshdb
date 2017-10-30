@@ -77,13 +77,13 @@ public class Country {
 
   /**
    * Works the same as
-   * {@link #getGeometry(org.heigit.missingmaps.nepalanalyses.geometries.CountryCodeType, java.lang.String) getGeometry}
+   * {@link #getGeometry(org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT, java.lang.String) getGeometry}
    * but returns the bounding box. To keep you from creating large bounding
    * boxes this function is limited to
-   * {@link org.heigit.missingmaps.nepalanalyses.geometries.CountryCodeType#GEOUNIT GEOUNIT}.
+   * {@link org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT GEOUNIT}.
    *
    * @param name the
-   * {@link org.heigit.missingmaps.nepalanalyses.geometries.CountryCodeType#ADMIN ADMIN}
+   * {@link org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT GEOUNIT}
    * name of the country
    * @return
    * @throws IOException
