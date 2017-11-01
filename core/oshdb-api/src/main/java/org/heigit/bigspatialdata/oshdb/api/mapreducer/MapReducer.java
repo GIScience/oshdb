@@ -228,10 +228,10 @@ public abstract class MapReducer<X> {
       if (this._bboxFilter == null)
         ret._bboxFilter = bboxFilter;
       else
-        ret._bboxFilter = BoundingBox.intersect(bboxFilter, this._bboxFilter);
+        ret._bboxFilter = BoundingBox.intersect(bboxFilter, ret._bboxFilter);
     } else {
-      ret._polyFilter = Geo.clip(this._polyFilter, bboxFilter);
-      ret._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
+      ret._polyFilter = Geo.clip(ret._polyFilter, bboxFilter);
+      ret._bboxFilter = new BoundingBox(ret._polyFilter.getEnvelopeInternal());
     }
     return ret;
   }
@@ -249,12 +249,12 @@ public abstract class MapReducer<X> {
       if (this._bboxFilter == null)
         ret._polyFilter = polygonFilter;
       else
-        ret._polyFilter = Geo.clip(polygonFilter, this._bboxFilter);
+        ret._polyFilter = Geo.clip(polygonFilter, ret._bboxFilter);
     } else {
-      ret._polyFilter = Geo.clip(polygonFilter, this._getPolyFilter());
+      ret._polyFilter = Geo.clip(polygonFilter, ret._getPolyFilter());
     }
-    ret._bboxFilter = new BoundingBox(this._polyFilter.getEnvelopeInternal());
-    return this;
+    ret._bboxFilter = new BoundingBox(ret._polyFilter.getEnvelopeInternal());
+    return ret;
   }
 
   /**
