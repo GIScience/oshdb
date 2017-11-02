@@ -5,7 +5,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,9 +43,8 @@ public class Country {
    * @throws IOException
    */
   public static FeatureSource<SimpleFeatureType, SimpleFeature> getFeatureSource() throws IOException {
-    File shp = new File("src/main/resources/ne_10m_admin_0_map_units/ne_10m_admin_0_map_units.shp");
     Map<String, Object> map = new HashMap<>(1);
-    map.put("url", shp.toURI().toURL());
+    map.put("url", Country.class.getResource("/ne_10m_admin_0_map_units/ne_10m_admin_0_map_units.shp"));
 
     DataStore dataStore = DataStoreFinder.getDataStore(map);
     String typeName = dataStore.getTypeNames()[0];
@@ -77,7 +75,7 @@ public class Country {
 
   /**
    * Works the same as
-   * {@link #getGeometry(org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT, java.lang.String) getGeometry}
+   * {@link #getGeometry(org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType, java.lang.String) getGeometry}
    * but returns the bounding box. To keep you from creating large bounding
    * boxes this function is limited to
    * {@link org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT GEOUNIT}.
