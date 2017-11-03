@@ -247,21 +247,6 @@ public abstract class MapReducer<X> {
    *
    * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
    * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
-   * @param isoDateStart an ISO 8601 period string representing the (regular) interval between the timestamps to be used in the analysis; for example "P1M" can be used for a monthly interval
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   */
-  public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd, String isoPeriod) {
-    this._tstamps = new OSHDBTimestamps(isoDateStart, isoDateEnd, isoPeriod);
-    return this;
-  }
-
-  /**
-   * Set the timestamps for which to perform the analysis in a regular interval between a start and end date.
-   *
-   * See {@link #timestamps(OSHDBTimestampList)} for further information.
-   *
-   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
    * @param isoDateStart the interval between the timestamps to be used in the analysis
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
