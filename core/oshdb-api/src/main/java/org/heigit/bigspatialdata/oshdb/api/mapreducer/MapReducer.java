@@ -425,6 +425,7 @@ public abstract class MapReducer<X> {
     }
     int keyId = keyValueId.getKey();
     int valueId = keyValueId.getValue();
+    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     this._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
     return this;
   }
