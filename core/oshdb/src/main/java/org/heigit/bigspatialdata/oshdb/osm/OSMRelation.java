@@ -106,7 +106,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
       try {
         geoms[i] = getMembers()[i].getEntity().getByTimestamp(timestamp).getGeometry(timestamp, areaDecider);
       } catch (NullPointerException ex) {
-        LOG.warn("Relation member entity missing, geometry could not be created.");
+        LOG.warn("Member entity of relation/{} missing, geometry could not be created.", this.getId());
         return null;
       }
     }
@@ -259,7 +259,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
       try {
         member.add("role", tagtranslator.role2String(mem.getRoleId()));
       } catch (NullPointerException ex) {
-        LOG.warn("The TagTranslator could not resolve the member role {} of a member of relation/{}", mem.getRoleId());
+        LOG.warn("The TagTranslator could not resolve the member role {} of a member of relation/{}", mem.getRoleId(), this.getId());
         member.add("role", mem.getRoleId());
       }
       JSONMembers.add(member);
