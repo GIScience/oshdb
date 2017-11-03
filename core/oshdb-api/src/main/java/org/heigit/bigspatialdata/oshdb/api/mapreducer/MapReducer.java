@@ -418,7 +418,7 @@ public abstract class MapReducer<X> {
   public MapReducer<X> where(String key, String value) throws Exception {
     Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
     if (keyValueId == null) {
-      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+      LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this filter.", key, value);
       this._preFilters.add(ignored -> false);
       this._filters.add(ignored -> false);
       return this;
