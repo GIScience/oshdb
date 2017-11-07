@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -127,31 +128,6 @@ public abstract class MapReducer<X> {
   public MapReducer<X> keytables(OSHDB_JDBC oshdb) {
     this._oshdbForTags = oshdb;
     return this;
-  }
-
-  /**
-   * Helper that resolves an OSM tag key string into an internal identifier (using the keytables database).
-   *
-   * @param key the osm tag key string (e.g. "building")
-   * @return the identifier of this tag key
-   * @throws Exception
-   */
-  protected Integer getTagKeyId(String key) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
-    return this._tagTranslator.key2Int(key);
-  }
-
-  /**
-   * Helper that resolves an OSM tag (key and value) string into an internal identifier (using the keytables database).
-   *
-   * @param key the osm tag key string (e.g. "highway")
-   * @param value the osm tag value string (e.g. "residential")
-   * @return the key's and value's identifiers of this tag key and value respectively
-   * @throws Exception
-   */
-  protected Pair<Integer, Integer> getTagValueId(String key, String value) throws Exception {
-    if (this._tagTranslator == null) this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
-    return this._tagTranslator.tag2Int(new ImmutablePair(key,value));
   }
 
   /**
@@ -350,7 +326,7 @@ public abstract class MapReducer<X> {
    * @throws Exception
    */
   public MapReducer<X> where(String key) throws Exception {
-    Integer keyId = this.getTagKeyId(key);
+    Integer keyId = this._getTagTranslator().key2Int(key);
     if (keyId == null) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
       this._preFilters.add(ignored -> false);
@@ -401,7 +377,7 @@ public abstract class MapReducer<X> {
    * @throws Exception
    */
   public MapReducer<X> where(String key, String value) throws Exception {
-    Pair<Integer, Integer> keyValueId = this.getTagValueId(key, value);
+    Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
     if (keyValueId == null) {
       LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this filter.", key, value);
       this._preFilters.add(ignored -> false);
@@ -444,6 +420,99 @@ public abstract class MapReducer<X> {
   @Deprecated
   public MapReducer<X> filterByTagValue(String key, String value) throws Exception {
     return this.where(key, value);
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and one of the
+   * given values.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @param values an array of tag values to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapReducer<X> where(String key, Collection<String> values) throws Exception {
+    Integer keyId = this._getTagTranslator().key2Int(key);
+    if (keyId == null || values.size() == 0) {
+      LOG.warn((keyId == null ? "Tag key \"{}\" not found." : "Empty tag value list.") + " No data will match this filter.", key);
+      this._preFilters.add(ignored -> false);
+      this._filters.add(ignored -> false);
+      return this;
+    }
+    List<Integer> valueIds = new ArrayList<>();
+    for (String value : values) {
+      Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
+      if (keyValueId == null) {
+        LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.", key, value);
+      } else {
+        valueIds.add(keyValueId.getValue());
+      }
+    }
+    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    this._filters.add(osmEntity -> valueIds.stream().anyMatch(valueId -> osmEntity.hasTagValue(keyId, valueId)));
+    return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have a tag with the given key and
+   * whose value matches the given regular expression pattern.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @param valuePattern a regular expression which the tag value of the osm entity must match
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapReducer<X> where(String key, Pattern valuePattern) throws Exception {
+    Integer keyId = this._getTagTranslator().key2Int(key);
+    if (keyId == null) {
+      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+      this._preFilters.add(ignored -> false);
+      this._filters.add(ignored -> false);
+      return this;
+    }
+    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    this._filters.add(osmEntity -> {
+      if (!osmEntity.hasTagKey(keyId)) return false;
+      int[] tags = osmEntity.getTags();
+      String value = null;
+      for (int i=0; i<tags.length; i+=2) {
+        if (tags[i] == keyId)
+          value = this._getTagTranslator().tag2String(keyId, tags[i+1]).getValue();
+      }
+      return valuePattern.matcher(value).matches();
+    });
+    return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one of the supplied
+   * tags (key=value pairs)
+   *
+   * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapReducer<X> where(Collection<Pair<String, String>> keyValuePairs) throws Exception {
+    if (keyValuePairs.size() == 0) {
+      LOG.warn("Empty tag list. No data will match this filter.");
+      this._preFilters.add(ignored -> false);
+      this._filters.add(ignored -> false);
+      return this;
+    }
+    Set<Integer> keyIds = new HashSet<>();
+    List<Pair<Integer, Integer>> keyValueIds = new ArrayList<>();
+    for (Pair<String, String> tag : keyValuePairs) {
+      Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(tag);
+      if (keyValueId == null) {
+        LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.", tag.getKey(), tag.getValue());
+      } else {
+        keyIds.add(keyValueId.getKey());
+        keyValueIds.add(keyValueId);
+      }
+    }
+    this._preFilters.add(oshEntitiy -> keyIds.stream().anyMatch(oshEntitiy::hasTagKey));
+    this._filters.add(osmEntity -> keyValueIds.stream().anyMatch(tag -> osmEntity.hasTagValue(tag.getKey(), tag.getValue())));
+    return this;
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -962,6 +1031,12 @@ public abstract class MapReducer<X> {
   // -------------------------------------------------------------------------------------------------------------------
   // Some helper methods for internal use in the mapReduce functions
   // -------------------------------------------------------------------------------------------------------------------
+
+  protected TagTranslator _getTagTranslator() {
+    if (this._tagTranslator == null)
+      this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
+    return this._tagTranslator;
+  }
 
   // Helper that chains multiple oshEntity filters together
   protected SerializablePredicate<OSHEntity> _getPreFilter() {
