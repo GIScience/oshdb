@@ -60,7 +60,7 @@ public class TimestampFormatter {
    * @return
    */
   public String isoDateTime(long timestamp) {
-    return _formatIsoDateTime.get().format(timestamp);
+    return _formatIsoDateTime.get().format(timestamp * 1000);
   }
 
   /**
