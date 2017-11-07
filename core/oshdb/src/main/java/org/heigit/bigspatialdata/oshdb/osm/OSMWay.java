@@ -6,8 +6,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Stream;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
@@ -131,13 +129,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
 
   @Override
   public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
-    JsonObjectBuilder result = super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
-    JsonArrayBuilder nd = Json.createArrayBuilder();
-    for (OSMMember node : getRefs()) {
-      nd.add(node.getId());
-    }
-    result.add("refs", nd);
-    return result;
+    return super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
   }
 
 }

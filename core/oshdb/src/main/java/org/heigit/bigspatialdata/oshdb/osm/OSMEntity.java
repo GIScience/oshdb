@@ -1,7 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Polygonal;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
@@ -12,8 +12,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
-
-import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.*;
@@ -24,6 +22,7 @@ import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
 
 public abstract class OSMEntity {
+
   private static final Logger LOG = LoggerFactory.getLogger(OSMEntity.class);
 
   protected final long id;
@@ -211,37 +210,104 @@ public abstract class OSMEntity {
    */
   protected JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     //JSON for properties
-    JsonObjectBuilder properties;
-    try {
-      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().osmTimestamp(getTimestamp())).add("user", tagtranslator.usertoStr(getUserId())).add("uid", getUserId());
-      for (int i = 0; i < getTags().length; i += 2) {
-        Pair<String, String> tags = tagtranslator.tag2String(new ImmutablePair<>(getTags()[i], getTags()[i + 1]));
-        properties.add(tags.getKey(), tags.getValue());
-      }
-    } catch (NullPointerException ex) {
-      LOG.warn("The TagTranslator could not resolve (some of) the tags of entity {}/{}", this.getType().toString().toLowerCase(), this.getId());
-      properties = Json.createObjectBuilder().add("visible", isVisible()).add("version", getVersion()).add("changeset", getChangeset()).add("timestamp", TimestampFormatter.getInstance().osmTimestamp(getTimestamp())).add("user", getUserId()).add("uid", getUserId());
-      for (int i = 0; i < getTags().length; i += 2) {
-        properties.add(Integer.toString(getTags()[i]), getTags()[i + 1]);
-      }
+    JsonObjectBuilder properties = Json.createObjectBuilder();
+    StringBuilder jsonid = new StringBuilder();
 
+    //add type
+    if (this instanceof OSMNode) {
+      properties.add("@type", "node");
+      jsonid.append("node");
+    } else if (this instanceof OSMWay) {
+      properties.add("@type", "way");
+      jsonid.append("way");
+    } else if (this instanceof OSMRelation) {
+      properties.add("@type", "relation");
+      jsonid.append("relation");
+    } else {
+      properties.add("@type", "unknown");
+      jsonid.append("unknowntype");
     }
+
+    //add other simple meta attributes
+    properties.add("@id", getId())
+            .add("@visible", isVisible())
+            .add("@version", getVersion())
+            .add("@changeset", getChangeset())
+            .add("@timestamp", TimestampFormatter.getInstance().isoDateTime(getTimestamp()))
+            .add("@geomtimestamp", TimestampFormatter.getInstance().isoDateTime(timestamp));
+    jsonid.append("/").append(getId()).append("@").append(TimestampFormatter.getInstance().isoDateTime(timestamp));
+
+    //add meta attributes with possible failures
+    try {
+      properties.add("@user", tagtranslator.usertoStr(getUserId()));
+    } catch (NullPointerException ex) {
+      LOG.warn("Could not resolve username of entity {}", this.getId());
+      properties.add("@user", "<error: could not resolve>");
+    }
+
+    properties.add("@uid", getUserId());
+
+    for (int i = 0; i < getTags().length; i += 2) {
+      properties = this.addRiskyKey(getTags()[i], getTags()[i + 1], tagtranslator, properties);
+    }
+
+    //add instance specific attributes
+    if (this instanceof OSMWay) {
+      JsonArrayBuilder nd = Json.createArrayBuilder();
+      OSMWay way = (OSMWay) this;
+      for (OSMMember node : way.getRefs()) {
+        nd.add(node.getId());
+      }
+      properties.add("refs", nd);
+
+    } else if (this instanceof OSMRelation) {
+      JsonArrayBuilder JSONMembers = Json.createArrayBuilder();
+      OSMRelation relation = (OSMRelation) this;
+      for (OSMMember mem : relation.getMembers()) {
+        JsonObjectBuilder member = Json.createObjectBuilder();
+        member.add("type", mem.getType().toString()).add("ref", mem.getId());
+        try {
+          member.add("role", tagtranslator.role2String(mem.getRoleId()));
+        } catch (NullPointerException ex) {
+          LOG.warn("The TagTranslator could not resolve the member role {} of a member of relation/{}", mem.getRoleId(), this.getId());
+          member.add("role", "<error: could not resolve>");
+        }
+        JSONMembers.add(member);
+      }
+      properties.add("members", JSONMembers);
+    }
+
     //JSON for geometry
     GeoJSONWriter writer = new GeoJSONWriter();
     try {
       GeoJSON json = writer.write(this.getGeometry(timestamp, areaDecider));
       JsonReader jsonReader = Json.createReader(new StringReader(json.toString()));
       JsonObject geom = jsonReader.readObject();
-      return Json.createObjectBuilder().add("type", "Feature").add("id", getId()).add("properties", properties).add("geometry", geom);
+      return Json.createObjectBuilder().add("type", "Feature").add("id", jsonid.toString()).add("properties", properties).add("geometry", geom);
     } catch (NullPointerException ex) {
       LOG.warn("Could not build the geometry of entity {}/{}", this.getType().toString().toLowerCase(), this.getId());
-      return Json.createObjectBuilder().add("type", "Feature").add("id", getId()).add("properties", properties);
+      return Json.createObjectBuilder().add("type", "Feature").add("id", jsonid.toString()).add("properties", properties).add("geometry", "<error: could not create geometry>");
+    }
+  }
+
+  private JsonObjectBuilder addRiskyKey(int key, int value, TagTranslator tagtranslator, JsonObjectBuilder properties) {
+    try {
+      Pair<String, String> temptags = tagtranslator.tag2String(key, value);
+      return properties.add(temptags.getKey(), temptags.getValue());
+    } catch (NullPointerException ex) {
+      try {
+        LOG.warn("The TagTranslator could not resolve a tag of entity {}/{}", this.getType().toString().toLowerCase(), this.getId());
+        String tempkey = tagtranslator.key2String(key);
+        return properties.add(tempkey, "<error: could not resolve value");
+      } catch (NullPointerException ex2) {
+        return properties.add("<error: could not resolve key>", "<error: could not resolve value");
+      }
     }
   }
 
   /**
    * Convert multiple features at once. Calls toGeoJSON for each feature but
-   * puts them in a FeatureCollection so you can see the all at once in your
+   * puts them in a FeatureCollection, so you can see them all at once in your
    * GIS.
    *
    * @param osmObjects A list of pairs, the left being the OSMEntity to convert
