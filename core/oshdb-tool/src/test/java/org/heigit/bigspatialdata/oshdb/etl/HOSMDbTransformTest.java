@@ -50,7 +50,7 @@ public class HOSMDbTransformTest {
   /*//works also:
   @Test
   public void testExtract_File() throws Exception {
-    File pbfFile = new File("./src/test/resources/maldives.osh.pbf");
+    File pbfFile = new File("./src/test/resources/test.osh.pbf");
     HOSMDbTransform.transform(pbfFile);
     assertTrue(oshdb.exists());
     assertTrue(nodes.exists());
@@ -59,7 +59,7 @@ public class HOSMDbTransformTest {
   }*/
   @Test
   public void testMain() throws Exception {
-    String[] args = new String[]{"-pbf", "./src/test/resources/maldives.osh.pbf", "-tmp", "./", "-key", "./keytables", "-db", "./oshdb"};
+    String[] args = new String[]{"-pbf", "./src/test/resources/test.osh.pbf", "-tmp", "./", "-key", "./keytables", "-db", "./oshdb"};
     HOSMDbTransform.main(args);
     assertTrue(oshdb.exists());
     assertTrue(nodes.exists());
