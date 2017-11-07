@@ -143,12 +143,7 @@ public class XYGrid {
     double lon = (x * cellWidth) - 180.0;
     double lat = (y * cellWidth) - 90.0;
 
-    final NumericRange longitude;
-    if (equalsEpsilon(lon, -180.0)) {
-      longitude = new NumericRange(180.0, (lon + cellWidth) - EPSILON);
-    } else {
-      longitude = new NumericRange(lon, (lon + cellWidth) - EPSILON);
-    }
+    final NumericRange longitude = new NumericRange(lon, (lon + cellWidth) - EPSILON);
 
     final NumericRange latitude;
     if (zoom == 0) {
@@ -277,16 +272,16 @@ public class XYGrid {
     }
 
     if (equalsEpsilon(minlong, 180.0)) {
-      minlong = -180.0;
-    }
-    if (equalsEpsilon(maxlat, 90.0)) {
-      maxlat -= EPSILON;
-    }
-    if (equalsEpsilon(minlat, 90.0)) {
-      minlat -= EPSILON;
+      minlong = 180.0 - EPSILON;
     }
     if (equalsEpsilon(maxlong, 180.0)) {
-      maxlong = -180.0;
+      maxlong = 180.0 - EPSILON;
+    }
+    if (equalsEpsilon(minlat, 90.0)) {
+      minlat = 90.0 - EPSILON;
+    }
+    if (equalsEpsilon(maxlat, 90.0)) {
+      maxlat = 90.0 - EPSILON;
     }
 
     //cope with BBOX extending over the date-line

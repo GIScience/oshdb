@@ -323,18 +323,18 @@ public class ZGrid {
 	      maxlat = 90.0;
 	    }
 
-	    if (equalsEpsilon(minlong, 180.0)) {
-	      minlong = -180.0;
-	    }
-	    if (equalsEpsilon(maxlat, 90.0)) {
-	      maxlat -= EPSILON;
-	    }
-	    if (equalsEpsilon(minlat, 90.0)) {
-	      minlat -= EPSILON;
-	    }
-	    if (equalsEpsilon(maxlong, 180.0)) {
-	      maxlong = -180.0;
-	    }
+			if (equalsEpsilon(minlong, 180.0)) {
+				minlong = -180.0;
+			}
+			if (equalsEpsilon(maxlong, 180.0)) {
+				maxlong = 180.0 - EPSILON;
+			}
+			if (equalsEpsilon(minlat, 90.0)) {
+				minlat = 90.0 - EPSILON;
+			}
+			if (equalsEpsilon(maxlat, 90.0)) {
+				maxlat = 90.0 - EPSILON;
+			}
 
 	    //cope with BBOX extending over the date-line
 	    if (minlong > maxlong) {

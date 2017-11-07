@@ -207,7 +207,7 @@ public class XYGridTest {
   @Test
   public void testGetCellDimensions() {
     long cellId = 0L;
-    MultiDimensionalNumericData expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(180.0, -90.00000000001), new NumericRange(-90.0, -0.00000000001)});
+    MultiDimensionalNumericData expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(-180.0, -90.00000000001), new NumericRange(-90.0, -0.00000000001)});
     MultiDimensionalNumericData result = two.getCellDimensions(cellId);
     org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
 
@@ -222,12 +222,12 @@ public class XYGridTest {
     org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
 
     cellId = 0L;
-    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(180.0, 179.99999999999), new NumericRange(-90.0, 90.0)});
+    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(-180.0, 179.99999999999), new NumericRange(-90.0, 90.0)});
     result = zero.getCellDimensions(cellId);
     org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
 
     cellId = 0L;
-    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(180.0, -0.00000000001), new NumericRange(-90.0, 90.0)});
+    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(-180.0, -0.00000000001), new NumericRange(-90.0, 90.0)});
     XYGrid instance = new XYGrid(1);
     result = instance.getCellDimensions(cellId);
     org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
@@ -282,6 +282,13 @@ public class XYGridTest {
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
 
+    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+    result = two.bbox2CellIdRanges(BBOX, false);
+    assertEquals(2, result.size());
+    interval = result.iterator().next();
+    assertEquals(0, interval.getLeft().longValue());
+    assertEquals(3, interval.getRight().longValue());
+
     BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
     result = zero.bbox2CellIdRanges(BBOX, false);
     assertEquals(1, result.size());
@@ -310,7 +317,7 @@ public class XYGridTest {
     }
     assertEquals(0, expectedCellIds.size());
 
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(180, 89), new NumericRange(0, 5)});
+    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 89), new NumericRange(0, 5)});
     expectedCellIds = new TreeSet<>();
     expectedCellIds.add(4L);
     expectedCellIds.add(5L);
@@ -350,6 +357,9 @@ public class XYGridTest {
     int expResult = 2048;
     result = new XYGrid(MAXZOOM).bbox2CellIdRanges(BBOX, true);
     assertEquals(expResult, result.size());
+    interval = result.iterator().next();
+    assertEquals(0, interval.getLeft().longValue());
+    assertEquals(4095, interval.getRight().longValue());
   }
 
   @Test
