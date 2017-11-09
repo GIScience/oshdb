@@ -12,16 +12,14 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-
 import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, Serializable {
+
   private static final Logger LOG = LoggerFactory.getLogger(OSMRelation.class);
 
   private static final long serialVersionUID = 1L;
@@ -251,21 +249,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
   @Override
   public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
-    JsonObjectBuilder result = super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
-    JsonArrayBuilder JSONMembers = Json.createArrayBuilder();
-    for (OSMMember mem : getMembers()) {
-      JsonObjectBuilder member = Json.createObjectBuilder();
-      member.add("type", mem.getType().toString()).add("ref", mem.getId());
-      try {
-        member.add("role", tagtranslator.role2String(mem.getRoleId()));
-      } catch (NullPointerException ex) {
-        LOG.warn("The TagTranslator could not resolve the member role {} of a member of relation/{}", mem.getRoleId(), this.getId());
-        member.add("role", mem.getRoleId());
-      }
-      JSONMembers.add(member);
-    }
-    result.add("members", JSONMembers);
-    return result;
+    return super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
   }
 
 }
