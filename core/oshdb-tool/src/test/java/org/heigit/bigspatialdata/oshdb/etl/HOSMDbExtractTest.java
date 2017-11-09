@@ -42,7 +42,7 @@ public class HOSMDbExtractTest {
   /*//works also:
   @Test
   public void testExtract_File() throws Exception {
-    File pbfFile = new File("./src/test/resources/maldives.osh.pbf");
+    File pbfFile = new File("./src/test/resources/test.osh.pbf");
     HOSMDbExtract.extract(pbfFile);
     assertTrue(oshdb.exists());
     assertTrue(relation.exists());
@@ -50,7 +50,7 @@ public class HOSMDbExtractTest {
   }*/
   @Test
   public void testMain() throws Exception {
-    String[] args = new String[]{"-pbf", "./src/test/resources/maldives.osh.pbf", "-tmp", "./", "-keytables", "./keytables"};
+    String[] args = new String[]{"-pbf", "./src/test/resources/test.osh.pbf", "-tmp", "./", "-keytables", "./keytables"};
     HOSMDbExtract.main(args);
     assertTrue(oshdb.exists());
     assertTrue(relation.exists());

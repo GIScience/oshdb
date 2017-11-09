@@ -173,8 +173,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @throws Exception
    */
   public MapAggregator<U, X> where(String key, Collection<String> values) throws Exception {
-    this._mapReducer.where(key, values);
-    return this;
+    return this.copyTransform(this._mapReducer.where(key, values));
   }
 
   /**
@@ -187,8 +186,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @throws Exception
    */
   public MapAggregator<U, X> where(String key, Pattern valuePattern) throws Exception {
-    this._mapReducer.where(key, valuePattern);
-    return this;
+    return this.copyTransform(this._mapReducer.where(key, valuePattern));
   }
 
   /**
@@ -200,8 +198,7 @@ public class MapAggregator<U extends Comparable, X> {
    * @throws Exception
    */
   public MapAggregator<U, X> where(Collection<Pair<String, String>> keyValuePairs) throws Exception {
-    this._mapReducer.where(keyValuePairs);
-    return this;
+    return this.copyTransform(this._mapReducer.where(keyValuePairs));
   }
 
   /**

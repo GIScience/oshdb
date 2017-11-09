@@ -7,16 +7,17 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.LongBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.LongBoundingBox.OVERLAP;
 
+
 public class ZGrid {
 
   private static final int DIMENSION = 2;
   private static long ZOOM_FACTOR = 1L << 56;
   private static long ID_MASK = 0x00FFFFFFFFFFFFFFL;
 
-  private final long space;// = (long) (360.0 * OSMNode.GEOM_PRECISION_TO_LONG);
+  private static final long space = (long) (360.0 * OSMNode.GEOM_PRECISION_TO_LONG);
   private final int maxZoom;
-
-  public ZGrid(int maxZoom, long space) {
+  
+  public ZGrid(int maxZoom) {
     if (maxZoom < 1)
       throw new IllegalArgumentException("maxZoom must be >= 1 but is " + maxZoom);
     // maxZoom so that 8 Bit ZoomLevel + maxZoom Bits per Dimension(2) = 64 Bit
@@ -24,22 +25,38 @@ public class ZGrid {
     if (maxZoom > 28)
       throw new IllegalArgumentException("maxZoom must not be > 28 but is " + maxZoom);
     this.maxZoom = maxZoom;
-    this.space = space;
   }
 
+  
+  public long getIdSingleZIdWithZoom(long lon, long lat){
+    return getIdSingleZIdWithZoom(lon,lon,lat,lat);
+  }
+  
   public long getIdSingleZIdWithZoom(long[] lon, long[] lat) {
+    return getIdSingleZIdWithZoom(lon[0], lon[1], lat[0], lat[1]);
+  }
+  public long getIdSingleZIdWithZoom(long minLon, long maxLon, long minLat, long maxLat){
     final long[] x = new long[2];
     final long[] y = new long[2];
 
-    int zoom = Math.min(optimalZoom(lon[1] - lon[0]), optimalZoom(lat[1] - lat[0]));
+    minLon = normalizeLon(minLon);
+    maxLon = normalizeLon(maxLon);
+    minLat = normalizeLat(minLat);
+    maxLat = normalizeLat(maxLat);
+    
+    if(!validateLon(minLon) || !validateLon(maxLon) ||
+       !validateLat(minLat) || !validateLat(maxLat))
+      return -1;
+    
+    int zoom = Math.min(optimalZoom(maxLon - minLon), optimalZoom(maxLat - minLat));
     long zoomPow = (long) Math.pow(2, zoom);
 
     while (zoom > 0) {
       long cellWidth = space / zoomPow;
-      x[0] = lon[0] / cellWidth;
-      x[1] = lon[1] / cellWidth;
-      y[0] = lat[0] / cellWidth;
-      y[1] = lat[1] / cellWidth;
+      x[0] = minLon / cellWidth;
+      x[1] = maxLon / cellWidth;
+      y[0] = minLat / cellWidth;
+      y[1] = maxLat / cellWidth;
 
       if (x[0] == x[1] && y[0] == y[1])
         break;
@@ -57,10 +74,27 @@ public class ZGrid {
   public static int getZoom(long zId) {
     return (int) (zId / ZOOM_FACTOR);
   }
+  
+  public static long addZoomToId(long id, int zoom){
+    return id + (zoom*ZOOM_FACTOR);
+  }
 
   public static long getIdWithoutZoom(long zId) {
     return zId & ID_MASK;
   }
+
+  public static long getParent(long zId, int parentZoom){
+    final long zoom = getZoom(zId);
+    if(zoom < parentZoom)
+      throw new IllegalArgumentException("zoom of id already lesser than parentZoom (zoom:"+zoom+" parentZoom:"+parentZoom+")");
+    if(zoom == parentZoom)
+      return zId;
+    final long diff = zoom - parentZoom;
+    final long id = (getIdWithoutZoom(zId) >>> diff*2);
+    
+    return id + (parentZoom)*ZOOM_FACTOR;
+  }
+    
   
   public static long getParent(long zId) {
     final long zoom = getZoom(zId);
@@ -70,6 +104,7 @@ public class ZGrid {
     }
     return 0;
   }
+      
   
   public Iterable<Long> iterableDF(LongBoundingBox search) {
     final ZGrid zGrid = this;
@@ -88,21 +123,21 @@ public class ZGrid {
   }
 
   public LongBoundingBox getBoundingBox(long zId) {
+    if(zId < 0)
+      return new LongBoundingBox(0,0,0,0);
     final long id = getIdWithoutZoom(zId);
     final int zoom = getZoom(zId);
     final long cellWidth = space / (long) Math.pow(2, zoom);
 
     long[] xy = getXY(id);
 
-    System.out.printf("x:%d, y:%d%n", xy[0], xy[1]);
-
     final long[] lon = new long[2];
-    lon[0] = xy[0] * cellWidth;
+    lon[0] = denormalizeLon(xy[0] * cellWidth);
     lon[1] = lon[0] + cellWidth - 1;
     final long[] lat = new long[2];
-    lat[0] = xy[1] * cellWidth;
+    lat[0] = denormalizeLat(xy[1] * cellWidth);
     lat[1] = lat[0] + cellWidth - 1;
-
+   
     return new LongBoundingBox(lon, lat);
   }
 
@@ -116,6 +151,8 @@ public class ZGrid {
   }
 
   private int optimalZoom(long delta) {
+    if(delta == 0)
+      return maxZoom;
     return Math.min(63 - Long.numberOfLeadingZeros((space / (delta))), maxZoom);
   }
 
@@ -140,6 +177,35 @@ public class ZGrid {
     return z;
   }
 
+  private static long normalizeLon(long lon){
+    return lon + (long)(180.0*OSMNode.GEOM_PRECISION_TO_LONG);
+  }
+  
+  private static long denormalizeLon(long lon){
+    return lon - (long)(180.0*OSMNode.GEOM_PRECISION_TO_LONG);
+  }
+  
+  private static long normalizeLat(long lat){
+    return lat + (long)(90.0*OSMNode.GEOM_PRECISION_TO_LONG);
+  }
+  private static long denormalizeLat(long lat){
+    return lat - (long)(90.0*OSMNode.GEOM_PRECISION_TO_LONG);
+  }
+  
+  private static boolean validateLon(long lon){
+    if(lon < 0 || lon > space)
+        return false;
+    return true;
+  }
+  
+  private static boolean validateLat(long lat){
+    if(lat < 0 || lat > space/2)
+        return false;
+    return true;
+  }
+  
+  
+  
   
   public static final Comparator<Long> ORDER_DFS = (a, b) -> {
     final long aZ = getZoom(a);
@@ -164,6 +230,12 @@ public class ZGrid {
     return (r == 0) ? prio : r;
   };
 
+  public static LongBoundingBox WORLD = new LongBoundingBox(
+      (long) (-180.0 * OSMNode.GEOM_PRECISION_TO_LONG),
+      (long) (180.0 * OSMNode.GEOM_PRECISION_TO_LONG),
+      (long) (-90.0 * OSMNode.GEOM_PRECISION_TO_LONG),
+      (long) (180.0 * OSMNode.GEOM_PRECISION_TO_LONG));
+  
   private static class DFIterator implements Iterator<Long> {
 
     private static class State {
@@ -268,28 +340,6 @@ public class ZGrid {
       hasNext = false;
       next = -1;
     }
-
-    private static int overlap(LongBoundingBox bbox, LongBoundingBox test) {
-      if (test.minLon >= bbox.maxLon)
-        return 0;
-      if (test.maxLon <= bbox.minLon)
-        return 0;
-      if (test.minLat >= bbox.maxLat)
-        return 0;
-      if (test.maxLat <= bbox.minLat)
-        return 0; // no overlap
-
-      // fit bbox in test
-      if (bbox.minLon >= test.minLon && bbox.maxLon <= test.maxLon && bbox.minLat >= test.minLat
-          && bbox.maxLat <= test.maxLat)
-        return 3;
-      // fit test in bbox
-      if (test.minLon >= bbox.minLon && test.maxLon <= bbox.maxLon && test.minLat >= bbox.minLat
-          && test.maxLat <= bbox.maxLat)
-        return 2;
-      return 1;
-    }
-
   }
   
   public static void main(String[] args){
@@ -297,77 +347,23 @@ public class ZGrid {
     final long space = (long) (360.0 * OSMNode.GEOM_PRECISION_TO_LONG);
     final long zoompow = (long) Math.pow(2, zoom);
     final long cellWidth = space / zoompow;
-    ZGrid g = new ZGrid(zoom, space);
+    ZGrid g = new ZGrid(zoom);
     // new LongBoundingBox(1,3,2,4))//
     g.iterableDF(new LongBoundingBox(86860589L, 86860589L + cellWidth, 494139909L, 494139909L + 100)).forEach(zId2 -> {
-      System.out.printf("z:%2d - %d%n", g.getZoom(zId2), g.getIdWithoutZoom(zId2));
+      System.out.printf("z:%2d - %d%n", ZGrid.getZoom(zId2), ZGrid.getIdWithoutZoom(zId2));
     });
+    
+    final long test = 32 + 4*ZOOM_FACTOR;
+    
+    
+    System.out.printf("-%64s- (%d:%d)%n",Long.toBinaryString(test),ZGrid.getZoom(test),ZGrid.getIdWithoutZoom(test));
+    final long testParent = ZGrid.getParent(test);
+    System.out.printf("-%64s- (%d:%d)%n",Long.toBinaryString(testParent),ZGrid.getZoom(testParent),ZGrid.getIdWithoutZoom(testParent));
+    final long testParentParent = ZGrid.getParent(testParent);
+    System.out.printf("-%64s- (%d:%d)%n",Long.toBinaryString(testParentParent),ZGrid.getZoom(testParentParent),ZGrid.getIdWithoutZoom(testParentParent));
+    final long testParent2 = ZGrid.getParent(test, 2);
+    System.out.printf("-%64s- (%d:%d)%n",Long.toBinaryString(testParent2),ZGrid.getZoom(testParent2),ZGrid.getIdWithoutZoom(testParent2));
+    
+    
   }
-
-  /*
-  public static void main(String[] args) {
-    final int zoom = 20;
-    final long zoompow = (long) Math.pow(2, zoom);
-    final long cellWidth = space / zoompow;
-
-    // 49,4139909, 8,6860589
-    final long[] lon = new long[] { 2 * cellWidth, 0 };
-    lon[1] = lon[0] + 1;
-    final long[] lat = new long[] { 2 * cellWidth, 0 };
-    lat[1] = lat[0] + 1;
-
-    ZGrid zGrid = new ZGrid(20);
-
-    long zId = zGrid.getIdSingleZIdWithZoom(lon, lat);
-
-    System.out.println(zId);
-    System.out.println(zGrid.getZoom(zId));
-    System.out.println(zGrid.getIdWithoutZoom(zId));
-    LongBoundingBox bbox = zGrid.getBoundingBox(zId);
-
-    long zIdBBox = zGrid.getIdSingleZIdWithZoom(bbox.getLon(), bbox.getLat());
-    System.out.printf("%d = %d%n", zId, zIdBBox);
-
-    long x1 = 0;// 0xFFFFFFFL;
-    long y1 = 0xFFFFFFFL;
-
-    long morton = morton(x1, y1);
-    System.out.printf("-%64s-%n", Long.toBinaryString(x1));
-    System.out.printf("-%64s-%n", Long.toBinaryString(y1));
-    System.out.printf("-%64s-%n", Long.toBinaryString(morton));
-    System.out.printf("-%64s-%n", Long.toBinaryString(ZOOM_FACTOR * 255));
-
-    long minCellWidth = space / 0xFFFFFFFL;
-    System.out.printf("-%64s-%n", Long.toBinaryString(minCellWidth));
-    long minZoomPow = space / minCellWidth;
-    System.out.printf("-%64s-%n", Long.toBinaryString(minZoomPow));
-    System.out.println(63 - Long.numberOfLeadingZeros(minZoomPow));
-
-    long mx = 0, my = 0;
-    for (int i = 0; i < 5; i++) {
-      long[] xy = getXY(i);
-      System.out.println(i + ": " + Arrays.toString(xy));
-    }
-
-    long minX = 1, minY = 2;
-    long maxX = 3, maxY = 4;
-
-    // 9, 11, 12, 13, 14, 15, 33, 36, 37
-    for (long id = morton(minX, minY); true; id++) {
-      long[] xy = getXY(id);
-      if (xy[0] < minX || xy[0] > maxX || xy[1] < minY || xy[1] > maxY)
-        continue;
-      System.out.printf("%d - %s%n", id, Arrays.toString(xy));
-      if (xy[0] == maxX && xy[1] == maxY)
-        break;
-    }
-
-    ZGrid g = new ZGrid(20);
-    // new LongBoundingBox(1,3,2,4))//
-    g.iterableDF(new LongBoundingBox(86860589L, 86860589L + cellWidth, 494139909L, 494139909L + 100)).forEach(zId2 -> {
-      System.out.printf("z:%2d - %d%n", getZoom(zId2), getIdWithoutZoom(zId2));
-    });
-
-  }
-*/
 }
