@@ -25,11 +25,11 @@ public class OSHDBTimestamp implements Comparable<OSHDBTimestamp> {
   }
   
   public String formatDate() {
-    return this._timeStampFormatter.date(this.toDate());
+    return _timeStampFormatter.date(this.toDate());
   }
 
   public String formatIsoDateTime() {
-    return this._timeStampFormatter.isoDateTime(this.toDate());
+    return _timeStampFormatter.isoDateTime(this.toDate());
   }
 
   public String toString() {

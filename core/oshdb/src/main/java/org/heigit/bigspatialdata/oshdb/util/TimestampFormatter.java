@@ -12,6 +12,13 @@ import java.util.TimeZone;
 public class TimestampFormatter {
 
   private static TimestampFormatter _instance;
+  private final ThreadLocal<SimpleDateFormat> _formatDate = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
+  private final ThreadLocal<SimpleDateFormat> _formatIsoDateTime = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+
+  private TimestampFormatter() {
+    this._formatDate.get().setTimeZone(TimeZone.getTimeZone("UTC"));
+    this._formatIsoDateTime.get().setTimeZone(TimeZone.getTimeZone("UTC"));
+  }
 
   /**
    * Get a standard TimestampFormatter.
@@ -24,13 +31,6 @@ public class TimestampFormatter {
     }
     return _instance;
   }
-  private final SimpleDateFormat _formatDate = new SimpleDateFormat("yyyy-MM-dd");
-  private final SimpleDateFormat _formatIsoDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-  private TimestampFormatter() {
-    this._formatDate.setTimeZone(TimeZone.getTimeZone("UTC"));
-    this._formatIsoDateTime.setTimeZone(TimeZone.getTimeZone("UTC"));
-  }
 
   /**
    * Converts a date to the format {@code yyyy-MM-dd}.
@@ -39,7 +39,7 @@ public class TimestampFormatter {
    * @return
    */
   public String date(Date date) {
-    return _formatDate.format(date);
+    return _formatDate.get().format(date);
   }
 
   /**
@@ -49,7 +49,7 @@ public class TimestampFormatter {
    * @return
    */
   public String isoDateTime(Date date) {
-    return _formatIsoDateTime.format(date);
+    return _formatIsoDateTime.get().format(date);
   }
 
   /**
@@ -60,7 +60,7 @@ public class TimestampFormatter {
    * @return
    */
   public String isoDateTime(long timestamp) {
-    return _formatIsoDateTime.format(timestamp * 1000);
+    return _formatIsoDateTime.get().format(timestamp * 1000);
   }
 
   /**
@@ -70,6 +70,6 @@ public class TimestampFormatter {
    * @return
    */
   public Long getTimestamp(String timestamp) {
-    return _formatIsoDateTime.parse(timestamp, new ParsePosition(0)).getTime() / 1000;
+    return _formatIsoDateTime.get().parse(timestamp, new ParsePosition(0)).getTime() / 1000;
   }
 }

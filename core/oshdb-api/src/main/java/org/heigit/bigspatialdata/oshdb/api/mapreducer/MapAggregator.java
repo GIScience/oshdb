@@ -11,6 +11,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -147,6 +148,47 @@ public class MapAggregator<U extends Comparable, X> {
    */
   public MapAggregator<U, X> where(String key, String value) throws Exception {
     this._mapReducer.where(key, value);
+    return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and one of the
+   * given values.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @param values an array of tag values to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapAggregator<U, X> where(String key, Collection<String> values) throws Exception {
+    this._mapReducer.where(key, values);
+    return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have a tag with the given key and
+   * whose value matches the given regular expression pattern.
+   *
+   * @param key the tag key to filter the osm entities for
+   * @param valuePattern a regular expression which the tag value of the osm entity must match
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapAggregator<U, X> where(String key, Pattern valuePattern) throws Exception {
+    this._mapReducer.where(key, valuePattern);
+    return this;
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one of the supplied
+   * tags (key=value pairs)
+   *
+   * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @throws Exception
+   */
+  public MapAggregator<U, X> where(Collection<Pair<String, String>> keyValuePairs) throws Exception {
+    this._mapReducer.where(keyValuePairs);
     return this;
   }
 
