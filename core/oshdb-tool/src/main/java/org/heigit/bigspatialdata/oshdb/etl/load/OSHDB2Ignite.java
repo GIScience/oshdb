@@ -8,9 +8,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +46,7 @@ public class OSHDB2Ignite {
    * @param oshdb Connection to the OSHDB
    * @throws org.apache.ignite.IgniteCheckedException
    */
-  public static void load(File igniteXML, Connection oshdb) throws IgniteCheckedException {
+  public static void load(File igniteXML, Connection oshdb, String prefix) throws IgniteCheckedException {
     Ignition.setClientMode(true);
     IgniteConfiguration cfg = IgnitionEx.loadConfiguration(igniteXML.toString()).get1();
     cfg.setIgniteInstanceName("IgniteImportClientInstance");
@@ -131,7 +129,7 @@ public class OSHDB2Ignite {
       return;
     }
     try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdbarg.oshdb, "sa", "")) {
-      OSHDB2Ignite.load(largs.ignitexml, con);
+      OSHDB2Ignite.load(largs.ignitexml, con, largs.prefix);
     }
 
   }
