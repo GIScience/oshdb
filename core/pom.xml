@@ -22,28 +22,17 @@
   
   <repositories>
     <repository>
-      <id>geowave-maven-release</id>
-      <name>GeoWave AWS Snapshot Repository</name>
-      <url>http://geowave-maven.s3-website-us-east-1.amazonaws.com/release</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-
-    <repository>
+      <name>Boundless Repository for Geotools</name>
       <id>boundless</id>
       <url>https://repo.boundlessgeo.com/release/</url>
     </repository>
 
     <repository>
       <id>osgeo</id>
-      <name>Open Source Geospatial Foundation Repository</name>
+      <name>Open Source Geospatial Foundation Repository (also for Geotools)</name>
       <url>http://download.osgeo.org/webdav/geotools/</url>
     </repository>
     
-    <!-- Should our personal repository be added, in case one of these fails?-->
+    <!-- Should our personal repository be added, in case one of these fails? The above are cached there.-->
   </repositories>
 </project>

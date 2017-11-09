@@ -1,12 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.index;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -21,6 +16,7 @@ import org.junit.Test;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class XYGridTest {
+
   private static final int MAXZOOM = OSHDB.MAXZOOM;
   private XYGrid zero;
   private XYGrid two;
@@ -180,19 +176,17 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetId_NumericRange_NumericRange() {
-    NumericRange longitudes = new NumericRange(-10.0, 10.0);
-    NumericRange latitudes = new NumericRange(-10.0, 10.0);
+  public void testGetId_BoundingBox() {
+    BoundingBox bbx = new BoundingBox(-10.0, 10.0, -10.0, 10.0);
     XYGrid instance = new XYGrid(2);
     long expResult = 1L;
-    long result = instance.getId(longitudes, latitudes);
+    long result = instance.getId(bbx);
     assertEquals(expResult, result);
 
-    longitudes = new NumericRange(10.0, -9.0);
-    latitudes = new NumericRange(-10.0, 10.0);
+    BoundingBox bbx2 = new BoundingBox(10.0, -9.0, -10.0, 10.0);
     instance = new XYGrid(2);
     expResult = 2L;
-    result = instance.getId(longitudes, latitudes);
+    result = instance.getId(bbx2);
     assertEquals(expResult, result);
   }
 
@@ -207,30 +201,30 @@ public class XYGridTest {
   @Test
   public void testGetCellDimensions() {
     long cellId = 0L;
-    MultiDimensionalNumericData expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(-180.0, -90.00000000001), new NumericRange(-90.0, -0.00000000001)});
-    MultiDimensionalNumericData result = two.getCellDimensions(cellId);
-    org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
+    BoundingBox expResult = new BoundingBox(-180.0, -90.00000000001, -90.0, -0.00000000001);
+    BoundingBox result = two.getCellDimensions(cellId);
+    assertEquals(expResult, result);
 
     cellId = 6L;
-    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(0.0, 89.99999999999), new NumericRange(0.0, 90.0)});
+    expResult = new BoundingBox(0.0, 89.99999999999, 0.0, 90.0);
     result = two.getCellDimensions(cellId);
-    org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
+    assertEquals(expResult, result);
 
     cellId = 7L;
-    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(90.0, 179.99999999999), new NumericRange(0.0, 90.0)});
+    expResult = new BoundingBox(90.0, 179.99999999999, 0.0, 90.0);
     result = two.getCellDimensions(cellId);
-    org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
+    assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(-180.0, 179.99999999999), new NumericRange(-90.0, 90.0)});
+    expResult = new BoundingBox(-180.0, 179.99999999999, -90.0, 90.0);
     result = zero.getCellDimensions(cellId);
-    org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
+    assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new BasicNumericDataset(new NumericData[]{new NumericRange(-180.0, -0.00000000001), new NumericRange(-90.0, 90.0)});
+    expResult = new BoundingBox(-180.0, -0.00000000001, -90.0, 90.0);
     XYGrid instance = new XYGrid(1);
     result = instance.getCellDimensions(cellId);
-    org.junit.Assert.assertTrue(Arrays.equals(result.getMaxValuesPerDimension(), expResult.getMaxValuesPerDimension()) && Arrays.equals(result.getMinValuesPerDimension(), expResult.getMinValuesPerDimension()));
+    assertEquals(expResult, result);
   }
 
   @Test
@@ -250,17 +244,17 @@ public class XYGridTest {
 
   @Test
   public void testGetEstimatedIdCount() {
-    MultiDimensionalNumericData data = new BasicNumericDataset(new NumericData[]{new NumericRange(0, 89), new NumericRange(0, 89)});
+    BoundingBox data = new BoundingBox(0, 89, 0, 89);
     long expResult = 1L;
     long result = two.getEstimatedIdCount(data);
     org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
 
-    data = new BasicNumericDataset(new NumericData[]{new NumericRange(-89.0, 89.0), new NumericRange(-90.0, 90.0)});
+    data = new BoundingBox(-89.0, 89.0, -90.0, 90.0);
     expResult = 4L;
     result = two.getEstimatedIdCount(data);
     org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
 
-    data = new BasicNumericDataset(new NumericData[]{new NumericRange(0.0, 0.000005364), new NumericRange(0.0, 0.000005364)});
+    data = new BoundingBox(0.0, 0.000005364, 0.0, 0.000005364);
     expResult = 256L;
     result = thirty.getEstimatedIdCount(data);
     org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
@@ -275,35 +269,43 @@ public class XYGridTest {
 
   @Test
   public void testBbox2Ids() {
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+    BoundingBox BBOX = new BoundingBox(-180, 180, -90, 90);
     Set<Pair<Long, Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+
     assertEquals(1, result.size());
     Pair<Long, Long> interval = result.iterator().next();
+
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
 
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+    BBOX = new BoundingBox(-180, 180, -90, 90);
     result = two.bbox2CellIdRanges(BBOX, false);
+
     assertEquals(2, result.size());
     interval = result.iterator().next();
+
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(3, interval.getRight().longValue());
 
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
+    BBOX = new BoundingBox(-10, 10, -10, 10);
     result = zero.bbox2CellIdRanges(BBOX, false);
+
     assertEquals(1, result.size());
     interval = result.iterator().next();
+
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
 
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(179, 89), new NumericRange(0, 5)});
+    BBOX = new BoundingBox(179, 89, 0, 5);
     result = zero.bbox2CellIdRanges(BBOX, false);
+
     assertEquals(1, result.size());
     interval = result.iterator().next();
+
     assertEquals(0, interval.getLeft().longValue());
     assertEquals(0, interval.getRight().longValue());
 
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-10, 10), new NumericRange(-10, 10)});
+    BBOX = new BoundingBox(-10, 10, -10, 10);
     TreeSet<Long> expectedCellIds = new TreeSet<>();
     expectedCellIds.add(1L);
     expectedCellIds.add(2L);
@@ -317,7 +319,7 @@ public class XYGridTest {
     }
     assertEquals(0, expectedCellIds.size());
 
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 89), new NumericRange(0, 5)});
+    BBOX = new BoundingBox(-180, 89, 0, 5);
     expectedCellIds = new TreeSet<>();
     expectedCellIds.add(4L);
     expectedCellIds.add(5L);
@@ -331,7 +333,7 @@ public class XYGridTest {
     }
     assertEquals(0, expectedCellIds.size());
 
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(90, 89), new NumericRange(-90, -1)});
+    BBOX = new BoundingBox(90, 89, -90, -1);
     expectedCellIds = new TreeSet<>();
     expectedCellIds.add(0L);
     expectedCellIds.add(1L);
@@ -353,7 +355,7 @@ public class XYGridTest {
     assertEquals(0, interval.getRight().longValue());
 
     // test performance for maximum sized BBOX
-    BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(-180, 180), new NumericRange(-90, 90)});
+    BBOX = new BoundingBox(-180, 180, -90, 90);
     int expResult = 2048;
     result = new XYGrid(MAXZOOM).bbox2CellIdRanges(BBOX, true);
     assertEquals(expResult, result.size());
@@ -374,9 +376,9 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetBoundingBox() throws CellId.cellIdExeption{
-    BoundingBox result=XYGrid.getBoundingBox(new CellId(2,2));
-    BoundingBox expResult=new BoundingBox(0,90,-90,0-1e-11);
-    assertEquals(expResult.toString(),result.toString());
+  public void testGetBoundingBox() throws CellId.cellIdExeption {
+    BoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
+    BoundingBox expResult = new BoundingBox(0, 90, -90, 0 - 1e-11);
+    assertEquals(expResult.toString(), result.toString());
   }
 }

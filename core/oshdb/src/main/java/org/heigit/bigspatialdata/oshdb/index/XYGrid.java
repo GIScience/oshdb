@@ -2,10 +2,6 @@ package org.heigit.bigspatialdata.oshdb.index;
 
 import java.util.Set;
 import java.util.TreeSet;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -44,6 +40,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class XYGrid {
+
   private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
 
   private final int zoom;
@@ -111,12 +108,11 @@ public class XYGrid {
    * Returns the smallest Id of the given Bounding Box.
    *
    *
-   * @param longitudes longitude-range
-   * @param latitudes latitude range
+   * @param bbx
    * @return south-western cellID of given BBOX
    */
-  public long getId(final NumericRange longitudes, final NumericRange latitudes) {
-    return getId(longitudes.getMin(), latitudes.getMin());
+  public long getId(BoundingBox bbx) {
+    return getId(bbx.minLon, bbx.minLat);
   }
 
   /**
@@ -132,9 +128,9 @@ public class XYGrid {
    * Calculates BBOX of given Cell.
    *
    * @param cellId ID of a cell calculated by getID
-   * @return a BBOX for that cell (minlong, maxlong; minlat, maxlat)
+   * @return a BBOX for that cell
    */
-  public MultiDimensionalNumericData getCellDimensions(final long cellId) {
+  public BoundingBox getCellDimensions(final long cellId) {
 
     //calculate the row and column, this tile-value corresponds to
     int x = (int) (cellId % zoompow);
@@ -143,32 +139,33 @@ public class XYGrid {
     double lon = (x * cellWidth) - 180.0;
     double lat = (y * cellWidth) - 90.0;
 
-    final NumericRange longitude = new NumericRange(lon, (lon + cellWidth) - EPSILON);
+    final double minlong = lon;
+    final double maxlong = (lon + cellWidth) - EPSILON;
 
-    final NumericRange latitude;
+    final double minlat;
+    final double maxlat;
     if (zoom == 0) {
-      latitude = new NumericRange(-90.0, 90.0);
+      minlat = -90.0;
+      maxlat = 90.0;
     } else if (equalsEpsilon(lat, 90.0 - cellWidth)) {
-      latitude = new NumericRange(lat, 90.0);
+      minlat = lat;
+      maxlat = 90.0;
     } else {
-      latitude = new NumericRange(lat, (lat + cellWidth) - EPSILON);
+      minlat = lat;
+      maxlat = (lat + cellWidth) - EPSILON;
     }
-
-    final NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
-    return new BasicNumericDataset(dataPerDimension);
+    return new BoundingBox(minlong, maxlong, minlat, maxlat);
   }
 
   /**
    * Calculate the BoundingBox of a specific GridCell.
+   *
    * @param cellID
    * @return
    */
   public static BoundingBox getBoundingBox(final CellId cellID) {
     XYGrid temp = new XYGrid(cellID.getZoomLevel());
-    MultiDimensionalNumericData bbox = temp.getCellDimensions(cellID.getId());
-    BoundingBox result = new BoundingBox(bbox.getMinValuesPerDimension()[0], bbox.getMaxValuesPerDimension()[0], bbox.getMinValuesPerDimension()[1], bbox.getMaxValuesPerDimension()[1]);
-    return result;
-
+    return temp.getCellDimensions(cellID.getId());
   }
 
   private static final double EPSILON = 1e-11;
@@ -190,14 +187,11 @@ public class XYGrid {
    * Returns number of Cells within given BBOX.
    *
    * @param data BBOX to estimate number of cells for
-   * @return estimated number of Cells
+   * @return the long
    */
-  public long getEstimatedIdCount(final MultiDimensionalNumericData data) {
-    //asserts fails if estimation fault exeeds zoom
-    final double[] mins = data.getMinValuesPerDimension();
-    final double[] maxes = data.getMaxValuesPerDimension();
+  public long getEstimatedIdCount(final BoundingBox data) {
     //number of Cells in x * number of cells in y
-    return (long) ((maxes[0] - mins[0]) / cellWidth * (maxes[1] - mins[1]) / cellWidth);
+    return (long) ((data.maxLon - data.minLon) / cellWidth * (data.maxLat - data.minLat) / cellWidth);
   }
 
   /**
@@ -207,22 +201,6 @@ public class XYGrid {
    */
   public int getLevel() {
     return zoom;
-  }
-
-  /**
-   * Calculates all tiles, that lie within a bounding-box.
-   *
-   * @param bbox The bounding box.
-   * @param enlarge if true, the BBOX is enlarged by one tile to the south-west
-   * to include tiles that possibly hold way or relation information, if false
-   * only holds tiles that intersect with the given BBOX. For queries: false is
-   * for nodes while true is for ways and relations.
-   *
-   * @return Returns a set of Tile-IDs that exactly lie within the given BBOX.
-   */
-  public Set<Pair<Long, Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
-    MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
-    return this.bbox2CellIdRanges(mdBbox, enlarge);
   }
 
   /**
@@ -239,13 +217,13 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
-  public Set<Pair<Long, Long>> bbox2CellIdRanges(MultiDimensionalNumericData bbox, boolean enlarge) {
+  public Set<Pair<Long, Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
     //initialise basic variables
     Set<Pair<Long, Long>> result = new TreeSet<>();
-    double minlong = bbox.getMinValuesPerDimension()[0];
-    double minlat = bbox.getMinValuesPerDimension()[1];
-    double maxlong = bbox.getMaxValuesPerDimension()[0];
-    double maxlat = bbox.getMaxValuesPerDimension()[1];
+    double minlong = bbox.minLon;
+    double minlat = bbox.minLat;
+    double maxlong = bbox.maxLon;
+    double maxlat = bbox.maxLat;
 
     if (minlat > maxlat) {
       LOG.warn("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
@@ -286,10 +264,7 @@ public class XYGrid {
 
     //cope with BBOX extending over the date-line
     if (minlong > maxlong) {
-      NumericRange longitude = new NumericRange(minlong, 180.0 - EPSILON);
-      NumericRange latitude = new NumericRange(minlat, maxlat);
-      NumericData[] dataPerDimension = new NumericData[]{longitude, latitude};
-      result.addAll(bbox2CellIdRanges(new BasicNumericDataset(dataPerDimension), enlarge));
+      result.addAll(bbox2CellIdRanges(new BoundingBox(minlong, 180.0 - EPSILON, minlat, maxlat), enlarge));
 
       minlong = -180.0;
     }
@@ -333,11 +308,11 @@ public class XYGrid {
       return null;
     }
 
-    MultiDimensionalNumericData bbox = this.getCellDimensions(center.getId());
-    double minlong = bbox.getMinValuesPerDimension()[0] - EPSILON;
-    double minlat = bbox.getMinValuesPerDimension()[1] - EPSILON;
-    double maxlong = bbox.getMaxValuesPerDimension()[0] + EPSILON;
-    double maxlat = bbox.getMaxValuesPerDimension()[1] + EPSILON;
+    BoundingBox bbox = this.getCellDimensions(center.getId());
+    double minlong = bbox.minLon - EPSILON;
+    double minlat = bbox.minLat - EPSILON;
+    double maxlong = bbox.maxLon + EPSILON;
+    double maxlat = bbox.maxLat + EPSILON;
     BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
 
     return this.bbox2CellIdRanges(newbbox, false);

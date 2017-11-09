@@ -24,13 +24,6 @@
       <artifactId>RoaringBitmap</artifactId>
       <version>0.6.37</version>
     </dependency>
-    
-    <!-- Will be removed soon -->
-    <dependency>
-      <groupId>mil.nga.giat</groupId>
-      <artifactId>geowave-core-index</artifactId>
-      <version>0.9.3</version>
-    </dependency>
 
     <dependency>
       <groupId>org.geotools</groupId>
@@ -72,6 +65,12 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
     </dependency>
   </dependencies>
 </project>

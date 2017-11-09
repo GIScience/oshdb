@@ -1,16 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.heigit.bigspatialdata.oshdb.index;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import static org.junit.Assert.assertEquals;
@@ -35,14 +26,13 @@ public class XYGridTreeTest {
     CellId compare = result.next();
     assertEquals(expResult.getId(), compare.getId());
     assertEquals(expResult.getZoomLevel(), compare.getZoomLevel());
-    
+
     result = instance.getIds(longitude, latitude).iterator();
-    for(int z=4; z > 0; z--){
-    	assertTrue(result.hasNext());
-    	assertEquals(z, result.next().getZoomLevel());	
+    for (int z = 4; z > 0; z--) {
+      assertTrue(result.hasNext());
+      assertEquals(z, result.next().getZoomLevel());
     }
-    
-    
+
   }
 
   @Test
@@ -56,8 +46,8 @@ public class XYGridTreeTest {
   }
 
   @Test
-  public void testBbox2CellIds_MultiDimensionalNumericData_boolean() throws CellId.cellIdExeption {
-    MultiDimensionalNumericData BBOX = new BasicNumericDataset(new NumericData[]{new NumericRange(0.0, 44.9), new NumericRange(0.0, 44.9)});
+  public void testBbox2CellIds_BoundingBox_boolean() throws CellId.cellIdExeption {
+    BoundingBox BBOX = new BoundingBox(0.0, 44.9, 0.0, 44.9);
     boolean enlarge = false;
     XYGridTree instance = new XYGridTree(3);
     HashSet<CellId> expectedCellIds = new HashSet<>(4);
@@ -73,11 +63,9 @@ public class XYGridTreeTest {
     }
     assertEquals(0, expectedCellIds.size());
   }
-  
-
 
   @Test
-  public void testBbox2CellIds_BoundingBox_boolean() throws CellId.cellIdExeption {
+  public void testBbox2CellIds_BoundingBox2_boolean() throws CellId.cellIdExeption {
     BoundingBox bbox = new BoundingBox(0.0, 89, 0.0, 89);
     boolean enlarge = true;
     XYGridTree instance = new XYGridTree(3);

@@ -21,9 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.cmdarg.TransformArgs;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellInfo;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellNode;
@@ -40,6 +38,8 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 
 /**
  * HOSMDbTransform
@@ -264,26 +264,24 @@ public class HOSMDbTransform {
         insert.setLong(2, cell.info().getId());
 
         CellInfo cellInfo = cell.info();
-        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        double[] minValues = cellDimensions.getMinValuesPerDimension();
+        BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         //create hosmCell of nodes from a "cellNode", a collection of nodes. First part is header, followed by cell.getNodes(), the actual nodes. At this point, delta encoding is already done within the HOSMNode
         GridOSHNodes hosmCell = GridOSHNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
-                (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getNodes());
+                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.minLon / OSMNode.GEOM_PRECISION),
+                (long) (cellDimensions.minLat / OSMNode.GEOM_PRECISION), cell.getNodes());
 
         //convert hosmCell of nodes to a byteArray of objects to the database
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(out);
-        oos.writeObject(hosmCell);
-        oos.flush();
-        oos.close();
+        try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+          oos.writeObject(hosmCell);
+          oos.flush();
+        }
         byte[] buf = out.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(buf);
         insert.setBinaryStream(3, in);
         insert.executeUpdate();
       }
     } catch (SQLException | IOException e) {
-      e.printStackTrace();
     }
   }
 
@@ -305,17 +303,16 @@ public class HOSMDbTransform {
         CellInfo cellInfo = cell.info();
 
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
-        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        double[] minValues = cellDimensions.getMinValuesPerDimension();
+        BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         GridOSHWays hosmCell = GridOSHWays.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
-                (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getWays());
+                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.maxLon / OSMNode.GEOM_PRECISION),
+                (long) (cellDimensions.minLat / OSMNode.GEOM_PRECISION), cell.getWays());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(out);
-        oos.writeObject(hosmCell);
-        oos.flush();
-        oos.close();
+        try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+          oos.writeObject(hosmCell);
+          oos.flush();
+        }
         byte[] buf = out.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(buf);
         insert.setBinaryStream(3, in);
@@ -323,8 +320,6 @@ public class HOSMDbTransform {
       }
 
     } catch (SQLException | IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
     }
 
   }
@@ -347,17 +342,16 @@ public class HOSMDbTransform {
         CellInfo cellInfo = cell.info();
 
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
-        MultiDimensionalNumericData cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        double[] minValues = cellDimensions.getMinValuesPerDimension();
+        BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         GridOSHRelations hosmCell = GridOSHRelations.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (minValues[0] / OSMNode.GEOM_PRECISION),
-                (long) (minValues[1] / OSMNode.GEOM_PRECISION), cell.getRelations());
+                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.maxLon / OSMNode.GEOM_PRECISION),
+                (long) (cellDimensions.minLat / OSMNode.GEOM_PRECISION), cell.getRelations());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(out);
-        oos.writeObject(hosmCell);
-        oos.flush();
-        oos.close();
+        try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+          oos.writeObject(hosmCell);
+          oos.flush();
+        }
         byte[] buf = out.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(buf);
         insert.setBinaryStream(3, in);
@@ -365,8 +359,6 @@ public class HOSMDbTransform {
       }
 
     } catch (SQLException | IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
     }
   }
 }

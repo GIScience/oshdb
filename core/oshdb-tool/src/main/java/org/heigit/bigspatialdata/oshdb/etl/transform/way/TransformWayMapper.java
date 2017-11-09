@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellWay;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;
@@ -32,6 +28,8 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -45,29 +43,6 @@ public class TransformWayMapper extends TransformMapper2 {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TransformWayMapper.class);
 
-  public static class Result {
-
-    private final SortedSet<CellWay> cells;
-    private final List<WayRelation> waysForRelations;
-
-    public Result(final SortedSet<CellWay> cells, final List<WayRelation> waysForRelations) {
-      this.cells = cells;
-      this.waysForRelations = waysForRelations;
-    }
-
-    public Result() {
-      cells = Collections.emptySortedSet();
-      waysForRelations = Collections.emptyList();
-    }
-
-    public SortedSet<CellWay> getCells() {
-      return cells;
-    }
-
-    public List<WayRelation> getWaysForRelations() {
-      return waysForRelations;
-    }
-  }
 
   private static final Result EMPTY_RESULT = new Result();
 
@@ -121,9 +96,9 @@ public class TransformWayMapper extends TransformMapper2 {
       Statement stmt = connKeyTables.createStatement();
       try (ResultSet rst = stmt.executeQuery(""
               + //
-              "select "+ TableNames.E_KEY.toString() +".txt, "+ TableNames.E_KEYVALUE.toString() +".txt, keyid, valueid "
+              "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString() + ".txt, keyid, valueid "
               + //
-              "from "+ TableNames.E_KEY.toString() +" join "+ TableNames.E_KEYVALUE.toString() +" on "+ TableNames.E_KEY.toString() +".id = "+ TableNames.E_KEYVALUE.toString() +".keyid ")) {
+              "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString() + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString() + ".keyid ")) {
         while (rst.next()) {
           Map<String, int[]> a = keyValueCache.get(rst.getString(1));
           if (a == null) {
@@ -189,7 +164,6 @@ public class TransformWayMapper extends TransformMapper2 {
       return new Result(cellOutput, waysForRelations);
 
     } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
     }
 
     return EMPTY_RESULT;
@@ -259,11 +233,7 @@ public class TransformWayMapper extends TransformMapper2 {
       }
     }
 
-    final NumericRange lonRange = new NumericRange(minLon * OSMNode.GEOM_PRECISION,
-            maxLon * OSMNode.GEOM_PRECISION);
-    final NumericRange latRange = new NumericRange(minLat * OSMNode.GEOM_PRECISION,
-            maxLat * OSMNode.GEOM_PRECISION);
-    final BasicNumericDataset boundingBox = new BasicNumericDataset(new NumericData[]{lonRange, latRange});
+    final BoundingBox boundingBox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION, minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
 
     long ids;
     int l = maxZoom;
@@ -276,7 +246,7 @@ public class TransformWayMapper extends TransformMapper2 {
       }
     }
 
-    long cellId = grid.getId(lonRange, latRange);
+    long cellId = grid.getId(boundingBox);
 
     Map<Long, CellWay> level = mapCellWays.get(l);
     if (level == null) {
@@ -301,5 +271,28 @@ public class TransformWayMapper extends TransformMapper2 {
             entity.getUser().getId(), //
             getKeyValue(entity.getTags()), //
             convertLongs(entity.getRefs()));
+  }
+  public static class Result {
+    
+    private final SortedSet<CellWay> cells;
+    private final List<WayRelation> waysForRelations;
+    
+    public Result(final SortedSet<CellWay> cells, final List<WayRelation> waysForRelations) {
+      this.cells = cells;
+      this.waysForRelations = waysForRelations;
+    }
+    
+    public Result() {
+      cells = Collections.emptySortedSet();
+      waysForRelations = Collections.emptyList();
+    }
+    
+    public SortedSet<CellWay> getCells() {
+      return cells;
+    }
+    
+    public List<WayRelation> getWaysForRelations() {
+      return waysForRelations;
+    }
   }
 }
