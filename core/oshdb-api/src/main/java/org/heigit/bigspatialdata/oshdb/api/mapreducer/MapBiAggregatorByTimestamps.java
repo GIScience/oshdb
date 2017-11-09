@@ -17,7 +17,7 @@ import java.util.*;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the second index used to group results
  */
-public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimestampAndOtherIndex<U>, X> {
+public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimestampAndOtherIndex<U>, X> implements MapAggregatorByTimestampsSettings<MapBiAggregatorByTimestamps<U, X>> {
   private boolean _zerofill = true;
 
   /**

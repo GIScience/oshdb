@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
-public class MapAggregator<U extends Comparable, X> {
+public class MapAggregator<U extends Comparable, X> implements MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
 
   MapReducer<Pair<U, X>> _mapReducer;
 
@@ -106,17 +106,6 @@ public class MapAggregator<U extends Comparable, X> {
   }
 
   /**
-   * Limits the analysis to the given osm entity types.
-   *
-   * @param type1 the set of osm types to filter (e.g. `OSMType.NODE`)
-   * @param otherTypes more osm types which should be analyzed
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   */
-  public MapAggregator<U, X> osmTypes(OSMType type1, OSMType ...otherTypes) {
-    return this.osmTypes(EnumSet.of(type1, otherTypes));
-  }
-
-  /**
    * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it should be considered for this analyis or not.
    *
    * @param f the filter function to call for each osm entity
@@ -145,9 +134,8 @@ public class MapAggregator<U extends Comparable, X> {
    *
    * @param key the tag key to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
    */
-  public MapAggregator<U, X> where(String key) throws Exception {
+  public MapAggregator<U, X> where(String key) {
     return this.copyTransform(this._mapReducer.where(key));
   }
 
@@ -157,9 +145,8 @@ public class MapAggregator<U extends Comparable, X> {
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
    */
-  public MapAggregator<U, X> where(String key, String value) throws Exception {
+  public MapAggregator<U, X> where(String key, String value) {
     return this.copyTransform(this._mapReducer.where(key, value));
   }
 
@@ -170,9 +157,8 @@ public class MapAggregator<U extends Comparable, X> {
    * @param key the tag key to filter the osm entities for
    * @param values an array of tag values to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
    */
-  public MapAggregator<U, X> where(String key, Collection<String> values) throws Exception {
+  public MapAggregator<U, X> where(String key, Collection<String> values) {
     return this.copyTransform(this._mapReducer.where(key, values));
   }
 
@@ -183,9 +169,8 @@ public class MapAggregator<U extends Comparable, X> {
    * @param key the tag key to filter the osm entities for
    * @param valuePattern a regular expression which the tag value of the osm entity must match
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
    */
-  public MapAggregator<U, X> where(String key, Pattern valuePattern) throws Exception {
+  public MapAggregator<U, X> where(String key, Pattern valuePattern) {
     return this.copyTransform(this._mapReducer.where(key, valuePattern));
   }
 
@@ -195,9 +180,8 @@ public class MapAggregator<U extends Comparable, X> {
    *
    * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
    */
-  public MapAggregator<U, X> where(Collection<Pair<String, String>> keyValuePairs) throws Exception {
+  public MapAggregator<U, X> where(Collection<Pair<String, String>> keyValuePairs) {
     return this.copyTransform(this._mapReducer.where(keyValuePairs));
   }
 
@@ -208,11 +192,10 @@ public class MapAggregator<U extends Comparable, X> {
    *
    * @param key the tag key to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
    * @deprecated use `where(key)` instead
    */
   @Deprecated
-  public MapAggregator<U, X> filterByTag(String key) throws Exception {
+  public MapAggregator<U, X> filterByTag(String key) {
     return this.where(key);
   }
 
@@ -223,11 +206,10 @@ public class MapAggregator<U extends Comparable, X> {
    *
    * @param key the tag key to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
    * @deprecated use `where(key,value)` instead
    */
   @Deprecated
-  public MapAggregator<U, X> filterByTag(String key, String value) throws Exception {
+  public MapAggregator<U, X> filterByTag(String key, String value) {
     return this.where(key, value);
   }
 
@@ -244,7 +226,6 @@ public class MapAggregator<U extends Comparable, X> {
    *
    * @return the sum of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
-   * @throws Exception
    */
   public SortedMap<U, Number> sum() throws Exception {
     return this
@@ -264,7 +245,6 @@ public class MapAggregator<U extends Comparable, X> {
    * @param mapper function that returns the numbers to sum up
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the summed up results of the `mapper` function
-   * @throws Exception
    */
   public <R extends Number> SortedMap<U, R> sum(SerializableFunction<X, R> mapper) throws Exception {
     return this
@@ -280,7 +260,6 @@ public class MapAggregator<U extends Comparable, X> {
    * Counts the number of results.
    *
    * @return the total count of features or modifications, summed up over all timestamps
-   * @throws Exception
    */
   public SortedMap<U, Integer> count() throws Exception {
     return this.sum(ignored -> 1);
@@ -292,7 +271,6 @@ public class MapAggregator<U extends Comparable, X> {
    * For example, this can be used together with the OSMContributionView to get the total amount of unique users editing specific feature types.
    *
    * @return the set of distinct values
-   * @throws Exception
    */
   public SortedMap<U, Set<X>> uniq() throws Exception {
     return this
@@ -311,8 +289,6 @@ public class MapAggregator<U extends Comparable, X> {
    * @param mapper function that returns some values
    * @param <R> the type that is returned by the `mapper` function
    * @return a set of distinct values returned by the `mapper` function
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
-   * @throws Exception
    */
   public <R> SortedMap<U, Set<R>> uniq(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).uniq();
@@ -324,7 +300,7 @@ public class MapAggregator<U extends Comparable, X> {
    * The current data values need to be numeric (castable to "Number" type), otherwise a runtime exception will be thrown.
    *
    * @return the average of the current data
-   * @throws Exception
+   * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
   public SortedMap<U, Double> average() throws Exception {
     return this
@@ -338,7 +314,6 @@ public class MapAggregator<U extends Comparable, X> {
    * @param mapper function that returns the numbers to average
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the average of the numbers returned by the `mapper` function
-   * @throws Exception
    */
   public <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper) throws Exception {
     return this.weightedAverage(data -> new WeightedValue<>(mapper.apply(data), 1.0));
@@ -351,9 +326,8 @@ public class MapAggregator<U extends Comparable, X> {
    *
    * @param mapper function that gets called for each entity snapshot or modification, needs to return the value and weight combination of numbers to average
    * @return the weighted average of the numbers returned by the `mapper` function
-   * @throws Exception
    */
-  public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue<Number>> mapper) throws Exception {
+  public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     return this
         .map(mapper)
         .reduce(
@@ -384,7 +358,6 @@ public class MapAggregator<U extends Comparable, X> {
    * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()` instead.
    *
    * @param action function that gets called for each transformed data entry
-   * @throws Exception
    * @deprecated only for testing purposes
    */
   @Deprecated
@@ -396,7 +369,6 @@ public class MapAggregator<U extends Comparable, X> {
    * Collects the results of this data aggregation into Lists
    *
    * @return an aggregated map of lists with all results
-   * @throws Exception
    */
   public SortedMap<U, List<X>> collect() throws Exception {
     return this.reduce(
@@ -483,7 +455,6 @@ public class MapAggregator<U extends Comparable, X> {
    * @param combiner a function that calculates the "sum" of two &lt;S&gt; values; <b>this function must be pure (have no side effects), and is not allowed to alter the state of the two input objects it gets!</b>
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
    */
   public <S> SortedMap<U, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     return this._mapReducer.reduce(

@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public abstract class MapReducer<X> {
+public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X> {
 	private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
   protected OSHDB _oshdb;
@@ -315,17 +315,6 @@ public abstract class MapReducer<X> {
   }
 
   /**
-   * Limits the analysis to the given osm entity types.
-   *
-   * @param type1 the set of osm types to filter (e.g. `OSMType.NODE`)
-   * @param otherTypes more osm types which should be analyzed
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   */
-  public MapReducer<X> osmTypes(OSMType type1, OSMType ...otherTypes) {
-    return this.osmTypes(EnumSet.of(type1, otherTypes));
-  }
-
-  /**
    * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it should be considered for this analyis or not.
    *
    * @param f the filter function to call for each osm entity
@@ -358,7 +347,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<X> where(String key) throws Exception {
+  public MapReducer<X> where(String key) {
     MapReducer<X> ret = this.copy();
     Integer keyId = this._getTagTranslator().key2Int(key);
     if (keyId == null) {
@@ -383,7 +372,7 @@ public abstract class MapReducer<X> {
    * @deprecated
    */
   @Deprecated
-  public MapReducer<X> filterByTag(String key) throws Exception {
+  public MapReducer<X> filterByTag(String key) {
     return this.where(key);
   }
 
@@ -398,7 +387,7 @@ public abstract class MapReducer<X> {
    * @deprecated
    */
   @Deprecated
-  public MapReducer<X> filterByTagKey(String key) throws Exception {
+  public MapReducer<X> filterByTagKey(String key) {
     return this.where(key);
   }
 
@@ -410,7 +399,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<X> where(String key, String value) throws Exception {
+  public MapReducer<X> where(String key, String value) {
     MapReducer<X> ret = this.copy();
     Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
     if (keyValueId == null) {
@@ -437,7 +426,7 @@ public abstract class MapReducer<X> {
    * @throws Exception
    * @deprecated
    */
-  public MapReducer<X> filterByTag(String key, String value) throws Exception {
+  public MapReducer<X> filterByTag(String key, String value) {
     return this.where(key, value);
   }
 
@@ -453,7 +442,7 @@ public abstract class MapReducer<X> {
    * @deprecated
    */
   @Deprecated
-  public MapReducer<X> filterByTagValue(String key, String value) throws Exception {
+  public MapReducer<X> filterByTagValue(String key, String value) {
     return this.where(key, value);
   }
 
@@ -466,7 +455,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<X> where(String key, Collection<String> values) throws Exception {
+  public MapReducer<X> where(String key, Collection<String> values) {
     Integer keyId = this._getTagTranslator().key2Int(key);
     if (keyId == null || values.size() == 0) {
       LOG.warn((keyId == null ? "Tag key \"{}\" not found." : "Empty tag value list.") + " No data will match this filter.", key);
@@ -497,7 +486,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<X> where(String key, Pattern valuePattern) throws Exception {
+  public MapReducer<X> where(String key, Pattern valuePattern) {
     Integer keyId = this._getTagTranslator().key2Int(key);
     if (keyId == null) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
@@ -527,7 +516,7 @@ public abstract class MapReducer<X> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @throws Exception
    */
-  public MapReducer<X> where(Collection<Pair<String, String>> keyValuePairs) throws Exception {
+  public MapReducer<X> where(Collection<Pair<String, String>> keyValuePairs) {
     if (keyValuePairs.size() == 0) {
       LOG.warn("Empty tag list. No data will match this filter.");
       this._preFilters.add(ignored -> false);
@@ -792,7 +781,6 @@ public abstract class MapReducer<X> {
    *
    * @return the sum of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
-   * @throws Exception
    */
   public Number sum() throws Exception {
     return this
@@ -812,7 +800,6 @@ public abstract class MapReducer<X> {
    * @param mapper function that returns the numbers to sum up
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the summed up results of the `mapper` function
-   * @throws Exception
    */
   public <R extends Number> R sum(SerializableFunction<X, R> mapper) throws Exception {
     return this
@@ -828,7 +815,6 @@ public abstract class MapReducer<X> {
    * Counts the number of results.
    *
    * @return the total count of features or modifications, summed up over all timestamps
-   * @throws Exception
    */
   public Integer count() throws Exception {
     return this.sum(ignored -> 1);
@@ -840,7 +826,6 @@ public abstract class MapReducer<X> {
    * For example, this can be used together with the OSMContributionView to get the total amount of unique users editing specific feature types.
    *
    * @return the set of distinct values
-   * @throws Exception
    */
   public Set<X> uniq() throws Exception {
     return this
@@ -859,8 +844,6 @@ public abstract class MapReducer<X> {
    * @param mapper function that returns some values
    * @param <R> the type that is returned by the `mapper` function
    * @return a set of distinct values returned by the `mapper` function
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
-   * @throws Exception
    */
   public <R> Set<R> uniq(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).uniq();
@@ -872,7 +855,7 @@ public abstract class MapReducer<X> {
    * The current data values need to be numeric (castable to "Number" type), otherwise a runtime exception will be thrown.
    *
    * @return the average of the current data
-   * @throws Exception
+   * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
   public Double average() throws Exception {
     return this
@@ -886,7 +869,6 @@ public abstract class MapReducer<X> {
    * @param mapper function that returns the numbers to average
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the average of the numbers returned by the `mapper` function
-   * @throws Exception
    */
   public <R extends Number> Double average(SerializableFunction<X, R> mapper) throws Exception {
     PayloadWithWeight<Double> runningSums = this
@@ -910,7 +892,6 @@ public abstract class MapReducer<X> {
    *
    * @param mapper function that gets called for each entity snapshot or modification, needs to return the value and weight combination of numbers to average
    * @return the weighted average of the numbers returned by the `mapper` function
-   * @throws Exception
    */
   public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     PayloadWithWeight<Double> runningSums = this
@@ -939,7 +920,6 @@ public abstract class MapReducer<X> {
    * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()` instead.
    *
    * @param action function that gets called for each transformed data entry
-   * @throws Exception
    * @deprecated only for testing purposes
    */
   @Deprecated
@@ -951,7 +931,6 @@ public abstract class MapReducer<X> {
    * Collects all results into a List
    *
    * @return a list with all results returned by the `mapper` function
-   * @throws Exception
    */
   public List<X> collect() throws Exception {
     return this.reduce(
@@ -985,7 +964,6 @@ public abstract class MapReducer<X> {
    * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
    */
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
@@ -1012,7 +990,6 @@ public abstract class MapReducer<X> {
    * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
    */
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(SerializableFunction<List<OSMContribution>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
@@ -1037,7 +1014,6 @@ public abstract class MapReducer<X> {
    * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
    */
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
@@ -1064,7 +1040,6 @@ public abstract class MapReducer<X> {
    * @param <R> the data type returned by the `mapper` function
    * @param <S> the data type used to contain the "reduced" (intermediate and final) results
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
-   * @throws Exception
    */
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper, SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
