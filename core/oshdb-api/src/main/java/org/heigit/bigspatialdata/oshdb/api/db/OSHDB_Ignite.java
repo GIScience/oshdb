@@ -6,7 +6,7 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 
-public class OSHDB_Ignite extends OSHDB {
+public class OSHDB_Ignite extends OSHDB implements AutoCloseable {
 
   private final Ignite _ignite;
 
