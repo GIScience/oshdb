@@ -24,6 +24,12 @@ public enum CacheNames {
     this.cachename = name;
   }
 
+  public String withPrefix(String prefix){
+    if(prefix != null && !prefix.trim().isEmpty())
+        return prefix+"_"+cachename;
+    return cachename;
+  }
+  
   @Override
   public String toString() {
     return cachename;

@@ -8,9 +8,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +46,7 @@ public class OSHDB2Ignite {
    * @param oshdb Connection to the OSHDB
    * @throws org.apache.ignite.IgniteCheckedException
    */
-  public static void load(File igniteXML, Connection oshdb) throws IgniteCheckedException {
+  public static void load(File igniteXML, Connection oshdb, String prefix) throws IgniteCheckedException {
     Ignition.setClientMode(true);
     IgniteConfiguration cfg = IgnitionEx.loadConfiguration(igniteXML.toString()).get1();
     cfg.setIgniteInstanceName("IgniteImportClientInstance");
@@ -57,9 +55,9 @@ public class OSHDB2Ignite {
 
       try (Statement stmt = oshdb.createStatement()) {
 
-        OSHDB2Ignite.<GridOSHNodes>doGridImport(ignite, stmt, CacheNames.NODES);
-        OSHDB2Ignite.<GridOSHWays>doGridImport(ignite, stmt, CacheNames.WAYS);
-        OSHDB2Ignite.<GridOSHRelations>doGridImport(ignite, stmt, CacheNames.RELATIONS);
+        OSHDB2Ignite.<GridOSHNodes>doGridImport(ignite, stmt, CacheNames.NODES,prefix);
+        OSHDB2Ignite.<GridOSHWays>doGridImport(ignite, stmt, CacheNames.WAYS,prefix);
+        OSHDB2Ignite.<GridOSHRelations>doGridImport(ignite, stmt, CacheNames.RELATIONS,prefix);
 
       } catch (SQLException ex) {
         LOG.log(Level.SEVERE, null, ex);
@@ -69,8 +67,8 @@ public class OSHDB2Ignite {
 
   }
 
-  private static <T> void doGridImport(Ignite ignite, Statement stmt, CacheNames cacheName) {
-    CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheName.toString());
+  private static <T> void doGridImport(Ignite ignite, Statement stmt, CacheNames cacheName, String prefix) {
+    CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheName.withPrefix(prefix));
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
 
@@ -131,7 +129,7 @@ public class OSHDB2Ignite {
       return;
     }
     try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdbarg.oshdb, "sa", "")) {
-      OSHDB2Ignite.load(largs.ignitexml, con);
+      OSHDB2Ignite.load(largs.ignitexml, con, largs.prefix);
     }
 
   }
