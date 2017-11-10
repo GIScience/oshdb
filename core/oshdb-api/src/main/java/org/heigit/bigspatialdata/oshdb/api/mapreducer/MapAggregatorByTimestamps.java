@@ -17,7 +17,7 @@ import java.util.*;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements MapAggregatorByTimestampsSettings<MapAggregatorByTimestamps<X>> {
+public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements MapAggregatorByTimestampsSettings<MapAggregatorByTimestamps<X>>, MapAggregatable<MapBiAggregatorByTimestamps<? extends Comparable, X>, X> {
   private boolean _zerofill = true;
 
   /**

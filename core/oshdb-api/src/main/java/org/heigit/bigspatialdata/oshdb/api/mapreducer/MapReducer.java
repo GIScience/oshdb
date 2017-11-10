@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X> {
+public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X>, MapAggregatable<MapAggregator<? extends Comparable, X>, X> {
 	private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
   protected OSHDB _oshdb;
