@@ -12,16 +12,11 @@
 
   <artifactId>oshdb</artifactId>
 
-  <properties>
-    <geotools-version>18-RC1</geotools-version>
-    <ignite.version>2.1.0</ignite.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>2.6.1</version>
+      <version>${protobuf.version}</version>
     </dependency>
 
     <dependency>
@@ -29,98 +24,53 @@
       <artifactId>RoaringBitmap</artifactId>
       <version>0.6.37</version>
     </dependency>
-    
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.25</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.25</version>
-    </dependency>
-			
-
-    <!-- Hilbert Index -->
-    <!-- <dependency> <groupId>com.google.uzaygezen</groupId> <artifactId>uzaygezen-core</artifactId> 
-    <version>0.2</version> </dependency> -->
-    <dependency>
-      <groupId>mil.nga.giat</groupId>
-      <artifactId>geowave-core-index</artifactId>
-      <version>0.9.3</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-      <scope>test</scope>
-    </dependency>
 
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-main</artifactId>
-      <version>${geotools-version}</version>
+      <version>${geotools.version}</version>
     </dependency>
-
-    <!-- <dependency> <groupId>com.vividsolutions</groupId> <artifactId>jts-core</artifactId> 
-    <version>1.14.0</version> </dependency> -->
+    
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
       <version>1.1.1</version>
     </dependency>
-    <!-- <dependency> <groupId>org.geotools</groupId> <artifactId>gt-geometry</artifactId> 
-    <version>15.1</version> </dependency> -->
+    
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.json</artifactId>
       <version>1.1</version>
-      <type>jar</type>
     </dependency>
+    
     <dependency>
       <groupId>org.wololo</groupId>
       <artifactId>jts2geojson</artifactId>
       <version>0.10.0</version>
-      <type>jar</type>
     </dependency>
 
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>1.4.193</version>
+      <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
+    
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.1</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
   </dependencies>
-
-  <repositories>
-    <repository>
-      <id>geowave-maven-release</id>
-      <name>GeoWave AWS Snapshot Repository</name>
-      <url>http://geowave-maven.s3-website-us-east-1.amazonaws.com/release</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-
-    <repository>
-      <id>boundless</id>
-      <url>https://repo.boundlessgeo.com/main/</url>
-    </repository>
-		
-    <repository>
-      <id>geotools</id>
-      <name>Open Source Geospatial Foundation Repository</name>
-      <url>http://download.osgeo.org/webdav/geotools/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-		
-  </repositories>
-
 </project>

@@ -65,7 +65,7 @@ public class PBF2BigDB {
    * @throws org.apache.ignite.IgniteCheckedException
    */
   public static void intoIgnite(File igniteXML, Connection connOSHDb) throws IgniteCheckedException {
-    OSHDB2Ignite.load(igniteXML, connOSHDb);
+    OSHDB2Ignite.load(igniteXML, connOSHDb, "");
   }
 
   public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException, SQLException, ParserConfigurationException, IgniteCheckedException {

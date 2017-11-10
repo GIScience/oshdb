@@ -24,6 +24,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,197 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
     super(obj);
   }
 
-  private<R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
+  @Override
+  protected <R, S> S mapReduceCellsOSMContribution(
+      SerializableFunction<OSMContribution, R> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    //load tag interpreter helper which is later used for geometry building
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+
+    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
+      String cacheName;
+      switch(osmType) {
+        case NODE:
+          cacheName = "grid_nodes";
+          break;
+        case WAY:
+          cacheName = "grid_ways";
+          break;
+        case RELATION:
+          cacheName = "gid_relations";
+          break;
+        default:
+          LOG.warn("unhandled osm type: " + osmType.toString());
+          return identitySupplier.get();
+      }
+      return Ignite_Helper._mapReduceCellsOSMContributionOnIgniteCache(
+          (OSHDB_Ignite)this._oshdb,
+          this._tagInterpreter,
+          cacheName,
+          cellIdsList,
+          this._tstamps.getTimestamps(),
+          this._bboxFilter,
+          this._getPolyFilter(),
+          this._getPreFilter(),
+          this._getFilter(),
+          mapper,
+          identitySupplier,
+          accumulator,
+          combiner
+      );
+    }).reduce(identitySupplier.get(), combiner);
+  }
+
+  @Override
+  protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, List<R>> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    //load tag interpreter helper which is later used for geometry building
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+
+    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
+      String cacheName;
+      switch(osmType) {
+        case NODE:
+          cacheName = "grid_nodes";
+          break;
+        case WAY:
+          cacheName = "grid_ways";
+          break;
+        case RELATION:
+          cacheName = "gid_relations";
+          break;
+        default:
+          LOG.warn("unhandled osm type: " + osmType.toString());
+          return identitySupplier.get();
+      }
+      return Ignite_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+          (OSHDB_Ignite)this._oshdb,
+          this._tagInterpreter,
+          cacheName,
+          cellIdsList,
+          this._tstamps.getTimestamps(),
+          this._bboxFilter,
+          this._getPolyFilter(),
+          this._getPreFilter(),
+          this._getFilter(),
+          mapper,
+          identitySupplier,
+          accumulator,
+          combiner
+      );
+    }).reduce(identitySupplier.get(), combiner);
+  }
+
+
+  @Override
+  protected <R, S> S mapReduceCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    //load tag interpreter helper which is later used for geometry building
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+
+    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
+      String cacheName;
+      switch(osmType) {
+        case NODE:
+          cacheName = "grid_nodes";
+          break;
+        case WAY:
+          cacheName = "grid_ways";
+          break;
+        case RELATION:
+          cacheName = "gid_relations";
+          break;
+        default:
+          LOG.warn("unhandled osm type: " + osmType.toString());
+          return identitySupplier.get();
+      }
+      return Ignite_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+          (OSHDB_Ignite)this._oshdb,
+          this._tagInterpreter,
+          cacheName,
+          cellIdsList,
+          this._tstamps.getTimestamps(),
+          this._bboxFilter,
+          this._getPolyFilter(),
+          this._getPreFilter(),
+          this._getFilter(),
+          mapper,
+          identitySupplier,
+          accumulator,
+          combiner
+      );
+    }).reduce(identitySupplier.get(), combiner);
+  }
+
+  @Override
+  protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    //load tag interpreter helper which is later used for geometry building
+    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+
+    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+
+    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
+      String cacheName;
+      switch(osmType) {
+        case NODE:
+          cacheName = "grid_nodes";
+          break;
+        case WAY:
+          cacheName = "grid_ways";
+          break;
+        case RELATION:
+          cacheName = "gid_relations";
+          break;
+        default:
+          LOG.warn("unhandled osm type: " + osmType.toString());
+          return identitySupplier.get();
+      }
+      return Ignite_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+          (OSHDB_Ignite)this._oshdb,
+          this._tagInterpreter,
+          cacheName,
+          cellIdsList,
+          this._tstamps.getTimestamps(),
+          this._bboxFilter,
+          this._getPolyFilter(),
+          this._getPreFilter(),
+          this._getFilter(),
+          mapper,
+          identitySupplier,
+          accumulator,
+          combiner
+      );
+    }).reduce(identitySupplier.get(), combiner);
+  }
+}
+
+
+class Ignite_Helper {
+  static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
+      OSHDB_Ignite oshdb,
+      TagInterpreter tagInterpreter,
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps,
@@ -59,7 +250,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) {
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = oshdb.getIgnite();
     CacheConfiguration<Long, GridOSHEntity> cacheCfg = new CacheConfiguration<>(cacheName);
     cacheCfg.setStatisticsEnabled(true);
     cacheCfg.setBackups(0);
@@ -85,7 +276,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
               bbox,
               poly,
               new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
-              this._tagInterpreter,
+              tagInterpreter,
               preFilter,
               filter,
               false
@@ -120,51 +311,10 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       return accExternal;
     }
   }
-  @Override
-  protected <R, S> S mapReduceCellsOSMContribution(
-      SerializableFunction<OSMContribution, R> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
-
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      String cacheName;
-      switch(osmType) {
-        case NODE:
-          cacheName = "grid_nodes";
-          break;
-        case WAY:
-          cacheName = "grid_ways";
-          break;
-        case RELATION:
-          cacheName = "gid_relations";
-          break;
-        default:
-          LOG.warn("unhandled osm type: " + osmType.toString());
-          return identitySupplier.get();
-      }
-      return this._mapReduceCellsOSMContributionOnIgniteCache(
-          cacheName,
-          cellIdsList,
-          this._tstamps.getTimestamps(),
-          this._bboxFilter,
-          this._getPolyFilter(),
-          this._getPreFilter(),
-          this._getFilter(),
-          mapper,
-          identitySupplier,
-          accumulator,
-          combiner
-      );
-    }).reduce(identitySupplier.get(), combiner);
-  }
-
-  private<R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+  static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+      OSHDB_Ignite oshdb,
+      TagInterpreter tagInterpreter,
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps,
@@ -177,7 +327,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) {
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = oshdb.getIgnite();
     CacheConfiguration<Long, GridOSHEntity> cacheCfg = new CacheConfiguration<>(cacheName);
     cacheCfg.setStatisticsEnabled(true);
     cacheCfg.setBackups(0);
@@ -204,7 +354,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
               bbox,
               poly,
               new CellIterator.TimestampInterval(tstamps.get(0), tstamps.get(tstamps.size()-1)),
-              this._tagInterpreter,
+              tagInterpreter,
               preFilter,
               filter,
               false
@@ -245,52 +395,11 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       return accExternal;
     }
   }
-  @Override
-  protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, List<R>> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
-
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
-
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      String cacheName;
-      switch(osmType) {
-        case NODE:
-          cacheName = "grid_nodes";
-          break;
-        case WAY:
-          cacheName = "grid_ways";
-          break;
-        case RELATION:
-          cacheName = "gid_relations";
-          break;
-        default:
-          LOG.warn("unhandled osm type: " + osmType.toString());
-          return identitySupplier.get();
-      }
-      return this._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-          cacheName,
-          cellIdsList,
-          this._tstamps.getTimestamps(),
-          this._bboxFilter,
-          this._getPolyFilter(),
-          this._getPreFilter(),
-          this._getFilter(),
-          mapper,
-          identitySupplier,
-          accumulator,
-          combiner
-      );
-    }).reduce(identitySupplier.get(), combiner);
-  }
 
 
-  private <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+  static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+      OSHDB_Ignite oshdb,
+      TagInterpreter tagInterpreter,
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps,
@@ -303,7 +412,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) {
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = oshdb.getIgnite();
     CacheConfiguration<Long, GridOSHEntity> cacheCfg = new CacheConfiguration<>(cacheName);
     cacheCfg.setStatisticsEnabled(true);
     cacheCfg.setBackups(0);
@@ -328,7 +437,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
               bbox,
               poly,
               tstamps,
-              this._tagInterpreter,
+              tagInterpreter,
               preFilter,
               filter,
               false
@@ -356,51 +465,10 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       return accExternal;
     }
   }
-  @Override
-  protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
-
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      String cacheName;
-      switch(osmType) {
-        case NODE:
-          cacheName = "grid_nodes";
-          break;
-        case WAY:
-          cacheName = "grid_ways";
-          break;
-        case RELATION:
-          cacheName = "gid_relations";
-          break;
-        default:
-          LOG.warn("unhandled osm type: " + osmType.toString());
-          return identitySupplier.get();
-      }
-      return this._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-          cacheName,
-          cellIdsList,
-          this._tstamps.getTimestamps(),
-          this._bboxFilter,
-          this._getPolyFilter(),
-          this._getPreFilter(),
-          this._getFilter(),
-          mapper,
-          identitySupplier,
-          accumulator,
-          combiner
-      );
-    }).reduce(identitySupplier.get(), combiner);
-  }
-
-  private <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+  static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+      OSHDB_Ignite oshdb,
+      TagInterpreter tagInterpreter,
       String cacheName,
       Set<CellId> cellIdsList,
       List<Long> tstamps, BoundingBox bbox,
@@ -412,7 +480,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) {
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = oshdb.getIgnite();
     CacheConfiguration<Long, GridOSHEntity> cacheCfg = new CacheConfiguration<>(cacheName);
     cacheCfg.setStatisticsEnabled(true);
     cacheCfg.setBackups(0);
@@ -437,7 +505,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
               bbox,
               poly,
               tstamps,
-              this._tagInterpreter,
+              tagInterpreter,
               preFilter,
               filter,
               false
@@ -468,48 +536,5 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
       }
       return accExternal;
     }
-  }
-  @Override
-  protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
-
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
-
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      String cacheName;
-      switch(osmType) {
-        case NODE:
-          cacheName = "grid_nodes";
-          break;
-        case WAY:
-          cacheName = "grid_ways";
-          break;
-        case RELATION:
-          cacheName = "gid_relations";
-          break;
-        default:
-          LOG.warn("unhandled osm type: " + osmType.toString());
-          return identitySupplier.get();
-      }
-      return this._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-          cacheName,
-          cellIdsList,
-          this._tstamps.getTimestamps(),
-          this._bboxFilter,
-          this._getPolyFilter(),
-          this._getPreFilter(),
-          this._getFilter(),
-          mapper,
-          identitySupplier,
-          accumulator,
-          combiner
-      );
-    }).reduce(identitySupplier.get(), combiner);
   }
 }

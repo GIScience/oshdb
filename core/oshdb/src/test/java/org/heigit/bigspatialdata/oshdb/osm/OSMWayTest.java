@@ -219,8 +219,8 @@ public class OSMWayTest {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1, hnode);
     OSMWay instance = new OSMWay(1L, 1, 0L, 1L, 1, new int[]{1, 2}, new OSMMember[]{part, part});
     TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
-    String expResult = "{\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]},\"refs\":[1,1]}";
-
+    String expResult = "{\"type\":\"Feature\",\"id\":\"way/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"way\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Alice\",\"@uid\":1,\"highway\":\"track\",\"refs\":[1,1]},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]}}";
+    
     String result = instance.toGeoJSON(1L, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     assertEquals(expResult, result);
   }

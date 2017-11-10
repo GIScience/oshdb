@@ -1,21 +1,38 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-parent</artifactId>
     <version>0.3.0-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
+  
   <artifactId>bigspatialdata-core-parent</artifactId>
   <name>HeiGIT Big Spatial Data Core Parent POM</name>
   <description>The set of base functionality provided for all configurations of BigSpatialData</description>	
   <packaging>pom</packaging>
+  
   <modules>
     <module>oshpbf-parser</module>
     <module>oshdb</module>
     <module>oshdb-api</module>
-    <module>oshdb-h2</module>
     <module>oshdb-tool</module>
-    <!-- <module>oshdb-utils</module>-->
   </modules>
+  
+  <repositories>
+    <repository>
+      <name>Boundless Repository for Geotools</name>
+      <id>boundless</id>
+      <url>https://repo.boundlessgeo.com/release/</url>
+    </repository>
+
+    <repository>
+      <id>osgeo</id>
+      <name>Open Source Geospatial Foundation Repository (also for Geotools)</name>
+      <url>http://download.osgeo.org/webdav/geotools/</url>
+    </repository>
+    
+    <!-- Should our personal repository be added, in case one of these fails? The above are cached there.-->
+  </repositories>
 </project>
