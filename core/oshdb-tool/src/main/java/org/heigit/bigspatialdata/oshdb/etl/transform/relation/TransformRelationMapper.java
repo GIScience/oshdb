@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellRelation;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;
@@ -35,6 +31,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -47,23 +44,6 @@ import org.slf4j.LoggerFactory;
 public class TransformRelationMapper extends TransformMapper2 {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TransformRelationMapper.class);
-
-  public static class Result {
-
-    private final SortedSet<CellRelation> cells;
-
-    public Result(final SortedSet<CellRelation> cells) {
-      this.cells = cells;
-    }
-
-    public Result() {
-      cells = Collections.emptySortedSet();
-    }
-
-    public SortedSet<CellRelation> getCells() {
-      return cells;
-    }
-  }
 
   private static final Result EMPTY_RESULT = new Result();
 
@@ -162,19 +142,19 @@ public class TransformRelationMapper extends TransformMapper2 {
             minTimestamp = Math.min(minTimestamp, pbfRelation.getTimestamp());
 
             for (OSMPbfRelation.OSMMember member : pbfRelation.getMembers()) {
-                switch (OSMType.fromInt(member.getType())) {
-                  case NODE: {
-                    nodes.add(member.getMemId());
-                    break;
-                  }
-                  case WAY: {
-                    ways.add(member.getMemId());
-                    break;
-                  }
-                  default: {
-                    break;
-                  }
+              switch (OSMType.fromInt(member.getType())) {
+                case NODE: {
+                  nodes.add(member.getMemId());
+                  break;
                 }
+                case WAY: {
+                  ways.add(member.getMemId());
+                  break;
+                }
+                default: {
+                  break;
+                }
+              }
             }
           }
 
@@ -200,7 +180,6 @@ public class TransformRelationMapper extends TransformMapper2 {
 
       }
     } catch (ClassNotFoundException | SQLException | IOException e) {
-      e.printStackTrace();
     }
 
     return EMPTY_RESULT;
@@ -241,9 +220,7 @@ public class TransformRelationMapper extends TransformMapper2 {
       cellId = -1;
 
     } else {
-      final NumericRange lonRange = new NumericRange(minLon, maxLon);
-      final NumericRange latRange = new NumericRange(minLat, maxLat);
-      final BasicNumericDataset boundingBox = new BasicNumericDataset(new NumericData[]{lonRange, latRange});
+      final BoundingBox boundingBox = new BoundingBox(minLon, maxLon, minLat, maxLat);
 
       level = maxZoom;
       XYGrid grid = null;
@@ -253,7 +230,7 @@ public class TransformRelationMapper extends TransformMapper2 {
           break;
         }
       }
-      cellId = grid.getId(lonRange, latRange);
+      cellId = grid.getId(boundingBox);
     }
 
     Map<Long, CellRelation> levelCell = mapCellRelations.get(level);
@@ -366,6 +343,23 @@ public class TransformRelationMapper extends TransformMapper2 {
             entity.getUser().getId(), //
             getKeyValue(entity.getTags()), //
             convertMembers(entity.getMembers()));
+  }
+
+  public static class Result {
+
+    private final SortedSet<CellRelation> cells;
+
+    public Result(final SortedSet<CellRelation> cells) {
+      this.cells = cells;
+    }
+
+    public Result() {
+      cells = Collections.emptySortedSet();
+    }
+
+    public SortedSet<CellRelation> getCells() {
+      return cells;
+    }
   }
 
 }

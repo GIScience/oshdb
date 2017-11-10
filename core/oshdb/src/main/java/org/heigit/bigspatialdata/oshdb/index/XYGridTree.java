@@ -3,10 +3,6 @@ package org.heigit.bigspatialdata.oshdb.index;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -20,6 +16,7 @@ import org.slf4j.LoggerFactory;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class XYGridTree {
+
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTree.class);
 
   private static final double EPSILON = 1e-11;
@@ -57,7 +54,7 @@ public class XYGridTree {
       @Override
       public Iterator<CellId> iterator() {
         Iterator<CellId> result = new Iterator<CellId>() {
-          private int level = maxLevel+1;
+          private int level = maxLevel + 1;
 
           @Override
           public boolean hasNext() {
@@ -89,10 +86,9 @@ public class XYGridTree {
    * @return
    */
   public CellId getInsertId(BoundingBox bbox) {
-    MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
     for (int i = maxLevel - 1; i > 0; i--) {
       try {
-        if (gridMap.get(i).getEstimatedIdCount(mdBbox) > 4) {
+        if (gridMap.get(i).getEstimatedIdCount(bbox) > 4) {
           continue;
         }
         return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
@@ -111,7 +107,7 @@ public class XYGridTree {
    * @param BBOX
    * @return
    */
-  public Iterable<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX) {
+  public Iterable<CellId> bbox2CellIds(final BoundingBox BBOX) {
     return bbox2CellIds(BBOX, true);
   }
 
@@ -123,7 +119,7 @@ public class XYGridTree {
    * @param enlarge
    * @return
    */
-  public Iterable<CellId> bbox2CellIds(final MultiDimensionalNumericData BBOX, final boolean enlarge) {
+  public Iterable<CellId> bbox2CellIds(final BoundingBox BBOX, final boolean enlarge) {
 
     return new Iterable<CellId>() {
       @Override
@@ -180,29 +176,17 @@ public class XYGridTree {
   }
 
   /**
-   * Get CellIds in all zoomlevel for a given BBOX.
-   *
-   * @param bbox
-   * @param enlarge
-   * @return
-   */
-  public Iterable<CellId> bbox2CellIds(BoundingBox bbox, boolean enlarge) {
-    MultiDimensionalNumericData mdBbox = new BasicNumericDataset(new NumericData[]{new NumericRange(bbox.minLon, bbox.maxLon), new NumericRange(bbox.minLat, bbox.maxLat)});
-    return this.bbox2CellIds(mdBbox, enlarge);
-  }
-
-  /**
    * Get 2D neighbours of given cell in its zoomlevel and all other zoomlevel.
    *
    * @param center
    * @return
    */
   public Iterable<CellId> getMultiZoomNeighbours(CellId center) {
-    MultiDimensionalNumericData bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
-    double minlong = bbox.getMinValuesPerDimension()[0] - EPSILON;
-    double minlat = bbox.getMinValuesPerDimension()[1] - EPSILON;
-    double maxlong = bbox.getMaxValuesPerDimension()[0] + EPSILON;
-    double maxlat = bbox.getMaxValuesPerDimension()[1] + EPSILON;
+    BoundingBox bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
+    double minlong = bbox.minLon - EPSILON;
+    double minlat = bbox.minLat - EPSILON;
+    double maxlong = bbox.maxLon + EPSILON;
+    double maxlat = bbox.maxLat + EPSILON;
     BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
     return this.bbox2CellIds(newbbox, false);
   }
