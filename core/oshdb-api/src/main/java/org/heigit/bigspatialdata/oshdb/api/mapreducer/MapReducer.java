@@ -60,7 +60,7 @@ public abstract class MapReducer<X> {
 	private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
   protected OSHDB _oshdb;
-  protected OSHDB_JDBC _oshdbForTags;
+  protected transient OSHDB_JDBC _oshdbForTags;
 
   // internal state
   Class _forClass = null;
@@ -68,7 +68,7 @@ public abstract class MapReducer<X> {
   private Grouping _grouping = Grouping.NONE;
 
   // utility objects
-  private TagTranslator _tagTranslator = null;
+  private transient TagTranslator _tagTranslator = null;
   protected TagInterpreter _tagInterpreter = null;
 
   // settings and filters
