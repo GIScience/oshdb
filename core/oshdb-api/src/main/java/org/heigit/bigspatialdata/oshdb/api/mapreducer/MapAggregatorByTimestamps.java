@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
@@ -16,7 +17,7 @@ import java.util.*;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> {
+public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements MapAggregatorByTimestampsSettings<MapAggregatorByTimestamps<X>>, MapAggregatable<MapBiAggregatorByTimestamps<? extends Comparable, X>, X> {
   private boolean _zerofill = true;
 
   /**
@@ -29,6 +30,17 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
     super(mapReducer, indexer);
   }
 
+  // "copy/transform" constructor
+  private MapAggregatorByTimestamps(MapAggregatorByTimestamps obj, MapReducer<Pair<OSHDBTimestamp, X>> mapReducer) {
+    super(mapReducer);
+    this._zerofill = obj._zerofill;
+  }
+
+  @Override
+  protected <R> MapAggregatorByTimestamps<R> copyTransform(MapReducer<Pair<OSHDBTimestamp, R>> mapReducer) {
+    return new MapAggregatorByTimestamps<>(this, mapReducer);
+  }
+
   /**
    * Enables/Disables the zero-filling feature of otherwise empty timestamp entries in the result.
    *
@@ -38,8 +50,9 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * @return this mapAggregator object
    */
   public MapAggregatorByTimestamps<X> zerofill(boolean zerofill) {
-    this._zerofill = zerofill;
-    return this;
+    MapAggregatorByTimestamps<X> ret = this.copyTransform(this._mapReducer);
+    ret._zerofill = zerofill;
+    return ret;
   }
 
   /**

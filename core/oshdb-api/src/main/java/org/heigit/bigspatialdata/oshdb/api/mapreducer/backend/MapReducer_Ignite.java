@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
@@ -22,7 +21,9 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.*;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
@@ -42,6 +43,10 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
     super(oshdb);
   }
 
+  // copy constructor
+  public MapReducer_Ignite(MapReducer_Ignite obj) {
+    super(obj);
+  }
 
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(

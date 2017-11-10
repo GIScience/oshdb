@@ -23,12 +23,18 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.*;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 
 public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
   public MapReducer_JDBC_multithread(OSHDB oshdb) {
     super(oshdb);
+  }
+
+  // copy constructor
+  public MapReducer_JDBC_multithread(MapReducer_JDBC_multithread obj) {
+    super(obj);
   }
 
   @Override

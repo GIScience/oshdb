@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndOtherIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
@@ -16,7 +17,7 @@ import java.util.*;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the second index used to group results
  */
-public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimestampAndOtherIndex<U>, X> {
+public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimestampAndOtherIndex<U>, X> implements MapAggregatorByTimestampsSettings<MapBiAggregatorByTimestamps<U, X>> {
   private boolean _zerofill = true;
 
   /**
@@ -36,6 +37,17 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
     ));
   }
 
+  // "copy/transform" constructor
+  private MapBiAggregatorByTimestamps(MapBiAggregatorByTimestamps obj, MapReducer<Pair<OSHDBTimestampAndOtherIndex<U>, X>> mapReducer) {
+    super(mapReducer);
+    this._zerofill = obj._zerofill;
+  }
+
+  @Override
+  protected <R> MapBiAggregatorByTimestamps<U, R> copyTransform(MapReducer<Pair<OSHDBTimestampAndOtherIndex<U>, R>> mapReducer) {
+    return new MapBiAggregatorByTimestamps<>(this, mapReducer);
+  }
+
   /**
    * Enables/Disables the zero-filling feature of otherwise empty timestamp entries in the result.
    *
@@ -45,8 +57,9 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * @return this mapAggregator object
    */
   public MapBiAggregatorByTimestamps<U, X> zerofill(boolean zerofill) {
-    this._zerofill = zerofill;
-    return this;
+    MapBiAggregatorByTimestamps<U, X> ret = this.copyTransform(this._mapReducer);
+    ret._zerofill = zerofill;
+    return ret;
   }
 
   /**
