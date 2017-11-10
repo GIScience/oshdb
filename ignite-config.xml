@@ -5,30 +5,54 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
     <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
 
+        <property name="igniteInstanceName" value="OSHDB-Grid" />
+
+        <!-- Set to true to enable distributed class loading for examples, default
+            is false. -->
+        <property name="peerClassLoadingEnabled" value="true" />
+
 
         <!-- Enabling Apache Ignite Persistent Store. -->
         <property name="persistentStoreConfiguration">
-            <bean class="org.apache.ignite.configuration.PersistentStoreConfiguration"/>
+            <bean class="org.apache.ignite.configuration.PersistentStoreConfiguration" />
         </property>
+
+        <!-- Setting up caches. -->
+        <!-- <property name="cacheConfiguration"> <list> <bean class="org.apache.ignite.configuration.CacheConfiguration">
+            <property name="name" value="organization"/> <property name="backups" value="1"/>
+            <property name="atomicityMode" value="TRANSACTIONAL"/> <property name="writeSynchronizationMode"
+            value="FULL_SYNC"/> <property name="indexedTypes"> <list> <value>java.lang.Long</value>
+            <value>org.apache.ignite.examples.model.Organization</value> </list> </property>
+            </bean> </list> </property> -->
+
         <property name="binaryConfiguration">
             <bean class="org.apache.ignite.configuration.BinaryConfiguration">
-                <property name="compactFooter" value="false"/>
+                <property name="compactFooter" value="false" />
             </bean>
         </property>
 
-        <property name="peerClassLoadingEnabled" value="true"/>
-
-        <!-- Explicitly configure TCP discovery SPI to provide a list of initial nodes. -->
+        <!-- Explicitly configure TCP discovery SPI to provide list of initial
+            nodes. -->
         <property name="discoverySpi">
             <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
                 <property name="ipFinder">
-                    <!-- Uncomment static IP finder to enable static-based discovery of initial nodes. -->
-                    <!--<bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder">-->
-                    <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder">
+                    <!-- Ignite provides several options for automatic discovery that can
+                        be used instead os static IP based discovery. For information on all options
+                        refer to our documentation: http://apacheignite.readme.io/docs/cluster-config -->
+                    <!-- Uncomment static IP finder to enable static-based discovery of
+                        initial nodes. -->
+                    <!--<bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder"> -->
+                    <bean
+                            class="org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder">
                         <property name="addresses">
                             <list>
                                 <!-- In distributed environment, replace with actual host IP address. -->
-                                <value>127.0.0.1:47500..47502</value>
+                                <value>127.0.0.1:47500..47509</value>
+                                <value>192.168.2.25:47500..47509</value>
+                                <value>192.168.2.10:47500..47509</value>
+                                <value>192.168.2.11:47500..47509</value>
+                                <value>192.168.2.26:47500..47509</value>
+                                <value>192.168.2.27:47500..47509</value>
                             </list>
                         </property>
                     </bean>
