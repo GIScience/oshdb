@@ -57,8 +57,9 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * @return this mapAggregator object
    */
   public MapBiAggregatorByTimestamps<U, X> zerofill(boolean zerofill) {
-    this._zerofill = zerofill;
-    return this;
+    MapBiAggregatorByTimestamps<U, X> ret = this.copyTransform(this._mapReducer);
+    ret._zerofill = zerofill;
+    return ret;
   }
 
   /**

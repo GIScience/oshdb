@@ -157,8 +157,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> keytables(OSHDB_JDBC oshdb) {
-    this._oshdbForTags = oshdb;
-    return this;
+    MapReducer<X> ret = this.copy();
+    ret._oshdbForTags = oshdb;
+    return ret;
   }
 
   /**
@@ -172,8 +173,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
   public MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter) {
-    this._tagInterpreter = tagInterpreter;
-    return this;
+    MapReducer<X> ret = this.copy();
+    ret._tagInterpreter = tagInterpreter;
+    return ret;
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -646,7 +648,6 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
    * @throws UnsupportedOperationException if this is called when the `groupById()` mode has been activated
    */
-  //public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp() throws UnsupportedOperationException {
   public MapAggregatorByTimestamps<X> aggregateByTimestamp() throws UnsupportedOperationException {
     if (this._grouping != Grouping.NONE)
       throw new UnsupportedOperationException("aggregateByTimestamp cannot be used together with the groupById() functionality");
@@ -694,10 +695,6 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
       return new MapAggregatorByTimestamps<X>(this, indexer);
     }
   }
-
-  /*public MapAggregator<TileId, X> aggregateByTiles(SerializableFunction<Geometry>) {
-
-  }*/
 
   // -------------------------------------------------------------------------------------------------------------------
   // Exposed generic reduce.
