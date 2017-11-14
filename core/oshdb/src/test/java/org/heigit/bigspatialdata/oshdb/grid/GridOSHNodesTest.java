@@ -87,11 +87,11 @@ public class GridOSHNodesTest {
     TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", ""));
     String expResult = "{\"type\":\"FeatureCollection\","
             + "\"features\":[{"
-            + "\"type\":\"Feature\",\"id\":1,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},"
+            + "\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"highway\":\"track\"},"
             + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
-            + "\"type\":\"Feature\",\"id\":2,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},"
+            + "\"type\":\"Feature\",\"id\":\"node/2@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":2,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"highway\":\"track\"},"
             + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
-            + "\"type\":\"Feature\",\"id\":3,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":1,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"track\"},"
+            + "\"type\":\"Feature\",\"id\":\"node/3@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":3,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"highway\":\"track\"},"
             + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}}]}";
     String result = instance.toGeoJSON(tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     assertEquals(expResult, result);

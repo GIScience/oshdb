@@ -111,7 +111,7 @@ public class OSHNodeTest {
 
     Class.forName("org.h2.Driver");
     TagTranslator tt = new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables;ACCESS_MODE_DATA=r", "sa", ""));
-    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":123,\"properties\":{\"visible\":true,\"version\":2,\"changeset\":46,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Alice\",\"uid\":1,\"highway\":\"unclassified\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}},{\"type\":\"Feature\",\"id\":123,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":47,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Bob\",\"uid\":2,\"source\":\"digitalglobe\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.715334,49.410283]}}]}";
+    String expResult = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/123@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":123,\"@visible\":true,\"@version\":2,\"@changeset\":46,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"highway\":\"unclassified\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}},{\"type\":\"Feature\",\"id\":123,\"properties\":{\"visible\":true,\"version\":1,\"changeset\":47,\"timestamp\":\"1970-01-01T00:00:00Z\",\"user\":\"Bob\",\"uid\":2,\"source\":\"digitalglobe\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.715334,49.410283]}}]}";
     String result = instance.toGeoJSON(tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1));
     assertEquals(expResult, result);
   }
