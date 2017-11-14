@@ -14,6 +14,10 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class SplitBoundaryResolverTest {
+  @Test
+  public void testDummy() throws IOException {
+    return;
+  }
 
   //@Test
   public void testResolve() throws IOException {
