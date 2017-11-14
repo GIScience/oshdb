@@ -68,7 +68,7 @@ public class ZGrid {
       return 0;
     }
 
-    return morton(x[0], y[0]) + (zoom * ZOOM_FACTOR);
+    return addZoomToId(morton(x[0], y[0]),zoom);
   }
 
   public static int getZoom(long zId) {
@@ -84,7 +84,7 @@ public class ZGrid {
   }
 
   public static long getParent(long zId, int parentZoom){
-    final long zoom = getZoom(zId);
+    final int zoom = getZoom(zId);
     if(zoom < parentZoom)
       throw new IllegalArgumentException("zoom of id already lesser than parentZoom (zoom:"+zoom+" parentZoom:"+parentZoom+")");
     if(zoom == parentZoom)
@@ -92,15 +92,15 @@ public class ZGrid {
     final long diff = zoom - parentZoom;
     final long id = (getIdWithoutZoom(zId) >>> diff*2);
     
-    return id + (parentZoom)*ZOOM_FACTOR;
+    return addZoomToId(id, parentZoom);
   }
     
   
   public static long getParent(long zId) {
-    final long zoom = getZoom(zId);
+    final int zoom = getZoom(zId);
     if (zoom > 0) {
       final long parentId = getIdWithoutZoom(zId) >>> 2;
-      return parentId + (zoom-1)*ZOOM_FACTOR;
+      return addZoomToId(parentId, zoom-1);
     }
     return 0;
   }
@@ -333,7 +333,7 @@ public class ZGrid {
 
         if (overlap != OVERLAP.NONE) {
           hasNext = true;
-          next = id + ZOOM_FACTOR * zoom;
+          next = addZoomToId(id ,zoom);
           return;
         }
       }
@@ -353,7 +353,7 @@ public class ZGrid {
       System.out.printf("z:%2d - %d%n", ZGrid.getZoom(zId2), ZGrid.getIdWithoutZoom(zId2));
     });
     
-    final long test = 32 + 4*ZOOM_FACTOR;
+    final long test = addZoomToId(32,4);
     
     
     System.out.printf("-%64s- (%d:%d)%n",Long.toBinaryString(test),ZGrid.getZoom(test),ZGrid.getIdWithoutZoom(test));
