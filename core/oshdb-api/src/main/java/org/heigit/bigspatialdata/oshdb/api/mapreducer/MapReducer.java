@@ -725,11 +725,12 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
     switch (this._grouping) {
       case NONE:
         if (this._flatMappers.size() == 0) {
-          final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
-            return this.mapReduceCellsOSMContribution((SerializableFunction<OSMContribution, X>)mapper::apply, identitySupplier, accumulator, combiner);
+            final SerializableFunction<OSMContribution, X> contributionMapper = data -> this._getMapper().apply(data);
+            return this.mapReduceCellsOSMContribution(contributionMapper, identitySupplier, accumulator, combiner);
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            return this.mapReduceCellsOSMEntitySnapshot((SerializableFunction<OSMEntitySnapshot, X>)mapper::apply, identitySupplier, accumulator, combiner);
+            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper = data -> this._getMapper().apply(data);
+            return this.mapReduceCellsOSMEntitySnapshot(snapshotMapper, identitySupplier, accumulator, combiner);
           } else throw new UnsupportedOperationException("Unimplemented data view: " + this._forClass.toString());
         } else {
           final SerializableFunction<Object, List<X>> flatMapper = this._getFlatMapper();
