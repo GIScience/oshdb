@@ -6,6 +6,7 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -25,7 +26,8 @@ import static org.junit.Assert.assertEquals;
  *
  */
 abstract class TestMapReduce {
-  private final OSHDB oshdb;
+  final OSHDB oshdb;
+  OSHDB_JDBC keytables = null;
 
   private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
   private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY);
@@ -36,24 +38,36 @@ abstract class TestMapReduce {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    MapReducer<OSMContribution> mapRed = OSMContributionView.on(oshdb);
+    if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
+    return mapRed.osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    MapReducer<OSMEntitySnapshot> mapRed = OSMEntitySnapshotView.on(oshdb);
+    if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
+    return mapRed.osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void testOSMContributionView() throws Exception {
+    // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .where(entity -> entity.getId() == 617308093)
         .map(OSMContribution::getContributorUserId)
-        .reduce(
-            HashSet::new,
-            (x,y) -> { x.add(y); return x; },
-            (x,y) -> { HashSet<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
-        );
+        .uniq();
+
+    /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
+    assertEquals(5, result.size());
+
+    // "flatMap"
+    result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .where(entity -> entity.getId() == 617308093)
+        .map(OSMContribution::getContributorUserId)
+        .filter(uid -> uid > 0)
+        .uniq();
 
     /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
     assertEquals(5, result.size());
@@ -61,15 +75,22 @@ abstract class TestMapReduce {
 
   @Test
   public void testOSMEntitySnapshotView() throws Exception {
+    // simple query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .where(entity -> entity.getId() == 617308093)
         .map(snapshot -> snapshot.getEntity().getUserId())
-        .reduce(
-            HashSet::new,
-            (x,y) -> { x.add(y); return x; },
-            (x,y) -> { HashSet<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
-        );
+        .uniq();
+
+    assertEquals(3, result.size());
+
+    // "flatMap"
+    result = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .where(entity -> entity.getId() == 617308093)
+        .map(snapshot -> snapshot.getEntity().getUserId())
+        .filter(uid -> uid > 0)
+        .uniq();
 
     assertEquals(3, result.size());
   }
