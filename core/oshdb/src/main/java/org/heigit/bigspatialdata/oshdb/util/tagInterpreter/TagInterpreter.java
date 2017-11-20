@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.tagInterpreter;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 /**
  * instances of this class are used to determine whether a OSM way represents a polygon or linestring geometry.
  */
-public class TagInterpreter {
+public class TagInterpreter implements Serializable {
   protected int areaNoTagKeyId, areaNoTagValueId;
   protected Map<Integer, Set<Integer>> wayAreaTags;
   protected Map<Integer, Set<Integer>> relationAreaTags;

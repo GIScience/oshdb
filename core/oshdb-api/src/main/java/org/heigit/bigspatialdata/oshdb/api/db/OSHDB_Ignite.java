@@ -1,12 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.api.db;
 
 import java.io.File;
+import java.io.Serializable;
 import java.sql.SQLException;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 
-public class OSHDB_Ignite extends OSHDB implements AutoCloseable {
+public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
 
   private final Ignite _ignite;
 

@@ -1,12 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
  *
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
-public class CellId {
+public class CellId implements Serializable {
   private final int zoomlevel;
   private final long id;
 

@@ -2,10 +2,12 @@ package org.heigit.bigspatialdata.oshdb.util;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
+
+import java.io.Serializable;
 import java.util.Locale;
 import org.geotools.geometry.jts.JTS;
 
-public class BoundingBox {
+public class BoundingBox implements Serializable {
 
   public final double minLon;
   public final double maxLon;

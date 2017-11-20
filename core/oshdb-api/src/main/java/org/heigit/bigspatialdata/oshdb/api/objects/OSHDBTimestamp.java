@@ -1,9 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.api.objects;
 
 import org.heigit.bigspatialdata.oshdb.util.TimestampFormatter;
+
+import java.io.Serializable;
 import java.util.Date;
 
-public class OSHDBTimestamp implements Comparable<OSHDBTimestamp> {
+public class OSHDBTimestamp implements Comparable<OSHDBTimestamp>, Serializable {
   private long _tstamp;
   private static final TimestampFormatter _timeStampFormatter = TimestampFormatter.getInstance();
 

@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -56,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X>, MapAggregatable<MapAggregator<? extends Comparable, X>, X> {
+public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X>, MapAggregatable<MapAggregator<? extends Comparable, X>, X>, Serializable {
 	private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
   protected OSHDB _oshdb;
@@ -1139,7 +1140,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
 // -------------------------------------------------------------------------------------------------------------------
 
 // mutable version of WeightedValue type (for internal use to do faster aggregation)
-class PayloadWithWeight<X> {
+class PayloadWithWeight<X> implements Serializable {
   X num;
   double weight;
   PayloadWithWeight(X num, double weight) {
