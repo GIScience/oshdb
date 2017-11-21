@@ -241,7 +241,6 @@ class Ignite_ScanQuery_Helper {
         SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
-      this.nodesToPart = nodesToPart;
       this.tagInterpreter = tagInterpreter;
       this.cacheName = cacheName;
       this.cellIdsList = cellIdsList;

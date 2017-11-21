@@ -201,9 +201,6 @@ class Ignite_LocalPeek_Helper {
    */
   private static abstract class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal> implements IgniteCallable<S> {
     /** */
-    Map<UUID, List<Integer>> nodesToPart;
-
-    /** */
     @IgniteInstanceResource
     Ignite node;
 
@@ -235,7 +232,6 @@ class Ignite_LocalPeek_Helper {
         SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
-      this.nodesToPart = nodesToPart;
       this.tagInterpreter = tagInterpreter;
       this.cacheName = cacheName;
       this.tstamps = tstamps;
@@ -247,10 +243,6 @@ class Ignite_LocalPeek_Helper {
       this.identitySupplier = identitySupplier;
       this.accumulator = accumulator;
       this.combiner = combiner;
-    }
-
-    void setNodesToPart(Map<UUID, List<Integer>> nodesToPart) {
-      this.nodesToPart = nodesToPart;
     }
   }
 
@@ -477,21 +469,9 @@ class Ignite_LocalPeek_Helper {
       SerializableBinaryOperator<S> combiner,
       MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P> computeJob
   ) {
-    Ignite ignite = oshdb.getIgnite();
-
-    // build mapping from ignite compute nodes to cache partitions
-    Affinity affinity = ignite.affinity(cacheName);
-    List<Integer> allPartitions = new ArrayList<>(affinity.partitions());
-    for (int i = 0; i < affinity.partitions(); i++) allPartitions.add(i);
-    Map<Integer, ClusterNode> partPerNodes = affinity.mapPartitionsToNodes(allPartitions);
-    Map<UUID, List<Integer>> nodesToPart = new HashMap<>();
-    for (Map.Entry<Integer, ClusterNode> entry : partPerNodes.entrySet()) {
-      List<Integer> nodeParts = nodesToPart.computeIfAbsent(entry.getValue().id(), k -> new ArrayList<>());
-      nodeParts.add(entry.getKey());
-    }
     // execute compute job on all ignite nodes and further reduce+return result(s)
-    IgniteCompute compute = ignite.compute(ignite.cluster().forNodeIds(nodesToPart.keySet()));
-    computeJob.setNodesToPart(nodesToPart);
+    Ignite ignite = oshdb.getIgnite();
+    IgniteCompute compute = ignite.compute();
     Collection<S> nodeResults = compute.broadcast(computeJob);
     return nodeResults.stream().reduce(identitySupplier.get(), combiner);
   }
