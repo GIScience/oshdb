@@ -8,8 +8,13 @@ import org.apache.ignite.Ignition;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 
 public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
+  public enum ComputeMode {
+    ScanQuery,
+    LocalPeek
+  }
 
   private final Ignite _ignite;
+  private ComputeMode _computeMode = ComputeMode.ScanQuery;
 
   public OSHDB_Ignite() throws SQLException, ClassNotFoundException {
     this(new File("ignite-config.xml"));
@@ -23,19 +28,8 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
   public OSHDB_Ignite(File igniteXml) {
     Ignition.setClientMode(true);
 
-    /*IgniteConfiguration igniteCfg = new IgniteConfiguration();
-    igniteCfg.setPeerClassLoadingEnabled(true);
-    BinaryConfiguration binaryCfg = new BinaryConfiguration();
-    binaryCfg.setCompactFooter(false);
-    igniteCfg.setBinaryConfiguration(binaryCfg)
-    this._ignite = Ignition.start(igniteCfg);*/
     this._ignite = Ignition.start(igniteXml.toString());
     this._ignite.active(true);
-
-    /*try (Ignite ignite = Ignition.start("ignite-config.xml")) {
-      ignite.active(true);
-      _ignite = ignite;
-    }*/
   }
 
   public Ignite getIgnite() {
@@ -46,4 +40,12 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
     this._ignite.close();
   }
 
+  public OSHDB_Ignite computeMode(ComputeMode computeMode) {
+    this._computeMode = computeMode;
+    return this;
+  }
+
+  public ComputeMode computeMode() {
+    return this._computeMode;
+  }
 }

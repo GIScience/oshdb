@@ -11,20 +11,22 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.junit.Assert;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import static org.junit.Assert.fail;
 
-public class TestMapReduceOSHDB_Ignite extends TestMapReduce {
+public class TestMapReduceOSHDB_Ignite_LocalPeek extends TestMapReduce {
   private final static Ignite ignite = Ignition.start(new File("./src/test/resources/ignite-config.xml").toString());
 
-  public TestMapReduceOSHDB_Ignite() throws Exception {
-    super(new OSHDB_Ignite(ignite));
+  public TestMapReduceOSHDB_Ignite_LocalPeek() throws Exception {
+    super(new OSHDB_Ignite(ignite).computeMode(OSHDB_Ignite.ComputeMode.LocalPeek));
     OSHDB_H2 oshdb_h2 = new OSHDB_H2("./src/test/resources/test-data");
     this.keytables = oshdb_h2;
 

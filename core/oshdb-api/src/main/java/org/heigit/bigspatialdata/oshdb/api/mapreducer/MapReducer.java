@@ -127,7 +127,17 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
       mapReducer._forClass = forClass;
       return mapReducer;
     } else if (oshdb instanceof OSHDB_Ignite) {
-      MapReducer<X> mapReducer = new MapReducer_Ignite<X>(oshdb);
+      MapReducer<X> mapReducer;
+      switch (((OSHDB_Ignite) oshdb).computeMode()) {
+        case ScanQuery:
+          mapReducer = new MapReducer_Ignite_ScanQuery<X>(oshdb);
+          break;
+        case LocalPeek:
+          mapReducer = new MapReducer_Ignite_LocalPeek<X>(oshdb);
+          break;
+        default:
+          throw new UnsupportedOperationException("Backend not implemented for this database option.");
+      }
       mapReducer._oshdbForTags = null;
       mapReducer._forClass = forClass;
       return mapReducer;
@@ -141,8 +151,10 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
       return new MapReducer_JDBC_singlethread<X>((MapReducer_JDBC_singlethread)this);
     if (this instanceof MapReducer_JDBC_multithread)
       return new MapReducer_JDBC_multithread<X>((MapReducer_JDBC_multithread)this);
-    if (this instanceof MapReducer_Ignite)
-      return new MapReducer_Ignite<X>((MapReducer_Ignite)this);
+    if (this instanceof MapReducer_Ignite_ScanQuery)
+      return new MapReducer_Ignite_ScanQuery<X>((MapReducer_Ignite_ScanQuery)this);
+    if (this instanceof MapReducer_Ignite_LocalPeek)
+      return new MapReducer_Ignite_LocalPeek<X>((MapReducer_Ignite_LocalPeek)this);
     throw new UnsupportedOperationException("Clone not implemented for this backend type: " + this.getClass().toString());
   }
 

@@ -6,12 +6,10 @@ import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
-import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.affinity.Affinity;
 import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
-import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -40,15 +38,15 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.*;
 
-public class MapReducer_Ignite<X> extends MapReducer<X> {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite.class);
+public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_ScanQuery.class);
 
-  public MapReducer_Ignite(OSHDB oshdb) {
+  public MapReducer_Ignite_ScanQuery(OSHDB oshdb) {
     super(oshdb);
   }
 
   // copy constructor
-  public MapReducer_Ignite(MapReducer_Ignite obj) {
+  public MapReducer_Ignite_ScanQuery(MapReducer_Ignite_ScanQuery obj) {
     super(obj);
   }
 
@@ -70,7 +68,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
         LOG.warn("unhandled osm type: " + osmType.toString());
         return identitySupplier.get();
       }
-      return Ignite_Helper._mapReduceCellsOSMContributionOnIgniteCache(
+      return Ignite_ScanQuery_Helper._mapReduceCellsOSMContributionOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
           cacheName.get(),
@@ -106,7 +104,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
         LOG.warn("unhandled osm type: " + osmType.toString());
         return identitySupplier.get();
       }
-      return Ignite_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+      return Ignite_ScanQuery_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
           cacheName.get(),
@@ -143,7 +141,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
         LOG.warn("unhandled osm type: " + osmType.toString());
         return identitySupplier.get();
       }
-      return Ignite_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+      return Ignite_ScanQuery_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
           cacheName.get(),
@@ -179,7 +177,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
         LOG.warn("unhandled osm type: " + osmType.toString());
         return identitySupplier.get();
       }
-      return Ignite_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+      return Ignite_ScanQuery_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
           cacheName.get(),
@@ -200,7 +198,7 @@ public class MapReducer_Ignite<X> extends MapReducer<X> {
 
 
 
-class Ignite_Helper {
+class Ignite_ScanQuery_Helper {
   /**
    * Compute closure that iterates over every partition owned by a node
    * located in a partition.
