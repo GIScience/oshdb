@@ -7,6 +7,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
+import org.jetbrains.annotations.Contract;
 
 import java.util.*;
 
@@ -37,6 +38,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
   }
 
   @Override
+  @Contract(pure = true)
   protected <R> MapAggregatorByTimestamps<R> copyTransform(MapReducer<Pair<OSHDBTimestamp, R>> mapReducer) {
     return new MapAggregatorByTimestamps<>(this, mapReducer);
   }
@@ -47,8 +49,9 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * This feature is enabled by default, and can be disabled by calling this function with a value of `false`.
    *
    * @param zerofill the enabled/disabled state of the zero-filling feature
-   * @return this mapAggregator object
+   * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapAggregatorByTimestamps<X> zerofill(boolean zerofill) {
     MapAggregatorByTimestamps<X> ret = this.copyTransform(this._mapReducer);
     ret._zerofill = zerofill;
@@ -79,6 +82,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * @throws Exception
    */
   @Override
+  @Contract(pure = true)
   public <S> SortedMap<OSHDBTimestamp, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     SortedMap<OSHDBTimestamp, S> result = super.reduce(identitySupplier, accumulator, combiner);
     if (!this._zerofill) return result;
@@ -98,6 +102,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * @param <U> the (arbitrary) data type of this index
    * @return a special MapAggregator object that performs aggregation by two separate indices
    */
+  @Contract(pure = true)
   public <U extends Comparable> MapBiAggregatorByTimestamps<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
     return new MapBiAggregatorByTimestamps<U, X>(this, indexer);
   }

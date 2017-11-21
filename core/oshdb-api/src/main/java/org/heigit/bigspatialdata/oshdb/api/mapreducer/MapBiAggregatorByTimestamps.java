@@ -6,6 +6,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndOtherIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
+import org.jetbrains.annotations.Contract;
 
 import java.util.*;
 
@@ -44,6 +45,7 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
   }
 
   @Override
+  @Contract(pure = true)
   protected <R> MapBiAggregatorByTimestamps<U, R> copyTransform(MapReducer<Pair<OSHDBTimestampAndOtherIndex<U>, R>> mapReducer) {
     return new MapBiAggregatorByTimestamps<>(this, mapReducer);
   }
@@ -54,8 +56,9 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * This feature is enabled by default, and can be disabled by calling this function with a value of `false`.
    *
    * @param zerofill the enabled/disabled state of the zero-filling feature
-   * @return this mapAggregator object
+   * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapBiAggregatorByTimestamps<U, X> zerofill(boolean zerofill) {
     MapBiAggregatorByTimestamps<U, X> ret = this.copyTransform(this._mapReducer);
     ret._zerofill = zerofill;
@@ -86,6 +89,7 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * @throws Exception
    */
   @Override
+  @Contract(pure = true)
   public <S> SortedMap<OSHDBTimestampAndOtherIndex<U>, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     SortedMap<OSHDBTimestampAndOtherIndex<U>, S> result = super.reduce(identitySupplier, accumulator, combiner);
     if (!this._zerofill) return result;

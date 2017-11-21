@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import com.vividsolutions.jts.geom.*;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_LocalPeek;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_ScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_multithread;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_singlethread;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
@@ -28,6 +28,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,8 +115,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param oshdb the database backend (and potentially computation grid) to use for fetching and processing the data
    * @param forClass the class (same as template parameter &lt;T&gt;) to iterate over in the `mapping` function
-   * @return
+   * @return a new mapReducer object operating on the given OSHDB backend
    */
+  @Contract("null, _ -> fail")
   public static <X> MapReducer<X> using(OSHDB oshdb, Class<?> forClass) {
     if (oshdb instanceof OSHDB_JDBC) {
       MapReducer<X> mapReducer;
@@ -146,6 +149,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
     }
   }
 
+  @NotNull
   private MapReducer<X> copy() {
     if (this instanceof MapReducer_JDBC_singlethread)
       return new MapReducer_JDBC_singlethread<X>((MapReducer_JDBC_singlethread)this);
@@ -167,8 +171,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * If this function is never called, the main database (specified during the construction of this object) is used for this.
    *
    * @param oshdb the database to use for resolving strings into internal identifiers
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> keytables(OSHDB_JDBC oshdb) {
     MapReducer<X> ret = this.copy();
     ret._oshdbForTags = oshdb;
@@ -183,8 +188,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * it is possible to use this function to supply their own tagInterpreter.
    *
    * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter) {
     MapReducer<X> ret = this.copy();
     ret._tagInterpreter = tagInterpreter;
@@ -199,7 +205,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Set the area of interest to the given bounding box. Deprecated, use `areaOfInterest()` instead (w/ same semantics).
    *
    * @param bbox the bounding box to query the data in
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Deprecated
   public MapReducer<X> boundingBox(BoundingBox bbox) {
@@ -211,8 +217,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Only objects inside or clipped by this bbox will be passed on to the analysis' `mapper` function.
    *
    * @param bboxFilter the bounding box to query the data in
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> areaOfInterest(BoundingBox bboxFilter) {
     MapReducer<X> ret = this.copy();
     if (this._polyFilter == null) {
@@ -232,8 +239,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Only objects inside or clipped by this polygon will be passed on to the analysis' `mapper` function.
    *
    * @param polygonFilter the bounding box to query the data in
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(P polygonFilter) {
     MapReducer<X> ret = this.copy();
     if (this._polyFilter == null) {
@@ -257,8 +265,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *   timestamp of this list are contributing). Additionally, the timestamps are used in the `aggregateByTimestamps` functionality.
    *
    * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the timestamps to do the analysis for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> timestamps(OSHDBTimestampList tstamps) {
     MapReducer<X> ret = this.copy();
     ret._tstamps = tstamps;
@@ -273,8 +282,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
    * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
    * @param interval the interval between the timestamps to be used in the analysis
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd, OSHDBTimestamps.Interval interval) {
     return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
   }
@@ -288,8 +298,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
    * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd) {
     return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd));
   }
@@ -301,8 +312,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
    * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the analysis
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> timestamps(String isoDateFirst, String... isoDateMore) {
     List<Long> timestamps = new ArrayList<>(2 + isoDateMore.length);
     try {
@@ -321,8 +333,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Limits the analysis to the given osm entity types.
    *
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> osmTypes(EnumSet<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
     ret._typeFilter = typeFilter;
@@ -333,8 +346,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it should be considered for this analyis or not.
    *
    * @param f the filter function to call for each osm entity
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> where(SerializablePredicate<OSMEntity> f) {
     MapReducer<X> ret = this.copy();
     ret._filters.add(f);
@@ -347,7 +361,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Deprecated, use `where(f)` instead
    *
    * @param f the filter function to call for each osm entity
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated
    */
   @Deprecated
@@ -359,9 +373,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
    *
    * @param key the tag key to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> where(String key) {
     MapReducer<X> ret = this.copy();
     Integer keyId = this._getTagTranslator().key2Int(key);
@@ -382,8 +396,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Deprecated, use `where(key)` instead.
    *
    * @param key the tag key to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated
    */
   @Deprecated
@@ -397,8 +410,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Deprecated, use `where(key)` instead.
    *
    * @param key the tag key to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated
    */
   @Deprecated
@@ -411,9 +423,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> where(String key, String value) {
     MapReducer<X> ret = this.copy();
     Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
@@ -437,10 +449,10 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated
    */
+  @Deprecated
   public MapReducer<X> filterByTag(String key, String value) {
     return this.where(key, value);
   }
@@ -452,8 +464,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated
    */
   @Deprecated
@@ -467,16 +478,17 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param key the tag key to filter the osm entities for
    * @param values an array of tag values to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> where(String key, Collection<String> values) {
+    MapReducer<X> ret = this.copy();
     Integer keyId = this._getTagTranslator().key2Int(key);
     if (keyId == null || values.size() == 0) {
       LOG.warn((keyId == null ? "Tag key \"{}\" not found." : "Empty tag value list.") + " No data will match this filter.", key);
-      this._preFilters.add(ignored -> false);
-      this._filters.add(ignored -> false);
-      return this;
+      ret._preFilters.add(ignored -> false);
+      ret._filters.add(ignored -> false);
+      return ret;
     }
     List<Integer> valueIds = new ArrayList<>();
     for (String value : values) {
@@ -487,9 +499,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
         valueIds.add(keyValueId.getValue());
       }
     }
-    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    this._filters.add(osmEntity -> valueIds.stream().anyMatch(valueId -> osmEntity.hasTagValue(keyId, valueId)));
-    return this;
+    ret._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    ret._filters.add(osmEntity -> valueIds.stream().anyMatch(valueId -> osmEntity.hasTagValue(keyId, valueId)));
+    return ret;
   }
 
   /**
@@ -498,19 +510,20 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @param key the tag key to filter the osm entities for
    * @param valuePattern a regular expression which the tag value of the osm entity must match
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> where(String key, Pattern valuePattern) {
+    MapReducer<X> ret = this.copy();
     Integer keyId = this._getTagTranslator().key2Int(key);
     if (keyId == null) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
-      this._preFilters.add(ignored -> false);
-      this._filters.add(ignored -> false);
-      return this;
+      ret._preFilters.add(ignored -> false);
+      ret._filters.add(ignored -> false);
+      return ret;
     }
-    this._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    this._filters.add(osmEntity -> {
+    ret._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    ret._filters.add(osmEntity -> {
       if (!osmEntity.hasTagKey(keyId)) return false;
       int[] tags = osmEntity.getTags();
       String value = null;
@@ -520,7 +533,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
       }
       return valuePattern.matcher(value).matches();
     });
-    return this;
+    return ret;
   }
 
   /**
@@ -528,15 +541,16 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * tags (key=value pairs)
    *
    * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @throws Exception
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> where(Collection<Pair<String, String>> keyValuePairs) {
+    MapReducer<X> ret = this.copy();
     if (keyValuePairs.size() == 0) {
       LOG.warn("Empty tag list. No data will match this filter.");
-      this._preFilters.add(ignored -> false);
-      this._filters.add(ignored -> false);
-      return this;
+      ret._preFilters.add(ignored -> false);
+      ret._filters.add(ignored -> false);
+      return ret;
     }
     Set<Integer> keyIds = new HashSet<>();
     List<Pair<Integer, Integer>> keyValueIds = new ArrayList<>();
@@ -549,9 +563,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
         keyValueIds.add(keyValueId);
       }
     }
-    this._preFilters.add(oshEntitiy -> keyIds.stream().anyMatch(oshEntitiy::hasTagKey));
-    this._filters.add(osmEntity -> keyValueIds.stream().anyMatch(tag -> osmEntity.hasTagValue(tag.getKey(), tag.getValue())));
-    return this;
+    ret._preFilters.add(oshEntitiy -> keyIds.stream().anyMatch(oshEntitiy::hasTagKey));
+    ret._filters.add(osmEntity -> keyValueIds.stream().anyMatch(tag -> osmEntity.hasTagValue(tag.getKey(), tag.getValue())));
+    return ret;
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -565,6 +579,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
    * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
    */
+  @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
     MapReducer<X> ret = this.copy();
     ret._mappers.add(mapper);
@@ -579,6 +594,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
    * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
    */
+  @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
     MapReducer<X> ret = this.copy();
     ret._mappers.add(flatMapper);
@@ -590,8 +606,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * Adds a custom arbitrary filter that gets executed in the current transformation chain.
    *
    * @param f the filter function that determines if the respective data should be passed on (when f returns true) or discarded (when f returns false)
-   * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Contract(pure = true)
   public MapReducer<X> filter(SerializablePredicate<X> f) {
     return this.flatMap(data -> f.test(data)
         ? Collections.singletonList(data)
@@ -614,6 +631,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @throws UnsupportedOperationException if this is called after some map (or flatMap) functions have already been set
    * @throws UnsupportedOperationException if this is called when a grouping has already been activated
    */
+  @Contract(pure = true)
   public MapReducer<List<X>> groupById() throws UnsupportedOperationException {
     if (!this._mappers.isEmpty())
       throw new UnsupportedOperationException("groupById() must be called before any `map` or `flatMap` transformation functions have been set");
@@ -631,6 +649,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param <U> the data type of the values used to aggregate the output. has to be a comparable type
    * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
    */
+  @Contract(pure = true)
   public <U extends Comparable> MapAggregator<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
     return new MapAggregator<U, X>(this, indexer);
   }
@@ -661,6 +680,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return a MapAggregator object with the equivalent state (settings, filters, map function, etc.) of the current MapReducer object
    * @throws UnsupportedOperationException if this is called when the `groupById()` mode has been activated
    */
+  @Contract(pure = true)
   public MapAggregatorByTimestamps<X> aggregateByTimestamp() throws UnsupportedOperationException {
     if (this._grouping != Grouping.NONE)
       throw new UnsupportedOperationException("aggregateByTimestamp cannot be used together with the groupById() functionality");
@@ -734,6 +754,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    * @throws Exception
    */
+  @Contract(pure = true)
   public <S> S reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
     switch (this._grouping) {
       case NONE:
@@ -793,6 +814,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return the sum of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
+  @Contract(pure = true)
   public Number sum() throws Exception {
     return this
         .makeNumeric()
@@ -812,6 +834,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the summed up results of the `mapper` function
    */
+  @Contract(pure = true)
   public <R extends Number> R sum(SerializableFunction<X, R> mapper) throws Exception {
     return this
         .map(mapper)
@@ -827,6 +850,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @return the total count of features or modifications, summed up over all timestamps
    */
+  @Contract(pure = true)
   public Integer count() throws Exception {
     return this.sum(ignored -> 1);
   }
@@ -838,6 +862,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @return the set of distinct values
    */
+  @Contract(pure = true)
   public Set<X> uniq() throws Exception {
     return this
         .reduce(
@@ -856,6 +881,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param <R> the type that is returned by the `mapper` function
    * @return a set of distinct values returned by the `mapper` function
    */
+  @Contract(pure = true)
   public <R> Set<R> uniq(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).uniq();
   }
@@ -868,6 +894,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return the average of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
+  @Contract(pure = true)
   public Double average() throws Exception {
     return this
         .makeNumeric()
@@ -881,6 +908,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the average of the numbers returned by the `mapper` function
    */
+  @Contract(pure = true)
   public <R extends Number> Double average(SerializableFunction<X, R> mapper) throws Exception {
     PayloadWithWeight<Double> runningSums = this
         .map(mapper)
@@ -904,6 +932,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @param mapper function that gets called for each entity snapshot or modification, needs to return the value and weight combination of numbers to average
    * @return the weighted average of the numbers returned by the `mapper` function
    */
+  @Contract(pure = true)
   public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     PayloadWithWeight<Double> runningSums = this
         .map(mapper)
@@ -943,6 +972,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * @return a list with all results returned by the `mapper` function
    */
+  @Contract(pure = true)
   public List<X> collect() throws Exception {
     return this.reduce(
         LinkedList::new,
