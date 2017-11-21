@@ -22,7 +22,7 @@ import java.sql.Statement;
 
 import static org.junit.Assert.fail;
 
-public class TestMapReduceOSHDB_Ignite extends TestMapReduce {
+abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
   final static Ignite ignite = Ignition.start(new File("./src/test/resources/ignite-config.xml").toString());
 
   public TestMapReduceOSHDB_Ignite(OSHDB_Ignite oshdb) throws Exception {
