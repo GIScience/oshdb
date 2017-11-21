@@ -685,12 +685,12 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
       ret._mappers.clear();
       ret._flatMappers.clear();
       MapAggregatorByTimestamps<X> mapAggregator = new MapAggregatorByTimestamps<X>(ret, indexer);
-      mappers.forEach(action -> {
+      for (SerializableFunction action : mappers) {
         if (flatMappers.contains(action))
-          mapAggregator.flatMap(action);
+          mapAggregator = (MapAggregatorByTimestamps<X>)mapAggregator.flatMap(action);
         else
-          mapAggregator.map(action);
-      });
+          mapAggregator = (MapAggregatorByTimestamps<X>)mapAggregator.map(action);
+      }
       return mapAggregator;
     } else {
       return new MapAggregatorByTimestamps<X>(this, indexer);
