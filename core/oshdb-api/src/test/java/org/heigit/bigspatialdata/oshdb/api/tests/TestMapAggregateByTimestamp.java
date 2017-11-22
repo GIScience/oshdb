@@ -30,7 +30,7 @@ public class TestMapAggregateByTimestamp {
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
-  private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2015-01-01");
+  private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2014-02-01");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
   private final double DELTA = 1e-8;
@@ -86,7 +86,7 @@ public class TestMapAggregateByTimestamp {
         .aggregateByTimestamp()
         .sum(snapshot -> 1);
 
-    assertEquals(2, result1.entrySet().size());
+    assertEquals(2, result2.entrySet().size());
 
     // multiple timestamps
     SortedMap<OSHDBTimestamp, Integer> result72 = createMapReducerOSMEntitySnapshot()
