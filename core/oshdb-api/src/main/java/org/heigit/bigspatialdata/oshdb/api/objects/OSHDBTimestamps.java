@@ -90,7 +90,7 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
   public OSHDBTimestamps(String isoDateStart, String isoDateEnd) {
     this.start = isoDateStart;
     this.end = isoDateEnd;
-    this.period = "P1Y";
+    this.period = null;
   }
 
   /**
