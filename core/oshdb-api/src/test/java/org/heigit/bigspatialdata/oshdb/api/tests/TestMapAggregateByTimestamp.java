@@ -56,6 +56,7 @@ public class TestMapAggregateByTimestamp {
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(14, result1.get(result1.firstKey()).intValue());
+
     // multiple timestamps
     SortedMap<OSHDBTimestamp, Integer> result2 = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -78,15 +79,24 @@ public class TestMapAggregateByTimestamp {
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(42, result1.get(result1.firstKey()).intValue());
-    // multiple timestamps
+
+    // two timestamps
     SortedMap<OSHDBTimestamp, Integer> result2 = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps2)
+        .aggregateByTimestamp()
+        .sum(snapshot -> 1);
+
+    assertEquals(2, result1.entrySet().size());
+
+    // multiple timestamps
+    SortedMap<OSHDBTimestamp, Integer> result72 = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
         .aggregateByTimestamp()
         .sum(snapshot -> 1);
 
-    assertEquals(72, result2.entrySet().size());
-    assertEquals(0, result2.get(result2.firstKey()).intValue());
-    assertEquals(42, result2.get(result2.lastKey()).intValue());
+    assertEquals(72, result72.entrySet().size());
+    assertEquals(0, result72.get(result72.firstKey()).intValue());
+    assertEquals(42, result72.get(result72.lastKey()).intValue());
   }
 
 
