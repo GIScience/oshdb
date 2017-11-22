@@ -82,7 +82,7 @@ public class TestMapAggregateByTimestamp {
 
     // two timestamps
     SortedMap<OSHDBTimestamp, Integer> result2 = createMapReducerOSMEntitySnapshot()
-        .timestamps("2014-01-01", "2014-02-01")
+        .timestamps(timestamps2)
         .aggregateByTimestamp()
         .sum(snapshot -> 1);
 

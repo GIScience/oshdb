@@ -685,26 +685,17 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
     if (this._grouping != Grouping.NONE)
       throw new UnsupportedOperationException("aggregateByTimestamp cannot be used together with the groupById() functionality");
 
-    final List<OSHDBTimestamp> timestamps = this._tstamps.getOSHDBTimestamps();
-
     // by timestamp indexing function -> for some data views we need to match the input data to the list
     SerializableFunction<X, OSHDBTimestamp> indexer;
     if (this._forClass.equals(OSMContribution.class)) {
+      final List<OSHDBTimestamp> timestamps = this._tstamps.getOSHDBTimestamps();
       indexer = data -> {
         int timeBinIndex = Collections.binarySearch(timestamps, ((OSMContribution)data).getTimestamp());
         if (timeBinIndex < 0) { timeBinIndex = -timeBinIndex - 2; }
         return timestamps.get(timeBinIndex);
       };
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-      switch (this._grouping) {
-        case BY_ID:
-          indexer = data -> ((List<OSMEntitySnapshot>)data).get(0).getTimestamp();
-          break;
-        case NONE:
-        default:
-          indexer = data -> ((OSMEntitySnapshot)data).getTimestamp();
-          break;
-      }
+      indexer = data -> ((OSMEntitySnapshot)data).getTimestamp();
     } else throw new UnsupportedOperationException("aggregateByTimestamp only implemented for OSMContribution and OSMEntitySnapshot");
 
     if (this._mappers.size() > 0) {
