@@ -115,12 +115,16 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * Helper function that converts the dual-index data structure returned by aggregation operations on this object to a nested Map structure,
    * which can be easier to process further on.
    *
+   * This version creates a map for each &lt;U&gt; index value, containing maps containing results by timestamps.
+   *
+   * See also {@link #nest_IndexThenTime(Map)}.
+   *
    * @param result the "flat" result data structure that should be converted to a nested structure
    * @param <A> an arbitrary data type, used for the data value items
    * @param <U> an arbitrary data type, used for the index'es key items
    * @return a nested data structure, where for each index part there is a separate level of nested maps
    */
-  public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest(SortedMap<OSHDBTimestampAndOtherIndex<U>, A> result) {
+  public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest_TimeThenIndex(Map<OSHDBTimestampAndOtherIndex<U>, A> result) {
     TreeMap<U, SortedMap<OSHDBTimestamp, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
       if (!ret.containsKey(index.getOtherIndex()))
@@ -130,7 +134,20 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
     return ret;
   }
 
-  public static <A,U> SortedMap<OSHDBTimestamp, SortedMap<U, A>> nest2(SortedMap<OSHDBTimestampAndOtherIndex<U>, A> result) {
+  /**
+   * Helper function that converts the dual-index data structure returned by aggregation operations on this object to a nested Map structure,
+   * which can be easier to process further on.
+   *
+   * This version creates a map for each timestamp, containing maps containing results by &lt;U&gt; index values.
+   *
+   * See also {@link #nest_TimeThenIndex(Map)}.
+   *
+   * @param result the "flat" result data structure that should be converted to a nested structure
+   * @param <A> an arbitrary data type, used for the data value items
+   * @param <U> an arbitrary data type, used for the index'es key items
+   * @return a nested data structure, where for each index part there is a separate level of nested maps
+   */
+  public static <A,U> SortedMap<OSHDBTimestamp, SortedMap<U, A>> nest_IndexThenTime(Map<OSHDBTimestampAndOtherIndex<U>, A> result) {
     TreeMap<OSHDBTimestamp, SortedMap<U, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
       if (!ret.containsKey(index.getTimeIndex()))
