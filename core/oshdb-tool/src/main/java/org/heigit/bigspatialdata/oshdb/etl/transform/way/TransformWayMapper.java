@@ -41,8 +41,7 @@ import org.slf4j.LoggerFactory;
 
 public class TransformWayMapper extends TransformMapper2 {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TransformWayMapper.class);
-
+  private static final Logger LOG = LoggerFactory.getLogger(TransformWayMapper.class);
 
   private static final Result EMPTY_RESULT = new Result();
 
@@ -112,7 +111,7 @@ public class TransformWayMapper extends TransformMapper2 {
       while (oshIterator.hasNext()) {
         final List<OSMPbfEntity> versions = oshIterator.next();
         if (versions.isEmpty()) {
-          LOGGER.warn("emyty list of versions!");
+          LOG.warn("emyty list of versions!");
           continue;
         }
         final long id = versions.get(0).getId();
@@ -164,6 +163,7 @@ public class TransformWayMapper extends TransformMapper2 {
       return new Result(cellOutput, waysForRelations);
 
     } catch (IOException | ClassNotFoundException e) {
+      LOG.error("Could not save map!", e);
     }
 
     return EMPTY_RESULT;
@@ -272,25 +272,26 @@ public class TransformWayMapper extends TransformMapper2 {
             getKeyValue(entity.getTags()), //
             convertLongs(entity.getRefs()));
   }
+
   public static class Result {
-    
+
     private final SortedSet<CellWay> cells;
     private final List<WayRelation> waysForRelations;
-    
+
     public Result(final SortedSet<CellWay> cells, final List<WayRelation> waysForRelations) {
       this.cells = cells;
       this.waysForRelations = waysForRelations;
     }
-    
+
     public Result() {
       cells = Collections.emptySortedSet();
       waysForRelations = Collections.emptyList();
     }
-    
+
     public SortedSet<CellWay> getCells() {
       return cells;
     }
-    
+
     public List<WayRelation> getWaysForRelations() {
       return waysForRelations;
     }

@@ -282,6 +282,7 @@ public class HOSMDbTransform {
         insert.executeUpdate();
       }
     } catch (SQLException | IOException e) {
+      LOG.error("Could not save Grid!", e);
     }
   }
 
@@ -320,6 +321,7 @@ public class HOSMDbTransform {
       }
 
     } catch (SQLException | IOException e) {
+      LOG.error("Could not save Grid!", e);
     }
 
   }
@@ -359,6 +361,7 @@ public class HOSMDbTransform {
       }
 
     } catch (SQLException | IOException e) {
+      LOG.error("Could not save Grid!", e);
     }
   }
 }

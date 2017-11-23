@@ -101,6 +101,8 @@ public class OSHDB2Ignite {
         }
         System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into " + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException | SQLException e) {
+        LOG.error("Could not import Grid!", e);
+
       }
     }
 

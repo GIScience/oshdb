@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class TransformRelationMapper extends TransformMapper2 {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TransformRelationMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TransformRelationMapper.class);
 
   private static final Result EMPTY_RESULT = new Result();
 
@@ -122,7 +122,7 @@ public class TransformRelationMapper extends TransformMapper2 {
         while (oshIterator.hasNext()) {
           final List<OSMPbfEntity> versions = oshIterator.next();
           if (versions.isEmpty()) {
-            LOGGER.warn("emyty list of versions!");
+            LOG.warn("emyty list of versions!");
             continue;
           }
           final long id = versions.get(0).getId();
@@ -180,6 +180,7 @@ public class TransformRelationMapper extends TransformMapper2 {
 
       }
     } catch (ClassNotFoundException | SQLException | IOException e) {
+      LOG.error("Could not save map!", e);
     }
 
     return EMPTY_RESULT;

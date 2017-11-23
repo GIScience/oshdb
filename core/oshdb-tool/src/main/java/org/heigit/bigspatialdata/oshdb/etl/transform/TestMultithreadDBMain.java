@@ -20,8 +20,12 @@ import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestMultithreadDBMain {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TestMultithreadDBMain.class);
 
   public static void main(String[] args) throws ClassNotFoundException {
     Class.forName("org.h2.Driver");
@@ -62,6 +66,7 @@ public class TestMultithreadDBMain {
                     }
                   }
                 } catch (IOException | SQLException | ClassNotFoundException e) {
+                  LOG.error("", e);
                 }
                 return cells.stream();
               })
@@ -112,6 +117,7 @@ public class TestMultithreadDBMain {
 			
        */
     } catch (SQLException e) {
+      LOG.error("", e);
     }
 
   }
