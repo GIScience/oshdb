@@ -11,8 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCheckedException;
@@ -29,13 +27,15 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
  */
 public class OSHDB2Ignite {
 
-  private static final Logger LOG = Logger.getLogger(OSHDB2Ignite.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(OSHDB2Ignite.class);
 
   /**
    * Load your extracted and transformed OSH-Data into Ignite Caches.
@@ -59,7 +59,7 @@ public class OSHDB2Ignite {
         OSHDB2Ignite.<GridOSHRelations>doGridImport(ignite, stmt, CacheNames.RELATIONS, prefix);
 
       } catch (SQLException ex) {
-        LOG.log(Level.SEVERE, null, ex);
+        LOG.error("", ex);
       }
 
     }
@@ -113,7 +113,7 @@ public class OSHDB2Ignite {
       jcom.parse(args);
     } catch (ParameterException e) {
       System.out.println("");
-      LOG.log(Level.SEVERE, e.getLocalizedMessage());
+      LOG.error(e.getLocalizedMessage());
       System.out.println("");
       jcom.usage();
 

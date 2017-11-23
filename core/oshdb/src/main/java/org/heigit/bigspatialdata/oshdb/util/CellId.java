@@ -1,13 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 /**
  *
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class CellId implements Serializable {
+
   private final int zoomlevel;
   private final long id;
 
@@ -28,21 +28,20 @@ public class CellId implements Serializable {
     this.id = id;
   }
 
-  
-  public static long getLevelId(int zoomlevel, long id){
-    return ((long)zoomlevel) << 56 | id;
+  public static long getLevelId(int zoomlevel, long id) {
+    return ((long) zoomlevel) << 56 | id;
   }
-  
-  public long getLevelId(){
-     return getLevelId(zoomlevel,id);
+
+  public long getLevelId() {
+    return getLevelId(zoomlevel, id);
   }
-  
-  public static CellId fromLevelId(long levelId) throws cellIdExeption{
-     final long id = levelId & 0x00FFFFFFFFFFFFFFL;
-     final int zoomlevel = (int) (levelId >>> 56);
-     return new CellId(zoomlevel, id);
+
+  public static CellId fromLevelId(long levelId) throws cellIdExeption {
+    final long id = levelId & 0x00FFFFFFFFFFFFFFL;
+    final int zoomlevel = (int) (levelId >>> 56);
+    return new CellId(zoomlevel, id);
   }
-  
+
   /**
    *
    * @return

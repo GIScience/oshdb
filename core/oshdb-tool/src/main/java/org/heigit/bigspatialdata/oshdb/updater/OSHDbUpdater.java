@@ -8,7 +8,8 @@ import java.nio.file.FileSystems;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TODO: enhance code, this is only version 1 TODO: simplify code TODO: Comment
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  */
 public class OSHDbUpdater {
 
-  private static final Logger LOG = Logger.getLogger(OSHDbUpdater.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(OSHDbUpdater.class);
 
   /**
    * @param args the command line arguments

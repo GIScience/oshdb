@@ -5,11 +5,12 @@ import com.beust.jcommander.ParametersDelegate;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExtractArgs {
 
-  private static final Logger LOG = Logger.getLogger(ExtractArgs.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ExtractArgs.class);
   @ParametersDelegate
   public HelpArg help = new HelpArg();
 

@@ -2,8 +2,6 @@ package org.heigit.bigspatialdata.oshdb.etl.load;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.Ignition;
@@ -13,20 +11,20 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
-import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 public class OSHDB2IgniteTest implements Runnable {
-
+  
   private static Ignite ignite;
   Thread t;
   ArrayList<String> caches = new ArrayList<>();
-
+  
   public OSHDB2IgniteTest() {
     caches.add("grid_node");
     caches.add("grid_way");
     caches.add("grid_relation");
   }
-
+  
   @Before
   public void setUpClass() {
     if (!(new File("./oshdb.mv.db")).exists()) {
@@ -34,7 +32,7 @@ public class OSHDB2IgniteTest implements Runnable {
     }
     t = new Thread(new OSHDB2IgniteTest());
     t.start();
-
+    
   }
 
   /*
@@ -55,7 +53,7 @@ public class OSHDB2IgniteTest implements Runnable {
     assertTrue(ignite.active());
     assertArrayEquals(caches.toArray(), ignite.cacheNames().toArray());
   }
-
+  
   @Override
   public void run() {
     try {
@@ -64,8 +62,8 @@ public class OSHDB2IgniteTest implements Runnable {
       ignite = Ignition.start(cfg);
       ignite.destroyCaches(caches);
     } catch (IgniteCheckedException ex) {
-      Logger.getLogger(OSHDB2IgniteTest.class.getName()).log(Level.SEVERE, null, ex);
+      LoggerFactory.getLogger(OSHDB2IgniteTest.class).error(ex.getLocalizedMessage());
     }
   }
-
+  
 }

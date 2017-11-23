@@ -10,6 +10,8 @@ import org.heigit.bigspatialdata.oshdb.util.CellId;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -21,6 +23,7 @@ public class XYGridTest {
   private XYGrid zero;
   private XYGrid two;
   private XYGrid thirty;
+  private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
 
   @Before
   public void setUp() {
@@ -122,6 +125,7 @@ public class XYGridTest {
     double longitude = -180.0;
     double latitude = -90.0;
     int zoom = 31;
+    LOG.info("This should throw a warning:!");
     XYGrid testclass = new XYGrid(zoom);
 
     Long expResult = 0L;
@@ -135,6 +139,7 @@ public class XYGridTest {
     double longitude = 180.0;
     double latitude = 90.0;
     int zoom = -1;
+    LOG.info("This should throw a warning:!");
     XYGrid testclass = new XYGrid(zoom);
 
     Long expResult = 0L;
@@ -357,6 +362,7 @@ public class XYGridTest {
     // test performance for maximum sized BBOX
     BBOX = new BoundingBox(-180, 180, -90, 90);
     int expResult = 2048;
+    LOG.info("If this throws a warning because of the maximum zoomlevel, we have to change XYGrid-Code:");
     result = new XYGrid(MAXZOOM).bbox2CellIdRanges(BBOX, true);
     assertEquals(expResult, result.size());
     interval = result.iterator().next();

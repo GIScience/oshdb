@@ -1,9 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.bitset;
 
-import java.util.logging.Logger;
 import static org.junit.Assert.*;
-
-import org.heigit.bigspatialdata.oshdb.util.bitset.LongRoaringBitmap;
 import org.junit.Test;
 
 /**

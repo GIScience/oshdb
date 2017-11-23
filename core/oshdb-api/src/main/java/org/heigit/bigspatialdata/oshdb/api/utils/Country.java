@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
@@ -20,6 +18,8 @@ import org.geotools.feature.FeatureIterator;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This Class uses the NaturalEarth 1:10 Cultural-Vectors to extract
@@ -33,7 +33,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
  */
 public class Country {
 
-  private static final Logger LOG = Logger.getLogger(Country.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(Country.class);
 
   /**
    * This is for advanced users who know how to use geotools. You may get your
@@ -65,7 +65,7 @@ public class Country {
   public static MultiPolygon getGeometry(CountryCodeType type, String name) throws IOException {
     if (type == CountryCodeType.ISO_A2) {
       if (name.length() > 2) {
-        LOG.log(Level.SEVERE, "ISO_A2 name has more than 2 characters.");
+        LOG.error("ISO_A2 name has more than 2 characters.");
         return null;
       }
     }
@@ -112,7 +112,7 @@ public class Country {
       }
       GeometryCollection geometryCollection = (GeometryCollection) gf.buildGeometry(poligonArr);
       if (geometryCollection.isEmpty()) {
-        LOG.log(Level.WARNING, "No feature was found");
+        LOG.warn("No feature was found");
         return null;
       }
 

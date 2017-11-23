@@ -7,13 +7,13 @@ import java.io.RandomAccessFile;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 public class SplitBoundaryResolverTest {
+
   @Test
   public void testDummy() throws IOException {
     return;
@@ -109,7 +109,7 @@ public class SplitBoundaryResolverTest {
 
       assertEquals(28, blockCount);
     } catch (URISyntaxException ex) {
-      Logger.getLogger(SplitBoundaryResolverTest.class.getName()).log(Level.SEVERE, null, ex);
+      LoggerFactory.getLogger(SplitBoundaryResolverTest.class).error(ex.getLocalizedMessage());
     }
   }
 

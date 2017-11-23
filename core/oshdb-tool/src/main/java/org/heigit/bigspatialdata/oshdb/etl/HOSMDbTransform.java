@@ -19,8 +19,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.etl.cmdarg.TransformArgs;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellInfo;
@@ -40,6 +38,8 @@ import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HOSMDbTransform
@@ -56,7 +56,7 @@ import org.heigit.bigspatialdata.oshdb.util.TableNames;
  */
 public class HOSMDbTransform {
 
-  private static final Logger LOG = Logger.getLogger(HOSMDbTransform.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HOSMDbTransform.class);
 
   /**
    * Transform the extracted Data to an OSH-DB.
@@ -208,7 +208,7 @@ public class HOSMDbTransform {
       jcom.parse(args);
     } catch (ParameterException e) {
       System.out.println("");
-      LOG.log(Level.SEVERE, e.getLocalizedMessage());
+      LOG.error(e.getLocalizedMessage());
       System.out.println("");
       jcom.usage();
 

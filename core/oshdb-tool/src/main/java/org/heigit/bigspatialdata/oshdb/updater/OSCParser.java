@@ -2,18 +2,19 @@ package org.heigit.bigspatialdata.oshdb.updater;
 
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.logging.Logger;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.heigit.bigspatialdata.oshdb.api.utils.OutputWriter;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class OSCParser extends DefaultHandler {
 
-  private static final Logger LOG = Logger.getLogger(OSCParser.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(OSCParser.class);
   private static final HashMap<String, Integer> stats = new HashMap<>(3);
 
   private final String kafkaOSCTopic;

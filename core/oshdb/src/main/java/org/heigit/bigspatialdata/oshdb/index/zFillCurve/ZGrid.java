@@ -18,7 +18,6 @@ public class ZGrid {
   private static final Logger LOG = LoggerFactory.getLogger(ZGrid.class);
 
   private static final double EPSILON = 1e-11;
-  private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(ZGrid.class.getName());
 
   /**
    * Determines if the two given double values are equal (their delta being

@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -25,8 +25,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * OSCTransformer parses XML file and creates corresponding Java objects.
  */
 public class OSCTransformer implements Runnable {
-
-  private static final Logger LOG = Logger.getGlobal();
+  
+  private static final Logger LOG = LoggerFactory.getLogger(OSCTransformer.class);
   private static final BlockingQueue<JSONObject> outQ = new LinkedBlockingQueue<>(200);
 
   /**
@@ -50,19 +50,19 @@ public class OSCTransformer implements Runnable {
         if (!record.value().isEmpty()) {
           JSONObject tempupdate = new JSONObject(record.value());
           OSCTransformer.outQ.put(tempupdate);
-          LOG.log(Level.INFO, OSCTransformer.outQ.take().toString());
+          LOG.info(OSCTransformer.outQ.take().toString());
           consumer.commitSync();
         }
       }
     }
   }
   private final OSCParser parser;
-
+  
   public OSCTransformer(Properties props) {
     parser = new OSCParser(props);
-
+    
   }
-
+  
   private void parse(File input) throws SAXException {
     try {
       InputSource InFile = new InputSource(new FileReader(input));
@@ -73,26 +73,26 @@ public class OSCTransformer implements Runnable {
       xr.setErrorHandler(parser);
       xr.parse(InFile);
     } catch (FileNotFoundException ex) {
-      LOG.log(Level.SEVERE, "Could not find file but that is unusual. Have you deleted anything?");
+      LOG.error("Could not find file but that is unusual. Have you deleted anything?");
     } catch (IOException ex) {
-      LOG.log(Level.SEVERE, "That file had an error, could not parse it");
+      LOG.error("That file had an error, could not parse it");
     }
   }
-
+  
   @Override
   public void run() {
     while (true) {
       try {
         File currparse = OSCDownloader.downfiles.take();
-        LOG.log(Level.FINE, currparse.toString());
+        LOG.debug(currparse.toString());
         this.parse(currparse);
         currparse.delete();
       } catch (InterruptedException | SAXException ex) {
         this.parser.kafkaProdStats.close();
-        Logger.getLogger(OSCTransformer.class.getName()).log(Level.SEVERE, null, ex);
+        LOG.error(ex.getLocalizedMessage());
       }
     }
-
+    
   }
-
+  
 }

@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.ignite.IgniteCheckedException;
 import org.heigit.bigspatialdata.oshdb.etl.load.OSHDB2Ignite;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Prototype of an easy class to convert PBF 2 H2 for testing users
@@ -17,7 +18,7 @@ import org.heigit.bigspatialdata.oshdb.etl.load.OSHDB2Ignite;
  */
 public class PBF2BigDB {
 
-  private static final Logger LOG = Logger.getLogger(PBF2BigDB.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(PBF2BigDB.class);
 
   /**
    * Load a PBF-File eg from Geofabrik into your desired JDBC-Compatible BigDB.

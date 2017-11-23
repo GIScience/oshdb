@@ -4,13 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
+import org.slf4j.LoggerFactory;
 
 public class FindNode {
 
@@ -35,7 +34,7 @@ public class FindNode {
         }
       }
     } catch (URISyntaxException ex) {
-      Logger.getLogger(FindNode.class.getName()).log(Level.SEVERE, null, ex);
+      LoggerFactory.getLogger(FindNode.class).error(ex.getLocalizedMessage());
     }
 
   }

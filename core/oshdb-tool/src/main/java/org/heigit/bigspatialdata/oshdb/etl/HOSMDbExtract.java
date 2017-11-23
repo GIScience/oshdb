@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.etl;
 
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import java.io.File;
@@ -21,19 +20,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.heigit.bigspatialdata.oshdb.etl.cmdarg.ExtractArgs;
 import org.heigit.bigspatialdata.oshdb.etl.extract.ExtractMapper;
 import org.heigit.bigspatialdata.oshdb.etl.extract.ExtractMapperResult;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.KeyValuesFrequency;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HOSMDbExtract {
 
-  private static final Logger LOG = Logger.getLogger(HOSMDbExtract.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HOSMDbExtract.class);
 
   /**
    * Extract HOSM-Data from pbf to H2.
@@ -83,7 +83,7 @@ public class HOSMDbExtract {
       jcom.parse(args);
     } catch (ParameterException e) {
       System.out.println("");
-      LOG.log(Level.SEVERE, e.getLocalizedMessage());
+      LOG.error(e.getLocalizedMessage());
       System.out.println("");
       jcom.usage();
 
