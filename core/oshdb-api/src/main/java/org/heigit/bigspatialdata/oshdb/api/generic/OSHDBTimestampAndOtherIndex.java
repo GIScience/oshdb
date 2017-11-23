@@ -5,7 +5,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
 import org.jetbrains.annotations.NotNull;
 
-public class OSHDBTimestampAndOtherIndex<V> implements Comparable<OSHDBTimestampAndOtherIndex> {
+import java.io.Serializable;
+
+public class OSHDBTimestampAndOtherIndex<V> implements Comparable<OSHDBTimestampAndOtherIndex>, Serializable {
   private Pair<V, OSHDBTimestamp> _payload;
   public OSHDBTimestampAndOtherIndex(OSHDBTimestamp timeIndex, V otherIndex) {
     this._payload = new ImmutablePair<>(otherIndex, timeIndex);
