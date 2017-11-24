@@ -5,9 +5,11 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_LocalPeek;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_ScanQuery;
 
-public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
+public class OSHDB_Ignite extends OSHDB_Implementation implements AutoCloseable, Serializable {
   public enum ComputeMode {
     ScanQuery,
     LocalPeek
@@ -30,6 +32,22 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
 
     this._ignite = Ignition.start(igniteXml.toString());
     this._ignite.active(true);
+  }
+
+  @Override
+  public <X> MapReducer<X> createMapReducer(Class<?> forClass) {
+    MapReducer<X> mapReducer;
+    switch (this.computeMode()) {
+      case ScanQuery:
+        mapReducer = new MapReducer_Ignite_ScanQuery<X>(this, forClass);
+        break;
+      case LocalPeek:
+        mapReducer = new MapReducer_Ignite_LocalPeek<X>(this, forClass);
+        break;
+      default:
+        throw new UnsupportedOperationException("Backend not implemented for this database option.");
+    }
+    return mapReducer;
   }
 
   public Ignite getIgnite() {

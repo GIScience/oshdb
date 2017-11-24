@@ -6,14 +6,12 @@ import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
-import org.apache.ignite.cache.CachePeekMode;
-import org.apache.ignite.cache.affinity.Affinity;
-import org.apache.ignite.cache.query.QueryCursor;
-import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.lang.IgniteCallable;
+import org.apache.ignite.lang.IgniteFuture;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
@@ -36,7 +34,6 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.cache.Cache;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
@@ -44,8 +41,8 @@ import java.util.function.Function;
 public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_LocalPeek.class);
 
-  public MapReducer_Ignite_LocalPeek(OSHDB oshdb) {
-    super(oshdb);
+  public MapReducer_Ignite_LocalPeek(OSHDB_Implementation oshdb, Class<?> forClass) {
+    super(oshdb, forClass);
   }
 
   // copy constructor

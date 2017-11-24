@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
@@ -28,8 +28,8 @@ import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 
 public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
-  public MapReducer_JDBC_multithread(OSHDB oshdb) {
-    super(oshdb);
+  public MapReducer_JDBC_multithread(OSHDB_Implementation oshdb, Class<?> forClass) {
+    super(oshdb, forClass);
   }
 
   // copy constructor
