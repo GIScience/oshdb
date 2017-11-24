@@ -6,12 +6,15 @@ import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
+import org.apache.ignite.IgniteException;
 import org.apache.ignite.cache.CachePeekMode;
 import org.apache.ignite.cache.affinity.Affinity;
 import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
+import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteCallable;
+import org.apache.ignite.lang.IgniteFuture;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
@@ -193,18 +196,64 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
   }
 }
 
-
 class Ignite_LocalPeek_Helper {
+  private static final Logger LOG = LoggerFactory.getLogger(Ignite_LocalPeek_Helper.class);
+
+  /**
+   * @param <T> Type of the task argument.
+   * @param <R> Type of the task result returning from {@link ComputeTask#reduce(List)} method.
+   */
+  @org.apache.ignite.compute.ComputeTaskNoResultCache
+  static class CancelableBroadcastTask<T, R> extends ComputeTaskAdapter<T, R> implements Serializable {
+    private final MapReduceCellsOnIgniteCacheComputeJob job;
+    private final SerializableBinaryOperator<R> combiner;
+
+    private R resultAccumulator;
+
+    public CancelableBroadcastTask(MapReduceCellsOnIgniteCacheComputeJob job, SerializableSupplier<R> identitySupplier, SerializableBinaryOperator<R> combiner) {
+      this.job = job;
+      this.combiner = combiner;
+      this.resultAccumulator = identitySupplier.get();
+    }
+
+    @Override
+    public Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, T arg) throws IgniteException {
+      Map<ComputeJob, ClusterNode> map = new HashMap<>(subgrid.size());
+      subgrid.forEach(node -> map.put(new ComputeJob() {
+        @IgniteInstanceResource
+        private Ignite ignite;
+        @Override
+        public void cancel() {
+          job.cancel();
+        }
+        @Override
+        public Object execute() throws IgniteException {
+          return job.execute(ignite);
+        }
+      }, node));
+      return map;
+    }
+
+    @Override
+    public ComputeJobResultPolicy result(ComputeJobResult res, List<ComputeJobResult> rcvd) throws IgniteException {
+      R data = res.getData();
+      resultAccumulator = combiner.apply(resultAccumulator, data);
+      return ComputeJobResultPolicy.WAIT;
+    }
+
+    @Override
+    public R reduce(List<ComputeJobResult> results) throws IgniteException {
+      return resultAccumulator;
+    }
+  }
+
   /**
    * Compute closure that iterates over every partition owned by a node
    * located in a partition.
    */
-  private static abstract class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal> implements IgniteCallable<S> {
-    /** */
-    @IgniteInstanceResource
-    Ignite node;
+  private static abstract class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal> implements Serializable {
+    boolean canceled = false;
 
-    /** */
     IgniteCache<Long, GridOSHEntity> cache;
 
     /* computation settings */
@@ -244,6 +293,13 @@ class Ignite_LocalPeek_Helper {
       this.accumulator = accumulator;
       this.combiner = combiner;
     }
+
+    void cancel() {
+      LOG.info("compute job canceled");
+      this.canceled = true;
+    }
+
+    public abstract S execute(Ignite node);
   }
 
   private static class MapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal> extends MapReduceCellsOnIgniteCacheComputeJob<OSMContribution, R, R, S, P> {
@@ -252,7 +308,7 @@ class Ignite_LocalPeek_Helper {
     }
 
     @Override
-    public S call() throws Exception {
+    public S execute(Ignite node) {
       cache = node.cache(cacheName);
       // calculate all cache keys we have to investigate
       Collection<Long> keys = new ArrayList<>();
@@ -266,6 +322,7 @@ class Ignite_LocalPeek_Helper {
       .map(key -> cache.localPeek(key))
       .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
       .map(oshEntityCell -> {
+        if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
         List<R> rs = new ArrayList<>();
         CellIterator.iterateAll(
@@ -306,7 +363,7 @@ class Ignite_LocalPeek_Helper {
     }
 
     @Override
-    public S call() throws Exception {
+    public S execute(Ignite node) {
       cache = node.cache(cacheName);
       // calculate all cache keys we have to investigate
       Collection<Long> keys = new ArrayList<>();
@@ -320,6 +377,7 @@ class Ignite_LocalPeek_Helper {
       .map(key -> cache.localPeek(key))
       .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
       .map(oshEntityCell -> {
+        if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
         List<R> rs = new ArrayList<>();
         List<OSMContribution> contributions = new ArrayList<>();
@@ -368,7 +426,10 @@ class Ignite_LocalPeek_Helper {
     }
 
     @Override
-    public S call() throws Exception {
+    public S execute(Ignite node) {
+      System.out.println(node);
+      System.out.println(cacheName);
+      System.out.println(node.cache(cacheName));
       cache = node.cache(cacheName);
       // calculate all cache keys we have to investigate
       Collection<Long> keys = new ArrayList<>();
@@ -382,6 +443,7 @@ class Ignite_LocalPeek_Helper {
       .map(key -> cache.localPeek(key))
       .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
       .map(oshEntityCell -> {
+        if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
         List<R> rs = new ArrayList<>();
         CellIterator.iterateByTimestamps(
@@ -417,7 +479,7 @@ class Ignite_LocalPeek_Helper {
     }
 
     @Override
-    public S call() throws Exception {
+    public S execute(Ignite node) {
       cache = node.cache(cacheName);
       // calculate all cache keys we have to investigate
       Collection<Long> keys = new ArrayList<>();
@@ -431,6 +493,7 @@ class Ignite_LocalPeek_Helper {
       .map(key -> cache.localPeek(key))
       .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
       .map(oshEntityCell -> {
+        if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
         List<R> rs = new ArrayList<>();
         CellIterator.iterateByTimestamps(
@@ -472,8 +535,10 @@ class Ignite_LocalPeek_Helper {
     // execute compute job on all ignite nodes and further reduce+return result(s)
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
-    Collection<S> nodeResults = compute.broadcast(computeJob);
-    return nodeResults.stream().reduce(identitySupplier.get(), combiner);
+
+    ComputeTaskFuture<S> result = compute.executeAsync(new CancelableBroadcastTask<Object, S>(computeJob, identitySupplier, combiner), null);
+
+    return result.get();
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
