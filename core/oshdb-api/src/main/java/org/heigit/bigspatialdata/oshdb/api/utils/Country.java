@@ -86,7 +86,7 @@ public class Country {
    * @return
    * @throws IOException
    */
-  public static BoundingBox getBBX(String name) throws IOException {
+  public static BoundingBox getBoundingBox(String name) throws IOException {
     MultiPolygon mp = Country.getFeatures(CountryCodeType.GEOUNIT, name);
     if (mp == null) {
       return null;

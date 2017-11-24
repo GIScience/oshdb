@@ -24,7 +24,7 @@ public class CountryTest {
     String name = "France";
     BoundingBox expResult = new BoundingBox(-5.132802, 9.559581, 41.365912, 51.087541);
 
-    BoundingBox result = Country.getBBX(name);
+    BoundingBox result = Country.getBoundingBox(name);
     assertEquals(expResult.toString(), result.toString());
   }
 
