@@ -14,7 +14,7 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
   }
 
   private final Ignite _ignite;
-  private ComputeMode _computeMode = ComputeMode.ScanQuery;
+  private ComputeMode _computeMode = ComputeMode.LocalPeek;
 
   public OSHDB_Ignite() throws SQLException, ClassNotFoundException {
     this(new File("ignite-config.xml"));
