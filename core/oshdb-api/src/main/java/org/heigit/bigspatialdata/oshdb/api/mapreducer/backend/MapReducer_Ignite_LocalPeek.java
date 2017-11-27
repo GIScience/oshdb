@@ -15,6 +15,7 @@ import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.lang.IgniteFuture;
+import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
@@ -197,8 +198,6 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
 }
 
 class Ignite_LocalPeek_Helper {
-  private static final Logger LOG = LoggerFactory.getLogger(Ignite_LocalPeek_Helper.class);
-
   /**
    * @param <T> Type of the task argument.
    * @param <R> Type of the task result returning from {@link ComputeTask#reduce(List)} method.
@@ -252,6 +251,7 @@ class Ignite_LocalPeek_Helper {
    * located in a partition.
    */
   private static abstract class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal> implements Serializable {
+    private static final Logger LOG = LoggerFactory.getLogger(MapReduceCellsOnIgniteCacheComputeJob.class);
     boolean canceled = false;
 
     IgniteCache<Long, GridOSHEntity> cache;
@@ -538,7 +538,16 @@ class Ignite_LocalPeek_Helper {
 
     ComputeTaskFuture<S> result = compute.executeAsync(new CancelableBroadcastTask<Object, S>(computeJob, identitySupplier, combiner), null);
 
-    return result.get();
+    if (!oshdb.timeoutInMilliseconds().isPresent()) {
+      return result.get();
+    } else {
+      try {
+        return result.get(oshdb.timeoutInMilliseconds().getAsLong());
+      } catch (IgniteFutureTimeoutException e) {
+        result.cancel();
+        throw e;
+      }
+    }
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(

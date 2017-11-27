@@ -3,6 +3,9 @@ package org.heigit.bigspatialdata.oshdb.api.db;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.Optional;
+import java.util.OptionalLong;
+
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
@@ -15,6 +18,7 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
 
   private final Ignite _ignite;
   private ComputeMode _computeMode = ComputeMode.LocalPeek;
+  private Long _timeout = null;
 
   public OSHDB_Ignite() throws SQLException, ClassNotFoundException {
     this(new File("ignite-config.xml"));
@@ -47,5 +51,42 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
 
   public ComputeMode computeMode() {
     return this._computeMode;
+  }
+
+  /**
+   * Set a timeout for queries on this ignite oshdb backend.
+   *
+   * If a query takes longer than the given time limit, a {@link org.apache.ignite.lang.IgniteFutureTimeoutException} will be thrown.
+   *
+   * @param seconds time (in seconds) a query is allowed to run for.
+   * @return the current oshdb object
+   */
+  public OSHDB_Ignite timeout(double seconds) {
+    if (this.computeMode() == ComputeMode.ScanQuery)
+      throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
+    this._timeout = (long)Math.ceil(seconds*1000);
+    return this;
+  }
+
+  /**
+   * Set a timeout for queries on this ignite oshdb backend.
+   *
+   * If a query takes longer than the given time limit, a {@link org.apache.ignite.lang.IgniteFutureTimeoutException} will be thrown.
+   *
+   * @param milliSeconds time (in milliseconds) a query is allowed to run for.
+   * @return the current oshdb object
+   */
+  public OSHDB_Ignite timeoutInMilliseconds(long milliSeconds) {
+    if (this.computeMode() == ComputeMode.ScanQuery)
+      throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
+    this._timeout = milliSeconds;
+    return this;
+  }
+
+  public OptionalLong timeoutInMilliseconds() {
+    if (this._timeout == null)
+      return OptionalLong.empty();
+    else
+      return OptionalLong.of(this._timeout);
   }
 }
