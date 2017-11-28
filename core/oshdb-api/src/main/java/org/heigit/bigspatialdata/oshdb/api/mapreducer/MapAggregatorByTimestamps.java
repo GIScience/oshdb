@@ -5,7 +5,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunctio
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.jetbrains.annotations.Contract;
 
