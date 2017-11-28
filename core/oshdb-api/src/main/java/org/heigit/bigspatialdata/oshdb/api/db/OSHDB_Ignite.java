@@ -9,6 +9,7 @@ import java.util.OptionalLong;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.exceptions.OSHDBTimeoutException;
 
 public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
   public enum ComputeMode {
@@ -56,7 +57,7 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
   /**
    * Set a timeout for queries on this ignite oshdb backend.
    *
-   * If a query takes longer than the given time limit, a {@link org.apache.ignite.lang.IgniteFutureTimeoutException} will be thrown.
+   * If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be thrown.
    *
    * @param seconds time (in seconds) a query is allowed to run for.
    * @return the current oshdb object
@@ -71,7 +72,7 @@ public class OSHDB_Ignite extends OSHDB implements AutoCloseable, Serializable {
   /**
    * Set a timeout for queries on this ignite oshdb backend.
    *
-   * If a query takes longer than the given time limit, a {@link org.apache.ignite.lang.IgniteFutureTimeoutException} will be thrown.
+   * If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be thrown.
    *
    * @param milliSeconds time (in milliseconds) a query is allowed to run for.
    * @return the current oshdb object
