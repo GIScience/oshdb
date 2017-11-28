@@ -78,7 +78,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   protected OSHDBTimestampList _tstamps = new OSHDBTimestamps("2008-01-01", (new OSHDBTimestamp((new Date()).getTime()/1000)).formatIsoDateTime(), OSHDBTimestamps.Interval.MONTHLY);
   protected BoundingBox _bboxFilter = null;
   private Geometry _polyFilter = null;
-  protected EnumSet<OSMType> _typeFilter = EnumSet.allOf(OSMType.class);
+  protected EnumSet<OSMType> _typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
   private final List<SerializableFunction> _mappers = new LinkedList<>();
