@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.utils;
 
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -16,8 +16,8 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_mu
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_singlethread;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.ISODateTimeParser;

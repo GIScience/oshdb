@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.generic;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;

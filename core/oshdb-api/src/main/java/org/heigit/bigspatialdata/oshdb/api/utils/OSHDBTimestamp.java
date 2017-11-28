@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.objects;
+package org.heigit.bigspatialdata.oshdb.api.utils;
 
 import org.heigit.bigspatialdata.oshdb.util.TimestampFormatter;
 

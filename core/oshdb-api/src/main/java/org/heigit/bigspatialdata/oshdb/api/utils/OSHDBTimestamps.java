@@ -1,12 +1,10 @@
-package org.heigit.bigspatialdata.oshdb.api.objects;
+package org.heigit.bigspatialdata.oshdb.api.utils;
 
 import java.time.Duration;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import org.heigit.bigspatialdata.oshdb.api.utils.ISODateTimeParser;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestampList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

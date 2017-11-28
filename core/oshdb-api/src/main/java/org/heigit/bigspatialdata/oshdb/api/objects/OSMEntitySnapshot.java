@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.objects;
 
 import com.vividsolutions.jts.geom.Geometry;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 
 /**
