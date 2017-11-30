@@ -12,13 +12,16 @@ import java.util.TimeZone;
 public class TimestampFormatter {
 
   private static TimestampFormatter _instance;
-  private final ThreadLocal<SimpleDateFormat> _formatDate = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
-  private final ThreadLocal<SimpleDateFormat> _formatIsoDateTime = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-
-  private TimestampFormatter() {
-    this._formatDate.get().setTimeZone(TimeZone.getTimeZone("UTC"));
-    this._formatIsoDateTime.get().setTimeZone(TimeZone.getTimeZone("UTC"));
-  }
+  private final ThreadLocal<SimpleDateFormat> _formatDate = ThreadLocal.withInitial(() -> {
+    SimpleDateFormat ret = new SimpleDateFormat("yyyy-MM-dd");
+    ret.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return ret;
+  });
+  private final ThreadLocal<SimpleDateFormat> _formatIsoDateTime = ThreadLocal.withInitial(() -> {
+    SimpleDateFormat ret = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    ret.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return ret;
+  });
 
   /**
    * Get a standard TimestampFormatter.
