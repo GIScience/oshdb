@@ -111,20 +111,6 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
     this._flatMappers.addAll(obj._flatMappers);
   }
 
-  /**
-   * Factory function that creates the mapReducer object of the appropriate class for the chosen backend (e.g. JDBC based database or Ignite)
-   *
-   * @param oshdb the database backend (and potentially computation grid) to use for fetching and processing the data
-   * @param forClass the class (same as template parameter &lt;T&gt;) to iterate over in the `mapping` function
-   * @return a new mapReducer object operating on the given OSHDB backend
-   */
-  @Contract("null, _ -> fail")
-  public static <X> MapReducer<X> using(OSHDB_Implementation oshdb, Class<?> forClass) {
-    MapReducer<X> mapReducer = oshdb.createMapReducer(forClass);
-    mapReducer._forClass = forClass;
-    return mapReducer;
-  }
-
   @NotNull
   private MapReducer<X> copy() {
     if (this instanceof MapReducer_JDBC_singlethread)

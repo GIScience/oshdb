@@ -6,7 +6,6 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 
 public class OSMEntitySnapshotView extends MapperFactory {
   public static MapReducer<OSMEntitySnapshot> on(OSHDB_Implementation oshdb) {
-    return oshdb.createMapReducer(OSMEntitySnapshot.class);
-    //return MapReducer.<OSMEntitySnapshot>using(oshdb, OSMEntitySnapshot.class);
+    return oshdb.<OSMEntitySnapshot>createMapReducer(OSMEntitySnapshot.class);
   }
 }
