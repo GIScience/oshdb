@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
@@ -297,7 +298,7 @@ class Ignite_LocalPeek_Helper {
       .map(oshEntityCell -> {
         if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
-        List<R> rs = new ArrayList<>();
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         CellIterator.iterateAll(
             oshEntityCell,
             bbox,
@@ -309,26 +310,18 @@ class Ignite_LocalPeek_Helper {
             false
         ).forEach(contribution -> {
           if (this.canceled) return;
-          rs.add(
-            mapper.apply(
-                new OSMContribution(
-                    new OSHDBTimestamp(contribution.timestamp),
-                    contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp) : null,
-                    contribution.previousGeometry,
-                    contribution.geometry,
-                    contribution.previousOsmEntity,
-                    contribution.osmEntity,
-                    contribution.activities
-                )
-            )
+          OSMContribution osmContribution = new OSMContribution(
+              new OSHDBTimestamp(contribution.timestamp),
+              contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp) : null,
+              contribution.previousGeometry,
+              contribution.geometry,
+              contribution.previousOsmEntity,
+              contribution.osmEntity,
+              contribution.activities
           );
+          accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
         });
-        S accInternal = identitySupplier.get();
-        // fold the results
-        for (R r : rs) {
-          accInternal = accumulator.apply(accInternal, r);
-        }
-        return accInternal;
+        return accInternal.get();
       }).reduce(identitySupplier.get(), combiner);
     }
   }
@@ -346,7 +339,7 @@ class Ignite_LocalPeek_Helper {
       .map(oshEntityCell -> {
         if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
-        List<R> rs = new ArrayList<>();
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         List<OSMContribution> contributions = new ArrayList<>();
         CellIterator.iterateAll(
             oshEntityCell,
@@ -369,21 +362,21 @@ class Ignite_LocalPeek_Helper {
               contribution.activities
           );
           if (contributions.size() > 0 && thisContribution.getEntityAfter().getId() != contributions.get(contributions.size()-1).getEntityAfter().getId()) {
-            rs.addAll(mapper.apply(contributions));
+            // immediately fold the results
+            for(R r : mapper.apply(contributions)) {
+              accInternal.set(accumulator.apply(accInternal.get(), r));
+            }
             contributions.clear();
           }
           contributions.add(thisContribution);
         });
-        // apply mapper one more time for last entity in current cell
-        if (contributions.size() > 0)
-          rs.addAll(mapper.apply(contributions));
-
-        S accInternal = identitySupplier.get();
-        // fold the results
-        for (R r : rs) {
-          accInternal = accumulator.apply(accInternal, r);
+        // apply mapper and fold results one more time for last entity in current cell
+        if (contributions.size() > 0) {
+          for(R r : mapper.apply(contributions)) {
+            accInternal.set(accumulator.apply(accInternal.get(), r));
+          }
         }
-        return accInternal;
+        return accInternal.get();
       }).reduce(identitySupplier.get(), combiner);
     }
   }
@@ -401,7 +394,7 @@ class Ignite_LocalPeek_Helper {
       .map(oshEntityCell -> {
         if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
-        List<R> rs = new ArrayList<>();
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         CellIterator.iterateByTimestamps(
             oshEntityCell,
             bbox,
@@ -417,17 +410,12 @@ class Ignite_LocalPeek_Helper {
             OSHDBTimestamp tstamp = new OSHDBTimestamp(timestamp);
             Geometry geometry = entityGeometry.getRight();
             OSMEntity entity = entityGeometry.getLeft();
-            OSMEntitySnapshot foo = new OSMEntitySnapshot(tstamp, geometry, entity);
-            R bar = mapper.apply(foo);
-            rs.add(bar);
+            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(tstamp, geometry, entity);
+            // immediately fold the result
+            accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
           });
         });
-        S accInternal = identitySupplier.get();
-        // fold the results
-        for (R r : rs) {
-          accInternal = accumulator.apply(accInternal, r);
-        }
-        return accInternal;
+        return accInternal.get();
       }).reduce(identitySupplier.get(), combiner);
     }
   }
@@ -445,7 +433,7 @@ class Ignite_LocalPeek_Helper {
       .map(oshEntityCell -> {
         if (this.canceled) return identitySupplier.get();
         // iterate over the history of all OSM objects in the current cell
-        List<R> rs = new ArrayList<>();
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         CellIterator.iterateByTimestamps(
             oshEntityCell,
             bbox,
@@ -464,14 +452,12 @@ class Ignite_LocalPeek_Helper {
             OSMEntity entity = value.getLeft();
             osmEntitySnapshots.add(new OSMEntitySnapshot(tstamp, geometry, entity));
           });
-          rs.addAll(mapper.apply(osmEntitySnapshots));
+          // immediately fold the results
+          for(R r : mapper.apply(osmEntitySnapshots)) {
+            accInternal.set(accumulator.apply(accInternal.get(), r));
+          }
         });
-        S accInternal = identitySupplier.get();
-        // fold the results
-        for (R r : rs) {
-          accInternal = accumulator.apply(accInternal, r);
-        }
-        return accInternal;
+        return accInternal.get();
       }).reduce(identitySupplier.get(), combiner);
     }
   }

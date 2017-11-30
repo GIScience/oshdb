@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import javax.cache.Cache;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 
 public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
@@ -285,7 +286,7 @@ class Ignite_ScanQuery_Helper {
         cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
-          List<R> rs = new ArrayList<>();
+          AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           CellIterator.iterateAll(
               oshEntityCell,
               bbox,
@@ -295,27 +296,19 @@ class Ignite_ScanQuery_Helper {
               preFilter,
               filter,
               false
-          ).forEach(contribution -> rs.add(
-              mapper.apply(
-                  new OSMContribution(
-                      new OSHDBTimestamp(contribution.timestamp),
-                      contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp) : null,
-                      contribution.previousGeometry,
-                      contribution.geometry,
-                      contribution.previousOsmEntity,
-                      contribution.osmEntity,
-                      contribution.activities
-                  )
-              )
-          ));
-
-          // todo: replace this with `rs.stream().reduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
-          S accInternal = identitySupplier.get();
-          // fold the results
-          for (R r : rs) {
-            accInternal = accumulator.apply(accInternal, r);
-          }
-          return accInternal;
+          ).forEach(contribution -> {
+            OSMContribution osmContribution = new OSMContribution(
+                new OSHDBTimestamp(contribution.timestamp),
+                contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp) : null,
+                contribution.previousGeometry,
+                contribution.geometry,
+                contribution.previousOsmEntity,
+                contribution.osmEntity,
+                contribution.activities
+            );
+            accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
+          });
+          return accInternal.get();
         })) {
           S accExternal = identitySupplier.get();
           // reduce the results
@@ -353,7 +346,7 @@ class Ignite_ScanQuery_Helper {
         cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>)cacheEntry).getValue();
-          List<R> rs = new ArrayList<>();
+          AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           List<OSMContribution> contributions = new ArrayList<>();
           CellIterator.iterateAll(
               oshEntityCell,
@@ -375,22 +368,21 @@ class Ignite_ScanQuery_Helper {
                 contribution.activities
             );
             if (contributions.size() > 0 && thisContribution.getEntityAfter().getId() != contributions.get(contributions.size()-1).getEntityAfter().getId()) {
-              rs.addAll(mapper.apply(contributions));
+              // immediately fold the results
+              for(R r : mapper.apply(contributions)) {
+                accInternal.set(accumulator.apply(accInternal.get(), r));
+              }
               contributions.clear();
             }
             contributions.add(thisContribution);
           });
-          // apply mapper one more time for last entity in current cell
-          if (contributions.size() > 0)
-            rs.addAll(mapper.apply(contributions));
-
-          // todo: replace this with `rs.stream().reduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
-          S accInternal = identitySupplier.get();
-          // fold the results
-          for (R r : rs) {
-            accInternal = accumulator.apply(accInternal, r);
+          // apply mapper and fold results one more time for last entity in current cell
+          if (contributions.size() > 0) {
+            for(R r : mapper.apply(contributions)) {
+              accInternal.set(accumulator.apply(accInternal.get(), r));
+            }
           }
-          return accInternal;
+          return accInternal.get();
         })) {
           S accExternal = identitySupplier.get();
           // reduce the results
@@ -427,7 +419,7 @@ class Ignite_ScanQuery_Helper {
             })).setPartition(part),
             cacheEntry -> {
               GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>)cacheEntry).getValue();
-              List<R> rs = new ArrayList<>();
+              AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
               CellIterator.iterateByTimestamps(
                   oshEntityCell,
                   bbox,
@@ -441,18 +433,11 @@ class Ignite_ScanQuery_Helper {
                 OSHDBTimestamp tstamp = new OSHDBTimestamp(timestamp);
                 Geometry geometry = entityGeometry.getRight();
                 OSMEntity entity = entityGeometry.getLeft();
-                OSMEntitySnapshot foo = new OSMEntitySnapshot(tstamp, geometry, entity);
-                R bar = mapper.apply(foo);
-                rs.add(bar);
+                OSMEntitySnapshot snapshot = new OSMEntitySnapshot(tstamp, geometry, entity);
+                // immediately fold the result
+                accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
               }));
-
-              // todo: replace this with `rs.stream().reduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
-              S accInternal = identitySupplier.get();
-              // fold the results
-              for (R r : rs) {
-                accInternal = accumulator.apply(accInternal, r);
-              }
-              return accInternal;
+              return accInternal.get();
             })) {
           S accExternal = identitySupplier.get();
           // reduce the results
@@ -489,7 +474,7 @@ class Ignite_ScanQuery_Helper {
         })).setPartition(part),
         cacheEntry -> {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>)cacheEntry).getValue();
-          List<R> rs = new ArrayList<>();
+          AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           CellIterator.iterateByTimestamps(
               oshEntityCell,
               bbox,
@@ -501,22 +486,18 @@ class Ignite_ScanQuery_Helper {
               false
           ).forEach(snapshots -> {
             List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());
-            snapshots.entrySet().forEach(entry -> {
-              OSHDBTimestamp tstamp = new OSHDBTimestamp(entry.getKey());
-              Geometry geometry = entry.getValue().getRight();
-              OSMEntity entity = entry.getValue().getLeft();
+            snapshots.forEach((key, value) -> {
+              OSHDBTimestamp tstamp = new OSHDBTimestamp(key);
+              Geometry geometry = value.getRight();
+              OSMEntity entity = value.getLeft();
               osmEntitySnapshots.add(new OSMEntitySnapshot(tstamp, geometry, entity));
             });
-            rs.addAll(mapper.apply(osmEntitySnapshots));
+            // immediately fold the results
+            for(R r : mapper.apply(osmEntitySnapshots)) {
+              accInternal.set(accumulator.apply(accInternal.get(), r));
+            }
           });
-
-          // todo: replace this with `rs.stream().reduce(identitySupplier, accumulator, combiner);` (needs accumulator to be non-interfering and stateless, see http://download.java.net/java/jdk9/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-)
-          S accInternal = identitySupplier.get();
-          // fold the results
-          for (R r : rs) {
-            accInternal = accumulator.apply(accInternal, r);
-          }
-          return accInternal;
+          return accInternal.get();
         })) {
           S accExternal = identitySupplier.get();
           // reduce the results
