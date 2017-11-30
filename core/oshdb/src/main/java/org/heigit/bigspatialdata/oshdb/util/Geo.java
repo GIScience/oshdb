@@ -145,7 +145,7 @@ public class Geo {
 	// =====================
 
 	public static Geometry clip(Geometry obj, BoundingBox bbox) {
-		Envelope envelope = new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat());
+		Envelope envelope = new Envelope(bbox.minLon, bbox.maxLon, bbox.minLat, bbox.maxLat);
 		return obj.intersection(JTS.toGeometry(envelope));
 	}
 

@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellNode;
@@ -197,7 +196,7 @@ public class TransformNodeMapper extends TransformMapper2 {
 
   private CellNode getCell(long longitude, long latitude) {
 
-    long cellId = grid.getId(longitude * OSHDB.GEOM_PRECISION, latitude * OSHDB.GEOM_PRECISION);
+    long cellId = grid.getId(longitude * OSMNode.GEOM_PRECISION, latitude * OSMNode.GEOM_PRECISION);
 
     CellNode cellNode = mapCellnodes.get(cellId);
     if (cellNode == null) {

@@ -275,10 +275,10 @@ public class ZGrid {
     //initialise basic variables
     Set< Long> result = new TreeSet<>();
 
-    double minlong = bbox.getMinLon();
-    double minlat = bbox.getMinLat();
-    double maxlong = bbox.getMaxLon();
-    double maxlat = bbox.getMaxLat();
+    double minlong = bbox.minLon;
+    double minlat = bbox.minLat;
+    double maxlong = bbox.maxLon;
+    double maxlat = bbox.maxLat;
 
     if (minlat > maxlat) {
       LOG.warn("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
@@ -378,26 +378,26 @@ public class ZGrid {
    */
   private LinkedList<BoundingBox> bboxSplitter(BoundingBox bbox, boolean enlarge) throws ZGridException {
     //System.out.printf("bbox %1$,.2f,%2$,.2f, %3$,.2f,%4$,.2f\n",bbox.minLon,bbox.maxLon,bbox.minLat,bbox.maxLat);
-    if (bbox.getMinLon() > bbox.getMaxLon()) {
+    if (bbox.minLon > bbox.maxLon) {
       throw new ZGridException("!Bounding Box not valid: minLon is larger than maxLon!");
-    } else if (bbox.getMinLat() > bbox.getMaxLat()) {
+    } else if (bbox.minLat > bbox.maxLat) {
       throw new ZGridException("!Bounding Box not valid: minLat is larger than maxLat!");
     }
 
     LinkedList<BoundingBox> collectBboxes = new LinkedList<>();
-    if (bbox.getMinLon() < -180.0) {
+    if (bbox.minLon < -180.0) {
 
-      double newMinLon = 180 + (bbox.getMinLon() + 180);
-      BoundingBox newBbox = new BoundingBox(newMinLon, 180.0 - EPSILON, bbox.getMinLat(), bbox.getMaxLat());
-      BoundingBox otherBbox = new BoundingBox(-180.0, bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat());
+      double newMinLon = 180 + (bbox.minLon + 180);
+      BoundingBox newBbox = new BoundingBox(newMinLon, 180.0 - EPSILON, bbox.minLat, bbox.maxLat);
+      BoundingBox otherBbox = new BoundingBox(-180.0, bbox.maxLon, bbox.minLat, bbox.maxLat);
       collectBboxes.add(newBbox);
       collectBboxes.add(otherBbox);
 
-    } else if (bbox.getMaxLon() > 180.0) {
+    } else if (bbox.maxLon > 180.0) {
 
-      double newMaxLon = -180 + (bbox.getMaxLon() - 180);
-      BoundingBox newBbox = new BoundingBox(-180.0, newMaxLon, bbox.getMinLat(), bbox.getMaxLat());
-      BoundingBox otherBbox = new BoundingBox(bbox.getMinLon(), 180.0 - EPSILON, bbox.getMinLat(), bbox.getMaxLat());
+      double newMaxLon = -180 + (bbox.maxLon - 180);
+      BoundingBox newBbox = new BoundingBox(-180.0, newMaxLon, bbox.minLat, bbox.maxLat);
+      BoundingBox otherBbox = new BoundingBox(bbox.minLon, 180.0 - EPSILON, bbox.minLat, bbox.maxLat);
       collectBboxes.add(newBbox);
 
       //System.out.printf("newBbox %1$,.2f,%2$,.2f, %3$,.2f,%4$,.2f\n",newBbox.minLon,newBbox.maxLon,newBbox.minLat,newBbox.maxLat);
@@ -423,10 +423,10 @@ public class ZGrid {
 
     Iterator<Long> result = new Iterator<Long>() {
 
-      double minlong = bbox.getMinLon();
-      double minlat = bbox.getMinLat();
-      double maxlong = bbox.getMaxLon();
-      double maxlat = bbox.getMaxLat();
+      double minlong = bbox.minLon;
+      double minlat = bbox.minLat;
+      double maxlong = bbox.maxLon;
+      double maxlat = bbox.maxLat;
 
       int columnmin = (int) ((minlong + 180.0) / cellWidth);
       int columnmax = (int) ((maxlong + 180.0) / cellWidth);
@@ -494,20 +494,20 @@ public class ZGrid {
     BoundingBox bbox2 = bbox;
     // check if given Bbox lays completely outside the normal world coordinates (-180 ... 180)
     // and if so beam the Bbox back into the normal world coordinate system
-    if (bbox2.getMinLon() > 180.0) {
-      double newMinLon = bbox2.getMinLon();
+    if (bbox2.minLon > 180.0) {
+      double newMinLon = bbox2.minLon;
       newMinLon += 90;
-      int m = (int) (bbox2.getMinLon() / 180);
-      newMinLon = (bbox2.getMinLon() - m * 180) - 90;
-      double newMaxLon = bbox2.getMaxLon() - m * 180;
-      bbox2 = new BoundingBox(newMinLon, newMaxLon, bbox2.getMinLat(), bbox2.getMaxLat());
-    } else if (bbox2.getMaxLon() < -180.0) {
-      double newMaxLon = bbox2.getMinLon();
+      int m = (int) (bbox2.minLon / 180);
+      newMinLon = (bbox2.minLon - m * 180) - 90;
+      double newMaxLon = bbox2.maxLon - m * 180;
+      bbox2 = new BoundingBox(newMinLon, newMaxLon, bbox2.minLat, bbox2.maxLat);
+    } else if (bbox2.maxLon < -180.0) {
+      double newMaxLon = bbox2.minLon;
       newMaxLon += 90;
-      int m = (int) (bbox2.getMaxLon() / 180);
-      newMaxLon = (bbox2.getMaxLon() - m * 180) - 90;
-      double newMinLon = bbox2.getMinLon() - m * 180;
-      bbox2 = new BoundingBox(newMinLon, newMaxLon, bbox2.getMinLat(), bbox2.getMaxLat());
+      int m = (int) (bbox2.maxLon / 180);
+      newMaxLon = (bbox2.maxLon - m * 180) - 90;
+      double newMinLon = bbox2.minLon - m * 180;
+      bbox2 = new BoundingBox(newMinLon, newMaxLon, bbox2.minLat, bbox2.maxLat);
     }
 
     // check if given Bbox is splitted into two Bboxes

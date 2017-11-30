@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellWay;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;
@@ -234,7 +233,7 @@ public class TransformWayMapper extends TransformMapper2 {
       }
     }
 
-    final BoundingBox boundingBox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION, minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
+    final BoundingBox boundingBox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION, minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
 
     long ids;
     int l = maxZoom;

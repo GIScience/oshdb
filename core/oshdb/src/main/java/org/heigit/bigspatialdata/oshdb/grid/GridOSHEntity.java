@@ -63,7 +63,7 @@ public abstract class GridOSHEntity<HOSM extends OSHEntity> implements Iterable<
   public String toString() {
     try {
       BoundingBox bbox = XYGrid.getBoundingBox(new CellId((int) id, level));
-      return String.format(Locale.ENGLISH, "ID:%d Level:%d BBox:(%f,%f),(%f,%f)", id, level, bbox.getMinLat(), bbox.getMinLon(), bbox.getMaxLat(), bbox.getMaxLon());
+      return String.format(Locale.ENGLISH, "ID:%d Level:%d BBox:(%f,%f),(%f,%f)", id, level, bbox.minLat, bbox.minLon, bbox.maxLat, bbox.maxLon);
     } catch (CellId.cellIdExeption ex) {
       LOG.warn("", ex);
       return String.format(Locale.ENGLISH, "ID:%d Level:%d", id, level);

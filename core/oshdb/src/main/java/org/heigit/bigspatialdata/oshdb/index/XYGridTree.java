@@ -91,7 +91,7 @@ public class XYGridTree {
         if (gridMap.get(i).getEstimatedIdCount(bbox) > 4) {
           continue;
         }
-        return new CellId(i, gridMap.get(i).getId(bbox.getMinLon(), bbox.getMinLat()));
+        return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
       } catch (CellId.cellIdExeption ex) {
         LOG.error(ex.getMessage());
         return null;
@@ -183,10 +183,10 @@ public class XYGridTree {
    */
   public Iterable<CellId> getMultiZoomNeighbours(CellId center) {
     BoundingBox bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
-    double minlong = bbox.getMinLon() - EPSILON;
-    double minlat = bbox.getMinLat() - EPSILON;
-    double maxlong = bbox.getMaxLon() + EPSILON;
-    double maxlat = bbox.getMaxLat() + EPSILON;
+    double minlong = bbox.minLon - EPSILON;
+    double minlat = bbox.minLat - EPSILON;
+    double maxlong = bbox.maxLon + EPSILON;
+    double maxlat = bbox.maxLat + EPSILON;
     BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
     return this.bbox2CellIds(newbbox, false);
   }
