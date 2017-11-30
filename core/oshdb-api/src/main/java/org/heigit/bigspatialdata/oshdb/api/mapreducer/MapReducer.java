@@ -8,13 +8,13 @@ import java.util.regex.Pattern;
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_LocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_ScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_multithread;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_singlethread;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X>, MapAggregatable<MapAggregator<? extends Comparable, X>, X>, Serializable {
 	private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
-  protected OSHDB _oshdb;
+  protected OSHDB_Implementation _oshdb;
   protected transient OSHDB_JDBC _oshdbForTags;
 
   // internal state
@@ -85,8 +85,9 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   private final Set<SerializableFunction> _flatMappers = new HashSet<>();
 
   // basic constructor
-  protected MapReducer(OSHDB oshdb) {
+  protected MapReducer(OSHDB_Implementation oshdb, Class<?> forClass) {
     this._oshdb = oshdb;
+    this._forClass = forClass;
   }
 
   // copy constructor
@@ -108,45 +109,6 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
     this._filters.addAll(obj._filters);
     this._mappers.addAll(obj._mappers);
     this._flatMappers.addAll(obj._flatMappers);
-  }
-
-  /**
-   * Factory function that creates the mapReducer object of the appropriate class for the chosen backend (e.g. JDBC based database or Ignite)
-   *
-   * @param oshdb the database backend (and potentially computation grid) to use for fetching and processing the data
-   * @param forClass the class (same as template parameter &lt;T&gt;) to iterate over in the `mapping` function
-   * @return a new mapReducer object operating on the given OSHDB backend
-   */
-  @Contract("null, _ -> fail")
-  public static <X> MapReducer<X> using(OSHDB oshdb, Class<?> forClass) {
-    if (oshdb instanceof OSHDB_JDBC) {
-      MapReducer<X> mapReducer;
-      if (((OSHDB_JDBC)oshdb).multithreading())
-        mapReducer = new MapReducer_JDBC_multithread<X>(oshdb);
-      else
-        mapReducer = new MapReducer_JDBC_singlethread<X>(oshdb);
-      mapReducer._oshdb = oshdb;
-      mapReducer._oshdbForTags = (OSHDB_JDBC)oshdb;
-      mapReducer._forClass = forClass;
-      return mapReducer;
-    } else if (oshdb instanceof OSHDB_Ignite) {
-      MapReducer<X> mapReducer;
-      switch (((OSHDB_Ignite) oshdb).computeMode()) {
-        case ScanQuery:
-          mapReducer = new MapReducer_Ignite_ScanQuery<X>(oshdb);
-          break;
-        case LocalPeek:
-          mapReducer = new MapReducer_Ignite_LocalPeek<X>(oshdb);
-          break;
-        default:
-          throw new UnsupportedOperationException("Backend not implemented for this database option.");
-      }
-      mapReducer._oshdbForTags = null;
-      mapReducer._forClass = forClass;
-      return mapReducer;
-    } else {
-      throw new UnsupportedOperationException("Backend not implemented for this database type.");
-    }
   }
 
   @NotNull

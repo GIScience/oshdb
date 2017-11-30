@@ -13,6 +13,7 @@ import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.exceptions.OSHDBTimeoutException;
@@ -40,8 +41,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
-  public MapReducer_Ignite_LocalPeek(OSHDB oshdb) {
-    super(oshdb);
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_LocalPeek.class);
+
+  public MapReducer_Ignite_LocalPeek(OSHDB_Implementation oshdb, Class<?> forClass) {
+    super(oshdb, forClass);
   }
 
   // copy constructor

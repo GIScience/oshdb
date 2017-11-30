@@ -12,7 +12,7 @@ import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
@@ -42,8 +42,8 @@ import java.util.function.*;
 public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_ScanQuery.class);
 
-  public MapReducer_Ignite_ScanQuery(OSHDB oshdb) {
-    super(oshdb);
+  public MapReducer_Ignite_ScanQuery(OSHDB_Implementation oshdb, Class<?> forClass) {
+    super(oshdb, forClass);
   }
 
   // copy constructor
