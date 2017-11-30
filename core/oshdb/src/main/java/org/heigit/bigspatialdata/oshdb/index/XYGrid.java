@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
@@ -42,6 +43,31 @@ import org.slf4j.LoggerFactory;
 public class XYGrid {
 
   private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
+  private static final double EPSILON = OSHDB.GEOM_PRECISION;
+
+  /**
+   * Calculate the BoundingBox of a specific GridCell.
+   *
+   * @param cellID
+   * @return
+   */
+  public static BoundingBox getBoundingBox(final CellId cellID) {
+    XYGrid temp = new XYGrid(cellID.getZoomLevel());
+    return temp.getCellDimensions(cellID.getId());
+  }
+
+  /**
+   * Determines if the two given double values are equal (their delta being
+   * smaller than a fixed epsilon).
+   *
+   * @param a The first double value to compare
+   * @param b The second double value to compare
+   * @return {@code true} if {@code abs(a - b) <= 1e-11}, {@code false}
+   * otherwise
+   */
+  public static boolean equalsEpsilon(double a, double b) {
+    return Math.abs(a - b) < EPSILON;
+  }
 
   private final int zoom;
   private final long zoompow;
@@ -112,7 +138,7 @@ public class XYGrid {
    * @return south-western cellID of given BBOX
    */
   public long getId(BoundingBox bbx) {
-    return getId(bbx.minLon, bbx.minLat);
+    return getId(bbx.getMinLon(), bbx.getMinLat());
   }
 
   /**
@@ -158,32 +184,6 @@ public class XYGrid {
   }
 
   /**
-   * Calculate the BoundingBox of a specific GridCell.
-   *
-   * @param cellID
-   * @return
-   */
-  public static BoundingBox getBoundingBox(final CellId cellID) {
-    XYGrid temp = new XYGrid(cellID.getZoomLevel());
-    return temp.getCellDimensions(cellID.getId());
-  }
-
-  private static final double EPSILON = 1e-11;
-
-  /**
-   * Determines if the two given double values are equal (their delta being
-   * smaller than a fixed epsilon).
-   *
-   * @param a The first double value to compare
-   * @param b The second double value to compare
-   * @return {@code true} if {@code abs(a - b) <= 1e-11}, {@code false}
-   * otherwise
-   */
-  public static boolean equalsEpsilon(double a, double b) {
-    return Math.abs(a - b) <= EPSILON;
-  }
-
-  /**
    * Returns number of Cells within given BBOX.
    *
    * @param data BBOX to estimate number of cells for
@@ -191,7 +191,7 @@ public class XYGrid {
    */
   public long getEstimatedIdCount(final BoundingBox data) {
     //number of Cells in x * number of cells in y
-    return (long) ((data.maxLon - data.minLon) / cellWidth * (data.maxLat - data.minLat) / cellWidth);
+    return (long) ((data.getMaxLon() - data.getMinLon()) / cellWidth * (data.getMaxLat() - data.getMinLat()) / cellWidth);
   }
 
   /**
@@ -220,10 +220,10 @@ public class XYGrid {
   public Set<Pair<Long, Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
     //initialise basic variables
     Set<Pair<Long, Long>> result = new TreeSet<>();
-    double minlong = bbox.minLon;
-    double minlat = bbox.minLat;
-    double maxlong = bbox.maxLon;
-    double maxlat = bbox.maxLat;
+    double minlong = bbox.getMinLon();
+    double minlat = bbox.getMinLat();
+    double maxlong = bbox.getMaxLon();
+    double maxlat = bbox.getMaxLat();
 
     if (minlat > maxlat) {
       LOG.warn("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
@@ -309,10 +309,10 @@ public class XYGrid {
     }
 
     BoundingBox bbox = this.getCellDimensions(center.getId());
-    double minlong = bbox.minLon - EPSILON;
-    double minlat = bbox.minLat - EPSILON;
-    double maxlong = bbox.maxLon + EPSILON;
-    double maxlat = bbox.maxLat + EPSILON;
+    double minlong = bbox.getMinLon() - EPSILON;
+    double minlat = bbox.getMinLat() - EPSILON;
+    double maxlong = bbox.getMaxLon() + EPSILON;
+    double maxlat = bbox.getMaxLat() + EPSILON;
     BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
 
     return this.bbox2CellIdRanges(newbbox, false);

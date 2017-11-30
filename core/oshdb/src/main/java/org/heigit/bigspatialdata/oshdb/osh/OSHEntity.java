@@ -194,16 +194,16 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     if (bbox == null) {
       return false;
     }
-    if (bbox.maxLat < otherBbox.minLat) {
+    if (bbox.getMaxLat() < otherBbox.getMinLat()) {
       return false;
     }
-    if (bbox.minLat > otherBbox.maxLat) {
+    if (bbox.getMinLat() > otherBbox.getMaxLat()) {
       return false;
     }
-    if (bbox.maxLon < otherBbox.minLon) {
+    if (bbox.getMaxLon() < otherBbox.getMinLon()) {
       return false;
     }
-    if (bbox.minLon > otherBbox.maxLon) {
+    if (bbox.getMinLon() > otherBbox.getMaxLon()) {
       return false;
     }
     return true;
@@ -220,8 +220,8 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     if (bbox == null) {
       return false;
     }
-    return bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat
-        && bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
+    return bbox.getMinLat() >= otherBbox.getMinLat() && bbox.getMaxLat() <= otherBbox.getMaxLat()
+        && bbox.getMinLon() >= otherBbox.getMinLon() && bbox.getMaxLon() <= otherBbox.getMaxLon();
   }
 
   /**
@@ -336,7 +336,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon);
+    return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().getMinLat(), getBoundingBox().getMinLon(), getBoundingBox().getMaxLat(), getBoundingBox().getMaxLon());
   }
 
   /**

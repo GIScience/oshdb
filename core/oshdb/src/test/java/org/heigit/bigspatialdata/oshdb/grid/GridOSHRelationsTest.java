@@ -12,7 +12,6 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -118,7 +117,7 @@ public class GridOSHRelationsTest {
 
     GridOSHRelations instance = GridOSHRelations.compact(cellId, cellLevel, baseId, 0, 0, 0, Arrays.asList(relation300, relation301));
 
-    String expResult = "Grid-Cell of OSHRelations ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
+    String expResult = "Grid-Cell of OSHRelations ID:2 Level:2 BBox:(-90.000000,0.000000),(0.000000,90.000000)";
     String result = instance.toString();
     assertEquals(expResult, result);
   }

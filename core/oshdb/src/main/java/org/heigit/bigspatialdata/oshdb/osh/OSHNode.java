@@ -7,6 +7,7 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
@@ -45,8 +46,8 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
       final long minLat = baseLatitude + wrapper.readSInt64();
       final long maxLat = minLat + wrapper.readUInt64();
 
-      bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-              minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+      bbox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
+              minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
 
     } else {
       bbox = null;
@@ -114,8 +115,8 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
       return null;
     }
 
-    return new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-            minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+    return new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
+            minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
   }
 
   @Override

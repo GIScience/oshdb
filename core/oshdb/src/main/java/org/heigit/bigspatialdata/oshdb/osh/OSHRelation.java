@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -52,8 +53,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final long minLat = baseLatitude + wrapper.readSInt64();
     final long maxLat = minLat + wrapper.readUInt64();
 
-    final BoundingBox bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-            minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+    final BoundingBox bbox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
+            minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -306,10 +307,10 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     for (OSHNode node : nodes) {
       BoundingBox bbox = node.getBoundingBox();
       if (bbox != null) {
-        minLon = Math.min(minLon, (long) (bbox.minLon / OSMNode.GEOM_PRECISION));
-        maxLon = Math.max(maxLon, (long) (bbox.maxLon / OSMNode.GEOM_PRECISION));
-        minLat = Math.min(minLat, (long) (bbox.minLat / OSMNode.GEOM_PRECISION));
-        maxLat = Math.max(maxLat, (long) (bbox.maxLat / OSMNode.GEOM_PRECISION));
+        minLon = Math.min(minLon, (long) (bbox.getMinLon() / OSHDB.GEOM_PRECISION));
+        maxLon = Math.max(maxLon, (long) (bbox.getMaxLon() / OSHDB.GEOM_PRECISION));
+        minLat = Math.min(minLat, (long) (bbox.getMinLat() / OSHDB.GEOM_PRECISION));
+        maxLat = Math.max(maxLat, (long) (bbox.getMaxLat() / OSHDB.GEOM_PRECISION));
       } else {
         Iterator<OSMNode> osmItr = node.iterator();
         while (osmItr.hasNext()) {
@@ -339,10 +340,10 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     offset = 0;
     for (OSHWay way : ways) {
       BoundingBox bbox = way.getBoundingBox();
-      minLon = Math.min(minLon, (long) (bbox.minLon / OSMNode.GEOM_PRECISION));
-      maxLon = Math.max(maxLon, (long) (bbox.maxLon / OSMNode.GEOM_PRECISION));
-      minLat = Math.min(minLat, (long) (bbox.minLat / OSMNode.GEOM_PRECISION));
-      maxLat = Math.max(maxLat, (long) (bbox.maxLat / OSMNode.GEOM_PRECISION));
+      minLon = Math.min(minLon, (long) (bbox.getMinLon() / OSHDB.GEOM_PRECISION));
+      maxLon = Math.max(maxLon, (long) (bbox.getMaxLon() / OSHDB.GEOM_PRECISION));
+      minLat = Math.min(minLat, (long) (bbox.getMinLat() / OSHDB.GEOM_PRECISION));
+      maxLat = Math.max(maxLat, (long) (bbox.getMaxLat() / OSHDB.GEOM_PRECISION));
 
       way = way.rebase(0, 0, baseLongitude, baseLatitude);
       wayOffsets.put(way.getId(), idx);

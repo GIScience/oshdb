@@ -66,7 +66,7 @@ public class GridOSHNodesTest {
     }
 
     GridOSHNodes instance = GridOSHNodes.rebase(2, 2, 100, 100000l, 86000000, 490000000, hosmNodes);
-    String expResult = "Grid-Cell of OSHNodes ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
+    String expResult = "Grid-Cell of OSHNodes ID:2 Level:2 BBox:(-90.000000,0.000000),(0.000000,90.000000)";
     String result = instance.toString();
     assertEquals(expResult, result);
   }

@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -62,8 +63,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 		final long minLat = baseLatitude + wrapper.readSInt64();
 		final long maxLat = minLat + wrapper.readUInt64();
 
-		final BoundingBox bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-				minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+		final BoundingBox bbox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
+				minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
 
 		final int[] keys;
 		if ((header & HEADER_HAS_TAGS) != 0) {

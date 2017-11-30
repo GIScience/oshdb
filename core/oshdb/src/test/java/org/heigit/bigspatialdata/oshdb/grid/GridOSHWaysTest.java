@@ -10,7 +10,6 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -45,7 +44,7 @@ public class GridOSHWaysTest {
     }
 
     GridOSHWays instance = GridOSHWays.compact(2, 2, 100, 100000l, 86000000, 490000000, hosmWays);
-    String expResult = "Grid-Cell of OSHWays ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
+    String expResult = "Grid-Cell of OSHWays ID:2 Level:2 BBox:(-90.000000,0.000000),(0.000000,90.000000)";
     String result = instance.toString();
     assertEquals(expResult, result);
   }

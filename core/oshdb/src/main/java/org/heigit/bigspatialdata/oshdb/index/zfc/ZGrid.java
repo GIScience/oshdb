@@ -2,10 +2,9 @@ package org.heigit.bigspatialdata.oshdb.index.zfc;
 
 import java.util.Comparator;
 import java.util.Iterator;
-
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
-import org.heigit.bigspatialdata.oshdb.util.LongBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.LongBoundingBox.OVERLAP;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox.OVERLAP;
 
 
 public class ZGrid {
@@ -14,7 +13,7 @@ public class ZGrid {
   private static long ZOOM_FACTOR = 1L << 56;
   private static long ID_MASK = 0x00FFFFFFFFFFFFFFL;
 
-  private static final long space = (long) (360.0 * OSMNode.GEOM_PRECISION_TO_LONG);
+  private static final long space = (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG);
   private final int maxZoom;
   
   public ZGrid(int maxZoom) {
@@ -106,7 +105,7 @@ public class ZGrid {
   }
       
   
-  public Iterable<Long> iterableDF(LongBoundingBox search) {
+  public Iterable<Long> iterableDF(BoundingBox search) {
     final ZGrid zGrid = this;
     return new Iterable<Long>() {
       final ZGrid grid = zGrid;
@@ -118,13 +117,13 @@ public class ZGrid {
     };
   }
 
-  public Iterator<Long> iteratorDF(LongBoundingBox search) {
+  public Iterator<Long> iteratorDF(BoundingBox search) {
     return new DFIterator(search, maxZoom,space);
   }
 
-  public LongBoundingBox getBoundingBox(long zId) {
+  public BoundingBox getBoundingBox(long zId) {
     if(zId < 0)
-      return new LongBoundingBox(0,0,0,0);
+      return new BoundingBox(0,0,0,0);
     final long id = getIdWithoutZoom(zId);
     final int zoom = getZoom(zId);
     final long cellWidth = space / (long) Math.pow(2, zoom);
@@ -138,7 +137,7 @@ public class ZGrid {
     lat[0] = denormalizeLat(xy[1] * cellWidth);
     lat[1] = lat[0] + cellWidth - 1;
    
-    return new LongBoundingBox(lon, lat);
+    return new BoundingBox(lon, lat);
   }
 
   private static long[] getXY(long id) {
@@ -178,18 +177,18 @@ public class ZGrid {
   }
 
   private static long normalizeLon(long lon){
-    return lon + (long)(180.0*OSMNode.GEOM_PRECISION_TO_LONG);
+    return lon + (long)(180.0*OSHDB.GEOM_PRECISION_TO_LONG);
   }
   
   private static long denormalizeLon(long lon){
-    return lon - (long)(180.0*OSMNode.GEOM_PRECISION_TO_LONG);
+    return lon - (long)(180.0*OSHDB.GEOM_PRECISION_TO_LONG);
   }
   
   private static long normalizeLat(long lat){
-    return lat + (long)(90.0*OSMNode.GEOM_PRECISION_TO_LONG);
+    return lat + (long)(90.0*OSHDB.GEOM_PRECISION_TO_LONG);
   }
   private static long denormalizeLat(long lat){
-    return lat - (long)(90.0*OSMNode.GEOM_PRECISION_TO_LONG);
+    return lat - (long)(90.0*OSHDB.GEOM_PRECISION_TO_LONG);
   }
   
   private static boolean validateLon(long lon){
@@ -230,23 +229,23 @@ public class ZGrid {
     return (r == 0) ? prio : r;
   };
 
-  public static LongBoundingBox WORLD = new LongBoundingBox(
-      (long) (-180.0 * OSMNode.GEOM_PRECISION_TO_LONG),
-      (long) (180.0 * OSMNode.GEOM_PRECISION_TO_LONG),
-      (long) (-90.0 * OSMNode.GEOM_PRECISION_TO_LONG),
-      (long) (180.0 * OSMNode.GEOM_PRECISION_TO_LONG));
+  public static BoundingBox WORLD = new BoundingBox(
+      (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG),
+      (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG),
+      (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG),
+      (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG));
   
   private static class DFIterator implements Iterator<Long> {
 
     private static class State {
       private int i = 0;
       private long id;
-      private LongBoundingBox bbox;
+      private BoundingBox bbox;
       private long width;
       private boolean complete = false;
     }
 
-    private final LongBoundingBox search;
+    private final BoundingBox search;
     private final int maxZoom;
     private final State[] states;
 
@@ -255,7 +254,7 @@ public class ZGrid {
 
     private int z = 1;
 
-    public DFIterator(LongBoundingBox search, int maxZoom, long space) {
+    public DFIterator(BoundingBox search, int maxZoom, long space) {
       this.search = search;
       this.maxZoom = maxZoom;
 
@@ -264,7 +263,7 @@ public class ZGrid {
         State s = new State();
         final long width = space / (long) Math.pow(2, z);
         s.width = width;
-        s.bbox = new LongBoundingBox(0, width, 0, width);
+        s.bbox = new BoundingBox(0, width, 0, width);
         states[z] = s;
       }
 
@@ -295,29 +294,28 @@ public class ZGrid {
           continue;
         }
 
-        final LongBoundingBox.OVERLAP overlap;
+        final BoundingBox.OVERLAP overlap;
         if (states[z - 1].complete) {
           overlap = OVERLAP.A_COMPLETE_IN_B;
         } else {
-          LongBoundingBox parentBBox = states[z - 1].bbox;
+          BoundingBox parentBBox = states[z - 1].bbox;
           switch (state.i) {
           case 0:
-            state.bbox = new LongBoundingBox(parentBBox.minLon, parentBBox.minLon + state.width, parentBBox.minLat,
-                parentBBox.minLat + state.width);
+            state.bbox = new BoundingBox(parentBBox.getMinLon(), parentBBox.getMinLon() + state.width, parentBBox.getMinLat(),
+                    parentBBox.getMinLat() + state.width);
             break;
           case 1:
-            state.bbox = new LongBoundingBox(parentBBox.minLon + state.width, parentBBox.minLon + 2 * state.width,
-                parentBBox.minLat, parentBBox.minLat + state.width);
+            state.bbox = new BoundingBox(parentBBox.getMinLon() + state.width, parentBBox.getMinLon() + 2 * state.width, parentBBox.getMinLat(), parentBBox.getMinLat() + state.width);
             break;
           case 2:
-            state.bbox = new LongBoundingBox(parentBBox.minLon, parentBBox.minLon + state.width,
-                parentBBox.minLat + state.width, parentBBox.minLat + 2 * state.width);
+            state.bbox = new BoundingBox(parentBBox.getMinLon(), parentBBox.getMinLon() + state.width,
+                parentBBox.getMinLat() + state.width, parentBBox.getMinLat() + 2 * state.width);
             break;
           case 3:
-            state.bbox = new LongBoundingBox(parentBBox.minLon + state.width, parentBBox.minLon + 2 * state.width,
-                parentBBox.minLat + state.width, parentBBox.minLat + 2 * state.width);
+            state.bbox = new BoundingBox(parentBBox.getMinLon() + state.width, parentBBox.getMinLon() + 2 * state.width,
+                parentBBox.getMinLat() + state.width, parentBBox.getMinLat() + 2 * state.width);
           }
-          overlap = LongBoundingBox.overlap(state.bbox, search);
+          overlap = BoundingBox.overlap(state.bbox, search);
         }
 
         if (overlap == OVERLAP.A_COMPLETE_IN_B)
@@ -344,12 +342,12 @@ public class ZGrid {
   
   public static void main(String[] args){
     final int zoom = 20;
-    final long space = (long) (360.0 * OSMNode.GEOM_PRECISION_TO_LONG);
+    final long space = (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     final long zoompow = (long) Math.pow(2, zoom);
     final long cellWidth = space / zoompow;
     ZGrid g = new ZGrid(zoom);
-    // new LongBoundingBox(1,3,2,4))//
-    g.iterableDF(new LongBoundingBox(86860589L, 86860589L + cellWidth, 494139909L, 494139909L + 100)).forEach(zId2 -> {
+    // new BoundingBox(1,3,2,4))//
+    g.iterableDF(new BoundingBox(86860589L, 86860589L + cellWidth, 494139909L, 494139909L + 100)).forEach(zId2 -> {
       System.out.printf("z:%2d - %d%n", ZGrid.getZoom(zId2), ZGrid.getIdWithoutZoom(zId2));
     });
     

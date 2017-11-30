@@ -1110,7 +1110,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // get all cell ids covered by the current area of interest's bounding box
   protected Iterable<CellId> _getCellIds() {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
-    if (this._bboxFilter == null || (this._bboxFilter.minLon >= this._bboxFilter.maxLon || this._bboxFilter.minLat >= this._bboxFilter.maxLat)) {
+    if (this._bboxFilter == null || (this._bboxFilter.getMinLon() >= this._bboxFilter.getMaxLon() || this._bboxFilter.getMinLat() >= this._bboxFilter.getMaxLat())) {
       // return an empty iterable if bbox is not set or empty
       LOG.warn("area of interest not set or empty");
       return Collections.emptyList();

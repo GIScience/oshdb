@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
 public class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
+  private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
   private XYGrid zero;
   private XYGrid two;
   private XYGrid thirty;
-  private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
 
   @Before
   public void setUp() {
@@ -111,7 +111,7 @@ public class XYGridTest {
   @Test
   public void test179_90_2() {
     // Testing Coordinates: 179, 90, zoom 2
-    double longitude = 179.99999999999;
+    double longitude = 180.0-OSHDB.GEOM_PRECISION;
     double latitude = 90.0;
 
     Long expResult = (long) 7;
@@ -234,14 +234,14 @@ public class XYGridTest {
 
   @Test
   public void testEqualsEpsilon() {
-    double a = 0.00000000001;
-    double b = 0.00000000002;
+    double a = 0.00000001;
+    double b = 0.00000002;
     boolean expResult = true;
     boolean result = XYGrid.equalsEpsilon(a, b);
     assertEquals(expResult, result);
 
-    a = 0.0000000001;
-    b = 0.0000000002;
+    a = 0.0000001;
+    b = 0.0000002;
     expResult = false;
     result = XYGrid.equalsEpsilon(a, b);
     assertEquals(expResult, result);
@@ -354,6 +354,8 @@ public class XYGridTest {
     assertEquals(0, expectedCellIds.size());
 
     result = two.bbox2CellIdRanges(two.getCellDimensions(0), false);
+    System.out.println(two.getCellDimensions(0));
+    System.out.println(result);
     assertEquals(1, result.size());
     interval = result.iterator().next();
     assertEquals(0, interval.getLeft().longValue());
