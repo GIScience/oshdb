@@ -15,6 +15,8 @@
 * …
 
 
+
+
 ### 0.2.0
 
 Approx. starting point of changelogs. DB schema is stable since a while. Raw access to data is possible.
