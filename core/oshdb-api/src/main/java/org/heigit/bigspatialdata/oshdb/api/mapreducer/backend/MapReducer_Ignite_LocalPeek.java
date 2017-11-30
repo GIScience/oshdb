@@ -307,7 +307,9 @@ class Ignite_LocalPeek_Helper {
             preFilter,
             filter,
             false
-        ).forEach(contribution -> rs.add(
+        ).forEach(contribution -> {
+          if (this.canceled) return;
+          rs.add(
             mapper.apply(
                 new OSMContribution(
                     new OSHDBTimestamp(contribution.timestamp),
@@ -319,7 +321,8 @@ class Ignite_LocalPeek_Helper {
                     contribution.activities
                 )
             )
-        ));
+          );
+        });
         S accInternal = identitySupplier.get();
         // fold the results
         for (R r : rs) {
@@ -355,6 +358,7 @@ class Ignite_LocalPeek_Helper {
             filter,
             false
         ).forEach(contribution -> {
+          if (this.canceled) return;
           OSMContribution thisContribution = new OSMContribution(
               new OSHDBTimestamp(contribution.timestamp),
               contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp) : null,
@@ -407,14 +411,17 @@ class Ignite_LocalPeek_Helper {
             preFilter,
             filter,
             false
-        ).forEach(result -> result.forEach((timestamp, entityGeometry) -> {
-          OSHDBTimestamp tstamp = new OSHDBTimestamp(timestamp);
-          Geometry geometry = entityGeometry.getRight();
-          OSMEntity entity = entityGeometry.getLeft();
-          OSMEntitySnapshot foo = new OSMEntitySnapshot(tstamp, geometry, entity);
-          R bar = mapper.apply(foo);
-          rs.add(bar);
-        }));
+        ).forEach(result -> {
+          if (this.canceled) return;
+          result.forEach((timestamp, entityGeometry) -> {
+            OSHDBTimestamp tstamp = new OSHDBTimestamp(timestamp);
+            Geometry geometry = entityGeometry.getRight();
+            OSMEntity entity = entityGeometry.getLeft();
+            OSMEntitySnapshot foo = new OSMEntitySnapshot(tstamp, geometry, entity);
+            R bar = mapper.apply(foo);
+            rs.add(bar);
+          });
+        });
         S accInternal = identitySupplier.get();
         // fold the results
         for (R r : rs) {
@@ -449,11 +456,12 @@ class Ignite_LocalPeek_Helper {
             filter,
             false
         ).forEach(snapshots -> {
+          if (this.canceled) return;
           List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());
-          snapshots.entrySet().forEach(entry -> {
-            OSHDBTimestamp tstamp = new OSHDBTimestamp(entry.getKey());
-            Geometry geometry = entry.getValue().getRight();
-            OSMEntity entity = entry.getValue().getLeft();
+          snapshots.forEach((key, value) -> {
+            OSHDBTimestamp tstamp = new OSHDBTimestamp(key);
+            Geometry geometry = value.getRight();
+            OSMEntity entity = value.getLeft();
             osmEntitySnapshots.add(new OSMEntitySnapshot(tstamp, geometry, entity));
           });
           rs.addAll(mapper.apply(osmEntitySnapshots));
