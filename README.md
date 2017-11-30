@@ -3,6 +3,7 @@ HeiGit BigSpatialData DB
 
 This is the core repository for the HeiGIT BigSpatialData OSM-History DB
 
+Jenkins says: [![Build Status](http://129.206.7.188:8081/buildStatus/icon?job=oshdb)](http://129.206.7.188:8081/job/oshdb/)
 
 See also
 --------
