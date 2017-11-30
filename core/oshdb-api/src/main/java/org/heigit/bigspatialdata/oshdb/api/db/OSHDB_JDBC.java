@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 
-public class OSHDB_JDBC extends OSHDB {
+public class OSHDB_JDBC extends OSHDB implements AutoCloseable {
 
   private final Connection _conn;
   private boolean useMultithreading = true;
@@ -34,5 +34,10 @@ public class OSHDB_JDBC extends OSHDB {
 
   public boolean multithreading() {
     return this.useMultithreading;
+  }
+
+  @Override
+  public void close() throws Exception {
+    this._conn.close();
   }
 }
