@@ -98,6 +98,7 @@ public class OSHDB2Ignite {
           @SuppressWarnings("unchecked")
           final T grid = (T) ois.readObject();
           streamer.addData(levelId, grid);
+          if (++cnt % 10 == 0) streamer.flush();
         }
         System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into " + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException | SQLException e) {
