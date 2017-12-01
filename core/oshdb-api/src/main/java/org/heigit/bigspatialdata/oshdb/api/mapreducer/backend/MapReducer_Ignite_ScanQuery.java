@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 
 public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_ScanQuery.class);
-
   public MapReducer_Ignite_ScanQuery(OSHDB_Implementation oshdb, Class<?> forClass) {
     super(oshdb, forClass);
   }
@@ -64,15 +62,11 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      Optional<String> cacheName = TableNames.forOSMType(osmType).map(TableNames::toString);
-      if (!cacheName.isPresent()) {
-        LOG.warn("unhandled osm type: " + osmType.toString());
-        return identitySupplier.get();
-      }
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._mapReduceCellsOSMContributionOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
-          cacheName.get(),
+          cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,
@@ -100,15 +94,11 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      Optional<String> cacheName = TableNames.forOSMType(osmType).map(TableNames::toString);
-      if (!cacheName.isPresent()) {
-        LOG.warn("unhandled osm type: " + osmType.toString());
-        return identitySupplier.get();
-      }
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
-          cacheName.get(),
+          cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,
@@ -137,15 +127,11 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      Optional<String> cacheName = TableNames.forOSMType(osmType).map(TableNames::toString);
-      if (!cacheName.isPresent()) {
-        LOG.warn("unhandled osm type: " + osmType.toString());
-        return identitySupplier.get();
-      }
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
-          cacheName.get(),
+          cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,
@@ -173,15 +159,11 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable)osmType -> {
-      Optional<String> cacheName = TableNames.forOSMType(osmType).map(TableNames::toString);
-      if (!cacheName.isPresent()) {
-        LOG.warn("unhandled osm type: " + osmType.toString());
-        return identitySupplier.get();
-      }
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
           this._tagInterpreter,
-          cacheName.get(),
+          cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
           this._bboxFilter,

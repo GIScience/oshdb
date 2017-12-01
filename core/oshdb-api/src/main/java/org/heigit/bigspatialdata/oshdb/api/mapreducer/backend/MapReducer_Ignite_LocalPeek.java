@@ -52,12 +52,12 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
     super(obj);
   }
 
-  private List<String> cacheNames() {
+  private List<String> cacheNames(String prefix) {
     return this._typeFilter.stream()
     .map(TableNames::forOSMType)
     .filter(Optional::isPresent)
     .map(Optional::get)
-    .map(TableNames::toString)
+    .map(tn -> tn.toString(prefix))
     .collect(Collectors.toList());
   }
 
@@ -73,7 +73,7 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
 
     return Ignite_LocalPeek_Helper._mapReduceCellsOSMContributionOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
-        this.cacheNames(),
+        this.cacheNames(this._oshdb.prefix()),
         this._tagInterpreter,
         this._tstamps.getTimestamps(),
         this._bboxFilter,
@@ -99,7 +99,7 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
 
     return Ignite_LocalPeek_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
-        this.cacheNames(),
+        this.cacheNames(this._oshdb.prefix()),
         this._tagInterpreter,
         this._tstamps.getTimestamps(),
         this._bboxFilter,
@@ -126,7 +126,7 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
 
     return Ignite_LocalPeek_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
-        this.cacheNames(),
+        this.cacheNames(this._oshdb.prefix()),
         this._tagInterpreter,
         this._tstamps.getTimestamps(),
         this._bboxFilter,
@@ -152,7 +152,7 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
 
     return Ignite_LocalPeek_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
-        this.cacheNames(),
+        this.cacheNames(this._oshdb.prefix()),
         this._tagInterpreter,
         this._tstamps.getTimestamps(),
         this._bboxFilter,

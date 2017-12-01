@@ -27,14 +27,18 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
 
   public TestMapReduceOSHDB_Ignite(OSHDB_Ignite oshdb) throws Exception {
     super(oshdb);
+
+    final String prefix = "tests";
+    oshdb.prefix(prefix);
+
     OSHDB_H2 oshdb_h2 = new OSHDB_H2("./src/test/resources/test-data");
     this.keytables = oshdb_h2;
 
     Ignite ignite = ((OSHDB_Ignite)this.oshdb).getIgnite();
     ignite.active(true);
 
-    // todo: also nodes+relations? (at the moment we don't use them in the actual TestMapReduce tests)
-    CacheConfiguration<Long, GridOSHNodes> cacheCfg = new CacheConfiguration<>(TableNames.T_NODES.toString());
+    // todo: also ways+relations? (at the moment we don't use them in the actual TestMapReduce tests)
+    CacheConfiguration<Long, GridOSHNodes> cacheCfg = new CacheConfiguration<>(TableNames.T_NODES.toString(prefix));
     cacheCfg.setStatisticsEnabled(true);
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);

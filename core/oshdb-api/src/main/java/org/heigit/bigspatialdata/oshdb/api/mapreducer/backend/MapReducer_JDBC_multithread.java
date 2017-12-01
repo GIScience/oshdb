@@ -8,7 +8,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
@@ -26,9 +28,14 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
+
   public MapReducer_JDBC_multithread(OSHDB_Implementation oshdb, Class<?> forClass) {
     super(oshdb, forClass);
   }
@@ -49,14 +56,14 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     return cellIdsList.parallelStream()
         .flatMap(cell -> {
           try {
+            String sqlQuery = this._typeFilter.stream().map(osmType ->
+              TableNames.forOSMType(osmType).map(tn -> tn.toString(this._oshdb.prefix()))
+            ).filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(tn -> "(select data from "+tn+" where level = ?1 and id = ?2)")
+            .collect(Collectors.joining(" union all "));
             // fetch data from H2 DB
-            PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
-                (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                    " union all " +
-                    (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                    " union all " +
-                    (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
-            );
+            PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
             pstmt.setInt(1, cell.getZoomLevel());
             pstmt.setLong(2, cell.getId());
             ResultSet oshCellsRawData = pstmt.executeQuery();
@@ -112,14 +119,14 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     return cellIdsList.parallelStream()
         .flatMap(cell -> {
           try {
+            String sqlQuery = this._typeFilter.stream().map(osmType ->
+                TableNames.forOSMType(osmType).map(tn -> tn.toString(this._oshdb.prefix()))
+            ).filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(tn -> "(select data from "+tn+" where level = ?1 and id = ?2)")
+            .collect(Collectors.joining(" union all "));
             // fetch data from H2 DB
-            PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
-                (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                    " union all " +
-                    (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                    " union all " +
-                    (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
-            );
+            PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
             pstmt.setInt(1, cell.getZoomLevel());
             pstmt.setLong(2, cell.getId());
             ResultSet oshCellsRawData = pstmt.executeQuery();
@@ -191,14 +198,14 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     return cellIdsList.parallelStream()
     .flatMap(cell -> {
       try {
+        String sqlQuery = this._typeFilter.stream().map(osmType ->
+            TableNames.forOSMType(osmType).map(tn -> tn.toString(this._oshdb.prefix()))
+        ).filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(tn -> "(select data from "+tn+" where level = ?1 and id = ?2)")
+        .collect(Collectors.joining(" union all "));
         // fetch data from H2 DB
-        PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
-            (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                " union all " +
-                (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                " union all " +
-                (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
-        );
+        PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
         pstmt.setInt(1, cell.getZoomLevel());
         pstmt.setLong(2, cell.getId());
         ResultSet oshCellsRawData = pstmt.executeQuery();
@@ -251,14 +258,14 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     return cellIdsList.parallelStream()
         .flatMap(cell -> {
           try {
+            String sqlQuery = this._typeFilter.stream().map(osmType ->
+                TableNames.forOSMType(osmType).map(tn -> tn.toString(this._oshdb.prefix()))
+            ).filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(tn -> "(select data from "+tn+" where level = ?1 and id = ?2)")
+            .collect(Collectors.joining(" union all "));
             // fetch data from H2 DB
-            PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(
-                (this._typeFilter.contains(OSMType.NODE) ? "(select data from grid_node where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                    " union all " +
-                    (this._typeFilter.contains(OSMType.WAY) ? "(select data from grid_way where level = ?1 and id = ?2)" : "(select 0 as data where false)" ) +
-                    " union all " +
-                    (this._typeFilter.contains(OSMType.RELATION) ? "(select data from grid_relation where level = ?1 and id = ?2)" : "(select 0 as data where false)" )
-            );
+            PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
             pstmt.setInt(1, cell.getZoomLevel());
             pstmt.setLong(2, cell.getId());
             ResultSet oshCellsRawData = pstmt.executeQuery();

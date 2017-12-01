@@ -75,13 +75,19 @@ public enum TableNames {
     return tablename;
   }
 
+  public String toString(String prefix) {
+    if(prefix != null && !prefix.trim().isEmpty())
+      return prefix+"_"+this.toString();
+    return this.toString();
+  }
+
   public static Optional<TableNames> forOSMType(OSMType type) {
     switch(type) {
       case NODE: return Optional.of(T_NODES);
       case WAY: return Optional.of(T_WAYS);
       case RELATION: return Optional.of(T_RELATIONS);
       default:
-        LoggerFactory.getLogger(TableNames.class).warn("no table found for osm type: " + type.toString());
+        LoggerFactory.getLogger(TableNames.class).error("no table found for osm type: " + type.toString());
         return Optional.empty();
     }
   }
