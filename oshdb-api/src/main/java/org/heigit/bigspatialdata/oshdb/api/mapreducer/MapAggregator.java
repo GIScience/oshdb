@@ -311,6 +311,25 @@ public class MapAggregator<U extends Comparable, X> implements MapReducerSetting
   }
 
   /**
+   * Counts all unique values of the results.
+   *
+   * For example, this can be used together with the OSMContributionView to get the number of unique users editing specific feature types.
+   *
+   * @return the set of distinct values
+   */
+  @Contract(pure = true)
+  public SortedMap<U, Integer> countUniq() throws Exception {
+    return this
+        .uniq().entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            e -> e.getValue().size(),
+            (v1, v2) -> v1, // can't happen, actually since input is already a map
+            TreeMap::new
+        ));
+  }
+
+  /**
    * Calculates the averages of the results.
    *
    * The current data values need to be numeric (castable to "Number" type), otherwise a runtime exception will be thrown.

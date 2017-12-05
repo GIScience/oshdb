@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -837,6 +838,18 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   @Contract(pure = true)
   public <R> Set<R> uniq(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).uniq();
+  }
+
+  /**
+   * Counts all unique values of the results.
+   *
+   * For example, this can be used together with the OSMContributionView to get the number of unique users editing specific feature types.
+   *
+   * @return the set of distinct values
+   */
+  @Contract(pure = true)
+  public Integer countUniq() throws Exception {
+    return this.uniq().size();
   }
 
   /**

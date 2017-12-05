@@ -86,6 +86,15 @@ interface MapReducerAggregations<X> {
   <R> Object uniq(SerializableFunction<X, R> mapper) throws Exception;
 
   /**
+   * Counts all unique values of the results.
+   *
+   * For example, this can be used together with the OSMContributionView to get the number of unique users editing specific feature types.
+   *
+   * @return the set of distinct values
+   */
+  Object countUniq() throws Exception;
+
+  /**
    * Calculates the averages of the results.
    *
    * The current data values need to be numeric (castable to "Number" type), otherwise a runtime exception will be thrown.
