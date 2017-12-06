@@ -77,7 +77,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
 
   // settings and filters
   protected OSHDBTimestampList _tstamps = new OSHDBTimestamps("2008-01-01", (new OSHDBTimestamp((new Date()).getTime()/1000)).formatIsoDateTime(), OSHDBTimestamps.Interval.MONTHLY);
-  protected BoundingBox _bboxFilter = null;
+  protected BoundingBox _bboxFilter = new BoundingBox(-180,180,-90,90);
   private Geometry _polyFilter = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
@@ -183,13 +183,10 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> areaOfInterest(BoundingBox bboxFilter) {
+  public MapReducer<X> areaOfInterest(@NotNull BoundingBox bboxFilter) {
     MapReducer<X> ret = this.copy();
     if (this._polyFilter == null) {
-      if (this._bboxFilter == null)
-        ret._bboxFilter = bboxFilter;
-      else
-        ret._bboxFilter = BoundingBox.intersect(bboxFilter, ret._bboxFilter);
+      ret._bboxFilter = BoundingBox.intersect(bboxFilter, ret._bboxFilter);
     } else {
       ret._polyFilter = Geo.clip(ret._polyFilter, bboxFilter);
       ret._bboxFilter = new BoundingBox(ret._polyFilter.getEnvelopeInternal());
@@ -205,13 +202,10 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(P polygonFilter) {
+  public <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(@NotNull P polygonFilter) {
     MapReducer<X> ret = this.copy();
     if (this._polyFilter == null) {
-      if (this._bboxFilter == null)
-        ret._polyFilter = polygonFilter;
-      else
-        ret._polyFilter = Geo.clip(polygonFilter, ret._bboxFilter);
+      ret._polyFilter = Geo.clip(polygonFilter, ret._bboxFilter);
     } else {
       ret._polyFilter = Geo.clip(polygonFilter, ret._getPolyFilter());
     }
