@@ -4,8 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,8 +34,9 @@ public class TagTranslator {
    * time to time! It has its own lazy cache to speed up searching.
    *
    * @param conn a connection to a database. For now only H2 is supported
+   * @throws OSHDBKeytablesNotFoundException if the supplied database doesn't contain the required "keyTables" tables
    */
-  public TagTranslator(Connection conn) {
+  public TagTranslator(Connection conn) throws OSHDBKeytablesNotFoundException {
     this.conn = conn;
     this.tagToInt = new ConcurrentHashMap<>(0);
     this.tagToString = new ConcurrentHashMap<>(0);
@@ -41,6 +44,20 @@ public class TagTranslator {
     this.roleToString = new ConcurrentHashMap<>(0);
     this.userToInt = new ConcurrentHashMap<>(0);
     this.userToString = new ConcurrentHashMap<>(0);
+
+    // test connection for presence of actual "keytables" tables
+    EnumSet<TableNames> keyTables = EnumSet.of(
+        TableNames.E_KEY,
+        TableNames.E_KEYVALUE,
+        TableNames.E_ROLE
+    );
+    for (TableNames table : keyTables) {
+      try {
+        this.conn.prepareStatement("select 1 from " + table.toString() + " LIMIT 1").execute();
+      } catch (SQLException e) {
+        throw new OSHDBKeytablesNotFoundException();
+      }
+    }
   }
 
   /**
