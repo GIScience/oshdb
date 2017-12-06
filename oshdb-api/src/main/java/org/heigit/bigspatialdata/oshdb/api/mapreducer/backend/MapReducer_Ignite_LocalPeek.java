@@ -68,13 +68,10 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
-
     return Ignite_LocalPeek_Helper._mapReduceCellsOSMContributionOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
         this.cacheNames(this._oshdb.prefix()),
-        this._tagInterpreter,
+        this._getTagInterpreter(),
         this._tstamps.getTimestamps(),
         this._bboxFilter,
         this._getPolyFilter(),
@@ -94,13 +91,10 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
-
     return Ignite_LocalPeek_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
         this.cacheNames(this._oshdb.prefix()),
-        this._tagInterpreter,
+        this._getTagInterpreter(),
         this._tstamps.getTimestamps(),
         this._bboxFilter,
         this._getPolyFilter(),
@@ -121,13 +115,10 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
-
     return Ignite_LocalPeek_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
         this.cacheNames(this._oshdb.prefix()),
-        this._tagInterpreter,
+        this._getTagInterpreter(),
         this._tstamps.getTimestamps(),
         this._bboxFilter,
         this._getPolyFilter(),
@@ -147,13 +138,10 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
-
     return Ignite_LocalPeek_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
         (OSHDB_Ignite)this._oshdb,
         this.cacheNames(this._oshdb.prefix()),
-        this._tagInterpreter,
+        this._getTagInterpreter(),
         this._tstamps.getTimestamps(),
         this._bboxFilter,
         this._getPolyFilter(),

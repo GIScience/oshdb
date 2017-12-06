@@ -1,10 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,9 +29,11 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,19 +64,20 @@ import org.slf4j.LoggerFactory;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
 public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X>, MapAggregatable<MapAggregator<? extends Comparable, X>, X>, Serializable {
-	private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
   protected OSHDB_Implementation _oshdb;
   protected transient OSHDB_JDBC _oshdbForTags;
 
   // internal state
   Class _forClass = null;
+
   private enum Grouping { NONE, BY_ID }
   private Grouping _grouping = Grouping.NONE;
 
   // utility objects
   private transient TagTranslator _tagTranslator = null;
-  protected TagInterpreter _tagInterpreter = null;
+  private TagInterpreter _tagInterpreter = null;
 
   // settings and filters
   protected OSHDBTimestampList _tstamps = new OSHDBTimestamps("2008-01-01", (new OSHDBTimestamp((new Date()).getTime()/1000)).formatIsoDateTime(), OSHDBTimestamps.Interval.MONTHLY);
@@ -1050,9 +1054,15 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // Some helper methods for internal use in the mapReduce functions
   // -------------------------------------------------------------------------------------------------------------------
 
+  protected TagInterpreter _getTagInterpreter() throws ParseException, SQLException, IOException {
+    if (this._tagInterpreter == null)
+      this._tagInterpreter = DefaultTagInterpreter.fromJDBC(this._oshdbForTags.getConnection());
+    return this._tagInterpreter;
+  }
+
   protected TagTranslator _getTagTranslator() {
     if (this._tagTranslator == null)
-      this._tagTranslator = new TagTranslator((this._oshdbForTags).getConnection());
+      this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
     return this._tagTranslator;
   }
 

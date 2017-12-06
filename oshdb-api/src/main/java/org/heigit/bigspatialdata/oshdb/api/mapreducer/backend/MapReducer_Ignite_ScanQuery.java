@@ -56,8 +56,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+    TagInterpreter tagInterpreter = this._getTagInterpreter(); //load tag interpreter helper which is later used for geometry building
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -65,7 +64,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._mapReduceCellsOSMContributionOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
-          this._tagInterpreter,
+          tagInterpreter,
           cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
@@ -88,8 +87,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+    TagInterpreter tagInterpreter = this._getTagInterpreter(); //load tag interpreter helper which is later used for geometry building
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -97,7 +95,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
-          this._tagInterpreter,
+          tagInterpreter,
           cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
@@ -121,8 +119,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+    TagInterpreter tagInterpreter = this._getTagInterpreter(); //load tag interpreter helper which is later used for geometry building
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -130,7 +127,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
-          this._tagInterpreter,
+          tagInterpreter,
           cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
@@ -153,8 +150,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    //load tag interpreter helper which is later used for geometry building
-    if (this._tagInterpreter == null) this._tagInterpreter = DefaultTagInterpreter.fromJDBC(((OSHDB_H2) this._oshdbForTags).getConnection());
+    TagInterpreter tagInterpreter = this._getTagInterpreter(); //load tag interpreter helper which is later used for geometry building
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -162,7 +158,7 @@ public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       return Ignite_ScanQuery_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
           (OSHDB_Ignite)this._oshdb,
-          this._tagInterpreter,
+          tagInterpreter,
           cacheName,
           cellIdsList,
           this._tstamps.getTimestamps(),
