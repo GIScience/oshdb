@@ -198,8 +198,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 
     Builder builder = new Builder(output, baseTimestamp);
 
-    for (int i = 0; i < versions.size(); i++) {
-      OSMNode node = versions.get(i);
+    for (OSMNode node: versions) {
       OSMEntity version = node;
 
       byte changed = 0;

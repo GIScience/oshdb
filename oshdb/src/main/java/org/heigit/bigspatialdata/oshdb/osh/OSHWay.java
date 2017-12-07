@@ -269,8 +269,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 
 		Builder builder = new Builder(output, baseTimestamp);
 
-		for (int i = 0; i < versions.size(); i++) {
-			OSMWay way = versions.get(i);
+		for (OSMWay way: versions) {
 			OSMEntity version = way;
 
 			byte changed = 0;
