@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>org.heigit.bigspatialdata</groupId>
+  <artifactId>bigspatialdata-parent</artifactId>
+  <version>0.3.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>HeiGIT Big Spatial Data Parent POM</name>
+  <url>http://www.geog.uni-heidelberg.de/gis/heigit_bigspatialdata.html</url>
+  <description></description>
+  <inceptionYear>2016</inceptionYear>
+  <organization>
+    <name>HeiGIT</name>
+    <url>http://www.geog.uni-heidelberg.de/gis/heigit_bigspatialdata.html</url>
+  </organization>
+
+  <licenses>
+    <!-- To be declared! -->
+  </licenses>
+  
+  <developers>
+    <!-- https://maven.apache.org/pom.html#Developers -->
+    <developer>
+      <id>rtroilo</id>
+      <name>Rafael Troilo</name>
+      <email>rafael.troilo@uni-heidelberg.de</email>
+    </developer>
+    <developer>
+      <id>mraifer</id>
+      <name>Martin Raifer</name>
+      <email>martin.raifer@uni-heidelberg.de</email>
+    </developer>
+    <developer>
+      <id>mr.moehritz</id>
+      <name>Moriz Schott</name>
+      <email>m.schott@stud.uni-heidelberg.de</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <!-- https://maven.apache.org/pom.html#SCM -->
+    <connection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</connection>
+    <developerConnection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</developerConnection>
+    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</url>
+  </scm>
+  
+  <issueManagement>
+    <system>GitLab</system>
+    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core/issues</url>
+  </issueManagement>
+  
+  <ciManagement>
+    <system>Jenkins</system>
+  </ciManagement>
+  
+  <distributionManagement>
+    <downloadUrl>http://129.206.7.121:8081/artifactory/</downloadUrl>
+    <repository>
+      <id>oshdb-releases</id>
+      <name>Heigit/GIScience maven repository (releases)</name>
+      <uniqueVersion>false</uniqueVersion>
+      <url>http://129.206.7.121:8081/artifactory/libs-release-local</url>
+      <layout>default</layout>
+    </repository>
+    <snapshotRepository>
+      <id>oshdb-snapshots</id>
+      <name>Heigit/GIScience maven repository (snapshots)</name>
+      <uniqueVersion>true</uniqueVersion>
+      <url>http://129.206.7.121:8081/artifactory/libs-snapshot-local</url>
+      <layout>default</layout>
+    </snapshotRepository>
+    <site>
+    </site>
+  </distributionManagement>
+  
+  <modules>
+    <module>core</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <geotools.version>18-RC1</geotools.version>
+    <ignite.version>2.3.0</ignite.version>
+    <slf4j.version>1.7.25</slf4j.version>
+    <h2.version>1.4.193</h2.version>
+    <postgresql.version>42.1.4</postgresql.version>
+    <kafka.version>0.11.0.0</kafka.version>
+    <osmosis.version>0.45</osmosis.version>
+    <guava.version>19.0</guava.version>
+    <protobuf.version>2.6.1</protobuf.version>
+    <fastutil.version>7.2.0</fastutil.version>
+    <lz4.version>1.4.0</lz4.version>
+    <mapdb.version>3.0.5</mapdb.version>
+    <rxjava2.version>2.1.4</rxjava2.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>			
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>complete</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <!-- This param should be removed at a later phase, as it supresses actual errors in the javadoc (see https://gitlab.com/giscience/osh-bigdb/OSH-BigDB/issues/3)-->
+        <additionalparam>-Xdoclint:none</additionalparam>
+        <!--
+                <downloadSources>true</downloadSources>
+                <downloadJavadocs>true</downloadJavadocs>
+        -->
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.4</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <id>withDep</id>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- NOTE: We don't need a groupId specification because the group is
+                org.apache.maven.plugins ...which is assumed by default.
+            -->
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>
+                    <!--put main class if there will be one available one day-->
+                  </mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <outputDirectory>${project.basedir}</outputDirectory>
+            </configuration>
+            <executions>
+              <execution>
+                <id>make-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <id>deployignite</id>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.0.2</version>
+            <configuration>
+              <outputDirectory>/opt/ignite/libs/oshdb</outputDirectory>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>install</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>/opt/ignite/libs/oshdb/lib</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
