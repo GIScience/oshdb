@@ -31,6 +31,7 @@ import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +43,14 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
   }
 
   // copy constructor
-  public MapReducer_JDBC_multithread(MapReducer_JDBC_multithread obj) {
+  private MapReducer_JDBC_multithread(MapReducer_JDBC_multithread obj) {
     super(obj);
+  }
+
+  @NotNull
+  @Override
+  protected MapReducer<X> copy() {
+    return new MapReducer_JDBC_multithread<X>(this);
   }
 
   @Override

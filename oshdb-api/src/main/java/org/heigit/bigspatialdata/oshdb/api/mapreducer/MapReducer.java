@@ -117,17 +117,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   }
 
   @NotNull
-  private MapReducer<X> copy() {
-    if (this instanceof MapReducer_JDBC_singlethread)
-      return new MapReducer_JDBC_singlethread<X>((MapReducer_JDBC_singlethread)this);
-    if (this instanceof MapReducer_JDBC_multithread)
-      return new MapReducer_JDBC_multithread<X>((MapReducer_JDBC_multithread)this);
-    if (this instanceof MapReducer_Ignite_ScanQuery)
-      return new MapReducer_Ignite_ScanQuery<X>((MapReducer_Ignite_ScanQuery)this);
-    if (this instanceof MapReducer_Ignite_LocalPeek)
-      return new MapReducer_Ignite_LocalPeek<X>((MapReducer_Ignite_LocalPeek)this);
-    throw new UnsupportedOperationException("Clone not implemented for this backend type: " + this.getClass().toString());
-  }
+  protected abstract MapReducer<X> copy();
 
   // -------------------------------------------------------------------------------------------------------------------
   // "Setting" methods and associated internal helpers

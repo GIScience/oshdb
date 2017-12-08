@@ -32,6 +32,7 @@ import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +49,14 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
   }
 
   // copy constructor
-  public MapReducer_Ignite_LocalPeek(MapReducer_Ignite_LocalPeek obj) {
+  private MapReducer_Ignite_LocalPeek(MapReducer_Ignite_LocalPeek obj) {
     super(obj);
+  }
+
+  @NotNull
+  @Override
+  protected MapReducer<X> copy() {
+    return new MapReducer_Ignite_LocalPeek<X>(this);
   }
 
   private List<String> cacheNames(String prefix) {

@@ -29,6 +29,7 @@ import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.jetbrains.annotations.NotNull;
 
 public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
   public MapReducer_JDBC_singlethread(OSHDB_Implementation oshdb, Class<?> forClass) {
@@ -36,8 +37,14 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
   }
 
   // copy constructor
-  public MapReducer_JDBC_singlethread(MapReducer_JDBC_singlethread obj) {
+  private MapReducer_JDBC_singlethread(MapReducer_JDBC_singlethread obj) {
     super(obj);
+  }
+
+  @NotNull
+  @Override
+  protected MapReducer<X> copy() {
+    return new MapReducer_JDBC_singlethread<X>(this);
   }
 
   @Override
