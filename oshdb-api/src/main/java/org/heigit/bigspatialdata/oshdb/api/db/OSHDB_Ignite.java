@@ -12,11 +12,13 @@ import org.heigit.bigspatialdata.oshdb.api.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_LocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_ScanQuery;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_AffinityCall;
 
 public class OSHDB_Ignite extends OSHDB_Implementation implements AutoCloseable, Serializable {
   public enum ComputeMode {
+    LocalPeek,
     ScanQuery,
-    LocalPeek
+    AffinityCall
   }
 
   private final Ignite _ignite;
@@ -43,11 +45,14 @@ public class OSHDB_Ignite extends OSHDB_Implementation implements AutoCloseable,
   public <X> MapReducer<X> createMapReducer(Class<?> forClass) {
     MapReducer<X> mapReducer;
     switch (this.computeMode()) {
+      case LocalPeek:
+        mapReducer = new MapReducer_Ignite_LocalPeek<X>(this, forClass);
+        break;
       case ScanQuery:
         mapReducer = new MapReducer_Ignite_ScanQuery<X>(this, forClass);
         break;
-      case LocalPeek:
-        mapReducer = new MapReducer_Ignite_LocalPeek<X>(this, forClass);
+      case AffinityCall:
+        mapReducer = new MapReducer_Ignite_AffinityCall<X>(this, forClass);
         break;
       default:
         throw new UnsupportedOperationException("Backend not implemented for this database option.");
