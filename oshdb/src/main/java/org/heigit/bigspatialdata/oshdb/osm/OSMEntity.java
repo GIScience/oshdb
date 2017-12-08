@@ -120,7 +120,7 @@ public abstract class OSMEntity {
    * @return true if the key is present and is NOT in a combination with the
    * given values, false otherwise
    */
-  public boolean hasTagKey(int key, int[] uninterestingValues) {
+  public boolean hasTagKeyExcluding(int key, int[] uninterestingValues) {
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {
         continue;
