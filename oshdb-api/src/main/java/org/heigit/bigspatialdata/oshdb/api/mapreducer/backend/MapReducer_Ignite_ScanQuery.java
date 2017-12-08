@@ -40,6 +40,14 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 
+/**
+ * {@inheritDoc}
+ *
+ *
+ * The "ScanQuery" implementation is the an implementation of the oshdb mapreducer on Ignite, which always scans
+ * over the whole data set when running queries. It might offer better performance for global (or almost global)
+ * queries. In other situations it should not be used.
+ */
 public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
   public MapReducer_Ignite_ScanQuery(OSHDB_Implementation oshdb, Class<?> forClass) {
     super(oshdb, forClass);

@@ -27,6 +27,17 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
+/**
+ * {@inheritDoc}
+ *
+ *
+ * The "AffinityCall" implementation is a very simple, but less efficient implementation of the oshdb mapreducer: It's
+ * just sending separate affinityCalls() to the cluster for each data cell and reduces all results locally on the client.
+ *
+ * It's good for testing purposes and maybe a viable option for special circumstances where one knows beforehand that
+ * only few cells have to be iterated over (e.g. queries in a small area of interest), where the (~constant) overhead
+ * associated with the other methods might be larger than the (~linear) inefficiency with this implementation.
+ */
 public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
   public MapReducer_Ignite_AffinityCall(OSHDB_Implementation oshdb, Class<?> forClass) {
     super(oshdb, forClass);

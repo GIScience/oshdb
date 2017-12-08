@@ -41,6 +41,14 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/**
+ * {@inheritDoc}
+ *
+ *
+ * The "LocalPeek" implementation is the a very versatile implementation of the oshdb mapreducer on Ignite: It offers
+ * high performance, scalability and cancelable queries. It should be used in most situations when running oshdb-
+ * analyses on ignite.
+ */
 public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_LocalPeek.class);
 
