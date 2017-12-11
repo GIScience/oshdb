@@ -38,6 +38,11 @@
       <name>Moriz Schott</name>
       <email>m.schott@stud.uni-heidelberg.de</email>
     </developer>
+    <developer>
+      <id>mauer</id>
+      <name>Michael Auer</name>
+      <email>auer@uni-heidelberg.de</email>
+    </developer>
   </developers>
 
   <scm>
