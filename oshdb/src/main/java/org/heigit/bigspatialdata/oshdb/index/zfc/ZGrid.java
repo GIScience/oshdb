@@ -207,7 +207,7 @@ public class ZGrid {
   
   
   
-  public static final Comparator<Long> ORDER_DFS = (a, b) -> {
+  public static final Comparator<Long> ORDER_DFS_TOP_DOWN = (a, b) -> {
     final long aZ = getZoom(a);
     final long bZ = getZoom(b);
     if (aZ == bZ)
@@ -225,6 +225,31 @@ public class ZGrid {
       x = aId;
       y = bId << DIMENSION * deltaZ;
       prio = 1;
+    }
+    final int r = Long.compare(x, y);
+    return (r == 0) ? prio : r;
+  };
+  
+  public static final Comparator<Long> ORDER_DFS_BOTTOM_UP = (a, b) -> {
+    final long aZ = getZoom(a);
+    final long bZ = getZoom(b);
+    if (aZ == bZ)
+      return Long.compare(a, b);
+    final long deltaZ = Math.abs(aZ - bZ);
+    final long aId = getIdWithoutZoom(a);
+    final long bId = getIdWithoutZoom(b);
+    final long x, y;
+    final int prio;
+    
+        
+    if (aZ < bZ) {
+      x = aId;
+      y = bId >>> DIMENSION * deltaZ;
+      prio = 1;
+    } else {
+      x = aId >>> DIMENSION * deltaZ;;
+      y = bId;
+      prio = -1;
     }
     final int r = Long.compare(x, y);
     return (r == 0) ? prio : r;
