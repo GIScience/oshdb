@@ -55,22 +55,6 @@ public class BoundingBox implements Serializable {
     );
   }
 
-  /**
-   * calculates the union of two bounding boxes
-   *
-   * @param first the first bounding box
-   * @param second the second bounding box
-   * @return the union of the two bboxes
-   */
-  public static BoundingBox union(BoundingBox first, BoundingBox second) {
-    return new BoundingBox(
-            Math.min(first.minLon, second.minLon),
-            Math.max(first.maxLon, second.maxLon),
-            Math.min(first.minLat, second.minLat),
-            Math.max(first.maxLat, second.maxLat)
-    );
-  }
-
   @Override
   public int hashCode() {
     int hash = 7;
