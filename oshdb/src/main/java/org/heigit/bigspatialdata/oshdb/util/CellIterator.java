@@ -47,7 +47,7 @@ public class CellIterator {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
-    Predicate<BoundingBox> bboxInPolygon = new FastBboxInPolygon(boundingPolygon); // todo: could be pulled outside this method (eliminating the per-cell constant overhead)
+    Predicate<BoundingBox> bboxInPolygon = boundingPolygon == null ? null : new FastBboxInPolygon(boundingPolygon); // todo: could be pulled outside this method (eliminating the per-cell constant overhead)
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
@@ -253,7 +253,7 @@ public class CellIterator {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
-    Predicate<BoundingBox> bboxInPolygon = new FastBboxInPolygon(boundingPolygon); // todo: could be pulled outside this method (eliminating the per-cell constant overhead)
+    Predicate<BoundingBox> bboxInPolygon = boundingPolygon == null ? null : new FastBboxInPolygon(boundingPolygon); // todo: could be pulled outside this method (eliminating the per-cell constant overhead)
 
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
