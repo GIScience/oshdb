@@ -11,9 +11,6 @@ import java.util.List;
 /**
  * fast *-in-polygon test inspired by
  * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
- *
- * todo: does this work for random winding order polygons? -> think it should always work
- * todo: can this be improved to work on long/int coordinates directly???
  */
 abstract class FastInPolygon {
     private final int AvgSegmentsPerBand = 10; // something in the order of 10-20 works fine according to the link above
@@ -53,11 +50,9 @@ abstract class FastInPolygon {
                 }
             }
         }
-        this.numBands = Math.max(1, segments.size() / AvgSegmentsPerBand); // todo: do something more clever here? e.g. this is not so optimal for a multipolygon with far away exclaves
-        //this.horizBands = new ArrayList<>(Collections.nCopies(numBands, new LinkedList<>()));
+        this.numBands = Math.max(1, segments.size() / AvgSegmentsPerBand); // possible optimization: start with this value of numBands, and if the result has over-full bands, increase numBands (e.g. x2) and do it again
         this.horizBands = new ArrayList<>(numBands);
         for (int i=0; i<numBands; i++) this.horizBands.add(new LinkedList<>());
-        //this.vertBands = new ArrayList<>(Collections.nCopies(numBands, new LinkedList<>()));
         this.vertBands = new ArrayList<>(numBands);
         for (int i=0; i<numBands; i++) this.vertBands.add(new LinkedList<>());
 
@@ -106,7 +101,6 @@ abstract class FastInPolygon {
             }
         }
         return cn; //  even -> outside, edd -> inside
-        //return cn % 2 == 1; // 0 if even (out), and 1 if  odd (in)
     }
     private int crossingNumberY(Point point) {
         List<Segment> band;
@@ -123,6 +117,5 @@ abstract class FastInPolygon {
             }
         }
         return cn; //  even -> outside, edd -> inside
-        //return cn % 2 == 1; // 0 if even (out), and 1 if  odd (in)
     }
 }
