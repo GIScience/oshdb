@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.index;
 
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
@@ -191,7 +192,7 @@ public class XYGrid {
    */
   public long getEstimatedIdCount(final BoundingBox data) {
     //number of Cells in x * number of cells in y
-    return (long) ((data.maxLon - data.minLon) / cellWidth * (data.maxLat - data.minLat) / cellWidth);
+    return  ((long) Math.ceil(Math.max((data.maxLon - data.minLon) / cellWidth,(data.maxLat - data.minLat) / cellWidth))) * 2;
   }
 
   /**
