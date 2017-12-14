@@ -86,14 +86,14 @@ public class XYGridTree {
    * @return
    */
   public CellId getInsertId(BoundingBox bbox) {
-    for (int i = maxLevel - 1; i > 0; i--) {
+    for (int i = maxLevel; i > 0; i--) {
       try {
-        if (gridMap.get(i).getEstimatedIdCount(bbox) > 4) {
+        if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
           continue;
         }
         return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
       } catch (CellId.cellIdExeption ex) {
-        LOG.error(ex.getMessage());
+        LOG.error("", ex);
         return null;
       }
     }
