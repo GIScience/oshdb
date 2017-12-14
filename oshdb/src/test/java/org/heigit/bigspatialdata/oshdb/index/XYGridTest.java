@@ -252,17 +252,17 @@ public class XYGridTest {
     BoundingBox data = new BoundingBox(0, 89, 0, 89);
     long expResult = 1L;
     long result = two.getEstimatedIdCount(data);
-    org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
+    assertEquals(expResult, result);
 
     data = new BoundingBox(-89.0, 89.0, -90.0, 90.0);
-    expResult = 4L;
+    expResult = 2L;
     result = two.getEstimatedIdCount(data);
-    org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
+    assertEquals(expResult, result);
 
     data = new BoundingBox(0.0, 0.000005364, 0.0, 0.000005364);
-    expResult = 256L;
+    expResult = 16L;
     result = thirty.getEstimatedIdCount(data);
-    org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
+    assertEquals(expResult, result);
   }
 
   @Test
