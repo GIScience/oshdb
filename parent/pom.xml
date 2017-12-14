@@ -68,6 +68,11 @@
       <name>Katharina Przbyill</name>
       <email>przybill@stud.uni-heidelberg.de</email>
     </developer>
+    <developer>
+      <id>fkowatsch</id>
+      <name>Fabian Kowatsch</name>
+      <email>fabian.kowatsch@uni-heidelberg.de</email>
+    </developer>
   </developers>
 
   <scm>
