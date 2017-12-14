@@ -19,7 +19,6 @@ public class XYGridTree {
 
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTree.class);
 
-  private static final double EPSILON = 1e-11;
   private final int maxLevel;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
 
@@ -47,8 +46,7 @@ public class XYGridTree {
    * @param latitude
    * @return An iterator over the cellIds in all zoomlevel
    */
-  public Iterable<CellId> getIds(double longitude, double latitude) {
-
+  public Iterable<CellId> getIds(long longitude, long latitude) {
     return new Iterable<CellId>() {
 
       @Override
@@ -76,6 +74,17 @@ public class XYGridTree {
         return result;
       }
     };
+  }
+
+  /**
+   * Get CellIds in all zoomlevel for a given point.
+   *
+   * @param longitude
+   * @param latitude
+   * @return An iterator over the cellIds in all zoomlevel
+   */
+  public Iterable<CellId> getIds(double longitude, double latitude) {
+    return this.getIds((long) longitude * OSHDB.GEOM_PRECISION_TO_LONG, (long) latitude * OSHDB.GEOM_PRECISION_TO_LONG);
 
   }
 
@@ -183,10 +192,10 @@ public class XYGridTree {
    */
   public Iterable<CellId> getMultiZoomNeighbours(CellId center) {
     BoundingBox bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
-    double minlong = bbox.minLon - EPSILON;
-    double minlat = bbox.minLat - EPSILON;
-    double maxlong = bbox.maxLon + EPSILON;
-    double maxlat = bbox.maxLat + EPSILON;
+    long minlong = bbox.minLon - 1L;
+    long minlat = bbox.minLat - 1L;
+    long maxlong = bbox.maxLon + 1L;
+    long maxlat = bbox.maxLat + 1L;
     BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
     return this.bbox2CellIds(newbbox, false);
   }

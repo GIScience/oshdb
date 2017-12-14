@@ -13,11 +13,10 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
-  public static final double GEOM_PRECISION       =  .0000001; // osm only support 7 decimals
-  public static final long GEOM_PRECISION_TO_LONG = 1_0000000L;
 
   private static final long serialVersionUID = 1L;
 
@@ -37,11 +36,11 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   }
 
   public double getLongitude() {
-    return longitude * GEOM_PRECISION;
+    return longitude * OSHDB.GEOM_PRECISION;
   }
 
   public double getLatitude() {
-    return latitude * GEOM_PRECISION;
+    return latitude * OSHDB.GEOM_PRECISION;
   }
 
   public long getLon() {
