@@ -12,7 +12,7 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducable;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -82,7 +82,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   protected transient OSHDB_JDBC _oshdbForTags;
 
   // internal state
-  Class<? extends OSHDB_MapReducable> _forClass = null;
+  Class<? extends OSHDB_MapReducible> _forClass = null;
 
   private enum Grouping {
     NONE, BY_ID
@@ -104,7 +104,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   private final Set<SerializableFunction> _flatMappers = new HashSet<>();
 
   // basic constructor
-  protected MapReducer(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducable> forClass) {
+  protected MapReducer(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducible> forClass) {
     this._oshdb = oshdb;
     this._forClass = forClass;
   }

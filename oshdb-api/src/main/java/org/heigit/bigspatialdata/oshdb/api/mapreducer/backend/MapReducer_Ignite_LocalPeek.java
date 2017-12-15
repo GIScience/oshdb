@@ -18,7 +18,7 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducable;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_LocalPeek.class);
 
-  public MapReducer_Ignite_LocalPeek(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducable> forClass) {
+  public MapReducer_Ignite_LocalPeek(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducible> forClass) {
     super(oshdb, forClass);
   }
 
