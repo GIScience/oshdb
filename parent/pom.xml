@@ -74,18 +74,6 @@
       <email>fabian.kowatsch@uni-heidelberg.de</email>
     </developer>
   </developers>
-
-  <scm>
-    <!-- https://maven.apache.org/pom.html#SCM -->
-    <connection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</connection>
-    <developerConnection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</developerConnection>
-    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</url>
-  </scm>
-  
-  <issueManagement>
-    <system>GitLab</system>
-    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core/issues</url>
-  </issueManagement>
   
   <ciManagement>
     <system>Jenkins</system>
