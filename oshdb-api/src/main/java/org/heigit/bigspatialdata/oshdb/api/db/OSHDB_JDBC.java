@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_multithread;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_singlethread;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducable;
 
 public class OSHDB_JDBC extends OSHDB_Database implements AutoCloseable {
 

@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.db;
 
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducable;
 
 public abstract class OSHDB_Database extends OSHDB {
     protected String prefix = "";

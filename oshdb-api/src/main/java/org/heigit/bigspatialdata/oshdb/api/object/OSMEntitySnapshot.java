@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.objects;
+package org.heigit.bigspatialdata.oshdb.api.object;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
