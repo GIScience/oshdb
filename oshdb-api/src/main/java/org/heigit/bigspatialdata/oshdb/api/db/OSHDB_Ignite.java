@@ -34,10 +34,14 @@ public class OSHDB_Ignite extends OSHDB_Implementation implements AutoCloseable,
     this._ignite.active(true);
   }
 
-  public OSHDB_Ignite(File igniteXml) {
+  public OSHDB_Ignite(String igniteConfigFilePath) {
+    this(new File(igniteConfigFilePath));
+  }
+
+  public OSHDB_Ignite(File igniteConfig) {
     Ignition.setClientMode(true);
 
-    this._ignite = Ignition.start(igniteXml.toString());
+    this._ignite = Ignition.start(igniteConfig.toString());
     this._ignite.active(true);
   }
 
