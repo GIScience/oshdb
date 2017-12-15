@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;

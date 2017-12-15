@@ -11,7 +11,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;

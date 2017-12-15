@@ -14,7 +14,7 @@ import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;

@@ -5,7 +5,7 @@ import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;

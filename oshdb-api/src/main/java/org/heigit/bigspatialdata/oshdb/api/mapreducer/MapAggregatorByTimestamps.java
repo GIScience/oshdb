@@ -1,10 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.jetbrains.annotations.Contract;
