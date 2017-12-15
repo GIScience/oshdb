@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
@@ -26,11 +26,9 @@ import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -39,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
-  public MapReducer_JDBC_multithread(OSHDB_Implementation oshdb, Class<? extends OSHDB_MapReducable> forClass) {
+  public MapReducer_JDBC_multithread(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducable> forClass) {
     super(oshdb, forClass);
   }
 

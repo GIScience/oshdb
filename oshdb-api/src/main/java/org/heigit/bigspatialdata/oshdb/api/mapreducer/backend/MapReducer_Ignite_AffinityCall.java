@@ -6,7 +6,7 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
@@ -40,7 +40,7 @@ import java.util.function.Function;
  * associated with the other methods might be larger than the (~linear) inefficiency with this implementation.
  */
 public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
-  public MapReducer_Ignite_AffinityCall(OSHDB_Implementation oshdb, Class<? extends OSHDB_MapReducable> forClass) {
+  public MapReducer_Ignite_AffinityCall(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducable> forClass) {
     super(oshdb, forClass);
   }
 

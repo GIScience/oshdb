@@ -12,8 +12,7 @@ import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -29,11 +28,8 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.cache.Cache;
 import java.io.Serializable;
@@ -50,7 +46,7 @@ import java.util.function.*;
  * queries. In other situations it should not be used.
  */
 public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
-  public MapReducer_Ignite_ScanQuery(OSHDB_Implementation oshdb, Class<? extends OSHDB_MapReducable> forClass) {
+  public MapReducer_Ignite_ScanQuery(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducable> forClass) {
     super(oshdb, forClass);
   }
 

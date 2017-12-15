@@ -8,7 +8,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_mu
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_JDBC_singlethread;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 
-public class OSHDB_JDBC extends OSHDB_Implementation implements AutoCloseable {
+public class OSHDB_JDBC extends OSHDB_Database implements AutoCloseable {
 
   private final Connection _conn;
   private boolean useMultithreading = true;

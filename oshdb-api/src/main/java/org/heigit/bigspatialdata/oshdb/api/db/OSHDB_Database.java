@@ -4,7 +4,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 
-public abstract class OSHDB_Implementation extends OSHDB {
+public abstract class OSHDB_Database extends OSHDB {
     protected String prefix = "";
 
     /**
@@ -15,7 +15,7 @@ public abstract class OSHDB_Implementation extends OSHDB {
      */
     public abstract <X extends OSHDB_MapReducable> MapReducer<X> createMapReducer(Class<X> forClass);
 
-    public OSHDB_Implementation prefix(String prefix) {
+    public OSHDB_Database prefix(String prefix) {
         this.prefix = prefix;
         return this;
     }

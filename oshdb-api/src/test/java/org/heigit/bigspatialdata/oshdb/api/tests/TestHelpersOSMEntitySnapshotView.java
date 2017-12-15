@@ -5,8 +5,7 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
 import org.junit.Test;
 
@@ -27,7 +26,7 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
  *
  */
 public class TestHelpersOSMEntitySnapshotView {
-  private final OSHDB_Implementation oshdb;
+  private final OSHDB_Database oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");

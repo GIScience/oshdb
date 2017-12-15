@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.oshdb.api.db;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.OptionalLong;
 
 import org.apache.ignite.Ignite;
@@ -15,7 +14,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_AffinityCall;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 
-public class OSHDB_Ignite extends OSHDB_Implementation implements AutoCloseable, Serializable {
+public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Serializable {
   public enum ComputeMode {
     LocalPeek,
     ScanQuery,

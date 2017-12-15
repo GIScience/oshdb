@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
@@ -78,7 +78,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
 
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
-  protected OSHDB_Implementation _oshdb;
+  protected OSHDB_Database _oshdb;
   protected transient OSHDB_JDBC _oshdbForTags;
 
   // internal state
@@ -104,7 +104,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   private final Set<SerializableFunction> _flatMappers = new HashSet<>();
 
   // basic constructor
-  protected MapReducer(OSHDB_Implementation oshdb, Class<? extends OSHDB_MapReducable> forClass) {
+  protected MapReducer(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducable> forClass) {
     this._oshdb = oshdb;
     this._forClass = forClass;
   }
