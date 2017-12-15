@@ -20,6 +20,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOpe
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
-  public MapReducer_JDBC_multithread(OSHDB_Implementation oshdb, Class<?> forClass) {
+  public MapReducer_JDBC_multithread(OSHDB_Implementation oshdb, Class<? extends OSHDB_MapReducable> forClass) {
     super(oshdb, forClass);
   }
 

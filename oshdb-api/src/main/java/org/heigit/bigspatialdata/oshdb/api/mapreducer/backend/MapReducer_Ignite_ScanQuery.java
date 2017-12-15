@@ -17,6 +17,7 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
@@ -49,7 +50,7 @@ import java.util.function.*;
  * queries. In other situations it should not be used.
  */
 public class MapReducer_Ignite_ScanQuery<X> extends MapReducer<X> {
-  public MapReducer_Ignite_ScanQuery(OSHDB_Implementation oshdb, Class<?> forClass) {
+  public MapReducer_Ignite_ScanQuery(OSHDB_Implementation oshdb, Class<? extends OSHDB_MapReducable> forClass) {
     super(oshdb, forClass);
   }
 

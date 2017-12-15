@@ -18,6 +18,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOpe
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.objects.OSHDB_MapReducable;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
@@ -32,7 +33,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
 
 public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
-  public MapReducer_JDBC_singlethread(OSHDB_Implementation oshdb, Class<?> forClass) {
+  public MapReducer_JDBC_singlethread(OSHDB_Implementation oshdb, Class<? extends OSHDB_MapReducable> forClass) {
     super(oshdb, forClass);
   }
 

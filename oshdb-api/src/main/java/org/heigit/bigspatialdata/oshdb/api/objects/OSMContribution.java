@@ -21,7 +21,7 @@ import org.heigit.bigspatialdata.oshdb.util.ContributionType;
  *   <li>the type(s) of change which has happened here (e.g. creation/deletion of an entity, modification of a geometry, altering of the tag list, etc.)</li>
  * </ul>
  */
-public class OSMContribution {
+public class OSMContribution implements OSHDB_MapReducable {
   private final OSHDBTimestamp _tstamp;
   private final OSHDBTimestamp _validTo;
   private final Geometry _geometryBefore;
