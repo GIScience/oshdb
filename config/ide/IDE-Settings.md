@@ -4,6 +4,8 @@ This link-list explains how to set up your IDE to use the designated code-style.
 
 Unfortunately the [EditorConfig](http://editorconfig.org)-Project is not yet sophisticated enough. So here is an explanation of each major IDE. The files are taken from [this repository](https://github.com/google/styleguide) and should be updated once in a while! Note that this only guarantees the right formatting for .java-code. See the codestyle-specifications for other languages.
 
+This [plugin](https://maven.apache.org/plugins/maven-checkstyle-plugin/) may help you analyse your formatting.
+
 ## IntelliJ
 
 Please follow this [guide](https://www.jetbrains.com/help/idea/configuring-code-style.html#d80998e33) using this [intellij-java-google-style.xml](/config/ide/intellij-java-google-style.xml).
