@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
-public class MapAggregator<U extends Comparable, X> implements MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
+public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
 
   MapReducer<Pair<U, X>> _mapReducer;
 
@@ -424,7 +424,7 @@ public class MapAggregator<U extends Comparable, X> implements MapReducerSetting
    *
    * @param mapper function that will be applied to each data entry (osm entity snapshot or contribution)
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
-   * @return the MapAggregator object operating on the transformed type (&lt;R&gt;)
+   * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
   public <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper) {
@@ -441,7 +441,7 @@ public class MapAggregator<U extends Comparable, X> implements MapReducerSetting
    *
    * @param flatMapper function that will be applied to each data entry (osm entity snapshot or contribution) and returns a list of results
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
-   * @return the MapAggregator object operating on the transformed type (&lt;R&gt;)
+   * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
   public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, List<R>> flatMapper) {

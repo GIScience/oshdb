@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
  * the next added mapper function will be called with a parameter of this type
  * as input
  */
-public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, MapReducerAggregations<X>, MapAggregatable<MapAggregator<? extends Comparable, X>, X>, Serializable {
+public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>, Mappable<X>, MapReducerAggregations<X>, MapAggregatable<MapAggregator<? extends Comparable, X>, X>, Serializable {
 
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
@@ -136,6 +136,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // -------------------------------------------------------------------------------------------------------------------
   // "Setting" methods and associated internal helpers
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Sets the keytables database to use in the calculations to resolve strings
    * (osm tags, roles) into internally used identifiers. If this function is
@@ -177,6 +178,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // -------------------------------------------------------------------------------------------------------------------
   // Filtering methods
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Set the area of interest to the given bounding box. Deprecated, use
    * `areaOfInterest()` instead (w/ same semantics).
@@ -589,6 +591,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // -------------------------------------------------------------------------------------------------------------------
   // "map", "flatMap" transformation methods
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Set an arbitrary `map` transformation function.
    *
@@ -596,7 +599,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * snapshot or contribution)
    * @param <R> an arbitrary data type which is the return type of the
    * transformation `map` function
-   * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
+   * @return a modified copy of this MapReducer object operating on the transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
@@ -615,7 +618,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    * entity snapshot or contribution) and returns a list of results
    * @param <R> an arbitrary data type which is the return type of the
    * transformation `map` function
-   * @return the MapReducer object operating on the transformed type (&lt;R&gt;)
+   * @return a modified copy of this MapReducer object operating on the transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
@@ -646,6 +649,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // Grouping and Aggregation
   // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Groups the input data (osm entity snapshot or contributions) by their
    * respective entity's ids before feeding them into further transformation
@@ -778,6 +782,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // Can be used by experienced users of the api to implement complex queries.
   // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Generic map-reduce routine
    *
@@ -913,6 +918,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // Available are: sum, count, average, weightedAverage and uniq.
   // Each one can be used to get results aggregated by timestamp, aggregated by a custom index and not aggregated totals.
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Sums up the results.
    *
@@ -1087,6 +1093,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // -------------------------------------------------------------------------------------------------------------------
   // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Iterates over each entity snapshot or contribution, and performs a single
    * `action` on each one of them.
@@ -1135,6 +1142,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // Generic map-reduce functions (internal).
   // These need to be implemented by the actual db/processing backend!
   // -------------------------------------------------------------------------------------------------------------------
+
   /**
    * Generic map-reduce used by the `OSMContributionView`
    *
@@ -1331,6 +1339,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   // -------------------------------------------------------------------------------------------------------------------
   // Some helper methods for internal use in the mapReduce functions
   // -------------------------------------------------------------------------------------------------------------------
+
   protected TagInterpreter _getTagInterpreter() throws ParseException, SQLException, IOException {
     if (this._tagInterpreter == null) {
       this._tagInterpreter = DefaultTagInterpreter.fromJDBC(this._oshdbForTags.getConnection());
@@ -1435,6 +1444,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
 // -------------------------------------------------------------------------------------------------------------------
 // Auxiliary classes and interfaces
 // -------------------------------------------------------------------------------------------------------------------
+
 // mutable version of WeightedValue type (for internal use to do faster aggregation)
 class PayloadWithWeight<X> implements Serializable {
 
