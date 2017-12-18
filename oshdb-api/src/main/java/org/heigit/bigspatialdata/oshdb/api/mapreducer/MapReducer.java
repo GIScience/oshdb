@@ -712,7 +712,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   }
 
   /**
-   * Sets up aggregation by timestamp.
+   * Sets up automatic aggregation by timestamp.
    *
    * In the OSMEntitySnapshotView, the snapshots' timestamp will be used
    * directly to aggregate results into. In the OSMContributionView, the
@@ -730,7 +730,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   @Contract(pure = true)
   public MapAggregatorByTimestamps<X> aggregateByTimestamp() throws UnsupportedOperationException {
     if (this._grouping != Grouping.NONE) {
-      throw new UnsupportedOperationException("aggregateByTimestamp cannot be used together with the groupById() functionality");
+      throw new UnsupportedOperationException("aggregateByTimestamp() cannot be used together with the groupById() functionality");
     }
 
     // by timestamp indexing function -> for some data views we need to match the input data to the list
@@ -771,6 +771,30 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
     } else {
       return new MapAggregatorByTimestamps<X>(this, indexer);
     }
+  }
+
+  /**
+   * Sets up aggregation by a custom time index.
+   *
+   * The timestamps returned by the supplied indexing function are matched to the corresponding time intervals
+   *
+   * @param indexer a callback function that return a timestamp object for each datum
+   * @return a MapAggregator object with the equivalent state (settings,
+   * filters, map function, etc.) of the current MapReducer object
+   *
+   * todo: write tests for this
+   * todo: check how this handles cases where indexer returns timestamps right at the interval boundaries (e.g. indexer = snapshot.getTimestamp()) -> write a test for this
+   */
+  public MapAggregatorByTimestamps<X> aggregateByTimestamp(SerializableFunction<X, OSHDBTimestamp> indexer) throws UnsupportedOperationException {
+    final List<OSHDBTimestamp> timestamps = this._tstamps.getOSHDBTimestamps();
+    return new MapAggregatorByTimestamps<X>(this, data -> {
+      // match timestamps to the given timestamp list
+      int timeBinIndex = Collections.binarySearch(timestamps, indexer.apply(data));
+      if (timeBinIndex < 0) {
+        timeBinIndex = -timeBinIndex - 2;
+      }
+      return timestamps.get(timeBinIndex);
+    });
   }
 
   // -------------------------------------------------------------------------------------------------------------------
