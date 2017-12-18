@@ -43,7 +43,7 @@ abstract class FastInPolygon {
       }
       for (int j = 0; j < p.getNumInteriorRing(); j++) {
         LineString r = p.getInteriorRingN(j);
-        for (int k = 0; k < r.getNumPoints(); k++) {
+        for (int k = 1; k < r.getNumPoints(); k++) {
           Coordinate p1 = r.getCoordinateN(k - 1);
           Coordinate p2 = r.getCoordinateN(k);
           segments.add(new Segment(p1, p2));
@@ -60,21 +60,22 @@ abstract class FastInPolygon {
     this.envWidth = env.getMaxX() - env.getMinX();
     this.envHeight = env.getMaxY() - env.getMinY();
     segments.forEach(segment -> {
-      int startHorizBand = Math.max(0, (int) Math.floor(((segment.getStartX() - env.getMinX()) / envWidth) * numBands));
-      int endHorizBand = Math.min(numBands - 1, (int) Math.floor(((segment.getEndX() - env.getMinX()) / envWidth) * numBands));
-      for (int i = startHorizBand; i <= endHorizBand; i++) {
+      int startHorizBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getStartX() - env.getMinX()) / envWidth) * numBands)));
+      int endHorizBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getEndX() - env.getMinX()) / envWidth) * numBands)));
+      for (int i = Math.min(startHorizBand, endHorizBand); i <= Math.max(startHorizBand, endHorizBand); i++) {
         horizBands.get(i).add(segment);
       }
-      int startVertBand = Math.max(0, (int) Math.floor(((segment.getStartY() - env.getMinY()) / envHeight) * numBands));
-      int endVertBand = Math.min(numBands - 1, (int) Math.floor(((segment.getEndY() - env.getMinY()) / envHeight) * numBands));
-      for (int i = startVertBand; i <= endVertBand; i++) {
-        horizBands.get(i).add(segment);
+      int startVertBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getStartY() - env.getMinY()) / envHeight) * numBands)));
+      int endVertBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getEndY() - env.getMinY()) / envHeight) * numBands)));
+      for (int i = Math.min(startVertBand, endVertBand); i <= Math.max(startVertBand, endVertBand); i++) {
+        vertBands.get(i).add(segment);
       }
     });
   }
 
   /**
-   * http://geomalgorithms.com/a03-_inclusion.html
+   * ported from http://geomalgorithms.com/a03-_inclusion.html
+   * which is derived from https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
    *
    * @param point
    * @param dir   boolean: true -> horizontal test, false -> vertical test
@@ -92,16 +93,21 @@ abstract class FastInPolygon {
 
     int cn = 0; // crossing number counter
     for (Segment segment : band) {
-      // compute  the actual edge-ray intersect x-coordinate
-      /*float vt = (float)(P.y  - V[i].y) / (V[i+1].y - V[i].y);
-      if (P.x <  V[i].x + vt * (V[i+1].x - V[i].x)) // P.x < intersect
-          ++cn; // a valid crossing of y=P.y right of P.x*/
-      double vt = (point.getY() - segment.getStartY()) / (segment.getEndY() - segment.getStartY());
-      if (point.getX() < segment.getStartX() + vt * (segment.getEndX() - segment.getStartX())) { // P.x < intersect
-        cn++; // a valid crossing of y=P.y right of P.x
+      // if (((V[i].y <= P.y) && (V[i+1].y > P.y))     // an upward crossing
+      // || ((V[i].y > P.y) && (V[i+1].y <=  P.y))) { // a downward crossing
+      if ((segment.getStartY() <= point.getY() && segment.getEndY() > point.getY()) || // an upward crossing
+          (segment.getStartY() > point.getY() && segment.getEndY() <= point.getY())) {  // a downward crossing
+        // compute  the actual edge-ray intersect x-coordinate
+        /*float vt = (float)(P.y  - V[i].y) / (V[i+1].y - V[i].y);
+        if (P.x <  V[i].x + vt * (V[i+1].x - V[i].x)) // P.x < intersect
+            ++cn; // a valid crossing of y=P.y right of P.x*/
+        double vt = (point.getY() - segment.getStartY()) / (segment.getEndY() - segment.getStartY());
+        if (point.getX() < segment.getStartX() + vt * (segment.getEndX() - segment.getStartX())) { // P.x < intersect
+          cn++; // a valid crossing of y=P.y right of P.x
+        }
       }
     }
-    return cn; //  even -> outside, edd -> inside
+    return cn; // even -> outside, edd -> inside
   }
 
   private int crossingNumberY(Point point) {
@@ -112,12 +118,15 @@ abstract class FastInPolygon {
 
     int cn = 0; // crossing number counter
     for (Segment segment : band) {
-      // compute  the actual edge-ray intersect x-coordinate
-      double vt = (point.getX() - segment.getStartX()) / (segment.getEndX() - segment.getStartX());
-      if (point.getY() < segment.getStartY() + vt * (segment.getEndY() - segment.getStartY())) { // P.y < intersect
-        cn++; // a valid crossing of x=P.x below of P.y
+      if ((segment.getStartX() <= point.getX() && segment.getEndX() > point.getX()) || // an "upward" crossing
+          (segment.getStartX() > point.getX() && segment.getEndX() <= point.getX())) {  // a "downward" crossing
+        // compute  the actual edge-ray intersect x-coordinate
+        double vt = (point.getX() - segment.getStartX()) / (segment.getEndX() - segment.getStartX());
+        if (point.getY() < segment.getStartY() + vt * (segment.getEndY() - segment.getStartY())) { // P.y < intersect
+          cn++; // a valid crossing of x=P.x below of P.y
+        }
       }
     }
-    return cn; //  even -> outside, edd -> inside
+    return cn; // even -> outside, edd -> inside
   }
 }
