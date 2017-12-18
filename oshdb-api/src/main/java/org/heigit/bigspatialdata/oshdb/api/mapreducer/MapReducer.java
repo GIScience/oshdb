@@ -730,7 +730,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
   @Contract(pure = true)
   public MapAggregatorByTimestamps<X> aggregateByTimestamp() throws UnsupportedOperationException {
     if (this._grouping != Grouping.NONE) {
-      throw new UnsupportedOperationException("aggregateByTimestamp() cannot be used together with the groupById() functionality");
+      throw new UnsupportedOperationException("automatic aggregateByTimestamp() cannot be used together with the groupById() functionality -> try using aggregateByTimestamp(customTimestampIndex) instead");
     }
 
     // by timestamp indexing function -> for some data views we need to match the input data to the list
@@ -747,12 +747,12 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       indexer = data -> ((OSMEntitySnapshot) data).getTimestamp();
     } else {
-      throw new UnsupportedOperationException("aggregateByTimestamp only implemented for OSMContribution and OSMEntitySnapshot");
+      throw new UnsupportedOperationException("automatic aggregateByTimestamp() only implemented for OSMContribution and OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead");
     }
 
     if (this._mappers.size() > 0) {
       // for convenience we allow one to set this function even after some map functions were set.
-      // if some map / flatMap functions were alredy set:
+      // if some map / flatMap functions were already set:
       // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions accordingly
       MapReducer<X> ret = this.copy();
       List<SerializableFunction> mappers = new LinkedList<>(ret._mappers);
