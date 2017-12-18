@@ -778,12 +778,11 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
    *
    * The timestamps returned by the supplied indexing function are matched to the corresponding time intervals
    *
-   * @param indexer a callback function that return a timestamp object for each datum
+   * @param indexer a callback function that return a timestamp object for each given data. Note that
+   *                if this function returns timestamps outside of the supplied timestamps() interval
+   *                results may be undefined
    * @return a MapAggregator object with the equivalent state (settings,
    * filters, map function, etc.) of the current MapReducer object
-   *
-   * todo: write tests for this
-   * todo: check how this handles cases where indexer returns timestamps right at the interval boundaries (e.g. indexer = snapshot.getTimestamp()) -> write a test for this
    */
   public MapAggregatorByTimestamps<X> aggregateByTimestamp(SerializableFunction<X, OSHDBTimestamp> indexer) throws UnsupportedOperationException {
     final List<OSHDBTimestamp> timestamps = this._tstamps.getOSHDBTimestamps();
