@@ -8,12 +8,22 @@ import static org.junit.Assert.assertEquals;
 
 
 public class FastBboxInPolygonTest {
+  /**
+   * @return a multipolygon of four small squares arranged in a square
+   */
+  public static MultiPolygon createSquareSquareMultiPolygon() {
+    GeometryFactory gf = new GeometryFactory();
+    Polygon poly1 = new BoundingBox(-1.5,-0.5,-1.5,-0.5).getGeometry();
+    Polygon poly2 = new BoundingBox(0.5,1.5,-1.5,-0.5).getGeometry();
+    Polygon poly3 = new BoundingBox(-1.5,-0.5,0.5,1.5).getGeometry();
+    Polygon poly4 = new BoundingBox(0.5,1.5,0.5,1.5).getGeometry();
+    return new MultiPolygon(new Polygon[] { poly1, poly2, poly3, poly4 }, gf);
+  }
+
   @Test
   public void testBboxInPolygon() {
     Polygon p = FastPointInPolygonTest.createPolygon();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
-
-    GeometryFactory gf = new GeometryFactory();
 
     // inside
     assertEquals(bip.test(new BoundingBox(-0.6,-0.4,-0.1,0.1)), true);
@@ -38,8 +48,6 @@ public class FastBboxInPolygonTest {
   public void testBboxInPolygonWithHole() {
     Polygon p = FastPointInPolygonTest.createPolygonWithHole();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
-
-    GeometryFactory gf = new GeometryFactory();
 
     // inside
     assertEquals(bip.test(new BoundingBox(2.1,2.2,-0.1,0.1)), true);
@@ -73,8 +81,6 @@ public class FastBboxInPolygonTest {
   public void testBboxInMultiPolygon() {
     MultiPolygon p = FastPointInPolygonTest.createMultiPolygon();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
-
-    GeometryFactory gf = new GeometryFactory();
 
     // left polygon
     // inside
@@ -122,5 +128,14 @@ public class FastBboxInPolygonTest {
     assertEquals(bip.test(new BoundingBox(3.1,3.2,1.1,1.2)), false);
     // covering hole, but all vertices inside polygon
     assertEquals(bip.test(new BoundingBox(2.2,3.8,-0.8,0.8)), false);
+  }
+
+  @Test
+  public void testBboxInSquareSquareMultiPolygon() {
+    MultiPolygon p = createSquareSquareMultiPolygon();
+    FastBboxInPolygon bip = new FastBboxInPolygon(p);
+
+    // not inside
+    assertEquals(bip.test(new BoundingBox(-1,1,-1,1)), false);
   }
 }
