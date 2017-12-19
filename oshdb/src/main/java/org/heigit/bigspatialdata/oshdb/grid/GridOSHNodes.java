@@ -7,7 +7,7 @@ import java.util.List;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 
 @SuppressWarnings("rawtypes")
-public class GridOSHNodes extends GridOSHEntities {
+public class GridOSHNodes extends GridOSHEntity {
 
   private static final long serialVersionUID = 1L;
 

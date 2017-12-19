@@ -24,7 +24,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
@@ -75,10 +75,10 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
             ResultSet oshCellsRawData = pstmt.executeQuery();
 
             // iterate over the result
-            List<GridOSHEntities> cellsData = new ArrayList<>();
+            List<GridOSHEntity> cellsData = new ArrayList<>();
             while (oshCellsRawData.next()) {
               // get one cell from the raw data stream
-              GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+              GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
               cellsData.add(oshCellRawData);
             }
             return cellsData.stream();
@@ -137,10 +137,10 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
             ResultSet oshCellsRawData = pstmt.executeQuery();
 
             // iterate over the result
-            List<GridOSHEntities> cellsData = new ArrayList<>();
+            List<GridOSHEntity> cellsData = new ArrayList<>();
             while (oshCellsRawData.next()) {
               // get one cell from the raw data stream
-              GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+              GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
               cellsData.add(oshCellRawData);
             }
             return cellsData.stream();
@@ -214,10 +214,10 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
         ResultSet oshCellsRawData = pstmt.executeQuery();
 
         // iterate over the result
-        List<GridOSHEntities> cellsData = new ArrayList<>();
+        List<GridOSHEntity> cellsData = new ArrayList<>();
         while (oshCellsRawData.next()) {
           // get one cell from the raw data stream
-          GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+          GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
           cellsData.add(oshCellRawData);
         }
         return cellsData.stream();
@@ -272,10 +272,10 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
             ResultSet oshCellsRawData = pstmt.executeQuery();
 
             // iterate over the result
-            List<GridOSHEntities> cellsData = new ArrayList<>();
+            List<GridOSHEntity> cellsData = new ArrayList<>();
             while (oshCellsRawData.next()) {
               // get one cell from the raw data stream
-              GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+              GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
               cellsData.add(oshCellRawData);
             }
             return cellsData.stream();

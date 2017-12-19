@@ -21,7 +21,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
@@ -65,7 +65,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
       // iterate over the result
       while (oshCellsRawData.next()) {
         // get one cell from the raw data stream
-        GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+        GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
@@ -117,7 +117,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
       // iterate over the result
       while (oshCellsRawData.next()) {
         // get one cell from the raw data stream
-        GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+        GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
@@ -184,7 +184,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
       // iterate over the result
       while (oshCellsRawData.next()) {
         // get one cell from the raw data stream
-        GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+        GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
@@ -232,7 +232,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
       // iterate over the result
       while (oshCellsRawData.next()) {
         // get one cell from the raw data stream
-        GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+        GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);

@@ -22,7 +22,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -271,14 +271,14 @@ class Ignite_LocalPeek_Helper {
 
     public abstract S execute(Ignite node);
 
-    List<Pair<IgniteCache<Long, GridOSHEntities>, Long>> localKeys(Ignite node) {
+    List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys(Ignite node) {
       // calculate all cache keys we have to investigate
       XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
       Collection<Long> keys = new LinkedList<>();
       grid.bbox2CellIds(bbox, true).forEach(cell -> keys.add(ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel())));
-      List<Pair<IgniteCache<Long, GridOSHEntities>, Long>> localKeys = new ArrayList<>(keys.size());
+      List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys = new ArrayList<>(keys.size());
       this.cacheNames.forEach(cacheName -> {
-        IgniteCache<Long, GridOSHEntities> cache = node.cache(cacheName);
+        IgniteCache<Long, GridOSHEntity> cache = node.cache(cacheName);
         // Map all keys to ignite nodes
         Map<ClusterNode, Collection<Long>> mappings = node.<Long>affinity(cache.getName()).mapKeysToNodes(keys);
         Collection<Long> cacheLocalKeys = mappings.get(node.cluster().localNode());

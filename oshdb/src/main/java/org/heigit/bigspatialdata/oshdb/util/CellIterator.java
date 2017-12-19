@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
@@ -42,7 +42,7 @@ public class CellIterator {
    * output multiple times. This can be used to optimize away recalculating expensive geometry operations on unchanged
    * feature geometries later on in the code.
    */
-  public static <P extends Geometry & Polygonal> Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntities cell, BoundingBox boundingBox, P boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static <P extends Geometry & Polygonal> Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, P boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -174,17 +174,17 @@ public class CellIterator {
     // return as an obj stream
     return results.stream();
   }
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntities cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateByTimestamps(cell, boundingBox, null, timestamps, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntities cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateByTimestamps(cell, boundingBox, timestamps, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntities cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     BoundingBox boundingBox = new BoundingBox(boundingPolygon.getEnvelopeInternal());
     return iterateByTimestamps(cell, boundingBox, boundingPolygon, timestamps, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntities cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateByTimestamps(cell, boundingPolygon, timestamps, tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
 
@@ -246,7 +246,7 @@ public class CellIterator {
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp intervals.
    */
-  public static <P extends Geometry & Polygonal> Stream<IterateAllEntry> iterateAll(GridOSHEntities cell, BoundingBox boundingBox, P boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static <P extends Geometry & Polygonal> Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, P boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
@@ -459,17 +459,17 @@ public class CellIterator {
     return results.stream();
   }
 
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntities cell, BoundingBox boundingBox, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateAll(cell, boundingBox, null, timeInterval, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntities cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, BoundingBox boundingBox, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateAll(cell, boundingBox, new CellIterator.TimestampInterval(), tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntities cell, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, Polygon boundingPolygon, TimestampInterval timeInterval, TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     BoundingBox boundingBox = new BoundingBox(boundingPolygon.getEnvelopeInternal());
     return iterateAll(cell, boundingBox, boundingPolygon, timeInterval, tagInterpreter, oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
-  public static Stream<IterateAllEntry> iterateAll(GridOSHEntities cell, Polygon boundingPolygon, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public static Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, Polygon boundingPolygon, TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateAll(cell, boundingPolygon, new CellIterator.TimestampInterval(), tagInterpreter, oshEntity -> true, osmEntityFilter, includeOldStyleMultipolygons);
   }
 }

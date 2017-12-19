@@ -24,7 +24,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -156,10 +156,10 @@ public class TestMultipolygonGeometry {
 							pstmt.setLong(2, zoomId.id);
 
 							try(final ResultSet rst2 = pstmt.executeQuery()){
-								List<GridOSHEntities> cells = new LinkedList<>();
+								List<GridOSHEntity> cells = new LinkedList<>();
 								while(rst2.next()){
 									final ObjectInputStream ois = new ObjectInputStream(rst2.getBinaryStream(1));
-									cells.add((GridOSHEntities) ois.readObject());
+									cells.add((GridOSHEntity) ois.readObject());
 								}
 								return cells.stream();
 							}

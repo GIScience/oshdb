@@ -13,7 +13,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -71,12 +71,12 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
-      IgniteCache<Long, GridOSHEntities> cache = ignite.cache(cacheName);
+      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return cellIdsList.stream()
           .map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
           .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
-            GridOSHEntities oshEntityCell = cache.localPeek(cellLongId);
+            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null) return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
@@ -123,12 +123,12 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
-      IgniteCache<Long, GridOSHEntities> cache = ignite.cache(cacheName);
+      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return cellIdsList.stream()
           .map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
           .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
-            GridOSHEntities oshEntityCell = cache.localPeek(cellLongId);
+            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null) return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
@@ -190,12 +190,12 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
-      IgniteCache<Long, GridOSHEntities> cache = ignite.cache(cacheName);
+      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return cellIdsList.stream()
           .map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
           .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
-            GridOSHEntities oshEntityCell = cache.localPeek(cellLongId);
+            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null) return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
@@ -239,12 +239,12 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
-      IgniteCache<Long, GridOSHEntities> cache = ignite.cache(cacheName);
+      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return cellIdsList.stream()
           .map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
           .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
-            GridOSHEntities oshEntityCell = cache.localPeek(cellLongId);
+            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null) return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
