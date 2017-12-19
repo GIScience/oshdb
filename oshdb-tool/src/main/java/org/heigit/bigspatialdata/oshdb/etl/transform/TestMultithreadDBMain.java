@@ -14,7 +14,7 @@ import java.util.OptionalDouble;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -50,7 +50,7 @@ public class TestMultithreadDBMain {
                 XYGrid g = new XYGrid(OSHDB.MAXZOOM);
                 System.out.println(g.getCellDimensions(cellId.getId()));
 
-                List<GridOSHEntity> cells = new ArrayList<>();
+                List<GridOSHEntities> cells = new ArrayList<>();
                 try (final PreparedStatement pstmt = conn
                         .prepareStatement("select data from grid_way where level = ? and id = ?")) {
                   pstmt.setInt(1, cellId.getZoomLevel());
@@ -59,7 +59,7 @@ public class TestMultithreadDBMain {
                   try (final ResultSet rst2 = pstmt.executeQuery()) {
                     while (rst2.next()) {
                       final ObjectInputStream ois = new ObjectInputStream(rst2.getBinaryStream(1));
-                      final GridOSHEntity hosmCell = (GridOSHEntity) ois.readObject();
+                      final GridOSHEntities hosmCell = (GridOSHEntities) ois.readObject();
                       // TODO cache the hosmCell here!
 
                       cells.add(hosmCell);

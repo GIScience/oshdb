@@ -18,8 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("rawtypes")
-public abstract class GridOSHEntity<HOSM extends OSHEntity> implements Iterable<HOSM>, Serializable {
-  private static final Logger LOG = LoggerFactory.getLogger(GridOSHEntity.class);
+public abstract class GridOSHEntities<HOSM extends OSHEntity> implements Iterable<HOSM>, Serializable {
+  private static final Logger LOG = LoggerFactory.getLogger(GridOSHEntities.class);
 
   private static final long serialVersionUID = 1L;
   protected final long id;
@@ -35,7 +35,7 @@ public abstract class GridOSHEntity<HOSM extends OSHEntity> implements Iterable<
   protected final int[] index;
   protected final byte[] data;
 
-  public GridOSHEntity(final long id,
+  public GridOSHEntities(final long id,
           final int level,
           final long baseId,
           final long baseTimestamp, final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
