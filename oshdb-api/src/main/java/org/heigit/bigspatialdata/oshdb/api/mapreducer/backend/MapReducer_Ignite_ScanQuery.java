@@ -20,7 +20,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -203,7 +203,7 @@ class Ignite_ScanQuery_Helper {
     Ignite node;
 
     /** */
-    IgniteCache<Long, GridOSHEntity> cache;
+    IgniteCache<Long, GridOSHEntities> cache;
 
     /* computation settings */
     final TagInterpreter tagInterpreter;
@@ -267,7 +267,7 @@ class Ignite_ScanQuery_Helper {
         //noinspection unchecked
         try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
           try {
-            return cellIdsList.contains(new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
+            return cellIdsList.contains(new CellId(((GridOSHEntities) cell).getLevel(), ((GridOSHEntities) cell).getId()));
           } catch (CellId.cellIdExeption cellIdExeption) {
             cellIdExeption.printStackTrace();
           }
@@ -275,7 +275,7 @@ class Ignite_ScanQuery_Helper {
         })).setPartition(part),
         cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
-          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
+          GridOSHEntities oshEntityCell = ((Cache.Entry<Long, GridOSHEntities>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           CellIterator.iterateAll(
               oshEntityCell,
@@ -327,7 +327,7 @@ class Ignite_ScanQuery_Helper {
         //noinspection unchecked
         try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
           try {
-            return cellIdsList.contains(new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
+            return cellIdsList.contains(new CellId(((GridOSHEntities) cell).getLevel(), ((GridOSHEntities) cell).getId()));
           } catch (CellId.cellIdExeption cellIdExeption) {
             cellIdExeption.printStackTrace();
           }
@@ -335,7 +335,7 @@ class Ignite_ScanQuery_Helper {
         })).setPartition(part),
         cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
-          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>)cacheEntry).getValue();
+          GridOSHEntities oshEntityCell = ((Cache.Entry<Long, GridOSHEntities>)cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           List<OSMContribution> contributions = new ArrayList<>();
           CellIterator.iterateAll(
@@ -401,14 +401,14 @@ class Ignite_ScanQuery_Helper {
         //noinspection unchecked
         try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
               try {
-                return cellIdsList.contains(new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
+                return cellIdsList.contains(new CellId(((GridOSHEntities) cell).getLevel(), ((GridOSHEntities) cell).getId()));
               } catch (CellId.cellIdExeption cellIdExeption) {
                 cellIdExeption.printStackTrace();
               }
               return false;
             })).setPartition(part),
             cacheEntry -> {
-              GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>)cacheEntry).getValue();
+              GridOSHEntities oshEntityCell = ((Cache.Entry<Long, GridOSHEntities>)cacheEntry).getValue();
               AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
               CellIterator.iterateByTimestamps(
                   oshEntityCell,
@@ -456,14 +456,14 @@ class Ignite_ScanQuery_Helper {
         //noinspection unchecked
         try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
           try {
-            return cellIdsList.contains(new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
+            return cellIdsList.contains(new CellId(((GridOSHEntities) cell).getLevel(), ((GridOSHEntities) cell).getId()));
           } catch (CellId.cellIdExeption cellIdExeption) {
             cellIdExeption.printStackTrace();
           }
           return false;
         })).setPartition(part),
         cacheEntry -> {
-          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>)cacheEntry).getValue();
+          GridOSHEntities oshEntityCell = ((Cache.Entry<Long, GridOSHEntities>)cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           CellIterator.iterateByTimestamps(
               oshEntityCell,
