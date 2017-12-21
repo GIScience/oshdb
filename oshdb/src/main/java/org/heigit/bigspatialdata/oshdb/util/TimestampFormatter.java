@@ -66,13 +66,4 @@ public class TimestampFormatter {
     return _formatIsoDateTime.get().format(timestamp * 1000);
   }
 
-  /**
-   * Parses a OSM-Timestamp to return a unix-timestamp (oshdb-timestamp).
-   *
-   * @param timestamp
-   * @return
-   */
-  public Long getTimestamp(String timestamp) {
-    return _formatIsoDateTime.get().parse(timestamp, new ParsePosition(0)).getTime() / 1000;
-  }
 }
