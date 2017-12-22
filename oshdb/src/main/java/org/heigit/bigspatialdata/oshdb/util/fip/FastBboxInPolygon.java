@@ -54,8 +54,8 @@ public class FastBboxInPolygon extends FastInPolygon implements Predicate<Boundi
       return false; // at least one of the bbox'es edges crosses the polygon
     }
     for (Envelope innerBBox : innerBboxes) {
-      if (boundingBox.minLat <= innerBBox.getMinY() && boundingBox.maxLat >= innerBBox.getMaxY() &&
-          boundingBox.minLon <= innerBBox.getMinX() && boundingBox.maxLon >= innerBBox.getMaxX()) {
+      if (boundingBox.getMinLat() <= innerBBox.getMinY() && boundingBox.getMaxLat() >= innerBBox.getMaxY() &&
+          boundingBox.getMinLon() <= innerBBox.getMinX() && boundingBox.getMaxLon() >= innerBBox.getMaxX()) {
         return false; // the bounding box fully covers at least one of the polygon's inner rings
       }
     }
