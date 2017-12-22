@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.oshdb.api.db;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.OptionalLong;
 
 import org.apache.ignite.Ignite;
@@ -13,8 +12,9 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_LocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_ScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_AffinityCall;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 
-public class OSHDB_Ignite extends OSHDB_Implementation implements AutoCloseable, Serializable {
+public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Serializable {
   public enum ComputeMode {
     LocalPeek,
     ScanQuery,
@@ -34,15 +34,19 @@ public class OSHDB_Ignite extends OSHDB_Implementation implements AutoCloseable,
     this._ignite.active(true);
   }
 
-  public OSHDB_Ignite(File igniteXml) {
+  public OSHDB_Ignite(String igniteConfigFilePath) {
+    this(new File(igniteConfigFilePath));
+  }
+
+  public OSHDB_Ignite(File igniteConfig) {
     Ignition.setClientMode(true);
 
-    this._ignite = Ignition.start(igniteXml.toString());
+    this._ignite = Ignition.start(igniteConfig.toString());
     this._ignite.active(true);
   }
 
   @Override
-  public <X> MapReducer<X> createMapReducer(Class<?> forClass) {
+  public <X extends OSHDB_MapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     MapReducer<X> mapReducer;
     switch (this.computeMode()) {
       case LocalPeek:

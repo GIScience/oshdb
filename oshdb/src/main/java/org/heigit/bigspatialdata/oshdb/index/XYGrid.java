@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
@@ -42,6 +43,18 @@ import org.slf4j.LoggerFactory;
 public class XYGrid {
 
   private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
+  private static final double EPSILON = OSHDB.GEOM_PRECISION;
+
+  /**
+   * Calculate the BoundingBox of a specific GridCell.
+   *
+   * @param cellID
+   * @return
+   */
+  public static BoundingBox getBoundingBox(final CellId cellID) {
+    XYGrid temp = new XYGrid(cellID.getZoomLevel());
+    return temp.getCellDimensions(cellID.getId());
+  }
 
   private final int zoom;
   private final long zoompow;
@@ -64,8 +77,8 @@ public class XYGrid {
       this.zoom = zoom;
     }
 
-    zoompow = (long) Math.pow(2, zoom);
-    cellWidth = 360.0 / zoompow;
+    zoompow = (long) Math.pow(2, this.zoom);
+    cellWidth = (360.0 / zoompow) * OSHDB.GEOM_PRECISION_TO_LONG;
   }
 
   /**
@@ -78,23 +91,27 @@ public class XYGrid {
    * @return Returns the ID of the tile as shown above
    */
   public long getId(double longitude, double latitude) {
+    return this.getId((long) (longitude * OSHDB.GEOM_PRECISION_TO_LONG), (long) (latitude * OSHDB.GEOM_PRECISION_TO_LONG));
+  }
+
+  public long getId(long longitude, long latitude) {
     //return -1, if point is outside geographical coordinate range
-    if (longitude > 180 || longitude < -180 || latitude > 90 || latitude < -90) {
+    if (longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       return -1l;
     }
 
-    longitude += 180.0;
-    latitude += 90.0;
+    longitude += (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    latitude += (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
 
     //if it reaches the eastern most border,it is placed on the western most tile
-    if (equalsEpsilon(longitude, 360.0)) {
+    if (longitude == (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       // wrap arround
-      longitude = 0.0;
+      longitude = 0L;
     }
     //if it reaches the northpole, it is placed in the northern most tile
-    if (equalsEpsilon(latitude, 180.0)) {
+    if (latitude == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       // fix latitude to clostest value under 180
-      latitude -= EPSILON;
+      latitude -= 1L;
     }
 
     //calculate column and row
@@ -121,7 +138,7 @@ public class XYGrid {
    * @return length in degree of borders of cells
    */
   public double getCellWidth() {
-    return cellWidth;
+    return cellWidth * OSHDB.GEOM_PRECISION;
   }
 
   /**
@@ -136,51 +153,25 @@ public class XYGrid {
     int x = (int) (cellId % zoompow);
     int y = (int) ((cellId - x) / zoompow);
     //calculate the values of the south-western most corner
-    double lon = (x * cellWidth) - 180.0;
-    double lat = (y * cellWidth) - 90.0;
+    long lon = (long) ((x * cellWidth) - (180.0 * OSHDB.GEOM_PRECISION_TO_LONG));
+    long lat = (long) ((y * cellWidth) - (90.0 * OSHDB.GEOM_PRECISION_TO_LONG));
 
-    final double minlong = lon;
-    final double maxlong = (lon + cellWidth) - EPSILON;
+    final long minlong = lon;
+    final long maxlong = (long) (lon + cellWidth) - 1L;
 
-    final double minlat;
-    final double maxlat;
+    final long minlat;
+    final long maxlat;
     if (zoom == 0) {
-      minlat = -90.0;
-      maxlat = 90.0;
-    } else if (equalsEpsilon(lat, 90.0 - cellWidth)) {
+      minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    } else if (lat == ((long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - cellWidth)) {
       minlat = lat;
-      maxlat = 90.0;
+      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     } else {
       minlat = lat;
-      maxlat = (lat + cellWidth) - EPSILON;
+      maxlat = (long) (lat + cellWidth) - 1L;
     }
     return new BoundingBox(minlong, maxlong, minlat, maxlat);
-  }
-
-  /**
-   * Calculate the BoundingBox of a specific GridCell.
-   *
-   * @param cellID
-   * @return
-   */
-  public static BoundingBox getBoundingBox(final CellId cellID) {
-    XYGrid temp = new XYGrid(cellID.getZoomLevel());
-    return temp.getCellDimensions(cellID.getId());
-  }
-
-  private static final double EPSILON = 1e-11;
-
-  /**
-   * Determines if the two given double values are equal (their delta being
-   * smaller than a fixed epsilon).
-   *
-   * @param a The first double value to compare
-   * @param b The second double value to compare
-   * @return {@code true} if {@code abs(a - b) <= 1e-11}, {@code false}
-   * otherwise
-   */
-  public static boolean equalsEpsilon(double a, double b) {
-    return Math.abs(a - b) <= EPSILON;
   }
 
   /**
@@ -191,7 +182,7 @@ public class XYGrid {
    */
   public long getEstimatedIdCount(final BoundingBox data) {
     //number of Cells in x * number of cells in y
-    return (long) ((data.maxLon - data.minLon) / cellWidth * (data.maxLat - data.minLat) / cellWidth);
+    return ((long) Math.ceil(Math.max((data.maxLon - data.minLon) / cellWidth, (data.maxLat - data.minLat) / cellWidth)));
   }
 
   /**
@@ -220,10 +211,10 @@ public class XYGrid {
   public Set<Pair<Long, Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
     //initialise basic variables
     Set<Pair<Long, Long>> result = new TreeSet<>();
-    double minlong = bbox.minLon;
-    double minlat = bbox.minLat;
-    double maxlong = bbox.maxLon;
-    double maxlat = bbox.maxLat;
+    long minlong = bbox.minLon;
+    long minlat = bbox.minLat;
+    long maxlong = bbox.maxLon;
+    long maxlat = bbox.maxLat;
 
     if (minlat > maxlat) {
       LOG.warn("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
@@ -232,51 +223,51 @@ public class XYGrid {
 
     Pair<Long, Long> outofboundsCell = new ImmutablePair<>(-1L, -1L);
     //test if bbox is on earth or extends further
-    if (minlong < -180.0 || minlong > 180.0) {
+    if (minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
-      minlong = -180.0;
+      minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (minlat < -90.0 || minlat > 90.0) {
+    if (minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
-      minlat = -90.0;
+      minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (maxlong > 180.0 || maxlong < -180.0) {
+    if (maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
-      maxlong = 180.0;
+      maxlong = (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (maxlat > 90.0 || maxlat < -90.0) {
+    if (maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
-      maxlat = 90.0;
+      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
 
-    if (equalsEpsilon(minlong, 180.0)) {
-      minlong = 180.0 - EPSILON;
+    if (minlong == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+      minlong = ((long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) - 1L;
     }
-    if (equalsEpsilon(maxlong, 180.0)) {
-      maxlong = 180.0 - EPSILON;
+    if (maxlong == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+      maxlong = ((long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) - 1L;
     }
-    if (equalsEpsilon(minlat, 90.0)) {
-      minlat = 90.0 - EPSILON;
+    if (minlat == (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+      minlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
     }
-    if (equalsEpsilon(maxlat, 90.0)) {
-      maxlat = 90.0 - EPSILON;
+    if (maxlat == (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
     }
 
     //cope with BBOX extending over the date-line
     if (minlong > maxlong) {
-      result.addAll(bbox2CellIdRanges(new BoundingBox(minlong, 180.0 - EPSILON, minlat, maxlat), enlarge));
+      result.addAll(bbox2CellIdRanges(new BoundingBox(minlong, (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L, minlat, maxlat), enlarge));
 
-      minlong = -180.0;
+      minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
 
     //At this point the following should be true
     //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
     //minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
     //calculate column and row range
-    int columnmin = (int) ((minlong + 180.0) / cellWidth);
-    int columnmax = (int) ((maxlong + 180.0) / cellWidth);
-    int rowmin = (int) ((minlat + 90.0) / cellWidth);
-    int rowmax = (int) ((maxlat + 90.0) / cellWidth);
+    int columnmin = (int) ((minlong + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
+    int columnmax = (int) ((maxlong + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
+    int rowmin = (int) ((minlat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
+    int rowmax = (int) ((maxlat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
 
     if (enlarge) {
       //it is impossible vor features to span over the datelimit, so the enlargement stops at column 0
@@ -309,10 +300,10 @@ public class XYGrid {
     }
 
     BoundingBox bbox = this.getCellDimensions(center.getId());
-    double minlong = bbox.minLon - EPSILON;
-    double minlat = bbox.minLat - EPSILON;
-    double maxlong = bbox.maxLon + EPSILON;
-    double maxlat = bbox.maxLat + EPSILON;
+    long minlong = bbox.minLon - 1L;
+    long minlat = bbox.minLat - 1L;
+    long maxlong = bbox.maxLon + 1L;
+    long maxlat = bbox.maxLat + 1L;
     BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
 
     return this.bbox2CellIdRanges(newbbox, false);

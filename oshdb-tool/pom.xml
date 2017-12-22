@@ -57,13 +57,13 @@
     <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
-      <version>1.72</version>
+      <version>${jcommander.version}</version>
     </dependency>
 
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.5</version>
+      <version>${commonsio.version}</version>
     </dependency>
 
     <dependency>
@@ -87,7 +87,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20160810</version>
+      <version>${orgjson.version}</version>
     </dependency>
 
     <dependency>

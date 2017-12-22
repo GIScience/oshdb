@@ -12,7 +12,6 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -54,7 +53,6 @@ public class GridOSHRelationsTest {
         e.printStackTrace();
       }
     });*/
-
     // todo: actually assert something in this test
   }
 

@@ -45,8 +45,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
       final long minLat = baseLatitude + wrapper.readSInt64();
       final long maxLat = minLat + wrapper.readUInt64();
 
-      bbox = new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-              minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+      bbox = new BoundingBox(minLon, maxLon, minLat, maxLat);
 
     } else {
       bbox = null;
@@ -114,8 +113,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
       return null;
     }
 
-    return new BoundingBox(minLon * OSMNode.GEOM_PRECISION, maxLon * OSMNode.GEOM_PRECISION,
-            minLat * OSMNode.GEOM_PRECISION, maxLat * OSMNode.GEOM_PRECISION);
+    return new BoundingBox(minLon, maxLon, minLat, maxLat);
   }
 
   @Override
@@ -198,7 +196,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 
     Builder builder = new Builder(output, baseTimestamp);
 
-    for (OSMNode node: versions) {
+    for (OSMNode node : versions) {
       OSMEntity version = node;
 
       byte changed = 0;
