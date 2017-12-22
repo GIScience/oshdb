@@ -60,13 +60,13 @@ abstract class FastInPolygon {
     this.envWidth = env.getMaxX() - env.getMinX();
     this.envHeight = env.getMaxY() - env.getMinY();
     segments.forEach(segment -> {
-      int startHorizBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getStartX() - env.getMinX()) / envWidth) * numBands)));
-      int endHorizBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getEndX() - env.getMinX()) / envWidth) * numBands)));
+      int startHorizBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getStartY() - env.getMinY()) / envHeight) * numBands)));
+      int endHorizBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getEndY() - env.getMinY()) / envHeight) * numBands)));
       for (int i = Math.min(startHorizBand, endHorizBand); i <= Math.max(startHorizBand, endHorizBand); i++) {
         horizBands.get(i).add(segment);
       }
-      int startVertBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getStartY() - env.getMinY()) / envHeight) * numBands)));
-      int endVertBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getEndY() - env.getMinY()) / envHeight) * numBands)));
+      int startVertBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getStartX() - env.getMinX()) / envWidth) * numBands)));
+      int endVertBand = Math.max(0, Math.min(numBands - 1, (int) Math.floor(((segment.getEndX() - env.getMinX()) / envWidth) * numBands)));
       for (int i = Math.min(startVertBand, endVertBand); i <= Math.max(startVertBand, endVertBand); i++) {
         vertBands.get(i).add(segment);
       }
@@ -79,7 +79,7 @@ abstract class FastInPolygon {
    *
    * @param point
    * @param dir   boolean: true -> horizontal test, false -> vertical test
-   * @return
+   * @return crossing number of this point in the chosen direction, if the value is even the point is outside of the polygon, otherwise it is inside
    */
   protected int crossingNumber(Point point, boolean dir) {
     return dir ? crossingNumberX(point) : crossingNumberY(point);
@@ -87,7 +87,7 @@ abstract class FastInPolygon {
 
   private int crossingNumberX(Point point) {
     List<Segment> band;
-    int horizBand = (int) Math.floor(((point.getX() - env.getMinX()) / envWidth) * numBands);
+    int horizBand = (int) Math.floor(((point.getY() - env.getMinY()) / envHeight) * numBands);
     horizBand = Math.max(0, Math.min(numBands - 1, horizBand));
     band = horizBands.get(horizBand);
 
@@ -107,12 +107,12 @@ abstract class FastInPolygon {
         }
       }
     }
-    return cn; // even -> outside, edd -> inside
+    return cn; // even -> outside, odd -> inside
   }
 
   private int crossingNumberY(Point point) {
     List<Segment> band;
-    int vertBand = (int) Math.floor(((point.getY() - env.getMinY()) / envHeight) * numBands);
+    int vertBand = (int) Math.floor(((point.getX() - env.getMinX()) / envWidth) * numBands);
     vertBand = Math.max(0, Math.min(numBands - 1, vertBand));
     band = vertBands.get(vertBand);
 
@@ -127,6 +127,6 @@ abstract class FastInPolygon {
         }
       }
     }
-    return cn; // even -> outside, edd -> inside
+    return cn; // even -> outside, odd -> inside
   }
 }

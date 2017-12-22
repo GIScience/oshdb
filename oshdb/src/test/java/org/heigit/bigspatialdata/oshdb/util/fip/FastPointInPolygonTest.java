@@ -12,13 +12,16 @@ public class FastPointInPolygonTest {
    */
   public static Polygon createPolygon() {
     GeometryFactory gf = new GeometryFactory();
-    Coordinate[] coordinates = new Coordinate[6];
+    Coordinate[] coordinates = new Coordinate[100];
     coordinates[0] = new Coordinate(0,0);
     coordinates[1] = new Coordinate(1,1);
     coordinates[2] = new Coordinate(-1,1);
-    coordinates[3] = new Coordinate(-1,-1);
-    coordinates[4] = new Coordinate(1,-1);
-    coordinates[5] = new Coordinate(0,0);
+    for (int i=3; i<=96; i++) {
+      coordinates[i] = new Coordinate(-1.0, 1.0 - 2.0*(i-2)/95);
+    }
+    coordinates[97] = new Coordinate(-1,-1);
+    coordinates[98] = new Coordinate(1,-1);
+    coordinates[99] = new Coordinate(0,0);
     LinearRing linear = new GeometryFactory().createLinearRing(coordinates);
     return new Polygon(linear, null, gf);
   }
