@@ -67,7 +67,7 @@ public class FastBboxInPolygonTest {
     assertEquals(bip.test(new BoundingBox(3.1,3.2,0.4,0.6)), false);
     assertEquals(bip.test(new BoundingBox(3.4,3.6,-0.1,0.1)), false);
     // intersecting hole
-    assertEquals(bip.test(new BoundingBox(2.9,3.1,-0.1,0.1)), false);
+    assertEquals(bip.test(new BoundingBox(2.1,3.9,-0.1,0.1)), false);
     // outside poly's bbox
     assertEquals(bip.test(new BoundingBox(4.1,4.2,-0.1,0.1)), false);
     assertEquals(bip.test(new BoundingBox(1.8,1.9,-0.1,0.1)), false);
@@ -120,7 +120,7 @@ public class FastBboxInPolygonTest {
     assertEquals(bip.test(new BoundingBox(3.1,3.2,0.4,0.6)), false);
     assertEquals(bip.test(new BoundingBox(3.4,3.6,-0.1,0.1)), false);
     // intersecting hole
-    assertEquals(bip.test(new BoundingBox(2.9,3.1,-0.1,0.1)), false);
+    assertEquals(bip.test(new BoundingBox(2.1,3.9,-0.1,0.1)), false);
     // outside poly's bbox
     assertEquals(bip.test(new BoundingBox(4.1,4.2,-0.1,0.1)), false);
     assertEquals(bip.test(new BoundingBox(1.8,1.9,-0.1,0.1)), false);
