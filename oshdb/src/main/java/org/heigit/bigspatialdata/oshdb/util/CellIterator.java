@@ -9,6 +9,7 @@ import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.fip.FastBboxInPolygon;
+import org.heigit.bigspatialdata.oshdb.util.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,15 +48,20 @@ public class CellIterator {
     List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
-    Predicate<BoundingBox> bboxInPolygon = boundingPolygon == null ? null : new FastBboxInPolygon(boundingPolygon); // todo: could be pulled outside this method (eliminating the per-cell constant overhead)
+    // todo: the following could be pulled outside of this method (eliminating the per-cell constant overhead)
+    Predicate<BoundingBox> bboxInPolygon = boundingPolygon == null ? x -> true :
+        new FastBboxInPolygon(boundingPolygon);
+    Predicate<BoundingBox> bboxOutsidePolygon = boundingPolygon == null ? x -> false :
+        new FastBboxOutsidePolygon(boundingPolygon);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
-          !oshEntity.intersectsBbox(boundingBox)) {
-        // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
+          !oshEntity.intersectsBbox(boundingBox) ||
+          bboxOutsidePolygon.test(oshEntity.getBoundingBox())) {
+        // this osh entity doesn't match the prefilter or is fully outside the requested area of interest -> skip it
         continue;
       }
-      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon == null || bboxInPolygon.test(boundingBox));
+      boolean fullyInside = oshEntity.insideBbox(boundingBox) && bboxInPolygon.test(boundingBox);
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations where not needed
       SortedMap<Long, List<Long>> queryTs = new TreeMap<>();
@@ -253,19 +259,24 @@ public class CellIterator {
     List<IterateAllEntry> results = new LinkedList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
-    Predicate<BoundingBox> bboxInPolygon = boundingPolygon == null ? null : new FastBboxInPolygon(boundingPolygon); // todo: could be pulled outside this method (eliminating the per-cell constant overhead)
+    // todo: the following could be pulled outside of this method (eliminating the per-cell constant overhead)
+    Predicate<BoundingBox> bboxInPolygon = boundingPolygon == null ? x -> true :
+        new FastBboxInPolygon(boundingPolygon);
+    Predicate<BoundingBox> bboxOutsidePolygon = boundingPolygon == null ? x -> false :
+        new FastBboxOutsidePolygon(boundingPolygon);
 
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
-          !oshEntity.intersectsBbox(boundingBox)) {
-        // this osh entity doesn't match the prefilter or is fully outside the requested bounding box -> skip it
+          !oshEntity.intersectsBbox(boundingBox) ||
+          bboxOutsidePolygon.test(oshEntity.getBoundingBox())) {
+        // this osh entity doesn't match the prefilter or is fully outside the requested area of interest -> skip it
         continue;
       }
 
-      boolean fullyInside = oshEntity.insideBbox(boundingBox) && (boundingPolygon == null || bboxInPolygon.test(boundingBox));
+      boolean fullyInside = oshEntity.insideBbox(boundingBox) && bboxInPolygon.test(oshEntity.getBoundingBox());
 
       List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
