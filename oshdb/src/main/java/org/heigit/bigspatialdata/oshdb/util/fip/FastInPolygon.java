@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.util.fip;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.triangulate.Segment;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -12,7 +13,7 @@ import java.util.List;
  * fast *-in-polygon test inspired by
  * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
  */
-abstract class FastInPolygon {
+abstract class FastInPolygon implements Serializable {
   private final int AvgSegmentsPerBand = 10; // something in the order of 10-20 works fine according to the link above
 
   private int numBands;

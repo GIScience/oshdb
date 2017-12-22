@@ -10,6 +10,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.fip.FastBboxOutsidePolygon;
+import org.heigit.bigspatialdata.oshdb.util.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -265,6 +266,8 @@ public class CellIterator {
     Predicate<BoundingBox> bboxOutsidePolygon = boundingPolygon == null ? x -> false :
         new FastBboxOutsidePolygon(boundingPolygon);
 
+    FastPolygonOperations fastPolygonClipper = boundingPolygon == null ? null : new FastPolygonOperations(boundingPolygon);
+
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
 
@@ -374,7 +377,8 @@ public class CellIterator {
             geom = fullyInside
                 ? osmEntity.getGeometry(timestamp, tagInterpreter)
                 : boundingPolygon != null
-                    ? osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingPolygon)
+                    //osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingPolygon)
+                    ? fastPolygonClipper.intersection(osmEntity.getGeometry(timestamp, tagInterpreter))
                     : osmEntity.getGeometryClipped(timestamp, tagInterpreter, boundingBox);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then used to "fix" the
