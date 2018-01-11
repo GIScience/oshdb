@@ -20,6 +20,30 @@
     <module>oshdb-tool</module>
   </modules>
   
+  <properties>
+    <apachecommons.version>3.1</apachecommons.version>
+    <commonsio.version>2.5</commonsio.version>
+    <fastutil.version>7.2.0</fastutil.version>
+    <geotools.version>18-RC1</geotools.version>
+    <glassfish.version>1.1</glassfish.version>
+    <googlejson.version>1.1.1</googlejson.version>
+    <guava.version>19.0</guava.version>
+    <h2.version>1.4.193</h2.version>
+    <ignite.version>2.3.0</ignite.version>
+    <jcommander.version>1.72</jcommander.version>
+    <jetbrainsannotations.version>13.0</jetbrainsannotations.version>
+    <kafka.version>0.11.0.0</kafka.version>
+    <lz4.version>1.4.0</lz4.version>
+    <mapdb.version>3.0.5</mapdb.version>
+    <orgjson.version>20160810</orgjson.version>
+    <osmosis.version>0.45</osmosis.version>
+    <postgresql.version>42.1.4</postgresql.version>
+    <protobuf.version>2.6.1</protobuf.version>
+    <roaringbitmap.version>0.6.37</roaringbitmap.version>
+    <rxjava2.version>2.1.4</rxjava2.version>
+    <wololo.version>0.10.0</wololo.version>
+  </properties>
+  
   <repositories>
     <repository>
       <!--This will resolve artefacts of Osgeo, Boundless and potentially others through our own reopository (https://www.jfrog.com/confluence/display/RTF/Maven+Repository#MavenRepository-ResolvingArtifactsthroughArtifactory).-->
@@ -28,4 +52,16 @@
       <url>http://129.206.7.121:8081/artifactory/main</url>
     </repository>
   </repositories>
+  
+  <scm>
+    <!-- https://maven.apache.org/pom.html#SCM -->
+    <connection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</connection>
+    <developerConnection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</developerConnection>
+    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core.git</url>
+  </scm>
+  
+  <issueManagement>
+    <system>GitLab</system>
+    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core/issues</url>
+  </issueManagement>
 </project>

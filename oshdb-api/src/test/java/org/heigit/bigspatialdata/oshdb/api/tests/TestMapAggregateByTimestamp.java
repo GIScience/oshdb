@@ -5,16 +5,15 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
@@ -27,7 +26,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestMapAggregateByTimestamp {
-  private final OSHDB_Implementation oshdb;
+  private final OSHDB_Database oshdb;
 
   private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");

@@ -13,15 +13,15 @@ import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
 import org.heigit.bigspatialdata.oshdb.api.exceptions.OSHDBTimeoutException;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.*;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
@@ -30,8 +30,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,16 +40,30 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/**
+ * {@inheritDoc}
+ *
+ *
+ * The "LocalPeek" implementation is the a very versatile implementation of the oshdb mapreducer on Ignite: It offers
+ * high performance, scalability and cancelable queries. It should be used in most situations when running oshdb-
+ * analyses on ignite.
+ */
 public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_LocalPeek.class);
 
-  public MapReducer_Ignite_LocalPeek(OSHDB_Implementation oshdb, Class<?> forClass) {
+  public MapReducer_Ignite_LocalPeek(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducible> forClass) {
     super(oshdb, forClass);
   }
 
   // copy constructor
-  public MapReducer_Ignite_LocalPeek(MapReducer_Ignite_LocalPeek obj) {
+  private MapReducer_Ignite_LocalPeek(MapReducer_Ignite_LocalPeek obj) {
     super(obj);
+  }
+
+  @NotNull
+  @Override
+  protected MapReducer<X> copy() {
+    return new MapReducer_Ignite_LocalPeek<X>(this);
   }
 
   private List<String> cacheNames(String prefix) {

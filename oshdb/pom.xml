@@ -22,7 +22,7 @@
     <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
-      <version>0.6.37</version>
+      <version>${roaringbitmap.version}</version>
     </dependency>
 
     <dependency>
@@ -34,19 +34,19 @@
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
-      <version>1.1.1</version>
+      <version>${googlejson.version}</version>
     </dependency>
     
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.json</artifactId>
-      <version>1.1</version>
+      <version>${glassfish.version}</version>
     </dependency>
     
     <dependency>
       <groupId>org.wololo</groupId>
       <artifactId>jts2geojson</artifactId>
-      <version>0.10.0</version>
+      <version>${wololo.version}</version>
     </dependency>
 
     <dependency>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.1</version>
+      <version>${apachecommons.version}</version>
     </dependency>
     
     <dependency>

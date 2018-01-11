@@ -91,7 +91,6 @@ public abstract class OSMEntity {
   }
 
   public boolean hasTagKey(int key) {
-    // todo: replace this with binary search (keys are sorted)
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {
         continue;
@@ -106,6 +105,7 @@ public abstract class OSMEntity {
     return false;
   }
 
+  @Deprecated
   public boolean hasTagKey(String key, TagTranslator tagTranslator) {
     Integer keyId = tagTranslator.key2Int(key);
     return keyId != null && this.hasTagKey(keyId);
@@ -121,8 +121,7 @@ public abstract class OSMEntity {
    * @return true if the key is present and is NOT in a combination with the
    * given values, false otherwise
    */
-  public boolean hasTagKey(int key, int[] uninterestingValues) {
-    // todo: replace this with binary search (keys are sorted)
+  public boolean hasTagKeyExcluding(int key, int[] uninterestingValues) {
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {
         continue;
@@ -139,7 +138,6 @@ public abstract class OSMEntity {
   }
 
   public boolean hasTagValue(int key, int value) {
-    // todo: replace this with binary search (keys are sorted)
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {
         continue;
@@ -154,6 +152,7 @@ public abstract class OSMEntity {
     return false;
   }
 
+  @Deprecated
   public boolean hasTagValue(String key, String value, TagTranslator tagTranslator) {
     Pair<Integer, Integer> tagId = tagTranslator.tag2Int(key, value);
     return tagId != null && this.hasTagValue(tagId.getKey(), tagId.getValue());
@@ -176,6 +175,7 @@ public abstract class OSMEntity {
    * @param tagTranslator the TagTranslator to translate the Tags.
    * @return
    */
+  @Deprecated
   public String toString(TagTranslator tagTranslator) {
     StringBuilder sb = new StringBuilder();
     sb.append(String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s UID:%d UName:%s TAGS:", getId(), getVersion(), getTimestamp(),
@@ -208,6 +208,7 @@ public abstract class OSMEntity {
    * @return A GeoJSON representation of the Object
    * https://tools.ietf.org/html/rfc7946#section-3
    */
+  @Deprecated
   protected JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     //JSON for properties
     JsonObjectBuilder properties = Json.createObjectBuilder();
@@ -321,6 +322,7 @@ public abstract class OSMEntity {
    * @return A GeoJSON-String representation of all these OSM-Objects
    * (https://tools.ietf.org/html/rfc7946#section-3.3
    */
+  @Deprecated
   public static String toGeoJSON(List<Pair<? extends OSMEntity, Long>> osmObjects, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     JsonObjectBuilder builder = Json.createObjectBuilder().add("type", "FeatureCollection");
     JsonArrayBuilder aBuilder = Json.createArrayBuilder();

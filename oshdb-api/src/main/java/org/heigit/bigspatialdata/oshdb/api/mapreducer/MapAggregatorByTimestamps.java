@@ -1,12 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -18,7 +19,7 @@ import java.util.*;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements MapAggregatorByTimestampsSettings<MapAggregatorByTimestamps<X>>, MapAggregatable<MapBiAggregatorByTimestamps<? extends Comparable, X>, X> {
+public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements Mappable<X>, MapAggregatorByTimestampsSettings<MapAggregatorByTimestamps<X>>, MapAggregatable<MapBiAggregatorByTimestamps<? extends Comparable, X>, X> {
   private boolean _zerofill = true;
 
   /**
@@ -56,6 +57,40 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
     MapAggregatorByTimestamps<X> ret = this.copyTransform(this._mapReducer);
     ret._zerofill = zerofill;
     return ret;
+  }
+
+  /**
+   * Set an arbitrary `map` transformation function.
+   *
+   * @return a modified copy of this MapAggregatorByTimestamps object operating on the transformed type (&lt;R&gt;)
+   */
+  @Override
+  @Contract(pure = true)
+  public <R> MapAggregatorByTimestamps<R> map(SerializableFunction<X, R> mapper) {
+    return (MapAggregatorByTimestamps<R>)super.map(mapper);
+  }
+
+  /**
+   * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number of results per input data entry.
+   * The results of this function will be "flattened", meaning that they can be for example transformed again by setting additional `map` functions.
+   *
+   * @return a modified copy of this MapAggregatorByTimestamps object operating on the transformed type (&lt;R&gt;)
+   */
+  @Override
+  @Contract(pure = true)
+  public <R> MapAggregatorByTimestamps<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
+    return (MapAggregatorByTimestamps<R>)super.flatMap(flatMapper);
+  }
+
+  /**
+   * Adds a custom arbitrary filter that gets executed in the current transformation chain.
+   *
+   * @return a modified copy of this MapAggregatorByTimestamps object (can be used to chain multiple commands together)
+   */
+  @Override
+  @Contract(pure = true)
+  public MapAggregatorByTimestamps<X> filter(SerializablePredicate<X> f) {
+    return (MapAggregatorByTimestamps<X>)super.filter(f);
   }
 
   /**

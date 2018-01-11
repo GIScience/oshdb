@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.objects;
+package org.heigit.bigspatialdata.oshdb.api.object;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
@@ -9,7 +9,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
  *
  * Alongside the entity and the timestamp, also the entity's geometry is provided.
  */
-public class OSMEntitySnapshot {
+public class OSMEntitySnapshot implements OSHDB_MapReducible {
   private final OSHDBTimestamp _tstamp;
   private final Geometry _geometry;
   private final OSMEntity _entity;

@@ -92,7 +92,7 @@
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
-      <version>13.0</version>
+      <version>${jetbrainsannotations.version}</version>
     </dependency>
   </dependencies>
 </project>

@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
 public class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
+  private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
   private XYGrid zero;
   private XYGrid two;
   private XYGrid thirty;
-  private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
 
   @Before
   public void setUp() {
@@ -111,7 +111,8 @@ public class XYGridTest {
   @Test
   public void test179_90_2() {
     // Testing Coordinates: 179, 90, zoom 2
-    double longitude = 179.99999999999;
+    double longitude = 180.0 - OSHDB.GEOM_PRECISION;
+    System.out.println(longitude);
     double latitude = 90.0;
 
     Long expResult = (long) 7;
@@ -172,7 +173,7 @@ public class XYGridTest {
   @Test
   public void test179_90_30() {
     // Testing Coordinates: 179, 90, zoom 30
-    double longitude = 179.999999999;
+    double longitude = 180.0-OSHDB.GEOM_PRECISION;
     double latitude = 90.0;
 
     Long expResult = 576460752303423487L;
@@ -206,44 +207,29 @@ public class XYGridTest {
   @Test
   public void testGetCellDimensions() {
     long cellId = 0L;
-    BoundingBox expResult = new BoundingBox(-180.0, -90.00000000001, -90.0, -0.00000000001);
+    BoundingBox expResult = new BoundingBox(-180.0, -90.0 - OSHDB.GEOM_PRECISION, -90.0, 0.0 - OSHDB.GEOM_PRECISION);
     BoundingBox result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 6L;
-    expResult = new BoundingBox(0.0, 89.99999999999, 0.0, 90.0);
+    expResult = new BoundingBox(0.0, 90.0 - OSHDB.GEOM_PRECISION, 0.0, 90.0);
     result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 7L;
-    expResult = new BoundingBox(90.0, 179.99999999999, 0.0, 90.0);
+    expResult = new BoundingBox(90.0, 180.0 - OSHDB.GEOM_PRECISION, 0.0, 90.0);
     result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new BoundingBox(-180.0, 179.99999999999, -90.0, 90.0);
+    expResult = new BoundingBox(-180.0, 180.0 - OSHDB.GEOM_PRECISION, -90.0, 90.0);
     result = zero.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new BoundingBox(-180.0, -0.00000000001, -90.0, 90.0);
+    expResult = new BoundingBox(-180.0, 0.0 - OSHDB.GEOM_PRECISION, -90.0, 90.0);
     XYGrid instance = new XYGrid(1);
     result = instance.getCellDimensions(cellId);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testEqualsEpsilon() {
-    double a = 0.00000000001;
-    double b = 0.00000000002;
-    boolean expResult = true;
-    boolean result = XYGrid.equalsEpsilon(a, b);
-    assertEquals(expResult, result);
-
-    a = 0.0000000001;
-    b = 0.0000000002;
-    expResult = false;
-    result = XYGrid.equalsEpsilon(a, b);
     assertEquals(expResult, result);
   }
 
@@ -252,17 +238,17 @@ public class XYGridTest {
     BoundingBox data = new BoundingBox(0, 89, 0, 89);
     long expResult = 1L;
     long result = two.getEstimatedIdCount(data);
-    org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
+    assertEquals(expResult, result);
 
     data = new BoundingBox(-89.0, 89.0, -90.0, 90.0);
-    expResult = 4L;
+    expResult = 2L;
     result = two.getEstimatedIdCount(data);
-    org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
+    assertEquals(expResult, result);
 
-    data = new BoundingBox(0.0, 0.000005364, 0.0, 0.000005364);
-    expResult = 256L;
+    data = new BoundingBox(0.0, 0.0000053, 0.0, 0.0000053);
+    expResult = 16L;
     result = thirty.getEstimatedIdCount(data);
-    org.junit.Assert.assertTrue(Math.abs(expResult - result) <= two.getLevel());
+    assertEquals(expResult, result);
   }
 
   @Test
@@ -384,7 +370,7 @@ public class XYGridTest {
   @Test
   public void testGetBoundingBox() throws CellId.cellIdExeption {
     BoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
-    BoundingBox expResult = new BoundingBox(0, 90, -90, 0 - 1e-11);
+    BoundingBox expResult = new BoundingBox(0.0, 90.0, -90.0, 0.0 - OSHDB.GEOM_PRECISION);
     assertEquals(expResult.toString(), result.toString());
   }
 }

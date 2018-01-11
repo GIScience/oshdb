@@ -207,11 +207,11 @@ public class TransformRelationMapper extends TransformMapper2 {
 
     for (OSHWay osh : ways) {
       BoundingBox bbox = osh.getBoundingBox();
-      minLon = Math.min(minLon, bbox.minLon);
-      maxLon = Math.max(maxLon, bbox.maxLon);
+      minLon = Math.min(minLon, bbox.getMinLon());
+      maxLon = Math.max(maxLon, bbox.getMaxLon());
 
-      minLat = Math.min(minLat, bbox.minLat);
-      maxLat = Math.max(maxLat, bbox.maxLat);
+      minLat = Math.min(minLat, bbox.getMinLat());
+      maxLat = Math.max(maxLat, bbox.getMaxLat());
     }
 
     int level;

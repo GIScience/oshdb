@@ -185,17 +185,17 @@ public class OSMNodeTest {
 
     instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 2, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     expResult = false;
-    result = instance.hasTagKey(1, new int[]{2, 3});
+    result = instance.hasTagKeyExcluding(1, new int[]{2, 3});
     assertEquals(expResult, result);
 
     instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     expResult = true;
-    result = instance.hasTagKey(1, new int[]{2, 3});
+    result = instance.hasTagKeyExcluding(1, new int[]{2, 3});
     assertEquals(expResult, result);
 
     instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[]{2, 1, 3, 3}, 1000000000L, 1000000000L);
     expResult = false;
-    result = instance.hasTagKey(1, new int[]{1, 3});
+    result = instance.hasTagKeyExcluding(1, new int[]{1, 3});
     assertEquals(expResult, result);
   }
 

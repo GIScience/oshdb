@@ -5,39 +5,43 @@ import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Implementation;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBiFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableBinaryOperator;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMContribution;
-import org.heigit.bigspatialdata.oshdb.api.objects.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.jetbrains.annotations.NotNull;
 
 public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
-  public MapReducer_JDBC_singlethread(OSHDB_Implementation oshdb, Class<?> forClass) {
+  public MapReducer_JDBC_singlethread(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducible> forClass) {
     super(oshdb, forClass);
   }
 
   // copy constructor
-  public MapReducer_JDBC_singlethread(MapReducer_JDBC_singlethread obj) {
+  private MapReducer_JDBC_singlethread(MapReducer_JDBC_singlethread obj) {
     super(obj);
+  }
+
+  @NotNull
+  @Override
+  protected MapReducer<X> copy() {
+    return new MapReducer_JDBC_singlethread<X>(this);
   }
 
   @Override

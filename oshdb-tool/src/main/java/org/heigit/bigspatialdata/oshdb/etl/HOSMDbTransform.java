@@ -267,8 +267,8 @@ public class HOSMDbTransform {
         BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         //create hosmCell of nodes from a "cellNode", a collection of nodes. First part is header, followed by cell.getNodes(), the actual nodes. At this point, delta encoding is already done within the HOSMNode
         GridOSHNodes hosmCell = GridOSHNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.minLon / OSMNode.GEOM_PRECISION),
-                (long) (cellDimensions.minLat / OSMNode.GEOM_PRECISION), cell.getNodes());
+                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.getMinLon() / OSHDB.GEOM_PRECISION),
+                (long) (cellDimensions.getMinLat() / OSHDB.GEOM_PRECISION), cell.getNodes());
 
         //convert hosmCell of nodes to a byteArray of objects to the database
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -306,8 +306,8 @@ public class HOSMDbTransform {
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
         BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         GridOSHWays hosmCell = GridOSHWays.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.maxLon / OSMNode.GEOM_PRECISION),
-                (long) (cellDimensions.minLat / OSMNode.GEOM_PRECISION), cell.getWays());
+                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
+                (long) (cellDimensions.getMinLat() / OSHDB.GEOM_PRECISION), cell.getWays());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
@@ -346,8 +346,8 @@ public class HOSMDbTransform {
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
         BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         GridOSHRelations hosmCell = GridOSHRelations.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.maxLon / OSMNode.GEOM_PRECISION),
-                (long) (cellDimensions.minLat / OSMNode.GEOM_PRECISION), cell.getRelations());
+                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
+                (long) (cellDimensions.getMinLat() / OSHDB.GEOM_PRECISION), cell.getRelations());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(out)) {

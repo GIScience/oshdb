@@ -184,8 +184,8 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * returns true if the bbox of this HOSM entity intersects (or is fully inside) the given bbox.
-   * Used to roughly pre-filter objects against a bbox.
+   * returns true if the bbox of this HOSM entity intersects (or is fully
+   * inside) the given bbox. Used to roughly pre-filter objects against a bbox.
    *
    * @param otherBbox the bounding box which this entity is tested against
    */
@@ -210,8 +210,9 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * returns true if the bbox of this HOSM entity is fully inside the given bbox.
-   * Can be used as an optimization to find not-to-be-clipped entity Geometries
+   * returns true if the bbox of this HOSM entity is fully inside the given
+   * bbox. Can be used as an optimization to find not-to-be-clipped entity
+   * Geometries
    *
    * @param otherBbox the bounding box which this entity is tested against
    */
@@ -221,22 +222,25 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
       return false;
     }
     return bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat
-        && bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
+            && bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
   }
 
   /**
    * Returns the list of timestamps at which this entity was modified.
    *
-   * If the parameter "recurse" is set to true, it will also include modifications of the object's child elements
-   * (useful to find out when the geometry of this object has been altered).
+   * If the parameter "recurse" is set to true, it will also include
+   * modifications of the object's child elements (useful to find out when the
+   * geometry of this object has been altered).
    *
-   * @param recurse specifies if times of modifications of child entities should also be returned or not
+   * @param recurse specifies if times of modifications of child entities should
+   * also be returned or not
    * @return a list of timestamps where this entity has been modified
    */
   public abstract List<Long> getModificationTimestamps(boolean recurse);
 
   /**
-   * Returns all timestamps at which this entity (or one or more of its child entities) has been modified.
+   * Returns all timestamps at which this entity (or one or more of its child
+   * entities) has been modified.
    *
    * @return a list of timestamps where this entity has been modified
    */
@@ -245,9 +249,11 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * Returns all timestamps at which this entity (or one or more of its child entities) has been modified and matches a given condition/filter.
+   * Returns all timestamps at which this entity (or one or more of its child
+   * entities) has been modified and matches a given condition/filter.
    *
-   * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
+   * @param osmEntityFilter only timestamps for which the entity matches this
+   * filter are returned
    * @return a list of timestamps where this entity has been modified
    */
   public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
@@ -289,16 +295,21 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * Returns all timestamps at which this entity (or one or more of its child entities) has been modified and matches a given condition/filter.
+   * Returns all timestamps at which this entity (or one or more of its child
+   * entities) has been modified and matches a given condition/filter.
    *
-   * If the groupedByChangeset parameter is set to true, consecutive modifications in a single changeset are grouped
-   * together (only the last modification timestamp of the corresponding changeset is returned). This can reduce the
-   * amount of geometry modifications by a lot (e.g. when sequential node uploads of a way modification causes many
-   * intermediate modification states), making results more "accurate"/comparable as well as faster processing of
-   * geometries.
+   * If the groupedByChangeset parameter is set to true, consecutive
+   * modifications in a single changeset are grouped together (only the last
+   * modification timestamp of the corresponding changeset is returned). This
+   * can reduce the amount of geometry modifications by a lot (e.g. when
+   * sequential node uploads of a way modification causes many intermediate
+   * modification states), making results more "accurate"/comparable as well as
+   * faster processing of geometries.
    *
-   * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
-   * @param groupedByChangeset if set, consecutive modifications of a single changeset are grouped together
+   * @param osmEntityFilter only timestamps for which the entity matches this
+   * filter are returned
+   * @param groupedByChangeset if set, consecutive modifications of a single
+   * changeset are grouped together
    * @return a list of timestamps where this entity has been modified
    */
   public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter, boolean groupedByChangeset) {
@@ -336,7 +347,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().minLat, getBoundingBox().minLon, getBoundingBox().maxLat, getBoundingBox().maxLon);
+    return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().getMinLat(), getBoundingBox().getMinLon(), getBoundingBox().getMaxLat(), getBoundingBox().getMaxLon());
   }
 
   /**

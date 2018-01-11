@@ -41,13 +41,4 @@ public class TimestampFormatterTest {
     assertEquals(expResult, result);
   }
 
-  @Test
-  public void testGetTimestamp() {
-    String timestamp = "2017-11-07T11:02:37Z";
-    TimestampFormatter instance = TimestampFormatter.getInstance();
-    long expResult = 1510052557L;
-    long result = instance.getTimestamp(timestamp);
-    assertEquals(expResult, result);
-  }
-
 }

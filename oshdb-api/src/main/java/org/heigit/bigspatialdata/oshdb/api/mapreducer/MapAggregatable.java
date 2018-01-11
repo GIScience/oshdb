@@ -1,6 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import org.heigit.bigspatialdata.oshdb.api.generic.lambdas.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 
 /**
  * Interface for MapReducers or MapAggregators that can be (further) aggregated by an arbitrary index
