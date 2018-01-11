@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.api.utils.dbaccess;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,8 +20,9 @@ public class TagTranslatorTest {
     // load H2-support
     Class.forName("org.h2.Driver");
 
-    //connect to the "Big"DB
-    TagTranslatorTest.conn = DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "");
+    // connect to the "Big"DB
+    TagTranslatorTest.conn =
+        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", "");
 
   }
 
@@ -30,14 +31,13 @@ public class TagTranslatorTest {
     TagTranslatorTest.conn.close();
   }
 
-  public TagTranslatorTest() {
-  }
+  public TagTranslatorTest() {}
 
   @Test
   public void testTag2Int() {
     Pair<String, String> tag = new ImmutablePair<>("building", "yes");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Pair<Integer, Integer> expResult = new ImmutablePair<>(0, 0);
+    Pair<Integer, Integer> expResult = new ImmutablePair<>(1, 0);
     Pair<Integer, Integer> result = instance.tag2Int(tag);
     assertEquals(expResult, result);
   }
@@ -46,7 +46,8 @@ public class TagTranslatorTest {
   public void testTag2String() {
     Pair<Integer, Integer> tag = new ImmutablePair<>(1, 2);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Pair<String, String> expResult = new ImmutablePair<>("highway", "track");
+    Pair<String, String> expResult = new ImmutablePair<>("building", "residential");
+
     Pair<String, String> result = instance.tag2String(tag);
     assertEquals(expResult, result);
   }
@@ -71,16 +72,28 @@ public class TagTranslatorTest {
 
   @Test
   public void testGetAllValues() {
-    String key = "surface";
+    String key = "building";
+
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     HashMap<String, Integer> val = new HashMap<>(2);
-    val.put("unpaved", 0);
-    val.put("asphalt", 1);
-    val.put("ground", 2);
-    val.put("paved", 3);
-    val.put("sand", 4);
-    val.put("dirt", 5);
-    Pair<Integer, Map<String, Integer>> expResult = new ImmutablePair<>(5, val);
+    val.put("yes", 0);
+    val.put("house", 1);
+    val.put("residential", 2);
+    val.put("apartments", 3);
+    val.put("garage", 4);
+    val.put("hut", 5);
+    val.put("industrial", 6);
+    val.put("entrance", 7);
+    val.put("detached", 8);
+    val.put("roof", 9);
+    val.put("shed", 10);
+    val.put("commercial", 11);
+    val.put("terrace", 12);
+    val.put("school", 13);
+    val.put("garages", 14);
+    val.put("retail", 15);
+
+    Pair<Integer, Map<String, Integer>> expResult = new ImmutablePair<>(1, val);
     Pair<Integer, Map<String, Integer>> result = instance.getAllValues(key);
     assertEquals(expResult, result);
   }
@@ -107,7 +120,7 @@ public class TagTranslatorTest {
   public void testKey2Int() {
     String key = "highway";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Integer expResult = 1;
+    Integer expResult = 2;
     Integer result = instance.key2Int(key);
     assertEquals(expResult, result);
   }
@@ -116,7 +129,8 @@ public class TagTranslatorTest {
   public void testKey2String() {
     Integer key = 1;
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    String expResult = "highway";
+    String expResult = "building";
+
     String result = instance.key2String(key);
     assertEquals(expResult, result);
   }

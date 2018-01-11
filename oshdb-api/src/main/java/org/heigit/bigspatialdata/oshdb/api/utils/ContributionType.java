@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.api.utils;
 
 public enum ContributionType {
   CREATION, // a new object has been created

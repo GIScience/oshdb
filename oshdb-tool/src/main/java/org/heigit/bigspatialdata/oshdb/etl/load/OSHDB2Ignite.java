@@ -26,7 +26,7 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

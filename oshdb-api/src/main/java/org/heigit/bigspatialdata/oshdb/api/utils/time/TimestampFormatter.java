@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.api.utils.time;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;

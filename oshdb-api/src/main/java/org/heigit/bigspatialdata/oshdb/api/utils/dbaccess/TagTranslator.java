@@ -1,5 +1,6 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.api.utils.dbaccess;
 
+import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBKeytablesNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

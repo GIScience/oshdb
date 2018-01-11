@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.utils;
+package org.heigit.bigspatialdata.oshdb.api.utils.geometry;
 
 /**
  * Defines the type of input for the Country class.

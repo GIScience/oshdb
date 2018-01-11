@@ -15,7 +15,7 @@ import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
+import org.heigit.bigspatialdata.oshdb.api.utils.ContributionType;
 import org.junit.Test;
 
 import java.util.EnumSet;

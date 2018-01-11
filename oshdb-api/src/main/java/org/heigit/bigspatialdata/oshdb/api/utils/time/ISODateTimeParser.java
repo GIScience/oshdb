@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.utils;
+package org.heigit.bigspatialdata.oshdb.api.utils.time;
 
 import java.time.Duration;
 import java.time.LocalDate;

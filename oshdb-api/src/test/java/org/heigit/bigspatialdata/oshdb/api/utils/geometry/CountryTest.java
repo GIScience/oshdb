@@ -1,5 +1,7 @@
-package org.heigit.bigspatialdata.oshdb.api.utils;
+package org.heigit.bigspatialdata.oshdb.api.utils.geometry;
 
+import org.heigit.bigspatialdata.oshdb.api.utils.geometry.CountryCodeType;
+import org.heigit.bigspatialdata.oshdb.api.utils.geometry.Country;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import static org.junit.Assert.assertEquals;

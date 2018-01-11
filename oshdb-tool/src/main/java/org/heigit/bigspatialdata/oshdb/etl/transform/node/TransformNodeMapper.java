@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
 import org.heigit.bigspatialdata.oshdb.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.CellNode;
 import org.heigit.bigspatialdata.oshdb.etl.transform.data.NodeRelation;

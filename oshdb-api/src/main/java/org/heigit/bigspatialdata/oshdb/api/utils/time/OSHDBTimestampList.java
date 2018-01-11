@@ -1,8 +1,9 @@
-package org.heigit.bigspatialdata.oshdb.api.utils;
+package org.heigit.bigspatialdata.oshdb.api.utils.time;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
 
 /**
  * Provider of a sorted list of (unix) timestamps.

@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.util.byteArray;
 
 import java.io.IOException;
 import java.util.Arrays;

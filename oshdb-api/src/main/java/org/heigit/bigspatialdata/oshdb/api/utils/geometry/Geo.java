@@ -1,7 +1,8 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.api.utils.geometry;
 
 import com.vividsolutions.jts.geom.*;
 import org.geotools.geometry.jts.JTS;
+import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 
 /**
  * Geometry utility functions

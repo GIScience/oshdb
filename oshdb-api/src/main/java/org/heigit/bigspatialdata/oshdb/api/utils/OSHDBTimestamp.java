@@ -1,6 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.utils;
 
-import org.heigit.bigspatialdata.oshdb.util.TimestampFormatter;
+import org.heigit.bigspatialdata.oshdb.api.utils.time.TimestampFormatter;
 
 import java.io.Serializable;
 import java.util.Date;

@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.utils;
+package org.heigit.bigspatialdata.oshdb.api.utils.geometry;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;

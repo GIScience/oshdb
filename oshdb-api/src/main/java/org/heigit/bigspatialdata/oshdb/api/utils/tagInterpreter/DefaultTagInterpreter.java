@@ -1,10 +1,10 @@
-package org.heigit.bigspatialdata.oshdb.util.tagInterpreter;
+package org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TagTranslator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

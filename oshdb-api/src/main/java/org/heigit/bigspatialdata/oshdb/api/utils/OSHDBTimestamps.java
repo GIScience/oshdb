@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.utils;
 
+import org.heigit.bigspatialdata.oshdb.api.utils.time.OSHDBTimestampList;
+import org.heigit.bigspatialdata.oshdb.api.utils.time.ISODateTimeParser;
 import java.time.Duration;
 import java.time.Period;
 import java.time.ZonedDateTime;

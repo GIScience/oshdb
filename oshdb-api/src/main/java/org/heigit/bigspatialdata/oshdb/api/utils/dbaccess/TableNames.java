@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.api.utils.dbaccess;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.slf4j.Logger;

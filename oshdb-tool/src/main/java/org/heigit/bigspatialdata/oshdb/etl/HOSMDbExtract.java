@@ -24,7 +24,7 @@ import org.heigit.bigspatialdata.oshdb.etl.cmdarg.ExtractArgs;
 import org.heigit.bigspatialdata.oshdb.etl.extract.ExtractMapper;
 import org.heigit.bigspatialdata.oshdb.etl.extract.ExtractMapperResult;
 import org.heigit.bigspatialdata.oshdb.etl.extract.data.KeyValuesFrequency;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
 import org.heigit.bigspatialdata.oshpbf.HeaderInfo;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfEntity.Type;
 import org.heigit.bigspatialdata.oshpbf.osm.OSMPbfUser;

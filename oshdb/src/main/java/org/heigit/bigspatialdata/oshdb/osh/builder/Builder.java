@@ -6,7 +6,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 
 public class Builder {
   

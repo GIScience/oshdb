@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.api.utils;
+package org.heigit.bigspatialdata.oshdb.api.utils.export;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,10 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class aims at providing your with the basic functions to store your
- * analyses Result. It tries to facilitate output and admin work by centrally
- * organising outputs. Once your have created output and provided your username,
- * ClusterAdmins will know how to provide your with your results.
+ * This class aims at providing you with the basic functions to store your analyses Result. It tries
+ * to facilitate output and admin work by centrally organising outputs. Once your have created
+ * output and provided your username, ClusterAdmins will know how to provide your with your results.
  */
 public class OutputWriter {
   private static final Logger LOG = LoggerFactory.getLogger(OutputWriter.class);
@@ -60,12 +59,12 @@ public class OutputWriter {
    * Writes a simple CSV-File.
    *
    * @param username your username. It will be part of the output.
-   * @param output The Data your want to store. The method call forEach on the
-   * stream.
+   * @param output The Data your want to store. The method call forEach on the stream.
    * @throws FileNotFoundException
    * @throws IOException
    */
-  public static void toCSV(String username, Stream<Pair<String, String>> output) throws IOException {
+  public static void toCSV(String username, Stream<Pair<String, String>> output)
+      throws IOException {
     File file = OutputWriter.getFile(username);
 
     try (PrintWriter out = new PrintWriter(file);) {
@@ -86,7 +85,9 @@ public class OutputWriter {
    */
   public static Connection getH2(String username) throws ClassNotFoundException, SQLException {
     Class.forName("org.h2.Driver");
-    return DriverManager.getConnection("jdbc:h2:/opt/ignite/UserOutput/" + username + "_" + dateFormat.format(new Date()), username, "");
+    return DriverManager.getConnection(
+        "jdbc:h2:/opt/ignite/UserOutput/" + username + "_" + dateFormat.format(new Date()),
+        username, "");
   }
 
   /**
@@ -97,11 +98,14 @@ public class OutputWriter {
    * @throws ClassNotFoundException
    * @throws SQLException
    */
-  public static void toH2(String username, Stream<Pair<String, String>> output) throws ClassNotFoundException, SQLException {
+  public static void toH2(String username, Stream<Pair<String, String>> output)
+      throws ClassNotFoundException, SQLException {
     try (Connection conn = OutputWriter.getH2(username)) {
       Statement stmt = conn.createStatement();
-      stmt.executeUpdate("drop table if exists result; create table if not exists result(key varchar(max), value varchar(max))");
-      try (PreparedStatement insert = conn.prepareStatement("insert into result (key,value) values(?,?)")) {
+      stmt.executeUpdate(
+          "drop table if exists result; create table if not exists result(key varchar(max), value varchar(max))");
+      try (PreparedStatement insert =
+          conn.prepareStatement("insert into result (key,value) values(?,?)")) {
         output.forEach((Pair<String, String> pair) -> {
           try {
             insert.setString(1, pair.getKey());
@@ -128,13 +132,16 @@ public class OutputWriter {
   public static Connection getPostgre(String username) throws ClassNotFoundException, SQLException {
     Class.forName("org.postgresql.Driver");
     String usernameDate = username + "_" + dateFormat.format(new Date());
-    try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/", "postgres", "HeiGit")) {
+    try (Connection conn =
+        DriverManager.getConnection("jdbc:postgresql://localhost:5432/", "postgres", "HeiGit")) {
       Statement stmt = conn.createStatement();
       stmt.executeUpdate("CREATE USER " + usernameDate + " WITH PASSWORD 'password'");
       stmt.executeUpdate("CREATE DATABASE " + usernameDate);
-      stmt.executeUpdate("GRANT ALL PRIVILEGES ON DATABASE " + usernameDate + " TO " + usernameDate);
+      stmt.executeUpdate(
+          "GRANT ALL PRIVILEGES ON DATABASE " + usernameDate + " TO " + usernameDate);
     }
-    return DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + usernameDate, usernameDate, "password");
+    return DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + usernameDate,
+        usernameDate, "password");
   }
 
   /**
@@ -145,12 +152,15 @@ public class OutputWriter {
    * @throws ClassNotFoundException
    * @throws SQLException
    */
-  public static void toPostgre(String username, Stream<Pair<String, String>> output) throws ClassNotFoundException, SQLException {
+  public static void toPostgre(String username, Stream<Pair<String, String>> output)
+      throws ClassNotFoundException, SQLException {
     try (Connection conn2 = OutputWriter.getPostgre(username)) {
       Statement stmt2 = conn2.createStatement();
 
-      stmt2.executeUpdate("drop table if exists result; create table if not exists result(key text, value text)");
-      try (PreparedStatement insert = conn2.prepareStatement("insert into result (key,value) values(?,?)")) {
+      stmt2.executeUpdate(
+          "drop table if exists result; create table if not exists result(key text, value text)");
+      try (PreparedStatement insert =
+          conn2.prepareStatement("insert into result (key,value) values(?,?)")) {
         output.forEach(pair -> {
           try {
             insert.setString(1, pair.getKey());
@@ -170,21 +180,20 @@ public class OutputWriter {
   }
 
   /**
-   * Creates the specified topic if it does not exist and creates a new
-   * KafkaProducer containing your properties. It overwrites the
-   * "bootstrap.servers" property to make it work on the cluster. Be sure to
-   * provide all important properties (See
-   * <a href="https://kafka.apache.org/documentation/#producerconfigs"> Kafka
-   * Documentation</a>), especially the Serialiser for your given K and V.
+   * Creates the specified topic if it does not exist and creates a new KafkaProducer containing
+   * your properties. It overwrites the "bootstrap.servers" property to make it work on the cluster.
+   * Be sure to provide all important properties (See
+   * <a href="https://kafka.apache.org/documentation/#producerconfigs"> Kafka Documentation</a>),
+   * especially the Serialiser for your given K and V.
    *
    * @param <K> Key Type of your producer
    * @param <V> Value Type of your producer
-   * @param topic Topic your want to broadcast to. Is Created if it does not
-   * exist.
+   * @param topic Topic your want to broadcast to. Is Created if it does not exist.
    * @return
    */
   public static <K, V> Producer<K, V> getKafka(String topic, Properties props) {
-    //check if it was created in this instance. If not check if it still exists in the cluster. This is to prevent multiple time consuming checks on zookeeper.
+    // check if it was created in this instance. If not check if it still exists in the cluster.
+    // This is to prevent multiple time consuming checks on zookeeper.
     if (!kafkatopic.contains(topic)) {
       OutputWriter.createKafkaTopic(topic);
     }
@@ -194,17 +203,18 @@ public class OutputWriter {
   }
 
   /**
-   * Promotes the result to the Kafka broker. This is especially useful if you
-   * want to get intermediate results before your Task is finished.
+   * Promotes the result to the Kafka broker. This is especially useful if you want to get
+   * intermediate results before your Task is finished.
    *
-   * @param topic Topic your want to broadcast to. Is Created if it does not
-   * exist.
+   * @param topic Topic your want to broadcast to. Is Created if it does not exist.
    * @param output The Data your want to store
    * @throws FileNotFoundException
    * @throws IOException
    */
-  public static void toKafka(String topic, Stream<Pair<String, String>> output) throws FileNotFoundException, IOException {
-    //check if it was created in this instance. If not check if it still exists in the cluster. This is to prevent multiple time consuming checks on zookeeper.
+  public static void toKafka(String topic, Stream<Pair<String, String>> output)
+      throws FileNotFoundException, IOException {
+    // check if it was created in this instance. If not check if it still exists in the cluster.
+    // This is to prevent multiple time consuming checks on zookeeper.
     if (!kafkatopic.contains(topic)) {
       OutputWriter.createKafkaTopic(topic);
     }
@@ -227,7 +237,7 @@ public class OutputWriter {
   }
 
   private static void createKafkaTopic(String topic) {
-    String zookeeperConnect = "localhost:2181";//,zkserver2:2181";
+    String zookeeperConnect = "localhost:2181";// ,zkserver2:2181";
     int sessionTimeoutMs = 10 * 1000;
     int connectionTimeoutMs = 8 * 1000;
 
@@ -235,29 +245,27 @@ public class OutputWriter {
     int replication = 1;
     Properties topicConfig = new Properties(); // add per-topic configurations settings here
 
-    // Note: You must initialize the ZkClient with ZKStringSerializer.  If you don't, then
-    // createTopic() will only seem to work (it will return without error).  The topic will exist in
+    // Note: You must initialize the ZkClient with ZKStringSerializer. If you don't, then
+    // createTopic() will only seem to work (it will return without error). The topic will exist in
     // only ZooKeeper and will be returned when listing topics, but Kafka itself does not create the
     // topic.
-    ZkClient zkClient = new ZkClient(
-            zookeeperConnect,
-            sessionTimeoutMs,
-            connectionTimeoutMs,
-            ZKStringSerializer$.MODULE$);
+    ZkClient zkClient = new ZkClient(zookeeperConnect, sessionTimeoutMs, connectionTimeoutMs,
+        ZKStringSerializer$.MODULE$);
 
     // Security for Kafka was added in Kafka 0.9.0.0
     boolean isSecureKafkaCluster = false;
 
-    ZkUtils zkUtils = new ZkUtils(zkClient, new ZkConnection(zookeeperConnect), isSecureKafkaCluster);
+    ZkUtils zkUtils =
+        new ZkUtils(zkClient, new ZkConnection(zookeeperConnect), isSecureKafkaCluster);
     if (!AdminUtils.topicExists(zkUtils, topic)) {
-      AdminUtils.createTopic(zkUtils, topic, partitions, replication, topicConfig, RackAwareMode.Enforced$.MODULE$);
+      AdminUtils.createTopic(zkUtils, topic, partitions, replication, topicConfig,
+          RackAwareMode.Enforced$.MODULE$);
     }
     zkClient.close();
     kafkatopic.add(topic);
 
   }
 
-  private OutputWriter() {
-  }
+  private OutputWriter() {}
 
 }
