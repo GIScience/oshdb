@@ -117,7 +117,7 @@ public class XYGridTree {
    * @return
    */
   public Iterable<CellId> bbox2CellIds(final BoundingBox BBOX) {
-    return bbox2CellIds(BBOX, true);
+    return bbox2CellIds(BBOX, false);
   }
 
   /**

@@ -1386,7 +1386,7 @@ public abstract class MapReducer<X> implements MapReducerSettings<MapReducer<X>>
       LOG.warn("area of interest not set or empty");
       return Collections.emptyList();
     }
-    return grid.bbox2CellIds(this._bboxFilter, true);
+    return grid.bbox2CellIds(this._bboxFilter, false);
   }
 
   // hack, so that we can use a variable that is of both Geometry and implements Polygonal (i.e. Polygon or MultiPolygon) as required in further processing steps
