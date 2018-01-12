@@ -347,13 +347,13 @@ public class XYGridTest {
 
     // test performance for maximum sized BBOX
     BBOX = new BoundingBox(-180, 180, -90, 90);
-    int expResult = 2048;
+    int expResult = (int)Math.pow(2,MAXZOOM)/2;
     LOG.info("If this throws a warning because of the maximum zoomlevel, we have to change XYGrid-Code:");
     result = new XYGrid(MAXZOOM).bbox2CellIdRanges(BBOX, true);
     assertEquals(expResult, result.size());
     interval = result.iterator().next();
     assertEquals(0, interval.getLeft().longValue());
-    assertEquals(4095, interval.getRight().longValue());
+    assertEquals((int)Math.pow(2,MAXZOOM)-1, interval.getRight().longValue());
   }
 
   @Test
