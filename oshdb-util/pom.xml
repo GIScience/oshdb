@@ -21,5 +21,18 @@
       <version>${kafka.version}</version>
     </dependency>
     
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-shapefile</artifactId>
+      <version>${geotools.version}</version>
+      <type>jar</type>
+    </dependency>
+    
   </dependencies>
 </project>

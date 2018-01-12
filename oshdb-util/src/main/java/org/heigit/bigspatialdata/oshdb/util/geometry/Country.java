@@ -22,13 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This Class uses the NaturalEarth 1:10 Cultural-Vectors to extract
- * BoundingBoxes and Polygons. It is meant to be a helper for
- * {@link org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer#areaOfInterest(com.vividsolutions.jts.geom.Geometry&com.vividsolutions.jts.geom.Polygonal) areaOfInterest}.
- * Please note, only continental territories are supported, for now. Its
- * underlying source is form
- * <a href="http://www.naturalearthdata.com/downloads/10m-cultural-vectors/">here</a>.
- * Please consider the licence when going public with the project.
+ * This Class uses the NaturalEarth 1:10 Cultural-Vectors to extract BoundingBoxes and Polygons. It
+ * is meant to be a helper for
+ * {@link org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer#areaOfInterest(com.vividsolutions.jts.geom.Geometry&com.vividsolutions.jts.geom.Polygonal)
+ * areaOfInterest}. Please note, only continental territories are supported, for now. Its underlying
+ * source is form
+ * <a href="http://www.naturalearthdata.com/downloads/10m-cultural-vectors/">here</a>. Please
+ * consider the licence when going public with the project.
  *
  */
 public class Country {
@@ -36,15 +36,17 @@ public class Country {
   private static final Logger LOG = LoggerFactory.getLogger(Country.class);
 
   /**
-   * This is for advanced users who know how to use geotools. You may get your
-   * feature(s) from this FeatureSource.
+   * This is for advanced users who know how to use geotools. You may get your feature(s) from this
+   * FeatureSource.
    *
    * @return A FeatureSource for the dataset.
    * @throws IOException
    */
-  public static FeatureSource<SimpleFeatureType, SimpleFeature> getFeatureSource() throws IOException {
+  public static FeatureSource<SimpleFeatureType, SimpleFeature> getFeatureSource()
+      throws IOException {
     Map<String, Object> map = new HashMap<>(1);
-    map.put("url", Country.class.getResource("/ne_10m_admin_0_map_units/ne_10m_admin_0_map_units.shp"));
+    map.put("url",
+        Country.class.getResource("/ne_10m_admin_0_map_units/ne_10m_admin_0_map_units.shp"));
 
     DataStore dataStore = DataStoreFinder.getDataStore(map);
     String typeName = dataStore.getTypeNames()[0];
@@ -52,14 +54,12 @@ public class Country {
   }
 
   /**
-   * Gets the exact geometry of a country. The output varies by the type of
-   * input you provide. Please note that the data is not perfect. Results may be
-   * unwanted, please check the source.
+   * Gets the exact geometry of a country. The output varies by the type of input you provide.
+   * Please note that the data is not perfect. Results may be unwanted, please check the source.
    *
    * @param type
    * @param name
-   * @return A MultiPolygon for simplicity, no matter what shape the country
-   * has.
+   * @return A MultiPolygon for simplicity, no matter what shape the country has.
    * @throws IOException
    */
   public static MultiPolygon getGeometry(CountryCodeType type, String name) throws IOException {
@@ -75,14 +75,13 @@ public class Country {
 
   /**
    * Works the same as
-   * {@link #getGeometry(org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType, java.lang.String) getGeometry}
-   * but returns the bounding box. To keep you from creating large bounding
-   * boxes this function is limited to
-   * {@link org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT GEOUNIT}.
+   * {@link #getGeometry(org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType, java.lang.String)
+   * getGeometry} but returns the bounding box. To keep you from creating large bounding boxes this
+   * function is limited to {@link org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT
+   * GEOUNIT}.
    *
-   * @param name the
-   * {@link org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT GEOUNIT}
-   * name of the country
+   * @param name the {@link org.heigit.bigspatialdata.oshdb.api.utils.CountryCodeType#GEOUNIT
+   *        GEOUNIT} name of the country
    * @return
    * @throws IOException
    */
@@ -125,7 +124,6 @@ public class Country {
     }
   }
 
-  private Country() {
-  }
+  private Country() {}
 
 }
