@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBKeytablesNotFoundException;
+import org.heigit.bigspatialdata.oshdb.api.utils.exceptions.OSHDBKeytablesNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

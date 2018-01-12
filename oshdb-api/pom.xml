@@ -11,11 +11,18 @@
   </parent>
 
   <artifactId>oshdb-api</artifactId>
+  <description>Functionallity of the Java-API.</description>
 
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>oshdb</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-util</artifactId>
       <version>${project.version}</version>
     </dependency>
 
