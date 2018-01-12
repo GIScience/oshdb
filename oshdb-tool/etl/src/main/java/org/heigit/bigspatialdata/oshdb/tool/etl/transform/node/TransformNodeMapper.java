@@ -17,13 +17,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellNode;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellNode;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -44,7 +44,7 @@ public class TransformNodeMapper extends TransformMapper2 {
     private final List<NodeRelation> nodesForRelations;
 
     public Result(final SortedSet<CellNode> nodeCells, final List<NodeRelation> nodesForWays,
-            final List<NodeRelation> nodesForRelations) {
+        final List<NodeRelation> nodesForRelations) {
       this.nodeCells = nodeCells;
       this.nodesForWays = nodesForWays;
       this.nodesForRelations = nodesForRelations;
@@ -92,9 +92,10 @@ public class TransformNodeMapper extends TransformMapper2 {
 
     initKeyTables(connKeyTables);
 
-    getWaysForNode = connRelations.prepareStatement("select ways from " + TableNames.E_NODE2WAY.toString() + " where node = ?");
-    getRelationsForNode
-            = connRelations.prepareStatement("select relations from " + TableNames.E_NODE2RELATION.toString() + " where node = ?");
+    getWaysForNode = connRelations.prepareStatement(
+        "select ways from " + TableNames.E_NODE2WAY.toString() + " where node = ?");
+    getRelationsForNode = connRelations.prepareStatement(
+        "select relations from " + TableNames.E_NODE2RELATION.toString() + " where node = ?");
 
     final List<NodeRelation> nodesForWays = new ArrayList<>();
     final List<NodeRelation> nodesForRelations = new ArrayList<>();
@@ -102,7 +103,7 @@ public class TransformNodeMapper extends TransformMapper2 {
     mapCellnodes = new HashMap<>();
 
     try ( //
-            final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
+        final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
 
       final OsmPbfIterator osmIterator = new OsmPbfIterator(blockItr);
       final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
@@ -110,18 +111,19 @@ public class TransformNodeMapper extends TransformMapper2 {
       clearKeyValueCache();
 
       Statement stmt = connKeyTables.createStatement();
-      try (ResultSet rst = stmt.executeQuery(""
-              + //
-              "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString() + ".txt, keyid, valueid "
-              + //
-              "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString() + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString() + ".keyid ")) {
+      try (ResultSet rst = stmt.executeQuery("" + //
+          "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString()
+          + ".txt, keyid, valueid " + //
+          "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString()
+          + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString()
+          + ".keyid ")) {
         while (rst.next()) {
           Map<String, int[]> a = keyValueCache.get(rst.getString(1));
           if (a == null) {
             a = new HashMap<>();
             keyValueCache.put(rst.getString(1), a);
           }
-          a.put(rst.getString(2), new int[]{rst.getInt(3), rst.getInt(4)});
+          a.put(rst.getString(2), new int[] {rst.getInt(3), rst.getInt(4)});
         }
       }
 
@@ -165,7 +167,8 @@ public class TransformNodeMapper extends TransformMapper2 {
           nodesForWays.add(new NodeRelation(((Long) ways[ways.length - 1]).longValue(), hnode));
         }
         if (relation.length > 0) {
-          nodesForRelations.add(new NodeRelation(((Long) relation[relation.length - 1]).longValue(), hnode));
+          nodesForRelations
+              .add(new NodeRelation(((Long) relation[relation.length - 1]).longValue(), hnode));
         }
       } // while blockItr.hasNext();
 
@@ -187,12 +190,12 @@ public class TransformNodeMapper extends TransformMapper2 {
 
   private OSMNode getNode(OSMPbfNode entity) {
     return new OSMNode(entity.getId(), //
-            entity.getVersion() * (entity.getVisible() ? 1 : -1), //
-            entity.getTimestamp(), //
-            entity.getChangeset(), //
-            entity.getUser().getId(), //
-            getKeyValue(entity.getTags()), //
-            entity.getLongitude(), entity.getLatitude());
+        entity.getVersion() * (entity.getVisible() ? 1 : -1), //
+        entity.getTimestamp(), //
+        entity.getChangeset(), //
+        entity.getUser().getId(), //
+        getKeyValue(entity.getTags()), //
+        entity.getLongitude(), entity.getLatitude());
   }
 
   private CellNode getCell(long longitude, long latitude) {

@@ -1,6 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TagTranslator;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import com.vividsolutions.jts.geom.*;
 import java.io.IOException;
 import java.io.Serializable;
@@ -16,13 +16,13 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
-import org.heigit.bigspatialdata.oshdb.api.utils.geometry.Geo;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.api.utils.time.ISODateTimeParser;
-import org.heigit.bigspatialdata.oshdb.api.utils.time.OSHDBTimestampList;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;

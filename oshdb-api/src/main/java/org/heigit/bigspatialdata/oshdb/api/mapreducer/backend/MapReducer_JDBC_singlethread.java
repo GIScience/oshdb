@@ -19,12 +19,12 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.api.utils.CellIterator;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.jetbrains.annotations.NotNull;
 
 public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {

@@ -20,17 +20,17 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellWay;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.WayRelation;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellWay;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.WayRelation;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -59,7 +59,8 @@ public class TransformWayMapper extends TransformMapper2 {
   private final Connection oshdbconn;
   private final Connection keytables;
 
-  public TransformWayMapper(final int maxZoom, final String nodeRelationFile, Connection oshdbRelations, Connection keytables) {
+  public TransformWayMapper(final int maxZoom, final String nodeRelationFile,
+      Connection oshdbRelations, Connection keytables) {
     this.maxZoom = maxZoom;
     this.oshdbconn = oshdbRelations;
     this.keytables = keytables;
@@ -76,15 +77,16 @@ public class TransformWayMapper extends TransformMapper2 {
 
     initKeyTables(connKeyTables);
 
-    pstmtRelationForWay = connRelations.prepareStatement("select relations from " + TableNames.E_WAY2RELATION.toString() + " where way = ?");
+    pstmtRelationForWay = connRelations.prepareStatement(
+        "select relations from " + TableNames.E_WAY2RELATION.toString() + " where way = ?");
 
     final List<WayRelation> waysForRelations = new ArrayList<>();
 
     try ( //
-            final FileInputStream fileStream = new FileInputStream(nodeRelationFile);
-            final BufferedInputStream bufferedStream = new BufferedInputStream(fileStream);
-            final ObjectInputStream relationStream = new ObjectInputStream(bufferedStream);
-            final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
+        final FileInputStream fileStream = new FileInputStream(nodeRelationFile);
+        final BufferedInputStream bufferedStream = new BufferedInputStream(fileStream);
+        final ObjectInputStream relationStream = new ObjectInputStream(bufferedStream);
+        final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
 
       final OsmPbfIterator osmIterator = new OsmPbfIterator(blockItr);
       final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
@@ -94,18 +96,19 @@ public class TransformWayMapper extends TransformMapper2 {
       clearKeyValueCache();
 
       Statement stmt = connKeyTables.createStatement();
-      try (ResultSet rst = stmt.executeQuery(""
-              + //
-              "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString() + ".txt, keyid, valueid "
-              + //
-              "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString() + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString() + ".keyid ")) {
+      try (ResultSet rst = stmt.executeQuery("" + //
+          "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString()
+          + ".txt, keyid, valueid " + //
+          "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString()
+          + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString()
+          + ".keyid ")) {
         while (rst.next()) {
           Map<String, int[]> a = keyValueCache.get(rst.getString(1));
           if (a == null) {
             a = new HashMap<>();
             keyValueCache.put(rst.getString(1), a);
           }
-          a.put(rst.getString(2), new int[]{rst.getInt(3), rst.getInt(4)});
+          a.put(rst.getString(2), new int[] {rst.getInt(3), rst.getInt(4)});
         }
       }
 
@@ -170,8 +173,8 @@ public class TransformWayMapper extends TransformMapper2 {
     return EMPTY_RESULT;
   }
 
-  private List<OSHNode> getNodes(final ObjectInputStream relationStream, final long id, SortedSet<Long> refs)
-          throws IOException, ClassNotFoundException {
+  private List<OSHNode> getNodes(final ObjectInputStream relationStream, final long id,
+      SortedSet<Long> refs) throws IOException, ClassNotFoundException {
     List<OSHNode> nodes = new ArrayList<>(refs.size());
 
     for (Long refId : refs) {
@@ -234,7 +237,9 @@ public class TransformWayMapper extends TransformMapper2 {
       }
     }
 
-    final BoundingBox boundingBox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION, minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
+    final BoundingBox boundingBox =
+        new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
+            minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
 
     long ids;
     int l = maxZoom;
@@ -266,12 +271,12 @@ public class TransformWayMapper extends TransformMapper2 {
 
   private OSMWay getWay(OSMPbfWay entity) {
     return new OSMWay(entity.getId(), //
-            entity.getVersion() * (entity.getVisible() ? 1 : -1), //
-            entity.getTimestamp(), //
-            entity.getChangeset(), //
-            entity.getUser().getId(), //
-            getKeyValue(entity.getTags()), //
-            convertLongs(entity.getRefs()));
+        entity.getVersion() * (entity.getVisible() ? 1 : -1), //
+        entity.getTimestamp(), //
+        entity.getChangeset(), //
+        entity.getUser().getId(), //
+        getKeyValue(entity.getTags()), //
+        convertLongs(entity.getRefs()));
   }
 
   public static class Result {

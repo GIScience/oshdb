@@ -20,6 +20,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.tool.etl.cmdarg.TransformArgs;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellInfo;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellNode;
@@ -31,25 +35,20 @@ import org.heigit.bigspatialdata.oshdb.tool.etl.transform.node.TransformNodeMapp
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.node.TransformNodeMapper.Result;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.relation.TransformRelationMapper;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.way.TransformWayMapper;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
-import org.heigit.bigspatialdata.oshdb.index.XYGrid;
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * HOSMDbTransform
  *
- * inputs from HOSMDbExtract - KeyTables (KeyValues, Roles, User) - Relation
- * Mappings node2Way, node2Relation, way2Relation, relation2Relation
+ * inputs from HOSMDbExtract - KeyTables (KeyValues, Roles, User) - Relation Mappings node2Way,
+ * node2Relation, way2Relation, relation2Relation
  *
- * output - transformed pbffile nodes with Strings replaced by references -
- * transformed pbffile ways with Strings replaced by references - transformed
- * pbffile relations with Strings replaced by references
+ * output - transformed pbffile nodes with Strings replaced by references - transformed pbffile ways
+ * with Strings replaced by references - transformed pbffile relations with Strings replaced by
+ * references
  *
  *
  * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
@@ -62,15 +61,16 @@ public class HOSMDbTransform {
    * Transform the extracted Data to an OSH-DB.
    *
    * @param pbfFile pbf-File Data was extracted from
-   * @param conn connection to the final BigDB that already holds the keytables
-   * from the extract step
+   * @param conn connection to the final BigDB that already holds the keytables from the extract
+   *        step
    * @param tempDir make sure the temp_relations.mv.db is present there!
    * @throws IOException
    * @throws FileNotFoundException
    * @throws SQLException
    * @throws ClassNotFoundException
    */
-  public static void transform(File pbfFile, Connection conn, Path tempDir) throws IOException, FileNotFoundException, SQLException, ClassNotFoundException {
+  public static void transform(File pbfFile, Connection conn, Path tempDir)
+      throws IOException, FileNotFoundException, SQLException, ClassNotFoundException {
     HOSMDbTransform.transform(pbfFile, conn, tempDir, conn);
   }
 
@@ -87,7 +87,7 @@ public class HOSMDbTransform {
    * @throws ClassNotFoundException
    */
   public static void transform(File pbfFile, Connection conn, Path tempDir, Connection keytables)
-          throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
+      throws FileNotFoundException, IOException, SQLException, ClassNotFoundException {
     Class.forName("org.h2.Driver");
 
     HOSMDbTransform hosmDbTransform = new HOSMDbTransform(tempDir, conn);
@@ -97,23 +97,26 @@ public class HOSMDbTransform {
     final String n2rRelationFile = hosmDbTransform.getTmp() + "/temp_nodesForRelation.ser";
     final String w2rRelationFile = hosmDbTransform.getTmp() + "/temp_waysForRelation.ser";
     final XYGrid grid = new XYGrid(maxZoom);
-    try (Connection tempRelations = DriverManager.getConnection("jdbc:h2:" + tempDir + "/" + EtlFiles.E_TEMPRELATIONS.getName(), "sa", "")) {
+    try (Connection tempRelations = DriverManager
+        .getConnection("jdbc:h2:" + tempDir + "/" + EtlFiles.E_TEMPRELATIONS.getName(), "sa", "")) {
       if (true) {
         try (//
-                final FileInputStream in = new FileInputStream(pbfFile); //
-                ) {
-          //define parts of file so it can be devided between threads
-          TransformNodeMapper nodeMapper = new TransformNodeMapper(maxZoom, tempRelations, keytables);
+            final FileInputStream in = new FileInputStream(pbfFile); //
+        ) {
+          // define parts of file so it can be devided between threads
+          TransformNodeMapper nodeMapper =
+              new TransformNodeMapper(maxZoom, tempRelations, keytables);
           TransformNodeMapper.Result nodeResult = nodeMapper.map(in);
 
           if (true) {
             System.out.println("Saving Node Grid");
-            //create grid cells containing all nodes in that cell:
-            // header; node1v1, node1v2,...,noder2v1,...nodeNvN (deltaencaoded and serialized as you know it)
-            //THIS is the MAGIC!!!
+            // create grid cells containing all nodes in that cell:
+            // header; node1v1, node1v2,...,noder2v1,...nodeNvN (deltaencaoded and serialized as you
+            // know it)
+            // THIS is the MAGIC!!!
             hosmDbTransform.saveGrid(nodeResult, grid);
 
-            //delete previous files
+            // delete previous files
             Path pN2W = Paths.get(n2wRelationFile);
             if (pN2W.toFile().exists()) {
               Files.delete(pN2W);
@@ -123,18 +126,19 @@ public class HOSMDbTransform {
               Files.delete(pN2R);
             }
             System.out.println("Saving NodesForRelation");
-            //temp_store serialized nodes so they can be read when creating a way or relation
+            // temp_store serialized nodes so they can be read when creating a way or relation
             saveNodesForRelations(nodeResult, pN2W.toFile(), pN2R.toFile());
           }
         }
       }
       if (true) {
         try (//
-                final FileInputStream in = new FileInputStream(pbfFile) //
-                ) {
+            final FileInputStream in = new FileInputStream(pbfFile) //
+        ) {
 
           System.out.println("Start Way Mapper");
-          TransformWayMapper wayMapper = new TransformWayMapper(maxZoom, n2wRelationFile, tempRelations, keytables);
+          TransformWayMapper wayMapper =
+              new TransformWayMapper(maxZoom, n2wRelationFile, tempRelations, keytables);
           TransformWayMapper.Result wayResults = wayMapper.map(in);
           System.out.println("Saving Way Grid");
           hosmDbTransform.saveGrid(wayResults);
@@ -149,10 +153,11 @@ public class HOSMDbTransform {
       }
       if (true) {
         try (//
-                final FileInputStream in = new FileInputStream(pbfFile) //
-                ) {
+            final FileInputStream in = new FileInputStream(pbfFile) //
+        ) {
           System.out.println("Start Relation Mapper");
-          TransformRelationMapper mapper = new TransformRelationMapper(maxZoom, n2rRelationFile, w2rRelationFile, tempRelations, keytables);
+          TransformRelationMapper mapper = new TransformRelationMapper(maxZoom, n2rRelationFile,
+              w2rRelationFile, tempRelations, keytables);
           TransformRelationMapper.Result result = mapper.map(in);
           System.out.println("Saving Relation Grid");
           hosmDbTransform.saveGrid(result);
@@ -163,13 +168,13 @@ public class HOSMDbTransform {
     }
   }
 
-  private static void saveNodesForRelations(TransformNodeMapper.Result nodeResult, File n2wRelationFile, File n2rRelationFile)
-          throws FileNotFoundException, IOException {
+  private static void saveNodesForRelations(TransformNodeMapper.Result nodeResult,
+      File n2wRelationFile, File n2rRelationFile) throws FileNotFoundException, IOException {
 
     try (//
-            FileOutputStream fileOutput = new FileOutputStream(n2wRelationFile);
-            BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
-            ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
+        FileOutputStream fileOutput = new FileOutputStream(n2wRelationFile);
+        BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
+        ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
       for (NodeRelation nr : nodeResult.getNodesForWays()) {
         objectOutput.writeObject(nr);
       }
@@ -177,9 +182,9 @@ public class HOSMDbTransform {
     }
 
     try (//
-            FileOutputStream fileOutput = new FileOutputStream(n2rRelationFile);
-            BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
-            ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
+        FileOutputStream fileOutput = new FileOutputStream(n2rRelationFile);
+        BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
+        ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
       for (NodeRelation nr : nodeResult.getNodesForRelations()) {
         objectOutput.writeObject(nr);
       }
@@ -187,11 +192,12 @@ public class HOSMDbTransform {
     }
   }
 
-  private static void saveWaysForRelations(TransformWayMapper.Result result, File w2rRelationFile) throws FileNotFoundException, IOException {
+  private static void saveWaysForRelations(TransformWayMapper.Result result, File w2rRelationFile)
+      throws FileNotFoundException, IOException {
     try (//
-            FileOutputStream fileOutput = new FileOutputStream(w2rRelationFile);
-            BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
-            ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
+        FileOutputStream fileOutput = new FileOutputStream(w2rRelationFile);
+        BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutput);
+        ObjectOutputStream objectOutput = new ObjectOutputStream(bufferedOutput)) {
       for (WayRelation nr : result.getWaysForRelations()) {
         objectOutput.writeObject(nr);
       }
@@ -200,7 +206,7 @@ public class HOSMDbTransform {
   }
 
   public static void main(String[] args)
-          throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
+      throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
     Class.forName("org.h2.Driver");
     TransformArgs targs = new TransformArgs();
     JCommander jcom = JCommander.newBuilder().addObject(targs).build();
@@ -223,9 +229,11 @@ public class HOSMDbTransform {
     final File pbfFile = targs.baseArgs.pbfFile;
 
     final Path tmpDir = targs.baseArgs.tempDir;
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:" + targs.oshdbarg.oshdb, "sa", "")) {
+    try (Connection conn =
+        DriverManager.getConnection("jdbc:h2:" + targs.oshdbarg.oshdb, "sa", "")) {
       if ((new File(targs.baseArgs.keytables.toString() + ".mv.db")).exists()) {
-        try (Connection keytables = DriverManager.getConnection("jdbc:h2:" + targs.baseArgs.keytables, "sa", "")) {
+        try (Connection keytables =
+            DriverManager.getConnection("jdbc:h2:" + targs.baseArgs.keytables, "sa", "")) {
           HOSMDbTransform.transform(pbfFile, conn, tmpDir, keytables);
         }
       } else {
@@ -233,6 +241,7 @@ public class HOSMDbTransform {
       }
     }
   }
+
   private final Path tmpDir;
   private final Connection conn;
 
@@ -247,30 +256,34 @@ public class HOSMDbTransform {
 
   private void saveGrid(Result result, XYGrid grid) {
 
-    //get connection and set up h2-DB
+    // get connection and set up h2-DB
     Connection dbconn = this.conn;
     try (Statement stmt = dbconn.createStatement()) {
 
-      stmt.executeUpdate(
-              "drop table if exists " + TableNames.T_NODES.toString() + "; create table if not exists " + TableNames.T_NODES.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
+      stmt.executeUpdate("drop table if exists " + TableNames.T_NODES.toString()
+          + "; create table if not exists " + TableNames.T_NODES.toString()
+          + "(level int, id bigint, data blob,  primary key(level,id))");
 
-      PreparedStatement insert
-              = dbconn.prepareStatement("insert into " + TableNames.T_NODES.toString() + " (level,id,data) values(?,?,?)");
+      PreparedStatement insert = dbconn.prepareStatement(
+          "insert into " + TableNames.T_NODES.toString() + " (level,id,data) values(?,?,?)");
 
-      //iterate over cells parsed from PBF-File
+      // iterate over cells parsed from PBF-File
       for (CellNode cell : result.getNodeCells()) {
-        //write zoomlevel and id to h2
+        // write zoomlevel and id to h2
         insert.setInt(1, cell.info().getZoomLevel());
         insert.setLong(2, cell.info().getId());
 
         CellInfo cellInfo = cell.info();
         BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        //create hosmCell of nodes from a "cellNode", a collection of nodes. First part is header, followed by cell.getNodes(), the actual nodes. At this point, delta encoding is already done within the HOSMNode
-        GridOSHNodes hosmCell = GridOSHNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.getMinLon() / OSHDB.GEOM_PRECISION),
+        // create hosmCell of nodes from a "cellNode", a collection of nodes. First part is header,
+        // followed by cell.getNodes(), the actual nodes. At this point, delta encoding is already
+        // done within the HOSMNode
+        GridOSHNodes hosmCell =
+            GridOSHNodes.rebase(cellInfo.getId(), cellInfo.getZoomLevel(), cell.minId(),
+                cell.minTimestamp(), (long) (cellDimensions.getMinLon() / OSHDB.GEOM_PRECISION),
                 (long) (cellDimensions.getMinLat() / OSHDB.GEOM_PRECISION), cell.getNodes());
 
-        //convert hosmCell of nodes to a byteArray of objects to the database
+        // convert hosmCell of nodes to a byteArray of objects to the database
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
           oos.writeObject(hosmCell);
@@ -291,11 +304,12 @@ public class HOSMDbTransform {
     Connection dbconn = this.conn;
     try (Statement stmt = dbconn.createStatement()) {
 
-      stmt.executeUpdate(
-              "drop table if exists " + TableNames.T_WAYS.toString() + "; create table if not exists " + TableNames.T_WAYS.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
+      stmt.executeUpdate("drop table if exists " + TableNames.T_WAYS.toString()
+          + "; create table if not exists " + TableNames.T_WAYS.toString()
+          + "(level int, id bigint, data blob,  primary key(level,id))");
 
-      PreparedStatement insert
-              = dbconn.prepareStatement("insert into " + TableNames.T_WAYS.toString() + " (level,id,data) values(?,?,?)");
+      PreparedStatement insert = dbconn.prepareStatement(
+          "insert into " + TableNames.T_WAYS.toString() + " (level,id,data) values(?,?,?)");
 
       for (CellWay cell : wayResults.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());
@@ -305,8 +319,9 @@ public class HOSMDbTransform {
 
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
         BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        GridOSHWays hosmCell = GridOSHWays.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
+        GridOSHWays hosmCell =
+            GridOSHWays.compact(cellInfo.getId(), cellInfo.getZoomLevel(), cell.minId(),
+                cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
                 (long) (cellDimensions.getMinLat() / OSHDB.GEOM_PRECISION), cell.getWays());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -331,11 +346,12 @@ public class HOSMDbTransform {
     Connection dbconn = this.conn;
     try (Statement stmt = dbconn.createStatement()) {
 
-      stmt.executeUpdate(
-              "drop table if exists " + TableNames.T_RELATIONS.toString() + "; create table if not exists " + TableNames.T_RELATIONS.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
+      stmt.executeUpdate("drop table if exists " + TableNames.T_RELATIONS.toString()
+          + "; create table if not exists " + TableNames.T_RELATIONS.toString()
+          + "(level int, id bigint, data blob,  primary key(level,id))");
 
-      PreparedStatement insert
-              = dbconn.prepareStatement("insert into " + TableNames.T_RELATIONS.toString() + " (level,id,data) values(?,?,?)");
+      PreparedStatement insert = dbconn.prepareStatement(
+          "insert into " + TableNames.T_RELATIONS.toString() + " (level,id,data) values(?,?,?)");
 
       for (CellRelation cell : result.getCells()) {
         insert.setInt(1, cell.info().getZoomLevel());
@@ -345,8 +361,9 @@ public class HOSMDbTransform {
 
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
         BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
-        GridOSHRelations hosmCell = GridOSHRelations.compact(cellInfo.getId(), cellInfo.getZoomLevel(),
-                cell.minId(), cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
+        GridOSHRelations hosmCell =
+            GridOSHRelations.compact(cellInfo.getId(), cellInfo.getZoomLevel(), cell.minId(),
+                cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
                 (long) (cellDimensions.getMinLat() / OSHDB.GEOM_PRECISION), cell.getRelations());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();

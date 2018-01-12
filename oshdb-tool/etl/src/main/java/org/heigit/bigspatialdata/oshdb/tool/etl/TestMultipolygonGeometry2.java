@@ -23,13 +23,13 @@ import java.util.TreeMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.utils.CellIterator;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 
 
 public class TestMultipolygonGeometry2 {

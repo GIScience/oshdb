@@ -7,7 +7,7 @@ import java.util.OptionalLong;
 
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
-import org.heigit.bigspatialdata.oshdb.api.exceptions.OSHDBTimeoutException;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_LocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_ScanQuery;

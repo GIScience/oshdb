@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.heigit.bigspatialdata.oshdb.api.utils.export.OutputWriter;
+import org.heigit.bigspatialdata.oshdb.util.export.OutputWriter;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,8 @@ public class OSCParser extends DefaultHandler {
   }
 
   @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+  public void startElement(String uri, String localName, String qName, Attributes attributes)
+      throws SAXException {
     super.startElement(uri, localName, qName, attributes);
 
     switch (localName) {
@@ -97,10 +98,9 @@ public class OSCParser extends DefaultHandler {
         break;
 
       case "member":
-        this.current.accumulate("member", new JSONObject()
-                .put("#TypeArt", attributes.getValue("#TypeArt"))
-                .put("ref", attributes.getValue("ref"))
-                .put("role", attributes.getValue("role")));
+        this.current.accumulate("member",
+            new JSONObject().put("#TypeArt", attributes.getValue("#TypeArt"))
+                .put("ref", attributes.getValue("ref")).put("role", attributes.getValue("role")));
         break;
 
       case "tag":
@@ -149,9 +149,9 @@ public class OSCParser extends DefaultHandler {
 
       this.kafkaProdOSCUpdate.send(new ProducerRecord<>(goal, this.current.toString()));
     } else if (goal.equals(this.kafkaStatsTopic)) {
-      this.kafkaProdStats.send(new ProducerRecord<>(goal, "Nodes: " + OSCParser.stats.get("Nodes")
-              + "; Ways: " + OSCParser.stats.get("Ways") + "; Relations: "
-              + OSCParser.stats.get("Relations")));
+      this.kafkaProdStats
+          .send(new ProducerRecord<>(goal, "Nodes: " + OSCParser.stats.get("Nodes") + "; Ways: "
+              + OSCParser.stats.get("Ways") + "; Relations: " + OSCParser.stats.get("Relations")));
     } else if (goal.equals(this.kafkaLiveUpdateTopicGeoserver)) {
       String location = this.current.getString("lat") + "," + this.current.getString("lon");
       this.kafkaProdLiveUpdate.send(new ProducerRecord<>(goal, location));

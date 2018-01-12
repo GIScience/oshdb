@@ -13,13 +13,13 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.api.utils.geometry.Geo;
-import org.heigit.bigspatialdata.oshdb.api.utils.geometry.OSHDbGeometryBuilder;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.osh.*;
 import org.heigit.bigspatialdata.oshdb.osm.*;
+import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TestMultithreadDBProcessingAndGeometryCalculations {

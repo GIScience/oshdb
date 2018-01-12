@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellRelation;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
-import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.WayRelation;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
@@ -30,8 +26,12 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellRelation;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
+import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.WayRelation;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.api.utils.dbaccess.TableNames;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -64,7 +64,8 @@ public class TransformRelationMapper extends TransformMapper2 {
   private final Connection relationsdbconn;
   private final Connection keytables;
 
-  public TransformRelationMapper(final int maxZoom, final String nodeRelationFile, final String wayRelationFile, Connection oshdbRelations, Connection keytables) {
+  public TransformRelationMapper(final int maxZoom, final String nodeRelationFile,
+      final String wayRelationFile, Connection oshdbRelations, Connection keytables) {
     this.maxZoom = maxZoom;
     this.nodeRelationFile = nodeRelationFile;
     this.wayRelationFile = wayRelationFile;
@@ -79,22 +80,22 @@ public class TransformRelationMapper extends TransformMapper2 {
 
   public Result map(InputStream in) {
     try (//
-            Connection connKeyTables = this.keytables;
-            Connection connRelations = this.relationsdbconn) {
+        Connection connKeyTables = this.keytables;
+        Connection connRelations = this.relationsdbconn) {
 
       initKeyTables(connKeyTables);
 
-      pstmtRelationForRelation = connRelations
-              .prepareStatement("select relations from " + TableNames.E_RELATION2RELATION.toString() + " where relation = ?");
+      pstmtRelationForRelation = connRelations.prepareStatement("select relations from "
+          + TableNames.E_RELATION2RELATION.toString() + " where relation = ?");
 
       try ( //
-              final FileInputStream fileNodeStream = new FileInputStream(nodeRelationFile);
-              final BufferedInputStream bufferedNodeStream = new BufferedInputStream(fileNodeStream);
-              final ObjectInputStream relationNodeStream = new ObjectInputStream(bufferedNodeStream);
-              final FileInputStream fileWayStream = new FileInputStream(wayRelationFile);
-              final BufferedInputStream bufferedWayStream = new BufferedInputStream(fileWayStream);
-              final ObjectInputStream relationWayStream = new ObjectInputStream(bufferedWayStream);
-              final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
+          final FileInputStream fileNodeStream = new FileInputStream(nodeRelationFile);
+          final BufferedInputStream bufferedNodeStream = new BufferedInputStream(fileNodeStream);
+          final ObjectInputStream relationNodeStream = new ObjectInputStream(bufferedNodeStream);
+          final FileInputStream fileWayStream = new FileInputStream(wayRelationFile);
+          final BufferedInputStream bufferedWayStream = new BufferedInputStream(fileWayStream);
+          final ObjectInputStream relationWayStream = new ObjectInputStream(bufferedWayStream);
+          final OsmPrimitiveBlockIterator blockItr = new OsmPrimitiveBlockIterator(in)) {
 
         final OsmPbfIterator osmIterator = new OsmPbfIterator(blockItr);
         final OshPbfIterator oshIterator = new OshPbfIterator(osmIterator);
@@ -104,18 +105,19 @@ public class TransformRelationMapper extends TransformMapper2 {
         clearKeyValueCache();
 
         Statement stmt = connKeyTables.createStatement();
-        try (ResultSet rst = stmt.executeQuery(""
-                + //
-                "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString() + ".txt, keyid, valueid "
-                + //
-                "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString() + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString() + ".keyid ")) {
+        try (ResultSet rst = stmt.executeQuery("" + //
+            "select " + TableNames.E_KEY.toString() + ".txt, " + TableNames.E_KEYVALUE.toString()
+            + ".txt, keyid, valueid " + //
+            "from " + TableNames.E_KEY.toString() + " join " + TableNames.E_KEYVALUE.toString()
+            + " on " + TableNames.E_KEY.toString() + ".id = " + TableNames.E_KEYVALUE.toString()
+            + ".keyid ")) {
           while (rst.next()) {
             Map<String, int[]> a = keyValueCache.get(rst.getString(1));
             if (a == null) {
               a = new HashMap<>();
               keyValueCache.put(rst.getString(1), a);
             }
-            a.put(rst.getString(2), new int[]{rst.getInt(3), rst.getInt(4)});
+            a.put(rst.getString(2), new int[] {rst.getInt(3), rst.getInt(4)});
           }
         }
 
@@ -249,8 +251,8 @@ public class TransformRelationMapper extends TransformMapper2 {
     return cell;
   }
 
-  private List<OSHNode> getNodes(final ObjectInputStream relationStream, final long id, SortedSet<Long> refs)
-          throws IOException, ClassNotFoundException {
+  private List<OSHNode> getNodes(final ObjectInputStream relationStream, final long id,
+      SortedSet<Long> refs) throws IOException, ClassNotFoundException {
     List<OSHNode> nodes = new ArrayList<>(refs.size());
 
     for (Long refId : refs) {
@@ -293,8 +295,8 @@ public class TransformRelationMapper extends TransformMapper2 {
     return nodes;
   }
 
-  private List<OSHWay> getWays(final ObjectInputStream relationStream, final long id, SortedSet<Long> refs)
-          throws IOException, ClassNotFoundException {
+  private List<OSHWay> getWays(final ObjectInputStream relationStream, final long id,
+      SortedSet<Long> refs) throws IOException, ClassNotFoundException {
     List<OSHWay> ways = new ArrayList<>(refs.size());
 
     for (Long refId : refs) {
@@ -338,12 +340,12 @@ public class TransformRelationMapper extends TransformMapper2 {
 
   private OSMRelation getRelation(OSMPbfRelation entity) {
     return new OSMRelation(entity.getId(), //
-            entity.getVersion() * (entity.getVisible() ? 1 : -1), //
-            entity.getTimestamp(), //
-            entity.getChangeset(), //
-            entity.getUser().getId(), //
-            getKeyValue(entity.getTags()), //
-            convertMembers(entity.getMembers()));
+        entity.getVersion() * (entity.getVisible() ? 1 : -1), //
+        entity.getTimestamp(), //
+        entity.getChangeset(), //
+        entity.getUser().getId(), //
+        getKeyValue(entity.getTags()), //
+        convertMembers(entity.getMembers()));
   }
 
   public static class Result {

@@ -27,10 +27,6 @@ import java.util.TreeMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.utils.geometry.Geo;
-import org.heigit.bigspatialdata.oshdb.api.utils.geometry.OSHDbGeometryBuilder;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.api.utils.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -39,6 +35,10 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TestMultipolygonGeometry {
