@@ -87,7 +87,7 @@ public class CellIterator {
         // skip node versions outside of the current cell
         if (osmEntity instanceof OSMNode) {
           OSMNode node = (OSMNode)osmEntity;
-          if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
+          if (cell.getLevel() == OSHDB.MAXZOOM && cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
             continue;
         }
 
@@ -288,7 +288,7 @@ public class CellIterator {
             node = (OSMNode)prev.osmEntity;
           }
           // todo: add case for node leaving bbox region -> (next version is probably not in out list of cells anymore) -> issue "deletion" result here and continue
-          if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
+          if (cell.getLevel() == OSHDB.MAXZOOM && cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
             skipOutput = true; //continue;
         }
 
