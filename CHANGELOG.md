@@ -2,6 +2,11 @@
 
 * tweak database cell structure: higher max-zoom level (15 instead of 12), move content from almost empty cells to higher zoom levels, store objects in cells where they fit fully
 
+### 0.3.1
+
+* make java API methods work with updated "0.4" oshdb schema
+* mark some methods as deprecated that are removed in 0.4
+
 ### 0.3.0
 
 * added a new easy to use _"functional programming style"_ API abstraction level that works on local oshdb files as well as on an Ignite cluster
