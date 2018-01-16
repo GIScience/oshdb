@@ -84,13 +84,6 @@ public class CellIterator {
         Long timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
-        // skip node versions outside of the current cell
-        if (osmEntity instanceof OSMNode) {
-          OSMNode node = (OSMNode)osmEntity;
-          if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
-            continue;
-        }
-
         if (!osmEntity.isVisible()) {
           // skip because this entity is deleted at this timestamp
           continue;
@@ -278,19 +271,6 @@ public class CellIterator {
         //prev = results.size() > 0 ? results.get(results.size()-1) : null; // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
 
         boolean skipOutput = false;
-
-        // skip node versions outside of the current cell // todo: we can get rid of this with the final db layout (nodes stored the same as other entity types)
-        if (osmEntity instanceof OSMNode) {
-          OSMNode node = (OSMNode)osmEntity;
-          if (!node.isVisible()) {
-            if (prev == null || prev.activities.contains(ContributionType.DELETION)) // previous version was deleted -> skip
-              continue osmEntityLoop;
-            node = (OSMNode)prev.osmEntity;
-          }
-          // todo: add case for node leaving bbox region -> (next version is probably not in out list of cells anymore) -> issue "deletion" result here and continue
-          if (cell.getId() != nodeGrid.getId(node.getLongitude(), node.getLatitude()))
-            skipOutput = true; //continue;
-        }
 
         Long nextTs = null;
         if (modTs.size() > modTs.indexOf(timestamp)+1) //todo: better way to figure out if timestamp is not last element??
