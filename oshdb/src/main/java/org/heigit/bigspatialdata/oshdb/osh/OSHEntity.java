@@ -5,17 +5,14 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.util.*;
 import java.util.function.Predicate;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
-import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 
 @SuppressWarnings("rawtypes")
-public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSHEntity>, Iterable<OSM> {
+public abstract class OSHEntity<OSM extends OSMEntity>
+    implements Comparable<OSHEntity>, Iterable<OSM> {
 
   protected final byte[] data;
   protected final int offset;
@@ -31,10 +28,10 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   protected final int dataOffset;
   protected final int dataLength;
 
-  public OSHEntity(final byte[] data, final int offset, final int length,
-          final long baseId, final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-          final byte header, final long id, final BoundingBox bbox, final int[] keys,
-          final int dataOffset, final int dataLength) {
+  public OSHEntity(final byte[] data, final int offset, final int length, final long baseId,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final byte header, final long id, final BoundingBox bbox, final int[] keys,
+      final int dataOffset, final int dataLength) {
     this.data = data;
     this.offset = offset;
     this.length = length;
@@ -113,7 +110,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     }
     return result;
     // todo: replace with call to getBetweenTimestamps(-Infinity, Infinity):
-    //return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
+    // return this.getBetweenTimestamps(Long.MIN_VALUE, Long.MAX_VALUE);
   }
 
   public OSM getByTimestamp(long timestamp) {
@@ -147,10 +144,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     return result;
   }
 
-  public boolean hasTagKey(String key, TagTranslator tagTranslator) {
-    Integer keyId = tagTranslator.key2Int(key);
-    return keyId != null && this.hasTagKey(keyId);
-  }
+
 
   public boolean hasTagKey(int key) {
     // todo: replace with binary search (keys are sorted)
@@ -166,7 +160,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   public abstract OSHEntity<OSM> rebase(long baseId, long baseTimestamp, long baseLongitude,
-          long baseLatitude) throws IOException;
+      long baseLatitude) throws IOException;
 
   @Override
   public int compareTo(OSHEntity o) {
@@ -184,8 +178,8 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * returns true if the bbox of this HOSM entity intersects (or is fully
-   * inside) the given bbox. Used to roughly pre-filter objects against a bbox.
+   * returns true if the bbox of this HOSM entity intersects (or is fully inside) the given bbox.
+   * Used to roughly pre-filter objects against a bbox.
    *
    * @param otherBbox the bounding box which this entity is tested against
    */
@@ -210,9 +204,8 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * returns true if the bbox of this HOSM entity is fully inside the given
-   * bbox. Can be used as an optimization to find not-to-be-clipped entity
-   * Geometries
+   * returns true if the bbox of this HOSM entity is fully inside the given bbox. Can be used as an
+   * optimization to find not-to-be-clipped entity Geometries
    *
    * @param otherBbox the bounding box which this entity is tested against
    */
@@ -222,25 +215,24 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
       return false;
     }
     return bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat
-            && bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
+        && bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
   }
 
   /**
    * Returns the list of timestamps at which this entity was modified.
    *
-   * If the parameter "recurse" is set to true, it will also include
-   * modifications of the object's child elements (useful to find out when the
-   * geometry of this object has been altered).
+   * If the parameter "recurse" is set to true, it will also include modifications of the object's
+   * child elements (useful to find out when the geometry of this object has been altered).
    *
-   * @param recurse specifies if times of modifications of child entities should
-   * also be returned or not
+   * @param recurse specifies if times of modifications of child entities should also be returned or
+   *        not
    * @return a list of timestamps where this entity has been modified
    */
   public abstract List<Long> getModificationTimestamps(boolean recurse);
 
   /**
-   * Returns all timestamps at which this entity (or one or more of its child
-   * entities) has been modified.
+   * Returns all timestamps at which this entity (or one or more of its child entities) has been
+   * modified.
    *
    * @return a list of timestamps where this entity has been modified
    */
@@ -249,11 +241,10 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * Returns all timestamps at which this entity (or one or more of its child
-   * entities) has been modified and matches a given condition/filter.
+   * Returns all timestamps at which this entity (or one or more of its child entities) has been
+   * modified and matches a given condition/filter.
    *
-   * @param osmEntityFilter only timestamps for which the entity matches this
-   * filter are returned
+   * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
    * @return a list of timestamps where this entity has been modified
    */
   public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
@@ -295,24 +286,22 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
   }
 
   /**
-   * Returns all timestamps at which this entity (or one or more of its child
-   * entities) has been modified and matches a given condition/filter.
+   * Returns all timestamps at which this entity (or one or more of its child entities) has been
+   * modified and matches a given condition/filter.
    *
-   * If the groupedByChangeset parameter is set to true, consecutive
-   * modifications in a single changeset are grouped together (only the last
-   * modification timestamp of the corresponding changeset is returned). This
-   * can reduce the amount of geometry modifications by a lot (e.g. when
-   * sequential node uploads of a way modification causes many intermediate
-   * modification states), making results more "accurate"/comparable as well as
-   * faster processing of geometries.
+   * If the groupedByChangeset parameter is set to true, consecutive modifications in a single
+   * changeset are grouped together (only the last modification timestamp of the corresponding
+   * changeset is returned). This can reduce the amount of geometry modifications by a lot (e.g.
+   * when sequential node uploads of a way modification causes many intermediate modification
+   * states), making results more "accurate"/comparable as well as faster processing of geometries.
    *
-   * @param osmEntityFilter only timestamps for which the entity matches this
-   * filter are returned
-   * @param groupedByChangeset if set, consecutive modifications of a single
-   * changeset are grouped together
+   * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
+   * @param groupedByChangeset if set, consecutive modifications of a single changeset are grouped
+   *        together
    * @return a list of timestamps where this entity has been modified
    */
-  public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter, boolean groupedByChangeset) {
+  public List<Long> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter,
+      boolean groupedByChangeset) {
     List<Long> allModificationTimestamps = this.getModificationTimestamps(osmEntityFilter);
     if (!groupedByChangeset || allModificationTimestamps.size() <= 1) {
       return allModificationTimestamps;
@@ -347,31 +336,10 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id, getVersions().get(0).getVersion(), getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().getMinLat(), getBoundingBox().getMinLon(), getBoundingBox().getMaxLat(), getBoundingBox().getMaxLon());
-  }
-
-  /**
-   * Get a GIS-compatible String version of your OSH-Object. Note that this
-   * method uses the timestamps of the underlying OSM-Entities to construct
-   * geometries. If you desire inter-version-geometries, which are possible,
-   * please refer to
-   * {@link org.heigit.bigspatialdata.oshdb.osm.OSMEntity#toGeoJSON(java.util.List, org.heigit.bigspatialdata.oshdb.util.TagTranslator, org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter) the static method toGeoJSON of the OSMEntity}.
-   *
-   * @param tagtranslator a connection to a database to translate the coded
-   * integer back to human readable string
-   * @param areaDecider A list of tags, that define a polygon from a linestring.
-   * A default one is available.
-   * @return A string representation of the Object in GeoJSON-format
-   * (https://tools.ietf.org/html/rfc7946#section-3.3)
-   */
-  public String toGeoJSON(TagTranslator tagtranslator, TagInterpreter areaDecider) {
-    List<Pair<? extends OSMEntity, Long>> entities = new ArrayList<>();
-    Iterator<? extends OSMEntity> it = iterator();
-    while (it.hasNext()) {
-      OSMEntity obj = it.next();
-      entities.add(new ImmutablePair<>(obj, obj.getTimestamp()));
-    }
-    return OSMEntity.toGeoJSON(entities, tagtranslator, areaDecider);
+    return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
+        getVersions().get(0).getVersion(),
+        getVersions().get(getVersions().size() - 1).getTimestamp(), getBoundingBox().getMinLat(),
+        getBoundingBox().getMinLon(), getBoundingBox().getMaxLat(), getBoundingBox().getMaxLon());
   }
 
 }

@@ -14,10 +14,10 @@
   <packaging>pom</packaging>
   
   <modules>
-    <module>oshpbf-parser</module>
     <module>oshdb</module>
     <module>oshdb-api</module>
     <module>oshdb-tool</module>
+    <module>oshdb-util</module>
   </modules>
   
   <properties>

@@ -4,7 +4,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndOtherIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.jetbrains.annotations.Contract;
 

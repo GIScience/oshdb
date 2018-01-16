@@ -4,11 +4,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import java.util.EnumSet;
 import java.util.Objects;
 
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 
 /**
  * Holds information about a single modification ("contribution") of a single entity in database.

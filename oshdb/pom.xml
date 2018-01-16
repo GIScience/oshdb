@@ -11,6 +11,7 @@
   </parent>
 
   <artifactId>oshdb</artifactId>
+  <description>The central database-concept for osh-objects.</description>
 
   <dependencies>
     <dependency>

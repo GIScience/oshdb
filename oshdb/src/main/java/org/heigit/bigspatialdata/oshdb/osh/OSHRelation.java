@@ -13,8 +13,8 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
 
 public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable {
 
