@@ -147,6 +147,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
     return result;
   }
 
+  @Deprecated
   public boolean hasTagKey(String key, TagTranslator tagTranslator) {
     Integer keyId = tagTranslator.key2Int(key);
     return keyId != null && this.hasTagKey(keyId);
@@ -364,6 +365,7 @@ public abstract class OSHEntity<OSM extends OSMEntity> implements Comparable<OSH
    * @return A string representation of the Object in GeoJSON-format
    * (https://tools.ietf.org/html/rfc7946#section-3.3)
    */
+  @Deprecated
   public String toGeoJSON(TagTranslator tagtranslator, TagInterpreter areaDecider) {
     List<Pair<? extends OSMEntity, Long>> entities = new ArrayList<>();
     Iterator<? extends OSMEntity> it = iterator();

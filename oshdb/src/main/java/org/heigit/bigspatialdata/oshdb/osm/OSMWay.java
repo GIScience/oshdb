@@ -44,6 +44,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   }
 
   @Override
+  @Deprecated
   public String toString(TagTranslator tagTranslator) {
     StringBuilder sb = new StringBuilder();
     sb.append("WAY-> ").append(super.toString(tagTranslator)).append(" Refs:").append("[");
@@ -122,12 +123,14 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   }
 
   @Override
+  @Deprecated
   public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).build().toString();
     return result;
   }
 
   @Override
+  @Deprecated
   public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     return super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
   }

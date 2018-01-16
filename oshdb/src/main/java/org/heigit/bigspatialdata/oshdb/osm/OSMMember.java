@@ -56,6 +56,7 @@ public class OSMMember {
    * @param tagTranslator the TagTranslator to translate the Tags.
    * @return
    */
+  @Deprecated
   public String toString(TagTranslator tagTranslator) {
     StringBuilder sb = new StringBuilder();
 

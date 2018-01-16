@@ -57,6 +57,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   }
 
   @Override
+  @Deprecated
   public String toString(TagTranslator tagTranslator) {
     return String.format(Locale.ENGLISH, "NODE: %s %f:%f", super.toString(tagTranslator), getLongitude(), getLatitude());
   }
@@ -114,12 +115,14 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   }
 
   @Override
+  @Deprecated
   public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).build().toString();
     return result;
   }
 
   @Override
+  @Deprecated
   public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     return super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
   }

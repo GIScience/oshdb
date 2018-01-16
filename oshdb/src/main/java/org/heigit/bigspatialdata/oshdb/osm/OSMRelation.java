@@ -227,6 +227,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
 
   @Override
+  @Deprecated
   public String toString(TagTranslator tagTranslator) {
     StringBuilder sb = new StringBuilder();
     sb.append("RELATION-> ").append(super.toString(tagTranslator)).append(" Mem:").append("[");
@@ -242,12 +243,14 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
 
   @Override
+  @Deprecated
   public String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     String result = this.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider).build().toString();
     return result;
   }
 
   @Override
+  @Deprecated
   public JsonObjectBuilder toGeoJSONbuilder(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider) {
     return super.toGeoJSONbuilder(timestamp, tagtranslator, areaDecider);
   }

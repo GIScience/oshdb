@@ -346,6 +346,7 @@ public abstract class OSMEntity {
    * @return A string representation of the Object in GeoJSON-format
    * (https://tools.ietf.org/html/rfc7946#section-3.3)
    */
+  @Deprecated
   public abstract String toGeoJSON(long timestamp, TagTranslator tagtranslator, TagInterpreter areaDecider);
 
   // helpers to determine underlying structure of osm objects
