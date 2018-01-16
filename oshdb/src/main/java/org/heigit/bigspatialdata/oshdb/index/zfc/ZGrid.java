@@ -134,14 +134,12 @@ public class ZGrid {
 
     long[] xy = getXY(id);
 
-    final long[] lon = new long[2];
-    lon[0] = denormalizeLon(xy[0] * cellWidth);
-    lon[1] = lon[0] + cellWidth - 1;
-    final long[] lat = new long[2];
-    lat[0] = denormalizeLat(xy[1] * cellWidth);
-    lat[1] = lat[0] + cellWidth - 1;
+    final long minLon = denormalizeLon(xy[0] * cellWidth);
+    final long maxLon = minLon + cellWidth - 1;
+    final long minLat = denormalizeLat(xy[1] * cellWidth);
+    final long maxLat = minLat + cellWidth - 1;
 
-    return new BoundingBox(lon, lat);
+    return new BoundingBox(minLon, maxLon, minLat, maxLat);
   }
 
   private static long[] getXY(long id) {

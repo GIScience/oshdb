@@ -76,10 +76,6 @@ public class BoundingBox implements Serializable {
     this(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY());
   }
 
-  public BoundingBox(long[] lon, long[] lat) {
-    this(lon[0], lon[1], lat[0], lat[1]);
-  }
-
   public double getMinLon() {
     return minLon * OSHDB.GEOM_PRECISION;
   }
