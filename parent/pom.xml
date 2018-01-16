@@ -5,7 +5,7 @@
   
   <groupId>org.heigit.bigspatialdata</groupId>
   <artifactId>bigspatialdata-parent</artifactId>
-  <version>0.3.0</version>
+  <version>0.3.1</version>
   <packaging>pom</packaging>
 
   <name>HeiGIT Big Spatial Data Parent POM</name>
