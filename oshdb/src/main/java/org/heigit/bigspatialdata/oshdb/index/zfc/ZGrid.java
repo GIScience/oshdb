@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.index.zfc;
 
 import java.util.Comparator;
 import java.util.Iterator;
+
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox.OVERLAP;
@@ -14,6 +15,7 @@ public class ZGrid {
 
   private static final long space = (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG);
   private final int maxZoom;
+  private static final BoundingBox zeroBoundingBox = new BoundingBox(0, 0, 0, 0);
 
   public ZGrid(int maxZoom) {
     if (maxZoom < 1) {
@@ -124,9 +126,9 @@ public class ZGrid {
     return new DFIterator(search, maxZoom, space);
   }
 
-  public BoundingBox getBoundingBox(long zId) {
+  public static BoundingBox getBoundingBox(long zId) {
     if (zId < 0) {
-      return new BoundingBox(0, 0, 0, 0);
+      return zeroBoundingBox;
     }
     final long id = getIdWithoutZoom(zId);
     final int zoom = getZoom(zId);
@@ -210,6 +212,11 @@ public class ZGrid {
   }
 
   public static final Comparator<Long> ORDER_DFS_TOP_DOWN = (a, b) -> {
+    if(a == -1)
+      return (b == -1)?0:-1;
+    if(b == -1)
+      return 1;
+    
     final long aZ = getZoom(a);
     final long bZ = getZoom(b);
     if (aZ == bZ) {
