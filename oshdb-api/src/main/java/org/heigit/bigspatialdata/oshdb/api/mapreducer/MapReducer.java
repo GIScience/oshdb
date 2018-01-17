@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import java.sql.Connection;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import com.vividsolutions.jts.geom.*;
 import java.io.IOException;
@@ -142,13 +144,23 @@ public abstract class MapReducer<X>
    * into internally used identifiers. If this function is never called, the main database
    * (specified during the construction of this object) is used for this.
    *
-   * @param oshdb the database to use for resolving strings into internal identifiers
+   * @param keytablesOshdb the database to use for resolving strings into internal identifiers
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> keytables(OSHDB_JDBC oshdb) {
+  public MapReducer<X> keytables(OSHDB_JDBC keytablesOshdb) {
+    if (keytablesOshdb != this._oshdb && this._oshdb instanceof OSHDB_JDBC) {
+      Connection c = ((OSHDB_JDBC) this._oshdb).getConnection();
+      try {
+        if (c.prepareStatement("select txt from "+ TableNames.E_KEY+" limit 1").execute()) {
+          LOG.warn("It looks like as if the current OSHDB comes with keytables included. Usually this means that you should use this file's keytables and should not set the keytables manually.");
+        }
+      } catch (SQLException e) {
+        // this is the expected path -> the oshdb doesn't have the key tables
+      }
+    }
     MapReducer<X> ret = this.copy();
-    ret._oshdbForTags = oshdb;
+    ret._oshdbForTags = keytablesOshdb;
     return ret;
   }
 
