@@ -1,6 +1,8 @@
 ### 0.4.0 SNAPSHOT (current master)
 
 * tweak database cell structure: higher max-zoom level (15 instead of 12), move content from almost empty cells to higher zoom levels, store objects in cells where they fit fully
+* (breaking) all timestamps related to oshdb objects (osm entities, etc.) return OSHDBTimestamp objects
+
 
 ### 0.3.1
 

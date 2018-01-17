@@ -27,6 +27,7 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -121,14 +122,14 @@ public class TestMultipolygonGeometry2 {
         }
       }
 
-      List<Long> timestamps;
+      List<OSHDBTimestamp> timestamps;
       timestamps = new ArrayList<>();
       final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
       for (int year = 2004; year <= 2018; year++) {
         for (int month = 1; month <= 12; month++) {
           try {
-            timestamps
-                .add(formatter.parse(String.format("%d%02d01", year, month)).getTime() / 1000);
+            timestamps.add(new OSHDBTimestamp(
+                formatter.parse(String.format("%d%02d01", year, month)).getTime() / 1000));
           } catch (java.text.ParseException e) {
             System.err.println("basdoawrd");
           }
@@ -168,11 +169,11 @@ public class TestMultipolygonGeometry2 {
             osmEntity -> osmEntity.hasTagKeyExcluding(interestedKeyId, uninterestedValueIds), false)
             .forEach(result -> {
               result.entrySet().forEach(entry -> {
-                long timestamp = entry.getKey();
+                OSHDBTimestamp timestamp = entry.getKey();
                 OSMEntity osmEntity = entry.getValue().getLeft();
                 Geometry geometry = entry.getValue().getRight();
 
-                counts.put(timestamp, counts.getOrDefault(timestamp, 0.0) + 1);
+                counts.put(timestamp.getRawUnixTimestamp(), counts.getOrDefault(timestamp, 0.0) + 1);
               });
             });
 

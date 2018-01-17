@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -39,8 +40,8 @@ public class JSONTransformerTest {
   @Test
   public void testTransform_4args_101() throws SQLException {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
-    long timestamp = 1L;
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(1L);
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
@@ -56,18 +57,18 @@ public class JSONTransformerTest {
   public void testTransform_4args_102()
       throws SQLException, ClassNotFoundException, IOException, ParseException {
     List<OSMNode> versions = new ArrayList<>(1);
-    versions.add(new OSMNode(123l, 1, 0l, 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(0l), 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
     OSMMember part = new OSMMember(1L, OSMType.NODE, 0, hnode);
     OSMRelation instance =
-        new OSMRelation(1L, 1, 0L, 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
+        new OSMRelation(1L, 1, new OSHDBTimestamp(0L), 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
         "{\"type\":\"Feature\",\"id\":\"relation/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"relation\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\",\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"}]},\"geometry\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]},{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}]}}";
 
     String result = JSONTransformer
-        .transform(instance, 1L, tt,
+        .transform(instance, new OSHDBTimestamp(1L), tt,
             DefaultTagInterpreter.fromJDBC(
                 DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", "")))
         .toString();
@@ -77,17 +78,17 @@ public class JSONTransformerTest {
   @Test
   public void testTransform_4args_103() throws SQLException, ClassNotFoundException, IOException {
     List<OSMNode> versions = new ArrayList<>(1);
-    versions.add(new OSMNode(123l, 1, 0l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(0l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1, hnode);
-    OSMWay instance = new OSMWay(1L, 1, 0L, 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
+    OSMWay instance = new OSMWay(1L, 1, new OSHDBTimestamp(0L), 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
         "{\"type\":\"Feature\",\"id\":\"way/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"way\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\",\"refs\":[1,1]},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]}}";
 
     String result = JSONTransformer
-        .transform(instance, 1L, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1))
+        .transform(instance, new OSHDBTimestamp(1L), tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1))
         .toString();
     assertEquals(expResult, result);
   }
@@ -95,10 +96,10 @@ public class JSONTransformerTest {
   @Test
   public void testMultiTransform() throws SQLException {
     int[] properties = {1, 2};
-    OSMNode instance = new OSMNode(1L, 1, 1415538449L, 1L, 1, properties, 1000000000L, 1000000000L);
-    List<Pair<? extends OSMEntity, Long>> OSMObjects = new ArrayList<>(2);
-    OSMObjects.add(new ImmutablePair<>(instance, 1L));
-    OSMObjects.add(new ImmutablePair<>(instance, 2L));
+    OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1415538449L), 1L, 1, properties, 1000000000L, 1000000000L);
+    List<Pair<? extends OSMEntity, OSHDBTimestamp>> OSMObjects = new ArrayList<>(2);
+    OSMObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(1L)));
+    OSMObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(2L)));
     TagInterpreter areaDecider = new TagInterpreter(1, 1, null, null, null, 1, 1, 1);
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
@@ -113,8 +114,8 @@ public class JSONTransformerTest {
 
     List<OSMNode> versions = new ArrayList<>(2);
 
-    versions.add(new OSMNode(123l, 2, 0l, 46l, 1, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-    versions.add(new OSMNode(123l, 1, 1l, 47l, 2, TAGS_B, LONLAT_B[0], LONLAT_B[1]));
+    versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(0l), 46l, 1, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 47l, 2, TAGS_B, LONLAT_B[0], LONLAT_B[1]));
 
     OSHNode instance = OSHNode.build(versions);
 
@@ -133,9 +134,9 @@ public class JSONTransformerTest {
     List<OSHNode> hosmNodes = new ArrayList<>(3);
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>(2);
-      versions.add(new OSMNode(i + 1, 1, 0, 1l, 1, new int[] {1, 2}, 86809727l - 1000000 * i,
+      versions.add(new OSMNode(i + 1, 1, new OSHDBTimestamp(0), 1l, 1, new int[] {1, 2}, 86809727l - 1000000 * i,
           494094984l - 1000000 * i));
-      versions.add(new OSMNode(i + 1, 2, 0, 1l, 1, new int[] {1, 2}, 0L, 0L));
+      versions.add(new OSMNode(i + 1, 2, new OSHDBTimestamp(0), 1l, 1, new int[] {1, 2}, 0L, 0L));
       hosmNodes.add(OSHNode.build(versions));
     }
 

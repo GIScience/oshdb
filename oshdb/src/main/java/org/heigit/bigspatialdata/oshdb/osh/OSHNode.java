@@ -12,6 +12,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
 
@@ -164,7 +165,7 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
             latitude = wrapper.readSInt64() + latitude;
           }
 
-          return new OSMNode(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+          return new OSMNode(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset, userId, keyValues,
                   (version > 0) ? baseLongitude + longitude : 0, (version > 0) ? baseLatitude + latitude : 0);
         } catch (IOException e) {
           e.printStackTrace();
@@ -310,8 +311,8 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
   }
 
   @Override
-  public List<Long> getModificationTimestamps(boolean recurse) {
-    List<Long> result = this.getVersions().stream()
+  public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
+    List<OSHDBTimestamp> result = this.getVersions().stream()
             .map(OSMNode::getTimestamp)
             .collect(Collectors.toList());
     Collections.sort(result);
@@ -319,8 +320,8 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
   }
 
   @Override
-  protected Map<Long, Long> getChangesetTimestamps() {
-    Map<Long, Long> result = new TreeMap<>();
+  protected Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+    Map<OSHDBTimestamp, Long> result = new TreeMap<>();
     this.getVersions().forEach(osmNode
             -> result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
     );

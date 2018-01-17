@@ -23,7 +23,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -97,14 +97,13 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       CellIterator
           .iterateAll(oshCell, this._bboxFilter, this._getPolyFilter(),
-              new CellIterator.TimestampInterval(this._tstamps.getTimestamps().get(0),
-                  this._tstamps.getTimestamps().get(this._tstamps.getTimestamps().size() - 1)),
+              new CellIterator.TimestampInterval(this._tstamps.get().get(0),
+                  this._tstamps.get().get(this._tstamps.get().size() - 1)),
               tagInterpreter, this._getPreFilter(), this._getFilter(), false)
           .forEach(contribution -> {
             OSMContribution osmContribution = new OSMContribution(
-                new OSHDBTimestamp(contribution.timestamp),
-                contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp)
-                    : null,
+                contribution.timestamp,
+                contribution.nextTimestamp,
                 contribution.previousGeometry, contribution.geometry,
                 contribution.previousOsmEntity, contribution.osmEntity, contribution.activities);
             accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
@@ -160,14 +159,13 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
       List<OSMContribution> contributions = new ArrayList<>();
       CellIterator
           .iterateAll(oshCell, this._bboxFilter, this._getPolyFilter(),
-              new CellIterator.TimestampInterval(this._tstamps.getTimestamps().get(0),
-                  this._tstamps.getTimestamps().get(this._tstamps.getTimestamps().size() - 1)),
+              new CellIterator.TimestampInterval(this._tstamps.get().get(0),
+                  this._tstamps.get().get(this._tstamps.get().size() - 1)),
               tagInterpreter, this._getPreFilter(), this._getFilter(), false)
           .forEach(contribution -> {
             OSMContribution thisContribution = new OSMContribution(
-                new OSHDBTimestamp(contribution.timestamp),
-                contribution.nextTimestamp != null ? new OSHDBTimestamp(contribution.nextTimestamp)
-                    : null,
+                contribution.timestamp,
+                contribution.nextTimestamp,
                 contribution.previousGeometry, contribution.geometry,
                 contribution.previousOsmEntity, contribution.osmEntity, contribution.activities);
             if (contributions.size() > 0 && thisContribution.getEntityAfter()
@@ -236,12 +234,11 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       CellIterator.iterateByTimestamps(oshCell, this._bboxFilter, this._getPolyFilter(),
-          this._tstamps.getTimestamps(), tagInterpreter, this._getPreFilter(), this._getFilter(),
-          false).forEach(result -> result.forEach((key, value) -> {
-            OSHDBTimestamp tstamp = new OSHDBTimestamp(key);
+          this._tstamps.get(), tagInterpreter, this._getPreFilter(), this._getFilter(),
+          false).forEach(result -> result.forEach((timestamp, value) -> {
             Geometry geometry = value.getRight();
             OSMEntity entity = value.getLeft();
-            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(tstamp, geometry, entity);
+            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(timestamp, geometry, entity);
             // immediately fold the result
             accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
           }));
@@ -294,14 +291,13 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       CellIterator.iterateByTimestamps(oshCell, this._bboxFilter, this._getPolyFilter(),
-          this._tstamps.getTimestamps(), tagInterpreter, this._getPreFilter(), this._getFilter(),
+          this._tstamps.get(), tagInterpreter, this._getPreFilter(), this._getFilter(),
           false).forEach(snapshots -> {
             List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());
-            snapshots.forEach((key, value) -> {
-              OSHDBTimestamp tstamp = new OSHDBTimestamp(key);
+            snapshots.forEach((timestamp, value) -> {
               Geometry geometry = value.getRight();
               OSMEntity entity = value.getLeft();
-              osmEntitySnapshots.add(new OSMEntitySnapshot(tstamp, geometry, entity));
+              osmEntitySnapshots.add(new OSMEntitySnapshot(timestamp, geometry, entity));
             });
             // immediately fold the results
             for (R r : mapper.apply(osmEntitySnapshots)) {

@@ -18,6 +18,8 @@ import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.LONLAT_A;
 import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.TAGS_A;
 import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.USER_A;
+
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -36,11 +38,11 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testIsAuxiliary() throws IOException {
     List<OSMNode> versions = new ArrayList<>(1);
-    versions.add(new OSMNode(123l, 1, 0l, 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(0l), 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
     OSMMember part = new OSMMember(1L, OSMType.NODE, 0, hnode);
     OSMRelation instance =
-        new OSMRelation(1L, 1, 0L, 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
+        new OSMRelation(1L, 1, new OSHDBTimestamp(0L), 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
     Set<Integer> uninterestingTagKeys = null;
     boolean expResult = false;
     boolean result = OSHDbGeometryBuilder.isAuxiliary(instance, uninterestingTagKeys);
@@ -50,7 +52,7 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testIsPoint() {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
     boolean expResult = true;
     boolean result = OSHDbGeometryBuilder.isPoint(entity);
     assertEquals(expResult, result);
@@ -59,7 +61,7 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testIsPointLike() {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
     TagInterpreter areaDecider = null;
     boolean expResult = true;
     boolean result = OSHDbGeometryBuilder.isPointLike(entity, areaDecider);
@@ -69,7 +71,7 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testIsArea() {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
     TagInterpreter areaDecider = null;
     boolean expResult = false;
     boolean result = OSHDbGeometryBuilder.isArea(entity, areaDecider);
@@ -79,7 +81,7 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testIsLine() {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
     TagInterpreter areaDecider = null;
     boolean expResult = false;
     boolean result = OSHDbGeometryBuilder.isLine(entity, areaDecider);
@@ -89,8 +91,8 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testGetGeometry() {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
-    long timestamp = 0L;
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
     TagInterpreter areaDecider = null;
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 100));
     Geometry result = OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -100,8 +102,8 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testGetGeometryClipped_4args_1() {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 800000000L);
-    long timestamp = 0L;
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 800000000L);
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
     TagInterpreter areaDecider = null;
     BoundingBox clipBbox = new BoundingBox(-180.0, 180.0, -90.0, 90.0);
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
@@ -113,8 +115,8 @@ public class OSHDbGeometryBuilderTest {
   @Test
   public void testGetGeometryClipped_4args_2() {
     int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 800000000L);
-    long timestamp = 0L;
+    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 800000000L);
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
     TagInterpreter areaDecider = null;
     Polygon clipPoly = (new BoundingBox(-180, 180, -90, 90)).getGeometry();
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));

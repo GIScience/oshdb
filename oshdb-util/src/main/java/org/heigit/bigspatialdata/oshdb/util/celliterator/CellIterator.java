@@ -12,6 +12,7 @@ import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -51,11 +52,11 @@ public class CellIterator {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public static <P extends Geometry & Polygonal> Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
-      GridOSHEntity cell, BoundingBox boundingBox, P boundingPolygon, List<Long> timestamps,
+  public static <P extends Geometry & Polygonal> Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
+      GridOSHEntity cell, BoundingBox boundingBox, P boundingPolygon, List<OSHDBTimestamp> timestamps,
       TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    List<SortedMap<Long, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
+    List<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
     XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
@@ -69,13 +70,13 @@ public class CellIterator {
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
-      SortedMap<Long, List<Long>> queryTs = new TreeMap<>();
+      SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
-        List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+        List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
         int j = 0;
-        for (long requestedT : timestamps) {
+        for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
-          while (j < modTs.size() && modTs.get(j) < requestedT) {
+          while (j < modTs.size() && modTs.get(j).getRawUnixTimestamp() < requestedT.getRawUnixTimestamp()) {
             needToRequest = true;
             j++;
           }
@@ -87,17 +88,17 @@ public class CellIterator {
         }
       } else {
         // todo: make this work with old style multipolygons!!?!
-        for (Long ts : timestamps) {
+        for (OSHDBTimestamp ts : timestamps) {
           queryTs.put(ts, new LinkedList<>());
         }
       }
 
-      SortedMap<Long, OSMEntity> osmEntityByTimestamps =
+      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
           oshEntity.getByTimestamps(new ArrayList<>(queryTs.keySet()));
-      SortedMap<Long, Pair<OSMEntity, Geometry>> oshResult = new TreeMap<>();
+      SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>> oshResult = new TreeMap<>();
 
-      osmEntityLoop: for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
-        Long timestamp = entity.getKey();
+      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+        OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
         if (!osmEntity.isVisible()) {
@@ -170,7 +171,7 @@ public class CellIterator {
             oshResult.put(timestamp, result);
             // add skipped timestamps (where nothing has changed from the last timestamp) to set of
             // results
-            for (Long additionalTimestamp : queryTs.get(timestamp)) {
+            for (OSHDBTimestamp additionalTimestamp : queryTs.get(timestamp)) {
               oshResult.put(additionalTimestamp, result);
             }
           }
@@ -196,24 +197,24 @@ public class CellIterator {
     return results.stream();
   }
 
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
-      GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps,
+  public static Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
+      GridOSHEntity cell, BoundingBox boundingBox, List<OSHDBTimestamp> timestamps,
       TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     return iterateByTimestamps(cell, boundingBox, null, timestamps, tagInterpreter,
         oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
 
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
-      GridOSHEntity cell, BoundingBox boundingBox, List<Long> timestamps,
+  public static Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
+      GridOSHEntity cell, BoundingBox boundingBox, List<OSHDBTimestamp> timestamps,
       TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter,
       boolean includeOldStyleMultipolygons) {
     return iterateByTimestamps(cell, boundingBox, timestamps, tagInterpreter, oshEntity -> true,
         osmEntityFilter, includeOldStyleMultipolygons);
   }
 
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
-      GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps,
+  public static Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
+      GridOSHEntity cell, Polygon boundingPolygon, List<OSHDBTimestamp> timestamps,
       TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     BoundingBox boundingBox = new BoundingBox(boundingPolygon.getEnvelopeInternal());
@@ -221,8 +222,8 @@ public class CellIterator {
         oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
 
-  public static Stream<SortedMap<Long, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
-      GridOSHEntity cell, Polygon boundingPolygon, List<Long> timestamps,
+  public static Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
+      GridOSHEntity cell, Polygon boundingPolygon, List<OSHDBTimestamp> timestamps,
       TagInterpreter tagInterpreter, Predicate<OSMEntity> osmEntityFilter,
       boolean includeOldStyleMultipolygons) {
     return iterateByTimestamps(cell, boundingPolygon, timestamps, tagInterpreter, oshEntity -> true,
@@ -230,44 +231,46 @@ public class CellIterator {
   }
 
   public static class TimestampInterval {
-    private long fromTimestamp;
-    private long toTimestamp;
+    private OSHDBTimestamp fromTimestamp;
+    private OSHDBTimestamp toTimestamp;
 
     public TimestampInterval() {
-      this(Long.MIN_VALUE, Long.MAX_VALUE);
+      this(new OSHDBTimestamp(Long.MIN_VALUE), new OSHDBTimestamp(Long.MAX_VALUE));
     }
 
-    public TimestampInterval(Long fromTimestamp, Long toTimestamp) {
+    public TimestampInterval(OSHDBTimestamp fromTimestamp, OSHDBTimestamp toTimestamp) {
       this.fromTimestamp = fromTimestamp;
       this.toTimestamp = toTimestamp;
     }
 
     public boolean intersects(TimestampInterval other) {
-      return other.toTimestamp >= this.fromTimestamp && other.fromTimestamp <= this.toTimestamp;
+      return other.toTimestamp.getRawUnixTimestamp() >= this.fromTimestamp.getRawUnixTimestamp()
+          && other.fromTimestamp.getRawUnixTimestamp() <= this.toTimestamp.getRawUnixTimestamp();
     }
 
-    public boolean includes(long timestamp) {
-      return timestamp >= this.fromTimestamp && timestamp < this.toTimestamp;
+    public boolean includes(OSHDBTimestamp timestamp) {
+      return timestamp.getRawUnixTimestamp() >= this.fromTimestamp.getRawUnixTimestamp()
+          && timestamp.getRawUnixTimestamp() < this.toTimestamp.getRawUnixTimestamp();
     }
 
-    public int compareTo(long timestamp) {
+    public int compareTo(OSHDBTimestamp timestamp) {
       if (this.includes(timestamp)) {
         return 0;
       }
-      return timestamp < this.fromTimestamp ? -1 : 1;
+      return timestamp.getRawUnixTimestamp() < this.fromTimestamp.getRawUnixTimestamp() ? -1 : 1;
     }
   }
 
   public static class IterateAllEntry {
-    public final Long timestamp;
-    public final Long nextTimestamp;
+    public final OSHDBTimestamp timestamp;
+    public final OSHDBTimestamp nextTimestamp;
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
     public final Geometry geometry;
     public final Geometry previousGeometry;
     public final EnumSet<ContributionType> activities;
 
-    IterateAllEntry(Long timestamp, Long nextTimestamp, OSMEntity entity,
+    IterateAllEntry(OSHDBTimestamp timestamp, OSHDBTimestamp nextTimestamp, OSMEntity entity,
         OSMEntity previousOsmEntity, Geometry geom, Geometry previousGeometry,
         EnumSet<ContributionType> activities) {
       this.timestamp = timestamp;
@@ -330,28 +333,27 @@ public class CellIterator {
       boolean fullyInside = oshEntity.insideBbox(boundingBox)
           && (boundingPolygon == null || (boundingPolygon.contains(boundingBox.getGeometry())));
 
-      List<Long> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
+      List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
       if (modTs.size() == 0 || !timeInterval
           .intersects(new TimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1)))) {
         continue; // ignore osh entity because it's edit history is fully outside of the given time
       } // interval of interest
 
-      SortedMap<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(modTs);
+      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(modTs);
 
       IterateAllEntry prev = null;
-      osmEntityLoop: for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
-        Long timestamp = entity.getKey();
+      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+        OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
-        // prev = results.size() > 0 ? results.get(results.size()-1) : null; // todo: replace with
-        // variable outside of osmEntitiyLoop (than we can also get rid of the ` ||
-        // prev.osmEntity.getId() != osmEntity.getId()`'s below)
+        // prev = results.size() > 0 ? results.get(results.size()-1) : null;
+        // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
         boolean skipOutput = false;
 
-        Long nextTs = null;
-        if (modTs.size() > modTs.indexOf(timestamp) + 1) // todo: better way to figure out if
-        // timestamp is not last element??
+        OSHDBTimestamp nextTs = null;
+        // todo: better way to figure out if timestamp is not last element??
+        if (modTs.size() > modTs.indexOf(timestamp) + 1)
         {
           nextTs = modTs.get(modTs.indexOf(timestamp) + 1);
         }
