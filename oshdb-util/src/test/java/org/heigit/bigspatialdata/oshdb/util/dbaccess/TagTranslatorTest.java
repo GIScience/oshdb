@@ -23,7 +23,7 @@ public class TagTranslatorTest {
 
     // connect to the "Big"DB
     TagTranslatorTest.conn =
-        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", "");
+        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r", "sa", "");
 
   }
 
