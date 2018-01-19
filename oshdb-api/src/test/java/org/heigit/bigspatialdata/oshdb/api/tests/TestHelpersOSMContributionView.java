@@ -5,6 +5,7 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import java.util.List;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -220,6 +221,17 @@ public class TestHelpersOSMContributionView {
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());
+  }
+
+  @Test
+  public void testIssue107() throws Exception {
+    // single timestamp
+    List<OSMContribution> result = this.createMapReducer()
+        .timestamps(timestamps72)
+        .collect();
+
+    assertEquals(true, result.get(0).getContributionTypes().contains(ContributionType.CREATION));
+    assertEquals(null, result.get(0).getEntityBefore());
   }
 
 }
