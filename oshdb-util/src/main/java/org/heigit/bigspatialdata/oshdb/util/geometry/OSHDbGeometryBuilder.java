@@ -11,6 +11,7 @@ import com.vividsolutions.jts.geom.Polygonal;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -127,15 +128,20 @@ public class OSHDbGeometryBuilder {
     Geometry[] geoms = new Geometry[relation.getMembers().length];
     for (int i = 0; i < relation.getMembers().length; i++) {
       try {
-        geoms[i] = OSHDbGeometryBuilder.getGeometry(
-            relation.getMembers()[i].getEntity().getByTimestamp(timestamp), timestamp, areaDecider);
+        if (relation.getMembers()[i].getEntity() == null)
+          geoms[i] = null;
+        else
+          geoms[i] = OSHDbGeometryBuilder.getGeometry(
+              relation.getMembers()[i].getEntity().getByTimestamp(timestamp),
+              timestamp,
+              areaDecider);
       } catch (NullPointerException ex) {
         LOG.warn("Member entity of relation/{} missing, geometry could not be created.",
             entity.getId());
         return null;
       }
     }
-    return geometryFactory.createGeometryCollection(geoms);
+    return geometryFactory.createGeometryCollection(Arrays.stream(geoms).filter(Objects::nonNull).toArray(Geometry[]::new));
   }
 
   private static Geometry getMultiPolygonGeometry(OSMRelation entity, long timestamp,
