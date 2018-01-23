@@ -8,7 +8,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -83,7 +83,7 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> areaOfInterest(BoundingBox bboxFilter) {
+  public MapAggregator<U, X> areaOfInterest(OSHDBBoundingBox bboxFilter) {
     return this.copyTransform(this._mapReducer.areaOfInterest(bboxFilter));
   }
 

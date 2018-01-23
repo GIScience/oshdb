@@ -30,7 +30,7 @@ import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellRelation;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.WayRelation;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
@@ -208,7 +208,7 @@ public class TransformRelationMapper extends TransformMapper2 {
     }
 
     for (OSHWay osh : ways) {
-      BoundingBox bbox = osh.getBoundingBox();
+      OSHDBBoundingBox bbox = osh.getBoundingBox();
       minLon = Math.min(minLon, bbox.getMinLon());
       maxLon = Math.max(maxLon, bbox.getMaxLon());
 
@@ -223,7 +223,7 @@ public class TransformRelationMapper extends TransformMapper2 {
       cellId = -1;
 
     } else {
-      final BoundingBox boundingBox = new BoundingBox(minLon, maxLon, minLat, maxLat);
+      final OSHDBBoundingBox boundingBox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
 
       level = maxZoom;
       XYGrid grid = null;

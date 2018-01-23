@@ -14,7 +14,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.LONLAT_A;
 import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.TAGS_A;
 import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.USER_A;
@@ -103,7 +103,7 @@ public class OSHDbGeometryBuilderTest {
     OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 800000000L);
     long timestamp = 0L;
     TagInterpreter areaDecider = null;
-    BoundingBox clipBbox = new BoundingBox(-180.0, 180.0, -90.0, 90.0);
+    OSHDBBoundingBox clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 90.0);
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
     Geometry result =
         OSHDbGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipBbox);
@@ -116,7 +116,7 @@ public class OSHDbGeometryBuilderTest {
     OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 800000000L);
     long timestamp = 0L;
     TagInterpreter areaDecider = null;
-    Polygon clipPoly = (new BoundingBox(-180, 180, -90, 90)).getGeometry();
+    Polygon clipPoly = (new OSHDBBoundingBox(-180, -90, 180, 90)).getGeometry();
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
     Geometry result =
         OSHDbGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipPoly);

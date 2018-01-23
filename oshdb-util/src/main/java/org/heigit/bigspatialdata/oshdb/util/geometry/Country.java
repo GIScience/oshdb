@@ -15,7 +15,7 @@ import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.slf4j.Logger;
@@ -85,13 +85,13 @@ public class Country {
    * @return
    * @throws IOException
    */
-  public static BoundingBox getBoundingBox(String name) throws IOException {
+  public static OSHDBBoundingBox getBoundingBox(String name) throws IOException {
     MultiPolygon mp = Country.getFeatures(CountryCodeType.GEOUNIT, name);
     if (mp == null) {
       return null;
     }
     Envelope env = mp.getEnvelopeInternal();
-    return new BoundingBox(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY());
+    return new OSHDBBoundingBox(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY());
 
   }
 

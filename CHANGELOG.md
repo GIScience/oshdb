@@ -1,6 +1,7 @@
 ### 0.4.0 SNAPSHOT (current master)
 
 * tweak database cell structure: higher max-zoom level (15 instead of 12), move content from almost empty cells to higher zoom levels, store objects in cells where they fit fully
+* (breaking) renamed bounding box class to `OSHDBBoundingBox` and change order of constructor parameters to `minLon, minLat, maxLon, maxLat` (was `minLon, maxLon, minLat, maxLat`)
 
 ### 0.3.1
 

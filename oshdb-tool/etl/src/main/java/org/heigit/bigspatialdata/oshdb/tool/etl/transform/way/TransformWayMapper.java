@@ -29,7 +29,7 @@ import org.heigit.bigspatialdata.oshdb.tool.etl.transform.TransformMapper2;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.CellWay;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.WayRelation;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
@@ -237,8 +237,8 @@ public class TransformWayMapper extends TransformMapper2 {
       }
     }
 
-    final BoundingBox boundingBox =
-        new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
+    final OSHDBBoundingBox boundingBox =
+        new OSHDBBoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
             minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
 
     long ids;

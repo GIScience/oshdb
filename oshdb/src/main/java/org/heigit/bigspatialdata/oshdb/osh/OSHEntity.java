@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 
 @SuppressWarnings("rawtypes")
@@ -23,14 +23,14 @@ public abstract class OSHEntity<OSM extends OSMEntity>
 
   protected final long id;
   protected final byte header;
-  protected final BoundingBox bbox;
+  protected final OSHDBBoundingBox bbox;
   protected final int[] keys;
   protected final int dataOffset;
   protected final int dataLength;
 
   public OSHEntity(final byte[] data, final int offset, final int length, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, final BoundingBox bbox, final int[] keys,
+      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
       final int dataOffset, final int dataLength) {
     this.data = data;
     this.offset = offset;
@@ -67,7 +67,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
     return length;
   }
 
-  public BoundingBox getBoundingBox() {
+  public OSHDBBoundingBox getBoundingBox() {
     return bbox;
   }
 
@@ -183,8 +183,8 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    *
    * @param otherBbox the bounding box which this entity is tested against
    */
-  public boolean intersectsBbox(BoundingBox otherBbox) {
-    BoundingBox bbox = this.getBoundingBox();
+  public boolean intersectsBbox(OSHDBBoundingBox otherBbox) {
+    OSHDBBoundingBox bbox = this.getBoundingBox();
     if (bbox == null) {
       return false;
     }
@@ -209,8 +209,8 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    *
    * @param otherBbox the bounding box which this entity is tested against
    */
-  public boolean insideBbox(BoundingBox otherBbox) {
-    BoundingBox bbox = this.getBoundingBox();
+  public boolean insideBbox(OSHDBBoundingBox otherBbox) {
+    OSHDBBoundingBox bbox = this.getBoundingBox();
     if (bbox == null) {
       return false;
     }

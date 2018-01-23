@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.TimestampInterval;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -58,7 +58,7 @@ public class IterateAllTest {
 
       List<IterateAllEntry> result = CellIterator.iterateAll(
           oshCellRawData,
-          new BoundingBox(8, 9, 49, 50),
+          new OSHDBBoundingBox(8, 9, 49, 50),
           new TimestampInterval(1325376000L, 1516375698L),
           DefaultTagInterpreter.fromJDBC(conn),
           oshEntity -> oshEntity.getId() == 617308093,

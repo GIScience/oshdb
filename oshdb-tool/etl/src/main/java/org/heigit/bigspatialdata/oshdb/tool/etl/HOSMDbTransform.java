@@ -35,7 +35,7 @@ import org.heigit.bigspatialdata.oshdb.tool.etl.transform.node.TransformNodeMapp
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.node.TransformNodeMapper.Result;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.relation.TransformRelationMapper;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.way.TransformWayMapper;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -274,7 +274,7 @@ public class HOSMDbTransform {
         insert.setLong(2, cell.info().getId());
 
         CellInfo cellInfo = cell.info();
-        BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
+        OSHDBBoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         // create hosmCell of nodes from a "cellNode", a collection of nodes. First part is header,
         // followed by cell.getNodes(), the actual nodes. At this point, delta encoding is already
         // done within the HOSMNode
@@ -318,7 +318,7 @@ public class HOSMDbTransform {
         CellInfo cellInfo = cell.info();
 
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
-        BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
+        OSHDBBoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         GridOSHWays hosmCell =
             GridOSHWays.compact(cellInfo.getId(), cellInfo.getZoomLevel(), cell.minId(),
                 cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
@@ -360,7 +360,7 @@ public class HOSMDbTransform {
         CellInfo cellInfo = cell.info();
 
         XYGrid grid = new XYGrid(cellInfo.getZoomLevel());
-        BoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
+        OSHDBBoundingBox cellDimensions = grid.getCellDimensions(cellInfo.getId());
         GridOSHRelations hosmCell =
             GridOSHRelations.compact(cellInfo.getId(), cellInfo.getZoomLevel(), cell.minId(),
                 cell.minTimestamp(), (long) (cellDimensions.getMaxLon() / OSHDB.GEOM_PRECISION),
