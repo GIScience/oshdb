@@ -276,41 +276,39 @@ public class DefaultTagInterpreter extends TagInterpreter {
 	}
 
 	@Override
-	public boolean evaluateForArea(OSMEntity osm) {
-		if (osm instanceof OSMRelation) {
-			return evaluateRelationForArea(osm.getTags());
+	public boolean isArea(OSMEntity entity) {
+		if (entity instanceof OSMRelation) {
+			return evaluateRelationForArea((OSMRelation)entity);
 		} else {
-			return super.evaluateForArea(osm);
+			return super.isArea(entity);
 		}
 	}
 
 	@Override
-	public boolean evaluateForLine(OSMEntity osm) {
-		if (osm instanceof OSMRelation) {
-			return evaluateRelationForLine(osm.getTags());
+	public boolean isLine(OSMEntity entity) {
+		if (entity instanceof OSMRelation) {
+			return evaluateRelationForLine((OSMRelation)entity);
 		} else {
-			return super.evaluateForArea(osm);
+			return super.isLine(entity);
 		}
 	}
 
 	// checks if the relation has the tag "type=multipolygon"
-	private boolean evaluateRelationForArea(int[] tags) {
+	private boolean evaluateRelationForArea(OSMRelation entity) {
+		int[] tags = entity.getTags();
 		// skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
-		// todo: replace with quicker binary search (tag keys are sorted)
+		// the following is slightly faster than running `return entity.hasTagValue(k1,v1) || entity.hasTagValue(k2,v2);`
 		for (int i = 0; i < tags.length; i += 2) {
 			if (tags[i] == typeKey)
 				return tags[i + 1] == typeMultipolygonValue || tags[i + 1] == typeBoundaryValue;
+			else if (tags[i] > typeKey)
+				return false;
 		}
 		return false;
 	}
 
 	// checks if the relation has the tag "type=route"
-	private boolean evaluateRelationForLine(int[] tags) {
-		// todo: replace with quicker binary search (tag keys are sorted)
-		for (int i = 0; i < tags.length; i += 2) {
-			if (tags[i] == typeKey)
-				return tags[i + 1] == typeRouteValue;
-		}
-		return false;
+	private boolean evaluateRelationForLine(OSMRelation entity) {
+		return entity.hasTagValue(typeKey, typeRouteValue);
 	}
 }
