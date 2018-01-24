@@ -118,7 +118,9 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
       List<Long> timestamps = new ArrayList<>(2);
       try {
         timestamps.add(ISODateTimeParser.parseISODateTime(start).toEpochSecond());
-        timestamps.add(ISODateTimeParser.parseISODateTime(end).toEpochSecond());
+        if (!start.equals(end)) {
+          timestamps.add(ISODateTimeParser.parseISODateTime(end).toEpochSecond());
+        }
       } catch (Exception e) {
         LOG.error(e.getMessage());
         return Collections.emptyList();
