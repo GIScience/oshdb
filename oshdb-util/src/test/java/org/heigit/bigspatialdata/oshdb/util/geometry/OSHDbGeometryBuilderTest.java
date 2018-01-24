@@ -34,59 +34,6 @@ public class OSHDbGeometryBuilderTest {
   public OSHDbGeometryBuilderTest() {}
 
   @Test
-  public void testIsAuxiliary() throws IOException {
-    List<OSMNode> versions = new ArrayList<>(1);
-    versions.add(new OSMNode(123l, 1, 0l, 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-    OSHNode hnode = OSHNode.build(versions);
-    OSMMember part = new OSMMember(1L, OSMType.NODE, 0, hnode);
-    OSMRelation instance =
-        new OSMRelation(1L, 1, 0L, 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
-    Set<Integer> uninterestingTagKeys = null;
-    boolean expResult = false;
-    boolean result = OSHDbGeometryBuilder.isAuxiliary(instance, uninterestingTagKeys);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testIsPoint() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
-    boolean expResult = true;
-    boolean result = OSHDbGeometryBuilder.isPoint(entity);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testIsPointLike() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
-    TagInterpreter areaDecider = null;
-    boolean expResult = true;
-    boolean result = OSHDbGeometryBuilder.isPointLike(entity, areaDecider);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testIsArea() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
-    TagInterpreter areaDecider = null;
-    boolean expResult = false;
-    boolean result = OSHDbGeometryBuilder.isArea(entity, areaDecider);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testIsLine() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);
-    TagInterpreter areaDecider = null;
-    boolean expResult = false;
-    boolean result = OSHDbGeometryBuilder.isLine(entity, areaDecider);
-    assertEquals(expResult, result);
-  }
-
-  @Test
   public void testGetGeometry() {
     int[] properties = {1, 2};
     OSMEntity entity = new OSMNode(1L, 1, 0L, 1L, 1, properties, 1000000000L, 1000000000L);

@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
@@ -33,62 +32,6 @@ public class OSHDbGeometryBuilder {
 
   private OSHDbGeometryBuilder() {}
 
-  // helpers to determine underlying structure of osm objects
-  // returns true if object is only used to define another object (e.g. nodes of a way without own
-  // tags)
-  /**
-   *
-   * @param <T>
-   * @param entity
-   * @param uninterestingTagKeys
-   * @return
-   */
-  public static <T extends OSMEntity> boolean isAuxiliary(T entity,
-      Set<Integer> uninterestingTagKeys) {
-    if (entity instanceof OSMRelation) {
-      return false;
-    }
-    // todo: return true if no own (except uninteresting) tags and member of a relation (e.g.
-    // multipolygon)
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-  // geometry: does it represent a point/line/polygon feature?
-
-  public static <T extends OSMEntity> boolean isPoint(T entity) {
-    return entity instanceof OSMNode;
-  }
-
-  public static <T extends OSMEntity> boolean isPointLike(T entity, TagInterpreter areaDecider) {
-    if (entity instanceof OSMNode) {
-      return true;
-    } // todo: also return true if relation type is site, restriction, etc.?
-    return OSHDbGeometryBuilder.isArea(entity, areaDecider);
-
-  }
-
-  public static <T extends OSMEntity> boolean isArea(T entity, TagInterpreter areaDecider) {
-    // add type
-    if (entity instanceof OSMNode) {
-      return false;
-    } else if (entity instanceof OSMWay) {
-      OSMWay way = (OSMWay) entity;
-      OSMMember[] nds = way.getRefs();
-      if (nds.length < 4 || nds[0].getId() != nds[nds.length - 1].getId()) {
-        return false;
-      }
-    }
-    return areaDecider.evaluateForArea(entity);
-  }
-
-  public static <T extends OSMEntity> boolean isLine(T entity, TagInterpreter areaDecider) {
-    if (entity instanceof OSMNode) {
-      return false;
-    } else if (entity instanceof OSMWay) {
-      return !OSHDbGeometryBuilder.isArea(entity, areaDecider);
-    }
-    return areaDecider.evaluateForLine(entity);
-  }
-
   // gets the geometry of this object at a specific timestamp
   public static <T extends OSMEntity> Geometry getGeometry(T entity, long timestamp,
       TagInterpreter areaDecider) {
@@ -104,7 +47,7 @@ public class OSHDbGeometryBuilder {
           way.getRefEntities(timestamp).filter(node -> node != null && node.isVisible())
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
-      if (OSHDbGeometryBuilder.isLine(entity, areaDecider)) {
+      if (areaDecider.isLine(entity)) {
         if (coords.length < 2) {
           return null; // better: "invalid line geometry" exception?
         }
@@ -117,11 +60,11 @@ public class OSHDbGeometryBuilder {
       }
     }
     OSMRelation relation = (OSMRelation) entity;
-    if (OSHDbGeometryBuilder.isArea(entity, areaDecider)) {
+    if (areaDecider.isArea(entity)) {
       return OSHDbGeometryBuilder.getMultiPolygonGeometry(relation, timestamp, areaDecider);
     }
     /*
-     * if (this.isLine(areaDecider)) { return getMultiLineStringGeometry(timestamp); }
+     * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
      */
     GeometryFactory geometryFactory = new GeometryFactory();
     Geometry[] geoms = new Geometry[relation.getMembers().length];
