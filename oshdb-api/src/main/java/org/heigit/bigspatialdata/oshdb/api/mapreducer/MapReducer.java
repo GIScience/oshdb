@@ -135,9 +135,9 @@ public abstract class MapReducer<X>
   @NotNull
   protected abstract MapReducer<X> copy();
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // "Setting" methods and associated internal helpers
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles)
@@ -153,7 +153,9 @@ public abstract class MapReducer<X>
       Connection c = ((OSHDB_JDBC) this._oshdb).getConnection();
       try {
         if (c.prepareStatement("select txt from "+ TableNames.E_KEY+" limit 1").execute()) {
-          LOG.warn("It looks like as if the current OSHDB comes with keytables included. Usually this means that you should use this file's keytables and should not set the keytables manually.");
+          LOG.warn("It looks like as if the current OSHDB comes with keytables included. "+
+              "Usually this means that you should use this file's keytables "+
+              "and should not set the keytables manually.");
         }
       } catch (SQLException e) {
         // this is the expected path -> the oshdb doesn't have the key tables
@@ -181,9 +183,9 @@ public abstract class MapReducer<X>
     return ret;
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Filtering methods
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Set the area of interest to the given bounding box. Deprecated, use `areaOfInterest()` instead
@@ -568,9 +570,9 @@ public abstract class MapReducer<X>
     return ret;
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // "map", "flatMap" transformation methods
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Set an arbitrary `map` transformation function.
@@ -618,10 +620,10 @@ public abstract class MapReducer<X>
         .flatMap(data -> f.test(data) ? Collections.singletonList(data) : Collections.emptyList());
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Grouping and Aggregation
   // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Groups the input data (osm entity snapshot or contributions) by their respective entity's ids
@@ -753,11 +755,11 @@ public abstract class MapReducer<X>
     }
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.
   // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Generic map-reduce routine
@@ -802,13 +804,21 @@ public abstract class MapReducer<X>
           if (this._forClass.equals(OSMContribution.class)) {
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> this._getMapper().apply(data);
-            return this.mapReduceCellsOSMContribution(contributionMapper, identitySupplier,
-                accumulator, combiner);
+            return this.mapReduceCellsOSMContribution(
+                contributionMapper,
+                identitySupplier,
+                accumulator,
+                combiner
+            );
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
-                data -> this._getMapper().apply(data);
-            return this.mapReduceCellsOSMEntitySnapshot(snapshotMapper, identitySupplier,
-                accumulator, combiner);
+            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper = data ->
+                this._getMapper().apply(data);
+            return this.mapReduceCellsOSMEntitySnapshot(
+                snapshotMapper,
+                identitySupplier,
+                accumulator,
+                combiner
+            );
           } else {
             throw new UnsupportedOperationException(
                 "Unimplemented data view: " + this._forClass.toString());
@@ -816,8 +826,8 @@ public abstract class MapReducer<X>
         } else {
           final SerializableFunction<Object, List<X>> flatMapper = this._getFlatMapper();
           if (this._forClass.equals(OSMContribution.class)) {
-            return this
-                .flatMapReduceCellsOSMContributionGroupedById((List<OSMContribution> inputList) -> {
+            return this.flatMapReduceCellsOSMContributionGroupedById(
+                (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
                       .map((SerializableFunction<OSMContribution, List<X>>) flatMapper::apply)
@@ -842,23 +852,19 @@ public abstract class MapReducer<X>
         final SerializableFunction<Object, List<X>> flatMapper;
         if (this._flatMappers.size() == 0) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
-          flatMapper = data -> Collections.singletonList(mapper.apply(data)); // todo: check if this
-                                                                              // is actually
-                                                                              // necessary, doesn't
-                                                                              // getFlatMapper() do
-                                                                              // the "same" in this
-                                                                              // case? should we add
-                                                                              // this as
-                                                                              // optimization case
-                                                                              // to
-                                                                              // getFlatMapper()??
+          flatMapper = data -> Collections.singletonList(mapper.apply(data));
+          // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in this
+          // case? should we add this as optimization case to getFlatMapper()??
         } else {
           flatMapper = this._getFlatMapper();
         }
         if (this._forClass.equals(OSMContribution.class)) {
           return this.flatMapReduceCellsOSMContributionGroupedById(
               (SerializableFunction<List<OSMContribution>, List<X>>) flatMapper::apply,
-              identitySupplier, accumulator, combiner);
+              identitySupplier,
+              accumulator,
+              combiner
+          );
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
               (SerializableFunction<List<OSMEntitySnapshot>, List<X>>) flatMapper::apply,
@@ -910,13 +916,13 @@ public abstract class MapReducer<X>
     return this.reduce(identitySupplier, accumulator::apply, accumulator);
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // "Quality of life" helper methods to use the map-reduce functionality more directly and easily
   // for typical queries.
   // Available are: sum, count, average, weightedAverage and uniq.
   // Each one can be used to get results aggregated by timestamp, aggregated by a custom index and
   // not aggregated totals.
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Sums up the results.
@@ -1057,9 +1063,9 @@ public abstract class MapReducer<X>
     return runningSums.num / runningSums.weight;
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Iterates over each entity snapshot or contribution, and performs a single `action` on each one
@@ -1100,10 +1106,10 @@ public abstract class MapReducer<X>
     });
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Generic map-reduce functions (internal).
   // These need to be implemented by the actual db/processing backend!
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Generic map-reduce used by the `OSMContributionView`
@@ -1284,9 +1290,9 @@ public abstract class MapReducer<X>
     throw new UnsupportedOperationException("Reduce function not yet implemented");
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Some helper methods for internal use in the mapReduce functions
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   protected TagInterpreter _getTagInterpreter() throws ParseException, SQLException, IOException {
     if (this._tagInterpreter == null) {
@@ -1394,9 +1400,9 @@ public abstract class MapReducer<X>
   }
 }
 
-// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Auxiliary classes and interfaces
-// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 
 // mutable version of WeightedValue type (for internal use to do faster aggregation)
