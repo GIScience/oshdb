@@ -1,11 +1,16 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+
+import org.geotools.geometry.jts.JTS;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
 import org.junit.Test;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Polygon;
 
 public class OSHDBBoundingBoxTest {
 
@@ -90,7 +95,7 @@ public class OSHDBBoundingBoxTest {
   public void testGetGeometry() {
     OSHDBBoundingBox instance = new OSHDBBoundingBox(0.0, 0.0, 1.0, 1.0);
     Polygon expResult = (new GeometryFactory()).createPolygon(new Coordinate[]{new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1), new Coordinate(0, 1), new Coordinate(0, 0)});
-    Polygon result = instance.getGeometry();
+    Polygon result = JTS.toGeometry(new Envelope(instance.getMinLon(), instance.getMaxLon(), instance.getMinLat(), instance.getMaxLat())); OSHDbGeometryBuilder.getGeometry(instance);
     assertEquals(expResult, result);
   }
 

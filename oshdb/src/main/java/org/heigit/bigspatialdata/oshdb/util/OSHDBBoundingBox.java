@@ -1,17 +1,20 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Polygon;
 import java.io.Serializable;
 import java.util.Locale;
-import org.geotools.geometry.jts.JTS;
+
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class OSHDBBoundingBox implements Serializable {
 
   private static final Logger LOG = LoggerFactory.getLogger(OSHDBBoundingBox.class);
+
+  
+  public static final OSHDBBoundingBox EMPTY = new OSHDBBoundingBox(0L, 0L, 0L, 0L);
+
 
   /**
    * calculates the intersection of two bounding boxes
@@ -72,9 +75,6 @@ public class OSHDBBoundingBox implements Serializable {
     this((double) minLon, (double) minLat, (double) maxLon, (double) maxLat);
   }
 
-  public OSHDBBoundingBox(Envelope envelope) {
-    this(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
-  }
 
   public double getMinLon() {
     return minLon * OSHDB.GEOM_PRECISION;
@@ -103,15 +103,6 @@ public class OSHDBBoundingBox implements Serializable {
   @Override
   public String toString() {
     return String.format(Locale.ENGLISH, "(%f,%f) (%f,%f)", this.getMinLon(), this.getMinLat(), this.getMaxLon(), this.getMaxLat());
-  }
-
-  /**
-   * returns JTS geometry object for convenience
-   *
-   * @return com.vividsolutions.jts.geom.Geometry
-   */
-  public Polygon getGeometry() {
-    return JTS.toGeometry(new Envelope(this.getMinLon(), this.getMaxLon(), this.getMinLat(), this.getMaxLat()));
   }
 
   @Override
