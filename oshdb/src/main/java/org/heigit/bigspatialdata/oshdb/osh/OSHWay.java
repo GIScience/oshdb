@@ -25,7 +25,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
 
@@ -61,7 +61,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     final long minLat = baseLatitude + wrapper.readSInt64();
     final long maxLat = minLat + wrapper.readUInt64();
 
-    final BoundingBox bbox = new BoundingBox(minLon, maxLon, minLat, maxLat);
+    final OSHDBBoundingBox bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -102,7 +102,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   private OSHWay(final byte[] data, final int offset, final int length, final long baseId, final long baseTimestamp,
-          final long baseLongitude, final long baseLatitude, final byte header, final long id, final BoundingBox bbox,
+          final long baseLongitude, final long baseLatitude, final byte header, final long id, final OSHDBBoundingBox bbox,
           final int[] keys, final int dataOffset, final int dataLength, final int[] nodeIndex,
           final int nodeDataOffset, final int nodeDataLength) {
     super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,

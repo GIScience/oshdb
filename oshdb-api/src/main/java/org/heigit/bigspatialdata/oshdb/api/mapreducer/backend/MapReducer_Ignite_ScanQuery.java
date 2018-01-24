@@ -24,6 +24,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.TableNames;
@@ -32,7 +33,6 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.jetbrains.annotations.NotNull;
 
@@ -165,7 +165,7 @@ class Ignite_ScanQuery_Helper {
     final String cacheName;
     final Set<CellId> cellIdsList;
     final List<Long> tstamps;
-    final BoundingBox bbox;
+    final OSHDBBoundingBox bbox;
     final P poly;
     final SerializablePredicate<OSHEntity> preFilter;
     final SerializablePredicate<OSMEntity> filter;
@@ -175,7 +175,7 @@ class Ignite_ScanQuery_Helper {
     final SerializableBinaryOperator<S> combiner;
 
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, String cacheName,
-        Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, P poly,
+        Set<CellId> cellIdsList, List<Long> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<V, MR> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
@@ -201,7 +201,7 @@ class Ignite_ScanQuery_Helper {
   private static class MapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<OSMContribution, R, R, S, P> {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, P poly,
+        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
@@ -263,7 +263,7 @@ class Ignite_ScanQuery_Helper {
   private static class FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMContribution>, R, List<R>, S, P> {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, P poly,
+        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<List<OSMContribution>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
@@ -341,7 +341,7 @@ class Ignite_ScanQuery_Helper {
   private static class MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<OSMEntitySnapshot, R, R, S, P> {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, P poly,
+        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
@@ -396,7 +396,7 @@ class Ignite_ScanQuery_Helper {
   private static class FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMEntitySnapshot>, R, List<R>, S, P> {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, BoundingBox bbox, P poly,
+        String cacheName, Set<CellId> cellIdsList, List<Long> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
@@ -480,7 +480,7 @@ class Ignite_ScanQuery_Helper {
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
       OSHDB_Ignite oshdb, TagInterpreter tagInterpreter, String cacheName, Set<CellId> cellIdsList,
-      List<Long> tstamps, BoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
+      List<Long> tstamps, OSHDBBoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -492,7 +492,7 @@ class Ignite_ScanQuery_Helper {
 
   static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
       OSHDB_Ignite oshdb, TagInterpreter tagInterpreter, String cacheName, Set<CellId> cellIdsList,
-      List<Long> tstamps, BoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
+      List<Long> tstamps, OSHDBBoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
@@ -505,7 +505,7 @@ class Ignite_ScanQuery_Helper {
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMEntitySnapshotOnIgniteCache(
       OSHDB_Ignite oshdb, TagInterpreter tagInterpreter, String cacheName, Set<CellId> cellIdsList,
-      List<Long> tstamps, BoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
+      List<Long> tstamps, OSHDBBoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter, SerializableFunction<OSMEntitySnapshot, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -517,7 +517,7 @@ class Ignite_ScanQuery_Helper {
 
   static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
       OSHDB_Ignite oshdb, TagInterpreter tagInterpreter, String cacheName, Set<CellId> cellIdsList,
-      List<Long> tstamps, BoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
+      List<Long> tstamps, OSHDBBoundingBox bbox, P poly, SerializablePredicate<OSHEntity> preFilter,
       SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,

@@ -34,7 +34,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -116,7 +116,7 @@ public class TestMultipolygonGeometry {
        * //System.out.println("-- "+rst.getInt(1)+"/"+rst.getInt(2)); zoomIds.add(new
        * ZoomId(rst.getInt(1),rst.getLong(2))); } rst.close();
        */
-      final BoundingBox bboxFilter = new BoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
+      final OSHDBBoundingBox bboxFilter = new OSHDBBoundingBox(8.65092, 8.65695, 49.38681, 49.39091);
       for (int zoom = 0; zoom <= MAXZOOM; zoom++) {
         XYGrid grid = new XYGrid(zoom);
         Set<Pair<Long, Long>> cellIds = grid.bbox2CellIdRanges(bboxFilter, true);

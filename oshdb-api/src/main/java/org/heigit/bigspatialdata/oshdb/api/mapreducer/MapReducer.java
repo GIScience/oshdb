@@ -97,7 +97,7 @@ public abstract class MapReducer<X>
   protected OSHDBTimestampList _tstamps = new OSHDBTimestamps("2008-01-01",
       (new OSHDBTimestamp((new Date()).getTime() / 1000)).formatIsoDateTime(),
       OSHDBTimestamps.Interval.MONTHLY);
-  protected BoundingBox _bboxFilter = new BoundingBox(-180, 180, -90, 90);
+  protected OSHDBBoundingBox _bboxFilter = new OSHDBBoundingBox(-180, -90, 180, 90);
   private Geometry _polyFilter = null;
   protected EnumSet<OSMType> _typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
@@ -195,7 +195,7 @@ public abstract class MapReducer<X>
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Deprecated
-  public MapReducer<X> boundingBox(BoundingBox bbox) {
+  public MapReducer<X> boundingBox(OSHDBBoundingBox bbox) {
     return this.areaOfInterest(bbox);
   }
 
@@ -207,13 +207,13 @@ public abstract class MapReducer<X>
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> areaOfInterest(@NotNull BoundingBox bboxFilter) {
+  public MapReducer<X> areaOfInterest(@NotNull OSHDBBoundingBox bboxFilter) {
     MapReducer<X> ret = this.copy();
     if (this._polyFilter == null) {
-      ret._bboxFilter = BoundingBox.intersect(bboxFilter, ret._bboxFilter);
+      ret._bboxFilter = OSHDBBoundingBox.intersect(bboxFilter, ret._bboxFilter);
     } else {
       ret._polyFilter = Geo.clip(ret._polyFilter, bboxFilter);
-      ret._bboxFilter = new BoundingBox(ret._polyFilter.getEnvelopeInternal());
+      ret._bboxFilter = new OSHDBBoundingBox(ret._polyFilter.getEnvelopeInternal());
     }
     return ret;
   }
@@ -233,7 +233,7 @@ public abstract class MapReducer<X>
     } else {
       ret._polyFilter = Geo.clip(polygonFilter, ret._getPolyFilter());
     }
-    ret._bboxFilter = new BoundingBox(ret._polyFilter.getEnvelopeInternal());
+    ret._bboxFilter = new OSHDBBoundingBox(ret._polyFilter.getEnvelopeInternal());
     return ret;
   }
 

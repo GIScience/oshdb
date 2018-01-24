@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.index;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -37,7 +37,7 @@ public class XYGridTreeTest {
 
   @Test
   public void testGetInsertId() throws CellId.cellIdExeption {
-    BoundingBox bbox = new BoundingBox(0.0, 179.0, -90.0, 90.0);
+    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, -90.0, 179.0, 90.0);
     XYGridTree instance = new XYGridTree(4);
     CellId expResult = new CellId(2, 2L);
     CellId result = instance.getInsertId(bbox);
@@ -47,7 +47,7 @@ public class XYGridTreeTest {
 
   @Test
   public void testBbox2CellIds_BoundingBox_boolean() throws CellId.cellIdExeption {
-    BoundingBox BBOX = new BoundingBox(0.0, 44.9, 0.0, 44.9);
+    OSHDBBoundingBox BBOX = new OSHDBBoundingBox(0.0, 0.0, 44.9, 44.9);
     boolean enlarge = false;
     XYGridTree instance = new XYGridTree(3);
     HashSet<CellId> expectedCellIds = new HashSet<>(4);
@@ -66,7 +66,7 @@ public class XYGridTreeTest {
 
   @Test
   public void testBbox2CellIds_BoundingBox2_boolean() throws CellId.cellIdExeption {
-    BoundingBox bbox = new BoundingBox(0.0, 89, 0.0, 89);
+    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, 0.0, 89, 89);
     boolean enlarge = true;
     XYGridTree instance = new XYGridTree(3);
     HashSet<CellId> expectedCellIds = new HashSet<>(17);

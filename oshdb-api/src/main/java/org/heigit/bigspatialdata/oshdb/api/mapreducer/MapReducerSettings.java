@@ -6,7 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -26,7 +26,7 @@ interface MapReducerSettings<M> {
    * @param bboxFilter the bounding box to query the data in
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M areaOfInterest(BoundingBox bboxFilter);
+  M areaOfInterest(OSHDBBoundingBox bboxFilter);
 
   /**
    * Set the area of interest to the given polygon.

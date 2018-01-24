@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.util.geometry;
 
 import com.vividsolutions.jts.geom.*;
 import org.geotools.geometry.jts.JTS;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
 /**
  * Geometry utility functions
@@ -145,7 +145,7 @@ public class Geo {
 	// = geometry clipping =
 	// =====================
 
-	public static Geometry clip(Geometry obj, BoundingBox bbox) {
+	public static Geometry clip(Geometry obj, OSHDBBoundingBox bbox) {
 		Envelope envelope = new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat());
 		return obj.intersection(JTS.toGeometry(envelope));
 	}

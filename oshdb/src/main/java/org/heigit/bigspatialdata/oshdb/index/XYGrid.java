@@ -5,7 +5,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +46,12 @@ public class XYGrid {
   private static final double EPSILON = OSHDB.GEOM_PRECISION;
 
   /**
-   * Calculate the BoundingBox of a specific GridCell.
+   * Calculate the OSHDBBoundingBox of a specific GridCell.
    *
    * @param cellID
    * @return
    */
-  public static BoundingBox getBoundingBox(final CellId cellID) {
+  public static OSHDBBoundingBox getBoundingBox(final CellId cellID) {
     XYGrid temp = new XYGrid(cellID.getZoomLevel());
     return temp.getCellDimensions(cellID.getId());
   }
@@ -128,7 +128,7 @@ public class XYGrid {
    * @param bbx
    * @return south-western cellID of given BBOX
    */
-  public long getId(BoundingBox bbx) {
+  public long getId(OSHDBBoundingBox bbx) {
     return getId(bbx.minLon, bbx.minLat);
   }
 
@@ -147,7 +147,7 @@ public class XYGrid {
    * @param cellId ID of a cell calculated by getID
    * @return a BBOX for that cell
    */
-  public BoundingBox getCellDimensions(final long cellId) {
+  public OSHDBBoundingBox getCellDimensions(final long cellId) {
 
     //calculate the row and column, this tile-value corresponds to
     int x = (int) (cellId % zoompow);
@@ -171,7 +171,7 @@ public class XYGrid {
       minlat = lat;
       maxlat = (long) (lat + cellWidth) - 1L;
     }
-    return new BoundingBox(minlong, maxlong, minlat, maxlat);
+    return new OSHDBBoundingBox(minlong, minlat, maxlong, maxlat);
   }
 
   /**
@@ -180,7 +180,7 @@ public class XYGrid {
    * @param data BBOX to estimate number of cells for
    * @return the long
    */
-  public long getEstimatedIdCount(final BoundingBox data) {
+  public long getEstimatedIdCount(final OSHDBBoundingBox data) {
     //number of Cells in x * number of cells in y
     return ((long) Math.ceil(Math.max((data.maxLon - data.minLon) / cellWidth, (data.maxLat - data.minLat) / cellWidth)));
   }
@@ -208,7 +208,7 @@ public class XYGrid {
    *
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
-  public Set<Pair<Long, Long>> bbox2CellIdRanges(BoundingBox bbox, boolean enlarge) {
+  public Set<Pair<Long, Long>> bbox2CellIdRanges(OSHDBBoundingBox bbox, boolean enlarge) {
     //initialise basic variables
     Set<Pair<Long, Long>> result = new TreeSet<>();
     long minlong = bbox.minLon;
@@ -255,7 +255,11 @@ public class XYGrid {
 
     //cope with BBOX extending over the date-line
     if (minlong > maxlong) {
-      result.addAll(bbox2CellIdRanges(new BoundingBox(minlong, (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L, minlat, maxlat), enlarge));
+      result.addAll(bbox2CellIdRanges(
+          new OSHDBBoundingBox(
+              minlong, minlat,
+              (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L, maxlat
+          ), enlarge));
 
       minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
@@ -299,12 +303,12 @@ public class XYGrid {
       return null;
     }
 
-    BoundingBox bbox = this.getCellDimensions(center.getId());
+    OSHDBBoundingBox bbox = this.getCellDimensions(center.getId());
     long minlong = bbox.minLon - 1L;
     long minlat = bbox.minLat - 1L;
     long maxlong = bbox.maxLon + 1L;
     long maxlat = bbox.maxLat + 1L;
-    BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
+    OSHDBBoundingBox newbbox = new OSHDBBoundingBox(minlong, minlat, maxlong, maxlat);
 
     return this.bbox2CellIdRanges(newbbox, false);
   }

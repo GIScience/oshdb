@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.*;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
 
@@ -53,8 +53,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final long minLat = baseLatitude + wrapper.readSInt64();
     final long maxLat = minLat + wrapper.readUInt64();
 
-    final BoundingBox bbox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
-            minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
+    final OSHDBBoundingBox bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -122,7 +121,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
   private OSHRelation(final byte[] data, final int offset, final int length, final long baseId,
           final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
-          final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
+          final long id, final OSHDBBoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
           final int[] nodeIndex, final int nodeDataOffset, final int nodeDataLength, final int[] wayIndex,
           final int wayDataOffset, final int wayDataLength) {
     super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
@@ -305,7 +304,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     int idx = 0;
     int offset = 0;
     for (OSHNode node : nodes) {
-      BoundingBox bbox = node.getBoundingBox();
+      OSHDBBoundingBox bbox = node.getBoundingBox();
       if (bbox != null) {
         minLon = Math.min(minLon, bbox.minLon);
         maxLon = Math.max(maxLon, bbox.maxLon);
@@ -339,7 +338,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     idx = 0;
     offset = 0;
     for (OSHWay way : ways) {
-      BoundingBox bbox = way.getBoundingBox();
+      OSHDBBoundingBox bbox = way.getBoundingBox();
       minLon = Math.min(minLon, bbox.minLon);
       maxLon = Math.max(maxLon, bbox.maxLon);
       minLat = Math.min(minLat, bbox.minLat);

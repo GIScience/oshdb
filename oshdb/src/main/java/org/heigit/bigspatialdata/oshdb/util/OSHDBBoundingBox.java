@@ -9,9 +9,9 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BoundingBox implements Serializable {
+public class OSHDBBoundingBox implements Serializable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(BoundingBox.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OSHDBBoundingBox.class);
 
   /**
    * calculates the intersection of two bounding boxes
@@ -20,21 +20,21 @@ public class BoundingBox implements Serializable {
    * @param second the second bounding box
    * @return the intersection of the two bboxes
    */
-  public static BoundingBox intersect(BoundingBox first, BoundingBox second) {
-    return new BoundingBox(
-            Math.max(first.minLon, second.minLon),
-            Math.min(first.maxLon, second.maxLon),
-            Math.max(first.minLat, second.minLat),
-            Math.min(first.maxLat, second.maxLat)
+  public static OSHDBBoundingBox intersect(OSHDBBoundingBox first, OSHDBBoundingBox second) {
+    return new OSHDBBoundingBox(
+        Math.max(first.minLon, second.minLon),
+        Math.max(first.minLat, second.minLat),
+        Math.min(first.maxLon, second.maxLon),
+        Math.min(first.maxLat, second.maxLat)
     );
   }
 
-  public static OVERLAP overlap(BoundingBox a, BoundingBox b) {
+  public static OVERLAP overlap(OSHDBBoundingBox a, OSHDBBoundingBox b) {
     if (b.minLon >= a.maxLon
-            || b.maxLon <= a.minLon
-            || b.minLat >= a.maxLat
-            || b.maxLat <= a.minLat) {
-      return OVERLAP.OVERLAP.NONE; // no overlap
+        || b.maxLon <= a.minLon
+        || b.minLat >= a.maxLat
+        || b.maxLat <= a.minLat) {
+      return OVERLAP.NONE; // no overlap
     }
     // fit bbox in test
     if (a.minLon >= b.minLon && a.maxLon <= b.maxLon && a.minLat >= b.minLat
@@ -44,9 +44,9 @@ public class BoundingBox implements Serializable {
     // fit test in bbox
     if (b.minLon >= a.minLon && b.maxLon <= a.maxLon && b.minLat >= a.minLat
             && b.maxLat <= a.maxLat) {
-      return OVERLAP.OVERLAP.B_COMPLETE_IN_A;
+      return OVERLAP.B_COMPLETE_IN_A;
     }
-    return OVERLAP.OVERLAP.OVERLAP;
+    return OVERLAP.OVERLAPPING;
   }
 
   public final long minLon;
@@ -54,26 +54,26 @@ public class BoundingBox implements Serializable {
   public final long minLat;
   public final long maxLat;
 
-  public BoundingBox(long minLon, long maxLon, long minLat, long maxLat) {
+  public OSHDBBoundingBox(long minLon, long minLat, long maxLon, long maxLat) {
     this.minLon = minLon;
     this.maxLon = maxLon;
     this.minLat = minLat;
     this.maxLat = maxLat;
   }
 
-  public BoundingBox(double minLon, double maxLon, double minLat, double maxLat) {
+  public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
     this.minLon = (long) (minLon * OSHDB.GEOM_PRECISION_TO_LONG);
     this.maxLon = (long) (maxLon * OSHDB.GEOM_PRECISION_TO_LONG);
     this.minLat = (long) (minLat * OSHDB.GEOM_PRECISION_TO_LONG);
     this.maxLat = (long) (maxLat * OSHDB.GEOM_PRECISION_TO_LONG);
   }
 
-  public BoundingBox(int minLon, int maxLon, int minLat, int maxLat) {
-    this((double) minLon, (double) maxLon, (double) minLat, (double) maxLat);
+  public OSHDBBoundingBox(int minLon, int minLat, int maxLon, int maxLat) {
+    this((double) minLon, (double) minLat, (double) maxLon, (double) maxLat);
   }
 
-  public BoundingBox(Envelope envelope) {
-    this(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY());
+  public OSHDBBoundingBox(Envelope envelope) {
+    this(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
   }
 
   public double getMinLon() {
@@ -102,7 +102,7 @@ public class BoundingBox implements Serializable {
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "(%f,%f) (%f,%f)", this.getMinLon(), this.getMaxLon(), this.getMinLat(), this.getMaxLat());
+    return String.format(Locale.ENGLISH, "(%f,%f) (%f,%f)", this.getMinLon(), this.getMinLat(), this.getMaxLon(), this.getMaxLat());
   }
 
   /**
@@ -135,7 +135,7 @@ public class BoundingBox implements Serializable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final BoundingBox other = (BoundingBox) obj;
+    final OSHDBBoundingBox other = (OSHDBBoundingBox) obj;
     if (this.minLon != other.minLon) {
       return false;
     }
@@ -150,7 +150,7 @@ public class BoundingBox implements Serializable {
 
   public enum OVERLAP {
     NONE,
-    OVERLAP,
+    OVERLAPPING,
     A_COMPLETE_IN_B,
     B_COMPLETE_IN_A
   }

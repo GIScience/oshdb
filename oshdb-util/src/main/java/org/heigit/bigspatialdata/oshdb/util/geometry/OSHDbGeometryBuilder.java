@@ -18,7 +18,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,7 +198,7 @@ public class OSHDbGeometryBuilder {
   }
 
   public static <T extends OSMEntity> Geometry getGeometryClipped(T entity, long timestamp,
-      TagInterpreter areaDecider, BoundingBox clipBbox) {
+      TagInterpreter areaDecider, OSHDBBoundingBox clipBbox) {
     Geometry geom = OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     if (geom == null) {
       return null;

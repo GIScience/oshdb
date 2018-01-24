@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public abstract class GridOSHEntity<HOSM extends OSHEntity>
   @Override
   public String toString() {
     try {
-      BoundingBox bbox = XYGrid.getBoundingBox(new CellId((int) id, level));
+      OSHDBBoundingBox bbox = XYGrid.getBoundingBox(new CellId((int) id, level));
       return String.format(Locale.ENGLISH, "ID:%d Level:%d BBox:(%f,%f),(%f,%f)", id, level,
           bbox.getMinLat(), bbox.getMinLon(), bbox.getMaxLat(), bbox.getMaxLon());
     } catch (CellId.cellIdExeption ex) {

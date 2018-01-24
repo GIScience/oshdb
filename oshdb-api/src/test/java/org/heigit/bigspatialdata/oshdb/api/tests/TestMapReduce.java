@@ -10,11 +10,11 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
 import java.util.Set;
@@ -28,7 +28,7 @@ abstract class TestMapReduce {
   final OSHDB_Database oshdb;
   OSHDB_JDBC keytables = null;
 
-  private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
   private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 

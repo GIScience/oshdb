@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -44,17 +44,8 @@ public class ZGridDFIteratorTest {
   @Test
   public void test() {
     ZGrid grid = new ZGrid(2);
-    {
-      Iterator<Long> itr = grid.iteratorDF(new BoundingBox(0L, (long) (360 * OSHDB.GEOM_PRECISION_TO_LONG), 0L, (long) (180 * OSHDB.GEOM_PRECISION_TO_LONG)));
-      while (itr.hasNext()) {
-        final long zid = itr.next();
-        final int z = ZGrid.getZoom(zid);
-        final long id = ZGrid.getIdWithoutZoom(zid);
-        System.out.printf("z:%2d - %3d (%d)%n", z, id, zid);
-      }
-    }
 
-    Iterator<Long> itr = grid.iteratorDF(new BoundingBox(0L, (long) (360 * OSHDB.GEOM_PRECISION_TO_LONG), 0L, (long) (180 * OSHDB.GEOM_PRECISION_TO_LONG)));
+    Iterator<Long> itr = grid.iteratorDF(new OSHDBBoundingBox(0L, 0L, (long) (360 * OSHDB.GEOM_PRECISION_TO_LONG), (long) (180 * OSHDB.GEOM_PRECISION_TO_LONG)));
     order.forEach((id) -> {
       assertTrue(itr.hasNext());
       assertEquals(id, itr.next());
