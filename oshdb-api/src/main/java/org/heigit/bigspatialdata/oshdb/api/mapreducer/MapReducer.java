@@ -18,7 +18,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -30,6 +30,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.*;
+import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
@@ -95,7 +96,7 @@ public abstract class MapReducer<X>
 
   // settings and filters
   protected OSHDBTimestampList _tstamps = new OSHDBTimestamps("2008-01-01",
-      (new OSHDBTimestamp((new Date()).getTime() / 1000)).formatIsoDateTime(),
+      TimestampFormatter.getInstance().date(new Date()),
       OSHDBTimestamps.Interval.MONTHLY);
   protected OSHDBBoundingBox _bboxFilter = new OSHDBBoundingBox(-180, -90, 180, 90);
   private Geometry _polyFilter = null;
@@ -303,11 +304,11 @@ public abstract class MapReducer<X>
    */
   @Contract(pure = true)
   public MapReducer<X> timestamps(String isoDateFirst, String... isoDateMore) {
-    List<Long> timestamps = new ArrayList<>(2 + isoDateMore.length);
+    List<OSHDBTimestamp> timestamps = new ArrayList<>(2 + isoDateMore.length);
     try {
-      timestamps.add(ISODateTimeParser.parseISODateTime(isoDateFirst).toEpochSecond());
+      timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(isoDateFirst).toEpochSecond()));
       for (String isoDate : isoDateMore) {
-        timestamps.add(ISODateTimeParser.parseISODateTime(isoDate).toEpochSecond());
+        timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(isoDate).toEpochSecond()));
       }
     } catch (Exception e) {
       LOG.error("unable to parse ISO date string: " + e.getMessage());
@@ -715,7 +716,7 @@ public abstract class MapReducer<X>
     // list
     SerializableFunction<X, OSHDBTimestamp> indexer;
     if (this._forClass.equals(OSMContribution.class)) {
-      final List<OSHDBTimestamp> timestamps = this._tstamps.getOSHDBTimestamps();
+      final List<OSHDBTimestamp> timestamps = this._tstamps.get();
       indexer = data -> {
         int timeBinIndex =
             Collections.binarySearch(timestamps, ((OSMContribution) data).getTimestamp());

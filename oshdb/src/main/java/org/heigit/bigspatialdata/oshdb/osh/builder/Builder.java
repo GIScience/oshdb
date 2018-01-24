@@ -46,10 +46,10 @@ public class Builder {
     output.writeSInt32(v- lastVersion);
     lastVersion = v;
     
-    output.writeSInt64((version.getTimestamp() - lastTimestamp) - baseTimestamp);
-    if (!firstVersion && lastTimestamp < version.getTimestamp())
+    output.writeSInt64((version.getTimestamp().getRawUnixTimestamp() - lastTimestamp) - baseTimestamp);
+    if (!firstVersion && lastTimestamp < version.getTimestamp().getRawUnixTimestamp())
       timestampsNotInOrder = true;
-    lastTimestamp = version.getTimestamp();
+    lastTimestamp = version.getTimestamp().getRawUnixTimestamp();
     
     output.writeSInt64(version.getChangeset() - lastChangeset);
     lastChangeset = version.getChangeset();

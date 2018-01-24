@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,7 @@ public abstract class OSMEntity {
   protected final long id;
 
   protected final int version;
-  protected final long timestamp;
+  protected final OSHDBTimestamp timestamp;
   protected final long changeset;
   protected final int userId;
   protected final int[] tags;
@@ -32,7 +33,7 @@ public abstract class OSMEntity {
    *        {@link org.heigit.bigspatialdata.oshdb.util.TagTranslator#TagTranslator(java.sql.Connection)
    *        TagTranslator}.
    */
-  public OSMEntity(final long id, final int version, final long timestamp, final long changeset,
+  public OSMEntity(final long id, final int version, final OSHDBTimestamp timestamp, final long changeset,
       final int userId, final int[] tags) {
     this.id = id;
     this.version = version;
@@ -52,7 +53,7 @@ public abstract class OSMEntity {
     return Math.abs(version);
   }
 
-  public long getTimestamp() {
+  public OSHDBTimestamp getTimestamp() {
     return timestamp;
   }
 
@@ -132,14 +133,14 @@ public abstract class OSMEntity {
 
 
   public boolean equalsTo(OSMEntity o) {
-    return id == o.id && version == o.version && timestamp == o.timestamp
+    return id == o.id && version == o.version && timestamp.equals(o.timestamp)
         && changeset == o.changeset && userId == o.userId && Arrays.equals(tags, o.tags);
   }
 
   @Override
   public String toString() {
     return String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s UID:%d TAGS:%S", getId(), getVersion(),
-        getTimestamp(), getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
+        getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
   }
 
 

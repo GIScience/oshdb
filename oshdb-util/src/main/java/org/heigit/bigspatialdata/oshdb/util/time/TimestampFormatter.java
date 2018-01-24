@@ -4,6 +4,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
 /**
  * A helper class to transform timestamps between string, date and long.
@@ -64,6 +65,16 @@ public class TimestampFormatter {
    */
   public String isoDateTime(long timestamp) {
     return _formatIsoDateTime.get().format(timestamp * 1000);
+  }
+
+  /**
+   * Converts a data to the format {@code yyyy-MM-dd'T'HH:mm:ss'Z'}.
+   *
+   * @param date
+   * @return
+   */
+  public String isoDateTime(OSHDBTimestamp date) {
+    return this.isoDateTime(date.getRawUnixTimestamp());
   }
 
 }

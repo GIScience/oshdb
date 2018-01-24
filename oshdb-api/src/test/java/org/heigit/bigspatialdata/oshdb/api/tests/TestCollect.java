@@ -10,7 +10,7 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -83,7 +83,7 @@ public class TestCollect {
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
         .collect();
-    assertEquals(14, result.get(timestamps72.getOSHDBTimestamps().get(60)).size());
+    assertEquals(14, result.get(timestamps72.get().get(60)).size());
   }
 
 }

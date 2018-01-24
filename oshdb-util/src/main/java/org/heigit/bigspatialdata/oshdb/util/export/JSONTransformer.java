@@ -18,6 +18,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -45,7 +46,7 @@ public class JSONTransformer {
    * @return A GeoJSON representation of the Object
    *         (https://tools.ietf.org/html/rfc7946#section-3.3)
    */
-  public static <T extends OSMEntity> JsonObject transform(T entity, long timestamp,
+  public static <T extends OSMEntity> JsonObject transform(T entity, OSHDBTimestamp timestamp,
       TagTranslator tagtranslator, TagInterpreter areaDecider) {
     // JSON for properties
     JsonObjectBuilder properties = Json.createObjectBuilder();
@@ -170,11 +171,11 @@ public class JSONTransformer {
    * @return A GeoJSON-String representation of all these OSM-Objects
    *         (https://tools.ietf.org/html/rfc7946#section-3.3
    */
-  public static JsonObject multiTransform(List<Pair<? extends OSMEntity, Long>> osmObjects,
+  public static JsonObject multiTransform(List<Pair<? extends OSMEntity, OSHDBTimestamp>> osmObjects,
       TagTranslator tagtranslator, TagInterpreter areaDecider) {
     JsonObjectBuilder builder = Json.createObjectBuilder().add("type", "FeatureCollection");
     JsonArrayBuilder aBuilder = Json.createArrayBuilder();
-    osmObjects.stream().forEach((Pair<? extends OSMEntity, Long> OSMObject) -> {
+    osmObjects.stream().forEach((Pair<? extends OSMEntity, OSHDBTimestamp> OSMObject) -> {
       aBuilder.add(JSONTransformer.transform(OSMObject.getKey(), OSMObject.getValue(),
           tagtranslator, areaDecider));
     });
@@ -200,7 +201,7 @@ public class JSONTransformer {
   public static <T extends OSHEntity> JsonObject transform(T entity, TagTranslator tagtranslator,
       TagInterpreter areaDecider) {
 
-    List<Pair<? extends OSMEntity, Long>> entities = new ArrayList<>(1);
+    List<Pair<? extends OSMEntity, OSHDBTimestamp>> entities = new ArrayList<>(1);
     @SuppressWarnings("unchecked")
     Iterator<? extends OSMEntity> it = entity.iterator();
     while (it.hasNext()) {
@@ -229,7 +230,7 @@ public class JSONTransformer {
    */
   public static <T extends GridOSHEntity> JsonObject transform(T entity,
       TagTranslator tagtranslator, TagInterpreter areaDecider) {
-    List<Pair<? extends OSMEntity, Long>> entities = new ArrayList<>(1);
+    List<Pair<? extends OSMEntity, OSHDBTimestamp>> entities = new ArrayList<>(1);
 
     @SuppressWarnings("unchecked")
     Iterator<? extends OSHEntity> it = entity.iterator();

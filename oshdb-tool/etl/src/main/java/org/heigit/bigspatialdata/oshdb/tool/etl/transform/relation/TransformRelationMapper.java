@@ -32,6 +32,7 @@ import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.NodeRelation;
 import org.heigit.bigspatialdata.oshdb.tool.etl.transform.data.WayRelation;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.TableNames;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshpbf.OshPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPbfIterator;
 import org.heigit.bigspatialdata.oshpbf.OsmPrimitiveBlockIterator;
@@ -341,7 +342,7 @@ public class TransformRelationMapper extends TransformMapper2 {
   private OSMRelation getRelation(OSMPbfRelation entity) {
     return new OSMRelation(entity.getId(), //
         entity.getVersion() * (entity.getVisible() ? 1 : -1), //
-        entity.getTimestamp(), //
+        new OSHDBTimestamp(entity.getTimestamp()), //
         entity.getChangeset(), //
         entity.getUser().getId(), //
         getKeyValue(entity.getTags()), //

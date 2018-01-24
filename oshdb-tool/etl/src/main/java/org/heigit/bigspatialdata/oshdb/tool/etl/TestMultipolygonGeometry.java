@@ -35,6 +35,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -175,10 +176,10 @@ public class TestMultipolygonGeometry {
           }
           boolean fullyInside = oshEntity.insideBbox(bboxFilter);
 
-          Map<Long, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(timestamps);
+          Map<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(timestamps);
           int outerId = allRoles.get("outer");
-          for (Map.Entry<Long, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
-            Long timestamp = entity.getKey();
+          for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+            OSHDBTimestamp timestamp = entity.getKey();
             OSMEntity osmEntity = entity.getValue();
             // if (osmEntity.isVisible() && osmEntity.hasTagKey(403) &&
             // osmEntity.hasTagValue(403,4)) {
@@ -274,7 +275,7 @@ public class TestMultipolygonGeometry {
 
               Double prevCnt = counts.get(timestamp);
               // counts.put(timestamp, prevCnt != null ? 0.5*(prevCnt.doubleValue() + dist) : dist);
-              counts.put(timestamp, prevCnt != null ? prevCnt.doubleValue() + dist : dist);
+              counts.put(timestamp.getRawUnixTimestamp(), prevCnt != null ? prevCnt.doubleValue() + dist : dist);
             } else {
               // System.out.println(osmEntity.getTags()[0]);
             }

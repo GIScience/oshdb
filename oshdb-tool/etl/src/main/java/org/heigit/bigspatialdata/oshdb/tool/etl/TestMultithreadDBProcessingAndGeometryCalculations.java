@@ -16,6 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.osh.*;
 import org.heigit.bigspatialdata.oshdb.osm.*;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -96,13 +97,14 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
       }
       rst.close();
 
-      List<Long> timestamps;
+      List<OSHDBTimestamp> timestamps;
       timestamps = new ArrayList<>();
       final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
       for (int year = 2004; year <= 2018; year++) {
         for (int month = 1; month <= 12; month++) {
           try {
-            timestamps.add(formatter.parse(String.format("%d%02d01", year, month)).getTime());
+            timestamps.add(new OSHDBTimestamp(
+                formatter.parse(String.format("%d%02d01", year, month)).getTime()));
           } catch (java.text.ParseException e) {
             System.err.println("basdoawrd");
           } ;
@@ -140,9 +142,9 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
         while (oshWayIt.hasNext()) {
           OSHWay oshWay = (OSHWay) oshWayIt.next();
 
-          Map<Long, OSMWay> osmWays = oshWay.getByTimestamps(timestamps);
-          for (Map.Entry<Long, OSMWay> way : osmWays.entrySet()) {
-            Long timestamp = way.getKey();
+          Map<OSHDBTimestamp, OSMWay> osmWays = oshWay.getByTimestamps(timestamps);
+          for (Map.Entry<OSHDBTimestamp, OSMWay> way : osmWays.entrySet()) {
+            OSHDBTimestamp timestamp = way.getKey();
             OSMWay osmWay = way.getValue();
             if (osmWay.isVisible() && osmWay.hasTagKey(1) /* && osmWay.hasTagValue(1,0) */) {
 
@@ -166,7 +168,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
               // dist = dist/(nds.length-1);
               Double prevCnt = counts.get(timestamp);
               // counts.put(timestamp, prevCnt != null ? 0.5*(prevCnt.doubleValue() + dist) : dist);
-              counts.put(timestamp, prevCnt != null ? prevCnt.doubleValue() + dist : dist);
+              counts.put(timestamp.getRawUnixTimestamp(), prevCnt != null ? prevCnt.doubleValue() + dist : dist);
             }
           }
         }

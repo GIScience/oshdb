@@ -19,6 +19,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public class OSHDbGeometryBuilder {
   private OSHDbGeometryBuilder() {}
 
   // gets the geometry of this object at a specific timestamp
-  public static <T extends OSMEntity> Geometry getGeometry(T entity, long timestamp,
+  public static <T extends OSMEntity> Geometry getGeometry(T entity, OSHDBTimestamp timestamp,
       TagInterpreter areaDecider) {
     if (entity instanceof OSMNode) {
       OSMNode node = (OSMNode) entity;
@@ -81,7 +82,7 @@ public class OSHDbGeometryBuilder {
     return geometryFactory.createGeometryCollection(geoms);
   }
 
-  private static Geometry getMultiPolygonGeometry(OSMRelation entity, long timestamp,
+  private static Geometry getMultiPolygonGeometry(OSMRelation entity, OSHDBTimestamp timestamp,
       TagInterpreter tagInterpreter) {
     GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -197,7 +198,7 @@ public class OSHDbGeometryBuilder {
     return joined;
   }
 
-  public static <T extends OSMEntity> Geometry getGeometryClipped(T entity, long timestamp,
+  public static <T extends OSMEntity> Geometry getGeometryClipped(T entity, OSHDBTimestamp timestamp,
       TagInterpreter areaDecider, OSHDBBoundingBox clipBbox) {
     Geometry geom = OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     if (geom == null) {
@@ -207,7 +208,7 @@ public class OSHDbGeometryBuilder {
   }
 
   public static <P extends Geometry & Polygonal, T extends OSMEntity> Geometry getGeometryClipped(
-      T entity, long timestamp, TagInterpreter areaDecider, P clipPoly) {
+      T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, P clipPoly) {
     Geometry geom = OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     if (geom == null) {
       return null;
