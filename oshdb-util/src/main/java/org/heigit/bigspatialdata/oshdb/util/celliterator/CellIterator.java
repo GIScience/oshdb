@@ -65,6 +65,8 @@ public class CellIterator {
         new FastBboxInPolygon(boundingPolygon);
     Predicate<OSHDBBoundingBox> bboxOutsidePolygon = boundingPolygon == null ? x -> false :
         new FastBboxOutsidePolygon(boundingPolygon);
+    FastPolygonOperations fastPolygonClipper = boundingPolygon == null ? null :
+        new FastPolygonOperations(boundingPolygon);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
@@ -144,14 +146,15 @@ public class CellIterator {
         try {
           Geometry geom;
           if (!isOldStyleMultipolygon) {
-            geom =
-                fullyInside ? OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-                    : boundingPolygon != null
-                        ? OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
-                            tagInterpreter, boundingPolygon)
-                        : OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
-                            tagInterpreter, boundingBox);
-
+            if (fullyInside) {
+              geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+            } else if (boundingPolygon != null) {
+              geom = fastPolygonClipper.intersection(
+                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+              );
+            } else {
+              geom = OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter, boundingBox);
+            }
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
             // used to "fix" the
@@ -332,8 +335,8 @@ public class CellIterator {
         new FastBboxInPolygon(boundingPolygon);
     Predicate<OSHDBBoundingBox> bboxOutsidePolygon = boundingPolygon == null ? x -> false :
         new FastBboxOutsidePolygon(boundingPolygon);
-
-    FastPolygonOperations fastPolygonClipper = boundingPolygon == null ? null : new FastPolygonOperations(boundingPolygon);
+    FastPolygonOperations fastPolygonClipper = boundingPolygon == null ? null :
+        new FastPolygonOperations(boundingPolygon);
 
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
@@ -443,11 +446,15 @@ public class CellIterator {
         try {
           Geometry geom;
           if (!isOldStyleMultipolygon) {
-            geom = fullyInside
-                ? OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-                : boundingPolygon != null
-                    ? fastPolygonClipper.intersection(OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter))
-                    : OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter, boundingBox);
+            if (fullyInside) {
+              geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+            } else if (boundingPolygon != null) {
+              geom = fastPolygonClipper.intersection(
+                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+              );
+            } else {
+              geom = OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter, boundingBox);
+            }
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
             // used to "fix" the results obtained from calculating the geometry on the object's outer
