@@ -14,6 +14,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -66,7 +67,7 @@ public class TestOSMDataFilters {
   public void polygon() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTypes(OSMType.NODE)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(OSHDbGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());
@@ -77,7 +78,9 @@ public class TestOSMDataFilters {
     GeometryFactory gf = new GeometryFactory();
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTypes(OSMType.NODE)
-        .areaOfInterest(gf.createMultiPolygon(new Polygon[] {bbox.getGeometry()}))
+        .areaOfInterest(gf.createMultiPolygon(new Polygon[] {
+            OSHDbGeometryBuilder.getGeometry(bbox)
+        }))
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());
@@ -89,7 +92,7 @@ public class TestOSMDataFilters {
   public void tagKey() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
         .where("building")
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .aggregateBy(snapshot -> snapshot.getEntity().getType())
         .count();
@@ -102,7 +105,7 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .where("highway", "residential")
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());
@@ -113,7 +116,7 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .where("highway", Arrays.asList("residential", "unclassified"))
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
@@ -124,7 +127,7 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .where("highway", Pattern.compile("residential|unclassified"))
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
@@ -138,7 +141,7 @@ public class TestOSMDataFilters {
             new ImmutablePair<>("highway", "unclassified"))
         )
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
@@ -150,7 +153,7 @@ public class TestOSMDataFilters {
         .where("name")
         .where("highway")
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> {
           int[] tags = snapshot.getEntity().getTags();
@@ -168,7 +171,7 @@ public class TestOSMDataFilters {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .where(entity -> entity.getVersion() > 2)
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> snapshot.getEntity().getVersion());
     assertEquals(4, result.stream().max(Comparator.reverseOrder()).orElse(-1).intValue());

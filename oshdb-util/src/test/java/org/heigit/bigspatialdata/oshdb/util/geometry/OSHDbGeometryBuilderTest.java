@@ -85,7 +85,7 @@ public class OSHDbGeometryBuilderTest {
     OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 800000000L);
     OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
     TagInterpreter areaDecider = null;
-    Polygon clipPoly = (new OSHDBBoundingBox(-180, -90, 180, 90)).getGeometry();
+    Polygon clipPoly = OSHDbGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
     Geometry result =
         OSHDbGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipPoly);

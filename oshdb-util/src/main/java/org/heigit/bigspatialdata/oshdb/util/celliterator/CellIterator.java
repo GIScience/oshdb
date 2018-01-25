@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.geotools.geometry.GeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
@@ -57,7 +58,7 @@ public class CellIterator {
       TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
-    XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
+    Polygon boundingBoxGeometry = OSHDbGeometryBuilder.getGeometry(boundingBox);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) || !oshEntity.intersectsBbox(boundingBox)) {
@@ -65,8 +66,9 @@ public class CellIterator {
         // box -> skip it
         continue;
       }
+      ;
       boolean fullyInside = oshEntity.insideBbox(boundingBox)
-          && (boundingPolygon == null || boundingPolygon.contains(boundingBox.getGeometry()));
+          && (boundingPolygon == null || boundingPolygon.contains(boundingBoxGeometry));
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
@@ -217,7 +219,7 @@ public class CellIterator {
       GridOSHEntity cell, Polygon boundingPolygon, List<OSHDBTimestamp> timestamps,
       TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    OSHDBBoundingBox boundingBox = new OSHDBBoundingBox(boundingPolygon.getEnvelopeInternal());
+    OSHDBBoundingBox boundingBox = OSHDbGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal());
     return iterateByTimestamps(cell, boundingBox, boundingPolygon, timestamps, tagInterpreter,
         oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
@@ -317,7 +319,7 @@ public class CellIterator {
       Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter,
       boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
-    XYGrid nodeGrid = new XYGrid(OSHDB.MAXZOOM);
+    Polygon boundingBoxGeometry = OSHDbGeometryBuilder.getGeometry(boundingBox);
 
     if (includeOldStyleMultipolygons) {
       throw new Error("this is not yet properly implemented (probably)"); // todo: remove this by
@@ -331,7 +333,7 @@ public class CellIterator {
         continue;
       }
       boolean fullyInside = oshEntity.insideBbox(boundingBox)
-          && (boundingPolygon == null || (boundingPolygon.contains(boundingBox.getGeometry())));
+          && (boundingPolygon == null || (boundingPolygon.contains(boundingBoxGeometry)));
 
       List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
@@ -375,13 +377,8 @@ public class CellIterator {
 
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
-          if (prev != null && !prev.activities.contains(ContributionType.DELETION)) { // todo: some
-            // of this may
-            // be
-            // refactorable
-            // between the
-            // two for
-            // loops
+          // todo: some of this may be refactorable between the two for loops
+          if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null,
                 prev.geometry, EnumSet.of(ContributionType.DELETION));
             if (!skipOutput) {
@@ -441,10 +438,8 @@ public class CellIterator {
 
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
-            // used to "fix" the
-            // results obtained from calculating the geometry on the object's outer way which
-            // doesn't know about the
-            // inner members of the multipolygon relation
+            // used to "fix" the results obtained from calculating the geometry on the object's outer
+            // way which doesn't know about the inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = OSHDbGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
@@ -589,7 +584,7 @@ public class CellIterator {
       TimestampInterval timeInterval, TagInterpreter tagInterpreter,
       Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter,
       boolean includeOldStyleMultipolygons) {
-    OSHDBBoundingBox boundingBox = new OSHDBBoundingBox(boundingPolygon.getEnvelopeInternal());
+    OSHDBBoundingBox boundingBox = OSHDbGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal());
     return iterateAll(cell, boundingBox, boundingPolygon, timeInterval, tagInterpreter,
         oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
