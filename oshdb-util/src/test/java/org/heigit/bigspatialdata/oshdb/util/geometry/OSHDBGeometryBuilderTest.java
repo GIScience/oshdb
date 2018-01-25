@@ -4,20 +4,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.LONLAT_A;
-import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.TAGS_A;
-import static org.heigit.bigspatialdata.oshdb.util.export.JSONTransformerTest.USER_A;
 
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -29,11 +18,11 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class OSHDbGeometryBuilderTest {
+public class OSHDBGeometryBuilderTest {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OSHDbGeometryBuilderTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OSHDBGeometryBuilderTest.class);
 
-  public OSHDbGeometryBuilderTest() {}
+  public OSHDBGeometryBuilderTest() {}
 
   /*todo: @Test
   public void testIsArea() {
@@ -62,7 +51,7 @@ public class OSHDbGeometryBuilderTest {
     OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
     TagInterpreter areaDecider = null;
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 100));
-    Geometry result = OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals(expResult, result);
   }
 
@@ -75,7 +64,7 @@ public class OSHDbGeometryBuilderTest {
     OSHDBBoundingBox clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 90.0);
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
     Geometry result =
-        OSHDbGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipBbox);
+        OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipBbox);
     assertEquals(expResult, result);
   }
 
@@ -85,10 +74,10 @@ public class OSHDbGeometryBuilderTest {
     OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 800000000L);
     OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
     TagInterpreter areaDecider = null;
-    Polygon clipPoly = OSHDbGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
+    Polygon clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
     Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
     Geometry result =
-        OSHDbGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipPoly);
+        OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipPoly);
     assertEquals(expResult, result);
   }
 

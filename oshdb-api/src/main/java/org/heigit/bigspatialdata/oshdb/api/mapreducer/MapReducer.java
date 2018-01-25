@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.sql.Connection;
 import org.heigit.bigspatialdata.oshdb.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import com.vividsolutions.jts.geom.*;
 import java.io.IOException;
@@ -215,7 +215,7 @@ public abstract class MapReducer<X>
       ret._bboxFilter = OSHDBBoundingBox.intersect(bboxFilter, ret._bboxFilter);
     } else {
       ret._polyFilter = Geo.clip(ret._polyFilter, bboxFilter);
-      ret._bboxFilter = OSHDbGeometryBuilder.boundingBoxOf(ret._polyFilter.getEnvelopeInternal());
+      ret._bboxFilter = OSHDBGeometryBuilder.boundingBoxOf(ret._polyFilter.getEnvelopeInternal());
     }
     return ret;
   }
@@ -235,7 +235,7 @@ public abstract class MapReducer<X>
     } else {
       ret._polyFilter = Geo.clip(polygonFilter, ret._getPolyFilter());
     }
-    ret._bboxFilter = OSHDbGeometryBuilder.boundingBoxOf(ret._polyFilter.getEnvelopeInternal());
+    ret._bboxFilter = OSHDBGeometryBuilder.boundingBoxOf(ret._polyFilter.getEnvelopeInternal());
     return ret;
   }
 

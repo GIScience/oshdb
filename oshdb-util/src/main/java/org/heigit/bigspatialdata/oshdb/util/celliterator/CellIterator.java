@@ -6,16 +6,13 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.geotools.geometry.GeometryBuilder;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +55,7 @@ public class CellIterator {
       TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     List<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
-    Polygon boundingBoxGeometry = OSHDbGeometryBuilder.getGeometry(boundingBox);
+    Polygon boundingBoxGeometry = OSHDBGeometryBuilder.getGeometry(boundingBox);
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) || !oshEntity.intersectsBbox(boundingBox)) {
@@ -139,11 +136,11 @@ public class CellIterator {
           Geometry geom;
           if (!isOldStyleMultipolygon) {
             geom =
-                fullyInside ? OSHDbGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+                fullyInside ? OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
                     : boundingPolygon != null
-                        ? OSHDbGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
+                        ? OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
                             tagInterpreter, boundingPolygon)
-                        : OSHDbGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
+                        : OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
                             tagInterpreter, boundingBox);
 
           } else {
@@ -154,7 +151,7 @@ public class CellIterator {
             // inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
-            geom = OSHDbGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+            geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
             Polygon poly = (Polygon) geom;
             Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
             for (int i = 0; i < poly.getNumInteriorRing(); i++) {
@@ -219,7 +216,7 @@ public class CellIterator {
       GridOSHEntity cell, Polygon boundingPolygon, List<OSHDBTimestamp> timestamps,
       TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
-    OSHDBBoundingBox boundingBox = OSHDbGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal());
+    OSHDBBoundingBox boundingBox = OSHDBGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal());
     return iterateByTimestamps(cell, boundingBox, boundingPolygon, timestamps, tagInterpreter,
         oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }
@@ -319,7 +316,7 @@ public class CellIterator {
       Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter,
       boolean includeOldStyleMultipolygons) {
     List<IterateAllEntry> results = new LinkedList<>();
-    Polygon boundingBoxGeometry = OSHDbGeometryBuilder.getGeometry(boundingBox);
+    Polygon boundingBoxGeometry = OSHDBGeometryBuilder.getGeometry(boundingBox);
 
     if (includeOldStyleMultipolygons) {
       throw new Error("this is not yet properly implemented (probably)"); // todo: remove this by
@@ -429,11 +426,11 @@ public class CellIterator {
           Geometry geom;
           if (!isOldStyleMultipolygon) {
             geom =
-                fullyInside ? OSHDbGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+                fullyInside ? OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
                     : boundingPolygon != null
-                        ? OSHDbGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
+                        ? OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
                             tagInterpreter, boundingPolygon)
-                        : OSHDbGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
+                        : OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp,
                             tagInterpreter, boundingBox);
 
           } else {
@@ -442,7 +439,7 @@ public class CellIterator {
             // way which doesn't know about the inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
-            geom = OSHDbGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+            geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
             Polygon poly = (Polygon) geom;
             Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
             for (int i = 0; i < poly.getNumInteriorRing(); i++) {
@@ -584,7 +581,7 @@ public class CellIterator {
       TimestampInterval timeInterval, TagInterpreter tagInterpreter,
       Predicate<OSHEntity> oshEntityPreFilter, Predicate<OSMEntity> osmEntityFilter,
       boolean includeOldStyleMultipolygons) {
-    OSHDBBoundingBox boundingBox = OSHDbGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal());
+    OSHDBBoundingBox boundingBox = OSHDBGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal());
     return iterateAll(cell, boundingBox, boundingPolygon, timeInterval, tagInterpreter,
         oshEntityPreFilter, osmEntityFilter, includeOldStyleMultipolygons);
   }

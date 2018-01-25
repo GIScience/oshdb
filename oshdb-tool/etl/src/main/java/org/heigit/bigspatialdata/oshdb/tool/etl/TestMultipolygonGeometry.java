@@ -37,7 +37,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -228,8 +228,8 @@ public class TestMultipolygonGeometry {
               double dist = 0.;
               try {
                 Geometry geom = fullyInside
-                    ? OSHDbGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-                    : OSHDbGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter,
+                    ? OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+                    : OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter,
                         bboxFilter);
 
                 if (geom == null) {
@@ -255,7 +255,7 @@ public class TestMultipolygonGeometry {
                     System.err.println("Unknown geometry type found: " + geom.getGeometryType());
                 }
                 if (isOldstyleMultipolygon) {
-                  Geometry adjustGeom = OSHDbGeometryBuilder
+                  Geometry adjustGeom = OSHDBGeometryBuilder
                       .getGeometry(oldstyleMultipolygonOuterWay, timestamp, tagInterpreter);
                   // oldstyleMultipolygonOuterWay.getGeometry(timestamp, new TagInterpreter()); ///
                   // todo -> custom taginterpreter for this case?!

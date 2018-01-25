@@ -18,7 +18,7 @@ import org.heigit.bigspatialdata.oshdb.osh.*;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -150,7 +150,7 @@ public class TestMultithreadDBProcessingAndGeometryCalculations {
 
               double dist = 0.;
               try {
-                Geometry geom = OSHDbGeometryBuilder.getGeometry(osmWay, timestamp, areaDecider);
+                Geometry geom = OSHDBGeometryBuilder.getGeometry(osmWay, timestamp, areaDecider);
 
                 if (geom == null) {
                   throw new NotImplementedException(); // hack!

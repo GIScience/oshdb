@@ -30,11 +30,11 @@ import com.vividsolutions.jts.geom.Polygonal;
 /**
  *
  */
-public class OSHDbGeometryBuilder {
+public class OSHDBGeometryBuilder {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OSHDbGeometryBuilder.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OSHDBGeometryBuilder.class);
 
-  private OSHDbGeometryBuilder() {}
+  private OSHDBGeometryBuilder() {}
 
   // gets the geometry of this object at a specific timestamp
   public static <T extends OSMEntity> Geometry getGeometry(T entity, OSHDBTimestamp timestamp,
@@ -65,7 +65,7 @@ public class OSHDbGeometryBuilder {
     }
     OSMRelation relation = (OSMRelation) entity;
     if (areaDecider.isArea(entity)) {
-      return OSHDbGeometryBuilder.getMultiPolygonGeometry(relation, timestamp, areaDecider);
+      return OSHDBGeometryBuilder.getMultiPolygonGeometry(relation, timestamp, areaDecider);
     }
     /*
      * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
@@ -74,7 +74,7 @@ public class OSHDbGeometryBuilder {
     Geometry[] geoms = new Geometry[relation.getMembers().length];
     for (int i = 0; i < relation.getMembers().length; i++) {
       try {
-        geoms[i] = OSHDbGeometryBuilder.getGeometry(
+        geoms[i] = OSHDBGeometryBuilder.getGeometry(
             relation.getMembers()[i].getEntity().getByTimestamp(timestamp), timestamp, areaDecider);
       } catch (NullPointerException ex) {
         LOG.warn("Member entity of relation/{} missing, geometry could not be created.",
@@ -109,12 +109,12 @@ public class OSHDbGeometryBuilder {
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
 
     // construct rings from polygons
-    List<LinearRing> outerRings = OSHDbGeometryBuilder.join(outerLines).stream()
+    List<LinearRing> outerRings = OSHDBGeometryBuilder.join(outerLines).stream()
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
-    List<LinearRing> innerRings = OSHDbGeometryBuilder.join(innerLines).stream()
+    List<LinearRing> innerRings = OSHDBGeometryBuilder.join(innerLines).stream()
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
@@ -203,7 +203,7 @@ public class OSHDbGeometryBuilder {
 
   public static <T extends OSMEntity> Geometry getGeometryClipped(T entity, OSHDBTimestamp timestamp,
       TagInterpreter areaDecider, OSHDBBoundingBox clipBbox) {
-    Geometry geom = OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     if (geom == null) {
       return null;
     }
@@ -212,7 +212,7 @@ public class OSHDbGeometryBuilder {
 
   public static <P extends Geometry & Polygonal, T extends OSMEntity> Geometry getGeometryClipped(
       T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, P clipPoly) {
-    Geometry geom = OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     if (geom == null) {
       return null;
     }

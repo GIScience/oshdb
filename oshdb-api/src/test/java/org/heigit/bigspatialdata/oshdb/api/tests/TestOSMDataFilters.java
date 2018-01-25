@@ -14,7 +14,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -67,7 +67,7 @@ public class TestOSMDataFilters {
   public void polygon() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTypes(OSMType.NODE)
-        .areaOfInterest(OSHDbGeometryBuilder.getGeometry(bbox))
+        .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());
@@ -79,7 +79,7 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTypes(OSMType.NODE)
         .areaOfInterest(gf.createMultiPolygon(new Polygon[] {
-            OSHDbGeometryBuilder.getGeometry(bbox)
+            OSHDBGeometryBuilder.getGeometry(bbox)
         }))
         .timestamps(timestamps1)
         .count();

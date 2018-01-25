@@ -20,7 +20,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDbGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
 import org.slf4j.Logger;
@@ -122,7 +122,7 @@ public class JSONTransformer {
     // JSON for geometry
     GeoJSONWriter writer = new GeoJSONWriter();
     try {
-      GeoJSON json = writer.write(OSHDbGeometryBuilder.getGeometry(entity, timestamp, areaDecider));
+      GeoJSON json = writer.write(OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider));
       JsonReader jsonReader = Json.createReader(new StringReader(json.toString()));
       JsonObject geom = jsonReader.readObject();
       result.add("type", "Feature").add("id", jsonid.toString()).add("properties", properties)
