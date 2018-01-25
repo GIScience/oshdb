@@ -692,7 +692,7 @@ public abstract class MapReducer<X>
   }
 
   /**
-   * Sets up aggregation by timestamp.
+   * Sets up automatic aggregation by timestamp.
    *
    * In the OSMEntitySnapshotView, the snapshots' timestamp will be used directly to aggregate
    * results into. In the OSMContributionView, the timestamps of the respective data modifications
@@ -710,7 +710,9 @@ public abstract class MapReducer<X>
   public MapAggregatorByTimestamps<X> aggregateByTimestamp() throws UnsupportedOperationException {
     if (this._grouping != Grouping.NONE) {
       throw new UnsupportedOperationException(
-          "aggregateByTimestamp cannot be used together with the groupById() functionality");
+          "automatic aggregateByTimestamp() cannot be used together with the groupById() "+
+          "functionality -> try using aggregateByTimestamp(customTimestampIndex) instead"
+      );
     }
 
     // by timestamp indexing function -> for some data views we need to match the input data to the
@@ -730,12 +732,14 @@ public abstract class MapReducer<X>
       indexer = data -> ((OSMEntitySnapshot) data).getTimestamp();
     } else {
       throw new UnsupportedOperationException(
-          "aggregateByTimestamp only implemented for OSMContribution and OSMEntitySnapshot");
+          "automatic aggregateByTimestamp() only implemented for OSMContribution and "+
+          "OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead"
+      );
     }
 
     if (this._mappers.size() > 0) {
       // for convenience we allow one to set this function even after some map functions were set.
-      // if some map / flatMap functions were alredy set:
+      // if some map / flatMap functions were already set:
       // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
       // accordingly
       MapReducer<X> ret = this.copy();
@@ -755,6 +759,29 @@ public abstract class MapReducer<X>
     } else {
       return new MapAggregatorByTimestamps<X>(this, indexer);
     }
+  }
+
+  /**
+   * Sets up aggregation by a custom time index.
+   *
+   * The timestamps returned by the supplied indexing function are matched to the corresponding time intervals
+   *
+   * @param indexer a callback function that return a timestamp object for each given data. Note that
+   *                if this function returns timestamps outside of the supplied timestamps() interval
+   *                results may be undefined
+   * @return a MapAggregator object with the equivalent state (settings,
+   * filters, map function, etc.) of the current MapReducer object
+   */
+  public MapAggregatorByTimestamps<X> aggregateByTimestamp(SerializableFunction<X, OSHDBTimestamp> indexer) throws UnsupportedOperationException {
+    final List<OSHDBTimestamp> timestamps = this._tstamps.get();
+    return new MapAggregatorByTimestamps<X>(this, data -> {
+      // match timestamps to the given timestamp list
+      int timeBinIndex = Collections.binarySearch(timestamps, indexer.apply(data));
+      if (timeBinIndex < 0) {
+        timeBinIndex = -timeBinIndex - 2;
+      }
+      return timestamps.get(timeBinIndex);
+    });
   }
 
   // -----------------------------------------------------------------------------------------------
