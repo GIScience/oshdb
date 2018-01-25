@@ -20,7 +20,7 @@ public class FastPolygonOperations implements Serializable {
 
 
   public <P extends Geometry & Polygonal> FastPolygonOperations(P geom) {
-    numBands = (int)Math.ceil(Math.sqrt(geom.getNumPoints()/AvgVerticesPerBlock));
+    numBands = (int)Math.ceil(Math.sqrt(1.0*geom.getNumPoints()/AvgVerticesPerBlock));
     blocks = new ArrayList<>(numBands*numBands);
 
     env = geom.getEnvelopeInternal();
