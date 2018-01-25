@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-parent</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.4.0-SNAPSHOT</version>
     <relativePath>./parent/pom.xml</relativePath>
   </parent>
   
@@ -14,16 +14,16 @@
   <packaging>pom</packaging>
   
   <modules>
-    <module>oshpbf-parser</module>
     <module>oshdb</module>
     <module>oshdb-api</module>
     <module>oshdb-tool</module>
+    <module>oshdb-util</module>
   </modules>
   
   <properties>
     <apachecommons.version>3.1</apachecommons.version>
     <commonsio.version>2.5</commonsio.version>
-    <fastutil.version>7.2.0</fastutil.version>
+    <fastutil.version>8.1.1</fastutil.version>
     <geotools.version>18-RC1</geotools.version>
     <glassfish.version>1.1</glassfish.version>
     <googlejson.version>1.1.1</googlejson.version>

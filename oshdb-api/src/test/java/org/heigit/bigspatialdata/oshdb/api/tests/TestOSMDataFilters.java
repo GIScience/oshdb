@@ -13,11 +13,12 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
 import java.util.*;
@@ -31,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 public class TestOSMDataFilters {
   private final OSHDB_Database oshdb;
 
-  private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2015-01-01");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
@@ -66,7 +67,7 @@ public class TestOSMDataFilters {
   public void polygon() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTypes(OSMType.NODE)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());
@@ -77,7 +78,9 @@ public class TestOSMDataFilters {
     GeometryFactory gf = new GeometryFactory();
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTypes(OSMType.NODE)
-        .areaOfInterest(gf.createMultiPolygon(new Polygon[] {bbox.getGeometry()}))
+        .areaOfInterest(gf.createMultiPolygon(new Polygon[] {
+            OSHDBGeometryBuilder.getGeometry(bbox)
+        }))
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());
@@ -89,7 +92,7 @@ public class TestOSMDataFilters {
   public void tagKey() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
         .where("building")
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .aggregateBy(snapshot -> snapshot.getEntity().getType())
         .count();
@@ -102,7 +105,7 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .where("highway", "residential")
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(2, result.intValue());
@@ -113,7 +116,7 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .where("highway", Arrays.asList("residential", "unclassified"))
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
@@ -124,7 +127,7 @@ public class TestOSMDataFilters {
     Integer result = createMapReducerOSMEntitySnapshot()
         .where("highway", Pattern.compile("residential|unclassified"))
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
@@ -138,7 +141,7 @@ public class TestOSMDataFilters {
             new ImmutablePair<>("highway", "unclassified"))
         )
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
@@ -150,7 +153,7 @@ public class TestOSMDataFilters {
         .where("name")
         .where("highway")
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> {
           int[] tags = snapshot.getEntity().getTags();
@@ -168,7 +171,7 @@ public class TestOSMDataFilters {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .where(entity -> entity.getVersion() > 2)
         .osmTypes(OSMType.WAY)
-        .areaOfInterest(bbox.getGeometry())
+        .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> snapshot.getEntity().getVersion());
     assertEquals(4, result.stream().max(Comparator.reverseOrder()).orElse(-1).intValue());

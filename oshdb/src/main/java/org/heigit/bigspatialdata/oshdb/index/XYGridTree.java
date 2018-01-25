@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +94,7 @@ public class XYGridTree {
    * @param bbox
    * @return
    */
-  public CellId getInsertId(BoundingBox bbox) {
+  public CellId getInsertId(OSHDBBoundingBox bbox) {
     for (int i = maxLevel; i > 0; i--) {
       try {
         if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
@@ -116,8 +116,8 @@ public class XYGridTree {
    * @param BBOX
    * @return
    */
-  public Iterable<CellId> bbox2CellIds(final BoundingBox BBOX) {
-    return bbox2CellIds(BBOX, true);
+  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX) {
+    return bbox2CellIds(BBOX, false);
   }
 
   /**
@@ -128,7 +128,7 @@ public class XYGridTree {
    * @param enlarge
    * @return
    */
-  public Iterable<CellId> bbox2CellIds(final BoundingBox BBOX, final boolean enlarge) {
+  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX, final boolean enlarge) {
 
     return new Iterable<CellId>() {
       @Override
@@ -191,12 +191,12 @@ public class XYGridTree {
    * @return
    */
   public Iterable<CellId> getMultiZoomNeighbours(CellId center) {
-    BoundingBox bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
+    OSHDBBoundingBox bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
     long minlong = bbox.minLon - 1L;
     long minlat = bbox.minLat - 1L;
     long maxlong = bbox.maxLon + 1L;
     long maxlat = bbox.maxLat + 1L;
-    BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
+    OSHDBBoundingBox newbbox = new OSHDBBoundingBox(minlong, minlat, maxlong, maxlat);
     return this.bbox2CellIds(newbbox, false);
   }
 

@@ -6,7 +6,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOp
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.jetbrains.annotations.Contract;
 
@@ -122,7 +122,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
     SortedMap<OSHDBTimestamp, S> result = super.reduce(identitySupplier, accumulator, combiner);
     if (!this._zerofill) return result;
     // fill nodata entries with "0"
-    final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.getOSHDBTimestamps();
+    final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.get();
     // pop last element from timestamps list if we're dealing with OSMContributions (where the timestamps list defines n-1 time intervals)
     if (this._mapReducer._forClass.equals(OSMContribution.class))
       timestamps.remove(timestamps.size()-1);

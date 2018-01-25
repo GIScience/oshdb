@@ -4,11 +4,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import java.util.EnumSet;
 import java.util.Objects;
 
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 
 /**
  * Holds information about a single modification ("contribution") of a single entity in database.
@@ -132,11 +132,11 @@ public class OSMContribution implements OSHDB_MapReducible {
   public int getContributorUserId() {
     // todo: optimizable if done directly in CellIterator??
     OSMEntity entity = this.getEntityAfter();
-    long contributionTimestamp = this.getTimestamp().toLong();
+    OSHDBTimestamp contributionTimestamp = this.getTimestamp();
     EnumSet<ContributionType> contributionTypes = this.getContributionTypes();
     // if the entity itself was modified at this exact timestamp, or we know from the contribution type that the entity
     // must also have been modified, we can just return the uid directly
-    if (contributionTimestamp == entity.getTimestamp() ||
+    if (contributionTimestamp.equals(entity.getTimestamp()) ||
         contributionTypes.contains(ContributionType.CREATION) ||
         contributionTypes.contains(ContributionType.TAG_CHANGE) ||
         contributionTypes.contains(ContributionType.MEMBERLIST_CHANGE) ||

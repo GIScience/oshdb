@@ -12,9 +12,10 @@ import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
 import org.heigit.bigspatialdata.oshdb.osm.*;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
 
 public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable {
 
@@ -53,8 +54,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final long minLat = baseLatitude + wrapper.readSInt64();
     final long maxLat = minLat + wrapper.readUInt64();
 
-    final BoundingBox bbox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
-            minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
+    final OSHDBBoundingBox bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -122,7 +122,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
   private OSHRelation(final byte[] data, final int offset, final int length, final long baseId,
           final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
-          final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
+          final long id, final OSHDBBoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
           final int[] nodeIndex, final int nodeDataOffset, final int nodeDataLength, final int[] wayIndex,
           final int wayDataOffset, final int wayDataLength) {
     super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
@@ -243,7 +243,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
                 members[i] = new OSMMember(memberId, memberType, memberRole, member);
               }
             }
-            return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+            return new OSMRelation(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset, userId, keyValues,
                     members);
           } catch (IOException e) {
             e.printStackTrace();
@@ -305,7 +305,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     int idx = 0;
     int offset = 0;
     for (OSHNode node : nodes) {
-      BoundingBox bbox = node.getBoundingBox();
+      OSHDBBoundingBox bbox = node.getBoundingBox();
       if (bbox != null) {
         minLon = Math.min(minLon, bbox.minLon);
         maxLon = Math.max(maxLon, bbox.maxLon);
@@ -339,7 +339,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     idx = 0;
     offset = 0;
     for (OSHWay way : ways) {
-      BoundingBox bbox = way.getBoundingBox();
+      OSHDBBoundingBox bbox = way.getBoundingBox();
       minLon = Math.min(minLon, bbox.minLon);
       maxLon = Math.max(maxLon, bbox.maxLon);
       minLat = Math.min(minLat, bbox.minLat);
@@ -526,11 +526,11 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   }
 
   @Override
-  public List<Long> getModificationTimestamps(boolean recurse) {
-    List<Long> result;
+  public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
+    List<OSHDBTimestamp> result;
 
     List<OSMRelation> rels = this.getVersions();
-    Set<Long> relTimestamps = rels.stream()
+    Set<OSHDBTimestamp> relTimestamps = rels.stream()
             .map(OSMEntity::getTimestamp)
             .collect(Collectors.toSet());
 
@@ -540,29 +540,28 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       return result;
     }
 
-    Set<Long> memberTimestamps = IntStream.range(0, rels.size())
-            .mapToObj(Integer::new)
-            .flatMap(osmRelIndex -> {
-              OSMRelation osmRel = rels.get(osmRelIndex);
-              if (!osmRel.isVisible()) {
-                return Stream.empty();
-              }
-              OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
-              return Arrays.stream(osmRel.getMembers())
-                      .filter(member -> member.getType() == OSMType.NODE || member.getType() == OSMType.WAY)
-                      .map(OSMMember::getEntity)
-                      .filter(Objects::nonNull)
-                      .flatMap(oshEntity
-                              -> (oshEntity instanceof OSHNode ? (OSHNode) oshEntity : (OSHWay) oshEntity)
-                              // gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
-                              .getModificationTimestamps(true).stream()
-                              .filter(ts
-                                      -> ts > osmRel.getTimestamp() && (nextOsmRel == null
-                              || ts < nextOsmRel.getTimestamp())
-                              )
-                      );
-            })
-            .collect(Collectors.toSet());
+    Set<OSHDBTimestamp> memberTimestamps = IntStream.range(0, rels.size()).boxed()
+        .flatMap(osmRelIndex -> {
+          OSMRelation osmRel = rels.get(osmRelIndex);
+          if (!osmRel.isVisible()) {
+            return Stream.empty();
+          }
+          OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
+          return Arrays.stream(osmRel.getMembers())
+              .filter(member -> member.getType() == OSMType.NODE || member.getType() == OSMType.WAY)
+              .map(OSMMember::getEntity)
+              .filter(Objects::nonNull)
+              .flatMap(oshEntity ->
+                  (oshEntity instanceof OSHNode ? (OSHNode) oshEntity : (OSHWay) oshEntity)
+                  // gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
+                  .getModificationTimestamps(true).stream()
+                  .filter(ts ->
+                      ts.getRawUnixTimestamp() > osmRel.getTimestamp().getRawUnixTimestamp() &&
+                      (nextOsmRel == null || ts.getRawUnixTimestamp() < nextOsmRel.getTimestamp().getRawUnixTimestamp())
+                  )
+              );
+        })
+        .collect(Collectors.toSet());
 
     result.addAll(memberTimestamps);
 
@@ -571,8 +570,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   }
 
   @Override
-  protected Map<Long, Long> getChangesetTimestamps() {
-    Map<Long, Long> result = new TreeMap<>();
+  protected Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+    Map<OSHDBTimestamp, Long> result = new TreeMap<>();
 
     List<OSMRelation> rels = this.getVersions();
     rels.forEach(osmRel -> {

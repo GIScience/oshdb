@@ -6,7 +6,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 
 public class Builder {
   
@@ -46,10 +46,10 @@ public class Builder {
     output.writeSInt32(v- lastVersion);
     lastVersion = v;
     
-    output.writeSInt64((version.getTimestamp() - lastTimestamp) - baseTimestamp);
-    if (!firstVersion && lastTimestamp < version.getTimestamp())
+    output.writeSInt64((version.getTimestamp().getRawUnixTimestamp() - lastTimestamp) - baseTimestamp);
+    if (!firstVersion && lastTimestamp < version.getTimestamp().getRawUnixTimestamp())
       timestampsNotInOrder = true;
-    lastTimestamp = version.getTimestamp();
+    lastTimestamp = version.getTimestamp().getRawUnixTimestamp();
     
     output.writeSInt64(version.getChangeset() - lastChangeset);
     lastChangeset = version.getChangeset();

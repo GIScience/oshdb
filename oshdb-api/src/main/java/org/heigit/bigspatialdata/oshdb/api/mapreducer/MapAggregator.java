@@ -8,7 +8,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -70,10 +70,10 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
    */
   MapAggregator() {}
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Filtering methods
   // Just forwards everything to the wrapped MapReducer object
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Set the area of interest to the given bounding box.
@@ -83,7 +83,7 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> areaOfInterest(BoundingBox bboxFilter) {
+  public MapAggregator<U, X> areaOfInterest(OSHDBBoundingBox bboxFilter) {
     return this.copyTransform(this._mapReducer.areaOfInterest(bboxFilter));
   }
 
@@ -224,11 +224,11 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
     return this.where(key, value);
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // "Quality of life" helper methods to use the map-reduce functionality more directly and easily for typical queries.
   // Available are: sum, count, average, weightedAverage and uniq.
   // Each one can be used to get results aggregated by timestamp, aggregated by a custom index and not aggregated totals.
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Sums up the results.
@@ -382,9 +382,9 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
         ));
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Iterates over the results of this data aggregation
@@ -415,9 +415,9 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
     );
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // "map", "flatMap" transformation methods
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Set an arbitrary `map` transformation function.
@@ -470,11 +470,11 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
     ));
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.
   // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   /**
    * Map-reduce routine with built-in aggregation
@@ -543,9 +543,9 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
     return this.reduce(identitySupplier, accumulator::apply, accumulator);
   }
 
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Some helper methods for internal use in the mapReduce functions
-  // -------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
 
   // casts current results to a numeric type, for summing and averaging
   @Contract(pure = true)
