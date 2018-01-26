@@ -40,6 +40,7 @@ import org.heigit.bigspatialdata.oshpbf.parser.rx.RxOshPbfReader;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Functions;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Streams;
 import com.google.common.io.CountingOutputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -179,8 +180,12 @@ public class Extract {
   }
 
   public void sortByFrequency(ExtractKeyTablesResult extratKeyTablesResult) throws FileNotFoundException, IOException {
+    System.out.print("sorting tags by frequency ...");
     sortByFrequency(extratKeyTablesResult.kvFrequency);
+    System.out.println(" done!");
+    System.out.print("sorting roles by frequency ...");
     sortByFrequency(extratKeyTablesResult.roleFrequency);
+    System.out.println(" done!");
   }
 
   public void sortByFrequency(KVFCollector kvFrequency) throws FileNotFoundException, IOException {
@@ -273,8 +278,9 @@ public class Extract {
       throw new IllegalArgumentException("worker must be lesser than totalWorker!");
 
     long availableMemory = SizeEstimator.estimateAvailableMemory();
+    System.out.print("extracting key tables ...");
     Extract extract = Extract.withMaxMemory(availableMemory).withWorkDirectory(workDir).withTempDirectory(tempDir);
-
+    System.out.println(" done!");
     if (config.distribute.merge) {
       try {
         List<File> tmp;
@@ -286,8 +292,9 @@ public class Extract {
         if(tmp.isEmpty())
           throw new RuntimeException("no files to merge");
         KVFCollector kvFrequency = new KVFCollector(tmp);
-
+        System.out.print("sorting tags by frequency ...");
         extract.sortByFrequency(kvFrequency);
+        System.out.println(" done!");
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -301,7 +308,9 @@ public class Extract {
         if(tmp.isEmpty())
           throw new RuntimeException("no files to merge");
         RoleCollector roleFrequency = new RoleCollector(tmp);
+        System.out.print("sorting roles by frequency ...");
         extract.sortByFrequency(roleFrequency);
+        System.out.println(" done!");
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -342,7 +351,8 @@ public class Extract {
       jcom.usage();
       return;
     }
-
+    Stopwatch stopwatch = Stopwatch.createStarted();
     extract(config);
+    System.out.println("extract done in "+stopwatch);
   }
 }

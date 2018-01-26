@@ -20,6 +20,7 @@ import org.reactivestreams.Publisher;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.google.common.base.Stopwatch;
 
 import io.reactivex.Flowable;
 import io.reactivex.functions.Action;
@@ -128,7 +129,9 @@ public class Transform {
         throw new Exception("to few memory left for transformation. You need to increase JVM heapsize -Xmx for transforming");
       
       System.out.println("maxMemory for transformation: "+maxMemory);
+      System.out.print("start transforming nodes ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformNodes(pbfMeta,maxZoom, tag2Id, worker, workerTotal);
+      System.out.println(" done!");
     }
 
     if (step.startsWith("a")||step.startsWith("w")) {
@@ -140,7 +143,9 @@ public class Transform {
         throw new Exception("to few memory left for transformation. You need to increase JVM heapsize -Xmx for transforming");
       
       System.out.println("maxMemory for transformation: "+maxMemory);
+      System.out.print("start transforming ways ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformWays(pbfMeta,maxZoom, tag2Id,node2Cell, worker, workerTotal);
+      System.out.println(" done!");
     }
 
     if (step.startsWith("a")||step.startsWith("r")) {
@@ -155,7 +160,9 @@ public class Transform {
         throw new Exception("to few memory left for transformation. You need to increase JVM heapsize -Xmx for transforming");
       
       System.out.println("maxMemory for transformation: "+maxMemory);
+      System.out.print("start transforming relations ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformRelations(pbfMeta,maxZoom, tag2Id, role2Id, node2Cell, way2Cell, worker, workerTotal);
+      System.out.println(" done!");
     }
     
     
@@ -178,7 +185,10 @@ public class Transform {
       jcom.usage();
       return;
     }
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    
     transform(config);
+    System.out.println("transform done in "+stopwatch);
   }
   
 }
