@@ -43,7 +43,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "NODE: %s %.7f:%.7f", super.toString(),getLatitude(), getLongitude());
+    return String.format(Locale.ENGLISH, "NODE: %s %.7f:%.7f", super.toString(), getLongitude(), getLatitude());
   }
 
 

@@ -49,8 +49,8 @@ public class OSMNodeTest {
 
   @Test
   public void testToString() {
-    OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, 1000000000L, 1000000000L);
-    String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true UID:1 TAGS:[] 100.0000000:100.0000000";
+    OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, 1100000000L, 100000000L);
+    String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true UID:1 TAGS:[] 110.0000000:10.0000000";
     String result = instance.toString();
     assertEquals(expResult, result);
   }
