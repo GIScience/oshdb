@@ -221,11 +221,12 @@ public class OSHDB2H2Handler extends OSHDbHandler {
 
         if (withKeyTables) {
           LoaderKeyTables keyTables = new LoaderKeyTables(workDirectory, handler);
-          System.out.println("Load tags");
+          System.out.print("loading tags ... ");
           keyTables.loadTags();
-          System.out.println("Load roles");
+          System.out.println(" done!");
+          System.out.print("loading roles ...");
           keyTables.loadRoles();
-          keyTables = null;
+          System.out.println(" done!");
         }
 
         /*
@@ -270,12 +271,13 @@ public class OSHDB2H2Handler extends OSHDbHandler {
         LoaderRelation rel;
         loader = rel = new LoaderRelation(workDirectory, handler, minRelationPerGrid, node, way, maxZoomLevel);
 
-        System.out.println("Load grid");
+        System.out.print("start loading to grid ...");
         loader.load();
+        System.out.println(" done!");
       }
     }
 
-    System.out.println("done! " + stopWatch);
+    System.out.println("loading done in " + stopWatch);
 
   }
 
