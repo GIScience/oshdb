@@ -334,7 +334,8 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * @return a list of timestamps where this entity has been modified
    */
   public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
-    if (this.getVersions().stream().noneMatch(osmEntityFilter)) {
+    List<OSM> versions = this.getVersions();
+    if (versions.stream().noneMatch(osmEntityFilter)) {
       return new ArrayList<>();
     }
 
@@ -344,7 +345,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
     int timeIdx = allModTs.size() - 1;
 
     long lastOsmEntityTs = Long.MAX_VALUE;
-    for (OSMEntity osmEntity : this) {
+    for (OSMEntity osmEntity : versions) {
       OSHDBTimestamp osmEntityTs = osmEntity.getTimestamp();
       if (osmEntityTs.getRawUnixTimestamp() >= lastOsmEntityTs) {
         continue; // skip versions with identical (or invalid*) timestamps
