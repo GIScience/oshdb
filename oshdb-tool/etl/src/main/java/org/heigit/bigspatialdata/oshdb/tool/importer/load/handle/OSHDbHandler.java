@@ -157,8 +157,6 @@ public abstract class OSHDbHandler extends LoaderHandler {
       List<OSMRelation> versions = osh2.stream().collect(Collectors.toList());
       
       long rid = versions.get(0).getId();
-      if(rid ==  3798196L || rid == 1996867)
-        System.out.println("hier");
 
       List<OSHNode> nodesForThisRelation = new ArrayList<>(osh2.getNodeIds().length);
       for (long id : osh2.getNodeIds()) {
@@ -179,8 +177,6 @@ public abstract class OSHDbHandler extends LoaderHandler {
       
       try {
         
-        if(rid ==  3798196L || rid == 1996867)
-          System.out.println("hier");
         OSHRelation ret = OSHRelation.build(versions, nodesForThisRelation, waysForThisRelation); 
         
         return ret;
