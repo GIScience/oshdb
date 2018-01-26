@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
 import java.util.Locale;
+
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
@@ -42,8 +43,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "NODE: %s %f:%f", super.toString(), getLongitude(),
-        getLatitude());
+    return String.format(Locale.ENGLISH, "NODE: %s %.7f:%.7f", super.toString(),getLatitude(), getLongitude());
   }
 
 

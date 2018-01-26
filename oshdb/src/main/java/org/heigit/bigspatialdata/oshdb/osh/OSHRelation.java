@@ -5,13 +5,26 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
-import org.heigit.bigspatialdata.oshdb.osm.*;
+
+import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
@@ -55,6 +68,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final long maxLat = minLat + wrapper.readUInt64();
 
     final OSHDBBoundingBox bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
+
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -298,7 +312,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     long maxLon = Long.MIN_VALUE;
     long minLat = Long.MAX_VALUE;
     long maxLat = Long.MIN_VALUE;
-
+    
     Map<Long, Integer> nodeOffsets = new HashMap<>();
     int[] nodeByteArrayIndex = new int[nodes.size()];
     ByteArrayOutputWrapper nodeData = new ByteArrayOutputWrapper();
@@ -448,9 +462,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       for (int i = 0; i < nodeByteArrayIndex.length; i++) {
         record.writeUInt32(nodeByteArrayIndex[i]);
       }
-      byte[] nodesOutput = nodeData.toByteArray();
-      record.writeUInt32(nodesOutput.length);
-      record.writeByteArray(nodesOutput);
+      record.writeUInt32(nodeData.length());
+      record.writeByteArray(nodeData.array(), 0, nodeData.length());
     }
 
     if (!ways.isEmpty()) {
@@ -459,16 +472,12 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       for (int i = 0; i < wayByteArrayIndex.length; i++) {
         record.writeUInt32(wayByteArrayIndex[i]);
       }
-      byte[] waysOutput = wayData.toByteArray();
-      record.writeUInt32(waysOutput.length);
-      record.writeByteArray(waysOutput);
+      record.writeUInt32(wayData.length());
+      record.writeByteArray(wayData.array(), 0, wayData.length());
     }
 
-    byte[] buffer = output.toByteArray();
-    record.writeByteArray(buffer);
-
-    byte[] data = record.toByteArray();
-    return OSHRelation.instance(data, 0, data.length, baseId, baseTimestamp, baseLongitude, baseLatitude);
+    record.writeByteArray(output.array(), 0, output.length());
+    return OSHRelation.instance(record.array(), 0, record.length(), baseId, baseTimestamp, baseLongitude, baseLatitude);
   }
 
   public void writeTo(ByteArrayOutputWrapper out) throws IOException {

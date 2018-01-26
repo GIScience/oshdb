@@ -1,19 +1,110 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
-import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.ObjectOutput;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Predicate;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 
+import com.google.common.collect.Lists;
+
 @SuppressWarnings("rawtypes")
 public abstract class OSHEntity<OSM extends OSMEntity>
     implements Comparable<OSHEntity>, Iterable<OSM> {
+  
+  public static class Builder {
+    
+    private static final int CHANGED_USER_ID = 1 << 0;
+    private static final int CHANGED_TAGS = 1 << 1;
+    
+    private final ByteArrayOutputWrapper output;
+    private final long baseTimestamp;
+    
+    
+    int lastVersion = 0;
+    long lastTimestamp = 0;
+    long lastChangeset = 0;
+    int lastUserId = 0;
+    int[] lastKeyValues = new int[0];
+    
+    SortedSet<Integer> keySet = new TreeSet<>();
+    
+    boolean firstVersion = true;
+    boolean timestampsNotInOrder = false;
+    
+    public Builder(final ByteArrayOutputWrapper output, final long baseTimestamp){
+      this.output = output;
+      this.baseTimestamp = baseTimestamp;
+    }
+    
+    public boolean getTimestampsNotInOrder(){
+      return timestampsNotInOrder;
+    }
+    
+    public SortedSet<Integer> getKeySet(){
+      return keySet;
+    }
+   
+     public void build(OSMEntity version, byte changed) throws IOException{
+      int v = (version.getVersion()* (!version.isVisible() ? -1 : 1)) ; 
+      output.writeSInt32(v- lastVersion);
+      lastVersion = v;
+      
+      output.writeSInt64((version.getTimestamp().getRawUnixTimestamp()  - lastTimestamp) - baseTimestamp);
+      if (!firstVersion && lastTimestamp < version.getTimestamp().getRawUnixTimestamp() )
+        timestampsNotInOrder = true;
+      lastTimestamp = version.getTimestamp().getRawUnixTimestamp() ;
+      
+      output.writeSInt64(version.getChangeset() - lastChangeset);
+      lastChangeset = version.getChangeset();
+      
+      int userId = version.getUserId();
+      if (userId != lastUserId)
+        changed |= CHANGED_USER_ID;
+
+      int[] keyValues = version.getTags();
+
+      if (version.isVisible() && !Arrays.equals(keyValues, lastKeyValues)) {
+        changed |= CHANGED_TAGS;
+      }
+      
+      output.writeByte(changed);
+
+      if ((changed & CHANGED_USER_ID) != 0) {
+        output.writeSInt32(userId - lastUserId);
+        lastUserId = userId;
+      }
+
+      if ((changed & CHANGED_TAGS) != 0) {
+        output.writeUInt32(keyValues.length);
+        for (int kv = 0; kv < keyValues.length; kv++) {
+          output.writeUInt32(keyValues[kv]);
+          if(kv%2 == 0) // only keys
+            keySet.add(Integer.valueOf(keyValues[kv]));
+        }
+        lastKeyValues = keyValues;
+      }
+      
+      firstVersion = false;
+    }
+    
+  }
 
   protected final byte[] data;
   protected final int offset;
