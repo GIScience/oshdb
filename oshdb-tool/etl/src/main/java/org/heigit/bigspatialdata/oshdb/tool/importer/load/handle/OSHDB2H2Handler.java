@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,8 +21,11 @@ import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderKeyTables;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderNode;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderRelation;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.load.cli.DBH2Arg;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import com.google.common.base.Stopwatch;
 
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
@@ -156,24 +158,21 @@ public class OSHDB2H2Handler extends OSHDbHandler {
     }
 
   }
+  
+  public static void load(DBH2Arg config) throws ClassNotFoundException {
+    final Path workDirectory = config.common.workDir;
+    Path oshdb = config.h2db;
+    int maxZoomLevel = config.maxZoom;
 
-  public static void main(String[] args) throws IOException, ClassNotFoundException, SQLException {
+    int minNodesPerGrid = config.minNodesPerGrid;
+    int minWaysPerGrid = config.minWaysPerGrid;
+    int minRelationPerGrid = config.minRelationPerGrid;
 
-    final String name = "sweden"; // "philippines";
-    final Path workDirectory = Paths.get("./temp", name);
-    Path oshdb = workDirectory.resolve(name + "_20180112_z12_keytable.oshdb");
-    int maxZoomLevel = 12;
+    boolean onlyNodesWithTags = config.onlyNodesWithTags;
+
+    boolean withKeyTables = config.withKeyTables;
+
     
-    
-    int minNodesPerGrid = 1000;
-    int minWaysPerGrid = 100;
-    int minRelationPerGrid = 10;
-
-    boolean onlyNodesWithTags = true;
-    
-    boolean withKeyTables = true;
-
-    final Stopwatch stopWatch = Stopwatch.createStarted();
     Class.forName("org.h2.Driver");
     try (Connection conn = DriverManager.getConnection("jdbc:h2:" + oshdb.toString(), "sa", "")) {
       try (Statement stmt = conn.createStatement()) {
@@ -229,40 +228,6 @@ public class OSHDB2H2Handler extends OSHDbHandler {
           System.out.println(" done!");
         }
 
-        /*
-         * handler = new OSHDbHandler(Roaring64NavigableMap.bitmapOf(),
-         * bitmapWays){
-         * 
-         * @Override public void handleNodeGrid(long zId,
-         * Collection<TransformOSHNode> nodes) { }
-         * 
-         * @Override public void handleRelationGrid(long zId,
-         * Collection<TransfomRelation> entities, Collection<TransformOSHNode>
-         * nodes, Collection<TransformOSHWay> ways) {
-         * 
-         * Optional<TransfomRelation> opt = entities.stream() .filter(r ->
-         * r.getId() == 3798196L || r.getId() == 1996867) .findAny();
-         * if(opt.isPresent()) super.handleRelationGrid(zId, entities, nodes,
-         * ways); }
-         * 
-         * @Override public void handleRelationsGrid(GridOSHRelations grid) {
-         * System.out.printf("%d:%d%n",grid.getLevel(),grid.getId());
-         * Consumer<OSHRelation> consumer = osh -> { System.out.println(osh);
-         * osh.forEach(osm -> System.out.printf("\t%s -> %s%n",new
-         * Date(osm.getTimestamp()*1000), osm)); }; grid.forEach(consumer);;
-         * 
-         * }
-         * 
-         * @Override public void handleNodeGrid(GridOSHNodes grid) { // TODO
-         * Auto-generated method stub
-         * 
-         * }
-         * 
-         * @Override public void handleWayGrid(GridOSHWays grid) { // TODO
-         * Auto-generated method stub
-         * 
-         * } };
-         */
         Loader loader;
         LoaderNode node;
         loader = node = new LoaderNode(workDirectory, handler, minNodesPerGrid, onlyNodesWithTags, maxZoomLevel);
@@ -274,10 +239,37 @@ public class OSHDB2H2Handler extends OSHDbHandler {
         System.out.print("start loading to grid ...");
         loader.load();
         System.out.println(" done!");
-      }
+      } 
+    }catch (IOException | SQLException e) {
+      e.printStackTrace();
     }
 
+    
+  }
+
+  public static void main(String[] args) throws IOException, ClassNotFoundException, SQLException {
+
+    DBH2Arg config = new DBH2Arg();
+    JCommander jcom = JCommander.newBuilder().addObject(config).build();
+
+    try {
+      jcom.parse(args);
+    } catch (ParameterException e) {
+      System.out.println("");
+      System.out.println(e.getLocalizedMessage());
+      System.out.println("");
+      jcom.usage();
+      return;
+    }
+    if (config.common.help) {
+      jcom.usage();
+      return;
+    }
+
+    final Stopwatch stopWatch = Stopwatch.createStarted();
+    load(config);
     System.out.println("loading done in " + stopWatch);
+ 
 
   }
 
