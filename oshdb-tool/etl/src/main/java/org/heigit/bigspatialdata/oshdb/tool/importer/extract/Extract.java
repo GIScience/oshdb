@@ -280,7 +280,6 @@ public class Extract {
     long availableMemory = SizeEstimator.estimateAvailableMemory();
     System.out.print("extracting key tables ...");
     Extract extract = Extract.withMaxMemory(availableMemory).withWorkDirectory(workDir).withTempDirectory(tempDir);
-    System.out.println(" done!");
     if (config.distribute.merge) {
       try {
         List<File> tmp;
