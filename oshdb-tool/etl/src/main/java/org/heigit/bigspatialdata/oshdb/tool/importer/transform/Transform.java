@@ -111,7 +111,7 @@ public class Transform {
       throw new IllegalArgumentException("step all with totalWorker > 1 is not allwod use step (node,way or relation)");
     
     final long availableHeapMemory = SizeEstimator.estimateAvailableMemory(); // reserve 1GB for parsing
-    final long availableMemory = availableHeapMemory - Math.max(1*GB, availableHeapMemory/3); //reserve at least 1GB or 1/3 of the total memroy    
+    final long availableMemory = availableHeapMemory - Math.max(1*GB, availableHeapMemory/3); //reserve at least 1GB or 1/3 of the total memory    
     
     System.out.println("Transform:");
     System.out.println("avaliable memory: "+availableMemory/1024L/1024L +" mb");
