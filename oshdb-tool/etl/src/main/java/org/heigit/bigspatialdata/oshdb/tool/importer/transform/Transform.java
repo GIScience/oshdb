@@ -47,10 +47,10 @@ public class Transform {
     return this;
   }
   
-  public TagToIdMapper getTagToIdMapper() throws FileNotFoundException, IOException{
+  public static TagToIdMapper getTagToIdMapper(Path workDirectory) throws FileNotFoundException, IOException{
     return TransformerTagRoles.getTagToIdMapper(workDirectory);
   }
-  public RoleToIdMapper getRoleToIdMapper() throws FileNotFoundException, IOException {
+  public static RoleToIdMapper getRoleToIdMapper(Path workDirectory) throws FileNotFoundException, IOException {
     return TransformerTagRoles.getRoleToIdMapper(workDirectory);
   }
   
@@ -110,15 +110,16 @@ public class Transform {
     if(workerTotal > 1 && (step.startsWith("a")))
       throw new IllegalArgumentException("step all with totalWorker > 1 is not allwod use step (node,way or relation)");
     
-    final long availableMemory = SizeEstimator.estimateAvailableMemory() - 1*GB; // reserve 1GB for parsing 
+    final long availableHeapMemory = SizeEstimator.estimateAvailableMemory(); // reserve 1GB for parsing
+    final long availableMemory = availableHeapMemory - Math.max(1*GB, availableHeapMemory/3); //reserve at least 1GB or 1/3 of the total memroy    
     
     System.out.println("Transform:");
-    System.out.println("avaliable memory: "+availableMemory);
+    System.out.println("avaliable memory: "+availableMemory/1024L/1024L +" mb");
     
     final Transform transform = Transform.withMaxMemory(availableMemory).withWorkDirectory(workDir);
     final OsmPbfMeta pbfMeta = Extract.pbfMetaData(pbf); 
     
-    final TagToIdMapper tag2Id = transform.getTagToIdMapper();
+    final TagToIdMapper tag2Id = Transform.getTagToIdMapper(workDir);
     
         
     if(step.startsWith("a") || step.startsWith("n")){
@@ -128,38 +129,41 @@ public class Transform {
       if(maxMemory < 1*MB)
         throw new Exception("to few memory left for transformation. You need to increase JVM heapsize -Xmx for transforming");
       
-      System.out.println("maxMemory for transformation: "+maxMemory);
+      System.out.println("maxMemory for transformation: "+maxMemory/1024L/1024L +" mb");
       System.out.print("start transforming nodes ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformNodes(pbfMeta,maxZoom, tag2Id, worker, workerTotal);
       System.out.println(" done!");
     }
 
     if (step.startsWith("a")||step.startsWith("w")) {
-      final SortedLong2LongMap node2Cell = new SortedLong2LongMap(workDir.resolve("transform_idToCell_" + "node"), 1*GB);
-      long maxMemory = availableMemory - tag2Id.estimatedSize() - 1*GB;
+      final long mapMemory = availableMemory/2L;
+      final SortedLong2LongMap node2Cell = new SortedLong2LongMap(workDir.resolve("transform_idToCell_" + "node"), mapMemory);
+      long maxMemory = availableMemory - tag2Id.estimatedSize() - mapMemory;
       if(maxMemory < 100*MB)
         System.out.println("warning: only 100MB memory left for transformation! Increase heapsize -Xmx if possible");
       if(maxMemory < 1*MB)
         throw new Exception("to few memory left for transformation. You need to increase JVM heapsize -Xmx for transforming");
       
-      System.out.println("maxMemory for transformation: "+maxMemory);
+      System.out.println("maxMemory for transformation: "+maxMemory/1024L/1024L +" mb");
       System.out.print("start transforming ways ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformWays(pbfMeta,maxZoom, tag2Id,node2Cell, worker, workerTotal);
       System.out.println(" done!");
     }
 
     if (step.startsWith("a")||step.startsWith("r")) {
-      final RoleToIdMapper role2Id = Transform.withMaxMemory(availableMemory).withWorkDirectory(workDir).getRoleToIdMapper();
-      final SortedLong2LongMap node2Cell = new SortedLong2LongMap(workDir.resolve("transform_idToCell_" + "node"), 1*GB);
-      final SortedLong2LongMap way2Cell = new SortedLong2LongMap(workDir.resolve("transform_idToCell_" + "way"), 1*GB);
+      final RoleToIdMapper role2Id = Transform.getRoleToIdMapper(workDir);
+      final long mapMemory = availableMemory/2L;
+      final long mapMemoryNode = mapMemory/3L;
+      final SortedLong2LongMap node2Cell = new SortedLong2LongMap(workDir.resolve("transform_idToCell_" + "node"), mapMemoryNode);
+      final SortedLong2LongMap way2Cell = new SortedLong2LongMap(workDir.resolve("transform_idToCell_" + "way"), mapMemory - mapMemoryNode);
       
-      long maxMemory = availableMemory - tag2Id.estimatedSize() - role2Id.estimatedSize() - 2*GB;
+      long maxMemory = availableMemory - tag2Id.estimatedSize() - role2Id.estimatedSize() - mapMemory;
       if(maxMemory < 100*MB)
         System.out.println("warning: only 100MB memory left for transformation! Increase heapsize -Xmx if possible");
       if(maxMemory < 1*MB)
         throw new Exception("to few memory left for transformation. You need to increase JVM heapsize -Xmx for transforming");
       
-      System.out.println("maxMemory for transformation: "+maxMemory);
+      System.out.println("maxMemory for transformation: "+maxMemory/1024L/1024L +" mb");
       System.out.print("start transforming relations ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformRelations(pbfMeta,maxZoom, tag2Id, role2Id, node2Cell, way2Cell, worker, workerTotal);
       System.out.println(" done!");

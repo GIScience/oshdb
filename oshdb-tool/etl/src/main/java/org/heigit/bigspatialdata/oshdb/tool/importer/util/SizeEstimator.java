@@ -10,8 +10,8 @@ public class SizeEstimator {
   private static int OBJ_OVERHEAD;
   private static boolean IS_64_BIT_JVM;
 
-  private static final long AVL_ENTRY_SIZE = 164;
-  private static final long AVL_MAP_SIZE = 72;
+  private static final long AVL_ENTRY_SIZE = 96;
+  private static final long AVL_MAP_SIZE = 128;
   
   static {
     // By default we assume 64 bit JVM
@@ -56,7 +56,7 @@ public class SizeEstimator {
   }
   
   public static long linkedListEntry(){
-    return OBJ_HEADER+3*OBJ_REF;
+    return OBJ_HEADER+2*OBJ_REF;
   }
   
   public static long estimatedSizeOf(byte[] bytes) {

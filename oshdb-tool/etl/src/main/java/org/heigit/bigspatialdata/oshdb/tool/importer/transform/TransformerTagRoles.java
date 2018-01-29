@@ -125,7 +125,7 @@ public class TransformerTagRoles {
         estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue(kvp.key)+4;
       } else {
         uniqueValues.put(hash, j);
-        estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue("") + 8;
+        estimatedSize += SizeEstimator.avlTreeEntry() + 8;
       }
     }
 
@@ -181,7 +181,7 @@ public class TransformerTagRoles {
           estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue(role.role) + 4;
         } else {
           uniqueRoles.put(hash, i);
-          estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue("") + 8;
+          estimatedSize += SizeEstimator.avlTreeEntry() + 8;
         }
       }
     }

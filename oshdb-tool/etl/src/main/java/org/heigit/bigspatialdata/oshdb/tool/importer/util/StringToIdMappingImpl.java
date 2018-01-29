@@ -72,7 +72,7 @@ public class StringToIdMappingImpl implements StringToIdMapping {
     long estimatedSize = 0;
     for (int i = 0; i < size; i++) {
       uniqueKeys.put(in.readInt(), in.readInt());
-      estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue("") + 8;
+      estimatedSize += SizeEstimator.avlTreeEntry() + 8;
     }
     size = in.readInt();
     final Object2IntMap<String> notUniqueKeys = new Object2IntAVLTreeMap<>();
