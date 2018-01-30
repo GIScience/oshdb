@@ -35,8 +35,8 @@ public class TransformerRelation extends Transformer {
   final SortedLong2LongMap wayToCell;
 
   public TransformerRelation(long maxMemory,int maxZoom, Path workDirectory, TagToIdMapper tagToIdMapper, RoleToIdMapper role2Id,
-      SortedLong2LongMap nodeToCell, SortedLong2LongMap wayToCell) throws IOException {
-    super(maxMemory,maxZoom, workDirectory, tagToIdMapper);
+      SortedLong2LongMap nodeToCell, SortedLong2LongMap wayToCell, int workerId) throws IOException {
+    super(maxMemory,maxZoom, workDirectory, tagToIdMapper,role2Id,workerId);
     this.nodeToCell = nodeToCell;
     this.wayToCell = wayToCell;
     
@@ -45,8 +45,6 @@ public class TransformerRelation extends Transformer {
   public OSMType type() {
     return OSMType.RELATION;
   }
-
-  private final long[] lastDataSize = new long[2];
 
   private Roaring64NavigableMap bitmapRefNode = new Roaring64NavigableMap();
   private Roaring64NavigableMap bitmapRefWay = new Roaring64NavigableMap();
@@ -109,14 +107,14 @@ public class TransformerRelation extends Transformer {
     super.complete();
     
     bitmapRefNode.runOptimize();
-    try(FileOutputStream fileOut = new FileOutputStream(workDirectory.resolve("nodeWithRelation.bitmap").toFile());
+    try(FileOutputStream fileOut = new FileOutputStream(workDirectory.resolve("transform_nodeWithRelation.bitmap").toFile());
         ObjectOutputStream out = new ObjectOutputStream(fileOut)){
       bitmapRefNode.writeExternal(out);
     } catch (IOException e) {
       e.printStackTrace();
     }
     bitmapRefWay.runOptimize();
-    try(FileOutputStream fileOut = new FileOutputStream(workDirectory.resolve("wayWithRelation.bitmap").toFile());
+    try(FileOutputStream fileOut = new FileOutputStream(workDirectory.resolve("transform_wayWithRelation.bitmap").toFile());
         ObjectOutputStream out = new ObjectOutputStream(fileOut)){
       bitmapRefWay.writeExternal(out);
     } catch (IOException e) {

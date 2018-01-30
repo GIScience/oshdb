@@ -29,8 +29,8 @@ public class TransformerWay extends Transformer {
   final SortedLong2LongMap nodeToCell;
 
   
-  public TransformerWay(long maxMemory,int maxZoom,Path workDirectory,TagToIdMapper tagToIdMapper,SortedLong2LongMap nodeToCell) throws IOException {
-    super(maxMemory,maxZoom, workDirectory,tagToIdMapper);
+  public TransformerWay(long maxMemory,int maxZoom,Path workDirectory,TagToIdMapper tagToIdMapper,SortedLong2LongMap nodeToCell, int workerId) throws IOException {
+    super(maxMemory,maxZoom, workDirectory,tagToIdMapper,workerId);
     this.nodeToCell = nodeToCell;
   }
   public OSMType type(){

@@ -210,7 +210,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
             .prepareStatement("insert into " + TableNames.T_RELATIONS.toString() + " (level,id,data) values(?,?,?)");
 
         Roaring64NavigableMap bitmapWays = new Roaring64NavigableMap();
-        try (FileInputStream fileIn = new FileInputStream(workDirectory.resolve("wayWithRelation.bitmap").toFile());
+        try (FileInputStream fileIn = new FileInputStream(workDirectory.resolve("transform_wayWithRelation.bitmap").toFile());
             ObjectInputStream in = new ObjectInputStream(fileIn)) {
           bitmapWays.readExternal(in);
         }

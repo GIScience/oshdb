@@ -25,8 +25,8 @@ public class TransformerNode extends Transformer {
   private final ByteArrayOutputWrapper baRecord = new ByteArrayOutputWrapper(1024);
   private final ByteArrayOutputWrapper baAux = new ByteArrayOutputWrapper(1024);
 
-  public TransformerNode(long maxMemory,int maxZoom, Path workDirectory, TagToIdMapper tagToIdMapper) throws IOException {
-    super(maxMemory,maxZoom, workDirectory, tagToIdMapper);
+  public TransformerNode(long maxMemory,int maxZoom, Path workDirectory, TagToIdMapper tagToIdMapper, int workerId) throws IOException {
+    super(maxMemory,maxZoom, workDirectory, tagToIdMapper,workerId);
   }
 
   public OSMType type() {

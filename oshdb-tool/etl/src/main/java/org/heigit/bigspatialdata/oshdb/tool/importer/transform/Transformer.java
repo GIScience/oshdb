@@ -44,7 +44,7 @@ public abstract class Transformer {
 
     public OSHDataContainer add(byte[] data) {
       sizeInBytesOfData += data.length + 4; // count of bytes + 4 bytes for the length of this array
-      estimatedMemoryUsage += SizeEstimator.estimatedSizeOf(data) + SizeEstimator.linkedListEntry() + SizeEstimator.objOverhead();
+      estimatedMemoryUsage += SizeEstimator.estimatedSizeOf(data) + SizeEstimator.linkedListEntry();
       list.add(data);
       return this;
     }
@@ -64,19 +64,21 @@ public abstract class Transformer {
   private final long maxMemoryUsage;
 
   protected final Path workDirectory ;
+  private final int workerId;
   private int fileNumber = 0;
 
   private final ZGrid grid;
 
-  public Transformer(long maxMemoryUsage,int maxZoom,Path workDirectory, TagToIdMapper tagToIdMapper) throws IOException {
-    this(maxMemoryUsage,maxZoom, workDirectory, tagToIdMapper, null);
+  public Transformer(long maxMemoryUsage,int maxZoom,Path workDirectory, TagToIdMapper tagToIdMapper, int workerId) throws IOException {
+    this(maxMemoryUsage,maxZoom, workDirectory, tagToIdMapper, null,workerId);
   }
   
-  public Transformer(long maxMemoryUsage,int maxZoom, Path workDirectory, TagToIdMapper tagToIdMapper, RoleToIdMapper roleToIdMapper) throws IOException {
+  public Transformer(long maxMemoryUsage,int maxZoom, Path workDirectory, TagToIdMapper tagToIdMapper, RoleToIdMapper roleToIdMapper, int workerId) throws IOException {
     this.maxMemoryUsage = maxMemoryUsage;
     this.workDirectory = workDirectory;
     this.tagToIdMapper = tagToIdMapper;
     this.roleToIdMapper = roleToIdMapper;
+    this.workerId = workerId;
     this.collector = new Long2ObjectAVLTreeMap<>(ZGrid.ORDER_DFS_TOP_DOWN);
     this.grid = new ZGrid(maxZoom);
 
@@ -182,9 +184,11 @@ public abstract class Transformer {
     if (collector.isEmpty())
       return;
     final Path filePath = workDirectory
-        .resolve(String.format("transform_%s_%02d", type().toString().toLowerCase(), fileNumber));
-    System.out.println("transformer saveToDisk " + filePath.toString());
-    try (RandomAccessFile out = new RandomAccessFile(filePath.toFile(), "rw"); FileChannel channel = out.getChannel()) {
+        .resolve(String.format("transform_%s_%02d_%02d", type().toString().toLowerCase(),workerId, fileNumber));
+    System.out.print("transformer saveToDisk " + filePath.toString()+" ... ");
+    long bytesWritten = 0;
+    try (RandomAccessFile out = new RandomAccessFile(filePath.toFile(), "rw"); 
+        FileChannel channel = out.getChannel()) {
       final ByteBuffer header = ByteBuffer.allocateDirect(8 + 4 + 4);
       ByteBuffer byteBuffer = ByteBuffer.allocateDirect(0);
 
@@ -210,30 +214,29 @@ public abstract class Transformer {
         byteBuffer.flip();
 
         header.clear();
-        if(cellId < 0)
-          System.out.println("saveToDisk "+cellId+" path:"+filePath+" "+counter);
         header.putLong(cellId);
         header.putInt(container.list.size());
         if(rawSize < 0)
-          System.out.println("saveToDisk rawSize negative "+cellId+" "+container.list.size());
+          System.err.println("saveToDisk rawSize negative "+cellId+" "+container.list.size());
         header.putInt(rawSize);
         header.flip();
 
+        bytesWritten += header.remaining();
         channel.write(header);
+        bytesWritten += byteBuffer.remaining();
         channel.write(byteBuffer);
-
-        iter.remove();
+        
+       
         counter++;
         lastCellId = cellId;
       }
-      System.out.println("saveToDisk lastCellId "+lastCellId+" path:"+filePath+" "+counter);
+      System.out.println("done! "+bytesWritten+" bytes");
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    
     fileNumber++;
     collector.clear();
     typeRefsMaps.clear();
