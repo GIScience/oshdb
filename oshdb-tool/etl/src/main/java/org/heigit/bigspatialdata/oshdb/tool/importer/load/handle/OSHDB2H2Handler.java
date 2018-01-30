@@ -217,15 +217,17 @@ public class OSHDB2H2Handler extends OSHDbHandler {
 
         LoaderHandler handler = new OSHDB2H2Handler(Roaring64NavigableMap.bitmapOf(), bitmapWays, insertKey,
             insertValue, insertRole, insertNode, insertWay, insertRelation);
-
+        Stopwatch loadingWatch = Stopwatch.createUnstarted();
         if (withKeyTables) {
           LoaderKeyTables keyTables = new LoaderKeyTables(workDirectory, handler);
           System.out.print("loading tags ... ");
+          loadingWatch.reset().start();
           keyTables.loadTags();
-          System.out.println(" done!");
+          System.out.println(" done! "+loadingWatch);
           System.out.print("loading roles ...");
+          loadingWatch.reset().start();
           keyTables.loadRoles();
-          System.out.println(" done!");
+          System.out.println(" done! "+loadingWatch);
         }
 
         Loader loader;
@@ -236,9 +238,10 @@ public class OSHDB2H2Handler extends OSHDbHandler {
         LoaderRelation rel;
         loader = rel = new LoaderRelation(workDirectory, handler, minRelationPerGrid, node, way, maxZoomLevel);
 
-        System.out.print("start loading to grid ...");
+        System.out.print("loading to grid ...");
+        loadingWatch.reset().start();
         loader.load();
-        System.out.println(" done!");
+        System.out.println(" done! "+loadingWatch);
       } 
     }catch (IOException | SQLException e) {
       e.printStackTrace();
