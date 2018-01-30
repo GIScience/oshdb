@@ -232,6 +232,7 @@ public class TestHelpersOSMContributionView {
 
     assertEquals(true, result.get(0).getContributionTypes().contains(ContributionType.CREATION));
     assertEquals(null, result.get(0).getEntityBefore());
+    assertEquals(null, result.get(0).getGeometryBefore());
   }
 
 }
