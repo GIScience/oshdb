@@ -165,8 +165,9 @@ public class TestMultipolygonGeometry2 {
 
         int interestedKeyId = allKeyValues.get("building").get("yes").getLeft();
         int[] uninterestedValueIds = {allKeyValues.get("building").get("no").getRight()};
-        CellIterator.iterateByTimestamps(hosmCell, bboxFilter, timestamps, tagInterpreter,
+        (new CellIterator(bboxFilter, tagInterpreter, oshEntity -> true,
             osmEntity -> osmEntity.hasTagKeyExcluding(interestedKeyId, uninterestedValueIds), false)
+        ).iterateByTimestamps(hosmCell, timestamps)
             .forEach(result -> {
               result.entrySet().forEach(entry -> {
                 OSHDBTimestamp timestamp = entry.getKey();

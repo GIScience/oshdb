@@ -40,7 +40,6 @@ public class FastPolygonOperations implements Serializable {
         );
       }
     }
-
   }
 
   public Geometry intersection(Geometry other) {
