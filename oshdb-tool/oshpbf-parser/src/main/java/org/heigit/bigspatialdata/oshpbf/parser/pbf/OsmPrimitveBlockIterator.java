@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -72,7 +73,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
 		if (entityIterator.hasNext())
 			return entityIterator.next();
 
-		return null;
+		throw new NoSuchElementException("no entities within a group");
 	}
 
 	private Iterator<Entity> parse(crosby.binary.Osmformat.PrimitiveGroup group) {
