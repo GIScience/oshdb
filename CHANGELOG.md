@@ -6,6 +6,7 @@
 * api: added possibility to aggregate results by custom timestamp values
 * much faster processing of queries with polygonal areas of interest
 * (breaking) celliterator is now an object instead of a set of static functions
+* api: include `slf4j-simple` logging framework by default
 
 ### 0.3.1
 
