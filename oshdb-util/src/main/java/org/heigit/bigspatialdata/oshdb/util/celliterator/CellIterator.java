@@ -78,8 +78,8 @@ public class CellIterator implements Serializable {
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     this.boundingBox = boundingBox;
     this.isBoundByPolygon = false; // todo: is this flag even needed? -> replace by "dummy" polygonClipper?
-    this.bboxInPolygon = null;
-    this.bboxOutsidePolygon = null;
+    this.bboxInPolygon = ignored -> true;
+    this.bboxOutsidePolygon = ignored -> false;
     this.fastPolygonClipper = null;
     this.tagInterpreter = tagInterpreter;
     this.oshEntityPreFilter = oshEntityPreFilter;
