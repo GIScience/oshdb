@@ -8,8 +8,11 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.CellId.cellIdExeption;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
@@ -103,20 +106,34 @@ public class CellIterator implements Serializable {
   public Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
       GridOSHEntity cell, List<OSHDBTimestamp> timestamps
   ) {
-    // todo: if cell is fully inside bounding box/polygon -> skip all geometry checks
-
     List<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
 
-    //noinspection unchecked
+    boolean allFullyInside = false;
+    if (this.isBoundByPolygon) {
+      // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
+      try {
+        OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(
+            new CellId(cell.getLevel(), cell.getId())
+        );
+        if (bboxOutsidePolygon.test(cellBoundingBox)) {
+          return results.stream();
+        }
+        allFullyInside = bboxInPolygon.test(cellBoundingBox);
+      } catch (CellId.cellIdExeption cellIdExeption) { /* cannot happen?? */ }
+    }
+
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
-          !oshEntity.intersectsBbox(boundingBox) ||
-          bboxOutsidePolygon.test(oshEntity.getBoundingBox())) {
+          !allFullyInside && (
+              !oshEntity.intersectsBbox(boundingBox) ||
+                  bboxOutsidePolygon.test(oshEntity.getBoundingBox())
+          )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         continue;
       }
-      boolean fullyInside = oshEntity.insideBbox(boundingBox) && bboxInPolygon.test(boundingBox);
+      boolean fullyInside = allFullyInside ||
+          oshEntity.insideBbox(boundingBox) && bboxInPolygon.test(boundingBox);
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
@@ -314,25 +331,37 @@ public class CellIterator implements Serializable {
    *         intervals.
    */
   public Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, TimestampInterval timeInterval) {
-    // todo: if cell is fully inside bounding box/polygon -> skip all geometry checks
     List<IterateAllEntry> results = new LinkedList<>();
-    Polygon boundingBoxGeometry = OSHDBGeometryBuilder.getGeometry(boundingBox);
 
-    // todo: if cell is fully inside bounding box/polygon -> skip all geometry checks
+    boolean allFullyInside = false;
+    if (this.isBoundByPolygon) {
+      // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
+      try {
+        OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(
+            new CellId(cell.getLevel(), cell.getId())
+        );
+        if (bboxOutsidePolygon.test(cellBoundingBox)) {
+          return results.stream();
+        }
+        allFullyInside = bboxInPolygon.test(cellBoundingBox);
+      } catch (CellId.cellIdExeption cellIdExeption) { /* cannot happen?? */ }
+    }
 
     if (includeOldStyleMultipolygons)
       throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
-          !oshEntity.intersectsBbox(boundingBox) ||
-          bboxOutsidePolygon.test(oshEntity.getBoundingBox())) {
+          !allFullyInside && (
+              !oshEntity.intersectsBbox(boundingBox) ||
+              bboxOutsidePolygon.test(oshEntity.getBoundingBox())
+          )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         continue;
       }
 
-      boolean fullyInside =
+      boolean fullyInside = allFullyInside ||
           oshEntity.insideBbox(boundingBox) && bboxInPolygon.test(oshEntity.getBoundingBox());
 
       List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
