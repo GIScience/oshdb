@@ -6,46 +6,37 @@ import java.util.function.Consumer;
 
 public class ConsumerUtil {
 
-	public interface ThrowingConsumer<T, E extends Exception> {
-		void accept(T t) throws E;
-	}
+  public interface ThrowingConsumer<T, E extends Exception> {
+    void accept(T t) throws E;
+  }
 
-	public interface ThrowingBiConsumer<T, U, E extends Exception> {
-		void accept(T t, U u) throws E;
-	}
+  public interface ThrowingBiConsumer<T, U, E extends Exception> {
+    void accept(T t, U u) throws E;
+  }
 
-	public static <T> Consumer<T> throwingConsumer(ThrowingConsumer<T, Exception> consumer) {
-		return i -> {
-			try {
-				consumer.accept(i);
-			} catch (Exception ex) {
-				throw new RuntimeException(ex);
-			}
-		};
-	}
+  public static <T> Consumer<T> throwingConsumer(ThrowingConsumer<T, Exception> consumer) {
+    return i -> {
+      try {
+        consumer.accept(i);
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    };
+  }
 
-	public static <T, E extends Exception> Consumer<T> throwingConsumer(ThrowingConsumer<T, Exception> consumer,
-			Class<E> clazz, ThrowingBiConsumer<T, E, Exception> exceptionHandler) {
-		return i -> {
-			try {
-				consumer.accept(i);
-			} catch (Exception ex) {
-				try {
-					E exCast = clazz.cast(ex);
-					exceptionHandler.accept(i, exCast);
-				} catch (Exception ccEx) {
-					throw new RuntimeException(ex);
-				}
-			}
-		};
-
-	}
-
-	public static void main(String[] args) {
-		List<Integer> integers = Arrays.asList(3, 9, 7, 0, 10, 20);
-		integers.forEach(throwingConsumer((Integer i) -> {
-			if (i.intValue() == 0)
-				throw new IllegalArgumentException("THis is a illagel argumunt");
-		}, IllegalArgumentException.class, (i, ex) -> System.out.printf("%s throws %s\n", i, ex)));
-	}
+  public static <T, E extends Exception> Consumer<T> throwingConsumer(ThrowingConsumer<T, Exception> consumer,
+      Class<E> clazz, ThrowingBiConsumer<T, E, Exception> exceptionHandler) {
+    return i -> {
+      try {
+        consumer.accept(i);
+      } catch (Exception ex) {
+        try {
+          E exCast = clazz.cast(ex);
+          exceptionHandler.accept(i, exCast);
+        } catch (Exception ccEx) {
+          throw new RuntimeException(ex);
+        }
+      }
+    };
+  }
 }
