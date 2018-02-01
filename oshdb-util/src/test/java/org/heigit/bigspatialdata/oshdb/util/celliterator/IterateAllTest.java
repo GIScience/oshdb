@@ -57,14 +57,15 @@ public class IterateAllTest {
           oshCellsRawData.getBinaryStream(1))
       ).readObject();
 
-      List<IterateAllEntry> result = CellIterator.iterateAll(
-          oshCellRawData,
+      List<IterateAllEntry> result = (new CellIterator(
           new OSHDBBoundingBox(8, 9, 49, 50),
-          new TimestampInterval(new OSHDBTimestamp(1325376000L), new OSHDBTimestamp(1516375698L)),
           DefaultTagInterpreter.fromJDBC(conn),
           oshEntity -> oshEntity.getId() == 617308093,
           osmEntity -> true,
           false
+      )).iterateAll(
+          oshCellRawData,
+          new TimestampInterval(new OSHDBTimestamp(1325376000L), new OSHDBTimestamp(1516375698L))
       ).collect(Collectors.toList());
       countTotal += result.size();
       for (IterateAllEntry entry : result) {

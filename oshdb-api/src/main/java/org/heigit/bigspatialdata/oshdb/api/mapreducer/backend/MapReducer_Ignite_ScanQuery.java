@@ -161,14 +161,10 @@ class Ignite_ScanQuery_Helper {
     IgniteCache<Long, GridOSHEntity> cache;
 
     /* computation settings */
-    final TagInterpreter tagInterpreter;
     final String cacheName;
     final Set<CellId> cellIdsList;
+    final CellIterator cellIterator;
     final List<OSHDBTimestamp> tstamps;
-    final OSHDBBoundingBox bbox;
-    final P poly;
-    final SerializablePredicate<OSHEntity> preFilter;
-    final SerializablePredicate<OSMEntity> filter;
     final SerializableFunction<V, MR> mapper;
     final SerializableSupplier<S> identitySupplier;
     final SerializableBiFunction<S, R, S> accumulator;
@@ -179,14 +175,10 @@ class Ignite_ScanQuery_Helper {
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<V, MR> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
-      this.tagInterpreter = tagInterpreter;
       this.cacheName = cacheName;
       this.cellIdsList = cellIdsList;
+      this.cellIterator = new CellIterator(bbox, poly, tagInterpreter, preFilter, filter, false);
       this.tstamps = tstamps;
-      this.bbox = bbox;
-      this.poly = poly;
-      this.preFilter = preFilter;
-      this.filter = filter;
       this.mapper = mapper;
       this.identitySupplier = identitySupplier;
       this.accumulator = accumulator;
@@ -233,11 +225,8 @@ class Ignite_ScanQuery_Helper {
           // iterate over the history of all OSM objects in the current cell
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          CellIterator
-              .iterateAll(oshEntityCell, bbox, poly,
-                  new CellIterator.TimestampInterval(tstamps.get(0),
-                      tstamps.get(tstamps.size() - 1)),
-                  tagInterpreter, preFilter, filter, false)
+          cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(tstamps.get(0),
+              tstamps.get(tstamps.size() - 1)))
               .forEach(contribution -> {
                 OSMContribution osmContribution =
                     new OSMContribution(contribution.timestamp,
@@ -297,11 +286,8 @@ class Ignite_ScanQuery_Helper {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           List<OSMContribution> contributions = new ArrayList<>();
-          CellIterator
-              .iterateAll(oshEntityCell, bbox, poly,
-                  new CellIterator.TimestampInterval(tstamps.get(0),
-                      tstamps.get(tstamps.size() - 1)),
-                  tagInterpreter, preFilter, filter, false)
+          cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(tstamps.get(0),
+              tstamps.get(tstamps.size() - 1)))
               .forEach(contribution -> {
                 OSMContribution thisContribution =
                     new OSMContribution(contribution.timestamp,
@@ -373,8 +359,7 @@ class Ignite_ScanQuery_Helper {
         })).setPartition(part), cacheEntry -> {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          CellIterator.iterateByTimestamps(oshEntityCell, bbox, poly, tstamps, tagInterpreter,
-              preFilter, filter, false)
+          cellIterator.iterateByTimestamps(oshEntityCell, tstamps)
               .forEach(result -> result.forEach((timestamp, entityGeometry) -> {
                 Geometry geometry = entityGeometry.getRight();
                 OSMEntity entity = entityGeometry.getLeft();
@@ -429,8 +414,8 @@ class Ignite_ScanQuery_Helper {
         })).setPartition(part), cacheEntry -> {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          CellIterator.iterateByTimestamps(oshEntityCell, bbox, poly, tstamps, tagInterpreter,
-              preFilter, filter, false).forEach(snapshots -> {
+          cellIterator.iterateByTimestamps(oshEntityCell, tstamps)
+              .forEach(snapshots -> {
                 List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());
                 snapshots.forEach((timestamp, value) -> {
                   Geometry geometry = value.getRight();

@@ -186,13 +186,10 @@ class Ignite_LocalPeek_Helper {
     boolean canceled = false;
 
     /* computation settings */
-    final TagInterpreter tagInterpreter;
     final List<String> cacheNames;
-    final List<OSHDBTimestamp> tstamps;
     final OSHDBBoundingBox bbox;
-    final P poly;
-    final SerializablePredicate<OSHEntity> preFilter;
-    final SerializablePredicate<OSMEntity> filter;
+    final CellIterator cellIterator;
+    final List<OSHDBTimestamp> tstamps;
     final SerializableFunction<V, MR> mapper;
     final SerializableSupplier<S> identitySupplier;
     final SerializableBiFunction<S, R, S> accumulator;
@@ -204,13 +201,10 @@ class Ignite_LocalPeek_Helper {
         SerializableFunction<V, MR> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
-      this.tagInterpreter = tagInterpreter;
       this.cacheNames = cacheNames;
-      this.tstamps = tstamps;
       this.bbox = bbox;
-      this.poly = poly;
-      this.preFilter = preFilter;
-      this.filter = filter;
+      this.cellIterator = new CellIterator(bbox, poly, tagInterpreter, preFilter, filter, false);
+      this.tstamps = tstamps;
       this.mapper = mapper;
       this.identitySupplier = identitySupplier;
       this.accumulator = accumulator;
@@ -228,7 +222,7 @@ class Ignite_LocalPeek_Helper {
       // calculate all cache keys we have to investigate
       XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
       Collection<Long> keys = new LinkedList<>();
-      grid.bbox2CellIds(bbox, true)
+      grid.bbox2CellIds(bbox, false)
           .forEach(cell -> keys.add(ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel())));
       List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys = new ArrayList<>(keys.size());
       this.cacheNames.forEach(cacheName -> {
@@ -264,11 +258,8 @@ class Ignite_LocalPeek_Helper {
               return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            CellIterator
-                .iterateAll(oshEntityCell, bbox, poly,
-                    new CellIterator.TimestampInterval(tstamps.get(0),
-                        tstamps.get(tstamps.size() - 1)),
-                    tagInterpreter, preFilter, filter, false)
+            cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(
+                tstamps.get(0), tstamps.get(tstamps.size() - 1)))
                 .forEach(contribution -> {
                   if (this.canceled)
                     return;
@@ -309,11 +300,8 @@ class Ignite_LocalPeek_Helper {
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
             List<OSMContribution> contributions = new ArrayList<>();
-            CellIterator
-                .iterateAll(oshEntityCell, bbox, poly,
-                    new CellIterator.TimestampInterval(tstamps.get(0),
-                        tstamps.get(tstamps.size() - 1)),
-                    tagInterpreter, preFilter, filter, false)
+            cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(
+                tstamps.get(0), tstamps.get(tstamps.size() - 1)))
                 .forEach(contribution -> {
                   if (this.canceled)
                     return;
@@ -366,8 +354,8 @@ class Ignite_LocalPeek_Helper {
               return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            CellIterator.iterateByTimestamps(oshEntityCell, bbox, poly, tstamps, tagInterpreter,
-                preFilter, filter, false).forEach(result -> {
+            cellIterator.iterateByTimestamps(oshEntityCell, tstamps)
+                .forEach(result -> {
                   if (this.canceled)
                     return;
                   result.forEach((timestamp, entityGeometry) -> {
@@ -405,8 +393,8 @@ class Ignite_LocalPeek_Helper {
               return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            CellIterator.iterateByTimestamps(oshEntityCell, bbox, poly, tstamps, tagInterpreter,
-                preFilter, filter, false).forEach(snapshots -> {
+            cellIterator.iterateByTimestamps(oshEntityCell, tstamps)
+                .forEach(snapshots -> {
                   if (this.canceled)
                     return;
                   List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());

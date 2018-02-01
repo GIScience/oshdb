@@ -113,7 +113,6 @@ public class XYGridTest {
   public void test179_90_2() {
     // Testing Coordinates: 179, 90, zoom 2
     double longitude = 180.0 - OSHDB.GEOM_PRECISION;
-    System.out.println(longitude);
     double latitude = 90.0;
 
     Long expResult = (long) 7;
