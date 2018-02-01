@@ -4,6 +4,8 @@
 * (breaking) renamed bounding box class to `OSHDBBoundingBox` and change order of constructor parameters to `minLon, minLat, maxLon, maxLat` (was `minLon, maxLon, minLat, maxLat`)
 * (breaking) all timestamps related to oshdb objects (osm entities, etc.) return `OSHDBTimestamp` objects
 * api: added possibility to aggregate results by custom timestamp values
+* much faster processing of queries with polygonal areas of interest
+* (breaking) celliterator is now an object instead of a set of static functions
 
 ### 0.3.1
 
