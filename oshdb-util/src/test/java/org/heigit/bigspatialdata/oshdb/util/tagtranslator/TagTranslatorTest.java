@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util.dbaccess;
+package org.heigit.bigspatialdata.oshdb.util.tagtranslator;
 
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import java.sql.Connection;
