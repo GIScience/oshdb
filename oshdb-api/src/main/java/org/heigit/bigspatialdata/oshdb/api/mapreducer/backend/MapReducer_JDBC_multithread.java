@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
@@ -66,22 +67,24 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
         this._tstamps.get().get(this._tstamps.get().size() - 1)
     );
 
-    final List<CellId> cellIdsList = new ArrayList<>();
-    this._getCellIds().forEach(cellIdsList::add);
+    final List<Pair<CellId, CellId>> cellIdRanges = new ArrayList<>();
+    this._getCellIdRanges().forEach(cellIdRanges::add);
 
-    return cellIdsList.parallelStream().flatMap(cell -> {
+    return cellIdRanges.parallelStream().flatMap(cellIdRange -> {
       try {
         String sqlQuery = this._typeFilter.stream()
             .map(osmType -> TableNames.forOSMType(osmType)
                 .map(tn -> tn.toString(this._oshdb.prefix())))
             .filter(Optional::isPresent).map(Optional::get)
-            .map(tn -> "(select data from " + tn + " where level = ?1 and id = ?2)")
+            .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
             .collect(Collectors.joining(" union all "));
         // fetch data from H2 DB
         PreparedStatement pstmt =
             ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
-        pstmt.setInt(1, cell.getZoomLevel());
-        pstmt.setLong(2, cell.getId());
+        pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
+        pstmt.setLong(2, cellIdRange.getLeft().getId());
+        pstmt.setLong(3, cellIdRange.getRight().getId());
+
         ResultSet oshCellsRawData = pstmt.executeQuery();
 
         // iterate over the result
@@ -128,22 +131,24 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
         this._tstamps.get().get(this._tstamps.get().size() - 1)
     );
 
-    final List<CellId> cellIdsList = new ArrayList<>();
-    this._getCellIds().forEach(cellIdsList::add);
+    final List<Pair<CellId, CellId>> cellIdRanges = new ArrayList<>();
+    this._getCellIdRanges().forEach(cellIdRanges::add);
 
-    return cellIdsList.parallelStream().flatMap(cell -> {
+    return cellIdRanges.parallelStream().flatMap(cellIdRange -> {
       try {
         String sqlQuery = this._typeFilter.stream()
             .map(osmType -> TableNames.forOSMType(osmType)
                 .map(tn -> tn.toString(this._oshdb.prefix())))
             .filter(Optional::isPresent).map(Optional::get)
-            .map(tn -> "(select data from " + tn + " where level = ?1 and id = ?2)")
+            .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
             .collect(Collectors.joining(" union all "));
         // fetch data from H2 DB
         PreparedStatement pstmt =
             ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
-        pstmt.setInt(1, cell.getZoomLevel());
-        pstmt.setLong(2, cell.getId());
+        pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
+        pstmt.setLong(2, cellIdRange.getLeft().getId());
+        pstmt.setLong(3, cellIdRange.getRight().getId());
+
         ResultSet oshCellsRawData = pstmt.executeQuery();
 
         // iterate over the result
