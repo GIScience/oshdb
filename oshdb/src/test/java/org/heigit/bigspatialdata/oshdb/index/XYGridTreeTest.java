@@ -17,7 +17,7 @@ import org.junit.Test;
 public class XYGridTreeTest {
 
   @Test
-  public void testGetIds() throws CellId.cellIdExeption {
+  public void testGetIds() {
     double longitude = 0.1;
     double latitude = 0.1;
     XYGridTree instance = new XYGridTree(4);
@@ -32,7 +32,7 @@ public class XYGridTreeTest {
   }
 
   @Test
-  public void testGetInsertId() throws CellId.cellIdExeption {
+  public void testGetInsertId() {
     OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, -90.0, 179.0, 90.0);
     XYGridTree instance = new XYGridTree(4);
     CellId expResult = new CellId(2, 2L);
@@ -56,7 +56,7 @@ public class XYGridTreeTest {
   }
 
   @Test
-  public void testBbox2CellIds_BoundingBox_boolean() throws CellId.cellIdExeption {
+  public void testBbox2CellIds_BoundingBox_boolean() {
     OSHDBBoundingBox BBOX = new OSHDBBoundingBox(0.0, 0.0, 44.9, 44.9);
     boolean enlarge = false;
     XYGridTree instance = new XYGridTree(3);
@@ -73,7 +73,7 @@ public class XYGridTreeTest {
   }
 
   @Test
-  public void testBbox2CellIds_BoundingBox2_boolean() throws CellId.cellIdExeption {
+  public void testBbox2CellIds_BoundingBox2_boolean() {
     OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, 0.0, 89, 89);
     boolean enlarge = true;
     XYGridTree instance = new XYGridTree(3);

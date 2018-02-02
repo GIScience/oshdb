@@ -213,15 +213,12 @@ class Ignite_ScanQuery_Helper {
       // run processing in parallel
       return myPartitions.parallelStream().map(part -> {
         // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
-          try {
-            return cellIdsList.contains(
-                new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
-          } catch (CellId.cellIdExeption cellIdExeption) {
-            cellIdExeption.printStackTrace();
-          }
-          return false;
-        })).setPartition(part), cacheEntry -> {
+        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
+            cellIdsList.contains(new CellId(
+                ((GridOSHEntity) cell).getLevel(),
+                ((GridOSHEntity) cell).getId()
+            ))
+        )).setPartition(part), cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
@@ -273,15 +270,12 @@ class Ignite_ScanQuery_Helper {
       // run processing in parallel
       return myPartitions.parallelStream().map(part -> {
         // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
-          try {
-            return cellIdsList.contains(
-                new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
-          } catch (CellId.cellIdExeption cellIdExeption) {
-            cellIdExeption.printStackTrace();
-          }
-          return false;
-        })).setPartition(part), cacheEntry -> {
+        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
+            cellIdsList.contains(new CellId(
+                ((GridOSHEntity) cell).getLevel(),
+                ((GridOSHEntity) cell).getId()
+            ))
+        )).setPartition(part), cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
@@ -348,15 +342,12 @@ class Ignite_ScanQuery_Helper {
       // run processing in parallel
       return myPartitions.parallelStream().map(part -> {
         // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
-          try {
-            return cellIdsList.contains(
-                new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
-          } catch (CellId.cellIdExeption cellIdExeption) {
-            cellIdExeption.printStackTrace();
-          }
-          return false;
-        })).setPartition(part), cacheEntry -> {
+        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
+            cellIdsList.contains(new CellId(
+                ((GridOSHEntity) cell).getLevel(),
+                ((GridOSHEntity) cell).getId()
+            ))
+        )).setPartition(part), cacheEntry -> {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           cellIterator.iterateByTimestamps(oshEntityCell, tstamps)
@@ -403,15 +394,12 @@ class Ignite_ScanQuery_Helper {
       // run processing in parallel
       return myPartitions.parallelStream().map(part -> {
         // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) -> {
-          try {
-            return cellIdsList.contains(
-                new CellId(((GridOSHEntity) cell).getLevel(), ((GridOSHEntity) cell).getId()));
-          } catch (CellId.cellIdExeption cellIdExeption) {
-            cellIdExeption.printStackTrace();
-          }
-          return false;
-        })).setPartition(part), cacheEntry -> {
+        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
+            cellIdsList.contains(new CellId(
+                ((GridOSHEntity) cell).getLevel(),
+                ((GridOSHEntity) cell).getId()
+            ))
+        )).setPartition(part), cacheEntry -> {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           cellIterator.iterateByTimestamps(oshEntityCell, tstamps)

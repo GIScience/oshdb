@@ -357,7 +357,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetNeighbours() throws CellId.cellIdExeption {
+  public void testGetNeighbours() {
     CellId center = new CellId(2, 6L);
     Set<Pair<Long, Long>> expResult = new TreeSet<>();
     expResult.add(new ImmutablePair<>(1L, 3L));
@@ -368,7 +368,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetBoundingBox() throws CellId.cellIdExeption {
+  public void testGetBoundingBox() {
     OSHDBBoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
     OSHDBBoundingBox expResult = new OSHDBBoundingBox(0.0, -90.0, 90.0, 0.0 - OSHDB.GEOM_PRECISION);
     assertEquals(expResult.toString(), result.toString());

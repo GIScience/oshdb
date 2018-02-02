@@ -12,7 +12,6 @@ import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.CellId.cellIdExeption;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
@@ -111,15 +110,14 @@ public class CellIterator implements Serializable {
     boolean allFullyInside = false;
     if (this.isBoundByPolygon) {
       // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
-      try {
-        OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(
-            new CellId(cell.getLevel(), cell.getId())
-        );
-        if (bboxOutsidePolygon.test(cellBoundingBox)) {
-          return results.stream();
-        }
-        allFullyInside = bboxInPolygon.test(cellBoundingBox);
-      } catch (CellId.cellIdExeption cellIdExeption) { /* cannot happen?? */ }
+      OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
+          cell.getLevel(),
+          cell.getId()
+      ));
+      if (bboxOutsidePolygon.test(cellBoundingBox)) {
+        return results.stream();
+      }
+      allFullyInside = bboxInPolygon.test(cellBoundingBox);
     }
 
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
@@ -336,15 +334,14 @@ public class CellIterator implements Serializable {
     boolean allFullyInside = false;
     if (this.isBoundByPolygon) {
       // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
-      try {
-        OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(
-            new CellId(cell.getLevel(), cell.getId())
-        );
-        if (bboxOutsidePolygon.test(cellBoundingBox)) {
-          return results.stream();
-        }
-        allFullyInside = bboxInPolygon.test(cellBoundingBox);
-      } catch (CellId.cellIdExeption cellIdExeption) { /* cannot happen?? */ }
+      OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
+          cell.getLevel(),
+          cell.getId()
+      ));
+      if (bboxOutsidePolygon.test(cellBoundingBox)) {
+        return results.stream();
+      }
+      allFullyInside = bboxInPolygon.test(cellBoundingBox);
     }
 
     if (includeOldStyleMultipolygons)

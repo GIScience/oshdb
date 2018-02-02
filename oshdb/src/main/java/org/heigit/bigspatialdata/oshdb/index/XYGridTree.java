@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
  * Multi zoomlevel functionality for the XYGrid.
  */
 public class XYGridTree {
-
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTree.class);
 
   private final int maxLevel;
@@ -58,13 +57,8 @@ public class XYGridTree {
 
           @Override
           public CellId next() {
-            try {
-              level++;
-              return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
-            } catch (CellId.cellIdExeption ex) {
-              LOG.error(ex.getMessage());
-              return null;
-            }
+            level++;
+            return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
           }
         };
 
@@ -93,15 +87,10 @@ public class XYGridTree {
    */
   public CellId getInsertId(OSHDBBoundingBox bbox) {
     for (int i=maxLevel; i >= 0; i--) {
-      try {
-        if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
-          continue;
-        }
-        return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
-      } catch (CellId.cellIdExeption ex) {
-        LOG.error("", ex);
-        return null;
+      if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
+        continue;
       }
+      return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
     }
     return null;
   }
@@ -149,27 +138,22 @@ public class XYGridTree {
 
           @Override
           public CellId next() {
-            try {
-              if (currID < maxID) {
-                currID++;
-                return new CellId(level, currID);
-              }
-              if (rows.hasNext()) {
-                row = rows.next();
-                currID = row.getLeft();
-                maxID = row.getRight();
-                return new CellId(level, currID);
-              }
-              level++;
-              rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+            if (currID < maxID) {
+              currID++;
+              return new CellId(level, currID);
+            }
+            if (rows.hasNext()) {
               row = rows.next();
               currID = row.getLeft();
               maxID = row.getRight();
               return new CellId(level, currID);
-            } catch (CellId.cellIdExeption ex) {
-              LOG.error(ex.getMessage());
-              return null;
             }
+            level++;
+            rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+            row = rows.next();
+            currID = row.getLeft();
+            maxID = row.getRight();
+            return new CellId(level, currID);
           }
         };
       }

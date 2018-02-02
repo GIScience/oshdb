@@ -52,12 +52,11 @@ public abstract class GridOSHEntity<HOSM extends OSHEntity>
 
   @Override
   public String toString() {
-    try {
+    if (id >= 0) {
       OSHDBBoundingBox bbox = XYGrid.getBoundingBox(new CellId((int) id, level));
       return String.format(Locale.ENGLISH, "ID:%d Level:%d BBox:(%f,%f),(%f,%f)", id, level,
           bbox.getMinLat(), bbox.getMinLon(), bbox.getMaxLat(), bbox.getMaxLon());
-    } catch (CellId.cellIdExeption ex) {
-      LOG.warn("", ex);
+    } else {
       return String.format(Locale.ENGLISH, "ID:%d Level:%d", id, level);
     }
   }
