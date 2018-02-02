@@ -5,8 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
+ * A wrapper class for cellIds consisting of a zoom level and an zoom-level specific id
  */
 public class CellId implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellId.class);
