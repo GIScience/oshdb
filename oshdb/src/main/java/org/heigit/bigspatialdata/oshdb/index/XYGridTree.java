@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.
- *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class XYGridTree {
 
@@ -29,10 +27,9 @@ public class XYGridTree {
    */
   public XYGridTree(int maxzoom) {
     maxLevel = maxzoom;
-    for (int i = maxzoom; i > 0; i--) {
+    for (int i=0; i <= maxLevel; i++) {
       gridMap.put(i, new XYGrid(i));
     }
-
   }
 
   public XYGridTree() {
@@ -52,17 +49,17 @@ public class XYGridTree {
       @Override
       public Iterator<CellId> iterator() {
         Iterator<CellId> result = new Iterator<CellId>() {
-          private int level = maxLevel + 1;
+          private int level = -1;
 
           @Override
           public boolean hasNext() {
-            return level > 1;
+            return level < maxLevel;
           }
 
           @Override
           public CellId next() {
             try {
-              level--;
+              level++;
               return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
             } catch (CellId.cellIdExeption ex) {
               LOG.error(ex.getMessage());
@@ -95,7 +92,7 @@ public class XYGridTree {
    * @return
    */
   public CellId getInsertId(OSHDBBoundingBox bbox) {
-    for (int i = maxLevel; i > 0; i--) {
+    for (int i=maxLevel; i >= 0; i--) {
       try {
         if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
           continue;
@@ -129,12 +126,11 @@ public class XYGridTree {
    * @return
    */
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX, final boolean enlarge) {
-
     return new Iterable<CellId>() {
       @Override
       public Iterator<CellId> iterator() {
-        Iterator<CellId> result = new Iterator<CellId>() {
-          private int level = maxLevel;
+        return new Iterator<CellId>() {
+          private int level = 0;
           private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
           private Pair<Long, Long> row = rows.next();
           private Long maxID = row.getRight();
@@ -142,7 +138,7 @@ public class XYGridTree {
 
           @Override
           public boolean hasNext() {
-            if (level > 1) {
+            if (level < maxLevel) {
               return true;
             }
             if (rows.hasNext()) {
@@ -164,7 +160,7 @@ public class XYGridTree {
                 maxID = row.getRight();
                 return new CellId(level, currID);
               }
-              level--;
+              level++;
               rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
               row = rows.next();
               currID = row.getLeft();
@@ -175,39 +171,10 @@ public class XYGridTree {
               return null;
             }
           }
-
         };
-
-        return result;
       }
     };
 
-  }
-
-  /**
-   * Get 2D neighbours of given cell in its zoomlevel and all other zoomlevel.
-   *
-   * @param center
-   * @return
-   */
-  public Iterable<CellId> getMultiZoomNeighbours(CellId center) {
-    OSHDBBoundingBox bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
-    long minlong = bbox.minLon - 1L;
-    long minlat = bbox.minLat - 1L;
-    long maxlong = bbox.maxLon + 1L;
-    long maxlat = bbox.maxLat + 1L;
-    OSHDBBoundingBox newbbox = new OSHDBBoundingBox(minlong, minlat, maxlong, maxlat);
-    return this.bbox2CellIds(newbbox, false);
-  }
-
-  /**
-   * Get the parent CellIds in all other zoomlevel.
-   *
-   * @param center
-   * @return
-   */
-  public Iterable<CellId> getMultiZoomParents(CellId center) {
-    return this.bbox2CellIds(this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId()), false);
   }
 
 }
