@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Polygonal;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -18,7 +19,8 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
  * Fast bounding-box in (multi)polygon test inspired by
  * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
  */
-public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<OSHDBBoundingBox> {
+public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<OSHDBBoundingBox>,
+    Serializable {
   private Collection<Envelope> outerBboxes = new ArrayList<>();
 
   public <P extends Geometry & Polygonal> FastBboxOutsidePolygon(P geom) {

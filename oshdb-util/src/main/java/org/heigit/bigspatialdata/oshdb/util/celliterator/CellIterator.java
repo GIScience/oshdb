@@ -28,8 +28,8 @@ public class CellIterator implements Serializable {
 
   private OSHDBBoundingBox boundingBox;
   private boolean isBoundByPolygon;
-  private Predicate<OSHDBBoundingBox> bboxInPolygon;
-  private Predicate<OSHDBBoundingBox> bboxOutsidePolygon;
+  private FastBboxInPolygon bboxInPolygon;
+  private FastBboxOutsidePolygon bboxOutsidePolygon;
   private FastPolygonOperations fastPolygonClipper;
   private TagInterpreter tagInterpreter;
   private Predicate<OSHEntity> oshEntityPreFilter;
@@ -80,8 +80,8 @@ public class CellIterator implements Serializable {
       Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
     this.boundingBox = boundingBox;
     this.isBoundByPolygon = false; // todo: is this flag even needed? -> replace by "dummy" polygonClipper?
-    this.bboxInPolygon = ignored -> true;
-    this.bboxOutsidePolygon = ignored -> false;
+    this.bboxInPolygon = null;
+    this.bboxOutsidePolygon = null;
     this.fastPolygonClipper = null;
     this.tagInterpreter = tagInterpreter;
     this.oshEntityPreFilter = oshEntityPreFilter;
@@ -108,7 +108,7 @@ public class CellIterator implements Serializable {
     List<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
 
     boolean allFullyInside = false;
-    if (this.isBoundByPolygon) {
+    if (isBoundByPolygon) {
       // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
           cell.getLevel(),
@@ -124,14 +124,16 @@ public class CellIterator implements Serializable {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.intersectsBbox(boundingBox) ||
-                  bboxOutsidePolygon.test(oshEntity.getBoundingBox())
-          )) {
+              (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+      )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         continue;
       }
-      boolean fullyInside = allFullyInside ||
-          oshEntity.insideBbox(boundingBox) && bboxInPolygon.test(boundingBox);
+      boolean fullyInside = allFullyInside || (
+          oshEntity.insideBbox(boundingBox) &&
+          (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+      );
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
@@ -332,7 +334,7 @@ public class CellIterator implements Serializable {
     List<IterateAllEntry> results = new LinkedList<>();
 
     boolean allFullyInside = false;
-    if (this.isBoundByPolygon) {
+    if (isBoundByPolygon) {
       // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
           cell.getLevel(),
@@ -351,15 +353,17 @@ public class CellIterator implements Serializable {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.intersectsBbox(boundingBox) ||
-              bboxOutsidePolygon.test(oshEntity.getBoundingBox())
-          )) {
+              (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+      )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         continue;
       }
 
-      boolean fullyInside = allFullyInside ||
-          oshEntity.insideBbox(boundingBox) && bboxInPolygon.test(oshEntity.getBoundingBox());
+      boolean fullyInside = allFullyInside || (
+          oshEntity.insideBbox(boundingBox) &&
+          (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+      );
 
       List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
