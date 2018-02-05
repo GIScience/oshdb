@@ -42,3 +42,7 @@ temp_*
 !oshdb-api/src/test/resources/tes-data.mv.db
 !oshdb-tool/etl/src/test/resources/test.mv.db
 !oshdb-util/src/test/resources/test-data.mv.db
+
+# shade plugin results
+**/dependency-reduced-pom.xml
+
