@@ -7,6 +7,7 @@
 * much faster processing of queries with polygonal areas of interest
 * (breaking) celliterator is now an object instead of a set of static functions
 * api: include `slf4j-simple` logging framework by default
+* (breaking) the OSM, OSH and Grid-Classes held more methods than information. These methods where therefore outsourced to the oshdb-util package. Also some oshdb-api util-classes where moved.
 
 ### 0.3.1
 
