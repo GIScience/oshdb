@@ -72,34 +72,6 @@ public class TagTranslatorTest {
   }
 
   @Test
-  public void testGetAllValues() {
-    String key = "building";
-
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    HashMap<String, Integer> val = new HashMap<>(2);
-    val.put("yes", 0);
-    val.put("house", 1);
-    val.put("residential", 2);
-    val.put("apartments", 3);
-    val.put("garage", 4);
-    val.put("hut", 5);
-    val.put("industrial", 6);
-    val.put("entrance", 7);
-    val.put("detached", 8);
-    val.put("roof", 9);
-    val.put("shed", 10);
-    val.put("commercial", 11);
-    val.put("terrace", 12);
-    val.put("school", 13);
-    val.put("garages", 14);
-    val.put("retail", 15);
-
-    Pair<Integer, Map<String, Integer>> expResult = new ImmutablePair<>(1, val);
-    Pair<Integer, Map<String, Integer>> result = instance.getAllValues(key);
-    assertEquals(expResult, result);
-  }
-
-  @Test
   public void testUsertoID() {
     String name = "Alice";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);

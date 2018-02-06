@@ -164,6 +164,31 @@ public class TestOSMDataFilters {
     assertEquals(2, result.size());
   }
 
+
+  @Test
+  public void tagNotExists() throws Exception {
+    Integer result = createMapReducerOSMEntitySnapshot()
+        .where("buildingsss")
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(0, result.intValue());
+
+    result = createMapReducerOSMEntitySnapshot()
+        .where("buildings", "residentialll")
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(0, result.intValue());
+
+    result = createMapReducerOSMEntitySnapshot()
+        .where("buildingsss", "residentialll")
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(0, result.intValue());
+  }
+
   // custom filter
 
   @Test
