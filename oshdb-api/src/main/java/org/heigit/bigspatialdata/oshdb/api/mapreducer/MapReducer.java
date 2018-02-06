@@ -372,7 +372,7 @@ public abstract class MapReducer<X>
   public MapReducer<X> where(String key) {
     MapReducer<X> ret = this.copy();
     Integer keyId = this._getTagTranslator().key2Int(key);
-    if (keyId == null) {
+    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
@@ -425,7 +425,7 @@ public abstract class MapReducer<X>
   public MapReducer<X> where(String key, String value) {
     MapReducer<X> ret = this.copy();
     Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
-    if (keyValueId == null) {
+    if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
       LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this filter.", key, value);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
@@ -482,7 +482,7 @@ public abstract class MapReducer<X>
   public MapReducer<X> where(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
     Integer keyId = this._getTagTranslator().key2Int(key);
-    if (keyId == null || values.size() == 0) {
+    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID || values.size() == 0) {
       LOG.warn((keyId == null ? "Tag key \"{}\" not found." : "Empty tag value list.")
           + " No data will match this filter.", key);
       ret._preFilters.add(ignored -> false);
@@ -492,7 +492,7 @@ public abstract class MapReducer<X>
     List<Integer> valueIds = new ArrayList<>();
     for (String value : values) {
       Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
-      if (keyValueId == null) {
+      if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
         LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.", key, value);
       } else {
         valueIds.add(keyValueId.getValue());
@@ -516,7 +516,7 @@ public abstract class MapReducer<X>
   public MapReducer<X> where(String key, Pattern valuePattern) {
     MapReducer<X> ret = this.copy();
     Integer keyId = this._getTagTranslator().key2Int(key);
-    if (keyId == null) {
+    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID) {
       LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
@@ -559,7 +559,7 @@ public abstract class MapReducer<X>
     List<Pair<Integer, Integer>> keyValueIds = new ArrayList<>();
     for (Pair<String, String> tag : keyValuePairs) {
       Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(tag);
-      if (keyValueId == null) {
+      if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
         LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.", tag.getKey(),
             tag.getValue());
       } else {
