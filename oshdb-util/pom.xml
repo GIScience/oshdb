@@ -33,6 +33,12 @@
       <version>${geotools.version}</version>
       <type>jar</type>
     </dependency>
-    
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.25</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
