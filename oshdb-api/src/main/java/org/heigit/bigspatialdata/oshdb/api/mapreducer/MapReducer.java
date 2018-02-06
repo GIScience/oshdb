@@ -372,7 +372,7 @@ public abstract class MapReducer<X>
       LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this filter.", key, value);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
-      return this;
+      return ret;
     }
     int keyId = keyValueId.getKey();
     int valueId = keyValueId.getValue();

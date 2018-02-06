@@ -175,7 +175,7 @@ public class TestOSMDataFilters {
     assertEquals(0, result.intValue());
 
     result = createMapReducerOSMEntitySnapshot()
-        .where("buildings", "residentialll")
+        .where("building", "residentialll")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
