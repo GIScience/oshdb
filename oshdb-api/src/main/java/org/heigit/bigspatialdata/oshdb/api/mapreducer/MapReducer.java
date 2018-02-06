@@ -191,18 +191,6 @@ public abstract class MapReducer<X>
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Set the area of interest to the given bounding box. Deprecated, use `areaOfInterest()` instead
-   * (w/ same semantics).
-   *
-   * @param bbox the bounding box to query the data in
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Deprecated
-  public MapReducer<X> boundingBox(OSHDBBoundingBox bbox) {
-    return this.areaOfInterest(bbox);
-  }
-
-  /**
    * Set the area of interest to the given bounding box. Only objects inside or clipped by this bbox
    * will be passed on to the analysis' `mapper` function.
    *
@@ -347,21 +335,6 @@ public abstract class MapReducer<X>
   }
 
   /**
-   * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it
-   * should be considered for this analyis or not.
-   *
-   * Deprecated, use `where(f)` instead
-   *
-   * @param f the filter function to call for each osm entity
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated
-   */
-  @Deprecated
-  public MapReducer<X> filterByOSMEntity(SerializablePredicate<OSMEntity> f) {
-    return this.where(f);
-  }
-
-  /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
    * (with an arbitrary value).
    *
@@ -381,36 +354,6 @@ public abstract class MapReducer<X>
     ret._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     ret._filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
     return ret;
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value).
-   *
-   * Deprecated, use `where(key)` instead.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated
-   */
-  @Deprecated
-  public MapReducer<X> filterByTag(String key) {
-    return this.where(key);
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value).
-   *
-   * Deprecated, use `where(key)` instead.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated
-   */
-  @Deprecated
-  public MapReducer<X> filterByTagKey(String key) {
-    return this.where(key);
   }
 
   /**
@@ -436,38 +379,6 @@ public abstract class MapReducer<X>
     ret._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     ret._filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
     return ret;
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * and value.
-   *
-   * Deprecated, use `where(key, value)` instead.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @param value the tag value to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated
-   */
-  @Deprecated
-  public MapReducer<X> filterByTag(String key, String value) {
-    return this.where(key, value);
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * and value.
-   *
-   * Deprecated, use `where(key, value)` instead.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @param value the tag value to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated
-   */
-  @Deprecated
-  public MapReducer<X> filterByTagValue(String key, String value) {
-    return this.where(key, value);
   }
 
   /**
@@ -672,24 +583,6 @@ public abstract class MapReducer<X>
   public <U extends Comparable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer) {
     return new MapAggregator<U, X>(this, indexer);
-  }
-
-  /**
-   * Sets a custom aggregation function that is used to group output results into.
-   *
-   * Deprecated, use `aggregateBy` instead.
-   *
-   * @param indexer a function that will be called for each input element and returns a value that
-   *        will be used to group the results by
-   * @param <U> the data type of the values used to aggregate the output. has to be a comparable
-   *        type
-   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
-   *         etc.) of the current MapReducer object
-   * @deprecated use `aggregateBy` instead.
-   */
-  @Deprecated
-  public <U extends Comparable> MapAggregator<U, X> aggregate(SerializableFunction<X, U> indexer) {
-    return this.aggregateBy(indexer);
   }
 
   /**
