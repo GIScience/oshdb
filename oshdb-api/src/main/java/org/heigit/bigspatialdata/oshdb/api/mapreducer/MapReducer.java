@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.sql.Connection;
 import org.heigit.bigspatialdata.oshdb.TableNames;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import com.vividsolutions.jts.geom.*;
@@ -154,13 +155,11 @@ public abstract class MapReducer<X>
     if (keytablesOshdb != this._oshdb && this._oshdb instanceof OSHDB_JDBC) {
       Connection c = ((OSHDB_JDBC) this._oshdb).getConnection();
       try {
-        // todo: same logic is already in TagTranslator/OSHDBKeytablesNotFoundException -> refactor
-        if (c.prepareStatement("select txt from "+ TableNames.E_KEY+" limit 1").execute()) {
-          LOG.warn("It looks like as if the current OSHDB comes with keytables included. "+
-              "Usually this means that you should use this file's keytables "+
-              "and should not set the keytables manually.");
-        }
-      } catch (SQLException e) {
+        new TagTranslator(c);
+        LOG.warn("It looks like as if the current OSHDB comes with keytables included. " +
+            "Usually this means that you should use this file's keytables " +
+            "and should not set the keytables manually.");
+      } catch (OSHDBKeytablesNotFoundException e) {
         // this is the expected path -> the oshdb doesn't have the key tables
       }
     }
