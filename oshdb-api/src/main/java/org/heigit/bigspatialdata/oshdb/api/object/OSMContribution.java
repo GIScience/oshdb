@@ -149,14 +149,14 @@ public class OSMContribution implements OSHDB_MapReducible {
     if (entity instanceof OSMWay) {
       userId = ((OSMWay)entity).getRefEntities(contributionTimestamp)
           .filter(Objects::nonNull)
-          .filter(n -> n.getTimestamp() == contributionTimestamp)
+          .filter(n -> n.getTimestamp().equals(contributionTimestamp))
           .findFirst()
           .map(OSMEntity::getUserId)
           .orElse(-1); // "rare" race condition, caused by not properly ordered timestamps (t_x > t_{x+1}) // todo: what to do here??
     } else if (entity instanceof OSMRelation) {
       userId = ((OSMRelation) entity).getMemberEntities(contributionTimestamp)
           .filter(Objects::nonNull)
-          .filter(e -> e.getTimestamp() == contributionTimestamp)
+          .filter(e -> e.getTimestamp().equals(contributionTimestamp))
           .findFirst()
           .map(OSMEntity::getUserId)
           .orElseGet(() ->
@@ -166,7 +166,7 @@ public class OSMContribution implements OSHDB_MapReducible {
                   .map(e -> (OSMWay)e)
                   .flatMap(w -> w.getRefEntities(contributionTimestamp))
                   .filter(Objects::nonNull)
-                  .filter(n -> n.getTimestamp() == contributionTimestamp)
+                  .filter(n -> n.getTimestamp().equals(contributionTimestamp))
                   .findFirst()
                   .map(OSMEntity::getUserId)
                   .orElse(-1) // possible "rare" race condition, caused by not properly ordered timestamps (t_x > t_{x+1}) // todo: what to do here??
