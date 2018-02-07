@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.TimestampInterval;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -56,14 +57,15 @@ public class IterateAllTest {
           oshCellsRawData.getBinaryStream(1))
       ).readObject();
 
-      List<IterateAllEntry> result = CellIterator.iterateAll(
-          oshCellRawData,
-          new BoundingBox(8, 9, 49, 50),
-          new TimestampInterval(1325376000L, 1516375698L),
+      List<IterateAllEntry> result = (new CellIterator(
+          new OSHDBBoundingBox(8, 9, 49, 50),
           DefaultTagInterpreter.fromJDBC(conn),
           oshEntity -> oshEntity.getId() == 617308093,
           osmEntity -> true,
           false
+      )).iterateAll(
+          oshCellRawData,
+          new TimestampInterval(new OSHDBTimestamp(1325376000L), new OSHDBTimestamp(1516375698L))
       ).collect(Collectors.toList());
       countTotal += result.size();
       for (IterateAllEntry entry : result) {

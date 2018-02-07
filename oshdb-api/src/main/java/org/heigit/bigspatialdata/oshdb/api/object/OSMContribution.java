@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import java.util.EnumSet;
 import java.util.Objects;
 
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
@@ -132,11 +132,11 @@ public class OSMContribution implements OSHDB_MapReducible {
   public int getContributorUserId() {
     // todo: optimizable if done directly in CellIterator??
     OSMEntity entity = this.getEntityAfter();
-    long contributionTimestamp = this.getTimestamp().toLong();
+    OSHDBTimestamp contributionTimestamp = this.getTimestamp();
     EnumSet<ContributionType> contributionTypes = this.getContributionTypes();
     // if the entity itself was modified at this exact timestamp, or we know from the contribution type that the entity
     // must also have been modified, we can just return the uid directly
-    if (contributionTimestamp == entity.getTimestamp() ||
+    if (contributionTimestamp.equals(entity.getTimestamp()) ||
         contributionTypes.contains(ContributionType.CREATION) ||
         contributionTypes.contains(ContributionType.TAG_CHANGE) ||
         contributionTypes.contains(ContributionType.MEMBERLIST_CHANGE) ||
@@ -149,14 +149,14 @@ public class OSMContribution implements OSHDB_MapReducible {
     if (entity instanceof OSMWay) {
       userId = ((OSMWay)entity).getRefEntities(contributionTimestamp)
           .filter(Objects::nonNull)
-          .filter(n -> n.getTimestamp() == contributionTimestamp)
+          .filter(n -> n.getTimestamp().equals(contributionTimestamp))
           .findFirst()
           .map(OSMEntity::getUserId)
           .orElse(-1); // "rare" race condition, caused by not properly ordered timestamps (t_x > t_{x+1}) // todo: what to do here??
     } else if (entity instanceof OSMRelation) {
       userId = ((OSMRelation) entity).getMemberEntities(contributionTimestamp)
           .filter(Objects::nonNull)
-          .filter(e -> e.getTimestamp() == contributionTimestamp)
+          .filter(e -> e.getTimestamp().equals(contributionTimestamp))
           .findFirst()
           .map(OSMEntity::getUserId)
           .orElseGet(() ->
@@ -166,7 +166,7 @@ public class OSMContribution implements OSHDB_MapReducible {
                   .map(e -> (OSMWay)e)
                   .flatMap(w -> w.getRefEntities(contributionTimestamp))
                   .filter(Objects::nonNull)
-                  .filter(n -> n.getTimestamp() == contributionTimestamp)
+                  .filter(n -> n.getTimestamp().equals(contributionTimestamp))
                   .findFirst()
                   .map(OSMEntity::getUserId)
                   .orElse(-1) // possible "rare" race condition, caused by not properly ordered timestamps (t_x > t_{x+1}) // todo: what to do here??

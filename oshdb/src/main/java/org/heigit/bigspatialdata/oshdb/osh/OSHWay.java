@@ -19,13 +19,14 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
 
@@ -51,7 +52,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   public static OSHWay instance(final byte[] data, final int offset, final int length, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
 
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -61,7 +62,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     final long minLat = baseLatitude + wrapper.readSInt64();
     final long maxLat = minLat + wrapper.readUInt64();
 
-    final BoundingBox bbox = new BoundingBox(minLon, maxLon, minLat, maxLat);
+    final OSHDBBoundingBox bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -97,16 +98,17 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     final int dataOffset = nodeDataOffset + nodeDataLength;
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHWay(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox,
-            keys, dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
+    return new OSHWay(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
+        dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
   }
 
   private OSHWay(final byte[] data, final int offset, final int length, final long baseId, final long baseTimestamp,
-          final long baseLongitude, final long baseLatitude, final byte header, final long id, final BoundingBox bbox,
+          final long baseLongitude, final long baseLatitude, final byte header, final long id, final OSHDBBoundingBox bbox,
           final int[] keys, final int dataOffset, final int dataLength, final int[] nodeIndex,
           final int nodeDataOffset, final int nodeDataLength) {
     super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
             dataOffset, dataLength);
+
 
     this.nodeIndex = nodeIndex;
     this.nodeDataOffset = nodeDataOffset;
@@ -186,8 +188,9 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
               }
             }
 
-            return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+            return new OSMWay(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset, userId, keyValues,
                     members);
+
           } catch (IOException e) {
             e.printStackTrace();
           }
@@ -224,7 +227,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
@@ -332,16 +335,136 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
       for (int i = 0; i < nodeByteArrayIndex.length; i++) {
         record.writeUInt32(nodeByteArrayIndex[i]);
       }
-      byte[] nodesOutput = nodeData.toByteArray();
-      record.writeUInt32(nodesOutput.length);
-      record.writeByteArray(nodesOutput);
+
+      record.writeUInt32(nodeData.length());
+      record.writeByteArray(nodeData.array(), 0, nodeData.length());
     }
 
-    byte[] waysOutput = output.toByteArray();
-    record.writeByteArray(waysOutput);
+    record.writeByteArray(output.array(), 0, output.length());
 
-    byte[] data = record.toByteArray();
-    return OSHWay.instance(data, 0, data.length);
+    return OSHWay.instance(record.array(), 0, record.length());
+  }
+
+  public static OSHWay build2(ByteArrayOutputWrapper output, ByteArrayOutputWrapper record,
+      ByteArrayOutputWrapper nodeData, List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+    Collections.sort(versions, Collections.reverseOrder());
+
+    output.reset();
+    record.reset();
+    nodeData.reset();
+
+    OSMMember[] lastRefs = new OSMMember[0];
+
+    long id = versions.get(0).getId();
+
+    long minLon = Long.MAX_VALUE;
+    long maxLon = Long.MIN_VALUE;
+    long minLat = Long.MAX_VALUE;
+    long maxLat = Long.MIN_VALUE;
+
+    Map<Long, Integer> nodeOffsets = new HashMap<>();
+    int[] nodeByteArrayIndex = new int[nodes.size()];
+
+    int idx = 0;
+    int offset = 0;
+    long lastId = 0;
+    for (OSHNode node : nodes) {
+      final long nodeId = node.getId();
+      node = node.rebase(lastId, 0, baseLongitude, baseLatitude);
+      lastId = nodeId;
+      nodeOffsets.put(node.getId(), idx);
+      nodeByteArrayIndex[idx++] = offset;
+      offset = node.getLength();
+      node.writeTo(nodeData);
+
+      Iterator<OSMNode> osmItr = node.iterator();
+      while (osmItr.hasNext()) {
+        OSMNode osm = osmItr.next();
+        if (osm.isVisible()) {
+          minLon = Math.min(minLon, osm.getLon());
+          maxLon = Math.max(maxLon, osm.getLon());
+
+          minLat = Math.min(minLat, osm.getLat());
+          maxLat = Math.max(maxLat, osm.getLat());
+        }
+      }
+    }
+
+    Builder builder = new Builder(output, baseTimestamp);
+
+    for (OSMWay way : versions) {
+      OSMEntity version = way;
+
+      byte changed = 0;
+      OSMMember[] refs = way.getRefs();
+      if (version.isVisible() && !memberEquals(refs, lastRefs)) {
+        changed |= CHANGED_REFS;
+      }
+
+      builder.build(version, changed);
+      if ((changed & CHANGED_REFS) != 0) {
+        long lastMemberId = 0;
+        output.writeUInt32(refs.length);
+        for (OSMMember ref : refs) {
+          Integer refOffset = nodeOffsets.get(Long.valueOf(ref.getId()));
+          if (refOffset == null) {
+            output.writeUInt32(0);
+            output.writeSInt64(ref.getId() - lastMemberId);
+          } else {
+            output.writeUInt32(refOffset.intValue() + 1);
+          }
+          lastMemberId = ref.getId();
+        }
+        lastRefs = refs;
+      }
+    }
+
+    // store nodes
+
+    byte header = 0;
+    if (versions.size() > 1) {
+      header |= HEADER_MULTIVERSION;
+    }
+    if (builder.getTimestampsNotInOrder()) {
+      header |= HEADER_TIMESTAMPS_NOT_IN_ORDER;
+    }
+    if (builder.getKeySet().size() > 0) {
+      header |= HEADER_HAS_TAGS;
+    }
+    if (nodes.isEmpty()) {
+      header |= HEADER_HAS_NO_NODES;
+    }
+
+    record.writeByte(header);
+
+    record.writeSInt64(minLon - baseLongitude);
+    record.writeUInt64(maxLon - minLon);
+    record.writeSInt64(minLat - baseLatitude);
+    record.writeUInt64(maxLat - minLat);
+
+    if ((header & HEADER_HAS_TAGS) != 0) {
+      record.writeUInt32(builder.getKeySet().size());
+      for (Integer key : builder.getKeySet()) {
+        record.writeUInt32(key.intValue());
+      }
+    }
+
+    record.writeUInt64(id - baseId);
+
+    if ((header & HEADER_HAS_NO_NODES) == 0) {
+      record.writeUInt32(nodeByteArrayIndex.length);
+      for (int i = 0; i < nodeByteArrayIndex.length; i++) {
+        record.writeUInt32(nodeByteArrayIndex[i]);
+      }
+
+      record.writeUInt32(nodeData.length());
+      record.writeByteArray(nodeData.array(), 0, nodeData.length());
+    }
+
+    record.writeByteArray(output.array(), 0, output.length());
+
+    return OSHWay.instance(record.array(), 0, record.length());
   }
 
   private static boolean memberEquals(OSMMember[] a, OSMMember[] b) {
@@ -402,11 +525,11 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   @Override
-  public List<Long> getModificationTimestamps(boolean recurse) {
-    List<Long> result;
+  public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
+    List<OSHDBTimestamp> result;
 
     List<OSMWay> ways = this.getVersions();
-    Set<Long> wayTimestamps = ways.stream().map(OSMEntity::getTimestamp).collect(Collectors.toSet());
+    Set<OSHDBTimestamp> wayTimestamps = ways.stream().map(OSMEntity::getTimestamp).collect(Collectors.toSet());
 
     result = new ArrayList<>(wayTimestamps);
     if (!recurse) {
@@ -414,17 +537,18 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
       return result;
     }
 
-    Set<Long> ndTimestamps = IntStream.range(0, ways.size()).mapToObj((Integer::new)).flatMap(osmWayIndex -> {
+    Set<OSHDBTimestamp> ndTimestamps = IntStream.range(0, ways.size()).mapToObj((Integer::new)).flatMap(osmWayIndex -> {
       OSMWay osmWay = ways.get(osmWayIndex);
       if (!osmWay.isVisible()) {
         return Stream.empty();
       }
       OSMWay nextOsmWay = osmWayIndex > 0 ? ways.get(osmWayIndex - 1) : null;
       return Arrays.stream(osmWay.getRefs()).map(osmNd -> ((OSHNode) osmNd.getEntity())).filter(Objects::nonNull)
-              .flatMap(oshNode -> oshNode.getVersions().stream()
-              .filter(osmNode -> osmNode.getTimestamp() > osmWay.getTimestamp()
-              && (nextOsmWay == null || osmNode.getTimestamp() < nextOsmWay.getTimestamp()))
-              .map(OSMEntity::getTimestamp));
+          .flatMap(oshNode -> oshNode.getVersions().stream()
+          .filter(osmNode -> osmNode.getTimestamp().getRawUnixTimestamp() > osmWay.getTimestamp().getRawUnixTimestamp()
+          && (nextOsmWay == null || osmNode.getTimestamp().getRawUnixTimestamp() < nextOsmWay.getTimestamp().getRawUnixTimestamp()))
+          .map(OSMEntity::getTimestamp));
+
     }).collect(Collectors.toSet());
 
     result.addAll(ndTimestamps);
@@ -434,8 +558,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   @Override
-  protected Map<Long, Long> getChangesetTimestamps() {
-    Map<Long, Long> result = new TreeMap<>();
+  protected Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+    Map<OSHDBTimestamp, Long> result = new TreeMap<>();
 
     List<OSMWay> ways = this.getVersions();
     ways.forEach(osmWay -> {
@@ -445,7 +569,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
         return;
       }
       Arrays.stream(osmWay.getRefs()).map(osmNd -> ((OSHNode) osmNd.getEntity())).filter(Objects::nonNull)
-              .forEach(oshNode -> oshNode.getVersions()
+          .forEach(oshNode -> oshNode.getVersions()
               .forEach(osmNode -> result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())));
     });
 

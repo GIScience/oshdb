@@ -6,6 +6,8 @@ import java.util.List;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.junit.Test;
 
 public class OSHNodeTest {
@@ -21,8 +23,8 @@ public class OSHNodeTest {
   public void testBuild() throws IOException {
     List<OSMNode> versions = new ArrayList<>();
 
-    versions.add(new OSMNode(123l, 1, 1l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-    versions.add(new OSMNode(123l, -2, 2l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, -2, new OSHDBTimestamp(2l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
 
     OSHNode hnode = OSHNode.build(versions);
     assertNotNull(hnode);
@@ -51,9 +53,9 @@ public class OSHNodeTest {
     // 85391383800:27676689900
     // NODE: ID:3718143950 V:+1+ TS:1440747974000 CS:33637224 VIS:true USER:3191558 TAGS:[]
     // 49619125:78983750
-    versions.add(new OSMNode(3718143950l, 2, 1480304071000l / 1000, 43996323l, 4803525, new int[0],
+    versions.add(new OSMNode(3718143950l, 2, new OSHDBTimestamp(1480304071000l / 1000), 43996323l, 4803525, new int[0],
         85391383800l / 100, 27676689900l / 100));
-    versions.add(new OSMNode(3718143950l, 1, 1440747974000l / 1000, 33637224, 3191558, new int[0],
+    versions.add(new OSMNode(3718143950l, 1, new OSHDBTimestamp(1440747974000l / 1000), 33637224, 3191558, new int[0],
         85391416000l / 100, 27676640000l / 100));
 
     OSHNode hosm = OSHNode.build(versions);
@@ -71,24 +73,24 @@ public class OSHNodeTest {
   public void testGetModificationTimestamps() throws IOException {
     List<OSMNode> versions = new ArrayList<>();
 
-    versions.add(new OSMNode(123l, 2, 2l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-    versions.add(new OSMNode(123l, 1, 1l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
 
     OSHNode hnode = OSHNode.build(versions);
 
-    List<Long> tss = hnode.getModificationTimestamps();
+    List<OSHDBTimestamp> tss = hnode.getModificationTimestamps();
     assertNotNull(tss);
     assertEquals(2, tss.size());
-    assertEquals(1l, (long) tss.get(0));
-    assertEquals(2l, (long) tss.get(1));
+    assertEquals(1l, tss.get(0).getRawUnixTimestamp());
+    assertEquals(2l, tss.get(1).getRawUnixTimestamp());
   }
 
   @Test
   public void testToString() throws IOException {
     List<OSMNode> versions = new ArrayList<>(2);
 
-    versions.add(new OSMNode(123l, 2, 2l, 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-    versions.add(new OSMNode(123l, 1, 1l, 0l, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1]));
+    versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
+    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 0l, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1]));
 
     OSHNode instance = OSHNode.build(versions);
     String expResult =

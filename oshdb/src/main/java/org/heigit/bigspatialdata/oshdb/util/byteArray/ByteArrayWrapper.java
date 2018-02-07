@@ -13,7 +13,6 @@ public class ByteArrayWrapper {
     }
   }
 
-
   protected final byte[] buffer;
   private final int offset;
   private final int bufferSize;
@@ -58,7 +57,11 @@ public class ByteArrayWrapper {
   public int readSInt32() throws IOException {
     return decodeZigZag32(readRawVarint32());
   }
-
+  
+  public int readSInt32Delta(int last) throws IOException {
+    return readSInt32() + last;
+  }
+  
   /** Read a {@code uint32} field value from the stream. */
   public int readUInt32() throws IOException {
     return readRawVarint32();
@@ -68,10 +71,17 @@ public class ByteArrayWrapper {
   public long readSInt64() throws IOException {
     return decodeZigZag64(readRawVarint64());
   }
+  public long readSInt64Delta(long last) throws IOException {
+    return readSInt64() + last;
+  }
 
   /** Read a {@code uint64} field value from the stream. */
   public long readUInt64() throws IOException {
     return readRawVarint64();
+  }
+  
+  public long readUInt64Delta(long last) throws IOException {
+    return readUInt64() + last;
   }
 
   /**
@@ -245,4 +255,8 @@ public class ByteArrayWrapper {
             + "input has been truncated or that an embedded message "
             + "misreported its own length.");
   }
+
+  
+
+  
 }

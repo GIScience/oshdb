@@ -8,7 +8,8 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
  * @author Rafael Troilo <r.troilo@uni-heidelberg.de>
  */
 public class OSMMember {
-
+  
+  
   private final long id;
   private final OSMType type;
   private final int roleId;

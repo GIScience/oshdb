@@ -1,12 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.util.time;
 
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
-import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
 import java.time.Duration;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import java.util.stream.Collectors;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,26 +34,6 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
   private String start;
   private String end;
   private String period;
-
-  @Deprecated
-  public OSHDBTimestamps(int startYear, int endYear, int startMonth, int endMonth, int startDay, int endDay) {
-    super();
-    this.start = "" + startYear + "-" + startMonth + "-" + startDay;
-    this.end   = "" +   endYear + "-" +   endMonth + "-" +   endDay;
-    this.period = "P1D";
-  }
-
-  @Deprecated
-  public OSHDBTimestamps(int startYear, int endYear, int startMonth, int endMonth) {
-    this(startYear, endYear, startMonth, endMonth, 1, 1);
-    this.period = "P1M";
-  }
-
-  @Deprecated
-  public OSHDBTimestamps(int startYear, int endYear) {
-    this(startYear, endYear, 1,1, 1, 1);
-    this.period = "P1Y";
-  }
 
   /**
    * Creates regularly spaced timestamps between a start and end date by time intervals defined by an ISO 8601 "period" identifier.
@@ -111,14 +91,15 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
    *
    * @return a list of unix timestamps (measured in seconds)
    */
-  public List<Long> getTimestamps() {
+  public List<OSHDBTimestamp> get() {
     if (period != null) {
-      return _getTimestampsAsEpochSeconds(start, end, period);
+      return _getTimestampsAsEpochSeconds(start, end, period).stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
     } else {
-      List<Long> timestamps = new ArrayList<>(2);
+      List<OSHDBTimestamp> timestamps = new ArrayList<>(2);
       try {
-        timestamps.add(ISODateTimeParser.parseISODateTime(start).toEpochSecond());
-        timestamps.add(ISODateTimeParser.parseISODateTime(end).toEpochSecond());
+        timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(start).toEpochSecond()));
+        if (start.equals(end)) return timestamps;
+        timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(end).toEpochSecond()));
       } catch (Exception e) {
         LOG.error(e.getMessage());
         return Collections.emptyList();
@@ -158,44 +139,4 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
       return Collections.emptyList();
     }
   }
-
-  private static List<Long> _getTimestampsAsEpochSeconds(String isoStringStart, String isoStringPeriod, int numberOfTimestamps) {
-    if (numberOfTimestamps < 1) {
-      LOG.error("Specified less than one timestamp :" + numberOfTimestamps);
-      return Collections.emptyList();
-    }
-
-    try {
-      List<Long> timestamps = new ArrayList<>(numberOfTimestamps);
-
-      ZonedDateTime start = ISODateTimeParser.parseISODateTime(isoStringStart);
-      Map<String, Object> steps = ISODateTimeParser.parseISOPeriod(isoStringPeriod);
-      Period period = (Period) steps.get("period");
-      Duration duration = (Duration) steps.get("duration");
-
-      int counter = 0;
-      ZonedDateTime currentTimestamp = ZonedDateTime.from(start);
-
-      while (counter < numberOfTimestamps) {
-        timestamps.add(currentTimestamp.toEpochSecond());
-        currentTimestamp = currentTimestamp.plus(period).plus(duration);
-        counter++;
-      }
-
-      return timestamps;
-    } catch (Exception e) {
-      LOG.error(e.getMessage());
-      return Collections.emptyList();
-    }
-  }
-
-  @Deprecated
-  public static List<Long> getTimestampsAsEpochSeconds(String isoStringStart, String isoStringEnd, String isoStringPeriod) {
-    return _getTimestampsAsEpochSeconds(isoStringStart, isoStringEnd, isoStringPeriod);
-  }
-  @Deprecated
-  public static List<Long> getTimestampsAsEpochSeconds(String isoStringStart, String isoStringPeriod, int numberOfTimestamps) {
-    return _getTimestampsAsEpochSeconds(isoStringStart, isoStringPeriod, numberOfTimestamps);
-  }
-  
 }

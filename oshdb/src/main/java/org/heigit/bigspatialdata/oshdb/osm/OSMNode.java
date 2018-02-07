@@ -2,7 +2,9 @@ package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
 import java.util.Locale;
+
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
@@ -11,7 +13,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   private final long longitude;
   private final long latitude;
 
-  public OSMNode(final long id, final int version, final long timestamp, final long changeset,
+  public OSMNode(final long id, final int version, final OSHDBTimestamp timestamp, final long changeset,
       final int userId, final int[] tags, final long longitude, final long latitude) {
     super(id, version, timestamp, changeset, userId, tags);
     this.longitude = longitude;
@@ -41,8 +43,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "NODE: %s %f:%f", super.toString(), getLongitude(),
-        getLatitude());
+    return String.format(Locale.ENGLISH, "NODE: %s %.7f:%.7f", super.toString(), getLongitude(), getLatitude());
   }
 
 
@@ -57,7 +58,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
       c = Integer.compare(Math.abs(version), Math.abs(o.version));
     }
     if (c == 0) {
-      c = Long.compare(timestamp, o.timestamp);
+      c = Long.compare(timestamp.getRawUnixTimestamp(), o.timestamp.getRawUnixTimestamp());
     }
     return c;
   }

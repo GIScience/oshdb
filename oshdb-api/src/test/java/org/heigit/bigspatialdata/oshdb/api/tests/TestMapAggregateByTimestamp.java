@@ -5,17 +5,18 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import java.util.Map.Entry;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
 import java.util.*;
@@ -28,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 public class TestMapAggregateByTimestamp {
   private final OSHDB_Database oshdb;
 
-  private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2014-12-30");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
@@ -70,6 +71,39 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
+  public void testOSMContributionCustomDefault() throws Exception {
+    // check if it produces the same result as the automatic aggregateByTimestamp()
+    SortedMap<OSHDBTimestamp, Integer> resultAuto = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp()
+        .sum(contribution -> 1);
+    SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp(OSMContribution::getTimestamp)
+        .sum(contribution -> 1);
+
+    assertEquals(resultAuto.entrySet().size(), resultCustom.entrySet().size());
+    for (OSHDBTimestamp t : resultAuto.keySet()) {
+      assertEquals(
+          resultAuto.get(t).intValue(),
+          resultCustom.get(t).intValue()
+      );
+    }
+  }
+
+  @Test
+  public void testOSMContributionCustom() throws Exception {
+    // most basic custom timestamp index possible -> map all to one single timestamp
+    SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp(ignored -> timestamps1.get().get(0))
+        .sum(snapshot -> 1);
+
+    assertEquals(71, resultCustom.entrySet().size());
+    assertEquals(1, resultCustom.entrySet().stream().filter(entry -> entry.getValue() > 0).count());
+  }
+
+  @Test
   public void testOSMEntitySnapshot() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = createMapReducerOSMEntitySnapshot()
@@ -99,5 +133,37 @@ public class TestMapAggregateByTimestamp {
     assertEquals(42, result72.get(result72.lastKey()).intValue());
   }
 
+  @Test
+  public void testOSMEntitySnapshotCustomDefault() throws Exception {
+    // check if it produces the same result as the automatic aggregateByTimestamp()
+    SortedMap<OSHDBTimestamp, Integer> resultAuto = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp()
+        .sum(snapshot -> 1);
+    SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+        .sum(snapshot -> 1);
+
+    assertEquals(resultAuto.entrySet().size(), resultCustom.entrySet().size());
+    for (OSHDBTimestamp t : resultAuto.keySet()) {
+      assertEquals(
+          resultAuto.get(t).intValue(),
+          resultCustom.get(t).intValue()
+      );
+    }
+  }
+
+  @Test
+  public void testOSMEntitySnapshotCustom() throws Exception {
+    // most basic custom timestamp index possible -> map all to one single timestamp
+    SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp(ignored -> timestamps1.get().get(0))
+        .sum(snapshot -> 1);
+
+    assertEquals(72, resultCustom.entrySet().size());
+    assertEquals(1, resultCustom.entrySet().stream().filter(entry -> entry.getValue() > 0).count());
+  }
 
 }

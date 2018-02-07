@@ -16,6 +16,12 @@
       <artifactId>oshdb-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.heigit.bigspatialdata</groupId>
+      <artifactId>oshdb-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     
     <dependency>
       <groupId>commons-io</groupId>

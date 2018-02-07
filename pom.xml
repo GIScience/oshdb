@@ -27,7 +27,7 @@
     <geotools.version>18-RC1</geotools.version>
     <glassfish.version>1.1</glassfish.version>
     <googlejson.version>1.1.1</googlejson.version>
-    <guava.version>19.0</guava.version>
+    <guava.version>23.6-jre</guava.version>
     <h2.version>1.4.193</h2.version>
     <ignite.version>2.3.0</ignite.version>
     <jcommander.version>1.72</jcommander.version>
@@ -40,7 +40,7 @@
     <postgresql.version>42.1.4</postgresql.version>
     <protobuf.version>2.6.1</protobuf.version>
     <roaringbitmap.version>0.6.37</roaringbitmap.version>
-    <rxjava2.version>2.1.4</rxjava2.version>
+    <rxjava2.version>2.1.9</rxjava2.version>
     <wololo.version>0.10.0</wololo.version>
   </properties>
   

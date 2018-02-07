@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
@@ -42,15 +42,10 @@ public class TagInterpreter implements Serializable {
     this.emptyRoleId = emptyRoleId;
   }
 
-  private boolean evaluateWayForArea(int[] tags) {
-    // todo: replace with quicker binary search (tag keys are sorted)
-    for (int i = 0; i < tags.length; i += 2) {
-      if (tags[i] == areaNoTagKeyId)
-        if (tags[i + 1] == areaNoTagValueId)
-          return false;
-        else
-          break;
-    }
+  private boolean evaluateWayForArea(OSMWay entity) {
+    int[] tags = entity.getTags();
+    if (entity.hasTagValue(areaNoTagKeyId, areaNoTagValueId))
+      return false;
     for (int i = 0; i < tags.length; i += 2) {
       if (wayAreaTags.containsKey(tags[i]) &&
           wayAreaTags.get(tags[i]).contains(tags[i + 1]))
@@ -59,7 +54,8 @@ public class TagInterpreter implements Serializable {
     return false;
   }
 
-  private boolean evaluateRelationForArea(int[] tags) {
+  private boolean evaluateRelationForArea(OSMRelation entity) {
+    int[] tags = entity.getTags();
     // skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
     for (int i = 0; i < tags.length; i += 2) {
       if (relationAreaTags.containsKey(tags[i]) &&
@@ -69,20 +65,27 @@ public class TagInterpreter implements Serializable {
     return false;
   }
 
-  public boolean evaluateForArea(OSMEntity osm) {
-    int[] tags = osm.getTags();
-    // todo: implement for relation
-    if (osm instanceof OSMWay) {
-      return this.evaluateWayForArea(tags);
-    } else if (osm instanceof OSMRelation) {
-      return this.evaluateRelationForArea(tags);
-    } else {
+  public boolean isArea(OSMEntity entity) {
+    if (entity instanceof OSMNode) {
       return false;
+    } else if (entity instanceof OSMWay) {
+      OSMWay way = (OSMWay) entity;
+      OSMMember[] nds = way.getRefs();
+      // must form closed ring with at least 3 vertices
+      if (nds.length < 4 || nds[0].getId() != nds[nds.length - 1].getId()) {
+        return false;
+      }
+      return this.evaluateWayForArea((OSMWay)entity);
+    } else /*if (entity instanceof OSMRelation)*/ {
+      return this.evaluateRelationForArea((OSMRelation)entity);
     }
   }
 
-  public boolean evaluateForLine(OSMEntity osm) {
-    return !evaluateForArea(osm);
+  public boolean isLine(OSMEntity entity) {
+    if (entity instanceof OSMNode) {
+      return false;
+    }
+    return !isArea(entity);
   }
 
   public boolean hasInterestingTagKey(OSMEntity osm) {

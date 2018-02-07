@@ -3,36 +3,33 @@ package org.heigit.bigspatialdata.oshdb.index;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.
- *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class XYGridTree {
-
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTree.class);
 
   private final int maxLevel;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
 
   /**
-   * Initialises all zoomlevel above the given one.
+   * Initialises all zoomlevel up until the given one.
    *
    * @param maxzoom the maximum zoom to be used
    */
   public XYGridTree(int maxzoom) {
     maxLevel = maxzoom;
-    for (int i = maxzoom; i > 0; i--) {
+    for (int i=0; i<=maxzoom; i++) {
       gridMap.put(i, new XYGrid(i));
     }
-
   }
 
   public XYGridTree() {
@@ -52,22 +49,17 @@ public class XYGridTree {
       @Override
       public Iterator<CellId> iterator() {
         Iterator<CellId> result = new Iterator<CellId>() {
-          private int level = maxLevel + 1;
+          private int level = -1;
 
           @Override
           public boolean hasNext() {
-            return level > 1;
+            return level < maxLevel;
           }
 
           @Override
           public CellId next() {
-            try {
-              level--;
-              return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
-            } catch (CellId.cellIdExeption ex) {
-              LOG.error(ex.getMessage());
-              return null;
-            }
+            level++;
+            return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
           }
         };
 
@@ -94,17 +86,12 @@ public class XYGridTree {
    * @param bbox
    * @return
    */
-  public CellId getInsertId(BoundingBox bbox) {
-    for (int i = maxLevel; i > 0; i--) {
-      try {
-        if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
-          continue;
-        }
-        return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
-      } catch (CellId.cellIdExeption ex) {
-        LOG.error("", ex);
-        return null;
+  public CellId getInsertId(OSHDBBoundingBox bbox) {
+    for (int i=maxLevel; i>=0; i--) {
+      if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
+        continue;
       }
+      return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
     }
     return null;
   }
@@ -116,25 +103,23 @@ public class XYGridTree {
    * @param BBOX
    * @return
    */
-  public Iterable<CellId> bbox2CellIds(final BoundingBox BBOX) {
+  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX) {
     return bbox2CellIds(BBOX, false);
   }
 
   /**
    * Get CellIds in all zoomlevel for a given BBOX.
    *
-   *
    * @param BBOX
    * @param enlarge
    * @return
    */
-  public Iterable<CellId> bbox2CellIds(final BoundingBox BBOX, final boolean enlarge) {
-
+  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX, final boolean enlarge) {
     return new Iterable<CellId>() {
       @Override
       public Iterator<CellId> iterator() {
-        Iterator<CellId> result = new Iterator<CellId>() {
-          private int level = maxLevel;
+        return new Iterator<CellId>() {
+          private int level = 0;
           private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
           private Pair<Long, Long> row = rows.next();
           private Long maxID = row.getRight();
@@ -142,7 +127,7 @@ public class XYGridTree {
 
           @Override
           public boolean hasNext() {
-            if (level > 1) {
+            if (level < maxLevel) {
               return true;
             }
             if (rows.hasNext()) {
@@ -153,61 +138,63 @@ public class XYGridTree {
 
           @Override
           public CellId next() {
-            try {
-              if (currID < maxID) {
-                currID++;
-                return new CellId(level, currID);
-              }
-              if (rows.hasNext()) {
-                row = rows.next();
-                currID = row.getLeft();
-                maxID = row.getRight();
-                return new CellId(level, currID);
-              }
-              level--;
-              rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+            if (currID < maxID) {
+              currID++;
+              return new CellId(level, currID);
+            }
+            if (rows.hasNext()) {
               row = rows.next();
               currID = row.getLeft();
               maxID = row.getRight();
               return new CellId(level, currID);
-            } catch (CellId.cellIdExeption ex) {
-              LOG.error(ex.getMessage());
-              return null;
             }
+            level++;
+            rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+            row = rows.next();
+            currID = row.getLeft();
+            maxID = row.getRight();
+            return new CellId(level, currID);
           }
-
         };
-
-        return result;
       }
     };
-
   }
 
   /**
-   * Get 2D neighbours of given cell in its zoomlevel and all other zoomlevel.
+   * Get CellIds in all zoomlevel for a given BBOX.
    *
-   * @param center
+   * @param BBOX
+   * @param enlarge
    * @return
    */
-  public Iterable<CellId> getMultiZoomNeighbours(CellId center) {
-    BoundingBox bbox = this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId());
-    long minlong = bbox.minLon - 1L;
-    long minlat = bbox.minLat - 1L;
-    long maxlong = bbox.maxLon + 1L;
-    long maxlat = bbox.maxLat + 1L;
-    BoundingBox newbbox = new BoundingBox(minlong, maxlong, minlat, maxlat);
-    return this.bbox2CellIds(newbbox, false);
-  }
+  public Iterable<Pair<CellId, CellId>> bbox2CellIdRanges(final OSHDBBoundingBox BBOX, final boolean enlarge) {
+    return new Iterable<Pair<CellId, CellId>>() {
+      @Override
+      public Iterator<Pair<CellId, CellId>> iterator() {
+        return new Iterator<Pair<CellId, CellId>>() {
+          private int level = 0;
+          private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
 
-  /**
-   * Get the parent CellIds in all other zoomlevel.
-   *
-   * @param center
-   * @return
-   */
-  public Iterable<CellId> getMultiZoomParents(CellId center) {
-    return this.bbox2CellIds(this.gridMap.get(center.getZoomLevel()).getCellDimensions(center.getId()), false);
+          @Override
+          public boolean hasNext() {
+            return level < maxLevel || rows.hasNext();
+          }
+
+          @Override
+          public Pair<CellId, CellId> next() {
+            if (!rows.hasNext()) {
+              level++;
+              rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+            }
+            Pair<Long, Long> row = rows.next();
+            return new ImmutablePair<>(
+                new CellId(level, row.getLeft()),
+                new CellId(level, row.getRight())
+            );
+          }
+        };
+      }
+    };
   }
 
 }

@@ -12,7 +12,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.junit.Test;
 
 import java.util.*;
@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 public class TestMapAggregate {
   private final OSHDB_Database oshdb;
 
-  private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
   private final double DELTA = 1e-8;

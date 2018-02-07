@@ -3,7 +3,7 @@ HeiGit OpenStreetMap History DB
 
 High-performance data analysis platform for OpenStreetMap full-history data.
 
-[![Build Status](http://129.206.7.188:8081/buildStatus/icon?job=oshdb-deploy)](http://129.206.7.188:8081/job/oshdb-deploy/)
+[![Build Status](https://jenkins.openrouteservice.org/buildStatus/icon?job=oshdb-deploy)](http://129.206.7.188:8081/job/oshdb-deploy/)
 
 Oshdb offers a distributed data base that splits storage and computation load. It is then possible to use the [map-reduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel. A central idea behind oshdb is to bring the code to the data.
 

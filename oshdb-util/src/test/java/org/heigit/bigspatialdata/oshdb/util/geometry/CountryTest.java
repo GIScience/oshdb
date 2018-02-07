@@ -1,9 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
-import org.heigit.bigspatialdata.oshdb.util.geometry.CountryCodeType;
-import org.heigit.bigspatialdata.oshdb.util.geometry.Country;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import com.vividsolutions.jts.geom.MultiPolygon;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
+
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -24,9 +23,9 @@ public class CountryTest {
   @Test
   public void testGetBBX() throws Exception {
     String name = "France";
-    BoundingBox expResult = new BoundingBox(-5.132802, 9.559581, 41.365912, 51.087541);
+    OSHDBBoundingBox expResult = new OSHDBBoundingBox(-5.132802, 9.559581, 41.365912, 51.087541);
 
-    BoundingBox result = Country.getBoundingBox(name);
+    OSHDBBoundingBox result = Country.getBoundingBox(name);
     assertEquals(expResult.toString(), result.toString());
   }
 

@@ -1,6 +1,13 @@
 ### 0.4.0 SNAPSHOT (current master)
 
 * tweak database cell structure: higher max-zoom level (15 instead of 12), move content from almost empty cells to higher zoom levels, store objects in cells where they fit fully
+* (breaking) renamed bounding box class to `OSHDBBoundingBox` and change order of constructor parameters to `minLon, minLat, maxLon, maxLat` (was `minLon, maxLon, minLat, maxLat`)
+* (breaking) all timestamps related to oshdb objects (osm entities, etc.) return `OSHDBTimestamp` objects
+* api: added possibility to aggregate results by custom timestamp values
+* much faster processing of queries with polygonal areas of interest
+* (breaking) celliterator is now an object instead of a set of static functions
+* api: include `slf4j-simple` logging framework by default
+* (breaking) the OSM, OSH and Grid-Classes held more methods than information. These methods where therefore outsourced to the oshdb-util package. Also some oshdb-api util-classes where moved.
 
 ### 0.3.1
 
