@@ -70,7 +70,7 @@ public class TestCollect {
   public void testFlatMapCollectGroupedById() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .groupById()
+        .groupByEntity()
         .flatMap(contributions -> Collections.singletonList(contributions.get(0).getEntityAfter().getId()))
         .collect();
     assertEquals(42, result.stream().collect(Collectors.toSet()).size());

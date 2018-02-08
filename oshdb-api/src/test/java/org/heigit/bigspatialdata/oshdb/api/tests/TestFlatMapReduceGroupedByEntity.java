@@ -25,14 +25,14 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-abstract class TestFlatMapReduceGroupedById {
+abstract class TestFlatMapReduceGroupedByEntity {
   private final OSHDB_Database oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
   private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
-  TestFlatMapReduceGroupedById(OSHDB_Database oshdb) throws Exception {
+  TestFlatMapReduceGroupedByEntity(OSHDB_Database oshdb) throws Exception {
     this.oshdb = oshdb;
   }
 
@@ -48,7 +48,7 @@ abstract class TestFlatMapReduceGroupedById {
   public void testOSMContributionView() throws Exception {
     Number result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .groupById()
+        .groupByEntity()
         .flatMap(contributions -> {
           if (contributions.get(0).getEntityAfter().getId() != 617308093)
             return new ArrayList<>();
@@ -70,7 +70,7 @@ abstract class TestFlatMapReduceGroupedById {
   public void testOSMEntitySnapshotView() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .groupById()
+        .groupByEntity()
         .flatMap(snapshots -> {
           if (snapshots.get(0).getEntity().getId() != 617308093)
             return new ArrayList<>();

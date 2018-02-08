@@ -52,7 +52,7 @@ public class TestForEach {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .groupById()
+        .groupByEntity()
         .forEach(contributions -> {
           contributions.forEach(contribution -> {
             result.put(contribution.getEntityAfter().getId(), true);
