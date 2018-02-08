@@ -555,10 +555,10 @@ public abstract class MapReducer<X>
    *         activated
    */
   @Contract(pure = true)
-  public MapReducer<List<X>> groupById() throws UnsupportedOperationException {
+  public MapReducer<List<X>> groupByEntity() throws UnsupportedOperationException {
     if (!this._mappers.isEmpty()) {
       throw new UnsupportedOperationException(
-          "groupById() must be called before any `map` or `flatMap` transformation functions have been set");
+          "groupByEntity() must be called before any `map` or `flatMap` transformation functions have been set");
     }
     if (this._grouping != Grouping.NONE) {
       throw new UnsupportedOperationException("A grouping is already active on this MapReducer");
@@ -566,6 +566,15 @@ public abstract class MapReducer<X>
     MapReducer<X> ret = this.copy();
     ret._grouping = Grouping.BY_ID;
     return (MapReducer<List<X>>) (ret);
+  }
+
+  /**
+   * @deprecated renamed to groupByEntity: {@link #groupByEntity()}
+   */
+  @Deprecated
+  @Contract(pure = true)
+  public MapReducer<List<X>> groupById() throws UnsupportedOperationException {
+    return this.groupByEntity();
   }
 
   /**
@@ -592,18 +601,18 @@ public abstract class MapReducer<X>
    * will be matched to corresponding time intervals (that are defined by the `timestamps` setting
    * here).
    *
-   * Cannot be used together with the `groupById()` setting enabled.
+   * Cannot be used together with the `groupByEntity()` setting enabled.
    *
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
-   * @throws UnsupportedOperationException if this is called when the `groupById()` mode has been
+   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has been
    *         activated
    */
   @Contract(pure = true)
   public MapAggregatorByTimestamps<X> aggregateByTimestamp() throws UnsupportedOperationException {
     if (this._grouping != Grouping.NONE) {
       throw new UnsupportedOperationException(
-          "automatic aggregateByTimestamp() cannot be used together with the groupById() "+
+          "automatic aggregateByTimestamp() cannot be used together with the groupByEntity() "+
           "functionality -> try using aggregateByTimestamp(customTimestampIndex) instead"
       );
     }

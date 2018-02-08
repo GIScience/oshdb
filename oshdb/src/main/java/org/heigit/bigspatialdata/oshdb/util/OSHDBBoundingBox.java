@@ -52,10 +52,10 @@ public class OSHDBBoundingBox implements Serializable {
     return OVERLAP.OVERLAPPING;
   }
 
-  public final long minLon;
-  public final long maxLon;
-  public final long minLat;
-  public final long maxLat;
+  public long minLon;
+  public long maxLon;
+  public long minLat;
+  public long maxLat;
 
   public OSHDBBoundingBox(long minLon, long minLat, long maxLon, long maxLat) {
     this.minLon = minLon;
@@ -63,7 +63,14 @@ public class OSHDBBoundingBox implements Serializable {
     this.minLat = minLat;
     this.maxLat = maxLat;
   }
-
+  
+  public void set(long minLon, long minLat, long maxLon, long maxLat) {
+    this.minLon = minLon;
+    this.maxLon = maxLon;
+    this.minLat = minLat;
+    this.maxLat = maxLat;
+  }
+  
   public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
     this.minLon = (long) (minLon * OSHDB.GEOM_PRECISION_TO_LONG);
     this.maxLon = (long) (maxLon * OSHDB.GEOM_PRECISION_TO_LONG);

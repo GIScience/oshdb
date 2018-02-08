@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class TestFlatMapAggregateGroupedById {
+public class TestFlatMapAggregateGroupedByEntity {
   private final OSHDB_Database oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
@@ -35,7 +35,7 @@ public class TestFlatMapAggregateGroupedById {
 
   private final double DELTA = 1e-8;
 
-  public TestFlatMapAggregateGroupedById() throws Exception {
+  public TestFlatMapAggregateGroupedByEntity() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
@@ -46,7 +46,7 @@ public class TestFlatMapAggregateGroupedById {
   public void test() throws Exception {
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .groupById()
+        .groupByEntity()
         .flatMap(contributions -> {
             if (contributions.get(0).getEntityAfter().getId() != 617308093)
               return new ArrayList<>();
