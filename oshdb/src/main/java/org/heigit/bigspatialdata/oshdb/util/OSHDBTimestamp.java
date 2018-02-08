@@ -13,6 +13,10 @@ public class OSHDBTimestamp implements Comparable<OSHDBTimestamp>, Serializable 
   public OSHDBTimestamp(Date tstamp) {
     this(tstamp.getTime() / 1000);
   }
+  
+  public void setTimestamp(long tstamp){
+    this._tstamp = tstamp;
+  }
 
   @Override
   public int compareTo(OSHDBTimestamp other) {
