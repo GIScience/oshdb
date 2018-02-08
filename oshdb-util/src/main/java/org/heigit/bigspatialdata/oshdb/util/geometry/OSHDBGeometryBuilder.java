@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 import org.geotools.geometry.jts.JTS;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -40,6 +41,7 @@ public class OSHDBGeometryBuilder {
   private OSHDBGeometryBuilder() {}
 
   // gets the geometry of this object at a specific timestamp
+  @Nonnull
   public static <T extends OSMEntity> Geometry getGeometry(T entity, OSHDBTimestamp timestamp,
       TagInterpreter areaDecider) {
     if (entity instanceof OSMNode) {
@@ -162,8 +164,8 @@ public class OSHDBGeometryBuilder {
   private static List<List<OSMNode>> join(OSMNode[][] lines) {
     // make a (mutable) copy of the polygons array
     List<List<OSMNode>> ways = new LinkedList<>();
-    for (int i = 0; i < lines.length; i++) {
-      ways.add(new LinkedList<>(Arrays.asList(lines[i])));
+    for (OSMNode[] line : lines) {
+      ways.add(new LinkedList<>(Arrays.asList(line)));
     }
     List<List<OSMNode>> joined = new LinkedList<>();
 
@@ -222,18 +224,12 @@ public class OSHDBGeometryBuilder {
   public static <T extends OSMEntity> Geometry getGeometryClipped(T entity, OSHDBTimestamp timestamp,
       TagInterpreter areaDecider, OSHDBBoundingBox clipBbox) {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    if (geom == null) {
-      return null;
-    }
     return Geo.clip(geom, clipBbox);
   }
 
   public static <P extends Geometry & Polygonal, T extends OSMEntity> Geometry getGeometryClipped(
       T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, P clipPoly) {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    if (geom == null) {
-      return null;
-    }
     return Geo.clip(geom, clipPoly);
   }
   
