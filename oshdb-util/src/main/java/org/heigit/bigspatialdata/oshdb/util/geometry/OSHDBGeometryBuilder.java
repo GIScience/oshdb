@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.geotools.geometry.jts.JTS;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
@@ -72,23 +74,33 @@ public class OSHDBGeometryBuilder {
      * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
      */
     GeometryFactory geometryFactory = new GeometryFactory();
-    Geometry[] geoms = new Geometry[relation.getMembers().length];
-    for (int i = 0; i < relation.getMembers().length; i++) {
-      try {
-        if (relation.getMembers()[i].getEntity() == null)
-          geoms[i] = null;
-        else
-          geoms[i] = OSHDBGeometryBuilder.getGeometry(
-              relation.getMembers()[i].getEntity().getByTimestamp(timestamp),
-              timestamp,
-              areaDecider);
-      } catch (NullPointerException ex) {
-        LOG.warn("Member entity of relation/{} missing, geometry could not be created.",
-            entity.getId());
-        return null;
+    OSMMember[] relationMembers = relation.getMembers();
+    Geometry[] geoms = new Geometry[relationMembers.length];
+    boolean completeGeometry = true;
+    for (int i = 0; i < relationMembers.length; i++) {
+      OSHEntity memberEntity = relationMembers[i].getEntity();
+      if (memberEntity == null) {
+        geoms[i] = null;
+        completeGeometry = false;
+        LOG.info(
+            "Member entity {}/{} of relation/{} missing, geometry could not be assembled fully.",
+            relationMembers[i].getType(), relationMembers[i].getId(), entity.getId()
+        );
+      } else {
+        geoms[i] = OSHDBGeometryBuilder.getGeometry(
+            memberEntity.getByTimestamp(timestamp),
+            timestamp,
+            areaDecider
+        );
       }
     }
-    return geometryFactory.createGeometryCollection(Arrays.stream(geoms).filter(Objects::nonNull).toArray(Geometry[]::new));
+    if (completeGeometry) {
+      return geometryFactory.createGeometryCollection(geoms);
+    } else {
+      return geometryFactory.createGeometryCollection(
+          Arrays.stream(geoms).filter(Objects::nonNull).toArray(Geometry[]::new)
+      );
+    }
   }
 
   private static Geometry getMultiPolygonGeometry(OSMRelation entity, OSHDBTimestamp timestamp,
