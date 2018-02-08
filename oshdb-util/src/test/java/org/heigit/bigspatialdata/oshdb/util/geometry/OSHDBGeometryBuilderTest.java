@@ -1,84 +1,162 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import static org.junit.Assert.assertEquals;
+
+import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
+import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/**
- *
- */
 public class OSHDBGeometryBuilderTest {
+  OSMXmlReader reader = new OSMXmlReader();
 
-  private static final Logger LOG = LoggerFactory.getLogger(OSHDBGeometryBuilderTest.class);
+  public OSHDBGeometryBuilderTest() {
+    reader.add("./src/test/resources/geometryBuilder.osh");
+  }
 
-  public OSHDBGeometryBuilderTest() {}
-
-  /*todo: @Test
-  public void testIsArea() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
-    TagInterpreter areaDecider = null;
-    boolean expResult = false;
-    boolean result = areaDecider.isArea(entity);
-    assertEquals(expResult, result);
-  }*/
-
-  /*todo: @Test
-  public void testIsLine() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
-    TagInterpreter areaDecider = null;
-    boolean expResult = false;
-    boolean result = areaDecider.isLine(entity);
-    assertEquals(expResult, result);
-  }*/
-
-  @Test
-  public void testGetGeometry() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
-    TagInterpreter areaDecider = null;
-    Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 100));
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertEquals(expResult, result);
+  private OSHDBTimestamp toOSHDBTimestamp(String timeString) {
+    try {
+      return new OSHDBTimestamp(
+          ISODateTimeParser.parseISODateTime(timeString).toEpochSecond()
+      );
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   @Test
-  public void testGetGeometryClipped_4args_1() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 800000000L);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
-    TagInterpreter areaDecider = null;
+  public void testPointGetGeometry() {
+    OSMEntity entity = reader.nodes().get(1L).get(0);
+    OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, null);
+    assertEquals(100, result.getCoordinates()[0].x, 100);
+    assertEquals(80, result.getCoordinates()[0].y, 80);
+  }
+
+  @Test
+  public void testPointGetGeometryClipped() {
+    OSMEntity entity = reader.nodes().get(1L).get(0);
+    OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
+    // by bbox
     OSHDBBoundingBox clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 90.0);
-    Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
-    Geometry result =
-        OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipBbox);
-    assertEquals(expResult, result);
+    Geometry result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipBbox);
+    assertEquals(false, result.isEmpty());
+    clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 0.0, 0.0);
+    result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipBbox);
+    assertEquals(true, result.isEmpty());
+    // by poly
+    Polygon clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
+    result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipPoly);
+    assertEquals(false, result.isEmpty());
+    clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-1, -1, 1, 1));
+    result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipPoly);
+    assertEquals(true, result.isEmpty());
   }
 
   @Test
-  public void testGetGeometryClipped_4args_2() {
-    int[] properties = {1, 2};
-    OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 800000000L);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
-    TagInterpreter areaDecider = null;
-    Polygon clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
-    Geometry expResult = (new GeometryFactory()).createPoint(new Coordinate(100, 80));
-    Geometry result =
-        OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, areaDecider, clipPoly);
-    assertEquals(expResult, result);
+  public void testWayGetGeometry() {
+    // linestring
+    OSMEntity entity = reader.ways().get(1L).get(0);
+    OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
+    TagInterpreter areaDecider = new FakeTagInterpreterAreaNever();
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("LineString", result.getGeometryType());
+    assertEquals(2, result.getNumPoints());
+    assertEquals(100, result.getCoordinates()[0].x, 0.00000001);
+    assertEquals(80, result.getCoordinates()[0].y, 0.00000001);
+    assertEquals(110, result.getCoordinates()[1].x, 0.00000001);
+    assertEquals(80.1, result.getCoordinates()[1].y, 0.00000001);
+
+    // polygon
+    entity = reader.ways().get(2L).get(0);
+    areaDecider = new FakeTagInterpreterAreaAlways();
+    result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("Polygon", result.getGeometryType());
+    assertEquals(5, result.getNumPoints());
+    assertEquals(result.getCoordinates()[0].x, result.getCoordinates()[4].x, 0.00000001);
+    assertEquals(result.getCoordinates()[0].y, result.getCoordinates()[4].y, 0.00000001);
+
+    // other timestamp -> changed member
+    entity = reader.ways().get(1L).get(0);
+    timestamp = toOSHDBTimestamp("2003-01-01");
+    areaDecider = new FakeTagInterpreterAreaNever();
+    result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals(80.2, result.getCoordinates()[0].y, 0.00000001);
   }
 
+  @Test
+  public void testWayGetGeometryIncomplete() {
+    // linestring with 3 node references, only 2 present
+    OSMEntity entity = reader.ways().get(3L).get(0);
+    OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
+    TagInterpreter areaDecider = new FakeTagInterpreterAreaNever();
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("LineString", result.getGeometryType());
+    assertEquals(2, result.getNumPoints());
+
+    // single noded way
+    entity = reader.ways().get(4L).get(0);
+    result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("Point", result.getGeometryType());
+    assertEquals(false, result.isEmpty());
+
+    // zero noded way
+    entity = reader.ways().get(5L).get(0);
+    result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals(true, result.isEmpty());
+  }
+
+  @Test
+  public void testRelationGetGeometry() {
+    // simplest multipolygon
+    OSMEntity entity = reader.relations().get(1L).get(0);
+    OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
+    TagInterpreter areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("Polygon", result.getGeometryType());
+    assertEquals(5, result.getNumPoints());
+
+    // other relation
+    areaDecider = new FakeTagInterpreterAreaNever();
+    result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("GeometryCollection", result.getGeometryType());
+    assertEquals(1, result.getNumGeometries());
+    assertEquals(5, result.getGeometryN(0).getNumPoints());
+  }
+}
+
+
+abstract class FakeTagInterpreter extends TagInterpreter {
+  public FakeTagInterpreter() {
+    super(0, 0, null, null, null,0, 0, 0);
+  }
+}
+
+class FakeTagInterpreterAreaAlways extends FakeTagInterpreter {
+  @Override
+  public boolean isArea(OSMEntity e) {
+    return true;
+  }
+}
+
+class FakeTagInterpreterAreaMultipolygonAllOuters extends FakeTagInterpreterAreaAlways {
+  @Override
+  public boolean isMultipolygonOuterMember(OSMMember osmMember) {
+    return true;
+  }
+}
+
+class FakeTagInterpreterAreaNever extends FakeTagInterpreter {
+  @Override
+  public boolean isArea(OSMEntity e) {
+    return false;
+  }
 }
