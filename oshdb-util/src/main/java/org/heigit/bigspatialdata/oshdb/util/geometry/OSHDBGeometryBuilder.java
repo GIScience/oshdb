@@ -54,16 +54,16 @@ public class OSHDBGeometryBuilder {
           way.getRefEntities(timestamp).filter(node -> node != null && node.isVisible())
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
-      if (areaDecider.isLine(entity)) {
-        if (coords.length < 2) {
-          return null; // better: "invalid line geometry" exception?
-        }
-        return geometryFactory.createLineString(coords);
-      } else {
-        if (coords.length < 4) {
-          return null; // better: "invalid polygon geometry" exception?
-        }
+      if (areaDecider.isArea(entity)) {
         return geometryFactory.createPolygon(coords);
+      } else if (coords.length >= 2) {
+        return geometryFactory.createLineString(coords);
+      } else if (coords.length == 1) {
+        LOG.info("way/{} is single-noded - falling back to point geometry", way.getId());
+        return geometryFactory.createPoint(coords[0]);
+      } else {
+        LOG.warn("way/{} with no nodes - falling back to empty (point) geometry", way.getId());
+        return geometryFactory.createPoint((Coordinate)null);
       }
     }
     OSMRelation relation = (OSMRelation) entity;
