@@ -38,12 +38,12 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.Files;
 
-public class OSMDb {
+public class OSMXmlReader {
 
   private static class Test {
 
     public void run() {
-      OSMDb db = new OSMDb();
+      OSMXmlReader db = new OSMXmlReader();
 
       Path testDataDir = Paths.get(getClass().getResource("/data").getPath());
 
@@ -61,6 +61,12 @@ public class OSMDb {
         System.out.println("\t" + osm);
       });
 
+      int key = 6;
+      System.out.println(db.keys.inverse().get(Integer.valueOf(key)));
+      System.out.println(db.keys.get("place"));
+
+      System.out.println(db.keyValues.get(key).inverse().get(Integer.valueOf(2)));
+
     }
   }
 
@@ -68,8 +74,6 @@ public class OSMDb {
     Test t = new Test();
     t.run();
   }
-  
-  
 
   BiMap<String, Integer> keys = HashBiMap.create();
   List<BiMap<String, Integer>> keyValues = new ArrayList<>();
@@ -80,19 +84,18 @@ public class OSMDb {
   ListMultimap<Long, OSMWay> ways = MultimapBuilder.treeKeys().arrayListValues().build();
   ListMultimap<Long, OSMRelation> relations = MultimapBuilder.treeKeys().arrayListValues().build();
 
-  
-  public BiMap<String, Integer> keys(){
+  public BiMap<String, Integer> keys() {
     return keys;
   }
-  
-  public List<BiMap<String, Integer>> keyValues(){
+
+  public List<BiMap<String, Integer>> keyValues() {
     return keyValues;
   }
 
-  public BiMap<String, Integer> roles(){
+  public BiMap<String, Integer> roles() {
     return roles;
   }
-  
+
   public ListMultimap<Long, OSMNode> nodes() {
     return nodes;
   }
@@ -103,6 +106,127 @@ public class OSMDb {
 
   public ListMultimap<Long, OSMRelation> relations() {
     return relations;
+  }
+
+  public void add(String... xml) {
+    try {
+      DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+      for (String s : xml) {
+        Document doc = dBuilder.parse(s);
+        read(doc);
+      }
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void read(Document doc) {
+    long lastId = -1;
+    long skipId = -1;
+
+    for (Element e : elementsByTag(doc, "node")) {
+      MutableOSMNode osm = new MutableOSMNode();
+      entity(osm, e);
+
+      long id = osm.getId();
+
+      if (lastId != id && nodes.containsKey(id)) {
+        skipId = id;
+      }
+
+      if (skipId != id) {
+        double lon = osm.isVisible() ? attrAsDouble(e, "lon") : 0.0;
+        double lat = osm.isVisible() ? attrAsDouble(e, "lat") : 0.0;
+
+        long longitude = (long) (lon * OSHDB.GEOM_PRECISION_TO_LONG);
+        long latitude = (long) (lat * OSHDB.GEOM_PRECISION_TO_LONG);
+
+        osm.setExtension(longitude, latitude);
+
+        OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1), osm.getTimestamp(),
+            osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(), osm.getLat());
+        nodes.put(Long.valueOf(id), oldOSM);
+      }
+      lastId = id;
+    }
+
+    lastId = -1;
+    skipId = -1;
+    for (Element e : elementsByTag(doc, "way")) {
+      MutableOSMWay osm = new MutableOSMWay();
+      entity(osm, e);
+
+      long id = osm.getId();
+      if (lastId != id && ways.containsKey(id)) {
+        skipId = id;
+      }
+
+      if (skipId != id) {
+        NodeList ndList = e.getElementsByTagName("nd");
+        OSMMember[] members = new OSMMember[ndList.getLength()];
+        int idx = 0;
+        for (Element m : iterableOf(ndList)) {
+          long memId = attrAsLong(m, "ref");
+          // members[idx++] = new OSMMemberWayIdOnly(memId);
+          members[idx++] = new OSMMember(memId, OSMType.NODE, 0);
+        }
+        // osm.setExtension(members);
+        OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1), osm.getTimestamp(),
+            osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
+        ways.put(Long.valueOf(id), oldOSM);
+      }
+      lastId = id;
+    }
+
+    lastId = -1;
+    skipId = -1;
+    for (Element e : elementsByTag(doc, "relation")) {
+      MutableOSMRelation osm = new MutableOSMRelation();
+      entity(osm, e);
+
+      long id = osm.getId();
+      if (lastId != id && relations.containsKey(id)) {
+        skipId = id;
+      }
+
+      if (skipId != id) {
+        NodeList ndList = e.getElementsByTagName("member");
+        OSMMember[] members = new OSMMember[ndList.getLength()];
+        int idx = 0;
+        for (Element m : iterableOf(ndList)) {
+          long memId = attrAsLong(m, "ref");
+          String role = attrAsString(m, "role");
+          String type = attrAsString(m, "type");
+
+          Integer r = roles.get(role);
+          if (r == null) {
+            r = Integer.valueOf(roles.size());
+            roles.put(role, r);
+          }
+
+          OSMType t;
+          if ("node".equalsIgnoreCase(type))
+            t = OSMType.NODE;
+          else if ("way".equalsIgnoreCase(type)) {
+            t = OSMType.WAY;
+          } else if ("relation".equalsIgnoreCase(type)) {
+            t = OSMType.RELATION;
+          } else {
+            t = OSMType.UNKNOWN;
+          }
+
+          // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
+          members[idx++] = new OSMMember(memId, t, r.intValue());
+        }
+        // osm.setExtension(members);
+        OSMRelation oldOSM = new OSMRelation(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
+            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
+        relations.put(Long.valueOf(id), oldOSM);
+      }
+      lastId = id;
+    }
   }
 
   public void add(Path... xml) {
@@ -120,108 +244,7 @@ public class OSMDb {
           }
 
           Document doc = dBuilder.parse(is);
-
-          long lastId = -1;
-          long skipId = -1;
-
-          for (Element e : elementsByTag(doc, "node")) {
-            MutableOSMNode osm = new MutableOSMNode();
-            entity(osm, e);
-
-            long id = osm.getId();
-
-            if (lastId != id && nodes.containsKey(id)) {
-              skipId = id;
-            }
-
-            if (skipId != id) {
-              double lon = osm.isVisible() ? attrAsDouble(e, "lon") : 0.0;
-              double lat = osm.isVisible() ? attrAsDouble(e, "lat") : 0.0;
-
-              long longitude = (long) (lon * OSHDB.GEOM_PRECISION_TO_LONG);
-              long latitude = (long) (lat * OSHDB.GEOM_PRECISION_TO_LONG);
-
-              osm.setExtension(longitude, latitude);
-
-              OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion()*(osm.isVisible()?1:-1), osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(), osm.getLat());
-              nodes.put(Long.valueOf(id), oldOSM);
-            }
-            lastId = id;
-          }
-
-          lastId = -1;
-          skipId = -1;
-          for (Element e : elementsByTag(doc, "way")) {
-            MutableOSMWay osm = new MutableOSMWay();
-            entity(osm, e);
-
-            long id = osm.getId();
-            if (lastId != id && ways.containsKey(id)) {
-              skipId = id;
-            }
-
-            if (skipId != id) {
-              NodeList ndList = e.getElementsByTagName("nd");
-              OSMMember[] members = new OSMMember[ndList.getLength()];
-              int idx = 0;
-              for (Element m : iterableOf(ndList)) {
-                long memId = attrAsLong(m, "ref");
-                //members[idx++] = new OSMMemberWayIdOnly(memId);
-                members[idx++] = new OSMMember(memId,OSMType.NODE,0);
-              }
-              //osm.setExtension(members);
-              OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion()*(osm.isVisible()?1:-1), osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(),members);
-              ways.put(Long.valueOf(id), oldOSM);
-            }
-            lastId = id;
-          }
-
-          lastId = -1;
-          skipId = -1;
-          for (Element e : elementsByTag(doc, "relation")) {
-            MutableOSMRelation osm = new MutableOSMRelation();
-            entity(osm, e);
-
-            long id = osm.getId();
-            if (lastId != id && relations.containsKey(id)) {
-              skipId = id;
-            }
-
-            if (skipId != id) {
-              NodeList ndList = e.getElementsByTagName("member");
-              OSMMember[] members = new OSMMember[ndList.getLength()];
-              int idx = 0;
-              for (Element m : iterableOf(ndList)) {
-                long memId = attrAsLong(m, "ref");
-                String role = attrAsString(m, "role");
-                String type = attrAsString(m, "type");
-
-                Integer r = roles.get(role);
-                if (r == null) {
-                  r = Integer.valueOf(roles.size());
-                  roles.put(role, r);
-                }
-
-                OSMType t;
-                if ("node".equalsIgnoreCase(type))
-                  t = OSMType.NODE;
-                else if ("way".equalsIgnoreCase(type)) {
-                  t = OSMType.WAY;
-                } else if ("relation".equalsIgnoreCase(type)) {
-                  t = OSMType.RELATION;
-                } else {
-                  t = OSMType.UNKNOWN;
-                }
-
-               // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
-                members[idx++] = new OSMMember(memId, t, r.intValue());
-              }
-             // osm.setExtension(members);
-              OSMRelation oldOSM = new OSMRelation(osm.getId(), osm.getVersion()*(osm.isVisible()?1:-1), osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(),members);
-              relations.put(Long.valueOf(id), oldOSM);
-            }
-            lastId = id;
-          }
+          read(doc);
         }
       }
     } catch (ParserConfigurationException | SAXException | IOException e) {
