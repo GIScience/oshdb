@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb;
+package org.heigit.bigspatialdata.oshdb.util.test;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -8,15 +8,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
@@ -45,7 +54,7 @@ public class OSMXmlReader {
     public void run() {
       OSMXmlReader db = new OSMXmlReader();
 
-      Path testDataDir = Paths.get(getClass().getResource("/data").getPath());
+      Path testDataDir = Paths.get(getClass().getResource("data").getPath());
 
       db.add(testDataDir.resolve("relation/r4815251.osh.gz"));
 
@@ -108,21 +117,7 @@ public class OSMXmlReader {
     return relations;
   }
 
-  public void add(String... xml) {
-    try {
-      DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-
-      for (String s : xml) {
-        Document doc = dBuilder.parse(s);
-        read(doc);
-      }
-    } catch (ParserConfigurationException | SAXException | IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void read(Document doc) {
+  private void read(Document doc) throws IOException {
     long lastId = -1;
     long skipId = -1;
 
@@ -170,7 +165,11 @@ public class OSMXmlReader {
         for (Element m : iterableOf(ndList)) {
           long memId = attrAsLong(m, "ref");
           // members[idx++] = new OSMMemberWayIdOnly(memId);
-          members[idx++] = new OSMMember(memId, OSMType.NODE, 0);
+          OSHEntity data = null;
+          if (this.nodes.containsKey(memId)) {
+            data = OSHNode.build(this.nodes.get(memId));
+          }
+          members[idx++] = new OSMMember(memId, OSMType.NODE, 0, data);
         }
         // osm.setExtension(members);
         OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1), osm.getTimestamp(),
@@ -218,7 +217,26 @@ public class OSMXmlReader {
           }
 
           // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
-          members[idx++] = new OSMMember(memId, t, r.intValue());
+          OSHEntity data = null;
+          switch (t) {
+            case NODE:
+              if (this.nodes.containsKey(memId)) {
+                data = OSHNode.build(this.nodes().get(memId));
+              }
+              break;
+            case WAY:
+              Map<Long, OSHNode> wayNodes = new TreeMap<>();
+              for (OSMWay way : this.ways().get(memId)) {
+                for (OSMMember wayNode : way.getRefs()) {
+                  wayNodes.putIfAbsent(wayNode.getId(), (OSHNode)wayNode.getEntity());
+                }
+              }
+              if (this.ways().containsKey(memId)) {
+                data = OSHWay.build(this.ways().get(memId), wayNodes.values());
+              }
+              break;
+          }
+          members[idx++] = new OSMMember(memId, t, r.intValue(), data);
         }
         // osm.setExtension(members);
         OSMRelation oldOSM = new OSMRelation(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
@@ -229,12 +247,26 @@ public class OSMXmlReader {
     }
   }
 
-  public void add(Path... xml) {
+  public void add(String... xmlFileUrl) {
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-      for (Path p : xml) {
+      for (String p : xmlFileUrl) {
+        Document doc = dBuilder.parse(p);
+        read(doc);
+      }
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void add(Path... xmlFilePath) {
+    try {
+      DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+      for (Path p : xmlFilePath) {
         String extension = Files.getFileExtension(p.toString());
 
         try (InputStream fileStream = new BufferedInputStream(new FileInputStream(p.toFile()))) {
