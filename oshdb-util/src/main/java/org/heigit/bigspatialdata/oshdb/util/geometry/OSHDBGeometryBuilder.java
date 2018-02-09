@@ -70,11 +70,23 @@ public class OSHDBGeometryBuilder {
     }
     OSMRelation relation = (OSMRelation) entity;
     if (areaDecider.isArea(entity)) {
-      return OSHDBGeometryBuilder.getMultiPolygonGeometry(relation, timestamp, areaDecider);
+      try {
+        return OSHDBGeometryBuilder.getMultiPolygonGeometry(relation, timestamp, areaDecider);
+      } catch (IllegalArgumentException e) {
+        // fall back to geometry collection builder
+      }
     }
     /*
      * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
      */
+    return getGeometryCollectionGeometry(relation, timestamp, areaDecider);
+  }
+
+  private static Geometry getGeometryCollectionGeometry(
+      OSMRelation relation,
+      OSHDBTimestamp timestamp,
+      TagInterpreter areaDecider
+  ){
     GeometryFactory geometryFactory = new GeometryFactory();
     OSMMember[] relationMembers = relation.getMembers();
     Geometry[] geoms = new Geometry[relationMembers.length];
@@ -86,7 +98,7 @@ public class OSHDBGeometryBuilder {
         completeGeometry = false;
         LOG.info(
             "Member entity {}/{} of relation/{} missing, geometry could not be assembled fully.",
-            relationMembers[i].getType(), relationMembers[i].getId(), entity.getId()
+            relationMembers[i].getType(), relationMembers[i].getId(), relation.getId()
         );
       } else {
         geoms[i] = OSHDBGeometryBuilder.getGeometry(
@@ -105,16 +117,19 @@ public class OSHDBGeometryBuilder {
     }
   }
 
-  private static Geometry getMultiPolygonGeometry(OSMRelation entity, OSHDBTimestamp timestamp,
-      TagInterpreter tagInterpreter) {
+  private static Geometry getMultiPolygonGeometry(
+      OSMRelation relation,
+      OSHDBTimestamp timestamp,
+      TagInterpreter areaDecider
+  ) {
     GeometryFactory geometryFactory = new GeometryFactory();
 
     Stream<OSMWay> outerMembers =
-        entity.getMemberEntities(timestamp, tagInterpreter::isMultipolygonOuterMember)
+        relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember)
             .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
 
     Stream<OSMWay> innerMembers =
-        entity.getMemberEntities(timestamp, tagInterpreter::isMultipolygonInnerMember)
+        relation.getMemberEntities(timestamp, areaDecider::isMultipolygonInnerMember)
             .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
 
     OSMNode[][] outerLines =

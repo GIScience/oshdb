@@ -4,6 +4,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
@@ -15,10 +16,10 @@ import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
 import org.junit.Test;
 
 public class OSHDBGeometryBuilderTest {
-  OSMXmlReader reader = new OSMXmlReader();
+  private OSMXmlReader testData = new OSMXmlReader();
 
   public OSHDBGeometryBuilderTest() {
-    reader.add("./src/test/resources/geometryBuilder.osh");
+    testData.add("./src/test/resources/geometryBuilder.osh");
   }
 
   private OSHDBTimestamp toOSHDBTimestamp(String timeString) {
@@ -34,7 +35,7 @@ public class OSHDBGeometryBuilderTest {
 
   @Test
   public void testPointGetGeometry() {
-    OSMEntity entity = reader.nodes().get(1L).get(0);
+    OSMEntity entity = testData.nodes().get(1L).get(0);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, null);
     assertEquals(100, result.getCoordinates()[0].x, 100);
@@ -43,7 +44,7 @@ public class OSHDBGeometryBuilderTest {
 
   @Test
   public void testPointGetGeometryClipped() {
-    OSMEntity entity = reader.nodes().get(1L).get(0);
+    OSMEntity entity = testData.nodes().get(1L).get(0);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     // by bbox
     OSHDBBoundingBox clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 90.0);
@@ -64,7 +65,7 @@ public class OSHDBGeometryBuilderTest {
   @Test
   public void testWayGetGeometry() {
     // linestring
-    OSMEntity entity = reader.ways().get(1L).get(0);
+    OSMEntity entity = testData.ways().get(1L).get(0);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     TagInterpreter areaDecider = new FakeTagInterpreterAreaNever();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -76,7 +77,7 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(80.1, result.getCoordinates()[1].y, 0.00000001);
 
     // polygon
-    entity = reader.ways().get(2L).get(0);
+    entity = testData.ways().get(2L).get(0);
     areaDecider = new FakeTagInterpreterAreaAlways();
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("Polygon", result.getGeometryType());
@@ -85,7 +86,7 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(result.getCoordinates()[0].y, result.getCoordinates()[4].y, 0.00000001);
 
     // other timestamp -> changed member
-    entity = reader.ways().get(1L).get(0);
+    entity = testData.ways().get(1L).get(0);
     timestamp = toOSHDBTimestamp("2003-01-01");
     areaDecider = new FakeTagInterpreterAreaNever();
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -95,7 +96,7 @@ public class OSHDBGeometryBuilderTest {
   @Test
   public void testWayGetGeometryIncomplete() {
     // linestring with 3 node references, only 2 present
-    OSMEntity entity = reader.ways().get(3L).get(0);
+    OSMEntity entity = testData.ways().get(3L).get(0);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     TagInterpreter areaDecider = new FakeTagInterpreterAreaNever();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -103,13 +104,13 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(2, result.getNumPoints());
 
     // single noded way
-    entity = reader.ways().get(4L).get(0);
+    entity = testData.ways().get(4L).get(0);
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("Point", result.getGeometryType());
     assertEquals(false, result.isEmpty());
 
     // zero noded way
-    entity = reader.ways().get(5L).get(0);
+    entity = testData.ways().get(5L).get(0);
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals(true, result.isEmpty());
   }
@@ -117,7 +118,7 @@ public class OSHDBGeometryBuilderTest {
   @Test
   public void testRelationGetGeometry() {
     // simplest multipolygon
-    OSMEntity entity = reader.relations().get(1L).get(0);
+    OSMEntity entity = testData.relations().get(1L).get(0);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     TagInterpreter areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -131,6 +132,29 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(1, result.getNumGeometries());
     assertEquals(5, result.getGeometryN(0).getNumPoints());
   }
+
+  @Test
+  public void testRelationGetGeometryIncomplete() {
+    // multipolygon, missing ring
+    OSMEntity entity = testData.relations().get(2L).get(0);
+    OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
+    TagInterpreter areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("Polygon", result.getGeometryType());
+    assertEquals(1, result.getNumGeometries());
+
+    // multipolygon, incomplete ring
+    entity = testData.relations().get(3L).get(0);
+    result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("GeometryCollection", result.getGeometryType());
+    assertEquals(1, result.getNumGeometries());
+
+    // other relation, missing member
+    areaDecider = new FakeTagInterpreterAreaNever();
+    result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    assertEquals("GeometryCollection", result.getGeometryType());
+    assertEquals(1, result.getNumGeometries());
+  }
 }
 
 
@@ -143,6 +167,10 @@ abstract class FakeTagInterpreter extends TagInterpreter {
 class FakeTagInterpreterAreaAlways extends FakeTagInterpreter {
   @Override
   public boolean isArea(OSMEntity e) {
+    if (e instanceof OSMWay) {
+      OSMMember[] nds = ((OSMWay) e).getRefs();
+      return (nds.length >= 4 && nds[0].getId() == nds[nds.length - 1].getId());
+    }
     return true;
   }
 }
