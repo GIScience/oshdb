@@ -184,17 +184,18 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
     List<OSHDBTimestamp> timestamps = this._tstamps.get();
 
     S result = identitySupplier.get();
-    for (CellId cellId : this._getCellIds()) {
+    for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
       String sqlQuery = this._typeFilter.stream()
           .map(osmType -> TableNames.forOSMType(osmType)
               .map(tn -> tn.toString(this._oshdb.prefix())))
           .filter(Optional::isPresent).map(Optional::get)
-          .map(tn -> "(select data from " + tn + " where level = ?1 and id = ?2)")
+          .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
           .collect(Collectors.joining(" union all "));
       // fetch data from H2 DB
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
-      pstmt.setInt(1, cellId.getZoomLevel());
-      pstmt.setLong(2, cellId.getId());
+      pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
+      pstmt.setLong(2, cellIdRange.getLeft().getId());
+      pstmt.setLong(3, cellIdRange.getRight().getId());
 
       // execute statement
       ResultSet oshCellsRawData = pstmt.executeQuery();
@@ -234,17 +235,18 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
     List<OSHDBTimestamp> timestamps = this._tstamps.get();
 
     S result = identitySupplier.get();
-    for (CellId cellId : this._getCellIds()) {
+    for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
       String sqlQuery = this._typeFilter.stream()
           .map(osmType -> TableNames.forOSMType(osmType)
               .map(tn -> tn.toString(this._oshdb.prefix())))
           .filter(Optional::isPresent).map(Optional::get)
-          .map(tn -> "(select data from " + tn + " where level = ?1 and id = ?2)")
+          .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
           .collect(Collectors.joining(" union all "));
       // fetch data from H2 DB
       PreparedStatement pstmt = ((OSHDB_H2) this._oshdb).getConnection().prepareStatement(sqlQuery);
-      pstmt.setInt(1, cellId.getZoomLevel());
-      pstmt.setLong(2, cellId.getId());
+      pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
+      pstmt.setLong(2, cellIdRange.getLeft().getId());
+      pstmt.setLong(3, cellIdRange.getRight().getId());
 
       // execute statement
       ResultSet oshCellsRawData = pstmt.executeQuery();
