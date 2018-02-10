@@ -29,8 +29,7 @@ import java.util.stream.Collectors;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
-public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
-
+public abstract class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
   MapReducer<Pair<U, X>> _mapReducer;
 
   /**
@@ -46,10 +45,10 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
     ));
   }
 
-  // "copy/transform" constructor
-  MapAggregator(MapReducer<Pair<U, X>> mapReducer) {
-    this._mapReducer = mapReducer;
-  }
+  /**
+   * empty dummy constructor, used by MapAggregatorByTimestampAndIndex (which sets the _mapReducer property by itself)
+   */
+  MapAggregator() {}
 
   /**
    * Creates new mapAggregator object for a specific mapReducer that already contains an aggregation index.
@@ -61,14 +60,7 @@ public class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapR
    * @return
    */
   @Contract(pure = true)
-  protected <R> MapAggregator<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer) {
-    return new MapAggregator<>(mapReducer);
-  }
-
-  /**
-   * empty dummy constructor, used by MapBiAggregatorByTimestamps (which sets the _mapReducer property by itself)
-   */
-  MapAggregator() {}
+  protected abstract <R> MapAggregator<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer);
 
   // -----------------------------------------------------------------------------------------------
   // Filtering methods

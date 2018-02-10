@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndOtherIndex;
+import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -18,19 +18,24 @@ import java.util.*;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the second index used to group results
  */
-public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimestampAndOtherIndex<U>, X> implements MapAggregatorByTimestampsSettings<MapBiAggregatorByTimestamps<U, X>> {
-  private boolean _zerofill = true;
+public class MapAggregatorByTimestampAndIndex<U, X> extends MapAggregator<OSHDBTimestampAndIndex<U>, X> {
+  private boolean _zerofillTimestamps = true;
+  private Collection<U> _zerofillKeys = Collections.emptyList();
 
   /**
    * constructor that takes an existing mapAggregatorByTimestamps object and adds a second index to it.
    *
-   * @param timeMapAggregator already existing mapAggregatorByTimestamps object that should be aggregated by another index as well
+   * @param timeMapAggregator already existing mapAggregatorByTimestamps object that should be
+   *        aggregated by another index as well
    * @param indexer function that returns the index value by which to aggregate the results as well
    */
-  MapBiAggregatorByTimestamps(MapAggregatorByTimestamps<X> timeMapAggregator, SerializableFunction<X, U> indexer) {
+  MapAggregatorByTimestampAndIndex(
+      MapAggregatorByTimestamps<X> timeMapAggregator,
+      SerializableFunction<X, U> indexer
+    ) {
     super();
-    this._mapReducer = timeMapAggregator._mapReducer.map(data -> new MutablePair<OSHDBTimestampAndOtherIndex<U>, X>(
-        new OSHDBTimestampAndOtherIndex<U>(
+    this._mapReducer = timeMapAggregator._mapReducer.map(data -> new MutablePair<OSHDBTimestampAndIndex<U>, X>(
+        new OSHDBTimestampAndIndex<U>(
             data.getKey(),
             indexer.apply(data.getValue())
         ),
@@ -39,15 +44,16 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
   }
 
   // "copy/transform" constructor
-  private MapBiAggregatorByTimestamps(MapBiAggregatorByTimestamps obj, MapReducer<Pair<OSHDBTimestampAndOtherIndex<U>, X>> mapReducer) {
-    super(mapReducer);
-    this._zerofill = obj._zerofill;
+  private MapAggregatorByTimestampAndIndex(MapAggregatorByTimestampAndIndex obj, MapReducer<Pair<OSHDBTimestampAndIndex<U>, X>> mapReducer) {
+    this._mapReducer = mapReducer;
+    this._zerofillTimestamps = obj._zerofillTimestamps;
+    this._zerofillKeys = obj._zerofillKeys;
   }
 
   @Override
   @Contract(pure = true)
-  protected <R> MapBiAggregatorByTimestamps<U, R> copyTransform(MapReducer<Pair<OSHDBTimestampAndOtherIndex<U>, R>> mapReducer) {
-    return new MapBiAggregatorByTimestamps<>(this, mapReducer);
+  protected <R> MapAggregatorByTimestampAndIndex<U, R> copyTransform(MapReducer<Pair<OSHDBTimestampAndIndex<U>, R>> mapReducer) {
+    return new MapAggregatorByTimestampAndIndex<>(this, mapReducer);
   }
 
   /**
@@ -59,9 +65,23 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapBiAggregatorByTimestamps<U, X> zerofill(boolean zerofill) {
-    MapBiAggregatorByTimestamps<U, X> ret = this.copyTransform(this._mapReducer);
-    ret._zerofill = zerofill;
+  public MapAggregatorByTimestampAndIndex<U, X> zerofillTimestamps(boolean zerofill) {
+    MapAggregatorByTimestampAndIndex<U, X> ret = this.copyTransform(this._mapReducer);
+    ret._zerofillTimestamps = zerofill;
+    return ret;
+  }
+
+  /**
+   * Enables/Disables the zero-filling of otherwise empty entries in the result.
+   *
+   * @param zerofillKeys a collection of keys whose values should be filled with "zeros" if they
+   *        would otherwise not be present in the result
+   * @return a modified copy of this object (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapAggregatorByTimestampAndIndex<U, X> zerofillIndices(Collection<U> zerofillKeys) {
+    MapAggregatorByTimestampAndIndex<U, X> ret = this.copyTransform(this._mapReducer);
+    ret._zerofillKeys = zerofillKeys;
     return ret;
   }
 
@@ -90,9 +110,9 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    */
   @Override
   @Contract(pure = true)
-  public <S> SortedMap<OSHDBTimestampAndOtherIndex<U>, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    SortedMap<OSHDBTimestampAndOtherIndex<U>, S> result = super.reduce(identitySupplier, accumulator, combiner);
-    if (!this._zerofill) return result;
+  public <S> SortedMap<OSHDBTimestampAndIndex<U>, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    SortedMap<OSHDBTimestampAndIndex<U>, S> result = super.reduce(identitySupplier, accumulator, combiner);
+    if (!this._zerofillTimestamps && this._zerofillKeys.isEmpty()) return result;
     // fill nodata entries with "0"
     final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.get();
     // pop last element from timestamps list if we're dealing with OSMContributions (where the timestamps list defines n-1 time intervals)
@@ -102,12 +122,19 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
     (new TreeSet<>(result.keySet())).forEach(index -> {
       if (!seen.contains(index.getOtherIndex())) {
         timestamps.forEach(ts -> {
-          OSHDBTimestampAndOtherIndex<U> potentiallyMissingIndex = new OSHDBTimestampAndOtherIndex<>(ts, index.getOtherIndex());
+          OSHDBTimestampAndIndex<U> potentiallyMissingIndex = new OSHDBTimestampAndIndex<>(ts, index.getOtherIndex());
           result.putIfAbsent(potentiallyMissingIndex, identitySupplier.get());
         });
         seen.add(index.getOtherIndex());
       }
     });
+    TreeSet<U> zerofillKeys = new TreeSet<>(this._zerofillKeys);
+    zerofillKeys.removeAll(seen);
+    zerofillKeys.forEach(zerofillKey ->
+      timestamps.forEach(ts ->
+        result.put(new OSHDBTimestampAndIndex<>(ts, zerofillKey), identitySupplier.get())
+      )
+    );
     return result;
   }
 
@@ -124,7 +151,7 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * @param <U> an arbitrary data type, used for the index'es key items
    * @return a nested data structure, where for each index part there is a separate level of nested maps
    */
-  public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest_IndexThenTime(Map<OSHDBTimestampAndOtherIndex<U>, A> result) {
+  public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest_IndexThenTime(Map<OSHDBTimestampAndIndex<U>, A> result) {
     TreeMap<U, SortedMap<OSHDBTimestamp, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
       if (!ret.containsKey(index.getOtherIndex()))
@@ -147,7 +174,7 @@ public class MapBiAggregatorByTimestamps<U, X> extends MapAggregator<OSHDBTimest
    * @param <U> an arbitrary data type, used for the index'es key items
    * @return a nested data structure, where for each index part there is a separate level of nested maps
    */
-  public static <A,U> SortedMap<OSHDBTimestamp, SortedMap<U, A>> nest_TimeThenIndex(Map<OSHDBTimestampAndOtherIndex<U>, A> result) {
+  public static <A,U> SortedMap<OSHDBTimestamp, SortedMap<U, A>> nest_TimeThenIndex(Map<OSHDBTimestampAndIndex<U>, A> result) {
     TreeMap<OSHDBTimestamp, SortedMap<U, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
       if (!ret.containsKey(index.getTimeIndex()))

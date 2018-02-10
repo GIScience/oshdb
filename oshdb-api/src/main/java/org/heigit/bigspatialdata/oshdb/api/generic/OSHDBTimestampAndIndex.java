@@ -7,10 +7,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
-public class OSHDBTimestampAndOtherIndex<V> implements Comparable<OSHDBTimestampAndOtherIndex>, Serializable {
+public class OSHDBTimestampAndIndex<V> implements Comparable<OSHDBTimestampAndIndex>, Serializable {
   private Pair<V, OSHDBTimestamp> _payload;
 
-  public OSHDBTimestampAndOtherIndex(OSHDBTimestamp timeIndex, V otherIndex) {
+  public OSHDBTimestampAndIndex(OSHDBTimestamp timeIndex, V otherIndex) {
     this._payload = new ImmutablePair<>(otherIndex, timeIndex);
   }
 
@@ -23,7 +23,7 @@ public class OSHDBTimestampAndOtherIndex<V> implements Comparable<OSHDBTimestamp
   }
 
   @Override
-  public int compareTo(@NotNull OSHDBTimestampAndOtherIndex o) {
+  public int compareTo(@NotNull OSHDBTimestampAndIndex o) {
     return this._payload.compareTo(o._payload);
   }
 

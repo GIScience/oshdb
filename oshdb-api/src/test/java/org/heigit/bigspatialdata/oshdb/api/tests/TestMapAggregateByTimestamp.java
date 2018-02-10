@@ -160,10 +160,23 @@ public class TestMapAggregateByTimestamp {
     SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
         .aggregateByTimestamp(ignored -> timestamps1.get().get(0))
+        .zerofill(true)
         .sum(snapshot -> 1);
 
     assertEquals(72, resultCustom.entrySet().size());
     assertEquals(1, resultCustom.entrySet().stream().filter(entry -> entry.getValue() > 0).count());
+  }
+
+  @Test
+  public void testOSMEntitySnapshotZerofill() throws Exception {
+    // disable zerofilling -> timestamps without results should not be present in result
+    SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp(ignored -> timestamps1.get().get(0))
+        .zerofill(false)
+        .sum(snapshot -> 1);
+
+    assertEquals(1, resultCustom.entrySet().size());
   }
 
 }

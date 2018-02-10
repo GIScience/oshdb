@@ -1,27 +1,24 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.SortedMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.jetbrains.annotations.Contract;
 
-import java.util.*;
-
-
 /**
- * A special variant of a MapAggregator, with improved handling of timestamp-based aggregation:
- *
- * It automatically fills timestamps with no data with "zero"s (which for example results in 0's in the case os `sum()` or `count()`, or `NaN` when using `average()`).
+ * …
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements Mappable<X>, MapAggregatable<MapAggregatorByTimestampAndIndex<? extends Comparable, X>, X> {
-  private boolean _zerofill = true;
+public class MapAggregatorByIndex<U extends Comparable, X> extends MapAggregator<U, X> implements Mappable<X>/*, MapAggregatorByTimestampsSettings<MapAggregatorByIndex<U, X>>, MapAggregatable<MapAggregatorByTimestampAndIndex<U, X>, X>*/ {
+  private Collection<U> _zerofill = Collections.emptyList();
 
   /**
    * basic constructor
@@ -29,34 +26,33 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * @param mapReducer mapReducer object which will be doing all actual calculations
    * @param indexer function that returns the timestamp value into which to aggregate the respective result
    */
-  MapAggregatorByTimestamps(MapReducer<X> mapReducer, SerializableFunction<X, OSHDBTimestamp> indexer) {
+  MapAggregatorByIndex(MapReducer<X> mapReducer, SerializableFunction<X, U> indexer) {
     super(mapReducer, indexer);
   }
 
   // "copy/transform" constructor
-  private MapAggregatorByTimestamps(MapAggregatorByTimestamps obj, MapReducer<Pair<OSHDBTimestamp, X>> mapReducer) {
+  private MapAggregatorByIndex(MapAggregatorByIndex obj, MapReducer<Pair<U, X>> mapReducer) {
     this._mapReducer = mapReducer;
     this._zerofill = obj._zerofill;
   }
 
   @Override
   @Contract(pure = true)
-  protected <R> MapAggregatorByTimestamps<R> copyTransform(MapReducer<Pair<OSHDBTimestamp, R>> mapReducer) {
-    return new MapAggregatorByTimestamps<>(this, mapReducer);
+  protected <R> MapAggregatorByIndex<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer) {
+    return new MapAggregatorByIndex<>(this, mapReducer);
   }
 
   /**
-   * Enables/Disables the zero-filling feature of otherwise empty timestamp entries in the result.
+   * Enables/Disables the zero-filling of otherwise empty entries in the result.
    *
-   * This feature is enabled by default, and can be disabled by calling this function with a value of `false`.
-   *
-   * @param zerofill the enabled/disabled state of the zero-filling feature
+   * @param zerofillKeys a collection of keys whose values should be filled with "zeros" if they
+   *        would otherwise not be present in the result
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregatorByTimestamps<X> zerofill(boolean zerofill) {
-    MapAggregatorByTimestamps<X> ret = this.copyTransform(this._mapReducer);
-    ret._zerofill = zerofill;
+  public MapAggregatorByIndex<U, X> zerofill(Collection<U> zerofillKeys) {
+    MapAggregatorByIndex<U, X> ret = this.copyTransform(this._mapReducer);
+    ret._zerofill = zerofillKeys;
     return ret;
   }
 
@@ -67,8 +63,8 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    */
   @Override
   @Contract(pure = true)
-  public <R> MapAggregatorByTimestamps<R> map(SerializableFunction<X, R> mapper) {
-    return (MapAggregatorByTimestamps<R>)super.map(mapper);
+  public <R> MapAggregatorByIndex<U, R> map(SerializableFunction<X, R> mapper) {
+    return (MapAggregatorByIndex<U, R>)super.map(mapper);
   }
 
   /**
@@ -79,8 +75,8 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    */
   @Override
   @Contract(pure = true)
-  public <R> MapAggregatorByTimestamps<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
-    return (MapAggregatorByTimestamps<R>)super.flatMap(flatMapper);
+  public <R> MapAggregatorByIndex<U, R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
+    return (MapAggregatorByIndex<U, R>)super.flatMap(flatMapper);
   }
 
   /**
@@ -90,8 +86,8 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    */
   @Override
   @Contract(pure = true)
-  public MapAggregatorByTimestamps<X> filter(SerializablePredicate<X> f) {
-    return (MapAggregatorByTimestamps<X>)super.filter(f);
+  public MapAggregatorByIndex<U, X> filter(SerializablePredicate<X> f) {
+    return (MapAggregatorByIndex<U, X>)super.filter(f);
   }
 
   /**
@@ -119,31 +115,24 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    */
   @Override
   @Contract(pure = true)
-  public <S> SortedMap<OSHDBTimestamp, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    SortedMap<OSHDBTimestamp, S> result = super.reduce(identitySupplier, accumulator, combiner);
-    if (!this._zerofill) return result;
+  public <S> SortedMap<U, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+    SortedMap<U, S> result = super.reduce(identitySupplier, accumulator, combiner);
+    if (this._zerofill.isEmpty()) return result;
     // fill nodata entries with "0"
-    final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.get();
-    // pop last element from timestamps list if we're dealing with OSMContributions (where the timestamps list defines n-1 time intervals)
-    if (this._mapReducer._forClass.equals(OSMContribution.class))
-      timestamps.remove(timestamps.size()-1);
-    timestamps.forEach(ts -> result.putIfAbsent(ts, identitySupplier.get()));
+    for (U zerofillKey : this._zerofill) {
+      if (!result.containsKey(zerofillKey)) {
+        result.put(zerofillKey, identitySupplier.get());
+      }
+    }
     return result;
   }
 
   /**
-   * Aggregates the results by a second index as well, in addition to the timestamps.
-   *
-   * @param indexer a function the returns the values that should be used as an additional index on
-   *        the aggregated results
-   * @param <U> the (arbitrary) data type of this index
-   * @return a special MapAggregator object that performs aggregation by two separate indices
+   * …
    */
   @Contract(pure = true)
-  public <U extends Comparable> MapAggregatorByTimestampAndIndex<U, X> aggregateBy(
-      SerializableFunction<X, U> indexer
-  ) {
-    return new MapAggregatorByTimestampAndIndex<U, X>(this, indexer)
-        .zerofillTimestamps(this._zerofill);
+  public MapAggregatorByTimestampAndIndex<U, X> aggregateByTimestamps() {
+    throw new UnsupportedOperationException("aggregateByTimestamps not yet implemented / try aggregating the other way around");
+    //return new MapAggregatorByTimestampAndIndex<U, X>(this, /*timeIndexer*/).zerofillTimestamps(this._zerofill);
   }
 }

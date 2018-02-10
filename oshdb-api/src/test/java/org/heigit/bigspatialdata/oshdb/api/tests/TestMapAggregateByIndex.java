@@ -7,6 +7,8 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapAggregatorByIndex;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapAggregatorByTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
@@ -22,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class TestMapAggregate {
+public class TestMapAggregateByIndex {
   private final OSHDB_Database oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
@@ -30,7 +32,7 @@ public class TestMapAggregate {
 
   private final double DELTA = 1e-8;
 
-  public TestMapAggregate() throws Exception {
+  public TestMapAggregateByIndex() throws Exception {
     oshdb = new OSHDB_H2("./src/test/resources/test-data");
   }
 
@@ -54,5 +56,20 @@ public class TestMapAggregate {
     assertEquals(1, result.entrySet().size());
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids
     assertEquals(5, result.get(617308093L).size());
+  }
+
+  @Test
+  public void testZerofill() throws Exception {
+    SortedMap<Long, Integer> result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .where(entity -> entity.getId() == 617308093)
+        .aggregateBy(contribution -> contribution.getEntityAfter().getId())
+        .zerofill(Collections.singletonList(-1L))
+        .count();
+
+    assertEquals(2, result.entrySet().size());
+    assertEquals(true, result.containsKey(-1L));
+    assertEquals(0, (int)result.get(-1L));
+    assertEquals(7, (int)result.get(617308093L));
   }
 }

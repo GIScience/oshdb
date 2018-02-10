@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.sql.Connection;
-import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
@@ -76,7 +75,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class MapReducer<X>
     implements MapReducerSettings<MapReducer<X>>, Mappable<X>, MapReducerAggregations<X>,
-    MapAggregatable<MapAggregator<? extends Comparable, X>, X>, Serializable {
+    MapAggregatable<MapAggregatorByIndex<? extends Comparable, X>, X>, Serializable {
 
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
@@ -588,9 +587,10 @@ public abstract class MapReducer<X>
    *         etc.) of the current MapReducer object
    */
   @Contract(pure = true)
-  public <U extends Comparable> MapAggregator<U, X> aggregateBy(
-      SerializableFunction<X, U> indexer) {
-    return new MapAggregator<U, X>(this, indexer);
+  public <U extends Comparable> MapAggregatorByIndex<U, X> aggregateBy(
+      SerializableFunction<X, U> indexer
+  ) {
+    return new MapAggregatorByIndex<>(this, indexer);
   }
 
   /**
@@ -683,7 +683,7 @@ public abstract class MapReducer<X>
         timeBinIndex = -timeBinIndex - 2;
       }
       return timestamps.get(timeBinIndex);
-    });
+    }).zerofill(false);
   }
 
   // -----------------------------------------------------------------------------------------------
