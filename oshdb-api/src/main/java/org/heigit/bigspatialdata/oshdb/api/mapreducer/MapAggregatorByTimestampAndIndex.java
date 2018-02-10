@@ -114,10 +114,10 @@ public class MapAggregatorByTimestampAndIndex<U, X> extends MapAggregator<OSHDBT
     SortedMap<OSHDBTimestampAndIndex<U>, S> result = super.reduce(identitySupplier, accumulator, combiner);
     if (!this._zerofillTimestamps && this._zerofillKeys.isEmpty()) return result;
     // fill nodata entries with "0"
-    final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.get();
+    final SortedSet<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.get();
     // pop last element from timestamps list if we're dealing with OSMContributions (where the timestamps list defines n-1 time intervals)
     if (this._mapReducer._forClass.equals(OSMContribution.class))
-      timestamps.remove(timestamps.size()-1);
+      timestamps.remove(timestamps.last());
     HashSet<U> seen = new HashSet<>();
     (new TreeSet<>(result.keySet())).forEach(index -> {
       if (!seen.contains(index.getOtherIndex())) {

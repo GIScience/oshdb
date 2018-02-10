@@ -5,6 +5,7 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import com.google.common.collect.Iterables;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -83,7 +84,7 @@ public class TestCollect {
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
         .collect();
-    assertEquals(14, result.get(timestamps72.get().get(60)).size());
+    assertEquals(14, result.get(Iterables.get(timestamps72.get(), 60)).size());
   }
 
 }

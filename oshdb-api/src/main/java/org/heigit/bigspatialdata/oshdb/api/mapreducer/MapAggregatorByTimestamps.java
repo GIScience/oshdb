@@ -123,10 +123,11 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
     SortedMap<OSHDBTimestamp, S> result = super.reduce(identitySupplier, accumulator, combiner);
     if (!this._zerofill) return result;
     // fill nodata entries with "0"
-    final List<OSHDBTimestamp> timestamps = this._mapReducer._tstamps.get();
-    // pop last element from timestamps list if we're dealing with OSMContributions (where the timestamps list defines n-1 time intervals)
+    final SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._mapReducer._tstamps.get());
+    // pop last element from timestamps list if we're dealing with OSMContributions (where the
+    // timestamps list defines n-1 time intervals)
     if (this._mapReducer._forClass.equals(OSMContribution.class))
-      timestamps.remove(timestamps.size()-1);
+      timestamps.remove(timestamps.last());
     timestamps.forEach(ts -> result.putIfAbsent(ts, identitySupplier.get()));
     return result;
   }

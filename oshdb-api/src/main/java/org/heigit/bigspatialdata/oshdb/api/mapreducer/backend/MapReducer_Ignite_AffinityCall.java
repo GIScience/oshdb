@@ -66,10 +66,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(
-        this._tstamps.get().get(0),
-        this._tstamps.get().get(this._tstamps.get().size() - 1)
-    );
+    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -112,10 +109,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(
-        this._tstamps.get().get(0),
-        this._tstamps.get().get(this._tstamps.get().size() - 1)
-    );
+    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -134,7 +128,6 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
             List<OSMContribution> contributions = new ArrayList<>();
-            List<OSHDBTimestamp> tstamps = this._tstamps.get();
             cellIterator.iterateAll(oshEntityCell, timestampInterval)
                 .forEach(contribution -> {
                   OSMContribution thisContribution =
@@ -175,7 +168,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    List<OSHDBTimestamp> timestamps = this._tstamps.get();
+    SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -217,7 +210,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    List<OSHDBTimestamp> timestamps = this._tstamps.get();
+    SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 

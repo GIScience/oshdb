@@ -80,6 +80,7 @@ public class TestMapAggregateByTimestamp {
     SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .aggregateByTimestamp(OSMContribution::getTimestamp)
+        .zerofill(true)
         .sum(contribution -> 1);
 
     assertEquals(resultAuto.entrySet().size(), resultCustom.entrySet().size());
@@ -96,7 +97,7 @@ public class TestMapAggregateByTimestamp {
     // most basic custom timestamp index possible -> map all to one single timestamp
     SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .aggregateByTimestamp(ignored -> timestamps1.get().get(0))
+        .aggregateByTimestamp(ignored -> timestamps1.get().first())
         .sum(snapshot -> 1);
 
     assertEquals(71, resultCustom.entrySet().size());
@@ -159,8 +160,7 @@ public class TestMapAggregateByTimestamp {
     // most basic custom timestamp index possible -> map all to one single timestamp
     SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .aggregateByTimestamp(ignored -> timestamps1.get().get(0))
-        .zerofill(true)
+        .aggregateByTimestamp(ignored -> timestamps1.get().first())
         .sum(snapshot -> 1);
 
     assertEquals(72, resultCustom.entrySet().size());
@@ -172,7 +172,7 @@ public class TestMapAggregateByTimestamp {
     // disable zerofilling -> timestamps without results should not be present in result
     SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .aggregateByTimestamp(ignored -> timestamps1.get().get(0))
+        .aggregateByTimestamp(ignored -> timestamps1.get().first())
         .zerofill(false)
         .sum(snapshot -> 1);
 

@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
@@ -54,10 +55,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(
-        this._tstamps.get().get(0),
-        this._tstamps.get().get(this._tstamps.get().size() - 1)
-    );
+    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
@@ -109,10 +107,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(
-        this._tstamps.get().get(0),
-        this._tstamps.get().get(this._tstamps.get().size() - 1)
-    );
+    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
@@ -181,7 +176,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    List<OSHDBTimestamp> timestamps = this._tstamps.get();
+    SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
@@ -232,7 +227,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    List<OSHDBTimestamp> timestamps = this._tstamps.get();
+    SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {

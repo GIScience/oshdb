@@ -103,7 +103,7 @@ public class CellIterator implements Serializable {
    *         geometries later on in the code.
    */
   public Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
-      GridOSHEntity cell, List<OSHDBTimestamp> timestamps
+      GridOSHEntity cell, SortedSet<OSHDBTimestamp> timestamps
   ) {
     List<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
 
@@ -277,6 +277,10 @@ public class CellIterator implements Serializable {
     public TimestampInterval(OSHDBTimestamp fromTimestamp, OSHDBTimestamp toTimestamp) {
       this.fromTimestamp = fromTimestamp;
       this.toTimestamp = toTimestamp;
+    }
+
+    public TimestampInterval(SortedSet<OSHDBTimestamp> oshdbTimestamps) {
+      this(oshdbTimestamps.first(), oshdbTimestamps.last());
     }
 
     public boolean intersects(TimestampInterval other) {

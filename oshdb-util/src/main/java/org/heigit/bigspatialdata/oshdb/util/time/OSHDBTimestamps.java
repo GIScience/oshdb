@@ -91,18 +91,19 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
    *
    * @return a list of unix timestamps (measured in seconds)
    */
-  public List<OSHDBTimestamp> get() {
+  public SortedSet<OSHDBTimestamp> get() {
     if (period != null) {
-      return _getTimestampsAsEpochSeconds(start, end, period).stream().map(OSHDBTimestamp::new).collect(Collectors.toList());
+      return new TreeSet<>(
+          _getTimestampsAsEpochSeconds(start, end, period).stream().map(OSHDBTimestamp::new).collect(Collectors.toList())
+      );
     } else {
-      List<OSHDBTimestamp> timestamps = new ArrayList<>(2);
+      SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
       try {
         timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(start).toEpochSecond()));
         if (start.equals(end)) return timestamps;
         timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(end).toEpochSecond()));
       } catch (Exception e) {
-        LOG.error(e.getMessage());
-        return Collections.emptyList();
+        LOG.error("Unable to parse timestamp string, skipping: " + e.getMessage());
       }
       return timestamps;
     }

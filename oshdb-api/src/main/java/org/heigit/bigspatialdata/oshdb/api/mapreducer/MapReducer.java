@@ -292,7 +292,7 @@ public abstract class MapReducer<X>
    */
   @Contract(pure = true)
   public MapReducer<X> timestamps(String isoDateFirst, String... isoDateMore) {
-    List<OSHDBTimestamp> timestamps = new ArrayList<>(2 + isoDateMore.length);
+    SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
     try {
       timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(isoDateFirst).toEpochSecond()));
       for (String isoDate : isoDateMore) {
@@ -301,7 +301,6 @@ public abstract class MapReducer<X>
     } catch (Exception e) {
       LOG.error("unable to parse ISO date string: " + e.getMessage());
     }
-    Collections.sort(timestamps);
     return this.timestamps(() -> timestamps);
   }
 
@@ -617,19 +616,11 @@ public abstract class MapReducer<X>
       );
     }
 
-    // by timestamp indexing function -> for some data views we need to match the input data to the
-    // list
+    // by timestamp indexing function -> for some views we need to match the input data to the list
     SerializableFunction<X, OSHDBTimestamp> indexer;
     if (this._forClass.equals(OSMContribution.class)) {
-      final List<OSHDBTimestamp> timestamps = this._tstamps.get();
-      indexer = data -> {
-        int timeBinIndex =
-            Collections.binarySearch(timestamps, ((OSMContribution) data).getTimestamp());
-        if (timeBinIndex < 0) {
-          timeBinIndex = -timeBinIndex - 2;
-        }
-        return timestamps.get(timeBinIndex);
-      };
+      final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._tstamps.get());
+      indexer = data -> timestamps.floor(((OSMContribution) data).getTimestamp());
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       indexer = data -> ((OSMEntitySnapshot) data).getTimestamp();
     } else {
@@ -675,15 +666,11 @@ public abstract class MapReducer<X>
    * filters, map function, etc.) of the current MapReducer object
    */
   public MapAggregatorByTimestamps<X> aggregateByTimestamp(SerializableFunction<X, OSHDBTimestamp> indexer) throws UnsupportedOperationException {
-    final List<OSHDBTimestamp> timestamps = this._tstamps.get();
+    final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._tstamps.get());
     return new MapAggregatorByTimestamps<X>(this, data -> {
       // match timestamps to the given timestamp list
-      int timeBinIndex = Collections.binarySearch(timestamps, indexer.apply(data));
-      if (timeBinIndex < 0) {
-        timeBinIndex = -timeBinIndex - 2;
-      }
-      return timestamps.get(timeBinIndex);
-    }).zerofill(false);
+      return timestamps.floor(indexer.apply(data));
+    });
   }
 
   // -----------------------------------------------------------------------------------------------
