@@ -283,18 +283,25 @@ public abstract class MapReducer<X>
   /**
    * Sets multiple arbitrary timestamps for which to perform the analysis.
    *
+   * Note for programmers wanting to use this method to supply an arbitrary number (n>=1) of
+   * timestamps: You may supply the same time string multiple times, which will be de-duplicated
+   * internally. E.g. you can call the method like this:
+   *   .timestamps(dateArr[0], dateArr[0], dateArr)
+   *
    * See {@link #timestamps(OSHDBTimestampList)} for further information.
    *
    * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
+   * @param isoDateFirst an ISO 8601 date string representing the second date of the analysis
    * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the
    *        analysis
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> timestamps(String isoDateFirst, String... isoDateMore) {
+  public MapReducer<X> timestamps(String isoDateFirst, String isoDateSecond, String... isoDateMore) {
     SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
     try {
       timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(isoDateFirst).toEpochSecond()));
+      timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(isoDateSecond).toEpochSecond()));
       for (String isoDate : isoDateMore) {
         timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(isoDate).toEpochSecond()));
       }
