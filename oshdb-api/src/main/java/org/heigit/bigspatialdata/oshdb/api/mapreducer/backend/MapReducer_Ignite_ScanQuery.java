@@ -348,14 +348,13 @@ class Ignite_ScanQuery_Helper {
         )).setPartition(part), cacheEntry -> {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          cellIterator.iterateByTimestamps(oshEntityCell, tstamps)
-              .forEach(result -> result.forEach((timestamp, entityGeometry) -> {
-                Geometry geometry = entityGeometry.getRight();
-                OSMEntity entity = entityGeometry.getLeft();
-                OSMEntitySnapshot snapshot = new OSMEntitySnapshot(timestamp, geometry, entity);
-                // immediately fold the result
-                accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
-              }));
+          cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(
+                data.timestamp, data.geometry, data.osmEntity
+            );
+            // immediately fold the result
+            accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
+          });
           return accInternal.get();
         })) {
           S accExternal = identitySupplier.get();
@@ -400,19 +399,28 @@ class Ignite_ScanQuery_Helper {
         )).setPartition(part), cacheEntry -> {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          cellIterator.iterateByTimestamps(oshEntityCell, tstamps)
-              .forEach(snapshots -> {
-                List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());
-                snapshots.forEach((timestamp, value) -> {
-                  Geometry geometry = value.getRight();
-                  OSMEntity entity = value.getLeft();
-                  osmEntitySnapshots.add(new OSMEntitySnapshot(timestamp, geometry, entity));
-                });
-                // immediately fold the results
-                for (R r : mapper.apply(osmEntitySnapshots)) {
-                  accInternal.set(accumulator.apply(accInternal.get(), r));
-                }
-              });
+          List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
+          cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+            OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(
+                data.timestamp, data.geometry, data.osmEntity
+            );
+            if (osmEntitySnapshots.size() > 0
+                && thisSnapshot.getEntity().getId() != osmEntitySnapshots
+                .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
+              // immediately fold the results
+              for (R r : mapper.apply(osmEntitySnapshots)) {
+                accInternal.set(accumulator.apply(accInternal.get(), r));
+              }
+              osmEntitySnapshots.clear();
+            }
+            osmEntitySnapshots.add(thisSnapshot);
+          });
+          // apply mapper and fold results one more time for last entity in current cell
+          if (osmEntitySnapshots.size() > 0) {
+            for (R r : mapper.apply(osmEntitySnapshots)) {
+              accInternal.set(accumulator.apply(accInternal.get(), r));
+            }
+          }
           return accInternal.get();
         })) {
           S accExternal = identitySupplier.get();

@@ -239,14 +239,13 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     }).map(oshCell -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByTimestamps(oshCell, timestamps)
-          .forEach(result -> result.forEach((timestamp, value) -> {
-            Geometry geometry = value.getRight();
-            OSMEntity entity = value.getLeft();
-            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(timestamp, geometry, entity);
-            // immediately fold the result
-            accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
-          }));
+      cellIterator.iterateByTimestamps(oshCell, timestamps).forEach(data -> {
+        OSMEntitySnapshot snapshot = new OSMEntitySnapshot(
+            data.timestamp, data.geometry, data.osmEntity
+        );
+        // immediately fold the result
+        accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
+      });
       return accInternal.get();
     }).reduce(identitySupplier.get(), combiner);
   }
@@ -298,18 +297,28 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     }).map(oshCell -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByTimestamps(oshCell, timestamps).forEach(snapshots -> {
-            List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>(snapshots.size());
-            snapshots.forEach((timestamp, value) -> {
-              Geometry geometry = value.getRight();
-              OSMEntity entity = value.getLeft();
-              osmEntitySnapshots.add(new OSMEntitySnapshot(timestamp, geometry, entity));
-            });
-            // immediately fold the results
-            for (R r : mapper.apply(osmEntitySnapshots)) {
-              accInternal.set(accumulator.apply(accInternal.get(), r));
-            }
-          });
+      List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
+      cellIterator.iterateByTimestamps(oshCell, timestamps).forEach(data -> {
+        OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(
+            data.timestamp, data.geometry, data.osmEntity
+        );
+        if (osmEntitySnapshots.size() > 0
+            && thisSnapshot.getEntity().getId() != osmEntitySnapshots
+            .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
+          // immediately fold the results
+          for (R r : mapper.apply(osmEntitySnapshots)) {
+            accInternal.set(accumulator.apply(accInternal.get(), r));
+          }
+          osmEntitySnapshots.clear();
+        }
+        osmEntitySnapshots.add(thisSnapshot);
+      });
+      // apply mapper and fold results one more time for last entity in current cell
+      if (osmEntitySnapshots.size() > 0) {
+        for (R r : mapper.apply(osmEntitySnapshots)) {
+          accInternal.set(accumulator.apply(accInternal.get(), r));
+        }
+      }
       return accInternal.get();
     }).reduce(identitySupplier.get(), (cur, acc) -> {
       return combiner.apply(acc, cur);

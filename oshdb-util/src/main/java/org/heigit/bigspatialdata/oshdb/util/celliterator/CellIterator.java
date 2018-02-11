@@ -89,6 +89,18 @@ public class CellIterator implements Serializable {
     this.includeOldStyleMultipolygons = includeOldStyleMultipolygons;
   }
 
+  public static class IterateByTimestampEntry {
+    public final OSHDBTimestamp timestamp;
+    public final OSMEntity osmEntity;
+    public final Geometry geometry;
+
+    IterateByTimestampEntry(OSHDBTimestamp timestamp, OSMEntity entity, Geometry geom) {
+      this.timestamp = timestamp;
+      this.osmEntity = entity;
+      this.geometry = geom;
+    }
+  }
+
   /**
    * Helper method to easily iterate over all entities in a cell that match a given condition/filter
    * as they existed at the given timestamps.
@@ -102,10 +114,10 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> iterateByTimestamps(
+  public Stream<IterateByTimestampEntry> iterateByTimestamps(
       GridOSHEntity cell, SortedSet<OSHDBTimestamp> timestamps
   ) {
-    List<SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>>> results = new ArrayList<>();
+    List<IterateByTimestampEntry> results = new LinkedList<>();
 
     boolean allFullyInside = false;
     if (isBoundByPolygon) {
@@ -162,7 +174,6 @@ public class CellIterator implements Serializable {
 
       SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
           oshEntity.getByTimestamps(new ArrayList<>(queryTs.keySet()));
-      SortedMap<OSHDBTimestamp, Pair<OSMEntity, Geometry>> oshResult = new TreeMap<>();
 
       osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
@@ -236,12 +247,11 @@ public class CellIterator implements Serializable {
           }
 
           if (geom != null && !geom.isEmpty()) {
-            Pair<OSMEntity, Geometry> result = new ImmutablePair<>(osmEntity, geom);
-            oshResult.put(timestamp, result);
+            results.add(new IterateByTimestampEntry(timestamp, osmEntity, geom));
             // add skipped timestamps (where nothing has changed from the last timestamp) to set of
             // results
             for (OSHDBTimestamp additionalTimestamp : queryTs.get(timestamp)) {
-              oshResult.put(additionalTimestamp, result);
+              results.add(new IterateByTimestampEntry(additionalTimestamp, osmEntity, geom));
             }
           }
         } catch (UnsupportedOperationException err) {
@@ -255,10 +265,6 @@ public class CellIterator implements Serializable {
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
               err.toString());
         }
-      }
-
-      if (oshResult.size() > 0) {
-        results.add(oshResult);
       }
     }
 
