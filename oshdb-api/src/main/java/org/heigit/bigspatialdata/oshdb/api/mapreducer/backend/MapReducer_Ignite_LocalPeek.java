@@ -258,7 +258,7 @@ class Ignite_LocalPeek_Helper {
               return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
+            cellIterator.iterateByContribution(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
                 .forEach(contribution -> {
                   if (this.canceled)
                     return;
@@ -299,7 +299,7 @@ class Ignite_LocalPeek_Helper {
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
             List<OSMContribution> contributions = new ArrayList<>();
-            cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
+            cellIterator.iterateByContribution(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
                 .forEach(contribution -> {
                   if (this.canceled)
                     return;

@@ -63,7 +63,7 @@ public class IterateAllTest {
           oshEntity -> oshEntity.getId() == 617308093,
           osmEntity -> true,
           false
-      )).iterateAll(
+      )).iterateByContribution(
           oshCellRawData,
           new TimestampInterval(new OSHDBTimestamp(1325376000L), new OSHDBTimestamp(1516375698L))
       ).collect(Collectors.toList());

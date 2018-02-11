@@ -340,7 +340,9 @@ public class CellIterator implements Serializable {
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, TimestampInterval timeInterval) {
+  public Stream<IterateAllEntry> iterateByContribution(
+      GridOSHEntity cell, TimestampInterval timeInterval
+  ) {
     List<IterateAllEntry> results = new LinkedList<>();
 
     boolean allFullyInside = false;
@@ -604,5 +606,13 @@ public class CellIterator implements Serializable {
 
     // return as an obj stream
     return results.stream();
+  }
+
+  /**
+   * @deprecated renamed to {@link #iterateByContribution(GridOSHEntity, TimestampInterval)}
+   */
+  @Deprecated
+  public Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, TimestampInterval timeInterval) {
+    return this.iterateByContribution(cell, timeInterval);
   }
 }

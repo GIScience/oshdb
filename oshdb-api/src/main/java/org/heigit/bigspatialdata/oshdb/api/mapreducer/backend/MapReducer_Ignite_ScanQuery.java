@@ -222,7 +222,7 @@ class Ignite_ScanQuery_Helper {
           // iterate over the history of all OSM objects in the current cell
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
+          cellIterator.iterateByContribution(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
               .forEach(contribution -> {
                 OSMContribution osmContribution =
                     new OSMContribution(contribution.timestamp,
@@ -279,7 +279,7 @@ class Ignite_ScanQuery_Helper {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           List<OSMContribution> contributions = new ArrayList<>();
-          cellIterator.iterateAll(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
+          cellIterator.iterateByContribution(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
               .forEach(contribution -> {
                 OSMContribution thisContribution =
                     new OSMContribution(contribution.timestamp,

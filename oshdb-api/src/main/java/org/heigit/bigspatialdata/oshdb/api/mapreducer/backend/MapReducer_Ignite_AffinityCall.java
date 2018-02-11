@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Geometry;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,10 +18,8 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.TimestampInterval;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.TableNames;
@@ -84,7 +81,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
               return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            cellIterator.iterateAll(oshEntityCell, timestampInterval)
+            cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
                 .forEach(contribution -> {
                   OSMContribution osmContribution =
                       new OSMContribution(contribution.timestamp,
@@ -128,7 +125,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
             List<OSMContribution> contributions = new ArrayList<>();
-            cellIterator.iterateAll(oshEntityCell, timestampInterval)
+            cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
                 .forEach(contribution -> {
                   OSMContribution thisContribution =
                       new OSMContribution(contribution.timestamp,

@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import com.vividsolutions.jts.geom.Geometry;
 import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +23,6 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.TimestampInterval;
@@ -83,7 +81,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
-        cellIterator.iterateAll(oshCellRawData, timestampInterval)
+        cellIterator.iterateByContribution(oshCellRawData, timestampInterval)
             .forEach(contribution -> {
               OSMContribution osmContribution = new OSMContribution(
                   contribution.timestamp,
@@ -136,7 +134,7 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
         List<OSMContribution> contributions = new ArrayList<>();
-        cellIterator.iterateAll(oshCellRawData, timestampInterval)
+        cellIterator.iterateByContribution(oshCellRawData, timestampInterval)
             .forEach(contribution -> {
               OSMContribution thisContribution = new OSMContribution(
                   contribution.timestamp,

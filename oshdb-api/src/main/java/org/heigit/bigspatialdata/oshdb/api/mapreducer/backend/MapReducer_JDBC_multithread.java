@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import com.vividsolutions.jts.geom.Geometry;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
@@ -27,9 +26,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.TimestampInterval;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.jetbrains.annotations.NotNull;
@@ -102,7 +99,7 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
     }).map(oshCell -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateAll(oshCell, timestampInterval)
+      cellIterator.iterateByContribution(oshCell, timestampInterval)
           .forEach(contribution -> {
             OSMContribution osmContribution = new OSMContribution(
                 contribution.timestamp,
@@ -164,7 +161,7 @@ public class MapReducer_JDBC_multithread<X> extends MapReducer<X> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       List<OSMContribution> contributions = new ArrayList<>();
-      cellIterator.iterateAll(oshCell, timestampInterval)
+      cellIterator.iterateByContribution(oshCell, timestampInterval)
           .forEach(contribution -> {
             OSMContribution thisContribution = new OSMContribution(
                 contribution.timestamp,
