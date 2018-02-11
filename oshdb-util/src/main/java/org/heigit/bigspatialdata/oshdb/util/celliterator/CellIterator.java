@@ -92,9 +92,11 @@ public class CellIterator implements Serializable {
   public static class IterateByTimestampEntry {
     public final OSHDBTimestamp timestamp;
     public final OSMEntity osmEntity;
-    public final Geometry geometry;
+    public final LazyEvaluatedObject<Geometry> geometry;
 
-    IterateByTimestampEntry(OSHDBTimestamp timestamp, OSMEntity entity, Geometry geom) {
+    IterateByTimestampEntry(
+        OSHDBTimestamp timestamp, OSMEntity entity, LazyEvaluatedObject<Geometry> geom
+    ) {
       this.timestamp = timestamp;
       this.osmEntity = entity;
       this.geometry = geom;
@@ -212,16 +214,22 @@ public class CellIterator implements Serializable {
         }
 
         try {
-          Geometry geom;
+          LazyEvaluatedObject<Geometry> geom;
           if (!isOldStyleMultipolygon) {
             if (fullyInside) {
-              geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-            } else if (isBoundByPolygon) {
-              geom = fastPolygonClipper.intersection(
+              geom = new LazyEvaluatedObject<>(() ->
                   OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
               );
+            } else if (isBoundByPolygon) {
+              geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
+                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+              ));
             } else {
-              geom = OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter, boundingBox);
+              geom = new LazyEvaluatedObject<>(
+                  OSHDBGeometryBuilder.getGeometryClipped(
+                      osmEntity, timestamp, tagInterpreter, boundingBox
+                  )
+              );
             }
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
@@ -231,22 +239,27 @@ public class CellIterator implements Serializable {
             // inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
-            geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-            Polygon poly = (Polygon) geom;
-            Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
-            for (int i = 0; i < poly.getNumInteriorRing(); i++) {
-              interiorRings[i] =
-                  new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[] {}, gf);
-            }
-            geom = new MultiPolygon(interiorRings, gf);
-            if (!fullyInside) {
-              geom = isBoundByPolygon
-                  ? fastPolygonClipper.intersection(geom)
-                  : Geo.clip(geom, boundingBox);
-            }
+            geom = new LazyEvaluatedObject<>(() -> {
+              Geometry _geom = OSHDBGeometryBuilder
+                  .getGeometry(osmEntity, timestamp, tagInterpreter);
+
+              Polygon poly = (Polygon) _geom;
+              Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
+              for (int i = 0; i < poly.getNumInteriorRing(); i++) {
+                interiorRings[i] =
+                    new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
+              }
+              _geom = new MultiPolygon(interiorRings, gf);
+              if (!fullyInside) {
+                _geom = isBoundByPolygon
+                    ? fastPolygonClipper.intersection(_geom)
+                    : Geo.clip(_geom, boundingBox);
+              }
+              return _geom;
+            });
           }
 
-          if (geom != null && !geom.isEmpty()) {
+          if (fullyInside || (geom.get() != null && !geom.get().isEmpty())) {
             results.add(new IterateByTimestampEntry(timestamp, osmEntity, geom));
             // add skipped timestamps (where nothing has changed from the last timestamp) to set of
             // results
