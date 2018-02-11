@@ -226,7 +226,6 @@ class Ignite_ScanQuery_Helper {
               .forEach(contribution -> {
                 OSMContribution osmContribution =
                     new OSMContribution(contribution.timestamp,
-                        contribution.nextTimestamp,
                         contribution.previousGeometry, contribution.geometry,
                         contribution.previousOsmEntity, contribution.osmEntity,
                         contribution.activities);
@@ -283,7 +282,6 @@ class Ignite_ScanQuery_Helper {
               .forEach(contribution -> {
                 OSMContribution thisContribution =
                     new OSMContribution(contribution.timestamp,
-                        contribution.nextTimestamp,
                         contribution.previousGeometry, contribution.geometry,
                         contribution.previousOsmEntity, contribution.osmEntity,
                         contribution.activities);

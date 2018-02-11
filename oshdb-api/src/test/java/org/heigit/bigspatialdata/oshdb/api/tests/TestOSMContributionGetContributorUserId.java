@@ -21,6 +21,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedContributionTypes;
 import org.junit.Test;
 
 /**
@@ -35,46 +36,46 @@ public class TestOSMContributionGetContributorUserId {
     // timestamp match
     OSMContribution c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMNode(1L, 1, new OSHDBTimestamp(123L), 1L, 7, new int[] {}, 0, 0),
-        EnumSet.of(ContributionType.CREATION)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
     );
     assertEquals(7, c.getContributorUserId());
     // contribution type match
     c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
-        EnumSet.of(ContributionType.CREATION)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
     );
     assertEquals(7, c.getContributorUserId());
     c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
-        EnumSet.of(ContributionType.TAG_CHANGE)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.TAG_CHANGE))
     );
     assertEquals(7, c.getContributorUserId());
     c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
-        EnumSet.of(ContributionType.MEMBERLIST_CHANGE)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.MEMBERLIST_CHANGE))
     );
     assertEquals(7, c.getContributorUserId());
     c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
-        EnumSet.of(ContributionType.DELETION)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
     );
     // non-match
     assertEquals(7, c.getContributorUserId());
     c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
-        EnumSet.of(ContributionType.GEOMETRY_CHANGE)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE))
     );
     assertEquals(-1, c.getContributorUserId());
   }
@@ -83,9 +84,9 @@ public class TestOSMContributionGetContributorUserId {
   public void wayDirect() throws Exception {
     OSMContribution c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMWay(1L, 1, new OSHDBTimestamp(123L), 1L, 7, new int[] {}, new OSMMember[] {}),
-        EnumSet.of(ContributionType.CREATION)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
     );
     assertEquals(7, c.getContributorUserId());
   }
@@ -99,11 +100,11 @@ public class TestOSMContributionGetContributorUserId {
 
     OSMContribution c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMWay(1L, 1, new OSHDBTimestamp(122L), 1L, 1, new int[] {}, new OSMMember[] {
             new OSMMember(3, OSMType.NODE, 0, OSHNode.build(versions))
         }),
-        EnumSet.of(ContributionType.GEOMETRY_CHANGE)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE))
     );
     assertEquals(7, c.getContributorUserId());
   }
@@ -112,9 +113,9 @@ public class TestOSMContributionGetContributorUserId {
   public void relationDirect() throws Exception {
     OSMContribution c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMRelation(1L, 1, new OSHDBTimestamp(123L), 1L, 7, new int[] {}, new OSMMember[] {}),
-        EnumSet.of(ContributionType.CREATION)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
     );
     assertEquals(7, c.getContributorUserId());
   }
@@ -128,11 +129,11 @@ public class TestOSMContributionGetContributorUserId {
 
     OSMContribution c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMRelation(1L, 1, new OSHDBTimestamp(122L), 1L, 1, new int[] {}, new OSMMember[] {
             new OSMMember(3, OSMType.WAY, 0, OSHWay.build(versions, Collections.emptyList()))
         }),
-        EnumSet.of(ContributionType.GEOMETRY_CHANGE)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE))
     );
     assertEquals(7, c.getContributorUserId());
   }
@@ -151,11 +152,11 @@ public class TestOSMContributionGetContributorUserId {
 
     OSMContribution c = new OSMContribution(
         new OSHDBTimestamp(123),
-        null, null, null, null,
+        null, null, null,
         new OSMRelation(1L, 1, new OSHDBTimestamp(110L), 1L, 1, new int[] {}, new OSMMember[] {
             new OSMMember(2, OSMType.WAY, 0, OSHWay.build(versions, Collections.singletonList(OSHNode.build(nodeVersions))))
         }),
-        EnumSet.of(ContributionType.GEOMETRY_CHANGE)
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE))
     );
     assertEquals(7, c.getContributorUserId());
   }

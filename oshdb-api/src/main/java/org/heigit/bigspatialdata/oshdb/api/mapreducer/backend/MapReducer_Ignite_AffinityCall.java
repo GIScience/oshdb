@@ -85,7 +85,6 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
                 .forEach(contribution -> {
                   OSMContribution osmContribution =
                       new OSMContribution(contribution.timestamp,
-                          contribution.nextTimestamp,
                           contribution.previousGeometry, contribution.geometry,
                           contribution.previousOsmEntity, contribution.osmEntity,
                           contribution.activities);
@@ -129,7 +128,6 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
                 .forEach(contribution -> {
                   OSMContribution thisContribution =
                       new OSMContribution(contribution.timestamp,
-                          contribution.nextTimestamp,
                           contribution.previousGeometry, contribution.geometry,
                           contribution.previousOsmEntity, contribution.osmEntity,
                           contribution.activities);

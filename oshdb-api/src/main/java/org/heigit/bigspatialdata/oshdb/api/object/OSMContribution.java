@@ -25,20 +25,18 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
  */
 public class OSMContribution implements OSHDB_MapReducible {
   private final OSHDBTimestamp _tstamp;
-  private final OSHDBTimestamp _validTo;
   private final LazyEvaluatedObject<Geometry> _geometryBefore;
   private final LazyEvaluatedObject<Geometry> _geometryAfter;
   private final OSMEntity _entityBefore;
   private final OSMEntity _entityAfter;
   private final LazyEvaluatedContributionTypes _contributionTypes;
   
-  public OSMContribution(OSHDBTimestamp tstamp, OSHDBTimestamp validTo,
+  public OSMContribution(OSHDBTimestamp tstamp,
       LazyEvaluatedObject<Geometry> geometryBefore, LazyEvaluatedObject<Geometry> geometryAfter,
       OSMEntity entityBefore, OSMEntity entityAfter,
       LazyEvaluatedContributionTypes contributionTypes
   ) {
     this._tstamp = tstamp;
-    this._validTo = validTo;
     this._geometryBefore = geometryBefore;
     this._geometryAfter = geometryAfter;
     this._entityBefore = entityBefore;
@@ -53,11 +51,6 @@ public class OSMContribution implements OSHDB_MapReducible {
    */
   public OSHDBTimestamp getTimestamp() {
     return this._tstamp;
-  }
-
-  @Deprecated
-  public OSHDBTimestamp getValidTo() {
-    return this._validTo;
   }
 
   /**

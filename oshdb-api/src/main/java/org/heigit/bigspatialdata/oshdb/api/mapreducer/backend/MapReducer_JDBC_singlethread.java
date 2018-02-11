@@ -85,7 +85,6 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
             .forEach(contribution -> {
               OSMContribution osmContribution = new OSMContribution(
                   contribution.timestamp,
-                  contribution.nextTimestamp,
                   contribution.previousGeometry, contribution.geometry,
                   contribution.previousOsmEntity, contribution.osmEntity, contribution.activities);
               accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
@@ -138,7 +137,6 @@ public class MapReducer_JDBC_singlethread<X> extends MapReducer<X> {
             .forEach(contribution -> {
               OSMContribution thisContribution = new OSMContribution(
                   contribution.timestamp,
-                  contribution.nextTimestamp,
                   contribution.previousGeometry, contribution.geometry,
                   contribution.previousOsmEntity, contribution.osmEntity, contribution.activities);
               if (contributions.size() > 0

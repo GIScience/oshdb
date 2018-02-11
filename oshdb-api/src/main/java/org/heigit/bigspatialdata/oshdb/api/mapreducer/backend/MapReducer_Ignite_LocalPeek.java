@@ -264,7 +264,6 @@ class Ignite_LocalPeek_Helper {
                     return;
                   OSMContribution osmContribution =
                       new OSMContribution(contribution.timestamp,
-                          contribution.nextTimestamp,
                           contribution.previousGeometry, contribution.geometry,
                           contribution.previousOsmEntity, contribution.osmEntity,
                           contribution.activities);
@@ -305,7 +304,6 @@ class Ignite_LocalPeek_Helper {
                     return;
                   OSMContribution thisContribution =
                       new OSMContribution(contribution.timestamp,
-                          contribution.nextTimestamp,
                           contribution.previousGeometry, contribution.geometry,
                           contribution.previousOsmEntity, contribution.osmEntity,
                           contribution.activities);

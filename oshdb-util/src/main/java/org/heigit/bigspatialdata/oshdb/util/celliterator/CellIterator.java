@@ -5,8 +5,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -322,19 +320,19 @@ public class CellIterator implements Serializable {
 
   public static class IterateAllEntry {
     public final OSHDBTimestamp timestamp;
-    public final OSHDBTimestamp nextTimestamp;
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
     public final LazyEvaluatedObject<Geometry> geometry;
     public final LazyEvaluatedObject<Geometry> previousGeometry;
     public final LazyEvaluatedContributionTypes activities;
 
-    IterateAllEntry(OSHDBTimestamp timestamp, OSHDBTimestamp nextTimestamp,
+    IterateAllEntry(
+        OSHDBTimestamp timestamp,
         OSMEntity entity, OSMEntity previousOsmEntity,
         LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> previousGeometry,
-        LazyEvaluatedContributionTypes activities) {
+        LazyEvaluatedContributionTypes activities
+    ) {
       this.timestamp = timestamp;
-      this.nextTimestamp = nextTimestamp;
       this.osmEntity = entity;
       this.previousOsmEntity = previousOsmEntity;
       this.geometry = geom;
@@ -411,8 +409,7 @@ public class CellIterator implements Serializable {
 
         OSHDBTimestamp nextTs = null;
         // todo: better way to figure out if timestamp is not last element??
-        if (modTs.size() > modTs.indexOf(timestamp) + 1)
-        {
+        if (modTs.size() > modTs.indexOf(timestamp) + 1) {
           nextTs = modTs.get(modTs.indexOf(timestamp) + 1);
         }
 
@@ -435,7 +432,7 @@ public class CellIterator implements Serializable {
           // this entity is deleted at this timestamp
           // todo: some of this may be refactorable between the two for loops
           if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-            prev = new IterateAllEntry(timestamp, nextTs,
+            prev = new IterateAllEntry(timestamp,
                 osmEntity, prev.osmEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
@@ -474,7 +471,7 @@ public class CellIterator implements Serializable {
             // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct
             // geometries for these?
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-              prev = new IterateAllEntry(timestamp, nextTs,
+              prev = new IterateAllEntry(timestamp,
                   osmEntity, prev.osmEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
@@ -531,7 +528,7 @@ public class CellIterator implements Serializable {
           if (!fullyInside && (geom.get() == null || geom.get().isEmpty())) {
             // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity,
+              prev = new IterateAllEntry(timestamp, osmEntity, prev.osmEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
               );
@@ -616,12 +613,16 @@ public class CellIterator implements Serializable {
 
           IterateAllEntry result;
           if (prev != null) {
-            result = new IterateAllEntry(
-                timestamp, nextTs, osmEntity, prev.osmEntity, geom, prev.geometry, activity
+            result = new IterateAllEntry(timestamp,
+                osmEntity, prev.osmEntity,
+                geom, prev.geometry,
+                activity
             );
           } else {
-            result = new IterateAllEntry(
-                timestamp, nextTs, osmEntity, null, geom, null, activity
+            result = new IterateAllEntry(timestamp,
+                osmEntity, null,
+                geom, new LazyEvaluatedObject<Geometry>((Geometry)null),
+                activity
             );
           }
 
