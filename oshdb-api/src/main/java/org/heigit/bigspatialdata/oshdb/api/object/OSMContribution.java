@@ -9,6 +9,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedContributionTypes;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
 
 /**
  * Holds information about a single modification ("contribution") of a single entity in database.
@@ -23,16 +25,18 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
  */
 public class OSMContribution implements OSHDB_MapReducible {
   private final OSHDBTimestamp _tstamp;
-  private final OSHDBTimestamp _validTo;
-  private final Geometry _geometryBefore;
-  private final Geometry _geometryAfter;
+  private final LazyEvaluatedObject<Geometry> _geometryBefore;
+  private final LazyEvaluatedObject<Geometry> _geometryAfter;
   private final OSMEntity _entityBefore;
   private final OSMEntity _entityAfter;
-  private final EnumSet<ContributionType> _contributionTypes;
+  private final LazyEvaluatedContributionTypes _contributionTypes;
   
-  public OSMContribution(OSHDBTimestamp tstamp, OSHDBTimestamp validTo, Geometry geometryBefore, Geometry geometryAfter, OSMEntity entityBefore, OSMEntity entityAfter, EnumSet<ContributionType> contributionTypes) {
+  public OSMContribution(OSHDBTimestamp tstamp,
+      LazyEvaluatedObject<Geometry> geometryBefore, LazyEvaluatedObject<Geometry> geometryAfter,
+      OSMEntity entityBefore, OSMEntity entityAfter,
+      LazyEvaluatedContributionTypes contributionTypes
+  ) {
     this._tstamp = tstamp;
-    this._validTo = validTo;
     this._geometryBefore = geometryBefore;
     this._geometryAfter = geometryAfter;
     this._entityBefore = entityBefore;
@@ -49,11 +53,6 @@ public class OSMContribution implements OSHDB_MapReducible {
     return this._tstamp;
   }
 
-  @Deprecated
-  public OSHDBTimestamp getValidTo() {
-    return this._validTo;
-  }
-
   /**
    * Returns the geometry of the entity before this modification.
    * Is `null` if this is a entity creation.
@@ -61,7 +60,7 @@ public class OSMContribution implements OSHDB_MapReducible {
    * @return a JTS Geometry object representing the entity's state before the modification
    */
   public Geometry getGeometryBefore() {
-    return this._geometryBefore;
+    return this._geometryBefore.get();
   }
 
   /**
@@ -71,7 +70,7 @@ public class OSMContribution implements OSHDB_MapReducible {
    * @return a JTS Geometry object representing the entity's state after the modification
    */
   public Geometry getGeometryAfter() {
-    return this._geometryAfter;
+    return this._geometryAfter.get();
   }
 
   /**
@@ -95,6 +94,29 @@ public class OSMContribution implements OSHDB_MapReducible {
   }
 
   /**
+   * Checks if this contribution is of the given contribution type. It can be one or more of:
+   * <ul>
+   *   <li>CREATION</li>
+   *   <li>DELETION</li>
+   *   <li>TAG_CHANGE</li>
+   *   <li>MEMBERLIST_CHANGE</li>
+   *   <li>GEOMETRY_CHANGE</li>
+   * </ul>
+   *
+   * If this is a entity creation or deletion, the other flags are not set (even though one might argue that a just
+   * created object clearly has a different geometry than before, for example).
+   *
+   * The MEMBERLIST_CHANGE flag is set if the list of "direct" children of this object (i.e. the nodes of a way or the
+   * members of a relation, but not for example the nodes of a way of a relation) has changed or rearranged. The flag is
+   * also set if only the role of a member of a relation has been changed.
+   *
+   * @return a set of modification type this contribution made on the underlying data
+   */
+  public boolean is(ContributionType contributionType) {
+    return this._contributionTypes.contains(contributionType);
+  }
+
+  /**
    * Determined the type of modification this contribution has made. Can be one or more of:
    * <ul>
    *   <li>CREATION</li>
@@ -114,7 +136,7 @@ public class OSMContribution implements OSHDB_MapReducible {
    * @return a set of modification type this contribution made on the underlying data
    */
   public EnumSet<ContributionType> getContributionTypes() {
-    return this._contributionTypes;
+    return this._contributionTypes.get();
   }
 
 

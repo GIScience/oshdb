@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.object;
 import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
 
 /**
  * Stores information about a single data entity at a specific time "snapshot".
@@ -11,10 +12,10 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
  */
 public class OSMEntitySnapshot implements OSHDB_MapReducible {
   private final OSHDBTimestamp _tstamp;
-  private final Geometry _geometry;
+  private final LazyEvaluatedObject<Geometry> _geometry;
   private final OSMEntity _entity;
   
-  public OSMEntitySnapshot(OSHDBTimestamp tstamp, Geometry geometry, OSMEntity entity) {
+  public OSMEntitySnapshot(OSHDBTimestamp tstamp, LazyEvaluatedObject<Geometry> geometry, OSMEntity entity) {
     this._tstamp = tstamp;
     this._geometry = geometry;
     this._entity = entity;
@@ -35,7 +36,7 @@ public class OSMEntitySnapshot implements OSHDB_MapReducible {
    * @return the geometry as a JTS Geometry
    */
   public Geometry getGeometry() {
-    return this._geometry;
+    return this._geometry.get();
   }
 
   /**

@@ -5,8 +5,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -92,9 +90,11 @@ public class CellIterator implements Serializable {
   public static class IterateByTimestampEntry {
     public final OSHDBTimestamp timestamp;
     public final OSMEntity osmEntity;
-    public final Geometry geometry;
+    public final LazyEvaluatedObject<Geometry> geometry;
 
-    IterateByTimestampEntry(OSHDBTimestamp timestamp, OSMEntity entity, Geometry geom) {
+    IterateByTimestampEntry(
+        OSHDBTimestamp timestamp, OSMEntity entity, LazyEvaluatedObject<Geometry> geom
+    ) {
       this.timestamp = timestamp;
       this.osmEntity = entity;
       this.geometry = geom;
@@ -183,6 +183,11 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
+        if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0 ||
+            osmEntity instanceof OSMRelation && ((OSMRelation)osmEntity).getMembers().length == 0) {
+          // skip way/relation with zero nodes/members
+          continue;
+        }
 
         boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
@@ -212,16 +217,22 @@ public class CellIterator implements Serializable {
         }
 
         try {
-          Geometry geom;
+          LazyEvaluatedObject<Geometry> geom;
           if (!isOldStyleMultipolygon) {
             if (fullyInside) {
-              geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-            } else if (isBoundByPolygon) {
-              geom = fastPolygonClipper.intersection(
+              geom = new LazyEvaluatedObject<>(() ->
                   OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
               );
+            } else if (isBoundByPolygon) {
+              geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
+                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+              ));
             } else {
-              geom = OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter, boundingBox);
+              geom = new LazyEvaluatedObject<>(
+                  OSHDBGeometryBuilder.getGeometryClipped(
+                      osmEntity, timestamp, tagInterpreter, boundingBox
+                  )
+              );
             }
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
@@ -231,22 +242,27 @@ public class CellIterator implements Serializable {
             // inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
-            geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-            Polygon poly = (Polygon) geom;
-            Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
-            for (int i = 0; i < poly.getNumInteriorRing(); i++) {
-              interiorRings[i] =
-                  new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[] {}, gf);
-            }
-            geom = new MultiPolygon(interiorRings, gf);
-            if (!fullyInside) {
-              geom = isBoundByPolygon
-                  ? fastPolygonClipper.intersection(geom)
-                  : Geo.clip(geom, boundingBox);
-            }
+            geom = new LazyEvaluatedObject<>(() -> {
+              Geometry _geom = OSHDBGeometryBuilder
+                  .getGeometry(osmEntity, timestamp, tagInterpreter);
+
+              Polygon poly = (Polygon) _geom;
+              Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
+              for (int i = 0; i < poly.getNumInteriorRing(); i++) {
+                interiorRings[i] =
+                    new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
+              }
+              _geom = new MultiPolygon(interiorRings, gf);
+              if (!fullyInside) {
+                _geom = isBoundByPolygon
+                    ? fastPolygonClipper.intersection(_geom)
+                    : Geo.clip(_geom, boundingBox);
+              }
+              return _geom;
+            });
           }
 
-          if (geom != null && !geom.isEmpty()) {
+          if (fullyInside || (geom.get() != null && !geom.get().isEmpty())) {
             results.add(new IterateByTimestampEntry(timestamp, osmEntity, geom));
             // add skipped timestamps (where nothing has changed from the last timestamp) to set of
             // results
@@ -309,18 +325,19 @@ public class CellIterator implements Serializable {
 
   public static class IterateAllEntry {
     public final OSHDBTimestamp timestamp;
-    public final OSHDBTimestamp nextTimestamp;
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
-    public final Geometry geometry;
-    public final Geometry previousGeometry;
-    public final EnumSet<ContributionType> activities;
+    public final LazyEvaluatedObject<Geometry> geometry;
+    public final LazyEvaluatedObject<Geometry> previousGeometry;
+    public final LazyEvaluatedContributionTypes activities;
 
-    IterateAllEntry(OSHDBTimestamp timestamp, OSHDBTimestamp nextTimestamp, OSMEntity entity,
-        OSMEntity previousOsmEntity, Geometry geom, Geometry previousGeometry,
-        EnumSet<ContributionType> activities) {
+    IterateAllEntry(
+        OSHDBTimestamp timestamp,
+        OSMEntity entity, OSMEntity previousOsmEntity,
+        LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> previousGeometry,
+        LazyEvaluatedContributionTypes activities
+    ) {
       this.timestamp = timestamp;
-      this.nextTimestamp = nextTimestamp;
       this.osmEntity = entity;
       this.previousOsmEntity = previousOsmEntity;
       this.geometry = geom;
@@ -397,8 +414,7 @@ public class CellIterator implements Serializable {
 
         OSHDBTimestamp nextTs = null;
         // todo: better way to figure out if timestamp is not last element??
-        if (modTs.size() > modTs.indexOf(timestamp) + 1)
-        {
+        if (modTs.size() > modTs.indexOf(timestamp) + 1) {
           nextTs = modTs.get(modTs.indexOf(timestamp) + 1);
         }
 
@@ -421,8 +437,11 @@ public class CellIterator implements Serializable {
           // this entity is deleted at this timestamp
           // todo: some of this may be refactorable between the two for loops
           if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-            prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null,
-                prev.geometry, EnumSet.of(ContributionType.DELETION));
+            prev = new IterateAllEntry(timestamp,
+                osmEntity, prev.osmEntity,
+                new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
+                new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
+            );
             if (!skipOutput) {
               results.add(prev);
             }
@@ -457,8 +476,11 @@ public class CellIterator implements Serializable {
             // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct
             // geometries for these?
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null,
-                  prev.geometry, EnumSet.of(ContributionType.DELETION));
+              prev = new IterateAllEntry(timestamp,
+                  osmEntity, prev.osmEntity,
+                  new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
+                  new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
+              );
               if (!skipOutput) {
                 results.add(prev);
               }
@@ -468,16 +490,22 @@ public class CellIterator implements Serializable {
         }
 
         try {
-          Geometry geom;
+          LazyEvaluatedObject<Geometry> geom;
           if (!isOldStyleMultipolygon) {
             if (fullyInside) {
-              geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-            } else if (isBoundByPolygon) {
-              geom = fastPolygonClipper.intersection(
+              geom = new LazyEvaluatedObject<>(() ->
                   OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
               );
+            } else if (isBoundByPolygon) {
+              geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
+                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+              ));
             } else {
-              geom = OSHDBGeometryBuilder.getGeometryClipped(osmEntity, timestamp, tagInterpreter, boundingBox);
+              geom = new LazyEvaluatedObject<>(
+                  OSHDBGeometryBuilder.getGeometryClipped(
+                      osmEntity, timestamp, tagInterpreter, boundingBox
+                  )
+              );
             }
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
@@ -485,106 +513,122 @@ public class CellIterator implements Serializable {
             // way which doesn't know about the inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
-            geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-            Polygon poly = (Polygon) geom;
-            Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
-            for (int i = 0; i < poly.getNumInteriorRing(); i++) {
-              interiorRings[i] =
-                  new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[] {}, gf);
-            }
-            geom = new MultiPolygon(interiorRings, gf);
-            if (!fullyInside) {
-              geom = Geo.clip(geom, boundingBox);
-            }
+            geom = new LazyEvaluatedObject<>(() -> {
+              Geometry _geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+              Polygon poly = (Polygon) _geom;
+              Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
+              for (int i = 0; i < poly.getNumInteriorRing(); i++) {
+                interiorRings[i] =
+                    new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
+              }
+              _geom = new MultiPolygon(interiorRings, gf);
+              if (!fullyInside) {
+                _geom = Geo.clip(_geom, boundingBox);
+              }
+              return _geom;
+            });
           }
 
-          EnumSet<ContributionType> activity;
-          if (geom == null || geom.isEmpty()) { // either object is outside of current area or has
-            // invalid geometry
+          LazyEvaluatedContributionTypes activity;
+          if (!fullyInside && (geom.get() == null || geom.get().isEmpty())) {
+            // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-              prev = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, null,
-                  prev.geometry, EnumSet.of(ContributionType.DELETION));
+              prev = new IterateAllEntry(timestamp, osmEntity, prev.osmEntity,
+                  new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
+                  new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
+              );
               if (!skipOutput) {
                 results.add(prev);
               }
             }
             continue osmEntityLoop;
           } else if (prev == null || prev.activities.contains(ContributionType.DELETION)) {
-            activity = EnumSet.of(ContributionType.CREATION);
+            activity = new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION));
             // todo: special case when an object gets specific tag/condition again after having them
             // removed?
           } else {
-            activity = EnumSet.noneOf(ContributionType.class);
-            // look if tags have been changed between versions
-            boolean tagsChange = false;
-            if (prev.osmEntity.getTags().length != osmEntity.getTags().length) {
-              tagsChange = true;
-            } else {
-              for (int i = 0; i < prev.osmEntity.getTags().length; i++) {
-                if (prev.osmEntity.getTags()[i] != osmEntity.getTags()[i]) {
-                  tagsChange = true;
-                  break;
-                }
+            OSMEntity prevEntity = prev.osmEntity;
+            LazyEvaluatedObject<Geometry> prevGeometry = prev.geometry;
+            activity = new LazyEvaluatedContributionTypes(contributionType -> {
+              switch (contributionType) {
+                case TAG_CHANGE:
+                  // look if tags have been changed between versions
+                  boolean tagsChange = false;
+                  if (prevEntity.getTags().length != osmEntity.getTags().length) {
+                    tagsChange = true;
+                  } else {
+                    for (int i = 0; i < prevEntity.getTags().length; i++) {
+                      if (prevEntity.getTags()[i] != osmEntity.getTags()[i]) {
+                        tagsChange = true;
+                        break;
+                      }
+                    }
+                  }
+                  return tagsChange;
+                case MEMBERLIST_CHANGE:
+                  // look if members have been changed between versions
+                  boolean membersChange = false;
+                  switch (prevEntity.getType()) {
+                    case WAY:
+                      OSMMember[] prevNds = ((OSMWay) prevEntity).getRefs();
+                      OSMMember[] currNds = ((OSMWay) osmEntity).getRefs();
+                      if (prevNds.length != currNds.length) {
+                        membersChange = true;
+                      } else {
+                        for (int i = 0; i < prevNds.length; i++) {
+                          if (prevNds[i].getId() != currNds[i].getId()) {
+                            membersChange = true;
+                            break;
+                          }
+                        }
+                      }
+                      break;
+                    case RELATION:
+                      OSMMember[] prevMembers = ((OSMRelation) prevEntity).getMembers();
+                      OSMMember[] currMembers = ((OSMRelation) osmEntity).getMembers();
+                      if (prevMembers.length != currMembers.length) {
+                        membersChange = true;
+                      } else {
+                        for (int i = 0; i < prevMembers.length; i++) {
+                          if (prevMembers[i].getId() != currMembers[i].getId()
+                              || prevMembers[i].getType() != currMembers[i].getType()
+                              || prevMembers[i].getRoleId() != currMembers[i].getRoleId()) {
+                            membersChange = true;
+                            break;
+                          }
+                        }
+                      }
+                      break;
+                  }
+                  return membersChange;
+                case GEOMETRY_CHANGE:
+                  // look if geometry has been changed between versions
+                  boolean geometryChange = false;
+                  if (geom.get() != null && prevGeometry.get() != null) {
+                    // todo: what if both are null? -> maybe fall back to MEMBER_CHANGE?
+                    // todo: check: does this work as expected?
+                    geometryChange = !prevGeometry.equals(geom);
+                  }
+                  return geometryChange;
+                default:
+                  return false;
               }
-            }
-            if (tagsChange) {
-              activity.add(ContributionType.TAG_CHANGE);
-            }
-            // look if members have been changed between versions
-            boolean membersChange = false;
-            switch (prev.osmEntity.getType()) {
-              case WAY:
-                OSMMember[] prevNds = ((OSMWay) prev.osmEntity).getRefs();
-                OSMMember[] currNds = ((OSMWay) osmEntity).getRefs();
-                if (prevNds.length != currNds.length) {
-                  membersChange = true;
-                } else {
-                  for (int i = 0; i < prevNds.length; i++) {
-                    if (prevNds[i].getId() != currNds[i].getId()) {
-                      membersChange = true;
-                      break;
-                    }
-                  }
-                }
-                break;
-              case RELATION:
-                OSMMember[] prevMembers = ((OSMRelation) prev.osmEntity).getMembers();
-                OSMMember[] currMembers = ((OSMRelation) osmEntity).getMembers();
-                if (prevMembers.length != currMembers.length) {
-                  membersChange = true;
-                } else {
-                  for (int i = 0; i < prevMembers.length; i++) {
-                    if (prevMembers[i].getId() != currMembers[i].getId()
-                        || prevMembers[i].getType() != currMembers[i].getType()
-                        || prevMembers[i].getRoleId() != currMembers[i].getRoleId()) {
-                      membersChange = true;
-                      break;
-                    }
-                  }
-                }
-                break;
-            }
-            if (membersChange) {
-              activity.add(ContributionType.MEMBERLIST_CHANGE);
-            }
-            // look if geometry has been changed between versions
-            boolean geometryChange = false;
-            if (geom != null && prev.geometry != null) // todo: what if both are null? -> maybe fall
-            // back to MEMEBER_CHANGE?
-            {
-              geometryChange = !prev.geometry.equals(geom); // todo: check: does this work as
-            } // expected?
-            if (geometryChange) {
-              activity.add(ContributionType.GEOMETRY_CHANGE);
-            }
+            });
           }
 
           IterateAllEntry result;
           if (prev != null) {
-            result = new IterateAllEntry(timestamp, nextTs, osmEntity, prev.osmEntity, geom,
-                prev.geometry, activity);
+            result = new IterateAllEntry(timestamp,
+                osmEntity, prev.osmEntity,
+                geom, prev.geometry,
+                activity
+            );
           } else {
-            result = new IterateAllEntry(timestamp, nextTs, osmEntity, null, geom, null, activity);
+            result = new IterateAllEntry(timestamp,
+                osmEntity, null,
+                geom, new LazyEvaluatedObject<Geometry>((Geometry)null),
+                activity
+            );
           }
 
           if (!skipOutput) {
