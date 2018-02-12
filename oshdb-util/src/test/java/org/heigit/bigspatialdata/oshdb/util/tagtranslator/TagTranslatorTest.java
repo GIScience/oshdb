@@ -72,24 +72,6 @@ public class TagTranslatorTest {
   }
 
   @Test
-  public void testUsertoID() {
-    String name = "Alice";
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Integer expResult = 1;
-    Integer result = instance.usertoID(name);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testUsertoStr() {
-    Integer uid = 2;
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    String expResult = "Bob";
-    String result = instance.usertoStr(uid);
-    assertEquals(expResult, result);
-  }
-
-  @Test
   public void testKey2Int() {
     String key = "highway";
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
