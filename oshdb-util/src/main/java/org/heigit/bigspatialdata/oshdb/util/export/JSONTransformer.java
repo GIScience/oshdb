@@ -76,14 +76,6 @@ public class JSONTransformer {
     jsonid.append("/").append(entity.getId()).append("@")
         .append(TimestampFormatter.getInstance().isoDateTime(timestamp));
 
-    // add meta attributes with possible failures
-    try {
-      properties.add("@user", tagtranslator.usertoStr(entity.getUserId()));
-    } catch (NullPointerException ex) {
-      LOG.warn("Could not resolve username of entity {}", entity.getId());
-      properties.add("@user", "<error: could not resolve>");
-    }
-
     properties.add("@uid", entity.getUserId());
 
     for (int i = 0; i < entity.getTags().length; i += 2) {

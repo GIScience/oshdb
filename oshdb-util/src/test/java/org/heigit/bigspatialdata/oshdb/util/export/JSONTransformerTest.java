@@ -45,7 +45,7 @@ public class JSONTransformerTest {
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
-        "{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}";
+        "{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}";
     String result = JSONTransformer
         .transform(entity, timestamp, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1))
         .toString();
@@ -65,7 +65,7 @@ public class JSONTransformerTest {
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
-        "{\"type\":\"Feature\",\"id\":\"relation/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"relation\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\",\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"}]},\"geometry\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]},{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}]}}";
+        "{\"type\":\"Feature\",\"id\":\"relation/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"relation\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\",\"members\":[{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"},{\"type\":\"NODE\",\"ref\":1,\"role\":\"outer\"}]},\"geometry\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]},{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}]}}";
 
     String result = JSONTransformer
         .transform(instance, new OSHDBTimestamp(1L), tt,
@@ -85,7 +85,7 @@ public class JSONTransformerTest {
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
-        "{\"type\":\"Feature\",\"id\":\"way/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"way\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\",\"refs\":[1,1]},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]}}";
+        "{\"type\":\"Feature\",\"id\":\"way/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"way\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\",\"refs\":[1,1]},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]}}";
 
     String result = JSONTransformer
         .transform(instance, new OSHDBTimestamp(1L), tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1))
@@ -104,7 +104,7 @@ public class JSONTransformerTest {
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
-        "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"2014-11-09T13:07:29Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:02Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"2014-11-09T13:07:29Z\",\"@geomtimestamp\":\"1970-01-01T00:00:02Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
+        "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"2014-11-09T13:07:29Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:02Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"2014-11-09T13:07:29Z\",\"@geomtimestamp\":\"1970-01-01T00:00:02Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
     String result = JSONTransformer.multiTransform(OSMObjects, tt, areaDecider).toString();
     assertEquals(expResult, result);
   }
@@ -123,7 +123,7 @@ public class JSONTransformerTest {
     TagTranslator tt = new TagTranslator(DriverManager
         .getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r", "sa", ""));
     String expResult =
-        "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/123@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":123,\"@visible\":true,\"@version\":2,\"@changeset\":46,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"house\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}},{\"type\":\"Feature\",\"id\":\"node/123@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":123,\"@visible\":true,\"@version\":1,\"@changeset\":47,\"@timestamp\":\"1970-01-01T00:00:01Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@user\":\"Bob\",\"@uid\":2,\"highway\":\"unclassified\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.715334,49.410283]}}]}";
+        "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/123@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":123,\"@visible\":true,\"@version\":2,\"@changeset\":46,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@uid\":1,\"building\":\"house\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}},{\"type\":\"Feature\",\"id\":\"node/123@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":123,\"@visible\":true,\"@version\":1,\"@changeset\":47,\"@timestamp\":\"1970-01-01T00:00:01Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":2,\"highway\":\"unclassified\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.715334,49.410283]}}]}";
     String result = JSONTransformer
         .transform(instance, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1)).toString();
     assertEquals(expResult, result);
@@ -144,11 +144,11 @@ public class JSONTransformerTest {
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult = "{\"type\":\"FeatureCollection\"," + "\"features\":[{"
-        + "\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\"},"
+        + "\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@uid\":1,\"building\":\"residential\"},"
         + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
-        + "\"type\":\"Feature\",\"id\":\"node/2@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":2,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\"},"
+        + "\"type\":\"Feature\",\"id\":\"node/2@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":2,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@uid\":1,\"building\":\"residential\"},"
         + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}},{"
-        + "\"type\":\"Feature\",\"id\":\"node/3@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":3,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@user\":\"Alice\",\"@uid\":1,\"building\":\"residential\"},"
+        + "\"type\":\"Feature\",\"id\":\"node/3@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":3,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@uid\":1,\"building\":\"residential\"},"
         + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}}]}";
     String result = JSONTransformer
         .transform(instance, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1)).toString();
