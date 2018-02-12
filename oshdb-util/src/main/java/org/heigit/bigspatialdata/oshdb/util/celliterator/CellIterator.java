@@ -183,6 +183,11 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
+        if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0 ||
+            osmEntity instanceof OSMRelation && ((OSMRelation)osmEntity).getMembers().length == 0) {
+          // skip way/relation with zero nodes/members
+          continue;
+        }
 
         boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
