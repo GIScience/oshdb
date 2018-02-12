@@ -29,7 +29,9 @@ import java.util.stream.Collectors;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
-public abstract class MapAggregator<U extends Comparable, X> implements Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
+public abstract class MapAggregator<U extends Comparable<U>, X> implements
+    Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X>
+{
   MapReducer<Pair<U, X>> _mapReducer;
 
   /**

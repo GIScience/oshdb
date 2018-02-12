@@ -20,7 +20,9 @@ import java.util.*;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements Mappable<X>, MapAggregatable<MapAggregatorByTimestampAndIndex<? extends Comparable, X>, X> {
+public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, X> implements
+    Mappable<X>, MapAggregatable<MapAggregatorByTimestampAndIndex<? extends Comparable<?>, X>, X>
+{
   private boolean _zerofill = true;
 
   /**
@@ -141,7 +143,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
    * @return a special MapAggregator object that performs aggregation by two separate indices
    */
   @Contract(pure = true)
-  public <U extends Comparable> MapAggregatorByTimestampAndIndex<U, X> aggregateBy(
+  public <U extends Comparable<U>> MapAggregatorByTimestampAndIndex<U, X> aggregateBy(
       SerializableFunction<X, U> indexer
   ) {
     return new MapAggregatorByTimestampAndIndex<U, X>(this, indexer)

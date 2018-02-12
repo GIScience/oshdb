@@ -73,9 +73,10 @@ import org.slf4j.LoggerFactory;
  * @param <X> the type that is returned by the currently set of mapper function. the next added
  *        mapper function will be called with a parameter of this type as input
  */
-public abstract class MapReducer<X>
-    implements MapReducerSettings<MapReducer<X>>, Mappable<X>, MapReducerAggregations<X>,
-    MapAggregatable<MapAggregatorByIndex<? extends Comparable, X>, X>, Serializable {
+public abstract class MapReducer<X> implements
+    MapReducerSettings<MapReducer<X>>, Mappable<X>, MapReducerAggregations<X>,
+    MapAggregatable<MapAggregatorByIndex<? extends Comparable<?>, X>, X>, Serializable
+{
 
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
@@ -613,7 +614,7 @@ public abstract class MapReducer<X>
    *         etc.) of the current MapReducer object
    */
   @Contract(pure = true)
-  public <U extends Comparable> MapAggregatorByIndex<U, X> aggregateBy(
+  public <U extends Comparable<U>> MapAggregatorByIndex<U, X> aggregateBy(
       SerializableFunction<X, U> indexer
   ) {
     return new MapAggregatorByIndex<>(this, indexer);

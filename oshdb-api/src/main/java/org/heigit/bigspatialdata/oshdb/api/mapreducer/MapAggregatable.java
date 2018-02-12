@@ -20,5 +20,5 @@ interface MapAggregatable<M, X> {
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    */
-  <U extends Comparable> M aggregateBy(SerializableFunction<X, U> indexer);
+  <U extends Comparable<U>> M aggregateBy(SerializableFunction<X, U> indexer);
 }

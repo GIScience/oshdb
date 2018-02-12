@@ -17,7 +17,9 @@ import org.jetbrains.annotations.Contract;
  *
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  */
-public class MapAggregatorByIndex<U extends Comparable, X> extends MapAggregator<U, X> implements Mappable<X>/*, MapAggregatorByTimestampsSettings<MapAggregatorByIndex<U, X>>, MapAggregatable<MapAggregatorByTimestampAndIndex<U, X>, X>*/ {
+public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggregator<U, X> implements
+    Mappable<X>/*, MapAggregatorByTimestampsSettings<MapAggregatorByIndex<U, X>>, MapAggregatable<MapAggregatorByTimestampAndIndex<U, X>, X>*/
+{
   private Collection<U> _zerofill = Collections.emptyList();
 
   /**
