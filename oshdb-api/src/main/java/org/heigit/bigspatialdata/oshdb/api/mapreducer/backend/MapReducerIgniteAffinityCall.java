@@ -8,11 +8,11 @@ import java.util.function.Function;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
@@ -38,21 +38,21 @@ import org.jetbrains.annotations.NotNull;
  * interest), where the (~constant) overhead associated with the other methods might be larger than
  * the (~linear) inefficiency with this implementation.
  */
-public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
-  public MapReducer_Ignite_AffinityCall(OSHDB_Database oshdb,
-      Class<? extends OSHDB_MapReducible> forClass) {
+public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
+  public MapReducerIgniteAffinityCall(OSHDBDatabase oshdb,
+      Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
 
   // copy constructor
-  private MapReducer_Ignite_AffinityCall(MapReducer_Ignite_AffinityCall obj) {
+  private MapReducerIgniteAffinityCall(MapReducerIgniteAffinityCall obj) {
     super(obj);
   }
 
   @NotNull
   @Override
   protected MapReducer<X> copy() {
-    return new MapReducer_Ignite_AffinityCall<X>(this);
+    return new MapReducerIgniteAffinityCall<X>(this);
   }
 
   @Override
@@ -67,7 +67,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
@@ -109,7 +109,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
@@ -167,7 +167,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
@@ -206,7 +206,7 @@ public class MapReducer_Ignite_AffinityCall<X> extends MapReducer<X> {
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
-    Ignite ignite = ((OSHDB_Ignite) this._oshdb).getIgnite();
+    Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {

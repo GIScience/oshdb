@@ -10,7 +10,7 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
  *
  * Alongside the entity and the timestamp, also the entity's geometry is provided.
  */
-public class OSMEntitySnapshot implements OSHDB_MapReducible {
+public class OSMEntitySnapshot implements OSHDBMapReducible {
   private final OSHDBTimestamp _tstamp;
   private final LazyEvaluatedObject<Geometry> _geometry;
   private final OSMEntity _entity;

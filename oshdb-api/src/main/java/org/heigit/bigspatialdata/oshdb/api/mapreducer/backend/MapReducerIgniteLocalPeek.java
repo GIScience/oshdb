@@ -17,13 +17,13 @@ import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
@@ -47,23 +47,23 @@ import org.slf4j.LoggerFactory;
  * Ignite: It offers high performance, scalability and cancelable queries. It should be used in most
  * situations when running oshdb- analyses on ignite.
  */
-public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducer_Ignite_LocalPeek.class);
+public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducerIgniteLocalPeek.class);
 
-  public MapReducer_Ignite_LocalPeek(OSHDB_Database oshdb,
-      Class<? extends OSHDB_MapReducible> forClass) {
+  public MapReducerIgniteLocalPeek(OSHDBDatabase oshdb,
+      Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
 
   // copy constructor
-  private MapReducer_Ignite_LocalPeek(MapReducer_Ignite_LocalPeek obj) {
+  private MapReducerIgniteLocalPeek(MapReducerIgniteLocalPeek obj) {
     super(obj);
   }
 
   @NotNull
   @Override
   protected MapReducer<X> copy() {
-    return new MapReducer_Ignite_LocalPeek<X>(this);
+    return new MapReducerIgniteLocalPeek<X>(this);
   }
 
   private List<String> cacheNames(String prefix) {
@@ -75,8 +75,8 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return Ignite_LocalPeek_Helper._mapReduceCellsOSMContributionOnIgniteCache(
-        (OSHDB_Ignite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+    return IgniteLocalPeekHelper._mapReduceCellsOSMContributionOnIgniteCache(
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -87,8 +87,8 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return Ignite_LocalPeek_Helper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-        (OSHDB_Ignite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+    return IgniteLocalPeekHelper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -100,8 +100,8 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
       SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
-    return Ignite_LocalPeek_Helper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-        (OSHDB_Ignite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+    return IgniteLocalPeekHelper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -112,8 +112,8 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return Ignite_LocalPeek_Helper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-        (OSHDB_Ignite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+    return IgniteLocalPeekHelper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -121,7 +121,7 @@ public class MapReducer_Ignite_LocalPeek<X> extends MapReducer<X> {
 }
 
 
-class Ignite_LocalPeek_Helper {
+class IgniteLocalPeekHelper {
   /**
    * @param <T> Type of the task argument.
    * @param <R> Type of the task result returning from {@link ComputeTask#reduce(List)} method.
@@ -415,7 +415,7 @@ class Ignite_LocalPeek_Helper {
   }
 
   private static <V, R, MR, S, P extends Geometry & Polygonal> S _mapReduceOnIgniteCache(
-      OSHDB_Ignite oshdb, SerializableSupplier<S> identitySupplier,
+      OSHDBIgnite oshdb, SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner,
       MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P> computeJob) {
     // execute compute job on all ignite nodes and further reduce+return result(s)
@@ -438,7 +438,7 @@ class Ignite_LocalPeek_Helper {
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
-      OSHDB_Ignite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMContribution, R> mapper,
@@ -451,7 +451,7 @@ class Ignite_LocalPeek_Helper {
   }
 
   static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-      OSHDB_Ignite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
@@ -464,7 +464,7 @@ class Ignite_LocalPeek_Helper {
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-      OSHDB_Ignite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
@@ -477,7 +477,7 @@ class Ignite_LocalPeek_Helper {
   }
 
   static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-      OSHDB_Ignite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,

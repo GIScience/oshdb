@@ -13,8 +13,8 @@ import org.apache.ignite.IgniteDataStreamer;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.configuration.CacheConfiguration;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Ignite;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.TableNames;
@@ -24,16 +24,16 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
   final static Ignite ignite =
       Ignition.start(new File("./src/test/resources/ignite-config.xml").toString());
 
-  public TestMapReduceOSHDB_Ignite(OSHDB_Ignite oshdb) throws Exception {
+  public TestMapReduceOSHDB_Ignite(OSHDBIgnite oshdb) throws Exception {
     super(oshdb);
 
     final String prefix = "tests";
     oshdb.prefix(prefix);
 
-    OSHDB_H2 oshdb_h2 = new OSHDB_H2("./src/test/resources/test-data");
+    OSHDBH2 oshdb_h2 = new OSHDBH2("./src/test/resources/test-data");
     this.keytables = oshdb_h2;
 
-    Ignite ignite = ((OSHDB_Ignite) this.oshdb).getIgnite();
+    Ignite ignite = ((OSHDBIgnite) this.oshdb).getIgnite();
     ignite.active(true);
 
     // todo: also ways+relations? (at the moment we don't use them in the actual TestMapReduce

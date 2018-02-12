@@ -9,12 +9,12 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_LocalPeek;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_ScanQuery;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducer_Ignite_AffinityCall;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 
-public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Serializable {
+public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Serializable {
   public enum ComputeMode {
     LocalPeek,
     ScanQuery,
@@ -25,20 +25,20 @@ public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Seria
   private ComputeMode _computeMode = ComputeMode.LocalPeek;
   private Long _timeout = null;
 
-  public OSHDB_Ignite() throws SQLException, ClassNotFoundException {
+  public OSHDBIgnite() throws SQLException, ClassNotFoundException {
     this(new File("ignite-config.xml"));
   }
 
-  public OSHDB_Ignite(Ignite ignite) {
+  public OSHDBIgnite(Ignite ignite) {
     this._ignite = ignite;
     this._ignite.active(true);
   }
 
-  public OSHDB_Ignite(String igniteConfigFilePath) {
+  public OSHDBIgnite(String igniteConfigFilePath) {
     this(new File(igniteConfigFilePath));
   }
 
-  public OSHDB_Ignite(File igniteConfig) {
+  public OSHDBIgnite(File igniteConfig) {
     Ignition.setClientMode(true);
 
     this._ignite = Ignition.start(igniteConfig.toString());
@@ -46,17 +46,17 @@ public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Seria
   }
 
   @Override
-  public <X extends OSHDB_MapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
+  public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     MapReducer<X> mapReducer;
     switch (this.computeMode()) {
       case LocalPeek:
-        mapReducer = new MapReducer_Ignite_LocalPeek<X>(this, forClass);
+        mapReducer = new MapReducerIgniteLocalPeek<X>(this, forClass);
         break;
       case ScanQuery:
-        mapReducer = new MapReducer_Ignite_ScanQuery<X>(this, forClass);
+        mapReducer = new MapReducerIgniteScanQuery<X>(this, forClass);
         break;
       case AffinityCall:
-        mapReducer = new MapReducer_Ignite_AffinityCall<X>(this, forClass);
+        mapReducer = new MapReducerIgniteAffinityCall<X>(this, forClass);
         break;
       default:
         throw new UnsupportedOperationException("Backend not implemented for this database option.");
@@ -72,7 +72,7 @@ public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Seria
     this._ignite.close();
   }
 
-  public OSHDB_Ignite computeMode(ComputeMode computeMode) {
+  public OSHDBIgnite computeMode(ComputeMode computeMode) {
     this._computeMode = computeMode;
     return this;
   }
@@ -89,7 +89,7 @@ public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Seria
    * @param seconds time (in seconds) a query is allowed to run for.
    * @return the current oshdb object
    */
-  public OSHDB_Ignite timeout(double seconds) {
+  public OSHDBIgnite timeout(double seconds) {
     if (this.computeMode() == ComputeMode.ScanQuery)
       throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
     this._timeout = (long)Math.ceil(seconds*1000);
@@ -104,7 +104,7 @@ public class OSHDB_Ignite extends OSHDB_Database implements AutoCloseable, Seria
    * @param milliSeconds time (in milliseconds) a query is allowed to run for.
    * @return the current oshdb object
    */
-  public OSHDB_Ignite timeoutInMilliseconds(long milliSeconds) {
+  public OSHDBIgnite timeoutInMilliseconds(long milliSeconds) {
     if (this.computeMode() == ComputeMode.ScanQuery)
       throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
     this._timeout = milliSeconds;

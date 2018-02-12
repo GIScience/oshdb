@@ -5,8 +5,8 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -25,14 +25,14 @@ import static org.junit.Assert.assertEquals;
  *
  */
 abstract class TestMapReduce {
-  final OSHDB_Database oshdb;
-  OSHDB_JDBC keytables = null;
+  final OSHDBDatabase oshdb;
+  OSHDBJdbc keytables = null;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
   private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
-  TestMapReduce(OSHDB_Database oshdb) throws Exception {
+  TestMapReduce(OSHDBDatabase oshdb) throws Exception {
     this.oshdb = oshdb;
   }
 

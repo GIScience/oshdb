@@ -23,7 +23,7 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
  *   <li>the type(s) of change which has happened here (e.g. creation/deletion of an entity, modification of a geometry, altering of the tag list, etc.)</li>
  * </ul>
  */
-public class OSMContribution implements OSHDB_MapReducible {
+public class OSMContribution implements OSHDBMapReducible {
   private final OSHDBTimestamp _tstamp;
   private final LazyEvaluatedObject<Geometry> _geometryBefore;
   private final LazyEvaluatedObject<Geometry> _geometryAfter;

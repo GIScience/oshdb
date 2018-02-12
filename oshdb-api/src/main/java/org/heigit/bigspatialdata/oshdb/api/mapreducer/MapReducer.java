@@ -12,11 +12,11 @@ import java.util.*;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_JDBC;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
@@ -80,11 +80,11 @@ public abstract class MapReducer<X> implements
 
   private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
-  protected OSHDB_Database _oshdb;
-  protected transient OSHDB_JDBC _oshdbForTags;
+  protected OSHDBDatabase _oshdb;
+  protected transient OSHDBJdbc _oshdbForTags;
 
   // internal state
-  Class<? extends OSHDB_MapReducible> _forClass = null;
+  Class<? extends OSHDBMapReducible> _forClass = null;
 
   private enum Grouping {
     NONE, BY_ID
@@ -109,7 +109,7 @@ public abstract class MapReducer<X> implements
   private final Set<SerializableFunction> _flatMappers = new HashSet<>();
 
   // basic constructor
-  protected MapReducer(OSHDB_Database oshdb, Class<? extends OSHDB_MapReducible> forClass) {
+  protected MapReducer(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     this._oshdb = oshdb;
     this._forClass = forClass;
   }
@@ -151,9 +151,9 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> keytables(OSHDB_JDBC keytablesOshdb) {
-    if (keytablesOshdb != this._oshdb && this._oshdb instanceof OSHDB_JDBC) {
-      Connection c = ((OSHDB_JDBC) this._oshdb).getConnection();
+  public MapReducer<X> keytables(OSHDBJdbc keytablesOshdb) {
+    if (keytablesOshdb != this._oshdb && this._oshdb instanceof OSHDBJdbc) {
+      Connection c = ((OSHDBJdbc) this._oshdb).getConnection();
       try {
         new TagTranslator(c);
         LOG.warn("It looks like as if the current OSHDB comes with keytables included. " +

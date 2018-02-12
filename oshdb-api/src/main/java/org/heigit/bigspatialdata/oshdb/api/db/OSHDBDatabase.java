@@ -2,9 +2,9 @@ package org.heigit.bigspatialdata.oshdb.api.db;
 
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDB_MapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 
-public abstract class OSHDB_Database extends OSHDB {
+public abstract class OSHDBDatabase extends OSHDB {
     protected String prefix = "";
 
     /**
@@ -13,9 +13,9 @@ public abstract class OSHDB_Database extends OSHDB {
      * @param forClass the data type class to iterate over in the `mapping` function of the generated MapReducer
      * @return a new mapReducer object operating on the given OSHDB backend
      */
-    public abstract <X extends OSHDB_MapReducible> MapReducer<X> createMapReducer(Class<X> forClass);
+    public abstract <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass);
 
-    public OSHDB_Database prefix(String prefix) {
+    public OSHDBDatabase prefix(String prefix) {
         this.prefix = prefix;
         return this;
     }

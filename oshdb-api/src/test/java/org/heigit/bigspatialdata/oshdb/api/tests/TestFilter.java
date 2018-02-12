@@ -5,8 +5,8 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestFilter {
-  private final OSHDB_Database oshdb;
+  private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
@@ -33,7 +33,7 @@ public class TestFilter {
   private final double DELTA = 1e-8;
 
   public TestFilter() throws Exception {
-    oshdb = new OSHDB_H2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
