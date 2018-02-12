@@ -258,9 +258,29 @@ public abstract class MapReducer<X>
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd,
-      OSHDBTimestamps.Interval interval) {
+  public MapReducer<X> timestamps(
+      String isoDateStart, String isoDateEnd, OSHDBTimestamps.Interval interval
+  ) {
     return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
+  }
+
+  /**
+   * Sets a single timestamp for which to perform the analysis at.
+   *
+   * Useful in combination with the OSMEntitySnapshotView when not performing further aggregation by
+   * timestamp.
+   *
+   * See {@link #timestamps(OSHDBTimestampList)} for further information.
+   *
+   * @param isoDate an ISO 8601 date string representing the date of the analysis
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapReducer<X> timestamps(String isoDate) {
+    if (this._forClass.equals(OSMContribution.class)) {
+      LOG.warn("OSMContributionView requires two or more timestamps, but only one was supplied.");
+    }
+    return this.timestamps(isoDate, isoDate, new String[] {});
   }
 
   /**
@@ -277,7 +297,7 @@ public abstract class MapReducer<X>
    */
   @Contract(pure = true)
   public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd) {
-    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd));
+    return this.timestamps(isoDateStart, isoDateEnd, new String[] {});
   }
 
   /**
@@ -291,7 +311,7 @@ public abstract class MapReducer<X>
    * See {@link #timestamps(OSHDBTimestampList)} for further information.
    *
    * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateFirst an ISO 8601 date string representing the second date of the analysis
+   * @param isoDateSecond an ISO 8601 date string representing the second date of the analysis
    * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the
    *        analysis
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
