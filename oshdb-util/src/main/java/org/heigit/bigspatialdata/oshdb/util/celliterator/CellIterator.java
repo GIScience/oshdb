@@ -18,6 +18,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -288,41 +289,6 @@ public class CellIterator implements Serializable {
     return results.stream();
   }
 
-  public static class TimestampInterval {
-    private OSHDBTimestamp fromTimestamp;
-    private OSHDBTimestamp toTimestamp;
-
-    public TimestampInterval() {
-      this(new OSHDBTimestamp(Long.MIN_VALUE), new OSHDBTimestamp(Long.MAX_VALUE));
-    }
-
-    public TimestampInterval(OSHDBTimestamp fromTimestamp, OSHDBTimestamp toTimestamp) {
-      this.fromTimestamp = fromTimestamp;
-      this.toTimestamp = toTimestamp;
-    }
-
-    public TimestampInterval(SortedSet<OSHDBTimestamp> oshdbTimestamps) {
-      this(oshdbTimestamps.first(), oshdbTimestamps.last());
-    }
-
-    public boolean intersects(TimestampInterval other) {
-      return other.toTimestamp.getRawUnixTimestamp() >= this.fromTimestamp.getRawUnixTimestamp()
-          && other.fromTimestamp.getRawUnixTimestamp() <= this.toTimestamp.getRawUnixTimestamp();
-    }
-
-    public boolean includes(OSHDBTimestamp timestamp) {
-      return timestamp.getRawUnixTimestamp() >= this.fromTimestamp.getRawUnixTimestamp()
-          && timestamp.getRawUnixTimestamp() < this.toTimestamp.getRawUnixTimestamp();
-    }
-
-    public int compareTo(OSHDBTimestamp timestamp) {
-      if (this.includes(timestamp)) {
-        return 0;
-      }
-      return timestamp.getRawUnixTimestamp() < this.fromTimestamp.getRawUnixTimestamp() ? -1 : 1;
-    }
-  }
-
   public static class IterateAllEntry {
     public final OSHDBTimestamp timestamp;
     public final OSMEntity osmEntity;
@@ -358,7 +324,7 @@ public class CellIterator implements Serializable {
    *         intervals.
    */
   public Stream<IterateAllEntry> iterateByContribution(
-      GridOSHEntity cell, TimestampInterval timeInterval
+      GridOSHEntity cell, OSHDBTimestampInterval timeInterval
   ) {
     List<IterateAllEntry> results = new LinkedList<>();
 
@@ -397,7 +363,7 @@ public class CellIterator implements Serializable {
       List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
 
       if (modTs.size() == 0 || !timeInterval
-          .intersects(new TimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1)))) {
+          .intersects(new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1)))) {
         continue; // ignore osh entity because it's edit history is fully outside of the given time
       } // interval of interest
 
@@ -653,10 +619,12 @@ public class CellIterator implements Serializable {
   }
 
   /**
-   * @deprecated renamed to {@link #iterateByContribution(GridOSHEntity, TimestampInterval)}
+   * @deprecated renamed to {@link #iterateByContribution(GridOSHEntity, OSHDBTimestampInterval)}
    */
   @Deprecated
-  public Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, TimestampInterval timeInterval) {
+  public Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, OSHDBTimestampInterval timeInterval) {
     return this.iterateByContribution(cell, timeInterval);
   }
 }
+
+

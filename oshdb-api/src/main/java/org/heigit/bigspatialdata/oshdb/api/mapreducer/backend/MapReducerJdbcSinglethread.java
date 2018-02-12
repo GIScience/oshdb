@@ -25,7 +25,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.TimestampInterval;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.jetbrains.annotations.NotNull;
 
 public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
@@ -53,7 +53,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
+    OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(this._tstamps.get());
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
@@ -104,7 +104,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
+    OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(this._tstamps.get());
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {

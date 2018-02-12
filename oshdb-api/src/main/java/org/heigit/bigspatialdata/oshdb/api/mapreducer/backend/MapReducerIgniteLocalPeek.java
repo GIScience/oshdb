@@ -20,6 +20,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -258,7 +259,7 @@ class IgniteLocalPeekHelper {
               return identitySupplier.get();
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            cellIterator.iterateByContribution(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
+            cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
                 .forEach(contribution -> {
                   if (this.canceled)
                     return;
@@ -298,7 +299,7 @@ class IgniteLocalPeekHelper {
             // iterate over the history of all OSM objects in the current cell
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
             List<OSMContribution> contributions = new ArrayList<>();
-            cellIterator.iterateByContribution(oshEntityCell, new CellIterator.TimestampInterval(tstamps))
+            cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
                 .forEach(contribution -> {
                   if (this.canceled)
                     return;

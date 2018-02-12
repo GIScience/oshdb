@@ -17,7 +17,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.TimestampInterval;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -63,7 +63,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
+    OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(this._tstamps.get());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
@@ -105,7 +105,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-    TimestampInterval timestampInterval = new CellIterator.TimestampInterval(this._tstamps.get());
+    OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(this._tstamps.get());
 
     final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
 
