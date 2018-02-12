@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
-public class OSHDBTimestampAndIndex<V> implements Comparable<OSHDBTimestampAndIndex>, Serializable {
+public class OSHDBTimestampAndIndex<V> implements Comparable<OSHDBTimestampAndIndex<V>>, Serializable {
   private Pair<V, OSHDBTimestamp> _payload;
 
   public OSHDBTimestampAndIndex(OSHDBTimestamp timeIndex, V otherIndex) {
