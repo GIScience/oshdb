@@ -163,7 +163,7 @@ public class OSMNodeTest {
   public void testGetTags() {
     OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, 1000000000L, 1000000000L);
     int[] expResult = new int[] {};
-    int[] result = instance.getTags();
+    int[] result = instance.getRawTags();
     Assert.assertArrayEquals(expResult, result);
   }
 

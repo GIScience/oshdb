@@ -121,7 +121,7 @@ public class OSMRelationTest {
     OSMRelation instance =
         new OSMRelation(1L, 2, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
     int[] expResult = new int[] {1, 1, 2, 2};
-    int[] result = instance.getTags();
+    int[] result = instance.getRawTags();
     Assert.assertArrayEquals(expResult, result);
   }
 

@@ -90,7 +90,7 @@ public class LoaderNode extends Loader {
       
       if(onlyNodesWithTags){
         grid.entities = nodes.stream().filter(osh-> {
-            return osh.stream().anyMatch(osm -> osm.getTags().length > 0);
+            return osh.stream().anyMatch(osm -> osm.getRawTags().length > 0);
         }).collect(Collectors.toList());
       }else {
         grid.entities = new ArrayList<>(nodes);

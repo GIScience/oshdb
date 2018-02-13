@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 
 /**
  * Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
@@ -36,8 +37,12 @@ public class OSMMember {
     return type;
   }
 
-  public int getRoleId() {
+  public int getRawRoleId() {
     return roleId;
+  }
+
+  public OSHDBRole getRoleId() {
+    return new OSHDBRole(roleId);
   }
 
   @SuppressWarnings("rawtypes")

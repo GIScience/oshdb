@@ -31,9 +31,11 @@ public class IterateAllTest {
     Class.forName("org.h2.Driver");
 
     // connect to the "Big"DB
-    IterateAllTest.conn =
-        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r", "sa", "");
-
+    IterateAllTest.conn = DriverManager.getConnection(
+        "jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
+        "sa",
+        ""
+    );
   }
 
   @AfterClass
@@ -59,7 +61,7 @@ public class IterateAllTest {
 
       List<IterateAllEntry> result = (new CellIterator(
           new OSHDBBoundingBox(8, 9, 49, 50),
-          DefaultTagInterpreter.fromJDBC(conn),
+          new DefaultTagInterpreter(conn),
           oshEntity -> oshEntity.getId() == 617308093,
           osmEntity -> true,
           false

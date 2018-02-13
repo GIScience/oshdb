@@ -112,9 +112,9 @@ public abstract class OSHEntity2 {
             changed |= CHANGED_USER_ID;
             userId = aux.writeSInt32Delta(version.getUserId(), userId);
           }
-          if(!Arrays.equals(version.getTags(), tags)){
+          if(!Arrays.equals(version.getRawTags(), tags)){
             changed |= CHANGED_TAGS;
-            tags = version.getTags();
+            tags = version.getRawTags();
             aux.writeUInt32(tags.length);
             for(int i=0; i< tags.length; i++){
               aux.writeUInt32(tags[i]);

@@ -48,7 +48,7 @@ public abstract class OSHRelation2 extends OSHEntity2 implements OSH<OSMRelation
           final long memId = member.getId();
           final OSMType type = member.getType();
           final int typeId = type.intValue();
-          final int role = member.getRoleId();
+          final int role = member.getRawRoleId();
           final Integer memberOffset;
           if (type == OSMType.NODE)
             memberOffset = nodeOffsets.get(Long.valueOf(member.getId()));
@@ -82,7 +82,7 @@ public abstract class OSHRelation2 extends OSHEntity2 implements OSH<OSMRelation
           return false;
         if (a[i].getType() != b[i].getType())
           return false;
-        if (a[i].getRoleId() != b[i].getRoleId())
+        if (a[i].getRawRoleId() != b[i].getRawRoleId())
           return false;
       }
       return true;

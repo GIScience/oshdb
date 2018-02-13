@@ -139,7 +139,7 @@ public class OSMWayTest {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {part, part});
     int[] expResult = new int[] {1, 1};
-    int[] result = instance.getTags();
+    int[] result = instance.getRawTags();
     Assert.assertArrayEquals(expResult, result);
   }
 

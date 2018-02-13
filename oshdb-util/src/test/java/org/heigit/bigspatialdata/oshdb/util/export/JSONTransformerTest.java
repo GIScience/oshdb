@@ -16,9 +16,9 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.json.simple.parser.ParseException;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class JSONTransformerTest {
     String expResult =
         "{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}";
     String result = JSONTransformer
-        .transform(entity, timestamp, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1))
+        .transform(entity, timestamp, tt, new FakeTagInterpreter())
         .toString();
     assertEquals(expResult, result);
 
@@ -69,8 +69,9 @@ public class JSONTransformerTest {
 
     String result = JSONTransformer
         .transform(instance, new OSHDBTimestamp(1L), tt,
-            DefaultTagInterpreter.fromJDBC(
-                DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", "")))
+            new DefaultTagInterpreter(DriverManager.getConnection(
+                "jdbc:h2:./src/test/resources/test-data", "sa", ""
+            )))
         .toString();
     assertEquals(expResult, result);
   }
@@ -88,7 +89,7 @@ public class JSONTransformerTest {
         "{\"type\":\"Feature\",\"id\":\"way/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"way\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\",\"refs\":[1,1]},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[8.675635,49.418620999999995],[8.675635,49.418620999999995]]}}";
 
     String result = JSONTransformer
-        .transform(instance, new OSHDBTimestamp(1L), tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1))
+        .transform(instance, new OSHDBTimestamp(1L), tt, new FakeTagInterpreter())
         .toString();
     assertEquals(expResult, result);
   }
@@ -100,7 +101,7 @@ public class JSONTransformerTest {
     List<Pair<? extends OSMEntity, OSHDBTimestamp>> OSMObjects = new ArrayList<>(2);
     OSMObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(1L)));
     OSMObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(2L)));
-    TagInterpreter areaDecider = new TagInterpreter(1, 1, null, null, null, 1, 1, 1);
+    TagInterpreter areaDecider = new FakeTagInterpreter();
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
@@ -125,7 +126,7 @@ public class JSONTransformerTest {
     String expResult =
         "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/123@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":123,\"@visible\":true,\"@version\":2,\"@changeset\":46,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@uid\":1,\"building\":\"house\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.675635,49.418620999999995]}},{\"type\":\"Feature\",\"id\":\"node/123@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":123,\"@visible\":true,\"@version\":1,\"@changeset\":47,\"@timestamp\":\"1970-01-01T00:00:01Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":2,\"highway\":\"unclassified\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[8.715334,49.410283]}}]}";
     String result = JSONTransformer
-        .transform(instance, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1)).toString();
+        .transform(instance, tt, new FakeTagInterpreter()).toString();
     assertEquals(expResult, result);
   }
 
@@ -151,9 +152,24 @@ public class JSONTransformerTest {
         + "\"type\":\"Feature\",\"id\":\"node/3@1970-01-01T00:00:00Z\",\"properties\":{\"@type\":\"node\",\"@id\":3,\"@visible\":true,\"@version\":2,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:00Z\",\"@geomtimestamp\":\"1970-01-01T00:00:00Z\",\"@uid\":1,\"building\":\"residential\"},"
         + "\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.0,0.0]}}]}";
     String result = JSONTransformer
-        .transform(instance, tt, new TagInterpreter(1, 1, null, null, null, 1, 1, 1)).toString();
+        .transform(instance, tt, new FakeTagInterpreter()).toString();
     assertEquals(expResult, result);
 
   }
 
+}
+
+class FakeTagInterpreter implements TagInterpreter {
+  @Override
+  public boolean isArea(OSMEntity entity) { return false; }
+  @Override
+  public boolean isLine(OSMEntity entity) { return false; }
+  @Override
+  public boolean hasInterestingTagKey(OSMEntity osm) { return false; }
+  @Override
+  public boolean isMultipolygonOuterMember(OSMMember osmMember) { return false; }
+  @Override
+  public boolean isMultipolygonInnerMember(OSMMember osmMember) { return false; }
+  @Override
+  public boolean isOldStyleMultipolygon(OSMRelation osmRelation) { return false; }
 }
