@@ -230,7 +230,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
 					changeset += changesetList.get(index);
 					uid += uidList.get(index);
 					userSid += userSidList.get(index);
-					visible = visibleList.get(index);
+					visible = (!visibleList.isEmpty())?visibleList.get(index):true;
 				}
 
 				List<Tag> tags = new ArrayList<>();
