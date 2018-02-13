@@ -27,8 +27,6 @@ public class TagTranslator {
   private static final String UNKNOWN_TAG_VALUE_STR = "<unknown tag value>";
   public static final int UNKNOWN_ROLE_ID = -1;
   private static final String UNKNOWN_ROLE_STR = "<unknown role>";
-  public static final int UNKNOWN_USER_ID = -1;
-  private static final String UNKNOWN_USER_STR = "<unknown user name>";
 
   private final Map<String, Integer> keyToInt;
   private final Map<Integer, String> keyToString;
@@ -36,8 +34,6 @@ public class TagTranslator {
   private final Map<Pair<Integer,Integer>, Pair<String,String>> tagToString;
   private final Map<String, Integer> roleToInt;
   private final Map<Integer, String> roleToString;
-  private final Map<String, Integer> userToInt;
-  private final Map<Integer, String> userToString;
 
   private final Connection conn;
 
@@ -57,8 +53,6 @@ public class TagTranslator {
     this.tagToString = new ConcurrentHashMap<>(0);
     this.roleToInt = new ConcurrentHashMap<>(0);
     this.roleToString = new ConcurrentHashMap<>(0);
-    this.userToInt = new ConcurrentHashMap<>(0);
-    this.userToString = new ConcurrentHashMap<>(0);
 
     // test connection for presence of actual "keytables" tables
     EnumSet<TableNames> keyTables =
@@ -81,9 +75,7 @@ public class TagTranslator {
         new ImmutablePair<>(UNKNOWN_TAG_KEY_STR, UNKNOWN_TAG_VALUE_STR),
         new ImmutablePair<>(UNKNOWN_TAG_KEY_ID, UNKNOWN_TAG_VALUE_ID));
     roleToString.put(UNKNOWN_ROLE_ID, UNKNOWN_ROLE_STR);
-    //roleToInt.put(UNKNOWN_ROLE_STR, UNKNOWN_ROLE_ID);
-    //userToString.put(UNKNOWN_USER_ID, UNKNOWN_USER_STR);
-    //userToInt.put(UNKNOWN_USER_STR, UNKNOWN_USER_ID);
+    roleToInt.put(UNKNOWN_ROLE_STR, UNKNOWN_ROLE_ID);
   }
 
   /**
