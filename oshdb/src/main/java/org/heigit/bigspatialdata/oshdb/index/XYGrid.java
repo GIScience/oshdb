@@ -2,11 +2,12 @@ package org.heigit.bigspatialdata.oshdb.index;
 
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +130,7 @@ public class XYGrid {
    * @return south-western cellID of given BBOX
    */
   public long getId(OSHDBBoundingBox bbx) {
-    return getId(bbx.minLon, bbx.minLat);
+    return getId(bbx.getMinLonLong(), bbx.getMinLatLong());
   }
 
   /**
@@ -182,7 +183,7 @@ public class XYGrid {
    */
   public long getEstimatedIdCount(final OSHDBBoundingBox data) {
     //number of Cells in x * number of cells in y
-    return ((long) Math.ceil(Math.max((data.maxLon - data.minLon) / cellWidth, (data.maxLat - data.minLat) / cellWidth)));
+    return ((long) Math.ceil(Math.max((data.getMaxLonLong() - data.getMinLonLong()) / cellWidth, (data.getMaxLatLong() - data.getMinLatLong()) / cellWidth)));
   }
 
   /**
@@ -211,10 +212,10 @@ public class XYGrid {
   public Set<Pair<Long, Long>> bbox2CellIdRanges(OSHDBBoundingBox bbox, boolean enlarge) {
     //initialise basic variables
     Set<Pair<Long, Long>> result = new TreeSet<>();
-    long minlong = bbox.minLon;
-    long minlat = bbox.minLat;
-    long maxlong = bbox.maxLon;
-    long maxlat = bbox.maxLat;
+    long minlong = bbox.getMinLonLong();
+    long minlat = bbox.getMinLatLong();
+    long maxlong = bbox.getMaxLonLong();
+    long maxlat = bbox.getMaxLatLong();
 
     if (minlat > maxlat) {
       LOG.warn("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
@@ -304,10 +305,10 @@ public class XYGrid {
     }
 
     OSHDBBoundingBox bbox = this.getCellDimensions(center.getId());
-    long minlong = bbox.minLon - 1L;
-    long minlat = bbox.minLat - 1L;
-    long maxlong = bbox.maxLon + 1L;
-    long maxlat = bbox.maxLat + 1L;
+    long minlong = bbox.getMinLonLong() - 1L;
+    long minlat = bbox.getMinLatLong() - 1L;
+    long maxlong = bbox.getMaxLonLong() + 1L;
+    long maxlat = bbox.getMaxLatLong() + 1L;
     OSHDBBoundingBox newbbox = new OSHDBBoundingBox(minlong, minlat, maxlong, maxlat);
 
     return this.bbox2CellIdRanges(newbbox, false);

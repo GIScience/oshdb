@@ -4,16 +4,12 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class OSHDBBoundingBox implements Serializable {
-
-  private static final Logger LOG = LoggerFactory.getLogger(OSHDBBoundingBox.class);
-
-  
+    
   public static final OSHDBBoundingBox EMPTY = new OSHDBBoundingBox(0L, 0L, 0L, 0L);
+  public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(Long.MAX_VALUE,Long.MAX_VALUE,Long.MIN_VALUE,Long.MIN_VALUE);
 
 
   /**
@@ -52,10 +48,10 @@ public class OSHDBBoundingBox implements Serializable {
     return OVERLAP.OVERLAPPING;
   }
 
-  public long minLon;
-  public long maxLon;
-  public long minLat;
-  public long maxLat;
+  private long minLon;
+  private long maxLon;
+  private long minLat;
+  private long maxLat;
 
   public OSHDBBoundingBox(long minLon, long minLat, long maxLon, long maxLat) {
     this.minLon = minLon;
@@ -82,21 +78,43 @@ public class OSHDBBoundingBox implements Serializable {
     this((double) minLon, (double) minLat, (double) maxLon, (double) maxLat);
   }
 
+  public void set(OSHDBBoundingBox bbox) {
+   this.minLat = bbox.minLon;
+   this.maxLon = bbox.maxLon;
+   this.minLat = bbox.minLat;
+   this.maxLat = bbox.maxLat;
+  }
 
   public double getMinLon() {
     return minLon * OSHDB.GEOM_PRECISION;
+  }
+  
+  public long getMinLonLong(){
+    return minLon;
   }
 
   public double getMaxLon() {
     return maxLon * OSHDB.GEOM_PRECISION;
   }
 
+  public long getMaxLonLong(){
+    return maxLon;
+  }
+  
   public double getMinLat() {
     return minLat * OSHDB.GEOM_PRECISION;
+  }
+  
+  public long getMinLatLong(){
+    return minLat;
   }
 
   public double getMaxLat() {
     return maxLat * OSHDB.GEOM_PRECISION;
+  }
+  
+  public long getMaxLatLong(){
+    return maxLat;
   }
 
   public long[] getLon() {
@@ -164,4 +182,14 @@ public class OSHDBBoundingBox implements Serializable {
     A_COMPLETE_IN_B,
     B_COMPLETE_IN_A
   }
+
+  public boolean isPoint() {
+    return minLon == maxLon && minLat == maxLat;
+  }
+  
+  public boolean isValid(){
+    return minLon <= maxLon && minLat <= maxLat;
+  }
+
+  
 }

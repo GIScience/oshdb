@@ -3,11 +3,12 @@ package org.heigit.bigspatialdata.oshdb.index;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +92,7 @@ public class XYGridTree {
       if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
         continue;
       }
-      return new CellId(i, gridMap.get(i).getId(bbox.minLon, bbox.minLat));
+      return new CellId(i, gridMap.get(i).getId(bbox.getMinLonLong(), bbox.getMinLatLong()));
     }
     return null;
   }

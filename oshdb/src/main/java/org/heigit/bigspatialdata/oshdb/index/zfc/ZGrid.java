@@ -325,20 +325,20 @@ public class ZGrid {
           OSHDBBoundingBox parentBBox = states[z - 1].bbox;
           switch (state.i) {
             case 0:
-              state.bbox = new OSHDBBoundingBox(parentBBox.minLon, parentBBox.minLat,
-                  parentBBox.minLon + state.width, parentBBox.minLat + state.width);
+              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong(), parentBBox.getMinLatLong(),
+                  parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong() + state.width);
               break;
             case 1:
-              state.bbox = new OSHDBBoundingBox(parentBBox.minLon + state.width, parentBBox.minLat,
-                  parentBBox.minLon + 2 * state.width, parentBBox.minLat + state.width);
+              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong(),
+                  parentBBox.getMinLonLong() + 2 * state.width, parentBBox.getMinLatLong() + state.width);
               break;
             case 2:
-              state.bbox = new OSHDBBoundingBox(parentBBox.minLon, parentBBox.minLat + state.width,
-                  parentBBox.minLon + state.width, parentBBox.minLat + 2 * state.width);
+              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong(), parentBBox.getMinLatLong() + state.width,
+                  parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong() + 2 * state.width);
               break;
             case 3:
-              state.bbox = new OSHDBBoundingBox(parentBBox.minLon + state.width, parentBBox.minLat + state.width,
-                  parentBBox.minLon + 2 * state.width, parentBBox.minLat + 2 * state.width);
+              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong() + state.width,
+                  parentBBox.getMinLonLong() + 2 * state.width, parentBBox.getMinLatLong() + 2 * state.width);
           }
           overlap = OSHDBBoundingBox.overlap(state.bbox, search);
         }
