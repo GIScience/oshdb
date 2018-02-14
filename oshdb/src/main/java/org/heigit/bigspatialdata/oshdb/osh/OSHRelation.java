@@ -321,10 +321,10 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     for (OSHNode node : nodes) {
       OSHDBBoundingBox bbox = node.getBoundingBox();
       if (bbox != null) {
-        minLon = Math.min(minLon, bbox.minLon);
-        maxLon = Math.max(maxLon, bbox.maxLon);
-        minLat = Math.min(minLat, bbox.minLat);
-        maxLat = Math.max(maxLat, bbox.maxLat);
+        minLon = Math.min(minLon, bbox.getMinLonLong());
+        maxLon = Math.max(maxLon, bbox.getMaxLonLong());
+        minLat = Math.min(minLat, bbox.getMinLatLong());
+        maxLat = Math.max(maxLat, bbox.getMaxLatLong());
       } else {
         Iterator<OSMNode> osmItr = node.iterator();
         while (osmItr.hasNext()) {
@@ -354,10 +354,10 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     offset = 0;
     for (OSHWay way : ways) {
       OSHDBBoundingBox bbox = way.getBoundingBox();
-      minLon = Math.min(minLon, bbox.minLon);
-      maxLon = Math.max(maxLon, bbox.maxLon);
-      minLat = Math.min(minLat, bbox.minLat);
-      maxLat = Math.max(maxLat, bbox.maxLat);
+      minLon = Math.min(minLon, bbox.getMinLonLong());
+      maxLon = Math.max(maxLon, bbox.getMaxLonLong());
+      minLat = Math.min(minLat, bbox.getMinLatLong());
+      maxLat = Math.max(maxLat, bbox.getMaxLatLong());
 
       way = way.rebase(0, 0, baseLongitude, baseLatitude);
       wayOffsets.put(way.getId(), idx);
