@@ -107,6 +107,18 @@ public class OSHDBBoundingBox implements Serializable {
     return new long[]{minLat, maxLat};
   }
 
+  public boolean intersects(OSHDBBoundingBox otherBbox) {
+    return (otherBbox != null)
+        && (maxLat >= otherBbox.minLat) && (minLat <= otherBbox.maxLat) 
+        && (maxLon >= otherBbox.minLon) && (minLon <= otherBbox.maxLon);
+  }
+  
+  public boolean isInside(OSHDBBoundingBox otherBbox) {
+    return (otherBbox != null) 
+        && (minLat >= otherBbox.minLat) && (maxLat <= otherBbox.maxLat)
+        && (minLon >= otherBbox.minLon) && (maxLon <= otherBbox.maxLon);
+  }
+  
   @Override
   public String toString() {
     return String.format(Locale.ENGLISH, "(%f,%f) (%f,%f)", this.getMinLon(), this.getMinLat(), this.getMaxLon(), this.getMaxLat());

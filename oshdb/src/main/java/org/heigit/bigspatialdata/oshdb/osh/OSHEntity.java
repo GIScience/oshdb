@@ -268,25 +268,15 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * Used to roughly pre-filter objects against a bbox.
    *
    * @param otherBbox the bounding box which this entity is tested against
+   * @deprecated Use {@link #getBoundingBox().intersects(OSHDBBoundingBox)} instead.
    */
+@Deprecated
   public boolean intersectsBbox(OSHDBBoundingBox otherBbox) {
     OSHDBBoundingBox bbox = this.getBoundingBox();
     if (bbox == null) {
       return false;
     }
-    if (bbox.maxLat < otherBbox.minLat) {
-      return false;
-    }
-    if (bbox.minLat > otherBbox.maxLat) {
-      return false;
-    }
-    if (bbox.maxLon < otherBbox.minLon) {
-      return false;
-    }
-    if (bbox.minLon > otherBbox.maxLon) {
-      return false;
-    }
-    return true;
+    return bbox.intersects(otherBbox);
   }
 
   /**
@@ -294,14 +284,15 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * optimization to find not-to-be-clipped entity Geometries
    *
    * @param otherBbox the bounding box which this entity is tested against
+   * @deprecated Use {@link #getBoundingBox().isInside(OSHDBBoundingBox)} instead.
    */
+@Deprecated
   public boolean insideBbox(OSHDBBoundingBox otherBbox) {
     OSHDBBoundingBox bbox = this.getBoundingBox();
     if (bbox == null) {
       return false;
     }
-    return bbox.minLat >= otherBbox.minLat && bbox.maxLat <= otherBbox.maxLat
-        && bbox.minLon >= otherBbox.minLon && bbox.maxLon <= otherBbox.maxLon;
+    return bbox.isInside(otherBbox);
   }
 
   /**
