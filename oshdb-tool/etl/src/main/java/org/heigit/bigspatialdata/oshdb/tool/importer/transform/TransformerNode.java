@@ -57,8 +57,8 @@ public class TransformerNode extends Transformer {
 
       final OSHDBBoundingBox bbox = getCellBounce(cellId);
 
-      final long baseLongitude = bbox.minLon;
-      final long baseLatitude = bbox.minLat;
+      final long baseLongitude = bbox.getMinLonLong();
+      final long baseLatitude = bbox.getMinLatLong();
 
       final LongFunction<byte[]> toByteArray = baseId -> {
         try {

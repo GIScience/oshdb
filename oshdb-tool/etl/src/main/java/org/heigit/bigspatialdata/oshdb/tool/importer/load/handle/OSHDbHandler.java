@@ -49,8 +49,8 @@ public abstract class OSHDbHandler extends LoaderHandler {
     XYGrid xyGrid = new XYGrid(zoom);
 
     OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zId);
-    long longitude = bbox.minLon + (bbox.maxLon - bbox.minLon) / 2;
-    long latitude = bbox.minLat + (bbox.maxLat - bbox.minLat) / 2;
+    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
+    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
     long xyId = xyGrid.getId(longitude, latitude);
 
     List<OSHNode> gridNodes = nodes.stream().map(osh2 -> {
@@ -82,8 +82,8 @@ public abstract class OSHDbHandler extends LoaderHandler {
     XYGrid xyGrid = new XYGrid(zoom);
 
     OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zId);
-    long longitude = bbox.minLon + (bbox.maxLon - bbox.minLon) / 2;
-    long latitude = bbox.minLat + (bbox.maxLat - bbox.minLat) / 2;
+    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
+    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
     long xyId = xyGrid.getId(longitude, latitude);
 
     Map<Long, OSHNode> idOshMap = new HashMap<>(nodes.size());
@@ -136,8 +136,8 @@ public abstract class OSHDbHandler extends LoaderHandler {
     XYGrid xyGrid = new XYGrid(zoom);
 
     OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zId);
-    long longitude = bbox.minLon + (bbox.maxLon - bbox.minLon) / 2;
-    long latitude = bbox.minLat + (bbox.maxLat - bbox.minLat) / 2;
+    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
+    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
     long xyId = xyGrid.getId(longitude, latitude);
 
     Map<Long, OSHNode> idOshMap = new HashMap<>(nodes.size());
