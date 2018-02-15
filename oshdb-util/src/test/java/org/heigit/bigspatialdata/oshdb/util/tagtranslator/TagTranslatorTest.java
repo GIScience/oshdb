@@ -8,6 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
@@ -35,7 +36,7 @@ public class TagTranslatorTest {
   public TagTranslatorTest() {}
 
   @Test
-  public void testTag2Int() {
+  public void testTag2Int() throws OSHDBKeytablesNotFoundException {
     OSMTag tag = new OSMTag("building", "yes");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSHDBTag expResult = new OSHDBTag(1, 0);
@@ -44,7 +45,7 @@ public class TagTranslatorTest {
   }
 
   @Test
-  public void testTag2String() {
+  public void testTag2String() throws OSHDBKeytablesNotFoundException {
     OSHDBTag tag = new OSHDBTag(1, 2);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMTag expResult = new OSMTag("building", "residential");
@@ -53,7 +54,7 @@ public class TagTranslatorTest {
   }
 
   @Test
-  public void testKey2Int() {
+  public void testKey2Int() throws OSHDBKeytablesNotFoundException {
     OSMTagKey key = new OSMTagKey("highway");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSHDBTagKey expResult = new OSHDBTagKey(2);
@@ -62,7 +63,7 @@ public class TagTranslatorTest {
   }
 
   @Test
-  public void testKey2String() {
+  public void testKey2String() throws OSHDBKeytablesNotFoundException {
     OSHDBTagKey key = new OSHDBTagKey(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMTagKey expResult = new OSMTagKey("building");
@@ -71,7 +72,7 @@ public class TagTranslatorTest {
   }
 
   @Test
-  public void testRole2Int() {
+  public void testRole2Int() throws OSHDBKeytablesNotFoundException {
     OSMRole role = new OSMRole("from");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSHDBRole expResult = new OSHDBRole(4);
@@ -80,7 +81,7 @@ public class TagTranslatorTest {
   }
 
   @Test
-  public void testRole2String() {
+  public void testRole2String() throws OSHDBKeytablesNotFoundException {
     OSHDBRole role = new OSHDBRole(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMRole expResult = new OSMRole("inner");

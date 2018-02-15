@@ -12,22 +12,29 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Easily translate your textual tags and roles to OSHDB's internal
  * representation (encoded as integers) and vice versa.
+ *
+ * This class handles missing/not-found data in the following ways:
+ * <ul>
+ *   <li>
+ *     for (tag/role) strings that cannot be found in a keytable, the tagtranslator will generate a
+ *     (temporary, internal and negative) id which can afterwards be resolved back to the input
+ *     string when using the <i>same</i> tagtranslator object.
+ *   </li>
+ *   <li>
+ *     for ids that are not found neither in the keytable nor the tagtranslator's cache, a runtime
+ *     exception is thrown
+ *   </li>
+ * </ul>
  */
 public class TagTranslator {
   private static final Logger LOG = LoggerFactory.getLogger(TagTranslator.class);
-
-  public static final int UNKNOWN_TAG_KEY_ID = -1;
-  private static final String UNKNOWN_TAG_KEY_STR = "<unknown tag key>";
-  public static final int UNKNOWN_TAG_VALUE_ID = -1;
-  private static final String UNKNOWN_TAG_VALUE_STR = "<unknown tag value>";
-  public static final int UNKNOWN_ROLE_ID = -1;
-  private static final String UNKNOWN_ROLE_STR = "<unknown role>";
 
   private final Map<OSMTagKey, OSHDBTagKey> keyToInt;
   private final Map<OSHDBTagKey, OSMTagKey> keyToString;
@@ -65,18 +72,6 @@ public class TagTranslator {
         throw new OSHDBKeytablesNotFoundException();
       }
     }
-
-    // pre-populate caches with id<->string pairs for "no-data" cases
-    keyToString.put(new OSHDBTagKey(UNKNOWN_TAG_KEY_ID), new OSMTagKey(UNKNOWN_TAG_KEY_STR));
-    keyToInt.put(new OSMTagKey(UNKNOWN_TAG_KEY_STR), new OSHDBTagKey(UNKNOWN_TAG_KEY_ID));
-    tagToString.put(
-        new OSHDBTag(UNKNOWN_TAG_KEY_ID, UNKNOWN_TAG_VALUE_ID),
-        new OSMTag(UNKNOWN_TAG_KEY_STR, UNKNOWN_TAG_VALUE_STR));
-    tagToInt.put(
-        new OSMTag(UNKNOWN_TAG_KEY_STR, UNKNOWN_TAG_VALUE_STR),
-        new OSHDBTag(UNKNOWN_TAG_KEY_ID, UNKNOWN_TAG_VALUE_ID));
-    roleToString.put(new OSHDBRole(UNKNOWN_ROLE_ID), new OSMRole(UNKNOWN_ROLE_STR));
-    roleToInt.put(new OSMRole(UNKNOWN_ROLE_STR), new OSHDBRole(UNKNOWN_ROLE_ID));
   }
 
   /**
@@ -106,11 +101,11 @@ public class TagTranslator {
       ResultSet keys = keystmt.executeQuery();
       keys.next();
       keyInt = new OSHDBTagKey(keys.getInt("ID"));
-      this.keyToString.put(keyInt, key);
     } catch (SQLException ex) {
-      LOG.info("Unable to find tag key \"{}\" in keytables.", key);
-      keyInt = new OSHDBTagKey(UNKNOWN_TAG_KEY_ID);
+      LOG.info("Unable to find tag key {} in keytables.", key);
+      keyInt = new OSHDBTagKey(getFakeId(key.toString()));
     }
+    this.keyToString.put(keyInt, key);
     this.keyToInt.put(key, keyInt);
     return keyInt;
   }
@@ -120,6 +115,7 @@ public class TagTranslator {
    *
    * @param key the tag key (represented as an integer)
    * @return the textual representation of this tag key
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag key cannot be found
    */
   public OSMTagKey osmTagKeyOf(int key) {
     return osmTagKeyOf(new OSHDBTagKey(key));
@@ -130,6 +126,7 @@ public class TagTranslator {
    *
    * @param key the tag key (as an OSHDBTagKey object)
    * @return the textual representation of this tag key
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag key cannot be found
    */
   public OSMTagKey osmTagKeyOf(OSHDBTagKey key) {
     if (this.keyToString.containsKey(key)) {
@@ -144,8 +141,9 @@ public class TagTranslator {
       keyString = new OSMTagKey(keys.getString("TXT"));
       this.keyToInt.put(keyString, key);
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag key id \"{}\" in keytables.", key);
-      keyString = new OSMTagKey(UNKNOWN_TAG_KEY_STR);
+      throw new OSHDBTagOrRoleNotFoundException(String.format(
+          "Unable to find tag key id %d in keytables.", key.toInt()
+      ));
     }
     this.keyToString.put(key, keyString);
     return keyString;
@@ -185,11 +183,11 @@ public class TagTranslator {
       ResultSet values = valstmt.executeQuery();
       values.next();
       tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
-      this.tagToString.put(tagInt, tag);
     } catch (SQLException ex) {
-      LOG.info("Unable to find tag \"{}\"=\"{}\" in keytables.", tag.getKey(), tag.getValue());
-      tagInt = new OSHDBTag(this.oshdbTagKeyOf(tag.getKey()).toInt(), UNKNOWN_TAG_VALUE_ID);
+      LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
+      tagInt = new OSHDBTag(this.oshdbTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
     }
+    this.tagToString.put(tagInt, tag);
     this.tagToInt.put(tag, tagInt);
     return tagInt;
   }
@@ -200,6 +198,7 @@ public class TagTranslator {
    * @param key the key of the tag (represented as an integer)
    * @param value the value of the tag (represented as an integer)
    * @return the textual representation of this tag
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
   public OSMTag osmTagOf(int key, int value) {
     return this.osmTagOf(new OSHDBTag(key, value));
@@ -210,6 +209,7 @@ public class TagTranslator {
    *
    * @param tag the tag (as an OSHDBTag object)
    * @return the textual representation of this tag
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
   public OSMTag osmTagOf(OSHDBTag tag) {
     // check if Key and Value are in cache
@@ -228,12 +228,14 @@ public class TagTranslator {
       ResultSet values = valstmt.executeQuery();
       values.next();
       tagString = new OSMTag(values.getString("KEYTXT"), values.getString("VALUETXT"));
-      this.tagToInt.put(tagString, tag);
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag id \"{}\"=\"{}\" in keytables.", tag.getKey(), tag.getValue());
-      tagString = new OSMTag(this.osmTagKeyOf(tag.getKey()).toString(), UNKNOWN_TAG_VALUE_STR);
+      throw new OSHDBTagOrRoleNotFoundException(String.format(
+          "Unable to find tag id %d=%d in keytables.",
+          tag.getKey(), tag.getValue()
+      ));
     }
     // put it in caches
+    this.tagToInt.put(tagString, tag);
     this.tagToString.put(tag, tagString);
     return tagString;
   }
@@ -265,11 +267,11 @@ public class TagTranslator {
       ResultSet roles = rolestmt.executeQuery();
       roles.next();
       roleInt = new OSHDBRole(roles.getInt("ID"));
-      this.roleToString.put(roleInt, role);
     } catch (SQLException ex) {
-      LOG.info("Unable to find role \"{}\" in keytables.", role);
-      roleInt = new OSHDBRole(UNKNOWN_ROLE_ID);
+      LOG.info("Unable to find role {} in keytables.", role);
+      roleInt = new OSHDBRole(getFakeId(role.toString()));
     }
+    this.roleToString.put(roleInt, role);
     this.roleToInt.put(role, roleInt);
     return roleInt;
   }
@@ -279,6 +281,7 @@ public class TagTranslator {
    *
    * @param role the role ID (represented as an integer)
    * @return the textual representation of this role
+   * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
    */
   public OSMRole osmRoleOf(int role) {
     return this.osmRoleOf(new OSHDBRole(role));
@@ -289,6 +292,7 @@ public class TagTranslator {
    *
    * @param role the role ID (as an OSHDBRole object)
    * @return the textual representation of this role
+   * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
    */
   public OSMRole osmRoleOf(OSHDBRole role) {
     if (this.roleToString.containsKey(role)) {
@@ -301,12 +305,17 @@ public class TagTranslator {
       ResultSet Roles = Rolestmt.executeQuery();
       Roles.next();
       roleString = new OSMRole(Roles.getString("TXT"));
-      this.roleToInt.put(roleString, role);
     } catch (SQLException ex) {
-      LOG.info("Unable to find role id \"{}\" in keytables.", role);
-      roleString = new OSMRole(UNKNOWN_ROLE_STR);
+      throw new OSHDBTagOrRoleNotFoundException(String.format(
+          "Unable to find role id %d in keytables.", role.toInt()
+      ));
     }
+    this.roleToInt.put(roleString, role);
     this.roleToString.put(role, roleString);
     return roleString;
+  }
+
+  private int getFakeId(String s) {
+    return -Math.abs(s.hashCode());
   }
 }

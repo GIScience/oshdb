@@ -11,6 +11,10 @@ public class OSHDBTagKey {
     return this.key;
   }
 
+  public boolean isPresentInKeytables() {
+    return this.key >= 0;
+  }
+
   @Override
   public boolean equals(Object o) {
     return o instanceof OSHDBTagKey && ((OSHDBTagKey)o).key == this.key;

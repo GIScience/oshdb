@@ -186,12 +186,15 @@ public class MapReducerJdbcMultithread<X> extends MapReducer<X> {
     }).reduce(identitySupplier.get(), combiner);
   }
 
-
+  private static long t0 = 0;
+  private static long t1 = 0;
+  private static long t2 = 0;
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
+    long __t = System.nanoTime();
     CellIterator cellIterator = new CellIterator(
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
@@ -201,7 +204,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducer<X> {
     final List<Pair<CellId, CellId>> cellIdRanges = new ArrayList<>();
     this._getCellIdRanges().forEach(cellIdRanges::add);
 
-    return cellIdRanges.parallelStream().flatMap(cellIdRange -> {
+    S ret = cellIdRanges.parallelStream().flatMap(cellIdRange -> {
+      long _t = System.nanoTime();
       try {
         String sqlQuery = this._typeFilter.stream()
             .map(osmType -> TableNames.forOSMType(osmType)
@@ -211,7 +215,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducer<X> {
             .collect(Collectors.joining(" union all "));
         // fetch data from H2 DB
         PreparedStatement pstmt =
-            ((OSHDBJdbc)this._oshdb).getConnection().prepareStatement(sqlQuery);
+            ((OSHDBJdbc) this._oshdb).getConnection().prepareStatement(sqlQuery);
         pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
         pstmt.setLong(2, cellIdRange.getLeft().getId());
         pstmt.setLong(3, cellIdRange.getRight().getId());
@@ -226,12 +230,14 @@ public class MapReducerJdbcMultithread<X> extends MapReducer<X> {
                   .readObject();
           cellsData.add(oshCellRawData);
         }
+        t1 += System.nanoTime() - _t;
         return cellsData.stream();
       } catch (SQLException | IOException | ClassNotFoundException e) {
         e.printStackTrace();
         return Stream.empty();
       }
     }).map(oshCell -> {
+      long _t = System.nanoTime();
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       cellIterator.iterateByTimestamps(oshCell, timestamps).forEach(data -> {
@@ -241,8 +247,18 @@ public class MapReducerJdbcMultithread<X> extends MapReducer<X> {
         // immediately fold the result
         accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
       });
+      t2 += System.nanoTime() - _t;
       return accInternal.get();
     }).reduce(identitySupplier.get(), combiner);
+    t0 += System.nanoTime() - __t;
+    {
+      System.out.println();
+      System.out.println();
+      System.out.println(t0/1E9 + "\t" + t1/1E9 + "\t" + t2/1E9);
+      System.out.println();
+      System.out.println();
+    }
+    return ret;
   }
 
   @Override

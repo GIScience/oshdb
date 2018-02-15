@@ -16,6 +16,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -38,7 +39,7 @@ public class JSONTransformerTest {
   public JSONTransformerTest() {}
 
   @Test
-  public void testTransform_4args_101() throws SQLException {
+  public void testTransform_4args_101() throws SQLException, OSHDBKeytablesNotFoundException {
     int[] properties = {1, 2};
     OSMEntity entity = new OSMNode(1L, 1, new OSHDBTimestamp(0L), 1L, 1, properties, 1000000000L, 1000000000L);
     OSHDBTimestamp timestamp = new OSHDBTimestamp(1L);
@@ -55,7 +56,7 @@ public class JSONTransformerTest {
 
   @Test
   public void testTransform_4args_102()
-      throws SQLException, ClassNotFoundException, IOException, ParseException {
+      throws SQLException, ClassNotFoundException, IOException, ParseException, OSHDBKeytablesNotFoundException {
     List<OSMNode> versions = new ArrayList<>(1);
     versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(0l), 1l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
@@ -77,7 +78,8 @@ public class JSONTransformerTest {
   }
 
   @Test
-  public void testTransform_4args_103() throws SQLException, ClassNotFoundException, IOException {
+  public void testTransform_4args_103()
+      throws SQLException, ClassNotFoundException, IOException, OSHDBKeytablesNotFoundException {
     List<OSMNode> versions = new ArrayList<>(1);
     versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(0l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     OSHNode hnode = OSHNode.build(versions);
@@ -95,7 +97,7 @@ public class JSONTransformerTest {
   }
 
   @Test
-  public void testMultiTransform() throws SQLException {
+  public void testMultiTransform() throws SQLException, OSHDBKeytablesNotFoundException {
     int[] properties = {1, 2};
     OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1415538449L), 1L, 1, properties, 1000000000L, 1000000000L);
     List<Pair<? extends OSMEntity, OSHDBTimestamp>> OSMObjects = new ArrayList<>(2);
@@ -111,7 +113,8 @@ public class JSONTransformerTest {
   }
 
   @Test
-  public void testTransform_4args_2() throws IOException, ClassNotFoundException, SQLException {
+  public void testTransform_4args_2()
+      throws IOException, ClassNotFoundException, SQLException, OSHDBKeytablesNotFoundException {
 
     List<OSMNode> versions = new ArrayList<>(2);
 
@@ -131,7 +134,8 @@ public class JSONTransformerTest {
   }
 
   @Test
-  public void testTransform_3args() throws IOException, SQLException {
+  public void testTransform_3args()
+      throws IOException, SQLException, OSHDBKeytablesNotFoundException {
     List<OSHNode> hosmNodes = new ArrayList<>(3);
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>(2);

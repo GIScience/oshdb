@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.json.simple.parser.ParseException;
@@ -46,8 +47,7 @@ public class IterateAllTest {
   public IterateAllTest() {}
 
   @Test
-  public void testIssue108()
-      throws SQLException, IOException, ClassNotFoundException, ParseException {
+  public void testIssue108() throws SQLException, IOException, ClassNotFoundException, ParseException, OSHDBKeytablesNotFoundException {
     ResultSet oshCellsRawData = conn.prepareStatement("select data from " + TableNames.T_NODES).executeQuery();
 
     int countTotal = 0;

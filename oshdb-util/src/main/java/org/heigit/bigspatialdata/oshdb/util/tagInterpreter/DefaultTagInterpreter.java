@@ -6,6 +6,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMRole;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
@@ -40,7 +41,8 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
    * @deprecated use constructor directly
    */
   @Deprecated
-  public static DefaultTagInterpreter fromJDBC(Connection conn) throws SQLException, IOException, ParseException {
+  public static DefaultTagInterpreter fromJDBC(Connection conn)
+      throws SQLException, IOException, ParseException, OSHDBKeytablesNotFoundException {
     return DefaultTagInterpreter.fromJDBC(conn,
         defaultAreaTagsDefinitionFile,
         defaultUninterestingTagsDefinitionFile
@@ -54,7 +56,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   public static DefaultTagInterpreter fromJDBC(
       Connection conn,
       String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile
-  ) throws SQLException, IOException, ParseException {
+  ) throws SQLException, IOException, ParseException, OSHDBKeytablesNotFoundException {
     return new DefaultTagInterpreter(
         new TagTranslator(conn),
         areaTagsDefinitionFile,
@@ -68,7 +70,8 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
    * @throws IOException
    * @throws ParseException
    */
-  public DefaultTagInterpreter(Connection conn) throws IOException, ParseException {
+  public DefaultTagInterpreter(Connection conn)
+      throws IOException, ParseException, OSHDBKeytablesNotFoundException {
     this(
         new TagTranslator(conn),
         defaultAreaTagsDefinitionFile,

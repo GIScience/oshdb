@@ -384,8 +384,8 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> where(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
     OSHDBTagKey keyId = this._getTagTranslator().oshdbTagKeyOf(key);
-    if (keyId.toInt() == TagTranslator.UNKNOWN_TAG_KEY_ID) {
-      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key.toString());
+    if (!keyId.isPresentInKeytables()) {
+      LOG.warn("Tag key {} not found. No data will match this filter.", key.toString());
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
       return ret;
@@ -419,8 +419,8 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> where(OSMTag tag) {
     MapReducer<X> ret = this.copy();
     OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(tag);
-    if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
-      LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this filter.",
+    if (!keyValueId.isPresentInKeytables()) {
+      LOG.warn("Tag {}={} not found. No data will match this filter.",
           tag.getKey(), tag.getValue());
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
@@ -444,9 +444,10 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
-    int keyId = this._getTagTranslator().oshdbTagKeyOf(key).toInt();
-    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID || values.size() == 0) {
-      LOG.warn((values.size() > 0 ? "Tag key \"{}\" not found." : "Empty tag value list.")
+    OSHDBTagKey oshdbKey = this._getTagTranslator().oshdbTagKeyOf(key);
+    int keyId = oshdbKey.toInt();
+    if (!oshdbKey.isPresentInKeytables() || values.size() == 0) {
+      LOG.warn((values.size() > 0 ? "Tag key {} not found." : "Empty tag value list.")
           + " No data will match this filter.", key);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
@@ -455,8 +456,8 @@ public abstract class MapReducer<X> implements
     Set<Integer> valueIds = new HashSet<>();
     for (String value : values) {
       OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(key, value);
-      if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
-        LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.", key, value);
+      if (!keyValueId.isPresentInKeytables()) {
+        LOG.warn("Tag {}={} not found. No data will match this tag value.", key, value);
       } else {
         valueIds.add(keyValueId.getValue());
       }
@@ -486,9 +487,10 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(String key, Pattern valuePattern) {
     MapReducer<X> ret = this.copy();
-    int keyId = this._getTagTranslator().oshdbTagKeyOf(key).toInt();
-    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID) {
-      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+    OSHDBTagKey oshdbKey = this._getTagTranslator().oshdbTagKeyOf(key);
+    int keyId = oshdbKey.toInt();
+    if (!oshdbKey.isPresentInKeytables()) {
+      LOG.warn("Tag key {} not found. No data will match this filter.", key);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
       return ret;
@@ -528,8 +530,8 @@ public abstract class MapReducer<X> implements
     Set<OSHDBTag> keyValueIds = new HashSet<>();
     for (OSMTag tag : tags) {
       OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(tag);
-      if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
-        LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.",
+      if (!keyValueId.isPresentInKeytables()) {
+        LOG.warn("Tag {}={} not found. No data will match this tag value.",
             tag.getKey(), tag.getValue());
       } else {
         keyIds.add(keyValueId.getKey());
@@ -1291,7 +1293,12 @@ public abstract class MapReducer<X> implements
 
   protected TagTranslator _getTagTranslator() {
     if (this._tagTranslator == null) {
-      this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
+      try {
+        this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
+      } catch (OSHDBKeytablesNotFoundException e) {
+        LOG.error(e.getMessage());
+        throw new RuntimeException(e);
+      }
     }
     return this._tagTranslator;
   }

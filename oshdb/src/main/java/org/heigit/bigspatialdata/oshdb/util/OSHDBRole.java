@@ -11,6 +11,10 @@ public class OSHDBRole {
     return this.role;
   }
 
+  public boolean isPresentInKeytables() {
+    return this.role >= 0;
+  }
+
   @Override
   public boolean equals(Object o) {
     return o instanceof OSHDBRole && ((OSHDBRole)o).role == this.role;
