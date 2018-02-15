@@ -60,13 +60,6 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         null, null, null,
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.MEMBERLIST_CHANGE))
-    );
-    assertEquals(7, c.getContributorUserId());
-    c = new OSMContribution(
-        new OSHDBTimestamp(123),
-        null, null, null,
-        new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
         new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
     );
     // non-match

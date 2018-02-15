@@ -531,42 +531,6 @@ public class CellIterator implements Serializable {
                     }
                   }
                   return tagsChange;
-                case MEMBERLIST_CHANGE:
-                  // look if members have been changed between versions
-                  boolean membersChange = false;
-                  switch (prevEntity.getType()) {
-                    case WAY:
-                      OSMMember[] prevNds = ((OSMWay) prevEntity).getRefs();
-                      OSMMember[] currNds = ((OSMWay) osmEntity).getRefs();
-                      if (prevNds.length != currNds.length) {
-                        membersChange = true;
-                      } else {
-                        for (int i = 0; i < prevNds.length; i++) {
-                          if (prevNds[i].getId() != currNds[i].getId()) {
-                            membersChange = true;
-                            break;
-                          }
-                        }
-                      }
-                      break;
-                    case RELATION:
-                      OSMMember[] prevMembers = ((OSMRelation) prevEntity).getMembers();
-                      OSMMember[] currMembers = ((OSMRelation) osmEntity).getMembers();
-                      if (prevMembers.length != currMembers.length) {
-                        membersChange = true;
-                      } else {
-                        for (int i = 0; i < prevMembers.length; i++) {
-                          if (prevMembers[i].getId() != currMembers[i].getId()
-                              || prevMembers[i].getType() != currMembers[i].getType()
-                              || prevMembers[i].getRoleId() != currMembers[i].getRoleId()) {
-                            membersChange = true;
-                            break;
-                          }
-                        }
-                      }
-                      break;
-                  }
-                  return membersChange;
                 case GEOMETRY_CHANGE:
                   // look if geometry has been changed between versions
                   boolean geometryChange = false;

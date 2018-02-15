@@ -4,6 +4,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import java.util.EnumSet;
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
@@ -28,12 +29,13 @@ public class OSMContribution implements OSHDBMapReducible {
   private final LazyEvaluatedObject<Geometry> _geometryBefore;
   private final LazyEvaluatedObject<Geometry> _geometryAfter;
   private final OSMEntity _entityBefore;
+  @Nonnull
   private final OSMEntity _entityAfter;
   private final LazyEvaluatedContributionTypes _contributionTypes;
   
   public OSMContribution(OSHDBTimestamp tstamp,
       LazyEvaluatedObject<Geometry> geometryBefore, LazyEvaluatedObject<Geometry> geometryAfter,
-      OSMEntity entityBefore, OSMEntity entityAfter,
+      OSMEntity entityBefore, @Nonnull OSMEntity entityAfter,
       LazyEvaluatedContributionTypes contributionTypes
   ) {
     this._tstamp = tstamp;
@@ -99,16 +101,11 @@ public class OSMContribution implements OSHDBMapReducible {
    *   <li>CREATION</li>
    *   <li>DELETION</li>
    *   <li>TAG_CHANGE</li>
-   *   <li>MEMBERLIST_CHANGE</li>
    *   <li>GEOMETRY_CHANGE</li>
    * </ul>
    *
    * If this is a entity creation or deletion, the other flags are not set (even though one might argue that a just
    * created object clearly has a different geometry than before, for example).
-   *
-   * The MEMBERLIST_CHANGE flag is set if the list of "direct" children of this object (i.e. the nodes of a way or the
-   * members of a relation, but not for example the nodes of a way of a relation) has changed or rearranged. The flag is
-   * also set if only the role of a member of a relation has been changed.
    *
    * @return a set of modification type this contribution made on the underlying data
    */
@@ -122,16 +119,11 @@ public class OSMContribution implements OSHDBMapReducible {
    *   <li>CREATION</li>
    *   <li>DELETION</li>
    *   <li>TAG_CHANGE</li>
-   *   <li>MEMBERLIST_CHANGE</li>
    *   <li>GEOMETRY_CHANGE</li>
    * </ul>
    *
    * If this is a entity creation or deletion, the other flags are not set (even though one might argue that a just
    * created object clearly has a different geometry than before, for example).
-   *
-   * The MEMBERLIST_CHANGE flag is set if the list of "direct" children of this object (i.e. the nodes of a way or the
-   * members of a relation, but not for example the nodes of a way of a relation) has changed or rearranged. The flag is
-   * also set if only the role of a member of a relation has been changed.
    *
    * @return a set of modification type this contribution made on the underlying data
    */
@@ -159,10 +151,8 @@ public class OSMContribution implements OSHDBMapReducible {
     // if the entity itself was modified at this exact timestamp, or we know from the contribution type that the entity
     // must also have been modified, we can just return the uid directly
     if (contributionTimestamp.equals(entity.getTimestamp()) ||
-        contributionTypes.contains(ContributionType.CREATION) ||
-        contributionTypes.contains(ContributionType.TAG_CHANGE) ||
-        contributionTypes.contains(ContributionType.MEMBERLIST_CHANGE) ||
-        contributionTypes.contains(ContributionType.DELETION)
+        this._entityBefore == null ||
+        this._entityBefore.getVersion() != this._entityAfter.getVersion()
     ) {
       return entity.getUserId();
     }
