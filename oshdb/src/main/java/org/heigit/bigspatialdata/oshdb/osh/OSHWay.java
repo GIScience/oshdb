@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
+import com.google.common.collect.Lists;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -11,11 +12,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -526,35 +530,34 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 
   @Override
   public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
-    List<OSHDBTimestamp> result;
-
-    List<OSMWay> ways = this.getVersions();
-    Set<OSHDBTimestamp> wayTimestamps = ways.stream().map(OSMEntity::getTimestamp).collect(Collectors.toSet());
-
-    result = new ArrayList<>(wayTimestamps);
+    List<OSHDBTimestamp> wayTs = new ArrayList<>(this.iterator().next().getVersion());
+    for (OSMWay osmWay : this) {
+      wayTs.add(osmWay.getTimestamp());
+    }
     if (!recurse) {
-      Collections.sort(result);
-      return result;
+      return Lists.reverse(wayTs);
     }
 
-    Set<OSHDBTimestamp> ndTimestamps = IntStream.range(0, ways.size()).mapToObj((Integer::new)).flatMap(osmWayIndex -> {
-      OSMWay osmWay = ways.get(osmWayIndex);
-      if (!osmWay.isVisible()) {
-        return Stream.empty();
+    SortedSet<OSHDBTimestamp> result = new TreeSet<>(wayTs);
+    int i = -1;
+    for (OSMWay osmWay : this) {
+      i++;
+      if (!osmWay.isVisible()) continue;
+      OSHDBTimestamp thisT = wayTs.get(i);
+      OSHDBTimestamp nextT = i>0 ? wayTs.get(i-1) : new OSHDBTimestamp(Long.MAX_VALUE);
+      OSMMember[] nds = osmWay.getRefs();
+      for (OSMMember nd : nds) {
+        OSHNode oshNode = (OSHNode)nd.getEntity();
+        if (oshNode == null) continue;
+        for (OSMNode osmNode : oshNode) {
+          OSHDBTimestamp nodeTs = osmNode.getTimestamp();
+          if (nodeTs.compareTo(nextT) > 0) continue;
+          if (nodeTs.compareTo(thisT) < 0) break;
+          result.add(nodeTs);
+        }
       }
-      OSMWay nextOsmWay = osmWayIndex > 0 ? ways.get(osmWayIndex - 1) : null;
-      return Arrays.stream(osmWay.getRefs()).map(osmNd -> ((OSHNode) osmNd.getEntity())).filter(Objects::nonNull)
-          .flatMap(oshNode -> oshNode.getVersions().stream()
-          .filter(osmNode -> osmNode.getTimestamp().getRawUnixTimestamp() > osmWay.getTimestamp().getRawUnixTimestamp()
-          && (nextOsmWay == null || osmNode.getTimestamp().getRawUnixTimestamp() < nextOsmWay.getTimestamp().getRawUnixTimestamp()))
-          .map(OSMEntity::getTimestamp));
-
-    }).collect(Collectors.toSet());
-
-    result.addAll(ndTimestamps);
-
-    Collections.sort(result);
-    return result;
+    }
+    return new ArrayList<>(result);
   }
 
   @Override
