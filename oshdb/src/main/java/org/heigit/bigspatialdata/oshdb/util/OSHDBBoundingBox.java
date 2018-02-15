@@ -79,10 +79,17 @@ public class OSHDBBoundingBox implements Serializable {
   }
 
   public void set(OSHDBBoundingBox bbox) {
-   this.minLat = bbox.minLon;
+   this.minLon = bbox.minLon;
    this.maxLon = bbox.maxLon;
    this.minLat = bbox.minLat;
    this.maxLat = bbox.maxLat;
+  }
+  
+  public void add(OSHDBBoundingBox bbox){
+    this.minLon = Math.min(minLon,bbox.minLon);
+    this.maxLon = Math.max(maxLon,bbox.maxLon);
+    this.minLat = Math.min(minLat,bbox.minLat);
+    this.maxLat = Math.max(maxLat,bbox.maxLat);
   }
 
   public double getMinLon() {
