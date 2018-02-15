@@ -1,6 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class OSHDBTimestamp implements Comparable<OSHDBTimestamp>, Serializable {
@@ -40,6 +44,7 @@ public class OSHDBTimestamp implements Comparable<OSHDBTimestamp>, Serializable 
   }
 
   public String toString() {
-    return this.toDate().toString();
+    ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochSecond(_tstamp), ZoneOffset.UTC);
+    return zdt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
   }
 }
