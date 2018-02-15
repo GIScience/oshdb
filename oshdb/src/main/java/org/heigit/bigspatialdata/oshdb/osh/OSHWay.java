@@ -551,8 +551,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
         if (oshNode == null) continue;
         for (OSMNode osmNode : oshNode) {
           OSHDBTimestamp nodeTs = osmNode.getTimestamp();
-          if (nodeTs.compareTo(nextT) > 0) continue;
-          if (nodeTs.compareTo(thisT) < 0) break;
+          if (nodeTs.compareTo(nextT) >= 0) continue;
+          if (nodeTs.compareTo(thisT) <= 0) break;
           result.add(nodeTs);
         }
       }

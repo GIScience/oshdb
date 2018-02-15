@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
+import com.google.common.collect.Lists;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -11,11 +12,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -25,6 +29,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
@@ -536,46 +541,87 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
   @Override
   public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
-    List<OSHDBTimestamp> result;
-
-    List<OSMRelation> rels = this.getVersions();
-    Set<OSHDBTimestamp> relTimestamps = rels.stream()
-            .map(OSMEntity::getTimestamp)
-            .collect(Collectors.toSet());
-
-    result = new ArrayList<>(relTimestamps);
+    List<OSHDBTimestamp> relTs = new ArrayList<>(this.iterator().next().getVersion());
+    for (OSMRelation osmRelation : this) {
+      relTs.add(osmRelation.getTimestamp());
+    }
     if (!recurse) {
-      Collections.sort(result);
-      return result;
+      return Lists.reverse(relTs);
     }
 
-    Set<OSHDBTimestamp> memberTimestamps = IntStream.range(0, rels.size()).boxed()
-        .flatMap(osmRelIndex -> {
-          OSMRelation osmRel = rels.get(osmRelIndex);
-          if (!osmRel.isVisible()) {
-            return Stream.empty();
+    Map<Long, LinkedList<OSHDBTimestamp>> childNodes = new TreeMap<>();
+    Map<Long, LinkedList<OSHDBTimestamp>> childWays = new TreeMap<>();
+    int i = -1;
+    for (OSMRelation osmRelation : this) {
+      i++;
+      OSHDBTimestamp thisT = relTs.get(i);
+      OSHDBTimestamp nextT = i > 0 ? relTs.get(i - 1) : new OSHDBTimestamp(Long.MAX_VALUE);
+      OSMMember[] members = osmRelation.getMembers();
+      for (OSMMember member : members) {
+        switch (member.getType()) {
+          case NODE:
+            childNodes.putIfAbsent(member.getId(), new LinkedList<>());
+            LinkedList<OSHDBTimestamp> childNodeValidityTimestamps = childNodes.get(member.getId());
+            if (childNodeValidityTimestamps.size() > 0 &&
+                childNodeValidityTimestamps.getLast().equals(thisT)) {
+              // merge consecutive time intervals
+              childNodeValidityTimestamps.pop();
+              childNodeValidityTimestamps.add(thisT);
+            } else {
+              childNodeValidityTimestamps.add(nextT);
+              childNodeValidityTimestamps.add(thisT);
+            }
+            break;
+          case WAY:
+            childWays.putIfAbsent(member.getId(), new LinkedList<>());
+            LinkedList<OSHDBTimestamp> childWayValidityTimestamps = childWays.get(member.getId());
+            if (childWayValidityTimestamps.size() > 0 &&
+                childWayValidityTimestamps.getLast().equals(thisT)) {
+              // merge consecutive time intervals
+              childWayValidityTimestamps.pop();
+              childWayValidityTimestamps.add(thisT);
+            } else {
+              childWayValidityTimestamps.add(nextT);
+              childWayValidityTimestamps.add(thisT);
+            }
+            break;
+        }
+      }
+    }
+
+    SortedSet<OSHDBTimestamp> result = new TreeSet<>(relTs);
+    for (OSMRelation osmRelation : this) {
+      OSMMember[] members = osmRelation.getMembers();
+      for (OSMMember member : members) {
+        Iterator<OSHDBTimestamp> validMemberTs;
+        List<OSHDBTimestamp> modTs;
+        switch (member.getType()) {
+          case NODE:
+            OSHNode oshNode = (OSHNode)member.getEntity();
+            modTs = oshNode.getModificationTimestamps();
+            validMemberTs = childNodes.get(member.getId()).iterator();
+            break;
+          case WAY:
+            OSHWay oshWay = (OSHWay)member.getEntity();
+            modTs = oshWay.getModificationTimestamps(true);
+            validMemberTs = childWays.get(member.getId()).iterator();
+            break;
+          default:
+            continue;
+        }
+        while (validMemberTs.hasNext()) {
+          OSHDBTimestamp toTs = validMemberTs.next();
+          OSHDBTimestamp fromTs = validMemberTs.next();
+          for (OSHDBTimestamp ts : modTs) {
+            if (ts.compareTo(fromTs) >= 0 && ts.compareTo(toTs) < 0) {
+              result.add(ts);
+            }
           }
-          OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
-          return Arrays.stream(osmRel.getMembers())
-              .filter(member -> member.getType() == OSMType.NODE || member.getType() == OSMType.WAY)
-              .map(OSMMember::getEntity)
-              .filter(Objects::nonNull)
-              .flatMap(oshEntity ->
-                  (oshEntity instanceof OSHNode ? (OSHNode) oshEntity : (OSHWay) oshEntity)
-                  // gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
-                  .getModificationTimestamps(true).stream()
-                  .filter(ts ->
-                      ts.getRawUnixTimestamp() > osmRel.getTimestamp().getRawUnixTimestamp() &&
-                      (nextOsmRel == null || ts.getRawUnixTimestamp() < nextOsmRel.getTimestamp().getRawUnixTimestamp())
-                  )
-              );
-        })
-        .collect(Collectors.toSet());
+        }
+      }
+    }
 
-    result.addAll(memberTimestamps);
-
-    Collections.sort(result);
-    return result;
+    return new ArrayList<>(result);
   }
 
   @Override
