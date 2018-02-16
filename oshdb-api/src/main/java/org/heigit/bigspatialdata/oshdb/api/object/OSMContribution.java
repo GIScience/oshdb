@@ -82,7 +82,7 @@ public class OSMContribution implements OSHDBMapReducible {
    *         clipped to the respective area of interest)
    */
   public Geometry getGeometryUnclippedAfter() {
-    return data.geometry.get();
+    return data.unclippedGeometry.get();
   }
 
   /**
