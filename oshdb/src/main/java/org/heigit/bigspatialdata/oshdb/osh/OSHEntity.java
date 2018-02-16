@@ -18,9 +18,11 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 
@@ -80,7 +82,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
       if (userId != lastUserId)
         changed |= CHANGED_USER_ID;
 
-      int[] keyValues = version.getTags();
+      int[] keyValues = version.getRawTags();
 
       if (version.isVisible() && !Arrays.equals(keyValues, lastKeyValues)) {
         changed |= CHANGED_TAGS;
@@ -165,7 +167,27 @@ public abstract class OSHEntity<OSM extends OSMEntity>
     return bbox;
   }
 
-  public int[] getKeys() {
+  public Iterable<OSHDBTagKey> getTagKeys() {
+    return new Iterable<OSHDBTagKey>() {
+      @Nonnull
+      @Override
+      public Iterator<OSHDBTagKey> iterator() {
+        return new Iterator<OSHDBTagKey>() {
+          int i=0;
+          @Override
+          public boolean hasNext() {
+            return i<keys.length;
+          }
+          @Override
+          public OSHDBTagKey next() {
+            return new OSHDBTagKey(keys[i++]);
+          }
+        };
+      }
+    };
+  }
+
+  public int[] getRawTagKeys() {
     return keys;
   }
 
@@ -233,6 +255,10 @@ public abstract class OSHEntity<OSM extends OSMEntity>
   }
 
 
+
+  public boolean hasTagKey(OSHDBTagKey tag) {
+    return this.hasTagKey(tag.toInt());
+  }
 
   public boolean hasTagKey(int key) {
     // todo: replace with binary search (keys are sorted)

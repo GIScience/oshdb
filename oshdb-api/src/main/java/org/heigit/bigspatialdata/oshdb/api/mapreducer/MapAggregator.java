@@ -9,6 +9,8 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -136,8 +138,30 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
+  public MapAggregator<U, X> where(OSMTagKey key) {
+    return this.copyTransform(this._mapReducer.where(key));
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return a modified copy of this object (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
   public MapAggregator<U, X> where(String key) {
     return this.copyTransform(this._mapReducer.where(key));
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
+   *
+   * @param tag the tag (key-value pair) to filter the osm entities for
+   * @return a modified copy of this object (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapAggregator<U, X> where(OSMTag tag) {
+    return this.copyTransform(this._mapReducer.where(tag));
   }
 
   /**
@@ -186,7 +210,7 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(Collection<Pair<String, String>> keyValuePairs) {
+  public MapAggregator<U, X> where(Collection<OSMTag> keyValuePairs) {
     return this.copyTransform(this._mapReducer.where(keyValuePairs));
   }
 

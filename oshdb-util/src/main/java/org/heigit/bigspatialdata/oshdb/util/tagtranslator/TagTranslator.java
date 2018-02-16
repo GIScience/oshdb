@@ -8,44 +8,48 @@ import java.sql.SQLException;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Easily translate your String-Keys or Values to OSHDb integer and vice versa.
+ * Easily translate your textual tags and roles to OSHDB's internal
+ * representation (encoded as integers) and vice versa.
  *
+ * This class handles missing/not-found data in the following ways:
+ * <ul>
+ *   <li>
+ *     for (tag/role) strings that cannot be found in a keytable, the tagtranslator will generate a
+ *     (temporary, internal and negative) id which can afterwards be resolved back to the input
+ *     string when using the <i>same</i> tagtranslator object.
+ *   </li>
+ *   <li>
+ *     for ids that are not found neither in the keytable nor the tagtranslator's cache, a runtime
+ *     exception is thrown
+ *   </li>
+ * </ul>
  */
 public class TagTranslator {
   private static final Logger LOG = LoggerFactory.getLogger(TagTranslator.class);
 
-  public static final int UNKNOWN_TAG_KEY_ID = -1;
-  private static final String UNKNOWN_TAG_KEY_STR = "<unknown tag key>";
-  public static final int UNKNOWN_TAG_VALUE_ID = -1;
-  private static final String UNKNOWN_TAG_VALUE_STR = "<unknown tag value>";
-  public static final int UNKNOWN_ROLE_ID = -1;
-  private static final String UNKNOWN_ROLE_STR = "<unknown role>";
-  public static final int UNKNOWN_USER_ID = -1;
-  private static final String UNKNOWN_USER_STR = "<unknown user name>";
-
-  private final Map<String, Integer> keyToInt;
-  private final Map<Integer, String> keyToString;
-  private final Map<Pair<String,String>, Pair<Integer,Integer>> tagToInt;
-  private final Map<Pair<Integer,Integer>, Pair<String,String>> tagToString;
-  private final Map<String, Integer> roleToInt;
-  private final Map<Integer, String> roleToString;
-  private final Map<String, Integer> userToInt;
-  private final Map<Integer, String> userToString;
+  private final Map<OSMTagKey, OSHDBTagKey> keyToInt;
+  private final Map<OSHDBTagKey, OSMTagKey> keyToString;
+  private final Map<OSMTag, OSHDBTag> tagToInt;
+  private final Map<OSHDBTag, OSMTag> tagToString;
+  private final Map<OSMRole, OSHDBRole> roleToInt;
+  private final Map<OSHDBRole, OSMRole> roleToString;
 
   private final Connection conn;
 
   /**
-   * A TagTranslator for a specific DB-Connection. Keep it safe and feed it from time to time! It
-   * has its own lazy cache to speed up searching.
+   * A TagTranslator for a specific DB-Connection. It has its own internal cache
+   * to speed up searching.
    *
-   * @param conn a connection to a database. For now only H2 is supported
+   * @param conn a connection to a database (containing oshdb keytables).
    * @throws OSHDBKeytablesNotFoundException if the supplied database doesn't contain the required
    *         "keyTables" tables
    */
@@ -57,8 +61,6 @@ public class TagTranslator {
     this.tagToString = new ConcurrentHashMap<>(0);
     this.roleToInt = new ConcurrentHashMap<>(0);
     this.roleToString = new ConcurrentHashMap<>(0);
-    this.userToInt = new ConcurrentHashMap<>(0);
-    this.userToString = new ConcurrentHashMap<>(0);
 
     // test connection for presence of actual "keytables" tables
     EnumSet<TableNames> keyTables =
@@ -70,98 +72,107 @@ public class TagTranslator {
         throw new OSHDBKeytablesNotFoundException();
       }
     }
-
-    // pre-populate caches with id<->string pairs for "no-data" cases
-    keyToString.put(UNKNOWN_TAG_KEY_ID, UNKNOWN_TAG_KEY_STR);
-    keyToInt.put(UNKNOWN_TAG_KEY_STR, UNKNOWN_TAG_KEY_ID);
-    tagToString.put(
-        new ImmutablePair<>(UNKNOWN_TAG_KEY_ID, UNKNOWN_TAG_VALUE_ID),
-        new ImmutablePair<>(UNKNOWN_TAG_KEY_STR, UNKNOWN_TAG_VALUE_STR));
-    tagToInt.put(
-        new ImmutablePair<>(UNKNOWN_TAG_KEY_STR, UNKNOWN_TAG_VALUE_STR),
-        new ImmutablePair<>(UNKNOWN_TAG_KEY_ID, UNKNOWN_TAG_VALUE_ID));
-    roleToString.put(UNKNOWN_ROLE_ID, UNKNOWN_ROLE_STR);
-    //roleToInt.put(UNKNOWN_ROLE_STR, UNKNOWN_ROLE_ID);
-    //userToString.put(UNKNOWN_USER_ID, UNKNOWN_USER_STR);
-    //userToInt.put(UNKNOWN_USER_STR, UNKNOWN_USER_ID);
   }
 
   /**
-   * Get ID (integer) of a tag key.
+   * Get oshdb's internal representation of a tag key (string).
    *
-   * @param key the tag key
-   * @return the corresponding integer ID of this key, or null if it cannot be found
+   * @param key the tag key as a string
+   * @return the corresponding oshdb representation of this key
    */
-  public Integer key2Int(String key) {
-    if (this.tagToInt.containsKey(key)) {
-      return this.tagToInt.get(key).getKey();
+  public OSHDBTagKey oshdbTagKeyOf(String key) {
+    return oshdbTagKeyOf(new OSMTagKey(key));
+  }
+
+  /**
+   * Get oshdb's internal representation of a tag key.
+   *
+   * @param key the tag key as an OSMTagKey object
+   * @return the corresponding oshdb representation of this key
+   */
+  public OSHDBTagKey oshdbTagKeyOf(OSMTagKey key) {
+    if (this.keyToInt.containsKey(key)) {
+      return this.keyToInt.get(key);
     }
-    Integer keyInt;
+    OSHDBTagKey keyInt;
     try (PreparedStatement keystmt = this.conn.prepareStatement(
         "select ID from " + TableNames.E_KEY.toString() + " where KEY.TXT = ?;")) {
-      keystmt.setString(1, key);
+      keystmt.setString(1, key.toString());
       ResultSet keys = keystmt.executeQuery();
       keys.next();
-      keyInt = keys.getInt("ID");
-      this.keyToString.put(keyInt, key);
+      keyInt = new OSHDBTagKey(keys.getInt("ID"));
     } catch (SQLException ex) {
-      LOG.info("Unable to find tag key \"{}\" in keytables.", key);
-      keyInt = UNKNOWN_TAG_KEY_ID;
+      LOG.info("Unable to find tag key {} in keytables.", key);
+      keyInt = new OSHDBTagKey(getFakeId(key.toString()));
     }
+    this.keyToString.put(keyInt, key);
     this.keyToInt.put(key, keyInt);
     return keyInt;
   }
 
   /**
-   * Get a tag key text (string) of a single key ID.
+   * Get a tag key's string representation from oshdb's internal data format.
    *
-   * @param key the ID (integer) of the tag key to fetch
-   * @return the text (string) of the corresponding tag key, or null if it cannot be found
+   * @param key the tag key (represented as an integer)
+   * @return the textual representation of this tag key
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag key cannot be found
    */
-  public String key2String(Integer key) {
+  public OSMTagKey osmTagKeyOf(int key) {
+    return osmTagKeyOf(new OSHDBTagKey(key));
+  }
+
+  /**
+   * Get a tag key's string representation from oshdb's internal data format.
+   *
+   * @param key the tag key (as an OSHDBTagKey object)
+   * @return the textual representation of this tag key
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag key cannot be found
+   */
+  public OSMTagKey osmTagKeyOf(OSHDBTagKey key) {
     if (this.keyToString.containsKey(key)) {
       return this.keyToString.get(key);
     }
-    String keyString;
+    OSMTagKey keyString;
     try (PreparedStatement keystmt =
         this.conn.prepareStatement("select TXT from KEY where KEY.ID = ?;")) {
-      keystmt.setInt(1, key);
+      keystmt.setInt(1, key.toInt());
       ResultSet keys = keystmt.executeQuery();
       keys.next();
-      keyString = keys.getString("TXT");
+      keyString = new OSMTagKey(keys.getString("TXT"));
       this.keyToInt.put(keyString, key);
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag key id \"{}\" in keytables.", key);
-      keyString = UNKNOWN_TAG_KEY_STR;
+      throw new OSHDBTagOrRoleNotFoundException(String.format(
+          "Unable to find tag key id %d in keytables.", key.toInt()
+      ));
     }
     this.keyToString.put(key, keyString);
     return keyString;
   }
 
   /**
-   * Get the IDs of a tag (key=value pair).
+   * Get oshdb's internal representation of a tag (key-value string pair).
    *
-   * @param key the key of the tag
-   * @param value the value of the tag
-   * @return the corresponding key-value ID (integer) Pair, or null if it cannot be found
+   * @param key the (string) key of the tag
+   * @param value the (string) value of the tag
+   * @return the corresponding oshdb representation of this tag
    */
-  public Pair<Integer, Integer> tag2Int(String key, String value) {
-    return this.tag2Int(new ImmutablePair<>(key, value));
+  public OSHDBTag oshdbTagOf(String key, String value) {
+    return this.oshdbTagOf(new OSMTag(key, value));
   }
 
   /**
-   * Get the IDs of a tag (key=value pair).
+   * Get oshdb's internal representation of a tag (key-value pair).
    *
-   * @param tag a key-value pair
-   * @return the corresponding key-value ID (integer) Pair, or null if it cannot be found
+   * @param tag a key-value pair as an OSMTag object
+   * @return the corresponding oshdb representation of this tag
    */
-  public Pair<Integer, Integer> tag2Int(Pair<String, String> tag) {
+  public OSHDBTag oshdbTagOf(OSMTag tag) {
     // check if Key and Value are in cache
     if (this.tagToInt.containsKey(tag)) {
       return this.tagToInt.get(tag);
     }
-    Pair<Integer, Integer> tagInt;
-    // key or value is not in cache so let's go get them
+    OSHDBTag tagInt;
+    // key or value is not in cache so let's go toInt them
     try (PreparedStatement valstmt =
         this.conn.prepareStatement("select k.ID as KEYID,kv.VALUEID as VALUEID "
             + "from " + TableNames.E_KEYVALUE.toString() + " kv "
@@ -171,41 +182,43 @@ public class TagTranslator {
       valstmt.setString(2, tag.getValue());
       ResultSet values = valstmt.executeQuery();
       values.next();
-      tagInt = new ImmutablePair<>(values.getInt("KEYID"), values.getInt("VALUEID"));
-      this.tagToString.put(tagInt, tag);
+      tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
     } catch (SQLException ex) {
-      LOG.info("Unable to find tag \"{}\"=\"{}\" in keytables.", tag.getKey(), tag.getValue());
-      tagInt = new ImmutablePair<>(this.key2Int(tag.getKey()), UNKNOWN_TAG_VALUE_ID);
+      LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
+      tagInt = new OSHDBTag(this.oshdbTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
     }
+    this.tagToString.put(tagInt, tag);
     this.tagToInt.put(tag, tagInt);
     return tagInt;
   }
 
   /**
-   * Get a tags text from a key-value ID pair.
+   * Get a tag's string representation from oshdb's internal data format.
    *
-   * @param key the key of the tag (integer) to fetch
-   * @param value the value of the tag (integer) to fetch
-   * @return the key-value pair (of strings) of the corresponding tag, or null if it cannot be found
+   * @param key the key of the tag (represented as an integer)
+   * @param value the value of the tag (represented as an integer)
+   * @return the textual representation of this tag
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
-  public Pair<String, String> tag2String(int key, int value) {
-    return this.tag2String(new ImmutablePair<>(key, value));
+  public OSMTag osmTagOf(int key, int value) {
+    return this.osmTagOf(new OSHDBTag(key, value));
   }
 
   /**
-   * Get a tags text from a key-value ID pair.
+   * Get a tag's string representation from oshdb's internal data format.
    *
-   * @param tag the key-value pair (of integers) to fetch
-   * @return the key-value pair (of strings) of the corresponding tag, or null if it cannot be found
+   * @param tag the tag (as an OSHDBTag object)
+   * @return the textual representation of this tag
+   * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
-  public Pair<String, String> tag2String(Pair<Integer, Integer> tag) {
+  public OSMTag osmTagOf(OSHDBTag tag) {
     // check if Key and Value are in cache
     if (this.tagToString.containsKey(tag)) {
       return this.tagToString.get(tag);
     }
-    Pair<String, String> tagString;
+    OSMTag tagString;
 
-    // key or value is not in cache so let's go get them
+    // key or value is not in cache so let's go toInt them
     try (PreparedStatement valstmt =
         this.conn.prepareStatement("select k.TXT as KEYTXT,kv.TXT as VALUETXT from "
             + TableNames.E_KEYVALUE.toString() + " kv inner join " + TableNames.E_KEY.toString()
@@ -214,66 +227,95 @@ public class TagTranslator {
       valstmt.setInt(2, tag.getValue());
       ResultSet values = valstmt.executeQuery();
       values.next();
-      tagString = new ImmutablePair<>(values.getString("KEYTXT"), values.getString("VALUETXT"));
-      this.tagToInt.put(tagString, tag);
+      tagString = new OSMTag(values.getString("KEYTXT"), values.getString("VALUETXT"));
     } catch (SQLException ex) {
-      LOG.warn("Unable to find tag id \"{}\"=\"{}\" in keytables.", tag.getKey(), tag.getValue());
-      tagString = new ImmutablePair<>(this.key2String(tag.getKey()), UNKNOWN_TAG_VALUE_STR);
+      throw new OSHDBTagOrRoleNotFoundException(String.format(
+          "Unable to find tag id %d=%d in keytables.",
+          tag.getKey(), tag.getValue()
+      ));
     }
     // put it in caches
+    this.tagToInt.put(tagString, tag);
     this.tagToString.put(tag, tagString);
     return tagString;
   }
 
   /**
-   * Get the ID for a role.
+   * Get oshdb's internal representation of a role (string).
    *
    * @param role the role string to fetch
-   * @return the integer ID of this role, or null if it cannot be found
+   * @return the corresponding oshdb representation of this role
    */
-  public Integer role2Int(String role) {
+  public OSHDBRole oshdbRoleOf(String role) {
+    return this.oshdbRoleOf(new OSMRole(role));
+  }
+
+  /**
+   * Get oshdb's internal representation of a role.
+   *
+   * @param role the role to fetch as an OSMRole object
+   * @return the corresponding oshdb representation of this role
+   */
+  public OSHDBRole oshdbRoleOf(OSMRole role) {
     if (this.roleToInt.containsKey(role)) {
       return this.roleToInt.get(role);
     }
-    Integer roleInt;
+    OSHDBRole roleInt;
     try (PreparedStatement rolestmt = conn
         .prepareStatement("select ID from " + TableNames.E_ROLE.toString() + " WHERE txt = ?;")) {
-      rolestmt.setString(1, role);
+      rolestmt.setString(1, role.toString());
       ResultSet roles = rolestmt.executeQuery();
       roles.next();
-      roleInt = roles.getInt("ID");
-      this.roleToString.put(roleInt, role);
+      roleInt = new OSHDBRole(roles.getInt("ID"));
     } catch (SQLException ex) {
-      LOG.info("Unable to find role \"{}\" in keytables.", role);
-      roleInt = UNKNOWN_ROLE_ID;
+      LOG.info("Unable to find role {} in keytables.", role);
+      roleInt = new OSHDBRole(getFakeId(role.toString()));
     }
+    this.roleToString.put(roleInt, role);
     this.roleToInt.put(role, roleInt);
     return roleInt;
   }
 
   /**
-   * Get the string for a role ID.
+   * Get a role's string representation from oshdb's internal data format.
    *
-   * @param role the role ID (integer) to fetch
-   * @return the role's text (string), or null if it cannot be found
+   * @param role the role ID (represented as an integer)
+   * @return the textual representation of this role
+   * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
    */
-  public String role2String(Integer role) {
+  public OSMRole osmRoleOf(int role) {
+    return this.osmRoleOf(new OSHDBRole(role));
+  }
+
+  /**
+   * Get a role's string representation from oshdb's internal data format.
+   *
+   * @param role the role ID (as an OSHDBRole object)
+   * @return the textual representation of this role
+   * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
+   */
+  public OSMRole osmRoleOf(OSHDBRole role) {
     if (this.roleToString.containsKey(role)) {
       return this.roleToString.get(role);
     }
-    String roleString;
+    OSMRole roleString;
     try (PreparedStatement Rolestmt = conn
         .prepareStatement("select TXT from " + TableNames.E_ROLE.toString() + " WHERE ID = ?;")) {
-      Rolestmt.setInt(1, role);
+      Rolestmt.setInt(1, role.toInt());
       ResultSet Roles = Rolestmt.executeQuery();
       Roles.next();
-      roleString = Roles.getString("TXT");
-      this.roleToInt.put(roleString, role);
+      roleString = new OSMRole(Roles.getString("TXT"));
     } catch (SQLException ex) {
-      LOG.info("Unable to find role id \"{}\" in keytables.", role);
-      roleString = UNKNOWN_ROLE_STR;
+      throw new OSHDBTagOrRoleNotFoundException(String.format(
+          "Unable to find role id %d in keytables.", role.toInt()
+      ));
     }
+    this.roleToInt.put(roleString, role);
     this.roleToString.put(role, roleString);
     return roleString;
+  }
+
+  private int getFakeId(String s) {
+    return -Math.abs(s.hashCode());
   }
 }

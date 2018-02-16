@@ -11,6 +11,8 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.regex.Pattern;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 
 /**
  * Interface defining the common setting methods found on MapReducer or MapAggregator objects
@@ -70,7 +72,23 @@ interface MapReducerSettings<M> {
    * @param key the tag key to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
+  M where(OSMTagKey key);
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
   M where(String key);
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
+   *
+   * @param tag the tag (key-value pair) to filter the osm entities for
+   * @return `this` mapReducer (can be used to chain multiple commands together)
+   */
+  M where(OSMTag tag);
 
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
@@ -108,5 +126,5 @@ interface MapReducerSettings<M> {
    * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M where(Collection<Pair<String, String>> keyValuePairs);
+  M where(Collection<OSMTag> keyValuePairs);
 }

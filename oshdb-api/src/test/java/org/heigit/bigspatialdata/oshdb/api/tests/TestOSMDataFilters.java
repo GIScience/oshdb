@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -137,8 +138,8 @@ public class TestOSMDataFilters {
   public void tagList() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .where(Arrays.asList(
-            new ImmutablePair<>("highway", "residential"),
-            new ImmutablePair<>("highway", "unclassified"))
+            new OSMTag("highway", "residential"),
+            new OSMTag("highway", "unclassified"))
         )
         .osmTypes(OSMType.WAY)
         .areaOfInterest(bbox)
@@ -156,7 +157,7 @@ public class TestOSMDataFilters {
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> {
-          int[] tags = snapshot.getEntity().getTags();
+          int[] tags = snapshot.getEntity().getRawTags();
           for (int i=0; i<tags.length; i+=2)
             if (tags[i] == 6 /*name*/) return tags[i+1];
           return -1; // cannot actually happen (since we query only snapshots with a name, but needed to make Java's compiler happy

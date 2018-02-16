@@ -3,6 +3,9 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 import java.sql.Connection;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import com.vividsolutions.jts.geom.*;
 import java.io.IOException;
@@ -23,7 +26,6 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
@@ -368,10 +370,22 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public MapReducer<X> where(String key) {
+    return this.where(new OSMTagKey(key));
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
+   * (with an arbitrary value).
+   *
+   * @param key the tag key to filter the osm entities for
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapReducer<X> where(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
-    Integer keyId = this._getTagTranslator().key2Int(key);
-    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID) {
-      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+    OSHDBTagKey keyId = this._getTagTranslator().oshdbTagKeyOf(key);
+    if (!keyId.isPresentInKeytables()) {
+      LOG.warn("Tag key {} not found. No data will match this filter.", key.toString());
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
       return ret;
@@ -391,10 +405,23 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public MapReducer<X> where(String key, String value) {
+    return this.where(new OSMTag(key, value));
+  }
+
+  /**
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
+   * and value.
+   *
+   * @param tag the tag (key-value pair) to filter the osm entities for
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapReducer<X> where(OSMTag tag) {
     MapReducer<X> ret = this.copy();
-    Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
-    if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
-      LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this filter.", key, value);
+    OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(tag);
+    if (!keyValueId.isPresentInKeytables()) {
+      LOG.warn("Tag {}={} not found. No data will match this filter.",
+          tag.getKey(), tag.getValue());
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
       return ret;
@@ -417,26 +444,35 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
-    Integer keyId = this._getTagTranslator().key2Int(key);
-    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID || values.size() == 0) {
-      LOG.warn((keyId == null ? "Tag key \"{}\" not found." : "Empty tag value list.")
+    OSHDBTagKey oshdbKey = this._getTagTranslator().oshdbTagKeyOf(key);
+    int keyId = oshdbKey.toInt();
+    if (!oshdbKey.isPresentInKeytables() || values.size() == 0) {
+      LOG.warn((values.size() > 0 ? "Tag key {} not found." : "Empty tag value list.")
           + " No data will match this filter.", key);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
       return ret;
     }
-    List<Integer> valueIds = new ArrayList<>();
+    Set<Integer> valueIds = new HashSet<>();
     for (String value : values) {
-      Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(key, value);
-      if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
-        LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.", key, value);
+      OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(key, value);
+      if (!keyValueId.isPresentInKeytables()) {
+        LOG.warn("Tag {}={} not found. No data will match this tag value.", key, value);
       } else {
         valueIds.add(keyValueId.getValue());
       }
     }
     ret._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    ret._filters.add(
-        osmEntity -> valueIds.stream().anyMatch(valueId -> osmEntity.hasTagValue(keyId, valueId)));
+    ret._filters.add(osmEntity -> {
+      int[] tags = osmEntity.getRawTags();
+      for (int i = 0; i < tags.length; i += 2) {
+        if (tags[i] > keyId) break;
+        if (tags[i] == keyId) {
+          return valueIds.contains(tags[i+1]);
+        }
+      }
+      return false;
+    });
     return ret;
   }
 
@@ -451,26 +487,25 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(String key, Pattern valuePattern) {
     MapReducer<X> ret = this.copy();
-    Integer keyId = this._getTagTranslator().key2Int(key);
-    if (keyId == TagTranslator.UNKNOWN_TAG_KEY_ID) {
-      LOG.warn("Tag key \"{}\" not found. No data will match this filter.", key);
+    OSHDBTagKey oshdbKey = this._getTagTranslator().oshdbTagKeyOf(key);
+    int keyId = oshdbKey.toInt();
+    if (!oshdbKey.isPresentInKeytables()) {
+      LOG.warn("Tag key {} not found. No data will match this filter.", key);
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
       return ret;
     }
     ret._preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
     ret._filters.add(osmEntity -> {
-      if (!osmEntity.hasTagKey(keyId)) {
-        return false;
-      }
-      int[] tags = osmEntity.getTags();
-      String value = null;
+      int[] tags = osmEntity.getRawTags();
       for (int i = 0; i < tags.length; i += 2) {
+        if (tags[i] > keyId) return false;
         if (tags[i] == keyId) {
-          value = this._getTagTranslator().tag2String(keyId, tags[i + 1]).getValue();
+          String value = this._getTagTranslator().osmTagOf(keyId, tags[i + 1]).getValue();
+          return valuePattern.matcher(value).matches();
         }
       }
-      return valuePattern.matcher(value).matches();
+      return false;
     });
     return ret;
   }
@@ -479,33 +514,42 @@ public abstract class MapReducer<X> implements
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
    * of the supplied tags (key=value pairs)
    *
-   * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
+   * @param tags the tags (key/value pairs) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(Collection<Pair<String, String>> keyValuePairs) {
+  public MapReducer<X> where(Collection<OSMTag> tags) {
     MapReducer<X> ret = this.copy();
-    if (keyValuePairs.size() == 0) {
+    if (tags.size() == 0) {
       LOG.warn("Empty tag list. No data will match this filter.");
       ret._preFilters.add(ignored -> false);
       ret._filters.add(ignored -> false);
       return ret;
     }
     Set<Integer> keyIds = new HashSet<>();
-    List<Pair<Integer, Integer>> keyValueIds = new ArrayList<>();
-    for (Pair<String, String> tag : keyValuePairs) {
-      Pair<Integer, Integer> keyValueId = this._getTagTranslator().tag2Int(tag);
-      if (keyValueId.getValue() == TagTranslator.UNKNOWN_TAG_VALUE_ID) {
-        LOG.warn("Tag \"{}\"=\"{}\" not found. No data will match this tag value.", tag.getKey(),
-            tag.getValue());
+    Set<OSHDBTag> keyValueIds = new HashSet<>();
+    for (OSMTag tag : tags) {
+      OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(tag);
+      if (!keyValueId.isPresentInKeytables()) {
+        LOG.warn("Tag {}={} not found. No data will match this tag value.",
+            tag.getKey(), tag.getValue());
       } else {
         keyIds.add(keyValueId.getKey());
         keyValueIds.add(keyValueId);
       }
     }
-    ret._preFilters.add(oshEntitiy -> keyIds.stream().anyMatch(oshEntitiy::hasTagKey));
-    ret._filters.add(osmEntity -> keyValueIds.stream()
-        .anyMatch(tag -> osmEntity.hasTagValue(tag.getKey(), tag.getValue())));
+    ret._preFilters.add(oshEntitiy -> {
+      for (int key : oshEntitiy.getRawTagKeys()) {
+        if (keyIds.contains(key)) return true;
+      }
+      return false;
+    });
+    ret._filters.add(osmEntity -> {
+      for (OSHDBTag oshdbTag : osmEntity.getTags()) {
+        if (keyValueIds.contains(oshdbTag)) return true;
+      }
+      return false;
+    });
     return ret;
   }
 
@@ -1242,14 +1286,19 @@ public abstract class MapReducer<X> implements
 
   protected TagInterpreter _getTagInterpreter() throws ParseException, SQLException, IOException {
     if (this._tagInterpreter == null) {
-      this._tagInterpreter = DefaultTagInterpreter.fromJDBC(this._oshdbForTags.getConnection());
+      this._tagInterpreter = new DefaultTagInterpreter(this._getTagTranslator());
     }
     return this._tagInterpreter;
   }
 
   protected TagTranslator _getTagTranslator() {
     if (this._tagTranslator == null) {
-      this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
+      try {
+        this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
+      } catch (OSHDBKeytablesNotFoundException e) {
+        LOG.error(e.getMessage());
+        throw new RuntimeException(e);
+      }
     }
     return this._tagTranslator;
   }

@@ -1,13 +1,14 @@
 package org.heigit.bigspatialdata.oshdb.util.tagtranslator;
 
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
@@ -35,59 +36,56 @@ public class TagTranslatorTest {
   public TagTranslatorTest() {}
 
   @Test
-  public void testTag2Int() {
-    Pair<String, String> tag = new ImmutablePair<>("building", "yes");
+  public void testTag2Int() throws OSHDBKeytablesNotFoundException {
+    OSMTag tag = new OSMTag("building", "yes");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Pair<Integer, Integer> expResult = new ImmutablePair<>(1, 0);
-    Pair<Integer, Integer> result = instance.tag2Int(tag);
+    OSHDBTag expResult = new OSHDBTag(1, 0);
+    OSHDBTag result = instance.oshdbTagOf(tag);
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testTag2String() {
-    Pair<Integer, Integer> tag = new ImmutablePair<>(1, 2);
+  public void testTag2String() throws OSHDBKeytablesNotFoundException {
+    OSHDBTag tag = new OSHDBTag(1, 2);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Pair<String, String> expResult = new ImmutablePair<>("building", "residential");
-
-    Pair<String, String> result = instance.tag2String(tag);
+    OSMTag expResult = new OSMTag("building", "residential");
+    OSMTag result = instance.osmTagOf(tag);
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testRole2Int() {
-    String role = "from";
+  public void testKey2Int() throws OSHDBKeytablesNotFoundException {
+    OSMTagKey key = new OSMTagKey("highway");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Integer expResult = 4;
-    Integer result = instance.role2Int(role);
+    OSHDBTagKey expResult = new OSHDBTagKey(2);
+    OSHDBTagKey result = instance.oshdbTagKeyOf(key);
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testRole2String() {
-    Integer role = 1;
+  public void testKey2String() throws OSHDBKeytablesNotFoundException {
+    OSHDBTagKey key = new OSHDBTagKey(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    String expResult = "inner";
-    String result = instance.role2String(role);
+    OSMTagKey expResult = new OSMTagKey("building");
+    OSMTagKey result = instance.osmTagKeyOf(key);
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testKey2Int() {
-    String key = "highway";
+  public void testRole2Int() throws OSHDBKeytablesNotFoundException {
+    OSMRole role = new OSMRole("from");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    Integer expResult = 2;
-    Integer result = instance.key2Int(key);
+    OSHDBRole expResult = new OSHDBRole(4);
+    OSHDBRole result = instance.oshdbRoleOf(role);
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testKey2String() {
-    Integer key = 1;
+  public void testRole2String() throws OSHDBKeytablesNotFoundException {
+    OSHDBRole role = new OSHDBRole(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    String expResult = "building";
-
-    String result = instance.key2String(key);
+    OSMRole expResult = new OSMRole("inner");
+    OSMRole result = instance.osmRoleOf(role);
     assertEquals(expResult, result);
   }
-
 }

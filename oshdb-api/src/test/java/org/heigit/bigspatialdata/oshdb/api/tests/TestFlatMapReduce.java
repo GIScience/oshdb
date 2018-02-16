@@ -46,7 +46,7 @@ public class TestFlatMapReduce {
           if (contribution.getEntityAfter().getId() != 617308093)
             return new ArrayList<>();
           List<Pair<Integer, Integer>> ret = new ArrayList<>();
-          int[] tags = contribution.getEntityAfter().getTags();
+          int[] tags = contribution.getEntityAfter().getRawTags();
           for (int i=0; i<tags.length; i+=2)
             ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
           return ret;

@@ -35,7 +35,7 @@ public class OSMMemberTest {
   public void testGetRoleId() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     int expResult = 1;
-    int result = instance.getRoleId();
+    int result = instance.getRawRoleId();
     assertEquals(expResult, result);
   }
 

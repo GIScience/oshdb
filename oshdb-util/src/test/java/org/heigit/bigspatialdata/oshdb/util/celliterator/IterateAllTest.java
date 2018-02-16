@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.json.simple.parser.ParseException;
@@ -31,9 +32,11 @@ public class IterateAllTest {
     Class.forName("org.h2.Driver");
 
     // connect to the "Big"DB
-    IterateAllTest.conn =
-        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r", "sa", "");
-
+    IterateAllTest.conn = DriverManager.getConnection(
+        "jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
+        "sa",
+        ""
+    );
   }
 
   @AfterClass
@@ -44,8 +47,7 @@ public class IterateAllTest {
   public IterateAllTest() {}
 
   @Test
-  public void testIssue108()
-      throws SQLException, IOException, ClassNotFoundException, ParseException {
+  public void testIssue108() throws SQLException, IOException, ClassNotFoundException, ParseException, OSHDBKeytablesNotFoundException {
     ResultSet oshCellsRawData = conn.prepareStatement("select data from " + TableNames.T_NODES).executeQuery();
 
     int countTotal = 0;
@@ -59,7 +61,7 @@ public class IterateAllTest {
 
       List<IterateAllEntry> result = (new CellIterator(
           new OSHDBBoundingBox(8, 9, 49, 50),
-          DefaultTagInterpreter.fromJDBC(conn),
+          new DefaultTagInterpreter(conn),
           oshEntity -> oshEntity.getId() == 617308093,
           osmEntity -> true,
           false

@@ -1,7 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.IntStream;
+import javax.annotation.Nonnull;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,13 +29,8 @@ public abstract class OSMEntity {
    * @param version Version. Versions &lt;=0 define visible Entities, &gt;0 deleted Entities.
    * @param timestamp Timestamp in seconds since 01.01.1970 00:00:00 UTC.
    * @param changeset Changeset-ID
-   * @param userId UserID. This is also the link to the UserName in the OSH-Db (see
-   *        {@link org.heigit.bigspatialdata.oshdb.util.TagTranslator#TagTranslator(java.sql.Connection)
-   *        TagTranslator})
-   * @param tags An array of OSH-Db key-value ids. The format is [KID1,VID1,KID2,VID2...KIDn,VIDn].
-   *        They can be translated to String and back using the
-   *        {@link org.heigit.bigspatialdata.oshdb.util.TagTranslator#TagTranslator(java.sql.Connection)
-   *        TagTranslator}.
+   * @param userId UserID
+   * @param tags An array of OSHDB key-value ids. The format is [KID1,VID1,KID2,VID2...KIDn,VIDn].
    */
   public OSMEntity(final long id, final int version, final OSHDBTimestamp timestamp, final long changeset,
       final int userId, final int[] tags) {
@@ -69,8 +68,32 @@ public abstract class OSMEntity {
     return (version >= 0);
   }
 
-  public int[] getTags() {
+  public Iterable<OSHDBTag> getTags() {
+    return new Iterable<OSHDBTag>() {
+      @Nonnull
+      @Override
+      public Iterator<OSHDBTag> iterator() {
+        return new Iterator<OSHDBTag>() {
+          int i=0;
+          @Override
+          public boolean hasNext() {
+            return i<tags.length;
+          }
+          @Override
+          public OSHDBTag next() {
+            return new OSHDBTag(tags[i++], tags[i++]);
+          }
+        };
+      }
+    };
+  }
+
+  public int[] getRawTags() {
     return tags;
+  }
+
+  public boolean hasTagKey(OSHDBTagKey key) {
+    return this.hasTagKey(key.toInt());
   }
 
   public boolean hasTagKey(int key) {
@@ -140,7 +163,8 @@ public abstract class OSMEntity {
   @Override
   public String toString() {
     return String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s UID:%d TAGS:%S", getId(), getVersion(),
-        getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
+        getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(), Arrays.toString(
+            getRawTags()));
   }
 
 

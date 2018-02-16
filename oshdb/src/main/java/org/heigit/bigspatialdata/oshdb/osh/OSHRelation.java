@@ -414,7 +414,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
             }
           }
 
-          output.writeUInt32(member.getRoleId());
+          output.writeUInt32(member.getRawRoleId());
           lastMemberId = member.getId();
         }
       }

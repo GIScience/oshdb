@@ -19,9 +19,10 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,8 +79,8 @@ public class JSONTransformer {
 
     properties.add("@uid", entity.getUserId());
 
-    for (int i = 0; i < entity.getTags().length; i += 2) {
-      properties = JSONTransformer.addRiskyKey(entity, entity.getTags()[i], entity.getTags()[i + 1],
+    for (int i = 0; i < entity.getRawTags().length; i += 2) {
+      properties = JSONTransformer.addRiskyKey(entity, entity.getRawTags()[i], entity.getRawTags()[i + 1],
           tagtranslator, properties);
     }
 
@@ -99,11 +100,11 @@ public class JSONTransformer {
         JsonObjectBuilder member = Json.createObjectBuilder();
         member.add("type", mem.getType().toString()).add("ref", mem.getId());
         try {
-          member.add("role", tagtranslator.role2String(mem.getRoleId()));
+          member.add("role", tagtranslator.osmRoleOf(mem.getRoleId()).toString());
         } catch (NullPointerException ex) {
           LOG.warn(
               "The TagTranslator could not resolve the member role {} of a member of relation/{}",
-              mem.getRoleId(), entity.getId());
+              mem.getRawRoleId(), entity.getId());
           member.add("role", "<error: could not resolve>");
         }
         JSONMembers.add(member);
@@ -133,13 +134,13 @@ public class JSONTransformer {
       TagTranslator tagtranslator, JsonObjectBuilder properties) {
 
     try {
-      Pair<String, String> temptags = tagtranslator.tag2String(key, value);
+      OSMTag temptags = tagtranslator.osmTagOf(key, value);
       return properties.add(temptags.getKey(), temptags.getValue());
     } catch (NullPointerException ex) {
       try {
         LOG.warn("The TagTranslator could not resolve a value (ValueID: {}) of Entity {}", value,
             entity.toString(), ex);
-        String tempkey = tagtranslator.key2String(key);
+        String tempkey = tagtranslator.osmTagKeyOf(key).toString();
         return properties.add(tempkey, "<error: could not resolve value>");
       } catch (NullPointerException ex2) {
         LOG.debug("The TagTranslator could ALSO not resolve the key (KeyID: {}) of Entity {}", key,
@@ -177,9 +178,7 @@ public class JSONTransformer {
 
   /**
    * Get a GIS-compatible version of your OSH-Object. Note that this method uses the timestamps of
-   * the underlying OSM-Entities to construct geometries. If you desire inter-version-geometries,
-   * which are possible, please refer to
-   * {@link #multiTransform(java.util.List, org.heigit.bigspatialdata.oshdb.util.TagTranslator, org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter)}
+   * the underlying OSM-Entities to construct geometries.
    *
    * @param <T>
    * @param entity
@@ -205,11 +204,7 @@ public class JSONTransformer {
 
   /**
    * Get a GIS-compatible version of your OSH-GridCell. Note that this method uses only the latest
-   * version of the each underlying OSM-Entity to construct geometries. If you desire
-   * inter-version-geometries, which are possible, or specific geometries of all versions in this
-   * cell, please refer to
-   * {@link #multiTransform(java.util.List, org.heigit.bigspatialdata.oshdb.util.TagTranslator, org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter) }
-   * and use it as desired. I hope you know what you are doing, this can get pretty big and nasty!!!
+   * version of the each underlying OSM-Entity to construct geometries.
    *
    * @param <T>
    * @param entity

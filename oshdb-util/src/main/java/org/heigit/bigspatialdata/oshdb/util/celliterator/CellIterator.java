@@ -542,11 +542,11 @@ public class CellIterator implements Serializable {
                 case TAG_CHANGE:
                   // look if tags have been changed between versions
                   boolean tagsChange = false;
-                  if (prevEntity.getTags().length != osmEntity.getTags().length) {
+                  if (prevEntity.getRawTags().length != osmEntity.getRawTags().length) {
                     tagsChange = true;
                   } else {
-                    for (int i = 0; i < prevEntity.getTags().length; i++) {
-                      if (prevEntity.getTags()[i] != osmEntity.getTags()[i]) {
+                    for (int i = 0; i < prevEntity.getRawTags().length; i++) {
+                      if (prevEntity.getRawTags()[i] != osmEntity.getRawTags()[i]) {
                         tagsChange = true;
                         break;
                       }
