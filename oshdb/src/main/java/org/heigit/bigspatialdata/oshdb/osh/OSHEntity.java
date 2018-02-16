@@ -270,7 +270,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * @param otherBbox the bounding box which this entity is tested against
    * @deprecated Use {@link #getBoundingBox().intersects(OSHDBBoundingBox)} instead.
    */
-@Deprecated
+  @Deprecated
   public boolean intersectsBbox(OSHDBBoundingBox otherBbox) {
     OSHDBBoundingBox bbox = this.getBoundingBox();
     if (bbox == null) {
@@ -286,7 +286,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * @param otherBbox the bounding box which this entity is tested against
    * @deprecated Use {@link #getBoundingBox().isInside(OSHDBBoundingBox)} instead.
    */
-@Deprecated
+  @Deprecated
   public boolean insideBbox(OSHDBBoundingBox otherBbox) {
     OSHDBBoundingBox bbox = this.getBoundingBox();
     if (bbox == null) {
