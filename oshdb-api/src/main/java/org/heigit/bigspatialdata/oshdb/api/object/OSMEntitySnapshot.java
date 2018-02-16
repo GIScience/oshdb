@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.object;
 import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
 
 /**
@@ -11,14 +12,10 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
  * Alongside the entity and the timestamp, also the entity's geometry is provided.
  */
 public class OSMEntitySnapshot implements OSHDBMapReducible {
-  private final OSHDBTimestamp _tstamp;
-  private final LazyEvaluatedObject<Geometry> _geometry;
-  private final OSMEntity _entity;
+  private final CellIterator.IterateByTimestampEntry data;
   
-  public OSMEntitySnapshot(OSHDBTimestamp tstamp, LazyEvaluatedObject<Geometry> geometry, OSMEntity entity) {
-    this._tstamp = tstamp;
-    this._geometry = geometry;
-    this._entity = entity;
+  public OSMEntitySnapshot(CellIterator.IterateByTimestampEntry data) {
+    this.data = data;
   }
 
   /**
@@ -27,16 +24,27 @@ public class OSMEntitySnapshot implements OSHDBMapReducible {
    * @return snapshot timestamp as an OSHDBTimestamp object
    */
   public OSHDBTimestamp getTimestamp() {
-    return this._tstamp;
+    return data.timestamp;
   }
 
   /**
-   * The geometry of this entity at the snapshot's timestamp.
+   * The geometry of this entity at the snapshot's timestamp clipped to the requested area of
+   * interest.
    *
    * @return the geometry as a JTS Geometry
    */
   public Geometry getGeometry() {
-    return this._geometry.get();
+    return data.geometry.get();
+  }
+
+  /**
+   * The geometry of this entity at the snapshot's timestamp. This is the full (unclipped) geometry
+   * of the osm entity.
+   *
+   * @return the unclipped geometry of the osm entity snapshot as a JTS Geometry
+   */
+  public Geometry getGeometryUnclipped() {
+    return data.unclippedGeometry.get();
   }
 
   /**
@@ -47,6 +55,6 @@ public class OSMEntitySnapshot implements OSHDBMapReducible {
    * @return the OSMEntity object of this snapshot
    */
   public OSMEntity getEntity() {
-    return this._entity;
+    return data.osmEntity;
   }
 }

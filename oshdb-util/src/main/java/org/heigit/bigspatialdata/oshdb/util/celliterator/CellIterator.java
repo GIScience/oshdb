@@ -92,13 +92,16 @@ public class CellIterator implements Serializable {
     public final OSHDBTimestamp timestamp;
     public final OSMEntity osmEntity;
     public final LazyEvaluatedObject<Geometry> geometry;
+    public final LazyEvaluatedObject<Geometry> unclippedGeometry;
 
     IterateByTimestampEntry(
-        OSHDBTimestamp timestamp, OSMEntity entity, LazyEvaluatedObject<Geometry> geom
+        OSHDBTimestamp timestamp, OSMEntity entity,
+        LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> unclippedGeom
     ) {
       this.timestamp = timestamp;
       this.osmEntity = entity;
       this.geometry = geom;
+      this.unclippedGeometry = unclippedGeom;
     }
   }
 
@@ -264,11 +267,12 @@ public class CellIterator implements Serializable {
           }
 
           if (fullyInside || (geom.get() != null && !geom.get().isEmpty())) {
-            results.add(new IterateByTimestampEntry(timestamp, osmEntity, geom));
-            // add skipped timestamps (where nothing has changed from the last timestamp) to set of
-            // results
-            for (OSHDBTimestamp additionalTimestamp : queryTs.get(timestamp)) {
-              results.add(new IterateByTimestampEntry(additionalTimestamp, osmEntity, geom));
+            LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
+                () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
+            results.add(new IterateByTimestampEntry(timestamp, osmEntity, geom, fullGeom));
+            // add skipped timestamps (where nothing has changed from the last timestamp) to result
+            for (OSHDBTimestamp additionalTstamp : queryTs.get(timestamp)) {
+              results.add(new IterateByTimestampEntry(additionalTstamp, osmEntity, geom, fullGeom));
             }
           }
         } catch (UnsupportedOperationException err) {

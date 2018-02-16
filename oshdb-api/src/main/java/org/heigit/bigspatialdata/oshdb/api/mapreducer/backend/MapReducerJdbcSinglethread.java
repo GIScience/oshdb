@@ -201,9 +201,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
         cellIterator.iterateByTimestamps(oshCellRawData, timestamps).forEach(data -> {
-          OSMEntitySnapshot snapshot = new OSMEntitySnapshot(
-              data.timestamp, data.geometry, data.osmEntity
-          );
+          OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
           // immediately fold the result
           accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
         });
@@ -252,9 +250,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
         AtomicReference<S> accInternal = new AtomicReference<>(result);
         List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
         cellIterator.iterateByTimestamps(oshCellRawData, timestamps).forEach(data -> {
-          OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(
-              data.timestamp, data.geometry, data.osmEntity
-          );
+          OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
           if (osmEntitySnapshots.size() > 0
               && thisSnapshot.getEntity().getId() != osmEntitySnapshots
               .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {

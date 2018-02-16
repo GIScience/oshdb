@@ -348,9 +348,7 @@ class IgniteScanQueryHelper {
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
-            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(
-                data.timestamp, data.geometry, data.osmEntity
-            );
+            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
             // immediately fold the result
             accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
           });
@@ -400,9 +398,7 @@ class IgniteScanQueryHelper {
           AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
           List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
           cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
-            OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(
-                data.timestamp, data.geometry, data.osmEntity
-            );
+            OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
             if (osmEntitySnapshots.size() > 0
                 && thisSnapshot.getEntity().getId() != osmEntitySnapshots
                 .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
