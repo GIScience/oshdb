@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
+import com.google.common.collect.Lists;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -394,11 +395,11 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
 
   @Override
   public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
-    List<OSHDBTimestamp> result = this.getVersions().stream()
-            .map(OSMNode::getTimestamp)
-            .collect(Collectors.toList());
-    Collections.sort(result);
-    return result;
+    List<OSHDBTimestamp> result = new ArrayList<>(this.iterator().next().getVersion());
+    for (OSMNode osmNode : this) {
+      result.add(osmNode.getTimestamp());
+    }
+    return Lists.reverse(result);
   }
 
   @Override
