@@ -29,7 +29,7 @@ public abstract class TransformOSHEntity<OSM extends OSMEntity> extends OSHEntit
   }
 
   @Override
-  protected Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
     throw new UnsupportedOperationException();
   }
 
