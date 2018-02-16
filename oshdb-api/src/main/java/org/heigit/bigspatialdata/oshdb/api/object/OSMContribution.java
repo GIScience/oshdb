@@ -42,40 +42,44 @@ public class OSMContribution implements OSHDBMapReducible {
   }
 
   /**
-   * Returns the geometry of the entity before this modification.
-   * Is `null` if this is a entity creation.
+   * Returns the geometry of the entity before this modification clipped to the requested area of
+   * interest. May be `null` if this is an entity creation.
    *
-   * @return a JTS Geometry object representing the entity's state before the modification
+   * @return a JTS Geometry object representing the entity's state before the modification (clipped
+   *         to the respective area of interest)
    */
   public Geometry getGeometryBefore() {
     return data.previousGeometry.get();
   }
 
   /**
-   * Returns the geometry of the entity before this modification.
-   * Is `null` if this is a entity creation.
+   * Returns the geometry of the entity before this modification. This is the full (unclipped)
+   * geometry of the entity. May be `null` if this is an entity creation.
    *
-   * @return a JTS Geometry object representing the entity's state before the modification
+   * @return a JTS Geometry object representing the entity's state before the modification (not
+   *         clipped to the respective area of interest)
    */
   public Geometry getGeometryUnclippedBefore() {
     return data.unclippedPreviousGeometry.get();
   }
 
   /**
-   * Returns the geometry of the entity after this modification.
-   * Is `null` if this is a entity deletion.
+   * Returns the geometry of the entity after this modification clipped to the requested area of
+   * interest. May be `null` if this is an entity deletion.
    *
-   * @return a JTS Geometry object representing the entity's state after the modification
+   * @return a JTS Geometry object representing the entity's state after the modification (clipped
+   *         to the respective area of interest)
    */
   public Geometry getGeometryAfter() {
     return data.geometry.get();
   }
 
   /**
-   * Returns the geometry of the entity after this modification.
-   * Is `null` if this is a entity deletion.
+   * Returns the geometry of the entity after this modification. This is the full (unclipped)
+   * geometry of the entity. May be `null` if this is an entity deletion.
    *
-   * @return a JTS Geometry object representing the entity's state after the modification
+   * @return a JTS Geometry object representing the entity's state after the modification (not
+   *         clipped to the respective area of interest)
    */
   public Geometry getGeometryUnclippedAfter() {
     return data.geometry.get();
