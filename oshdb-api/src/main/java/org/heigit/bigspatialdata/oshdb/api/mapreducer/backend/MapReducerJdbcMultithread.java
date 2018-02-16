@@ -101,10 +101,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducer<X> {
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       cellIterator.iterateByContribution(oshCell, timestampInterval)
           .forEach(contribution -> {
-            OSMContribution osmContribution = new OSMContribution(
-                contribution.timestamp,
-                contribution.previousGeometry, contribution.geometry,
-                contribution.previousOsmEntity, contribution.osmEntity, contribution.activities);
+            OSMContribution osmContribution = new OSMContribution(contribution);
             accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
           });
       return accInternal.get();
@@ -162,10 +159,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducer<X> {
       List<OSMContribution> contributions = new ArrayList<>();
       cellIterator.iterateByContribution(oshCell, timestampInterval)
           .forEach(contribution -> {
-            OSMContribution thisContribution = new OSMContribution(
-                contribution.timestamp,
-                contribution.previousGeometry, contribution.geometry,
-                contribution.previousOsmEntity, contribution.osmEntity, contribution.activities);
+            OSMContribution thisContribution = new OSMContribution(contribution);
             if (contributions.size() > 0 && thisContribution.getEntityAfter()
                 .getId() != contributions.get(contributions.size() - 1).getEntityAfter().getId()) {
               // immediately fold the results

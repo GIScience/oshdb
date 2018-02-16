@@ -84,10 +84,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
                 .forEach(contribution -> {
                   OSMContribution osmContribution =
-                      new OSMContribution(contribution.timestamp,
-                          contribution.previousGeometry, contribution.geometry,
-                          contribution.previousOsmEntity, contribution.osmEntity,
-                          contribution.activities);
+                      new OSMContribution(contribution);
                   accInternal
                       .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
                 });
@@ -127,10 +124,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
                 .forEach(contribution -> {
                   OSMContribution thisContribution =
-                      new OSMContribution(contribution.timestamp,
-                          contribution.previousGeometry, contribution.geometry,
-                          contribution.previousOsmEntity, contribution.osmEntity,
-                          contribution.activities);
+                      new OSMContribution(contribution);
                   if (contributions.size() > 0
                       && thisContribution.getEntityAfter().getId() != contributions
                           .get(contributions.size() - 1).getEntityAfter().getId()) {

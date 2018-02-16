@@ -9,6 +9,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedContributionTypes;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
@@ -25,25 +26,10 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
  * </ul>
  */
 public class OSMContribution implements OSHDBMapReducible {
-  private final OSHDBTimestamp _tstamp;
-  private final LazyEvaluatedObject<Geometry> _geometryBefore;
-  private final LazyEvaluatedObject<Geometry> _geometryAfter;
-  private final OSMEntity _entityBefore;
-  @Nonnull
-  private final OSMEntity _entityAfter;
-  private final LazyEvaluatedContributionTypes _contributionTypes;
-  
-  public OSMContribution(OSHDBTimestamp tstamp,
-      LazyEvaluatedObject<Geometry> geometryBefore, LazyEvaluatedObject<Geometry> geometryAfter,
-      OSMEntity entityBefore, @Nonnull OSMEntity entityAfter,
-      LazyEvaluatedContributionTypes contributionTypes
-  ) {
-    this._tstamp = tstamp;
-    this._geometryBefore = geometryBefore;
-    this._geometryAfter = geometryAfter;
-    this._entityBefore = entityBefore;
-    this._entityAfter = entityAfter;
-    this._contributionTypes = contributionTypes;
+  private final CellIterator.IterateAllEntry data;
+
+  public OSMContribution(CellIterator.IterateAllEntry data) {
+    this.data = data;
   }
 
   /**
@@ -52,7 +38,7 @@ public class OSMContribution implements OSHDBMapReducible {
    * @return the modification timestamp as a OSHDBTimestamp object
    */
   public OSHDBTimestamp getTimestamp() {
-    return this._tstamp;
+    return data.timestamp;
   }
 
   /**
@@ -62,7 +48,17 @@ public class OSMContribution implements OSHDBMapReducible {
    * @return a JTS Geometry object representing the entity's state before the modification
    */
   public Geometry getGeometryBefore() {
-    return this._geometryBefore.get();
+    return data.previousGeometry.get();
+  }
+
+  /**
+   * Returns the geometry of the entity before this modification.
+   * Is `null` if this is a entity creation.
+   *
+   * @return a JTS Geometry object representing the entity's state before the modification
+   */
+  public Geometry getGeometryUnclippedBefore() {
+    return data.unclippedPreviousGeometry.get();
   }
 
   /**
@@ -72,7 +68,17 @@ public class OSMContribution implements OSHDBMapReducible {
    * @return a JTS Geometry object representing the entity's state after the modification
    */
   public Geometry getGeometryAfter() {
-    return this._geometryAfter.get();
+    return data.geometry.get();
+  }
+
+  /**
+   * Returns the geometry of the entity after this modification.
+   * Is `null` if this is a entity deletion.
+   *
+   * @return a JTS Geometry object representing the entity's state after the modification
+   */
+  public Geometry getGeometryUnclippedAfter() {
+    return data.geometry.get();
   }
 
   /**
@@ -82,7 +88,7 @@ public class OSMContribution implements OSHDBMapReducible {
    * @return the entity object as it was before this modification
    */
   public OSMEntity getEntityBefore() {
-    return this._entityBefore;
+    return data.previousOsmEntity;
   }
 
   /**
@@ -92,7 +98,7 @@ public class OSMContribution implements OSHDBMapReducible {
    * @return the entity object as it was after this modification
    */
   public OSMEntity getEntityAfter() {
-    return this._entityAfter;
+    return data.osmEntity;
   }
 
   /**
@@ -110,7 +116,7 @@ public class OSMContribution implements OSHDBMapReducible {
    * @return a set of modification type this contribution made on the underlying data
    */
   public boolean is(ContributionType contributionType) {
-    return this._contributionTypes.contains(contributionType);
+    return data.activities.contains(contributionType);
   }
 
   /**
@@ -128,7 +134,7 @@ public class OSMContribution implements OSHDBMapReducible {
    * @return a set of modification type this contribution made on the underlying data
    */
   public EnumSet<ContributionType> getContributionTypes() {
-    return this._contributionTypes.get();
+    return data.activities.get();
   }
 
 
@@ -151,8 +157,8 @@ public class OSMContribution implements OSHDBMapReducible {
     // if the entity itself was modified at this exact timestamp, or we know from the contribution type that the entity
     // must also have been modified, we can just return the uid directly
     if (contributionTimestamp.equals(entity.getTimestamp()) ||
-        this._entityBefore == null ||
-        this._entityBefore.getVersion() != this._entityAfter.getVersion()
+        this.getEntityBefore() == null ||
+        this.getEntityBefore().getVersion() != this.getEntityAfter().getVersion()
     ) {
       return entity.getUserId();
     }

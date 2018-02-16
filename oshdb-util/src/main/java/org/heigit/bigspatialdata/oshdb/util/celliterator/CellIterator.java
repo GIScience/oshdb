@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -295,23 +296,30 @@ public class CellIterator implements Serializable {
 
   public static class IterateAllEntry {
     public final OSHDBTimestamp timestamp;
+    @Nonnull
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
     public final LazyEvaluatedObject<Geometry> geometry;
     public final LazyEvaluatedObject<Geometry> previousGeometry;
+    public final LazyEvaluatedObject<Geometry> unclippedGeometry;
+    public final LazyEvaluatedObject<Geometry> unclippedPreviousGeometry;
     public final LazyEvaluatedContributionTypes activities;
 
-    IterateAllEntry(
+    public IterateAllEntry(
         OSHDBTimestamp timestamp,
-        OSMEntity entity, OSMEntity previousOsmEntity,
-        LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> previousGeometry,
+        @Nonnull OSMEntity entity, OSMEntity previousOsmEntity,
+        LazyEvaluatedObject<Geometry> geometry, LazyEvaluatedObject<Geometry> previousGeometry,
+        LazyEvaluatedObject<Geometry> unclippedGeometry,
+        LazyEvaluatedObject<Geometry> previousUnclippedGeometry,
         LazyEvaluatedContributionTypes activities
     ) {
       this.timestamp = timestamp;
       this.osmEntity = entity;
       this.previousOsmEntity = previousOsmEntity;
-      this.geometry = geom;
+      this.geometry = geometry;
       this.previousGeometry = previousGeometry;
+      this.unclippedGeometry = unclippedGeometry;
+      this.unclippedPreviousGeometry = previousUnclippedGeometry;
       this.activities = activities;
     }
   }
@@ -410,6 +418,7 @@ public class CellIterator implements Serializable {
             prev = new IterateAllEntry(timestamp,
                 osmEntity, prev.osmEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
+                new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
             );
             if (!skipOutput) {
@@ -449,6 +458,7 @@ public class CellIterator implements Serializable {
               prev = new IterateAllEntry(timestamp,
                   osmEntity, prev.osmEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
+                  new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
               );
               if (!skipOutput) {
@@ -505,6 +515,7 @@ public class CellIterator implements Serializable {
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp, osmEntity, prev.osmEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
+                  new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
               );
               if (!skipOutput) {
@@ -551,16 +562,21 @@ public class CellIterator implements Serializable {
           }
 
           IterateAllEntry result;
+          LazyEvaluatedObject<Geometry> unclippedGeom = new LazyEvaluatedObject<>(() ->
+              OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+          );
           if (prev != null) {
             result = new IterateAllEntry(timestamp,
                 osmEntity, prev.osmEntity,
                 geom, prev.geometry,
+                unclippedGeom, prev.unclippedGeometry,
                 activity
             );
           } else {
             result = new IterateAllEntry(timestamp,
                 osmEntity, null,
-                geom, new LazyEvaluatedObject<Geometry>((Geometry)null),
+                geom, new LazyEvaluatedObject<>((Geometry)null),
+                unclippedGeom, new LazyEvaluatedObject<>((Geometry)null),
                 activity
             );
           }
