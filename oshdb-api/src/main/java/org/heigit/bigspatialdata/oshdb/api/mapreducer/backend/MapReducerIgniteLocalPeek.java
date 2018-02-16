@@ -19,6 +19,7 @@ import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
@@ -77,7 +78,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._mapReduceCellsOSMContributionOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -89,7 +90,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -102,7 +103,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
     return IgniteLocalPeekHelper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -114,7 +115,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()),
+        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
         this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
         this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
         accumulator, combiner);
@@ -188,6 +189,7 @@ class IgniteLocalPeekHelper {
 
     /* computation settings */
     final List<String> cacheNames;
+    final Iterable<Pair<CellId, CellId>> cellIdRanges;
     final OSHDBBoundingBox bbox;
     final CellIterator cellIterator;
     final SortedSet<OSHDBTimestamp> tstamps;
@@ -197,12 +199,14 @@ class IgniteLocalPeekHelper {
     final SerializableBinaryOperator<S> combiner;
 
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, List<String> cacheNames,
+        Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<V, MR> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
       this.cacheNames = cacheNames;
+      this.cellIdRanges = cellIdRanges;
       this.bbox = bbox;
       this.cellIterator = new CellIterator(bbox, poly, tagInterpreter, preFilter, filter, false);
       this.tstamps = tstamps;
@@ -222,17 +226,24 @@ class IgniteLocalPeekHelper {
     List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys(Ignite node) {
       // calculate all cache keys we have to investigate
       XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
-      Collection<Long> keys = new LinkedList<>();
-      grid.bbox2CellIds(bbox, false)
-          .forEach(cell -> keys.add(ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel())));
-      List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys = new ArrayList<>(keys.size());
+      List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys = new ArrayList<>();
       this.cacheNames.forEach(cacheName -> {
         IgniteCache<Long, GridOSHEntity> cache = node.cache(cacheName);
-        // Map all keys to ignite nodes
-        Map<ClusterNode, Collection<Long>> mappings =
-            node.<Long>affinity(cache.getName()).mapKeysToNodes(keys);
-        Collection<Long> cacheLocalKeys = mappings.get(node.cluster().localNode());
-        cacheLocalKeys.forEach(key -> localKeys.add(new ImmutablePair<>(cache, key)));
+        List<Long> cellIdRangeIds = new ArrayList<>();
+        this.cellIdRanges.forEach(cellIdRange -> {
+          cellIdRangeIds.clear();
+          int level = cellIdRange.getLeft().getZoomLevel();
+          long from = CellId.getLevelId(level, cellIdRange.getLeft().getId());
+          long to = CellId.getLevelId(level, cellIdRange.getRight().getId());
+          for (long key = from; key < to; key++) {
+            cellIdRangeIds.add(key);
+          }
+          // Map keys to ignite nodes and remember the local ones
+          node.<Long>affinity(cache.getName())
+              .mapKeysToNodes(cellIdRangeIds)
+              .getOrDefault(node.cluster().localNode(), Collections.emptyList())
+              .forEach(key -> localKeys.add(new ImmutablePair<>(cache, key)));
+        });
       });
       return localKeys;
     }
@@ -241,11 +252,12 @@ class IgniteLocalPeekHelper {
   private static class MapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<OSMContribution, R, R, S, P> {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        List<String> cacheNames, SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+        List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+        SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
-      super(tagInterpreter, cacheNames, tstamps, bbox, poly, preFilter, filter, mapper,
+      super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
           identitySupplier, accumulator, combiner);
     }
 
@@ -276,12 +288,13 @@ class IgniteLocalPeekHelper {
   private static class FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMContribution>, R, List<R>, S, P> {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        List<String> cacheNames, SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+        List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+        SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<List<OSMContribution>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
-      super(tagInterpreter, cacheNames, tstamps, bbox, poly, preFilter, filter, mapper,
+      super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
           identitySupplier, accumulator, combiner);
     }
 
@@ -327,11 +340,12 @@ class IgniteLocalPeekHelper {
   private static class MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<OSMEntitySnapshot, R, R, S, P> {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        List<String> cacheNames, SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+        List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+        SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
-      super(tagInterpreter, cacheNames, tstamps, bbox, poly, preFilter, filter, mapper,
+      super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
           identitySupplier, accumulator, combiner);
     }
 
@@ -359,12 +373,13 @@ class IgniteLocalPeekHelper {
   private static class FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMEntitySnapshot>, R, List<R>, S, P> {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        List<String> cacheNames, SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+        List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+        SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
         SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
-      super(tagInterpreter, cacheNames, tstamps, bbox, poly, preFilter, filter, mapper,
+      super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
           identitySupplier, accumulator, combiner);
     }
 
@@ -429,7 +444,8 @@ class IgniteLocalPeekHelper {
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
-      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+      TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMContribution, R> mapper,
@@ -437,12 +453,13 @@ class IgniteLocalPeekHelper {
       SerializableBinaryOperator<S> combiner) {
     return _mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new MapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
-            cacheNames, tstamps, bbox, poly, preFilter, filter, mapper, identitySupplier,
-            accumulator, combiner));
+            cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
+            identitySupplier, accumulator, combiner));
   }
 
   static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+      TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
@@ -450,12 +467,13 @@ class IgniteLocalPeekHelper {
       SerializableBinaryOperator<S> combiner) {
     return _mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
-            cacheNames, tstamps, bbox, poly, preFilter, filter, mapper, identitySupplier,
-            accumulator, combiner));
+            cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
+            identitySupplier, accumulator, combiner));
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+      TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
@@ -463,12 +481,13 @@ class IgniteLocalPeekHelper {
       SerializableBinaryOperator<S> combiner) {
     return _mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
-            cacheNames, tstamps, bbox, poly, preFilter, filter, mapper, identitySupplier,
-            accumulator, combiner));
+            cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
+            identitySupplier, accumulator, combiner));
   }
 
   static <R, S, P extends Geometry & Polygonal> S _flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-      OSHDBIgnite oshdb, List<String> cacheNames, TagInterpreter tagInterpreter,
+      OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
+      TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
@@ -476,7 +495,7 @@ class IgniteLocalPeekHelper {
       SerializableBinaryOperator<S> combiner) {
     return _mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
-            cacheNames, tstamps, bbox, poly, preFilter, filter, mapper, identitySupplier,
-            accumulator, combiner));
+            cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
+            identitySupplier, accumulator, combiner));
   }
 }
