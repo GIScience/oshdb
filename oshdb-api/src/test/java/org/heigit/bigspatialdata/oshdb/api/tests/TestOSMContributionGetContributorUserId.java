@@ -39,7 +39,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         new OSMNode(1L, 1, new OSHDBTimestamp(123L), 1L, 7, new int[] {}, 0, 0), null,
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION)),
+        1L
     ));
     assertEquals(7, c.getContributorUserId());
     // contribution type match
@@ -47,7 +48,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0), null,
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION)),
+        1L
     ));
     assertEquals(7, c.getContributorUserId());
     c = new OSMContribution(new IterateAllEntry(
@@ -55,7 +57,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSMNode(1L, 2, new OSHDBTimestamp(122L), 2L, 7, new int[] {3,4}, 0, 0),
         new OSMNode(1L, 1, new OSHDBTimestamp(121L), 1L, 6, new int[] {1,2}, 0, 0),
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.TAG_CHANGE))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.TAG_CHANGE)),
+        2L
     ));
     assertEquals(7, c.getContributorUserId());
     c = new OSMContribution(new IterateAllEntry(
@@ -63,7 +66,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSMNode(1L, -2, new OSHDBTimestamp(122L), 2L, 7, new int[] {}, 0, 0), // negative version == isVisible = false
         new OSMNode(1L, 1, new OSHDBTimestamp(121L), 1L, 6, new int[] {}, 0, 0),
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
+        2L
     ));
     // non-match
     assertEquals(7, c.getContributorUserId());
@@ -72,7 +76,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
         new OSMNode(1L, 1, new OSHDBTimestamp(122L), 1L, 7, new int[] {}, 0, 0),
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.noneOf(ContributionType.class))
+        new LazyEvaluatedContributionTypes(EnumSet.noneOf(ContributionType.class)),
+        -1L
     ));
     assertEquals(-1, c.getContributorUserId());
   }
@@ -83,7 +88,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         new OSMWay(1L, 1, new OSHDBTimestamp(123L), 1L, 7, new int[] {}, new OSMMember[] {}), null,
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION)),
+        1L
     ));
     assertEquals(7, c.getContributorUserId());
   }
@@ -102,7 +108,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         entity, entity,
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE)),
+        1L
     ));
     assertEquals(7, c.getContributorUserId());
   }
@@ -113,7 +120,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         new OSMRelation(1L, 1, new OSHDBTimestamp(123L), 1L, 7, new int[] {}, new OSMMember[] {}), null,
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION)),
+        1L
     ));
     assertEquals(7, c.getContributorUserId());
   }
@@ -132,7 +140,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         entity, entity,
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE)),
+        1L
     ));
     assertEquals(7, c.getContributorUserId());
   }
@@ -156,7 +165,8 @@ public class TestOSMContributionGetContributorUserId {
         new OSHDBTimestamp(123),
         entity, entity,
         null, null, null, null,
-        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE))
+        new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.GEOMETRY_CHANGE)),
+        1L
     ));
     assertEquals(7, c.getContributorUserId());
   }

@@ -304,6 +304,7 @@ public class CellIterator implements Serializable {
     public final LazyEvaluatedObject<Geometry> unclippedGeometry;
     public final LazyEvaluatedObject<Geometry> unclippedPreviousGeometry;
     public final LazyEvaluatedContributionTypes activities;
+    public long changeset;
 
     public IterateAllEntry(
         OSHDBTimestamp timestamp,
@@ -311,7 +312,8 @@ public class CellIterator implements Serializable {
         LazyEvaluatedObject<Geometry> geometry, LazyEvaluatedObject<Geometry> previousGeometry,
         LazyEvaluatedObject<Geometry> unclippedGeometry,
         LazyEvaluatedObject<Geometry> previousUnclippedGeometry,
-        LazyEvaluatedContributionTypes activities
+        LazyEvaluatedContributionTypes activities,
+        long changeset
     ) {
       this.timestamp = timestamp;
       this.osmEntity = entity;
@@ -321,6 +323,7 @@ public class CellIterator implements Serializable {
       this.unclippedGeometry = unclippedGeometry;
       this.unclippedPreviousGeometry = previousUnclippedGeometry;
       this.activities = activities;
+      this.changeset = changeset;
     }
   }
 
@@ -372,7 +375,8 @@ public class CellIterator implements Serializable {
           (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
       );
 
-      List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, true);
+      Map<OSHDBTimestamp, Long> changesetTs = oshEntity.getChangesetTimestamps();
+      List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, changesetTs);
 
       if (modTs.size() == 0 || !timeInterval
           .intersects(new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1)))) {
@@ -414,12 +418,13 @@ public class CellIterator implements Serializable {
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
           // todo: some of this may be refactorable between the two for loops
-          if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
+          if (prev != null && prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp,
                 osmEntity, prev.osmEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
-                new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
+                new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
+                osmEntity.getChangeset()
             );
             if (!skipOutput) {
               results.add(prev);
@@ -459,7 +464,8 @@ public class CellIterator implements Serializable {
                   osmEntity, prev.osmEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
-                  new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
+                  new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
+                  changesetTs.get(timestamp)
               );
               if (!skipOutput) {
                 results.add(prev);
@@ -516,7 +522,8 @@ public class CellIterator implements Serializable {
               prev = new IterateAllEntry(timestamp, osmEntity, prev.osmEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
-                  new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION))
+                  new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
+                  changesetTs.get(timestamp)
               );
               if (!skipOutput) {
                 results.add(prev);
@@ -570,14 +577,16 @@ public class CellIterator implements Serializable {
                 osmEntity, prev.osmEntity,
                 geom, prev.geometry,
                 unclippedGeom, prev.unclippedGeometry,
-                activity
+                activity,
+                changesetTs.get(timestamp)
             );
           } else {
             result = new IterateAllEntry(timestamp,
                 osmEntity, null,
                 geom, new LazyEvaluatedObject<>((Geometry)null),
                 unclippedGeom, new LazyEvaluatedObject<>((Geometry)null),
-                activity
+                activity,
+                changesetTs.get(timestamp)
             );
           }
 

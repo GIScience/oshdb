@@ -196,4 +196,13 @@ public class OSMContribution implements OSHDBMapReducible {
     }
     return userId;
   }
+
+  /**
+   * Returns the osm changeset id of the contribution.
+   *
+   * @return the id of the osm changeset represented by the current contribution object
+   */
+  public long getChangesetId() {
+    return data.changeset;
+  }
 }

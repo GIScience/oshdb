@@ -558,7 +558,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   @Override
-  protected Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
 
     List<OSMWay> ways = this.getVersions();

@@ -402,10 +402,10 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
   }
 
   @Override
-  protected Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
-    this.getVersions().forEach(osmNode
-            -> result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
+    this.getVersions().forEach(osmNode ->
+        result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
     );
     return result;
   }

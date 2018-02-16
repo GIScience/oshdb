@@ -579,7 +579,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   }
 
   @Override
-  protected Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
 
     List<OSMRelation> rels = this.getVersions();
@@ -590,11 +590,9 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
         return;
       }
       Arrays.stream(osmRel.getMembers())
-              .map(member -> ((OSHEntity) member.getEntity()))
-              .filter(Objects::nonNull)
-              .forEach(oshEntity
-                      -> result.putAll(oshEntity.getChangesetTimestamps())
-              );
+          .map(member -> ((OSHEntity) member.getEntity()))
+          .filter(Objects::nonNull)
+          .forEach(oshEntity -> result.putAll(oshEntity.getChangesetTimestamps()));
     });
 
     return result;

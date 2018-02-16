@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
+import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -326,24 +328,28 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    */
   public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
     List<OSM> versions = this.getVersions();
-    if (versions.stream().noneMatch(osmEntityFilter)) {
-      return new ArrayList<>();
+    List<Boolean> versionMatches = versions.stream()
+        .map(osmEntityFilter::test)
+        .collect(Collectors.toList());
+    if (versionMatches.stream().noneMatch(match -> match)) {
+      return Collections.emptyList();
     }
 
     List<OSHDBTimestamp> allModTs = this.getModificationTimestamps(true);
-    List<OSHDBTimestamp> filteredModTs = new LinkedList<>();
+    List<OSHDBTimestamp> filteredModTs = new ArrayList<>(allModTs.size());
 
     int timeIdx = allModTs.size() - 1;
 
     long lastOsmEntityTs = Long.MAX_VALUE;
-    for (OSMEntity osmEntity : versions) {
+    for (int i=0; i<versions.size(); i++) {
+      OSMEntity osmEntity = versions.get(i);
       OSHDBTimestamp osmEntityTs = osmEntity.getTimestamp();
       if (osmEntityTs.getRawUnixTimestamp() >= lastOsmEntityTs) {
         continue; // skip versions with identical (or invalid*) timestamps
       }
       OSHDBTimestamp modTs = allModTs.get(timeIdx);
 
-      boolean matches = osmEntityFilter.test(osmEntity);
+      boolean matches = versionMatches.get(i);
 
       if (matches) {
         while (modTs.getRawUnixTimestamp() >= osmEntityTs.getRawUnixTimestamp()) {
@@ -367,30 +373,26 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * Returns all timestamps at which this entity (or one or more of its child entities) has been
    * modified and matches a given condition/filter.
    *
-   * If the groupedByChangeset parameter is set to true, consecutive modifications in a single
-   * changeset are grouped together (only the last modification timestamp of the corresponding
-   * changeset is returned). This can reduce the amount of geometry modifications by a lot (e.g.
-   * when sequential node uploads of a way modification causes many intermediate modification
-   * states), making results more "accurate"/comparable as well as faster processing of geometries.
+   * Consecutive modifications from a single changeset are grouped together (only the last
+   * modification timestamp of the corresponding changeset is considered). This can reduce the
+   * amount of geometry modifications by a lot (e.g. when sequential node uploads of a way
+   * modification causes many intermediate modification states), making results more
+   * "accurate"/comparable as well as allowing faster processing of geometries.
    *
    * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
-   * @param groupedByChangeset if set, consecutive modifications of a single changeset are grouped
-   *        together
+   * @param changesetTimestamps association between timestamps and changeset-ids, can be obtained
+   *        from oshEntity by calling {@link #getChangesetTimestamps}.
    * @return a list of timestamps where this entity has been modified
    */
   public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter,
-      boolean groupedByChangeset) {
+      Map<OSHDBTimestamp, Long> changesetTimestamps) {
     List<OSHDBTimestamp> allModificationTimestamps = this.getModificationTimestamps(osmEntityFilter);
-    if (!groupedByChangeset || allModificationTimestamps.size() <= 1) {
+    if (allModificationTimestamps.size() <= 1) {
       return allModificationTimestamps;
     }
-
     // group modification timestamps by changeset
     List<OSHDBTimestamp> result = new ArrayList<>();
-    Map<OSHDBTimestamp, Long> changesetTimestamps = this.getChangesetTimestamps();
-
     allModificationTimestamps = Lists.reverse(allModificationTimestamps);
-
     Long nextChangeset = -1L;
     for (OSHDBTimestamp timestamp : allModificationTimestamps) {
       Long changeset = changesetTimestamps.get(timestamp);
@@ -410,7 +412,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    *
    * @return a map between timestamps and changeset ids
    */
-  protected abstract Map<OSHDBTimestamp, Long> getChangesetTimestamps();
+  public abstract Map<OSHDBTimestamp, Long> getChangesetTimestamps();
 
   @Override
   public String toString() {
