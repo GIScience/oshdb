@@ -1,10 +1,14 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.LongStream;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -65,7 +69,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     );
     OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(this._tstamps.get());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
 
     Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
@@ -74,8 +78,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      return cellIdsList.stream().map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
-          .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+      return Streams.stream(cellIdRanges)
+          .flatMapToLong(cellIdRangeToCellIds())
+          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null)
               return identitySupplier.get();
@@ -83,14 +88,23 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
             cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
                 .forEach(contribution -> {
-                  OSMContribution osmContribution =
-                      new OSMContribution(contribution);
+                  OSMContribution osmContribution = new OSMContribution(contribution);
                   accInternal
                       .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
                 });
             return accInternal.get();
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
+  }
+
+  @Nonnull
+  private static Function<Pair<CellId, CellId>, LongStream> cellIdRangeToCellIds() {
+    return cellIdRange -> {
+      int level = cellIdRange.getLeft().getZoomLevel();
+      long from = CellId.getLevelId(level, cellIdRange.getLeft().getId());
+      long to = CellId.getLevelId(level, cellIdRange.getRight().getId());
+      return LongStream.rangeClosed(from, to);
+    };
   }
 
   @Override
@@ -104,7 +118,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     );
     OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(this._tstamps.get());
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
 
     Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
@@ -113,8 +127,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      return cellIdsList.stream().map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
-          .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+      return Streams.stream(cellIdRanges)
+          .flatMapToLong(cellIdRangeToCellIds())
+          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null)
               return identitySupplier.get();
@@ -123,8 +138,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             List<OSMContribution> contributions = new ArrayList<>();
             cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
                 .forEach(contribution -> {
-                  OSMContribution thisContribution =
-                      new OSMContribution(contribution);
+                  OSMContribution thisContribution = new OSMContribution(contribution);
                   if (contributions.size() > 0
                       && thisContribution.getEntityAfter().getId() != contributions
                           .get(contributions.size() - 1).getEntityAfter().getId()) {
@@ -159,7 +173,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     );
     SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
 
     Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
@@ -168,8 +182,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      return cellIdsList.stream().map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
-          .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+      return Streams.stream(cellIdRanges)
+          .flatMapToLong(cellIdRangeToCellIds())
+          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null)
               return identitySupplier.get();
@@ -196,7 +211,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     );
     SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
 
-    final Set<CellId> cellIdsList = Sets.newHashSet(this._getCellIds());
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
 
     Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
     IgniteCompute compute = ignite.compute();
@@ -205,8 +220,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      return cellIdsList.stream().map(cell -> ZGrid.addZoomToId(cell.getId(), cell.getZoomLevel()))
-          .map(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+      return Streams.stream(cellIdRanges)
+          .flatMapToLong(cellIdRangeToCellIds())
+          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null)
               return identitySupplier.get();
