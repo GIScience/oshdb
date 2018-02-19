@@ -1328,19 +1328,6 @@ public abstract class MapReducer<X> implements
   }
 
   // get all cell ids covered by the current area of interest's bounding box
-  @Deprecated
-  protected Iterable<CellId> _getCellIds() {
-    XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
-    if (this._bboxFilter == null || (this._bboxFilter.getMinLon() >= this._bboxFilter.getMaxLon()
-        || this._bboxFilter.getMinLat() >= this._bboxFilter.getMaxLat())) {
-      // return an empty iterable if bbox is not set or empty
-      LOG.warn("area of interest not set or empty");
-      return Collections.emptyList();
-    }
-    return grid.bbox2CellIds(this._bboxFilter, false);
-  }
-
-  // get all cell ids covered by the current area of interest's bounding box
   protected Iterable<Pair<CellId, CellId>> _getCellIdRanges() {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
     if (this._bboxFilter == null || (this._bboxFilter.getMinLon() >= this._bboxFilter.getMaxLon()
