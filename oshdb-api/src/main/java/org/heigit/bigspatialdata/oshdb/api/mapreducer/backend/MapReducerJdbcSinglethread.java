@@ -1,17 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import java.io.ObjectInputStream;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
@@ -24,11 +19,10 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.jetbrains.annotations.NotNull;
 
-public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
+public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   public MapReducerJdbcSinglethread(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
@@ -57,27 +51,11 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
-      String sqlQuery = this._typeFilter.stream()
-          .map(osmType -> TableNames.forOSMType(osmType)
-              .map(tn -> tn.toString(this._oshdb.prefix())))
-          .filter(Optional::isPresent).map(Optional::get)
-          .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
-          .collect(Collectors.joining(" union all "));
-      // fetch data from H2 DB
-      PreparedStatement pstmt = ((OSHDBJdbc)this._oshdb).getConnection().prepareStatement(sqlQuery);
-      pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
-      pstmt.setLong(2, cellIdRange.getLeft().getId());
-      pstmt.setLong(3, cellIdRange.getRight().getId());
-
-      // execute statement
-      ResultSet oshCellsRawData = pstmt.executeQuery();
+      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       // iterate over the result
       while (oshCellsRawData.next()) {
-        // get one cell from the raw data stream
-        GridOSHEntity oshCellRawData =
-            (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1)))
-                .readObject();
+        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
@@ -105,27 +83,11 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
-      String sqlQuery = this._typeFilter.stream()
-          .map(osmType -> TableNames.forOSMType(osmType)
-              .map(tn -> tn.toString(this._oshdb.prefix())))
-          .filter(Optional::isPresent).map(Optional::get)
-          .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
-          .collect(Collectors.joining(" union all "));
-      // fetch data from H2 DB
-      PreparedStatement pstmt = ((OSHDBJdbc)this._oshdb).getConnection().prepareStatement(sqlQuery);
-      pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
-      pstmt.setLong(2, cellIdRange.getLeft().getId());
-      pstmt.setLong(3, cellIdRange.getRight().getId());
-
-      // execute statement
-      ResultSet oshCellsRawData = pstmt.executeQuery();
+      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       // iterate over the result
       while (oshCellsRawData.next()) {
-        // get one cell from the raw data stream
-        GridOSHEntity oshCellRawData =
-            (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1)))
-                .readObject();
+        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
@@ -170,27 +132,11 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
-      String sqlQuery = this._typeFilter.stream()
-          .map(osmType -> TableNames.forOSMType(osmType)
-              .map(tn -> tn.toString(this._oshdb.prefix())))
-          .filter(Optional::isPresent).map(Optional::get)
-          .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
-          .collect(Collectors.joining(" union all "));
-      // fetch data from H2 DB
-      PreparedStatement pstmt = ((OSHDBJdbc)this._oshdb).getConnection().prepareStatement(sqlQuery);
-      pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
-      pstmt.setLong(2, cellIdRange.getLeft().getId());
-      pstmt.setLong(3, cellIdRange.getRight().getId());
-
-      // execute statement
-      ResultSet oshCellsRawData = pstmt.executeQuery();
+      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       // iterate over the result
       while (oshCellsRawData.next()) {
-        // get one cell from the raw data stream
-        GridOSHEntity oshCellRawData =
-            (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1)))
-                .readObject();
+        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
@@ -218,27 +164,11 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
 
     S result = identitySupplier.get();
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
-      String sqlQuery = this._typeFilter.stream()
-          .map(osmType -> TableNames.forOSMType(osmType)
-              .map(tn -> tn.toString(this._oshdb.prefix())))
-          .filter(Optional::isPresent).map(Optional::get)
-          .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
-          .collect(Collectors.joining(" union all "));
-      // fetch data from H2 DB
-      PreparedStatement pstmt = ((OSHDBJdbc)this._oshdb).getConnection().prepareStatement(sqlQuery);
-      pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
-      pstmt.setLong(2, cellIdRange.getLeft().getId());
-      pstmt.setLong(3, cellIdRange.getRight().getId());
-
-      // execute statement
-      ResultSet oshCellsRawData = pstmt.executeQuery();
+      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       // iterate over the result
       while (oshCellsRawData.next()) {
-        // get one cell from the raw data stream
-        GridOSHEntity oshCellRawData =
-            (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1)))
-                .readObject();
+        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
 
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(result);
@@ -267,4 +197,5 @@ public class MapReducerJdbcSinglethread<X> extends MapReducer<X> {
     }
     return combiner.apply(identitySupplier.get(), result);
   }
+
 }
