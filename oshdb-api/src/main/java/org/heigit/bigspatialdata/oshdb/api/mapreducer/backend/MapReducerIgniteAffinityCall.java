@@ -70,6 +70,14 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     };
   }
 
+  interface Callaback<S> extends Serializable {
+    S apply (CellIterator cellIterator,
+        OSHDBTimestampInterval timestampInterval,
+        SortedSet<OSHDBTimestamp> timestamps,
+        GridOSHEntity oshEntityCell
+    );
+  }
+
   private <S> S runOnIgnite(
       Callaback<S> callback,
       SerializableSupplier<S> identitySupplier,
@@ -100,14 +108,6 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             return callback.apply(cellIterator, timestampInterval, timestamps, oshEntityCell);
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
-  }
-
-  interface Callaback<S> {
-    public S apply (CellIterator cellIterator,
-        OSHDBTimestampInterval timestampInterval,
-        SortedSet<OSHDBTimestamp> timestamps,
-        GridOSHEntity oshEntityCell
-    );
   }
 
   @Override
