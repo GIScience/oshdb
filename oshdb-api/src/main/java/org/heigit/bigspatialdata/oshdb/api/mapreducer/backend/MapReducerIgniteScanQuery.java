@@ -203,6 +203,36 @@ class IgniteScanQueryHelper {
       Pair<CellId, CellId> cellIdRange = cellIdRangeEntry.getValue();
       return cellIdRange.getLeft().getId() <= id && cellIdRange.getRight().getId() >= id;
     }
+
+    interface Callaback<S> extends Serializable {
+      S apply (GridOSHEntity oshEntityCell);
+    }
+
+    S call(Callaback<S> callback) {
+      cache = node.cache(cacheName);
+      // Getting a list of the partitions owned by this node.
+      List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
+      Collections.shuffle(myPartitions);
+      // ^ todo: check why this gives 2x speedup (regarding "uptime") on cluster!!??
+      // run processing in parallel
+      return myPartitions.parallelStream().map(part -> {
+        // noinspection unchecked
+        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
+            this.cellIdInRange((GridOSHEntity)cell)
+        )).setPartition(part), cacheEntry -> {
+          // iterate over the history of all OSM objects in the current cell
+          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
+          return callback.apply(oshEntityCell);
+        })) {
+          S accExternal = identitySupplier.get();
+          // reduce the results
+          for (S entry : cursor) {
+            accExternal = combiner.apply(accExternal, entry);
+          }
+          return accExternal;
+        }
+      }).reduce(identitySupplier.get(), combiner);
+    }
   }
 
   private static class MapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
@@ -219,38 +249,18 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() throws Exception {
-      cache = node.cache(cacheName);
-      // Getting a list of the partitions owned by this node.
-      List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
-      Collections.shuffle(myPartitions);
-      // ^ todo: check why this gives 2x speedup (regarding "uptime") on cluster!!??
-      // run processing in parallel
-      return myPartitions.parallelStream().map(part -> {
-        // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
-            this.cellIdInRange((GridOSHEntity)cell)
-        )).setPartition(part), cacheEntry -> {
-          // iterate over the history of all OSM objects in the current cell
-          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
-          AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
-              .forEach(contribution -> {
-                OSMContribution osmContribution =
-                    new OSMContribution(contribution);
-                accInternal
-                    .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
-              });
-          return accInternal.get();
-        })) {
-          S accExternal = identitySupplier.get();
-          // reduce the results
-          for (S entry : cursor) {
-            accExternal = combiner.apply(accExternal, entry);
-          }
-          return accExternal;
-        }
-      }).reduce(identitySupplier.get(), combiner);
+    public S call() {
+      return super.call(oshEntityCell -> {
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+            .forEach(contribution -> {
+              OSMContribution osmContribution = new OSMContribution(contribution);
+              // immediately fold the result
+              accInternal
+                  .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
+            });
+        return accInternal.get();
+      });
     }
   }
 
@@ -268,53 +278,32 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() throws Exception {
-      cache = node.cache(cacheName);
-      // Getting a list of the partitions owned by this node.
-      List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
-      Collections.shuffle(myPartitions);
-      // ^ todo: check why this gives 2x speedup (regarding "uptime") on cluster!!??
-      // run processing in parallel
-      return myPartitions.parallelStream().map(part -> {
-        // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
-            this.cellIdInRange((GridOSHEntity)cell)
-        )).setPartition(part), cacheEntry -> {
-          // iterate over the history of all OSM objects in the current cell
-          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
-          AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          List<OSMContribution> contributions = new ArrayList<>();
-          cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
-              .forEach(contribution -> {
-                OSMContribution thisContribution =
-                    new OSMContribution(contribution);
-                if (contributions.size() > 0
-                    && thisContribution.getEntityAfter().getId() != contributions
-                        .get(contributions.size() - 1).getEntityAfter().getId()) {
-                  // immediately fold the results
-                  for (R r : mapper.apply(contributions)) {
-                    accInternal.set(accumulator.apply(accInternal.get(), r));
-                  }
-                  contributions.clear();
+    public S call() {
+      return super.call(oshEntityCell -> {
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        List<OSMContribution> contributions = new ArrayList<>();
+        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+            .forEach(contribution -> {
+              OSMContribution thisContribution = new OSMContribution(contribution);
+              if (contributions.size() > 0
+                  && thisContribution.getEntityAfter().getId() != contributions
+                  .get(contributions.size() - 1).getEntityAfter().getId()) {
+                // immediately fold the results
+                for (R r : mapper.apply(contributions)) {
+                  accInternal.set(accumulator.apply(accInternal.get(), r));
                 }
-                contributions.add(thisContribution);
-              });
-          // apply mapper and fold results one more time for last entity in current cell
-          if (contributions.size() > 0) {
-            for (R r : mapper.apply(contributions)) {
-              accInternal.set(accumulator.apply(accInternal.get(), r));
-            }
+                contributions.clear();
+              }
+              contributions.add(thisContribution);
+            });
+        // apply mapper and fold results one more time for last entity in current cell
+        if (contributions.size() > 0) {
+          for (R r : mapper.apply(contributions)) {
+            accInternal.set(accumulator.apply(accInternal.get(), r));
           }
-          return accInternal.get();
-        })) {
-          S accExternal = identitySupplier.get();
-          // reduce the results
-          for (S entry : cursor) {
-            accExternal = combiner.apply(accExternal, entry);
-          }
-          return accExternal;
         }
-      }).reduce(identitySupplier.get(), combiner);
+        return accInternal.get();
+      });
     }
   }
 
@@ -332,35 +321,16 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() throws Exception {
-      cache = node.cache(cacheName);
-      // Getting a list of the partitions owned by this node.
-      List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
-      Collections.shuffle(myPartitions);
-      // ^ todo: check why this gives 2x speedup (regarding "uptime") on cluster!!??
-      // run processing in parallel
-      return myPartitions.parallelStream().map(part -> {
-        // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
-            this.cellIdInRange((GridOSHEntity)cell)
-        )).setPartition(part), cacheEntry -> {
-          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
-          AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
-            OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
-            // immediately fold the result
-            accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
-          });
-          return accInternal.get();
-        })) {
-          S accExternal = identitySupplier.get();
-          // reduce the results
-          for (S entry : cursor) {
-            accExternal = combiner.apply(accExternal, entry);
-          }
-          return accExternal;
-        }
-      }).reduce(identitySupplier.get(), combiner);
+    public S call() {
+      return super.call(oshEntityCell -> {
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+          OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
+          // immediately fold the result
+          accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
+        });
+        return accInternal.get();
+      });
     }
   }
 
@@ -378,50 +348,31 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() throws Exception {
-      cache = node.cache(cacheName);
-      // Getting a list of the partitions owned by this node.
-      List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
-      Collections.shuffle(myPartitions);
-      // ^ todo: check why this gives 2x speedup (regarding "uptime") on cluster!!??
-      // run processing in parallel
-      return myPartitions.parallelStream().map(part -> {
-        // noinspection unchecked
-        try (QueryCursor<S> cursor = cache.query((new ScanQuery((key, cell) ->
-            this.cellIdInRange((GridOSHEntity)cell)
-        )).setPartition(part), cacheEntry -> {
-          GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
-          AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-          List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-          cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
-            OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
-            if (osmEntitySnapshots.size() > 0
-                && thisSnapshot.getEntity().getId() != osmEntitySnapshots
-                .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
-              // immediately fold the results
-              for (R r : mapper.apply(osmEntitySnapshots)) {
-                accInternal.set(accumulator.apply(accInternal.get(), r));
-              }
-              osmEntitySnapshots.clear();
-            }
-            osmEntitySnapshots.add(thisSnapshot);
-          });
-          // apply mapper and fold results one more time for last entity in current cell
-          if (osmEntitySnapshots.size() > 0) {
+    public S call() {
+      return super.call(oshEntityCell -> {
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
+        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+          OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
+          if (osmEntitySnapshots.size() > 0
+              && thisSnapshot.getEntity().getId() != osmEntitySnapshots
+              .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
+            // immediately fold the results
             for (R r : mapper.apply(osmEntitySnapshots)) {
               accInternal.set(accumulator.apply(accInternal.get(), r));
             }
+            osmEntitySnapshots.clear();
           }
-          return accInternal.get();
-        })) {
-          S accExternal = identitySupplier.get();
-          // reduce the results
-          for (S entry : cursor) {
-            accExternal = combiner.apply(accExternal, entry);
+          osmEntitySnapshots.add(thisSnapshot);
+        });
+        // apply mapper and fold results one more time for last entity in current cell
+        if (osmEntitySnapshots.size() > 0) {
+          for (R r : mapper.apply(osmEntitySnapshots)) {
+            accInternal.set(accumulator.apply(accInternal.get(), r));
           }
-          return accExternal;
         }
-      }).reduce(identitySupplier.get(), combiner);
+        return accInternal.get();
+      });
     }
   }
 
