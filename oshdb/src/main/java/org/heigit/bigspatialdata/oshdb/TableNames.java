@@ -62,7 +62,11 @@ public enum TableNames {
   /**
    * Table that holds Grid-OSH-Relations in the oshdb.
    */
-  T_RELATIONS("grid_relation");
+  T_RELATIONS("grid_relation"),
+  /**
+   * Table that holds metadata in the oshdb.
+   */
+  T_METADATA("metadata");
 
   private final String tablename;
 

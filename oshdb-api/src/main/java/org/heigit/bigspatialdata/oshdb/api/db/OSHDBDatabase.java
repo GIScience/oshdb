@@ -15,11 +15,23 @@ public abstract class OSHDBDatabase extends OSHDB {
      */
     public abstract <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass);
 
+    /**
+     * returns metadata about the given OSHDB
+     * (for example copyright information, currentness of the data, spatial extent, etc.)
+     */
+    public abstract String metadata(String property);
+
+    /**
+     * sets the "table/cache" name prefix to be used with this oshdb
+     */
     public OSHDBDatabase prefix(String prefix) {
         this.prefix = prefix;
         return this;
     }
 
+    /**
+     * returns the currently set db "table/cache" name prefix
+     */
     public String prefix() {
         return this.prefix;
     }

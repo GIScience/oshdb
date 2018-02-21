@@ -64,6 +64,12 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
     return mapReducer;
   }
 
+  @Override
+  public String metadata(String property) {
+    // todo: implement this
+    return null;
+  }
+
   public Ignite getIgnite() {
     return this._ignite;
   }
