@@ -255,7 +255,7 @@ class IgniteLocalPeekHelper {
       return this.localKeys(node).parallelStream()
           .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
           .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
-          .filter(ignored -> this.canceled)
+          .filter(ignored -> !this.canceled)
           .map(callback::apply)
           .reduce(identitySupplier.get(), combiner);
     }
