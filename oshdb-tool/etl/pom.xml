@@ -65,6 +65,12 @@
 			<artifactId>h2</artifactId>
 			<version>${h2.version}</version>
 		</dependency>
+		
+		    <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-core</artifactId>
+      <version>${ignite.version}</version>
+    </dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
