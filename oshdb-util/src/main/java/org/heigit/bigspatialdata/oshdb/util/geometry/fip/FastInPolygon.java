@@ -13,17 +13,22 @@ import java.util.List;
  * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
  */
 abstract class FastInPolygon implements Serializable {
+  private class SerializableSegment extends Segment implements Serializable {
+    public SerializableSegment(Coordinate p0, Coordinate p1) {
+      super(p0, p1);
+    }
+  }
+
   private final int AvgSegmentsPerBand = 10; // something in the order of 10-20 works fine according to the link above
 
   private int numBands;
 
-  private ArrayList<List<Segment>> horizBands;
-  private ArrayList<List<Segment>> vertBands;
+  private ArrayList<List<SerializableSegment>> horizBands;
+  private ArrayList<List<SerializableSegment>> vertBands;
 
   private Envelope env;
   private double envWidth;
   private double envHeight;
-
 
   protected <P extends Geometry & Polygonal> FastInPolygon(P geom) {
     MultiPolygon mp;
@@ -32,21 +37,21 @@ abstract class FastInPolygon implements Serializable {
     else
       mp = (MultiPolygon) geom;
 
-    List<Segment> segments = new LinkedList<>();
+    List<SerializableSegment> segments = new LinkedList<>();
     for (int i = 0; i < mp.getNumGeometries(); i++) {
       Polygon p = (Polygon) mp.getGeometryN(i);
       LineString er = p.getExteriorRing();
       for (int k = 1; k < er.getNumPoints(); k++) {
         Coordinate p1 = er.getCoordinateN(k - 1);
         Coordinate p2 = er.getCoordinateN(k);
-        segments.add(new Segment(p1, p2));
+        segments.add(new SerializableSegment(p1, p2));
       }
       for (int j = 0; j < p.getNumInteriorRing(); j++) {
         LineString r = p.getInteriorRingN(j);
         for (int k = 1; k < r.getNumPoints(); k++) {
           Coordinate p1 = r.getCoordinateN(k - 1);
           Coordinate p2 = r.getCoordinateN(k);
-          segments.add(new Segment(p1, p2));
+          segments.add(new SerializableSegment(p1, p2));
         }
       }
     }
@@ -86,7 +91,7 @@ abstract class FastInPolygon implements Serializable {
   }
 
   private int crossingNumberX(Point point) {
-    List<Segment> band;
+    List<SerializableSegment> band;
     int horizBand = (int) Math.floor(((point.getY() - env.getMinY()) / envHeight) * numBands);
     horizBand = Math.max(0, Math.min(numBands - 1, horizBand));
     band = horizBands.get(horizBand);
@@ -111,7 +116,7 @@ abstract class FastInPolygon implements Serializable {
   }
 
   private int crossingNumberY(Point point) {
-    List<Segment> band;
+    List<SerializableSegment> band;
     int vertBand = (int) Math.floor(((point.getX() - env.getMinX()) / envWidth) * numBands);
     vertBand = Math.max(0, Math.min(numBands - 1, vertBand));
     band = vertBands.get(vertBand);
