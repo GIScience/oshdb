@@ -224,21 +224,7 @@ public class CellIterator implements Serializable {
         try {
           LazyEvaluatedObject<Geometry> geom;
           if (!isOldStyleMultipolygon) {
-            if (fullyInside) {
-              geom = new LazyEvaluatedObject<>(() ->
-                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-              );
-            } else if (isBoundByPolygon) {
-              geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
-                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-              ));
-            } else {
-              geom = new LazyEvaluatedObject<>(
-                  OSHDBGeometryBuilder.getGeometryClipped(
-                      osmEntity, timestamp, tagInterpreter, boundingBox
-                  )
-              );
-            }
+            geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
             // used to "fix" the
@@ -292,6 +278,27 @@ public class CellIterator implements Serializable {
 
     // return as an obj stream
     return results.stream();
+  }
+
+  private LazyEvaluatedObject<Geometry> constructClippedGeometry(OSMEntity osmEntity,
+      OSHDBTimestamp timestamp, boolean fullyInside) {
+    LazyEvaluatedObject<Geometry> geom;
+    if (fullyInside) {
+      geom = new LazyEvaluatedObject<>(() ->
+          OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+      );
+    } else if (isBoundByPolygon) {
+      geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
+          OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
+      ));
+    } else {
+      geom = new LazyEvaluatedObject<>(
+          OSHDBGeometryBuilder.getGeometryClipped(
+              osmEntity, timestamp, tagInterpreter, boundingBox
+          )
+      );
+    }
+    return geom;
   }
 
   public static class IterateAllEntry {
@@ -478,21 +485,7 @@ public class CellIterator implements Serializable {
         try {
           LazyEvaluatedObject<Geometry> geom;
           if (!isOldStyleMultipolygon) {
-            if (fullyInside) {
-              geom = new LazyEvaluatedObject<>(() ->
-                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-              );
-            } else if (isBoundByPolygon) {
-              geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
-                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-              ));
-            } else {
-              geom = new LazyEvaluatedObject<>(
-                  OSHDBGeometryBuilder.getGeometryClipped(
-                      osmEntity, timestamp, tagInterpreter, boundingBox
-                  )
-              );
-            }
+            geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
             // used to "fix" the results obtained from calculating the geometry on the object's outer
