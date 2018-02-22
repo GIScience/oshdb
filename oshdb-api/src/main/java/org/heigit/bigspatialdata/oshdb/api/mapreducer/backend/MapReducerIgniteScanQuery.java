@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
@@ -204,11 +203,11 @@ class IgniteScanQueryHelper {
       return cellIdRange.getLeft().getId() <= id && cellIdRange.getRight().getId() >= id;
     }
 
-    interface Callaback<S> extends Serializable {
+    interface Callback<S> extends Serializable {
       S apply (GridOSHEntity oshEntityCell);
     }
 
-    S call(Callaback<S> callback) {
+    S call(Callback<S> callback) {
       cache = node.cache(cacheName);
       // Getting a list of the partitions owned by this node.
       List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());

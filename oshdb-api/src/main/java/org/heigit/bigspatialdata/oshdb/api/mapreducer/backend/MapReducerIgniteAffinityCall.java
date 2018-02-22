@@ -70,7 +70,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     };
   }
 
-  interface Callaback<S> extends Serializable {
+  interface Callback<S> extends Serializable {
     S apply(
         GridOSHEntity oshEntityCell,
         CellIterator cellIterator,
@@ -80,7 +80,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
   }
 
   private <S> S runOnIgnite(
-      Callaback<S> callback,
+      Callback<S> callback,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
