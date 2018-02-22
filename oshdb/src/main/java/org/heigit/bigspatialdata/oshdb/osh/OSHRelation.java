@@ -595,14 +595,16 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       for (OSMMember member : members) {
         Iterator<OSHDBTimestamp> validMemberTs;
         List<OSHDBTimestamp> modTs;
+        OSHEntity entity = member.getEntity();
+        if (entity == null) continue;
         switch (member.getType()) {
           case NODE:
-            OSHNode oshNode = (OSHNode)member.getEntity();
+            OSHNode oshNode = (OSHNode)entity;
             modTs = oshNode.getModificationTimestamps();
             validMemberTs = childNodes.get(member.getId()).iterator();
             break;
           case WAY:
-            OSHWay oshWay = (OSHWay)member.getEntity();
+            OSHWay oshWay = (OSHWay)entity;
             modTs = oshWay.getModificationTimestamps(true);
             validMemberTs = childWays.get(member.getId()).iterator();
             break;
