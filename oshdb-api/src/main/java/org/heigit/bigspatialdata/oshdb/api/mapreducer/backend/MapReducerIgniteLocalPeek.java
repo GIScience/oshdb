@@ -315,8 +315,7 @@ class IgniteLocalPeekHelper {
             .forEach(contribution -> {
               if (this.canceled)
                 return;
-              OSMContribution thisContribution =
-                  new OSMContribution(contribution);
+              OSMContribution thisContribution = new OSMContribution(contribution);
               if (contributions.size() > 0
                   && thisContribution.getEntityAfter().getId() != contributions
                       .get(contributions.size() - 1).getEntityAfter().getId()) {
