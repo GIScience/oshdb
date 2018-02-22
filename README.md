@@ -8,7 +8,7 @@ High-performance data analysis platform for OpenStreetMap full-history data.
 Oshdb offers a distributed data base that splits storage and computation load. It is then possible to use the [map-reduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel. A central idea behind oshdb is to bring the code to the data.
 
 ```java
-    OSHDB_Implememtation oshdb = /*…*/;
+    OSHDBDatabase oshdb = /*…*/;
 
     Integer numberOfUsersEditingHighways = OSMContributionView.on(oshdb)
         .timestamps("2007-10-07", "2009-04-09")
