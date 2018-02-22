@@ -34,7 +34,6 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.jetbrains.annotations.NotNull;
@@ -247,6 +246,19 @@ class IgniteLocalPeekHelper {
       });
       return localKeys;
     }
+
+    interface Callback<S> extends Serializable {
+      S apply (GridOSHEntity oshEntityCell);
+    }
+
+    S execute(Ignite node, Callback<S> callback) {
+      return this.localKeys(node).parallelStream()
+          .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
+          .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
+          .filter(ignored -> this.canceled)
+          .map(callback::apply)
+          .reduce(identitySupplier.get(), combiner);
+    }
   }
 
   private static class MapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
@@ -263,25 +275,20 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return this.localKeys(node).parallelStream()
-          .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
-          .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
-          .map(oshEntityCell -> {
-            if (this.canceled)
-              return identitySupplier.get();
-            // iterate over the history of all OSM objects in the current cell
-            AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
-                .forEach(contribution -> {
-                  if (this.canceled)
-                    return;
-                  OSMContribution osmContribution =
-                      new OSMContribution(contribution);
-                  accInternal
-                      .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
-                });
-            return accInternal.get();
-          }).reduce(identitySupplier.get(), combiner);
+      return super.execute(node, oshEntityCell -> {
+        // iterate over the history of all OSM objects in the current cell
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+            .forEach(contribution -> {
+              if (this.canceled)
+                return;
+              OSMContribution osmContribution =
+                  new OSMContribution(contribution);
+              accInternal
+                  .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
+            });
+        return accInternal.get();
+      });
     }
   }
 
@@ -300,40 +307,35 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return this.localKeys(node).parallelStream()
-          .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
-          .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
-          .map(oshEntityCell -> {
-            if (this.canceled)
-              return identitySupplier.get();
-            // iterate over the history of all OSM objects in the current cell
-            AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            List<OSMContribution> contributions = new ArrayList<>();
-            cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
-                .forEach(contribution -> {
-                  if (this.canceled)
-                    return;
-                  OSMContribution thisContribution =
-                      new OSMContribution(contribution);
-                  if (contributions.size() > 0
-                      && thisContribution.getEntityAfter().getId() != contributions
-                          .get(contributions.size() - 1).getEntityAfter().getId()) {
-                    // immediately fold the results
-                    for (R r : mapper.apply(contributions)) {
-                      accInternal.set(accumulator.apply(accInternal.get(), r));
-                    }
-                    contributions.clear();
-                  }
-                  contributions.add(thisContribution);
-                });
-            // apply mapper and fold results one more time for last entity in current cell
-            if (contributions.size() > 0) {
-              for (R r : mapper.apply(contributions)) {
-                accInternal.set(accumulator.apply(accInternal.get(), r));
+      return super.execute(node, oshEntityCell -> {
+        // iterate over the history of all OSM objects in the current cell
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        List<OSMContribution> contributions = new ArrayList<>();
+        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+            .forEach(contribution -> {
+              if (this.canceled)
+                return;
+              OSMContribution thisContribution =
+                  new OSMContribution(contribution);
+              if (contributions.size() > 0
+                  && thisContribution.getEntityAfter().getId() != contributions
+                      .get(contributions.size() - 1).getEntityAfter().getId()) {
+                // immediately fold the results
+                for (R r : mapper.apply(contributions)) {
+                  accInternal.set(accumulator.apply(accInternal.get(), r));
+                }
+                contributions.clear();
               }
-            }
-            return accInternal.get();
-          }).reduce(identitySupplier.get(), combiner);
+              contributions.add(thisContribution);
+            });
+        // apply mapper and fold results one more time for last entity in current cell
+        if (contributions.size() > 0) {
+          for (R r : mapper.apply(contributions)) {
+            accInternal.set(accumulator.apply(accInternal.get(), r));
+          }
+        }
+        return accInternal.get();
+      });
     }
   }
 
@@ -351,22 +353,17 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return this.localKeys(node).parallelStream()
-          .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
-          .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
-          .map(oshEntityCell -> {
-            if (this.canceled)
-              return identitySupplier.get();
-            // iterate over the history of all OSM objects in the current cell
-            AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
-              if (this.canceled) return;
-              OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
-              // immediately fold the result
-              accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
-            });
-            return accInternal.get();
-          }).reduce(identitySupplier.get(), combiner);
+      return super.execute(node, oshEntityCell -> {
+        // iterate over the history of all OSM objects in the current cell
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+          if (this.canceled) return;
+          OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
+          // immediately fold the result
+          accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
+        });
+        return accInternal.get();
+      });
     }
   }
 
@@ -385,38 +382,33 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return this.localKeys(node).parallelStream()
-          .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
-          .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
-          .map(oshEntityCell -> {
-            if (this.canceled)
-              return identitySupplier.get();
-            // iterate over the history of all OSM objects in the current cell
-            AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-            List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-            cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
-              if (this.canceled)
-                return;
-              OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
-              if (osmEntitySnapshots.size() > 0
-                  && thisSnapshot.getEntity().getId() != osmEntitySnapshots
-                  .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
-                // immediately fold the results
-                for (R r : mapper.apply(osmEntitySnapshots)) {
-                  accInternal.set(accumulator.apply(accInternal.get(), r));
-                }
-                osmEntitySnapshots.clear();
-              }
-              osmEntitySnapshots.add(thisSnapshot);
-            });
-            // apply mapper and fold results one more time for last entity in current cell
-            if (osmEntitySnapshots.size() > 0) {
-              for (R r : mapper.apply(osmEntitySnapshots)) {
-                accInternal.set(accumulator.apply(accInternal.get(), r));
-              }
+      return super.execute(node, oshEntityCell -> {
+        // iterate over the history of all OSM objects in the current cell
+        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
+        List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
+        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+          if (this.canceled)
+            return;
+          OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
+          if (osmEntitySnapshots.size() > 0
+              && thisSnapshot.getEntity().getId() != osmEntitySnapshots
+              .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
+            // immediately fold the results
+            for (R r : mapper.apply(osmEntitySnapshots)) {
+              accInternal.set(accumulator.apply(accInternal.get(), r));
             }
-            return accInternal.get();
-          }).reduce(identitySupplier.get(), combiner);
+            osmEntitySnapshots.clear();
+          }
+          osmEntitySnapshots.add(thisSnapshot);
+        });
+        // apply mapper and fold results one more time for last entity in current cell
+        if (osmEntitySnapshots.size() > 0) {
+          for (R r : mapper.apply(osmEntitySnapshots)) {
+            accInternal.set(accumulator.apply(accInternal.get(), r));
+          }
+        }
+        return accInternal.get();
+      });
     }
   }
 
