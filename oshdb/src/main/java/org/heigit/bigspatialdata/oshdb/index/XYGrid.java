@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.index;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  *
  */
-public class XYGrid {
+public class XYGrid implements Serializable {
 
   private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
   private static final double EPSILON = OSHDB.GEOM_PRECISION;

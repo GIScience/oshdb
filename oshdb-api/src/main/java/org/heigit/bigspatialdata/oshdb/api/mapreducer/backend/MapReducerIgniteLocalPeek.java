@@ -33,7 +33,6 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.jetbrains.annotations.NotNull;
@@ -224,7 +223,6 @@ class IgniteLocalPeekHelper {
 
     List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys(Ignite node) {
       // calculate all cache keys we have to investigate
-      XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
       List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys = new ArrayList<>();
       this.cacheNames.forEach(cacheName -> {
         IgniteCache<Long, GridOSHEntity> cache = node.cache(cacheName);

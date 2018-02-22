@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
-public class OSHDBTag {
+import java.io.Serializable;
+
+public class OSHDBTag implements Serializable {
   private int key;
   private int value;
 

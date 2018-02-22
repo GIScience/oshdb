@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
-public class OSHDBRole {
+import java.io.Serializable;
+
+public class OSHDBRole implements Serializable {
   private int role;
 
   public OSHDBRole(int role) {

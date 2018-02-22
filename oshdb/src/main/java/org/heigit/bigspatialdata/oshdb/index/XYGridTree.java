@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.index;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Multi zoomlevel functionality for the XYGrid.
  */
-public class XYGridTree {
+public class XYGridTree implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTree.class);
 
   private final int maxLevel;
@@ -169,31 +170,26 @@ public class XYGridTree {
    * @return
    */
   public Iterable<Pair<CellId, CellId>> bbox2CellIdRanges(final OSHDBBoundingBox BBOX, final boolean enlarge) {
-    return new Iterable<Pair<CellId, CellId>>() {
+    return (Iterable<Pair<CellId, CellId>> & Serializable) () -> new Iterator<Pair<CellId, CellId>>() {
+      private int level = 0;
+      private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+
       @Override
-      public Iterator<Pair<CellId, CellId>> iterator() {
-        return new Iterator<Pair<CellId, CellId>>() {
-          private int level = 0;
-          private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+      public boolean hasNext() {
+        return level < maxLevel || rows.hasNext();
+      }
 
-          @Override
-          public boolean hasNext() {
-            return level < maxLevel || rows.hasNext();
-          }
-
-          @Override
-          public Pair<CellId, CellId> next() {
-            if (!rows.hasNext()) {
-              level++;
-              rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-            }
-            Pair<Long, Long> row = rows.next();
-            return new ImmutablePair<>(
-                new CellId(level, row.getLeft()),
-                new CellId(level, row.getRight())
-            );
-          }
-        };
+      @Override
+      public Pair<CellId, CellId> next() {
+        if (!rows.hasNext()) {
+          level++;
+          rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+        }
+        Pair<Long, Long> row = rows.next();
+        return new ImmutablePair<>(
+            new CellId(level, row.getLeft()),
+            new CellId(level, row.getRight())
+        );
       }
     };
   }
