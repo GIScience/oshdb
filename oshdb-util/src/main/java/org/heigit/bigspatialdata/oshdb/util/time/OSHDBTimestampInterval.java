@@ -1,9 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.util.time;
 
+import java.io.Serializable;
 import java.util.SortedSet;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
-public class OSHDBTimestampInterval {
+public class OSHDBTimestampInterval implements Serializable {
   private final OSHDBTimestamp fromTimestamp;
   private final OSHDBTimestamp toTimestamp;
 
