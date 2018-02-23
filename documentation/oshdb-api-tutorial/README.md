@@ -17,8 +17,8 @@ This tutorial will get you to the point of implementing your custom
 analyses. It consists of the following steps:
 
 1. [Preparation](preparation.md)
-1. [Mandatory Settings]
-1. [Entity Filters]
+1. [Mandatory Settings](mandatory-settings.md)
+1. [Entity Filters](entity-filters.md)
 1. [Aggregation Settings]
 1. [Map]
 1. [Result Filters]
