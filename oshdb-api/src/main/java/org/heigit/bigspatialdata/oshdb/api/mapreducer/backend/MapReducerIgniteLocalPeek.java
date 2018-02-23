@@ -232,7 +232,7 @@ class IgniteLocalPeekHelper {
           int level = cellIdRange.getLeft().getZoomLevel();
           long from = CellId.getLevelId(level, cellIdRange.getLeft().getId());
           long to = CellId.getLevelId(level, cellIdRange.getRight().getId());
-          for (long key = from; key < to; key++) {
+          for (long key = from; key <= to; key++) {
             cellIdRangeIds.add(key);
           }
           // Map keys to ignite nodes and remember the local ones
