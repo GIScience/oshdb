@@ -26,14 +26,17 @@ import org.slf4j.LoggerFactory;
 public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
 
+  public interface OSHEntityFilter extends Predicate<OSHEntity>, Serializable {};
+  public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {};
+
   private OSHDBBoundingBox boundingBox;
   private boolean isBoundByPolygon;
   private FastBboxInPolygon bboxInPolygon;
   private FastBboxOutsidePolygon bboxOutsidePolygon;
   private FastPolygonOperations fastPolygonClipper;
   private TagInterpreter tagInterpreter;
-  private Predicate<OSHEntity> oshEntityPreFilter;
-  private Predicate<OSMEntity> osmEntityFilter;
+  private OSHEntityFilter oshEntityPreFilter;
+  private OSMEntityFilter osmEntityFilter;
   private boolean includeOldStyleMultipolygons;
 
   /**
@@ -58,9 +61,9 @@ public class CellIterator implements Serializable {
    *        (both CPU and memory) as the default path.
    */
   public <P extends Geometry & Polygonal> CellIterator(OSHDBBoundingBox boundingBox,
-      P boundingPolygon,
-      TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
-      Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+      P boundingPolygon, TagInterpreter tagInterpreter,
+      OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
+      boolean includeOldStyleMultipolygons) {
     this(
         boundingBox,
         tagInterpreter,
@@ -75,9 +78,9 @@ public class CellIterator implements Serializable {
       this.fastPolygonClipper = new FastPolygonOperations(boundingPolygon);
     }
   }
-  public CellIterator(OSHDBBoundingBox boundingBox,
-      TagInterpreter tagInterpreter, Predicate<OSHEntity> oshEntityPreFilter,
-      Predicate<OSMEntity> osmEntityFilter, boolean includeOldStyleMultipolygons) {
+  public CellIterator(OSHDBBoundingBox boundingBox, TagInterpreter tagInterpreter,
+      OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
+      boolean includeOldStyleMultipolygons) {
     this.boundingBox = boundingBox;
     this.isBoundByPolygon = false; // todo: is this flag even needed? -> replace by "dummy" polygonClipper?
     this.bboxInPolygon = null;

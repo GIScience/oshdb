@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.sql.Connection;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -1304,7 +1305,7 @@ public abstract class MapReducer<X> implements
   }
 
   // Helper that chains multiple oshEntity filters together
-  protected SerializablePredicate<OSHEntity> _getPreFilter() {
+  protected CellIterator.OSHEntityFilter _getPreFilter() {
     return (this._preFilters.isEmpty()) ? (oshEntity -> true) : (oshEntity -> {
       for (SerializablePredicate<OSHEntity> filter : this._preFilters) {
         if (!filter.test(oshEntity)) {
@@ -1316,7 +1317,7 @@ public abstract class MapReducer<X> implements
   }
 
   // Helper that chains multiple osmEntity filters together
-  protected SerializablePredicate<OSMEntity> _getFilter() {
+  protected CellIterator.OSMEntityFilter _getFilter() {
     return (this._filters.isEmpty()) ? (osmEntity -> true) : (osmEntity -> {
       for (SerializablePredicate<OSMEntity> filter : this._filters) {
         if (!filter.test(osmEntity)) {

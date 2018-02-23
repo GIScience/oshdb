@@ -199,7 +199,7 @@ class IgniteLocalPeekHelper {
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, List<String> cacheNames,
         Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<V, MR> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -264,7 +264,7 @@ class IgniteLocalPeekHelper {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
@@ -295,7 +295,7 @@ class IgniteLocalPeekHelper {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMContribution>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -341,7 +341,7 @@ class IgniteLocalPeekHelper {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
@@ -369,7 +369,7 @@ class IgniteLocalPeekHelper {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -436,7 +436,7 @@ class IgniteLocalPeekHelper {
       OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
       TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -450,7 +450,7 @@ class IgniteLocalPeekHelper {
       OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
       TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -464,7 +464,7 @@ class IgniteLocalPeekHelper {
       OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
       TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -478,7 +478,7 @@ class IgniteLocalPeekHelper {
       OSHDBIgnite oshdb, List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
       TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {

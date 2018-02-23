@@ -175,7 +175,7 @@ class IgniteScanQueryHelper {
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, String cacheName,
         Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<V, MR> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       this.cacheName = cacheName;
@@ -239,7 +239,7 @@ class IgniteScanQueryHelper {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMContribution, R> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -268,7 +268,7 @@ class IgniteScanQueryHelper {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMContribution>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -311,7 +311,7 @@ class IgniteScanQueryHelper {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -338,7 +338,7 @@ class IgniteScanQueryHelper {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -404,7 +404,7 @@ class IgniteScanQueryHelper {
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -418,7 +418,7 @@ class IgniteScanQueryHelper {
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMContribution>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -432,7 +432,7 @@ class IgniteScanQueryHelper {
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
@@ -446,7 +446,7 @@ class IgniteScanQueryHelper {
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      SerializablePredicate<OSHEntity> preFilter, SerializablePredicate<OSMEntity> filter,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
