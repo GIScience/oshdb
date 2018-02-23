@@ -42,7 +42,7 @@ from 2014-01-01 till 2015-01-01 is done by adding the following code:
 
 ```
 // add timestamps to MapReducer
-mapReducer = mapReducer.timestamps("2014-01-01", "2015-01-01", SHDBTimestamps.Interval.MONTHLY);
+mapReducer = mapReducer.timestamps("2014-01-01", "2015-01-01", OSHDBTimestamps.Interval.MONTHLY);
 ```
 
 ## Summary
