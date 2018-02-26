@@ -49,5 +49,5 @@ mapReducer = mapReducer.timestamps("2014-01-01", "2015-01-01", OSHDBTimestamps.I
 
 TODO: [link-to-full-code]
 
-The next step is to setup [entity filters](entitiy-filters.md) that select
+The next step is to setup [entity filters](entity-filters.md) that select
 the OSM entities you wish to analyse.
