@@ -20,7 +20,7 @@ analyses. It consists of the following steps:
 1. [Mandatory Settings](mandatory-settings.md)
 1. [Entity Filters](entity-filters.md)
 1. [Aggregation Settings](aggregation-settings.md)
-1. [Map]
+1. [Map](map.md)
 1. [Result Filters]
 1. [Multiple Maps and Result Filters]
 1. [Reduce]
