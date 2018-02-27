@@ -44,15 +44,21 @@ We use a nested class for clarity, although you could also use
 a lambda expression or implement the class in a different file.
 
 ```
-// by entity-definition
-class EntityFilter implements SerializablePredicate<OSMEntity> {
+public static void main(...) throws [...] {
+
+  [...]
+
+  // by entity-definition
+  mapReducer = mapReducer.where(new EntityFilter());
+}
+
+private static class EntityFilter implements SerializablePredicate<OSMEntity> {
 
   public boolean test(OSMEntity t) {
     return t.getVersion() > 2;
   }
 }
 
-mapReducer = mapReducer.where(new EntityFilter());
 ```
 
 ## Summary
