@@ -1,3 +1,4 @@
-# Oshdb-API User Manual
+# Oshdb User Manual
 
-* [Tutorial](oshdb-api-tutorial/README.md)
+* [Oshdb-API Tutorial](oshdb-api-tutorial/README.md)<br>
+  This tutorial teaches how to use the oshdb-API in Java.

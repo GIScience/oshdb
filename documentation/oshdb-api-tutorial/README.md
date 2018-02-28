@@ -22,9 +22,9 @@ analyses. It consists of the following steps:
 1. [Aggregation Settings](aggregation-settings.md)
 1. [Map](map.md)
 1. [Result Filters](result-filters.md)
-1. [Multiple Maps and Result Filters]
-1. [Reduce]
-1. [Result Handling]
+1. [Multiple Maps and Result Filters](multiple-maps-and-filters.md)
+1. [Reduce](reduce.md)
+1. [Result Handling](result-handling.md)
 
 You may also download the code examples from our
 [examples repository](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples).
