@@ -48,7 +48,7 @@ Installation
 API
 ---
 
-*(links to API docs)*
+* [Oshdb-API Tutorial](documentation/oshdb-api-tutorial/README.md)
 
 Examples
 --------
