@@ -25,7 +25,7 @@ Calculate the sum of the given data.
 SortedMap<OSHDBTimestamp,Number> sum = mapAggregatorWithMap.sum();
 ```
 
-# Count
+## Count
 
 Count the number of given data items.
 ```
@@ -33,7 +33,7 @@ Count the number of given data items.
 SortedMap<OSHDBTimestamp,Integer> count = mapAggregatorWithMap.count();
 ```
 
-# Unique
+## Unique
 
 Return a set of unique values.
 ```
@@ -41,7 +41,7 @@ Return a set of unique values.
 SortedMap<OSHDBTimestamp, Set<Double>> uniq = mapAggregatorWithMap.uniq();
 ```
 
-# Custom Reduce
+## Custom Reduce
 
 You may also implement a custom reduce function. In this tutorial we
 illustrate how to do this, by re-implementing the sum function.
@@ -76,5 +76,9 @@ private static class Combiner implements SerializableBinaryOperator<Integer> {
   }
 }
 ```
+
+## Summary
+
+In this step we explained how to specify a reduce function.
 
 Finally you probably wish to [output your results](result-handling.md).
