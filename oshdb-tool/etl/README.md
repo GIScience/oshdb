@@ -52,27 +52,23 @@ Apache website.
 1. In order to deploy the oshdb dependencies to ignite,
    change back to the base directory and let maven copy all dependencies to
    your ignite installation. It assumes this is at /opt/ignite. If it is not,
-   you may place a link to the actual location there.
-
-  ```bash
-  cd ../..
-  mvn -Pdeployignite clean install
-  ```
+   you may place a link to the actual location there.<br>
+   ```bash
+   cd ../..
+   mvn -Pdeployignite clean install
+   ```
 
 2. Then start as many ignite servers in a pseudo-distributed system as you
    think your computer can handle using the provided ignite-config.xml.
-   You either have to use a terminal for each ignite server or nohup:
+   You either have to use a terminal for each ignite server or nohup:<br>
+   ```bash
+   nohup /opt/ignite/bin/ignite.sh ignite-config.xml &>/opt/ignite/log.log &
+   /opt/ignite/bin/ignite.sh ignite-config.xml
+   ```
 
-  ```bash
-  nohup /opt/ignite/bin/ignite.sh ignite-config.xml &>/opt/ignite/log.log &
-  /opt/ignite/bin/ignite.sh ignite-config.xml
-  ```
+3. Finally, you can import the data as follows:<br>
+   ```bash
+   cd oshdb-tool/etl
+   mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.etl.load.OSHDB2Ignite" -Dexec.args="-ignite ../ignite-config.xml"
+   ```
 
-3. Finally, you can import the data as follows:
-
-  ```bash
-  cd oshdb-tool/etl
-  mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.etl.load.OSHDB2Ignite" -Dexec.args="-ignite ../ignite-config.xml"
-  ```
-
-_**DONE**_

@@ -11,7 +11,9 @@ First you need to create a new maven java project.
 ## Declaring Dependencies
 
 Add the following dependency to the dependencies section of your
-[pom.xml](https://maven.apache.org/guides/introduction/introduction-to-the-pom.html).
+[pom.xml](https://maven.apache.org/guides/introduction/introduction-to-the-pom.html),
+where `${oshdb-version}` has to be replaced by the desired
+version of the oshdb-API.
 
 ```
 <dependencies>
