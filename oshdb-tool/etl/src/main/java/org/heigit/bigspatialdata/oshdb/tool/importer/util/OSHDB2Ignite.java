@@ -117,8 +117,8 @@ public class OSHDB2Ignite {
     @Parameter(names = {"--prefix"}, description = "cache table prefix", required = false)
     public String prefix;
     
-    @Parameter(names = {"-db", "-oshdb", "-outputDb"}, description = "Path to output H2", required = false, order = 2)
-    public File oshdb = new File("./oshdb");
+    @Parameter(names = {"-db", "-oshdb", "-outputDb"}, description = "Path to output H2", required = true, order = 2)
+    public File oshdb;
     
     @Parameter(names = {"-help", "--help", "-h", "--h"}, help = true, order = 0)
     public boolean help = false;
