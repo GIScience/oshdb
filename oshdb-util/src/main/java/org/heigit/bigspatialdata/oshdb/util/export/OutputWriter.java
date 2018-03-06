@@ -124,12 +124,12 @@ public class OutputWriter {
   }
 
   /**
-   * Get the handle to a standard Postgre Database, you can fill.
+   * Get the handle to a standard PostgreSQL Database, you can fill.
    *
    * @param username your username. It will be part of the output.
    * @return
    */
-  public static Connection getPostgre(String username) throws ClassNotFoundException, SQLException {
+  public static Connection getPostgres(String username) throws ClassNotFoundException, SQLException {
     Class.forName("org.postgresql.Driver");
     String usernameDate = username + "_" + dateFormat.format(new Date());
     try (Connection conn =
@@ -152,9 +152,9 @@ public class OutputWriter {
    * @throws ClassNotFoundException
    * @throws SQLException
    */
-  public static void toPostgre(String username, Stream<Pair<String, String>> output)
+  public static void toPostgres(String username, Stream<Pair<String, String>> output)
       throws ClassNotFoundException, SQLException {
-    try (Connection conn2 = OutputWriter.getPostgre(username)) {
+    try (Connection conn2 = OutputWriter.getPostgres(username)) {
       Statement stmt2 = conn2.createStatement();
 
       stmt2.executeUpdate(
