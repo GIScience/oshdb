@@ -21,7 +21,10 @@ public class OSHDBH2 extends OSHDBJdbc {
     return this;
   }
   
-  public OSHDBH2 cacheInMemory() throws ClassNotFoundException, SQLException {   
+  public OSHDBH2 cacheInMemory(boolean cache) throws ClassNotFoundException, SQLException {
+    if(!cache)
+      return this;
+    
     Connection dest = DriverManager.getConnection("jdbc:h2:mem:");
     try (Connection src = this.getConnection()) {
       try (Statement srcStmt = src.createStatement(); ResultSet srcRst = srcStmt.executeQuery("script drop")) {
