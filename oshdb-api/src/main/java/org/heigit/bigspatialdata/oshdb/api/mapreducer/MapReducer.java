@@ -181,6 +181,7 @@ public abstract class MapReducer<X> implements
    * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @SuppressWarnings("unused")
   @Contract(pure = true)
   public MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter) {
     MapReducer<X> ret = this.copy();
@@ -568,8 +569,9 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
-    MapReducer<X> ret = this.copy();
+    MapReducer<?> ret = this.copy();
     ret._mappers.add(mapper);
+    //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
     return (MapReducer<R>) ret;
   }
 
@@ -585,9 +587,10 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
-    MapReducer<X> ret = this.copy();
+    MapReducer<?> ret = this.copy();
     ret._mappers.add(flatMapper);
     ret._flatMappers.add(flatMapper);
+    //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
     return (MapReducer<R>) ret;
   }
 
@@ -636,7 +639,8 @@ public abstract class MapReducer<X> implements
     }
     MapReducer<X> ret = this.copy();
     ret._grouping = Grouping.BY_ID;
-    return (MapReducer<List<X>>) (ret);
+    //noinspection unchecked – now in the reduce() step, the backend will return a list of items
+    return (MapReducer<List<X>>) ret;
   }
 
   /**
@@ -713,15 +717,18 @@ public abstract class MapReducer<X> implements
       Set<SerializableFunction> flatMappers = new HashSet<>(ret._flatMappers);
       ret._mappers.clear();
       ret._flatMappers.clear();
-      MapAggregatorByTimestamps<X> mapAggregator = new MapAggregatorByTimestamps<X>(ret, indexer);
+      MapAggregatorByTimestamps<?> mapAggregator = new MapAggregatorByTimestamps<X>(ret, indexer);
       for (SerializableFunction action : mappers) {
         if (flatMappers.contains(action)) {
-          mapAggregator = (MapAggregatorByTimestamps<X>) mapAggregator.flatMap(action);
+          //noinspection unchecked – applying untyped function (we don't know intermediate types)
+          mapAggregator = mapAggregator.flatMap(action);
         } else {
-          mapAggregator = (MapAggregatorByTimestamps<X>) mapAggregator.map(action);
+          //noinspection unchecked – applying untyped function (we don't know intermediate types)
+          mapAggregator = mapAggregator.map(action);
         }
       }
-      return mapAggregator;
+      //noinspection unchecked – after applying all (flat)map functions, the final type is X
+      return (MapAggregatorByTimestamps<X>)mapAggregator;
     } else {
       return new MapAggregatorByTimestamps<X>(this, indexer);
     }
