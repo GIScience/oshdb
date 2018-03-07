@@ -40,7 +40,6 @@ public class ISODateTimeParser {
     case 4:
       // pattern = "uuuu";
       zdt = Year.parse(isoDateTimeString).atDay(1).atStartOfDay(ZoneId.of("Z"));
-      
       break;
     case 6:
       // pattern = "uuuuMM";
