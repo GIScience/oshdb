@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerJdbcMultithread;
@@ -13,7 +14,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 
 public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
 
-  private final Connection _conn;
+  protected Connection _conn;
   private boolean useMultithreading = true;
 
   public OSHDBJdbc(String classToLoad, String jdbcString) throws SQLException, ClassNotFoundException {
