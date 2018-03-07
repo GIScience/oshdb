@@ -792,9 +792,11 @@ public abstract class MapReducer<X> implements
     switch (this._grouping) {
       case NONE:
         if (this._flatMappers.size() == 0) {
+          final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
             final SerializableFunction<OSMContribution, X> contributionMapper =
-                data -> this._getMapper().apply(data);
+                data -> mapper.apply(data);
             return this.mapReduceCellsOSMContribution(
                 contributionMapper,
                 identitySupplier,
@@ -802,8 +804,9 @@ public abstract class MapReducer<X> implements
                 combiner
             );
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper = data ->
-                this._getMapper().apply(data);
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
+                data -> mapper.apply(data);
             return this.mapReduceCellsOSMEntitySnapshot(
                 snapshotMapper,
                 identitySupplier,
