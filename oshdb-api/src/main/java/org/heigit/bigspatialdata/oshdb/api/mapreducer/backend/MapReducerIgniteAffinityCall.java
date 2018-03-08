@@ -97,6 +97,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     IgniteCompute compute = ignite.compute();
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+      assert(TableNames.forOSMType(osmType).isPresent());
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
