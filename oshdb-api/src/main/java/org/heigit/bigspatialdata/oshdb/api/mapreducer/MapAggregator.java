@@ -447,6 +447,7 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper) {
     return this.copyTransform(this._mapReducer.map(inData -> {
+      //noinspection unchecked – trick/hack to replace mapped values without copying pair objects
       Pair<U,R> outData = (Pair<U,R>)inData;
       outData.setValue(mapper.apply(inData.getValue()));
       return outData;
