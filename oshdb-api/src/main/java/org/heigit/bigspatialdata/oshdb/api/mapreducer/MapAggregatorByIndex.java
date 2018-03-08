@@ -33,7 +33,7 @@ public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggrega
   }
 
   // "copy/transform" constructor
-  private MapAggregatorByIndex(MapAggregatorByIndex obj, MapReducer<Pair<U, X>> mapReducer) {
+  private MapAggregatorByIndex(MapAggregatorByIndex<U, ?> obj, MapReducer<Pair<U, X>> mapReducer) {
     this._mapReducer = mapReducer;
     this._zerofill = obj._zerofill;
   }

@@ -36,7 +36,7 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
   }
 
   // "copy/transform" constructor
-  private MapAggregatorByTimestamps(MapAggregatorByTimestamps obj, MapReducer<Pair<OSHDBTimestamp, X>> mapReducer) {
+  private MapAggregatorByTimestamps(MapAggregatorByTimestamps<?> obj, MapReducer<Pair<OSHDBTimestamp, X>> mapReducer) {
     this._mapReducer = mapReducer;
     this._zerofill = obj._zerofill;
   }

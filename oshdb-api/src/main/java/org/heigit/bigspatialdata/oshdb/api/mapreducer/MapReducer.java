@@ -118,7 +118,7 @@ public abstract class MapReducer<X> implements
   }
 
   // copy constructor
-  protected MapReducer(MapReducer obj) {
+  protected MapReducer(MapReducer<?> obj) {
     this._oshdb = obj._oshdb;
     this._oshdbForTags = obj._oshdbForTags;
 
