@@ -143,7 +143,7 @@ public class CellIterator implements Serializable {
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
-              !oshEntity.intersectsBbox(boundingBox) ||
+              !oshEntity.getBoundingBox().intersects(boundingBox) ||
               (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
       )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
@@ -151,7 +151,7 @@ public class CellIterator implements Serializable {
         continue;
       }
       boolean fullyInside = allFullyInside || (
-          oshEntity.insideBbox(boundingBox) &&
+          oshEntity.getBoundingBox().isInside(boundingBox) &&
           (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
       );
 
@@ -372,7 +372,7 @@ public class CellIterator implements Serializable {
     for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
-              !oshEntity.intersectsBbox(boundingBox) ||
+              !oshEntity.getBoundingBox().intersects(boundingBox) ||
               (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
       )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
@@ -381,7 +381,7 @@ public class CellIterator implements Serializable {
       }
 
       boolean fullyInside = allFullyInside || (
-          oshEntity.insideBbox(boundingBox) &&
+          oshEntity.getBoundingBox().isInside(boundingBox) &&
           (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
       );
 
