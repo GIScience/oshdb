@@ -111,6 +111,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
 
     JSONParser parser = new JSONParser();
     JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)));
+    // todo: check json schema for validity
+
+    //noinspection unchecked
     for (JSONObject tag : (Iterable<JSONObject>)tagList) {
       String key = (String)tag.get("key");
       switch ((String)tag.get("polygon")) {
@@ -124,6 +127,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
           valueIds = new HashSet<>();
           keyId = tagTranslator.oshdbTagKeyOf(key).toInt();
           JSONArray values = (JSONArray) tag.get("values");
+          //noinspection unchecked
           for (String value : (Iterable<String>) values) {
             OSMTag keyValue = new OSMTag(key, value);
             valueIds.add(tagTranslator.oshdbTagOf(keyValue).getValue());
@@ -135,6 +139,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
           valueIds = new InvertedHashSet<>();
           keyId = tagTranslator.oshdbTagKeyOf(key).toInt();
           values = (JSONArray) tag.get("values");
+          //noinspection unchecked
           for (String value : (Iterable<String>) values) {
             OSMTag keyValue = new OSMTag(key, value);
             valueIds.add(tagTranslator.oshdbTagOf(keyValue).getValue());
@@ -162,6 +167,8 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     // list of uninteresting tags
     Set<Integer> uninterestingTagKeys = new HashSet<>();
     JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(uninterestingTagsDefinitionFile)));
+    // todo: check json schema for validity
+    //noinspection unchecked
     for (String tagKey : (Iterable<String>)uninterestingTagsList) {
       uninterestingTagKeys.add(tagTranslator.oshdbTagKeyOf(tagKey).toInt());
     }
