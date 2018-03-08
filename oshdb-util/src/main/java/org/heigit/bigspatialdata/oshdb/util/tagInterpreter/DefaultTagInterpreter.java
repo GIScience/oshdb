@@ -1,15 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.util.tagInterpreter;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMRole;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -116,28 +110,28 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
       switch ((String)tag.get("polygon")) {
         case "all":
           Set<Integer> valueIds = new InvertedHashSet<>();
-          int keyId = tagTranslator.oshdbTagKeyOf(key).toInt();
-          valueIds.add(tagTranslator.oshdbTagOf(key, "no").getValue());
+          int keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
+          valueIds.add(tagTranslator.getOSHDBTagOf(key, "no").getValue());
           wayAreaTags.put(keyId, valueIds);
           break;
         case "whitelist":
           valueIds = new HashSet<>();
-          keyId = tagTranslator.oshdbTagKeyOf(key).toInt();
+          keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
           JSONArray values = (JSONArray) tag.get("values");
           for (String value : (Iterable<String>) values) {
             OSMTag keyValue = new OSMTag(key, value);
-            valueIds.add(tagTranslator.oshdbTagOf(keyValue).getValue());
+            valueIds.add(tagTranslator.getOSHDBTagOf(keyValue).getValue());
           }
-          valueIds.add(tagTranslator.oshdbTagOf(key, "no").getValue());
+          valueIds.add(tagTranslator.getOSHDBTagOf(key, "no").getValue());
           wayAreaTags.put(keyId, valueIds);
           break;
         case "blacklist":
           valueIds = new InvertedHashSet<>();
-          keyId = tagTranslator.oshdbTagKeyOf(key).toInt();
+          keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
           values = (JSONArray) tag.get("values");
           for (String value : (Iterable<String>) values) {
             OSMTag keyValue = new OSMTag(key, value);
-            valueIds.add(tagTranslator.oshdbTagOf(keyValue).getValue());
+            valueIds.add(tagTranslator.getOSHDBTagOf(keyValue).getValue());
           }
           wayAreaTags.put(keyId, valueIds);
           break;
@@ -147,10 +141,10 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     }
 
     // hardcoded type=multipolygon for relations
-    this.typeKey = tagTranslator.oshdbTagKeyOf("type").toInt();
-    this.typeMultipolygonValue = tagTranslator.oshdbTagOf("type", "multipolygon").getValue();
-    this.typeBoundaryValue = tagTranslator.oshdbTagOf("type", "boundary").getValue();
-    this.typeRouteValue = tagTranslator.oshdbTagOf("type", "route").getValue();
+    this.typeKey = tagTranslator.getOSHDBTagKeyOf("type").toInt();
+    this.typeMultipolygonValue = tagTranslator.getOSHDBTagOf("type", "multipolygon").getValue();
+    this.typeBoundaryValue = tagTranslator.getOSHDBTagOf("type", "boundary").getValue();
+    this.typeRouteValue = tagTranslator.getOSHDBTagOf("type", "route").getValue();
 
     // we still need to also store relation area tags for isOldStyleMultipolygon() functionality!
     Map<Integer, Set<Integer>> relAreaTags = new TreeMap<>();
@@ -163,19 +157,19 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     Set<Integer> uninterestingTagKeys = new HashSet<>();
     JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(uninterestingTagsDefinitionFile)));
     for (String tagKey : (Iterable<String>)uninterestingTagsList) {
-      uninterestingTagKeys.add(tagTranslator.oshdbTagKeyOf(tagKey).toInt());
+      uninterestingTagKeys.add(tagTranslator.getOSHDBTagKeyOf(tagKey).toInt());
     }
 
     this.wayAreaTags = wayAreaTags;
     this.relationAreaTags = relAreaTags;
     this.uninterestingTagKeys = uninterestingTagKeys;
 
-    this.areaNoTagKeyId = tagTranslator.oshdbTagOf("area", "no").getKey();
-    this.areaNoTagValueId = tagTranslator.oshdbTagOf("area", "no").getValue();
+    this.areaNoTagKeyId = tagTranslator.getOSHDBTagOf("area", "no").getKey();
+    this.areaNoTagValueId = tagTranslator.getOSHDBTagOf("area", "no").getValue();
 
-    this.outerRoleId = tagTranslator.oshdbRoleOf("outer").toInt();
-    this.innerRoleId = tagTranslator.oshdbRoleOf("inner").toInt();
-    this.emptyRoleId = tagTranslator.oshdbRoleOf("").toInt();
+    this.outerRoleId = tagTranslator.getOSHDBRoleOf("outer").toInt();
+    this.innerRoleId = tagTranslator.getOSHDBRoleOf("inner").toInt();
+    this.emptyRoleId = tagTranslator.getOSHDBRoleOf("").toInt();
   }
 
   @Override

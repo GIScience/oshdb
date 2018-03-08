@@ -80,8 +80,8 @@ public class TagTranslator {
    * @param key the tag key as a string
    * @return the corresponding oshdb representation of this key
    */
-  public OSHDBTagKey oshdbTagKeyOf(String key) {
-    return oshdbTagKeyOf(new OSMTagKey(key));
+  public OSHDBTagKey getOSHDBTagKeyOf(String key) {
+    return getOSHDBTagKeyOf(new OSMTagKey(key));
   }
 
   /**
@@ -90,7 +90,7 @@ public class TagTranslator {
    * @param key the tag key as an OSMTagKey object
    * @return the corresponding oshdb representation of this key
    */
-  public OSHDBTagKey oshdbTagKeyOf(OSMTagKey key) {
+  public OSHDBTagKey getOSHDBTagKeyOf(OSMTagKey key) {
     if (this.keyToInt.containsKey(key)) {
       return this.keyToInt.get(key);
     }
@@ -117,8 +117,8 @@ public class TagTranslator {
    * @return the textual representation of this tag key
    * @throws OSHDBTagOrRoleNotFoundException if the given tag key cannot be found
    */
-  public OSMTagKey osmTagKeyOf(int key) {
-    return osmTagKeyOf(new OSHDBTagKey(key));
+  public OSMTagKey getOSMTagKeyOf(int key) {
+    return getOSMTagKeyOf(new OSHDBTagKey(key));
   }
 
   /**
@@ -128,7 +128,7 @@ public class TagTranslator {
    * @return the textual representation of this tag key
    * @throws OSHDBTagOrRoleNotFoundException if the given tag key cannot be found
    */
-  public OSMTagKey osmTagKeyOf(OSHDBTagKey key) {
+  public OSMTagKey getOSMTagKeyOf(OSHDBTagKey key) {
     if (this.keyToString.containsKey(key)) {
       return this.keyToString.get(key);
     }
@@ -156,8 +156,8 @@ public class TagTranslator {
    * @param value the (string) value of the tag
    * @return the corresponding oshdb representation of this tag
    */
-  public OSHDBTag oshdbTagOf(String key, String value) {
-    return this.oshdbTagOf(new OSMTag(key, value));
+  public OSHDBTag getOSHDBTagOf(String key, String value) {
+    return this.getOSHDBTagOf(new OSMTag(key, value));
   }
 
   /**
@@ -166,7 +166,7 @@ public class TagTranslator {
    * @param tag a key-value pair as an OSMTag object
    * @return the corresponding oshdb representation of this tag
    */
-  public OSHDBTag oshdbTagOf(OSMTag tag) {
+  public OSHDBTag getOSHDBTagOf(OSMTag tag) {
     // check if Key and Value are in cache
     if (this.tagToInt.containsKey(tag)) {
       return this.tagToInt.get(tag);
@@ -185,7 +185,7 @@ public class TagTranslator {
       tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
     } catch (SQLException ex) {
       LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
-      tagInt = new OSHDBTag(this.oshdbTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
+      tagInt = new OSHDBTag(this.getOSHDBTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
     }
     this.tagToString.put(tagInt, tag);
     this.tagToInt.put(tag, tagInt);
@@ -200,8 +200,8 @@ public class TagTranslator {
    * @return the textual representation of this tag
    * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
-  public OSMTag osmTagOf(int key, int value) {
-    return this.osmTagOf(new OSHDBTag(key, value));
+  public OSMTag getOSMTagOf(int key, int value) {
+    return this.getOSMTagOf(new OSHDBTag(key, value));
   }
 
   /**
@@ -211,7 +211,7 @@ public class TagTranslator {
    * @return the textual representation of this tag
    * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
-  public OSMTag osmTagOf(OSHDBTag tag) {
+  public OSMTag getOSMTagOf(OSHDBTag tag) {
     // check if Key and Value are in cache
     if (this.tagToString.containsKey(tag)) {
       return this.tagToString.get(tag);
@@ -246,8 +246,8 @@ public class TagTranslator {
    * @param role the role string to fetch
    * @return the corresponding oshdb representation of this role
    */
-  public OSHDBRole oshdbRoleOf(String role) {
-    return this.oshdbRoleOf(new OSMRole(role));
+  public OSHDBRole getOSHDBRoleOf(String role) {
+    return this.getOSHDBRoleOf(new OSMRole(role));
   }
 
   /**
@@ -256,7 +256,7 @@ public class TagTranslator {
    * @param role the role to fetch as an OSMRole object
    * @return the corresponding oshdb representation of this role
    */
-  public OSHDBRole oshdbRoleOf(OSMRole role) {
+  public OSHDBRole getOSHDBRoleOf(OSMRole role) {
     if (this.roleToInt.containsKey(role)) {
       return this.roleToInt.get(role);
     }
@@ -283,8 +283,8 @@ public class TagTranslator {
    * @return the textual representation of this role
    * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
    */
-  public OSMRole osmRoleOf(int role) {
-    return this.osmRoleOf(new OSHDBRole(role));
+  public OSMRole getOSMRoleOf(int role) {
+    return this.getOSMRoleOf(new OSHDBRole(role));
   }
 
   /**
@@ -294,7 +294,7 @@ public class TagTranslator {
    * @return the textual representation of this role
    * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
    */
-  public OSMRole osmRoleOf(OSHDBRole role) {
+  public OSMRole getOSMRoleOf(OSHDBRole role) {
     if (this.roleToString.containsKey(role)) {
       return this.roleToString.get(role);
     }

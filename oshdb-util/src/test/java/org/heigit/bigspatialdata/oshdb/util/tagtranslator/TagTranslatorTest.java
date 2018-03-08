@@ -3,8 +3,6 @@ package org.heigit.bigspatialdata.oshdb.util.tagtranslator;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
@@ -40,7 +38,7 @@ public class TagTranslatorTest {
     OSMTag tag = new OSMTag("building", "yes");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSHDBTag expResult = new OSHDBTag(1, 0);
-    OSHDBTag result = instance.oshdbTagOf(tag);
+    OSHDBTag result = instance.getOSHDBTagOf(tag);
     assertEquals(expResult, result);
   }
 
@@ -49,7 +47,7 @@ public class TagTranslatorTest {
     OSHDBTag tag = new OSHDBTag(1, 2);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMTag expResult = new OSMTag("building", "residential");
-    OSMTag result = instance.osmTagOf(tag);
+    OSMTag result = instance.getOSMTagOf(tag);
     assertEquals(expResult, result);
   }
 
@@ -58,7 +56,7 @@ public class TagTranslatorTest {
     OSMTagKey key = new OSMTagKey("highway");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSHDBTagKey expResult = new OSHDBTagKey(2);
-    OSHDBTagKey result = instance.oshdbTagKeyOf(key);
+    OSHDBTagKey result = instance.getOSHDBTagKeyOf(key);
     assertEquals(expResult, result);
   }
 
@@ -67,7 +65,7 @@ public class TagTranslatorTest {
     OSHDBTagKey key = new OSHDBTagKey(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMTagKey expResult = new OSMTagKey("building");
-    OSMTagKey result = instance.osmTagKeyOf(key);
+    OSMTagKey result = instance.getOSMTagKeyOf(key);
     assertEquals(expResult, result);
   }
 
@@ -76,7 +74,7 @@ public class TagTranslatorTest {
     OSMRole role = new OSMRole("from");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSHDBRole expResult = new OSHDBRole(4);
-    OSHDBRole result = instance.oshdbRoleOf(role);
+    OSHDBRole result = instance.getOSHDBRoleOf(role);
     assertEquals(expResult, result);
   }
 
@@ -85,7 +83,7 @@ public class TagTranslatorTest {
     OSHDBRole role = new OSHDBRole(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMRole expResult = new OSMRole("inner");
-    OSMRole result = instance.osmRoleOf(role);
+    OSMRole result = instance.getOSMRoleOf(role);
     assertEquals(expResult, result);
   }
 }
