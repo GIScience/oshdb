@@ -1353,6 +1353,7 @@ public abstract class MapReducer<X> implements
   // hack, so that we can use a variable that is of both Geometry and implements Polygonal (i.e.
   // Polygon or MultiPolygon) as required in further processing steps
   protected <P extends Geometry & Polygonal> P _getPolyFilter() {
+    //noinspection unchecked – all setters only accept Polygonal geometries
     return (P) this._polyFilter;
   }
 
@@ -1366,9 +1367,11 @@ public abstract class MapReducer<X> implements
         if (this._flatMappers.contains(mapper)) {
           throw new UnsupportedOperationException("cannot flat map this");
         } else {
+          //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           result = mapper.apply(result);
         }
       }
+      //noinspection unchecked – after applying all mapper functions, the result type is X
       return (X) result;
     });
   }
@@ -1383,12 +1386,15 @@ public abstract class MapReducer<X> implements
       for (SerializableFunction mapper : this._mappers) {
         List<Object> newResults = new LinkedList<>();
         if (this._flatMappers.contains(mapper)) {
-          results.forEach(result -> newResults.addAll((List<Object>) mapper.apply(result)));
+          //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
+          results.forEach(result -> newResults.addAll((List<?>) mapper.apply(result)));
         } else {
+          //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           results.forEach(result -> newResults.add(mapper.apply(result)));
         }
         results = newResults;
       }
+      //noinspection unchecked – after applying all mapper functions, the result type is List<X>
       return (List<X>) results;
     });
   }
