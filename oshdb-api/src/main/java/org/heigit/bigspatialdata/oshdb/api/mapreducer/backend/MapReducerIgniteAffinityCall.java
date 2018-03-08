@@ -103,6 +103,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
           .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+            @SuppressWarnings("SerializableStoresNonSerializable")
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null)
               return identitySupplier.get();
