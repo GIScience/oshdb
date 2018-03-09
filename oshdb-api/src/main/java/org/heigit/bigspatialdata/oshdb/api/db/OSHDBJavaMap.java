@@ -28,21 +28,20 @@ public class OSHDBJavaMap extends OSHDBDatabase {
     this.user = user;
     this.pw = pw;
     Class.forName(classToLoad);
-    //super("org.h2.Driver", "jdbc:h2:" + databaseFile.replaceAll("\\.mv\\.db$", "") + ";ACCESS_MODE_DATA=r");
+    
+    //TODO load Metadata
+    //TODO load keytables
   }
   
   @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
-
+    
     final Map<OSMType,Map<Long,GridOSHEntity>> database = new HashMap<>();
     try(Connection conn = DriverManager.getConnection(jdbcString, user, pw)){
-      
-      
+            
       database.put(OSMType.NODE, loadTable(conn,TableNames.T_NODES.toString()));
       database.put(OSMType.WAY, loadTable(conn,TableNames.T_WAYS.toString()));
       database.put(OSMType.RELATION, loadTable(conn,TableNames.T_RELATIONS.toString()));
-      
-      
             
     } catch (Exception e) {
       throw new RuntimeException(e);
