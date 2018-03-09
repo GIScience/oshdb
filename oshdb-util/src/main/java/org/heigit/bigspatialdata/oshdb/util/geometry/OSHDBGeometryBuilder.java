@@ -60,7 +60,7 @@ public class OSHDBGeometryBuilder {
   public static Geometry getGeometry(
       OSMEntity entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider
   ) {
-    assert timestamp.compareTo(entity.getTimestamp()) < 0 :
+    assert timestamp.compareTo(entity.getTimestamp()) >= 0 :
         "cannot produce geometry of entity for timestamp before this entity's version's timestamp";
     if (entity instanceof OSMNode) {
       OSMNode node = (OSMNode) entity;
