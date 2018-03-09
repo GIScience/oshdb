@@ -8,7 +8,20 @@
 * (breaking) celliterator is now an object instead of a set of static functions
 * api: include `slf4j-simple` logging framework by default
 * (breaking) the OSM, OSH and Grid-Classes held more methods than information. These methods where therefore outsourced to the oshdb-util package. Also some oshdb-api util-classes where moved.
-* more robust geometry building (e.g. incomplete or broken relations are now returned as GeometryCollections)  
+* more robust geometry building (e.g. incomplete or broken relations are now returned as GeometryCollections)
+* more performant querying of data cells (both in H2 as well as Ignite backends)
+* api: add possibility to zero-fill custom aggregation indices
+* api: implement lazy evaluation of geometries (speeding up queries like `count()` that don't require entity geometries)
+* naming scheme of oshdb related classes: `OSHDB` (as well as `OSM`, `OSH`) are written in upper case
+* moved "parent" maven module outside of this repository
+* (breaking) introduce specific classes for osm tags, tag-keys, roles and their oshdb counterparts
+* significant performance improvements of internal `getModificationTimestamps` method (which is called once for every matching entity)
+* (breaking) drop MEMBERLIST_CHANGE from available contribution types
+* (api) add method to get unclipped geometries
+* add method to get changeset id of OSMContribution objects
+* (api) add option to cache all data in memory when using the H2 backend
+* improve code quality all over the place (reduced duplicate code, reduced or annotated type casting warnings, reduced usage of raw types)
+* various bugfixes
 
 ### 0.3.1
 
