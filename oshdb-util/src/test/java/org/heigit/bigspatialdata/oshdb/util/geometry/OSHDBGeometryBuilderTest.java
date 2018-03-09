@@ -37,7 +37,7 @@ public class OSHDBGeometryBuilderTest {
 
   @Test
   public void testPointGetGeometry() {
-    OSMEntity entity = testData.nodes().get(1L).get(0);
+    OSMEntity entity = testData.nodes().get(1L).get(1);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, null);
     assertEquals(100, result.getCoordinates()[0].x, 100);
@@ -46,7 +46,7 @@ public class OSHDBGeometryBuilderTest {
 
   @Test
   public void testPointGetGeometryClipped() {
-    OSMEntity entity = testData.nodes().get(1L).get(0);
+    OSMEntity entity = testData.nodes().get(1L).get(1);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     // by bbox
     OSHDBBoundingBox clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 90.0);

@@ -99,16 +99,16 @@ public class JSONTransformerTest {
   @Test
   public void testMultiTransform() throws SQLException, OSHDBKeytablesNotFoundException {
     int[] properties = {1, 2};
-    OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1415538449L), 1L, 1, properties, 1000000000L, 1000000000L);
-    List<Pair<? extends OSMEntity, OSHDBTimestamp>> OSMObjects = new ArrayList<>(2);
-    OSMObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(1L)));
-    OSMObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(2L)));
+    OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, properties, 1000000000L, 1000000000L);
+    List<Pair<? extends OSMEntity, OSHDBTimestamp>> osmObjects = new ArrayList<>(2);
+    osmObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(1L)));
+    osmObjects.add(new ImmutablePair<>(instance, new OSHDBTimestamp(2L)));
     TagInterpreter areaDecider = new FakeTagInterpreter();
     TagTranslator tt = new TagTranslator(
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data", "sa", ""));
     String expResult =
-        "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"2014-11-09T13:07:29Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:02Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"2014-11-09T13:07:29Z\",\"@geomtimestamp\":\"1970-01-01T00:00:02Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
-    String result = JSONTransformer.multiTransform(OSMObjects, tt, areaDecider).toString();
+        "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:01Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:01Z\",\"@geomtimestamp\":\"1970-01-01T00:00:01Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}},{\"type\":\"Feature\",\"id\":\"node/1@1970-01-01T00:00:02Z\",\"properties\":{\"@type\":\"node\",\"@id\":1,\"@visible\":true,\"@version\":1,\"@changeset\":1,\"@timestamp\":\"1970-01-01T00:00:01Z\",\"@geomtimestamp\":\"1970-01-01T00:00:02Z\",\"@uid\":1,\"building\":\"residential\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[100.0,100.0]}}]}";
+    String result = JSONTransformer.multiTransform(osmObjects, tt, areaDecider).toString();
     assertEquals(expResult, result);
   }
 
