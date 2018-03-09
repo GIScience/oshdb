@@ -40,10 +40,28 @@ public class OSHDBGeometryBuilder {
 
   private OSHDBGeometryBuilder() {}
 
-  // gets the geometry of this object at a specific timestamp
+  /**
+   * Gets the geometry of an OSM entity at a specific timestamp.
+   *
+   * The given timestamp must be in the valid timestamp range of the given entity version:
+   * <ul>
+   *   <li>timestamp must be equal or bigger than entity.getTimestamp()</li>
+   *   <li>timestamp must be less than the next version of this osm entity (if one exists)</li>
+   * </ul>
+   *
+   * @param entity the osm entity to generate the geometry of
+   * @param timestamp the timestamp for which to create the entity's geometry
+   * @param areaDecider a TagInterpreter object which decides whether to generate a linear or a
+   *                    polygonal geometry for the respective entity (based on its tags)
+   * @return a JTS geometry object (simple features compatible, i.e. a Point, LineString, Polygon
+   *         or MultiPolygon)
+   */
   @Nonnull
-  public static <T extends OSMEntity> Geometry getGeometry(T entity, OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider) {
+  public static Geometry getGeometry(
+      OSMEntity entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider
+  ) {
+    assert timestamp.compareTo(entity.getTimestamp()) < 0 :
+        "cannot produce geometry of entity for timestamp before this entity's version's timestamp";
     if (entity instanceof OSMNode) {
       OSMNode node = (OSMNode) entity;
       GeometryFactory geometryFactory = new GeometryFactory();
@@ -92,7 +110,19 @@ public class OSHDBGeometryBuilder {
     Geometry[] geoms = new Geometry[relationMembers.length];
     boolean completeGeometry = true;
     for (int i = 0; i < relationMembers.length; i++) {
-      OSHEntity memberEntity = relationMembers[i].getEntity();
+      OSHEntity memberOSHEntity = relationMembers[i].getEntity();
+      // memberOSHEntity might be null when working on an extract with incomplete relation members
+      OSMEntity memberEntity = memberOSHEntity == null ? null :
+          memberOSHEntity.getByTimestamp(timestamp);
+      /*
+      memberEntity might be null when working with redacted data, for example:
+       * user 1 creates node 1 (timestamp 1)
+       * user 2 creates relation 1 with node 1 as member (timestamp 2)
+       * user 2 edits node 1, which now has a version 2 (timestamp 3)
+       * user 1's edits are redacted -> node 1 version 1 is now hidden (version 2 isn't)
+      now when requesting relation 1's geometry at timestamps between 2 and 3, memberOSHEntity
+      is not null, but memberEntity is.
+      */
       if (memberEntity == null) {
         geoms[i] = null;
         completeGeometry = false;
@@ -102,7 +132,7 @@ public class OSHDBGeometryBuilder {
         );
       } else {
         geoms[i] = OSHDBGeometryBuilder.getGeometry(
-            memberEntity.getByTimestamp(timestamp),
+            memberEntity,
             timestamp,
             areaDecider
         );
