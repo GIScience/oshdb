@@ -100,7 +100,7 @@ public class JSONTransformer {
         JsonObjectBuilder member = Json.createObjectBuilder();
         member.add("type", mem.getType().toString()).add("ref", mem.getId());
         try {
-          member.add("role", tagtranslator.osmRoleOf(mem.getRoleId()).toString());
+          member.add("role", tagtranslator.getOSMRoleOf(mem.getRoleId()).toString());
         } catch (NullPointerException ex) {
           LOG.warn(
               "The TagTranslator could not resolve the member role {} of a member of relation/{}",
@@ -134,13 +134,13 @@ public class JSONTransformer {
       TagTranslator tagtranslator, JsonObjectBuilder properties) {
 
     try {
-      OSMTag temptags = tagtranslator.osmTagOf(key, value);
+      OSMTag temptags = tagtranslator.getOSMTagOf(key, value);
       return properties.add(temptags.getKey(), temptags.getValue());
     } catch (NullPointerException ex) {
       try {
         LOG.warn("The TagTranslator could not resolve a value (ValueID: {}) of Entity {}", value,
             entity.toString(), ex);
-        String tempkey = tagtranslator.osmTagKeyOf(key).toString();
+        String tempkey = tagtranslator.getOSMTagKeyOf(key).toString();
         return properties.add(tempkey, "<error: could not resolve value>");
       } catch (NullPointerException ex2) {
         LOG.debug("The TagTranslator could ALSO not resolve the key (KeyID: {}) of Entity {}", key,

@@ -385,7 +385,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
-    OSHDBTagKey keyId = this._getTagTranslator().oshdbTagKeyOf(key);
+    OSHDBTagKey keyId = this._getTagTranslator().getOSHDBTagKeyOf(key);
     if (!keyId.isPresentInKeytables()) {
       LOG.warn("Tag key {} not found. No data will match this filter.", key.toString());
       ret._preFilters.add(ignored -> false);
@@ -420,7 +420,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(OSMTag tag) {
     MapReducer<X> ret = this.copy();
-    OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(tag);
+    OSHDBTag keyValueId = this._getTagTranslator().getOSHDBTagOf(tag);
     if (!keyValueId.isPresentInKeytables()) {
       LOG.warn("Tag {}={} not found. No data will match this filter.",
           tag.getKey(), tag.getValue());
@@ -446,7 +446,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
-    OSHDBTagKey oshdbKey = this._getTagTranslator().oshdbTagKeyOf(key);
+    OSHDBTagKey oshdbKey = this._getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables() || values.size() == 0) {
       LOG.warn((values.size() > 0 ? "Tag key {} not found." : "Empty tag value list.")
@@ -457,7 +457,7 @@ public abstract class MapReducer<X> implements
     }
     Set<Integer> valueIds = new HashSet<>();
     for (String value : values) {
-      OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(key, value);
+      OSHDBTag keyValueId = this._getTagTranslator().getOSHDBTagOf(key, value);
       if (!keyValueId.isPresentInKeytables()) {
         LOG.warn("Tag {}={} not found. No data will match this tag value.", key, value);
       } else {
@@ -489,7 +489,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> where(String key, Pattern valuePattern) {
     MapReducer<X> ret = this.copy();
-    OSHDBTagKey oshdbKey = this._getTagTranslator().oshdbTagKeyOf(key);
+    OSHDBTagKey oshdbKey = this._getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables()) {
       LOG.warn("Tag key {} not found. No data will match this filter.", key);
@@ -503,7 +503,7 @@ public abstract class MapReducer<X> implements
       for (int i = 0; i < tags.length; i += 2) {
         if (tags[i] > keyId) return false;
         if (tags[i] == keyId) {
-          String value = this._getTagTranslator().osmTagOf(keyId, tags[i + 1]).getValue();
+          String value = this._getTagTranslator().getOSMTagOf(keyId, tags[i + 1]).getValue();
           return valuePattern.matcher(value).matches();
         }
       }
@@ -531,7 +531,7 @@ public abstract class MapReducer<X> implements
     Set<Integer> keyIds = new HashSet<>();
     Set<OSHDBTag> keyValueIds = new HashSet<>();
     for (OSMTag tag : tags) {
-      OSHDBTag keyValueId = this._getTagTranslator().oshdbTagOf(tag);
+      OSHDBTag keyValueId = this._getTagTranslator().getOSHDBTagOf(tag);
       if (!keyValueId.isPresentInKeytables()) {
         LOG.warn("Tag {}={} not found. No data will match this tag value.",
             tag.getKey(), tag.getValue());
