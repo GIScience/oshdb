@@ -6,8 +6,8 @@
   * ~~`new BoundingBox(9.4,17.5,46.4,49.1)`~~ (0.3 code)
   * `new OSHDBBoundingBox(9.4,46.4,17.5,49.1)` (0.4)
 * fixed naming scheme of oshdb related classes: `OSHDB` (as well as `OSM`, `OSH`) are written in upper case:
-  * `OSHDB_Ignite` it now `OSHDBIgnite`
-  * `OSHDbGeometryBuilder` is now `OSHDBGeometryBuilder`
+  * ~~`OSHDB_Ignite`~~ is now `OSHDBIgnite`
+  * ~~`OSHDbGeometryBuilder`~~ is now `OSHDBGeometryBuilder`
 * re-introduced `oshdb-util` module
   * some classes/packages have been moved to this module (e.g. the `geometry` and `time` helpers, as well as `tagInterpreter`, `tagTranslator`, `cellIterator`, `export`, …)
   * moved some functionality from `OSM`, `OSH` and `Grid` classes into the oshdb-util package (these methods are now found in more specific classes like the `OSHDBGeometryBuilder`)
@@ -16,7 +16,7 @@
 * introduce specific classes for osm tags (`OSMTag`), tag-keys (`OSMTagKey`), roles (`OSMRole`) and their oshdb counterparts (`OSHDBTag`, …)
   * these will be returned e.g. by `OSMEntity.getTags()` instead of the raw tag (`int`) ids – if you need these, use `OSMEntity.getRawTags()` or the appropriate getter function of the new objects (e.g. `OSHDBTag.getKey()`)
 * the celliterator is now a (reusable) object instead of a set of static functions
-* drop MEMBERLIST_CHANGE from analyzed contribution types of `OSMContribution`s
+* drop ~~`MEMBERLIST_CHANGE`~~ from analyzed contribution types of `OSMContribution`s
 
 ### new features
 
