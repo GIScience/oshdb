@@ -1,4 +1,4 @@
-HeiGit OpenStreetMap History DB
+HeiGIT OpenStreetMap History DB
 ===============================
 
 High-performance data analysis platform for OpenStreetMap full-history data.
