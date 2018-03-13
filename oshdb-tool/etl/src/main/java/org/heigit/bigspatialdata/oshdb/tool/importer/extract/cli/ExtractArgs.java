@@ -24,16 +24,16 @@ public class ExtractArgs {
   @Parameter(names = {"--md5"}, description="MD5 checksum")
   public String md5 = "";
   
-  @Parameter(names = {"--poly"}, validateWith = FileExistValidator.class)
+  @Parameter(names = {"--poly"}, description="extract region",  validateWith = FileExistValidator.class)
   public Path polyFile;
   
-  @Parameter(names = {"--bbox"})
+  @Parameter(names = {"--bbox"}, description="extract_region")
   public String bbox = "";
   
-  @Parameter(names = {"--timevalidity_from"}, description="", required = true, validateWith=TimeValidity.class)
+  @Parameter(names = {"--timevalidity_from"}, description="first valid timestamp", required = true, validateWith=TimeValidity.class)
   public String timeValidityFrom; //cc-by-sa 2007-10-07
   
-  @Parameter(names = {"--timevalidity_to"}, description="", validateWith=TimeValidity.class)
+  @Parameter(names = {"--timevalidity_to"}, description="latest valid timestamp", validateWith=TimeValidity.class)
   public String timeValidityTo = null; //
 
   @Parameter(names = { "--overwrite" }, description = "overwrite existing files", order = 1)
