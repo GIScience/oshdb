@@ -17,6 +17,12 @@
 			<artifactId>oshdb</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
