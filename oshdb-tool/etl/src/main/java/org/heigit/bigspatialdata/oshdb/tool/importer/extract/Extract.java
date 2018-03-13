@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,10 +26,12 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.tool.importer.extract.cli.ExtractArgs;
 import org.heigit.bigspatialdata.oshdb.tool.importer.extract.collector.KVFCollector;
 import org.heigit.bigspatialdata.oshdb.tool.importer.extract.collector.RoleCollector;
+import org.heigit.bigspatialdata.oshdb.tool.importer.extract.collector.StatsCollector;
 import org.heigit.bigspatialdata.oshdb.tool.importer.extract.data.OsmPbfMeta;
 import org.heigit.bigspatialdata.oshdb.tool.importer.extract.data.Role;
 import org.heigit.bigspatialdata.oshdb.tool.importer.extract.data.VF;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.ExternalSort;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.PolyFileReader;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.SizeEstimator;
 import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.Relation;
 import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.RelationMember;
@@ -36,6 +39,7 @@ import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.Tag;
 import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.TagText;
 import org.heigit.bigspatialdata.oshpbf.parser.rx.Osh;
 import org.heigit.bigspatialdata.oshpbf.parser.rx.RxOshPbfReader;
+import org.wololo.geojson.GeoJSON;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
@@ -123,7 +127,10 @@ public class Extract {
     return this;
   }
 
-  public ExtractKeyTablesResult extract(Path pbf, int workerId, int workerTotal, boolean keepTemp) {
+  public ExtractKeyTablesResult extract(ExtractArgs config, int workerId, int workerTotal, boolean keepTemp) {
+    final Path pbf = config.pbf;
+    final StatsCollector stats = new StatsCollector(pbf);
+    
     final KVFCollector kvFrequency = new KVFCollector();
     kvFrequency.setWorkerId(workerId);
     kvFrequency.setTempDir((workerTotal > 1) ? workDirectory.toFile() : tempDirectory.toFile());
@@ -139,7 +146,11 @@ public class Extract {
     final long start = workSize * workerId;
     final long softEnd = Math.min(start + workSize, fileLength);
 
-    Flowable<Osh> oshFlow = RxOshPbfReader.readOsh(pbf, start, softEnd, -1);
+    Flowable<Osh> oshFlow = RxOshPbfReader.readOsh(pbf, start, softEnd, -1,stats::addHeader);
+    
+    oshFlow = oshFlow.doOnNext(osh -> {
+      stats.add(osh);
+    });
 
     oshFlow = oshFlow.doOnNext(osh -> {
       if (kvFrequency.getEstimatedSize() + roleFrequency.getEstimatedSize() > maxMemory) {
@@ -175,6 +186,27 @@ public class Extract {
     });
 
     oshFlow.count().blockingGet();
+    
+    try(FileOutputStream fos = new FileOutputStream(workDirectory.resolve("extract_meta").toFile());
+        PrintStream out = new PrintStream(fos)){
+      stats.print(out);
+        
+      if(config.polyFile != null){
+        GeoJSON json = PolyFileReader.parse(config.polyFile);
+        out.println("extract.region="+json.toString());
+      }else if(config.bbox != null){
+        out.println("extract.region={\"bbox\":["+config.bbox+"]}");
+      }
+      
+      out.println("extract.timerange_from="+config.timeValidityFrom);
+      if(config.timeValidityTo != null)
+        out.println("extract.timerange_to="+config.timeValidityTo);
+      
+      
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    
     ExtractKeyTablesResult result = new ExtractKeyTablesResult(kvFrequency, roleFrequency);
     return result;
   }
@@ -266,11 +298,16 @@ public class Extract {
   }
   
   public static void extract(ExtractArgs config) {
-
     Path pbf = config.pbf;
     Path workDir = config.common.workDir;
     Path tempDir = config.common.tempDir;
     boolean overwrite = config.overwrite;
+    
+    if(workDir == null)
+      workDir = Paths.get(".");
+    
+    if(tempDir == null)
+      tempDir = workDir;
 
     int worker = config.distribute.worker;
     int workerTotal = config.distribute.totalWorkers;
@@ -317,7 +354,7 @@ public class Extract {
 
     if (overwrite || !Files.exists(workDir.resolve("extract_keys"))
         || !Files.exists(workDir.resolve("extract_keyvalues")) || !Files.exists(workDir.resolve("extract_roles"))) {
-      ExtractKeyTablesResult result = extract.extract(pbf, worker, workerTotal, false);
+      ExtractKeyTablesResult result = extract.extract(config, worker, workerTotal, false);
 
       try {
         if (workerTotal > 1) {
@@ -331,6 +368,9 @@ public class Extract {
         throw new RuntimeException(e);
       }
     }
+    
+    
+    
   }
 
   public static void main(String[] args) {

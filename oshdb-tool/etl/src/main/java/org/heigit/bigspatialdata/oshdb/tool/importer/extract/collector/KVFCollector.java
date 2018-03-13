@@ -270,7 +270,7 @@ public class KVFCollector implements Iterable<KVF> {
     @Override
     public KVF next() {
       if (!hasNext())
-        throw new NoSuchElementException("Troilo");
+        throw new NoSuchElementException();
 
       final Entry<String> entry = keyIterator.next();
       final String key = entry.getKey();
