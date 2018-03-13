@@ -14,6 +14,10 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -201,9 +205,14 @@ public class Extract {
         out.println("extract.region={\"bbox\":["+config.bbox+"]}");
       }
       
-      out.println("extract.timerange_from="+config.timeValidityFrom);
+      out.print("extract.timerange="+config.timeValidityFrom);
       if(config.timeValidityTo != null)
-        out.println("extract.timerange_to="+config.timeValidityTo);
+        out.println(","+config.timeValidityTo);
+      else if(stats.header.hasOsmosisReplicationTimestamp() && stats.header.getOsmosisReplicationTimestamp() > 0){
+        out.println(","+ZonedDateTime.ofInstant(Instant.ofEpochSecond(stats.header.getOsmosisReplicationTimestamp()), ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+      }else {
+        out.println(","+ZonedDateTime.ofInstant(Instant.ofEpochSecond(stats.maxTs), ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+      }
       
       
     } catch (Exception e) {
