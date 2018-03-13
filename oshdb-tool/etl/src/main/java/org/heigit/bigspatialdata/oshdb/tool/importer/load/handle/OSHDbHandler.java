@@ -33,8 +33,8 @@ public abstract class OSHDbHandler extends LoaderHandler {
   public abstract void handleWayGrid(GridOSHWays grid);
   public abstract void handleRelationsGrid(GridOSHRelations grid);
   
-  private final Roaring64NavigableMap bitmapNodeRelation;
-  private final Roaring64NavigableMap bitmapWayRelation;
+  protected final Roaring64NavigableMap bitmapNodeRelation;
+  protected final Roaring64NavigableMap bitmapWayRelation;
 
   protected OSHDbHandler(Roaring64NavigableMap bitmapNodeRelation, Roaring64NavigableMap bitmapWayRelation) {
     this.bitmapNodeRelation = bitmapNodeRelation;
@@ -72,7 +72,7 @@ public abstract class OSHDbHandler extends LoaderHandler {
     }
   }
 
-  private Long2ObjectAVLTreeMap<OSHWay> waysForRelation = new Long2ObjectAVLTreeMap<>();
+  protected Long2ObjectAVLTreeMap<OSHWay> waysForRelation = new Long2ObjectAVLTreeMap<>();
 
   @Override
   public void handleWayGrid(long zId, Collection<TransformOSHWay> ways, Collection<TransformOSHNode> nodes) {
