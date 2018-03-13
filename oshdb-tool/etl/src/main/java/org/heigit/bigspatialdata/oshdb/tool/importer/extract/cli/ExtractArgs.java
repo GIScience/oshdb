@@ -30,10 +30,10 @@ public class ExtractArgs {
   @Parameter(names = {"--bbox"}, description="extract_region")
   public String bbox = "";
   
-  @Parameter(names = {"--timevalidity_from"}, description="first valid timestamp", required = true, validateWith=TimeValidity.class)
+  @Parameter(names = {"--timevalidity_from"}, description="first valid timestamp in isodate format", required = true, validateWith=TimeValidity.class)
   public String timeValidityFrom; //cc-by-sa 2007-10-07
   
-  @Parameter(names = {"--timevalidity_to"}, description="latest valid timestamp", validateWith=TimeValidity.class)
+  @Parameter(names = {"--timevalidity_to"}, description="latest valid timestamp in isodate format", validateWith=TimeValidity.class)
   public String timeValidityTo = null; //
 
   @Parameter(names = { "--overwrite" }, description = "overwrite existing files", order = 1)
