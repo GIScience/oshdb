@@ -190,7 +190,10 @@ public class Extract {
     try(FileOutputStream fos = new FileOutputStream(workDirectory.resolve("extract_meta").toFile());
         PrintStream out = new PrintStream(fos)){
       stats.print(out);
-        
+      
+      if(!config.md5.trim().isEmpty())
+        out.println("file.md5="+config.md5);
+      
       if(config.polyFile != null){
         GeoJSON json = PolyFileReader.parse(config.polyFile);
         out.println("extract.region="+json.toString());
