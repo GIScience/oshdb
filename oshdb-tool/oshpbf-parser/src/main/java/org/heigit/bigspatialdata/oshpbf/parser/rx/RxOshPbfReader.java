@@ -19,6 +19,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import crosby.binary.Fileformat;
 import crosby.binary.Osmformat;
+import crosby.binary.Osmformat.HeaderBlock;
 import io.reactivex.Emitter;
 import io.reactivex.Flowable;
 import io.reactivex.functions.BiFunction;
@@ -27,9 +28,8 @@ import io.reactivex.schedulers.Schedulers;;
 
 public class RxOshPbfReader {
 
-  private static final byte[] SIGNATURE_OSMDATA = { /* wire_type */10, /* stringSize */7, 79, 83, 77, 68, 97, 116, 97 };
-  private static final byte[] SIGNATURE_OSMHEADER = { /* wire_type */10, /* stringSize */9, 79, 83, 77, 72, 101, 97,
-      100, 101, 114 };
+  private static final byte[] SIGNATURE_OSMDATA   = { /* wire_type */10, /* stringSize */7, 79, 83, 77, 68, 97, 116, 97 };
+  private static final byte[] SIGNATURE_OSMHEADER = { /* wire_type */10, /* stringSize */9, 79, 83, 77, 72, 101, 97, 100, 101, 114 };
   private static final int BLOBHEADER_SIZE_BYTES = 4;
   private static final int SIGNATURE_SIZE_BYTES = Math.max(SIGNATURE_OSMDATA.length, SIGNATURE_OSMHEADER.length);
 
@@ -78,11 +78,19 @@ public class RxOshPbfReader {
   }
 
   public static Flowable<Osh> readOsh(Path pbfPath, long pos, long softLimit, long hardLimit) {
+    return readOsh(pbfPath, pos, softLimit, hardLimit, header -> {});
+  }
+  public static Flowable<Osh> readOsh(Path pbfPath, long pos, long softLimit, long hardLimit, Consumer<HeaderBlock> header) {
     final int cpus = Runtime.getRuntime().availableProcessors();
     final int maxConcurrency = cpus - 1;
     final int prefetch = 4;
 
-    Flowable<Osh> oshFlow = readBlob(pbfPath, pos, softLimit, hardLimit).filter(PbfBlob::isData)
+    Flowable<Osh> oshFlow = readBlob(pbfPath, pos, softLimit, hardLimit)
+        .doOnNext(blob -> {
+          if(blob.isHeader())
+            header.accept(blob.getHeaderBlock());
+        })
+        .filter(PbfBlob::isData)
         .observeOn(Schedulers.computation())
         .concatMapEager(
             blob -> Flowable.just(blob).subscribeOn(Schedulers.computation()).map(b -> blobToOSHItr(b, false)),
