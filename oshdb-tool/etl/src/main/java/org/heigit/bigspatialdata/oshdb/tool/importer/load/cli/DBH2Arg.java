@@ -32,4 +32,11 @@ public class DBH2Arg {
   
   @Parameter(names = {"-z", "--maxZoom" }, description = "maximal zoom level", validateWith = PositiveInteger.class,  order = 2)
   public int maxZoom = 15;
+    
+  @Parameter(names = {"--attribution"}, required = true)
+  public String attribution = "Copyright Right";
+  
+  @Parameter(names = {"--attribution-url"}, required = true)
+  public String attributionUrl;
+     
 }

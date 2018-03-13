@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.load.handle;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -174,8 +176,37 @@ public class OSHDB2H2Handler extends OSHDbHandler {
 
     
     Class.forName("org.h2.Driver");
-    try (Connection conn = DriverManager.getConnection("jdbc:h2:" + oshdb.toString(), "sa", "")) {
+    try (Connection conn = DriverManager.getConnection("jdbc:h2:" + oshdb.toString()+"", "sa", "")) {
       try (Statement stmt = conn.createStatement()) {
+        
+        
+        try(BufferedReader br = new BufferedReader(new FileReader(workDirectory.resolve("extract_meta").toFile()))){
+          stmt.executeUpdate("drop table if exists " + TableNames.T_METADATA.toString() + "; create table if not exists "
+              + TableNames.T_METADATA.toString() + "(id varchar primary key, value varchar)");
+          PreparedStatement insert = conn
+              .prepareStatement("insert into " + TableNames.T_METADATA.toString() + " (id,values) values (?,?)");
+          String line = null;
+          while((line = br.readLine()) != null){
+            if(line.trim().isEmpty())
+              continue;
+            
+            String[] split = line.split("=",2);
+            if(split.length != 2)
+              throw new RuntimeException("metadata file is corrupt");
+            
+            insert.setString(1, split[0]);
+            insert.setString(2, split[1]);
+            insert.addBatch();
+          }
+          
+          insert.setString(1,"attribution.short");
+          insert.setString(2,config.attribution);
+          insert.addBatch();
+          insert.setString(1,"attribution.url");
+          insert.setString(2,config.attributionUrl);
+          
+          insert.executeBatch();
+        }
 
         if (withKeyTables) {
           stmt.executeUpdate("drop table if exists " + TableNames.E_KEY.toString() + "; create table if not exists "
@@ -217,6 +248,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
 
         LoaderHandler handler = new OSHDB2H2Handler(Roaring64NavigableMap.bitmapOf(), bitmapWays, insertKey,
             insertValue, insertRole, insertNode, insertWay, insertRelation);
+           
         Stopwatch loadingWatch = Stopwatch.createUnstarted();
         if (withKeyTables) {
           LoaderKeyTables keyTables = new LoaderKeyTables(workDirectory, handler);
@@ -230,6 +262,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
           System.out.println(" done! "+loadingWatch);
         }
 
+        
         Loader loader;
         LoaderNode node;
         loader = node = new LoaderNode(workDirectory, handler, minNodesPerGrid, onlyNodesWithTags, maxZoomLevel);
@@ -272,8 +305,6 @@ public class OSHDB2H2Handler extends OSHDbHandler {
     final Stopwatch stopWatch = Stopwatch.createStarted();
     load(config);
     System.out.println("loading done in " + stopWatch);
- 
-
   }
 
 }
