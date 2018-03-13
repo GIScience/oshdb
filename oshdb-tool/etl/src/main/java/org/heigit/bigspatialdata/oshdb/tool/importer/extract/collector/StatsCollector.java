@@ -30,9 +30,9 @@ public class StatsCollector {
   private long maxLat = Long.MIN_VALUE;
 
   private long minTs = Long.MAX_VALUE;
-  private long maxTs = Long.MIN_VALUE;
+  public long maxTs = Long.MIN_VALUE;
 
-  private HeaderBlock header = null;
+  public HeaderBlock header = null;
   private Path pbf = null;
   public StatsCollector(Path pbf) {
     this.pbf = pbf;
