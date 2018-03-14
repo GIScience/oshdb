@@ -8,14 +8,16 @@ be created by the steps extract, transform and load as follows:
 ## Extract
 
 The first step is to extract data by from your .osh.pbf-File. To do so,
-run the following commands, assuming that you are in the base directory 
-of the downloaded 
-[OSH-Code](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core/tree/master):
+you have to figure out the valid time period contained in this file and
+to provide the start of this period in the ISO date-time format. The
+actual extraction is performed by running the following commands, assuming
+that you are in the base directory of the downloaded
+[OSH-Code](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core/tree/master).
 
 
 ```bash
 cd oshdb-tool/etl
-mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.extract.Extract" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles"
+mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.extract.Extract" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles --timevalidity_from YYYY-MM-DD"
 ```
 
 This creates the files `extract_keys`, `extract_keyvalues` and `extract_roles` 
@@ -43,12 +45,14 @@ and do not use too large files.
 
 ## Load
 
-TODO: mention license specification
-
 ### Load into an H2 Database
 
+The transformed data has to be loaded into a database to which the oshdb will interface.
+In order to enable the oshdb to provide a proper attribution of the imported data, you
+have to set an attribution text and an attribution url
+
 ```bash
-mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.load.handle.OSHDB2H2Handler" -Dexec.args="-tmpDir ./tmpFiles --out /absolote/path/to/your-H2-database"
+mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.load.handle.OSHDB2H2Handler" -Dexec.args="-tmpDir ./tmpFiles --out /absolote/path/to/your-H2-database --attribution '© OpenStreetMap contributors' --attribution-url 'https://www.openstreetmap.org/copyright'"
 ```
 
 You now have a ready-to-use oshdb named **your-H2-database.mv.db** in the specified
