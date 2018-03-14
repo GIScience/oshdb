@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-core-parent</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>0.4.0-RC1</version>
   </parent>
   <artifactId>oshdb-util</artifactId>
   <description>A collection of utilities that are helpers for an easy access to the raw-data or other computations.</description>
