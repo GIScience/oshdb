@@ -184,7 +184,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
           stmt.executeUpdate("drop table if exists " + TableNames.T_METADATA.toString() + "; create table if not exists "
               + TableNames.T_METADATA.toString() + "(id varchar primary key, value varchar)");
           PreparedStatement insert = conn
-              .prepareStatement("insert into " + TableNames.T_METADATA.toString() + " (id,values) values (?,?)");
+              .prepareStatement("insert into " + TableNames.T_METADATA.toString() + " (id,value) values (?,?)");
           String line = null;
           while((line = br.readLine()) != null){
             if(line.trim().isEmpty())
