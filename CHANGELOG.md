@@ -39,6 +39,7 @@
 #### oshdb-tool
 
 * rewritten importer (.osh.pbf → .oshdb) etl toolchain
+* generated oshdb files include metadata about the included (osm) data
 
 ### preformance
 
