@@ -204,6 +204,11 @@ public class OSHDB2H2Handler extends OSHDbHandler {
           insert.addBatch();
           insert.setString(1,"attribution.url");
           insert.setString(2,config.attributionUrl);
+          insert.addBatch();
+          
+          insert.setString(1,"oshdb.maxzoom");
+          insert.setString(2,""+maxZoomLevel);
+          insert.addBatch();
           
           insert.executeBatch();
         }
