@@ -292,38 +292,6 @@ public abstract class OSHEntity<OSM extends OSMEntity>
   }
 
   /**
-   * returns true if the bbox of this HOSM entity intersects (or is fully inside) the given bbox.
-   * Used to roughly pre-filter objects against a bbox.
-   *
-   * @param otherBbox the bounding box which this entity is tested against
-   * @deprecated Use {@link #getBoundingBox().intersects(OSHDBBoundingBox)} instead.
-   */
-  @Deprecated
-  public boolean intersectsBbox(OSHDBBoundingBox otherBbox) {
-    OSHDBBoundingBox bbox = this.getBoundingBox();
-    if (bbox == null) {
-      return false;
-    }
-    return bbox.intersects(otherBbox);
-  }
-
-  /**
-   * returns true if the bbox of this HOSM entity is fully inside the given bbox. Can be used as an
-   * optimization to find not-to-be-clipped entity Geometries
-   *
-   * @param otherBbox the bounding box which this entity is tested against
-   * @deprecated Use {@link #getBoundingBox().isInside(OSHDBBoundingBox)} instead.
-   */
-  @Deprecated
-  public boolean insideBbox(OSHDBBoundingBox otherBbox) {
-    OSHDBBoundingBox bbox = this.getBoundingBox();
-    if (bbox == null) {
-      return false;
-    }
-    return bbox.isInside(otherBbox);
-  }
-
-  /**
    * Returns the list of timestamps at which this entity was modified.
    *
    * If the parameter "recurse" is set to true, it will also include modifications of the object's
