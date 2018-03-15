@@ -45,7 +45,7 @@
 * rewritten importer (.osh.pbf → .oshdb) etl toolchain
 * generated oshdb files include metadata about the included (osm) data
 
-### preformance
+### performance
 
 * oshdb-api: much faster processing of queries with polygonal areas of interest
 * oshdb-api: implement lazy evaluation of geometries (large speed up for queries like `count()` that don't require entity geometries)
