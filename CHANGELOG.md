@@ -1,4 +1,8 @@
-## 0.4.0 SNAPSHOT (current master)
+## 0.5.0 SNAPSHOT (current master)
+
+* …
+
+## 0.4.0
 
 ### breaking changes
 
