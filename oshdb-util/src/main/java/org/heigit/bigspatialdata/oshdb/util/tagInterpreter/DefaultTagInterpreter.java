@@ -32,33 +32,6 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   private final static String defaultUninterestingTagsDefinitionFile = "json/uninterestingTags.json";
 
   /**
-   * @deprecated use constructor directly
-   */
-  @Deprecated
-  public static DefaultTagInterpreter fromJDBC(Connection conn)
-      throws SQLException, IOException, ParseException, OSHDBKeytablesNotFoundException {
-    return DefaultTagInterpreter.fromJDBC(conn,
-        defaultAreaTagsDefinitionFile,
-        defaultUninterestingTagsDefinitionFile
-    );
-  }
-
-  /**
-   * @deprecated use constructor directly
-   */
-  @Deprecated
-  public static DefaultTagInterpreter fromJDBC(
-      Connection conn,
-      String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile
-  ) throws SQLException, IOException, ParseException, OSHDBKeytablesNotFoundException {
-    return new DefaultTagInterpreter(
-        new TagTranslator(conn),
-        areaTagsDefinitionFile,
-        uninterestingTagsDefinitionFile
-    );
-  }
-
-  /**
    *
    * @param conn
    * @throws IOException

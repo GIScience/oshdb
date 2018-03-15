@@ -607,13 +607,6 @@ public class CellIterator implements Serializable {
     return results.stream();
   }
 
-  /**
-   * @deprecated renamed to {@link #iterateByContribution(GridOSHEntity, OSHDBTimestampInterval)}
-   */
-  @Deprecated
-  public Stream<IterateAllEntry> iterateAll(GridOSHEntity cell, OSHDBTimestampInterval timeInterval) {
-    return this.iterateByContribution(cell, timeInterval);
-  }
 }
 
 
