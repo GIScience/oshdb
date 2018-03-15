@@ -118,20 +118,6 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it should be considered for this analyis or not.
-   *
-   * Deprecated, use `where(f)` instead.
-   *
-   * @param f the filter function to call for each osm entity
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use `where(f)` instead
-   */
-  @Deprecated
-  public MapAggregator<U, X> filterByOSMEntity(SerializablePredicate<OSMEntity> f) {
-    return this.where(f);
-  }
-
-  /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
    *
    * @param key the tag key to filter the osm entities for
@@ -212,34 +198,6 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public MapAggregator<U, X> where(Collection<OSMTag> keyValuePairs) {
     return this.copyTransform(this._mapReducer.where(keyValuePairs));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
-   *
-   * Deprecated, use `where(key)` instead.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use `where(key)` instead
-   */
-  @Deprecated
-  public MapAggregator<U, X> filterByTag(String key) {
-    return this.where(key);
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
-   *
-   * Deprecated, use `where(key,value)` instead.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use `where(key,value)` instead
-   */
-  @Deprecated
-  public MapAggregator<U, X> filterByTag(String key, String value) {
-    return this.where(key, value);
   }
 
   // -----------------------------------------------------------------------------------------------

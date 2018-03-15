@@ -644,15 +644,6 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * @deprecated renamed to groupByEntity: {@link #groupByEntity()}
-   */
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<List<X>> groupById() throws UnsupportedOperationException {
-    return this.groupByEntity();
-  }
-
-  /**
    * Sets a custom aggregation function that is used to group output results into.
    *
    * @param indexer a function that will be called for each input element and returns a value that
