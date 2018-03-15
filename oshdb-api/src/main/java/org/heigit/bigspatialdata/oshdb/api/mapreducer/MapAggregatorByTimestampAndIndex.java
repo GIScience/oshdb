@@ -86,6 +86,29 @@ public class MapAggregatorByTimestampAndIndex<U, X> extends MapAggregator<OSHDBT
   }
 
   /**
+   * Set an arbitrary `map` transformation function.
+   *
+   * @return a modified copy of this MapAggregatorByTimestamps object operating on the transformed type (&lt;R&gt;)
+   */
+  @Override
+  @Contract(pure = true)
+  public <R> MapAggregatorByTimestampAndIndex<U, R> map(SerializableFunction<X, R> mapper) {
+    return (MapAggregatorByTimestampAndIndex<U, R>)super.map(mapper);
+  }
+
+  /**
+   * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number of results per input data entry.
+   * The results of this function will be "flattened", meaning that they can be for example transformed again by setting additional `map` functions.
+   *
+   * @return a modified copy of this MapAggregatorByTimestamps object operating on the transformed type (&lt;R&gt;)
+   */
+  @Override
+  @Contract(pure = true)
+  public <R> MapAggregatorByTimestampAndIndex<U, R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
+    return (MapAggregatorByTimestampAndIndex<U, R>)super.flatMap(flatMapper);
+  }
+
+  /**
    * Map-reduce routine with built-in aggregation by timestamp
    *
    * This can be used to perform an arbitrary map-reduce routine whose results should be aggregated separately according to timestamps.
