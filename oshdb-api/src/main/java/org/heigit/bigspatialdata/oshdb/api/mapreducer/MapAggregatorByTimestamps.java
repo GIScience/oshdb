@@ -1,11 +1,16 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.jetbrains.annotations.Contract;
@@ -148,5 +153,51 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
   ) {
     return new MapAggregatorByTimestampAndIndex<U, X>(this, indexer)
         .zerofillTimestamps(this._zerofill);
+  }
+
+  /**
+   * Aggregates the results by sub-regions as well, in addition to the timestamps.
+   *
+   * Cannot be used together with the `groupByEntity()` setting enabled.
+   *
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
+   *         etc.) of the current MapReducer object
+   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has been
+   *         activated
+   * @throws UnsupportedOperationException when called after any map or flatMap functions are set
+   */
+  @Contract(pure = true)
+  public <U extends Comparable<U>, P extends Geometry & Polygonal>
+  MapAggregatorByTimestampAndIndex<U, X> aggregateByGeometry(Map<U, P> geometries) throws
+      UnsupportedOperationException
+  {
+    if (this._mapReducer._grouping != Grouping.NONE) {
+      throw new UnsupportedOperationException(
+          "aggregateByGeometry() cannot be used together with the groupByEntity() functionality"
+      );
+    }
+
+    GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
+    if (this._mapReducer._mappers.size() > 1) {
+      throw new UnsupportedOperationException(
+          "please call aggregateByGeometry before setting any map or flatMap functions"
+      );
+    } else {
+      MapAggregatorByTimestampAndIndex<U, ? extends OSHDBMapReducible> ret;
+      if (this._mapReducer._forClass.equals(OSMContribution.class)) {
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
+            .aggregateBy(Pair::getKey).map(Pair::getValue);
+      } else if (this._mapReducer._forClass.equals(OSMEntitySnapshot.class)) {
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
+            .aggregateBy(Pair::getKey).map(Pair::getValue);
+      } else {
+        throw new UnsupportedOperationException(
+            "aggregateByGeometry not implemented for objects of type: " + this._mapReducer._forClass.toString()
+        );
+      }
+      ret = ret.zerofillIndices(geometries.keySet());
+      //noinspection unchecked – this._mappers.size() is 0, so the type is still X
+      return (MapAggregatorByTimestampAndIndex<U, X>) ret;
+    }
   }
 }

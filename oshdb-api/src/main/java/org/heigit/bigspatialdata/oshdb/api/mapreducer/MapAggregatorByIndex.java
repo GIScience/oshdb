@@ -133,8 +133,8 @@ public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggrega
    * …
    */
   @Contract(pure = true)
-  public MapAggregatorByTimestampAndIndex<U, X> aggregateByTimestamps() {
-    throw new UnsupportedOperationException("aggregateByTimestamps not yet implemented / try aggregating the other way around");
+  public MapAggregatorByTimestampAndIndex<U, X> aggregateByTimestamp() {
+    throw new UnsupportedOperationException("aggregateByTimestamp not yet implemented / try aggregating the other way around");
     //return new MapAggregatorByTimestampAndIndex<U, X>(this, /*timeIndexer*/).zerofillTimestamps(this._zerofill);
   }
 }

@@ -32,7 +32,7 @@ public class MapAggregatorByTimestampAndIndex<U, X> extends MapAggregator<OSHDBT
   MapAggregatorByTimestampAndIndex(
       MapAggregatorByTimestamps<X> timeMapAggregator,
       SerializableFunction<X, U> indexer
-    ) {
+  ) {
     super();
     this._mapReducer = timeMapAggregator._mapReducer.map(data -> new MutablePair<OSHDBTimestampAndIndex<U>, X>(
         new OSHDBTimestampAndIndex<U>(

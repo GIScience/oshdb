@@ -89,11 +89,11 @@ public abstract class MapReducer<X> implements
   // internal state
   Class<? extends OSHDBMapReducible> _forClass = null;
 
-  private enum Grouping {
+  enum Grouping {
     NONE, BY_ID
   }
 
-  private Grouping _grouping = Grouping.NONE;
+  Grouping _grouping = Grouping.NONE;
 
   // utility objects
   private transient TagTranslator _tagTranslator = null;
@@ -108,7 +108,7 @@ public abstract class MapReducer<X> implements
   protected EnumSet<OSMType> _typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
-  private final List<SerializableFunction> _mappers = new LinkedList<>();
+  final List<SerializableFunction> _mappers = new LinkedList<>();
   private final Set<SerializableFunction> _flatMappers = new HashSet<>();
 
   // basic constructor
@@ -238,7 +238,7 @@ public abstract class MapReducer<X> implements
    * it will set the time slices at which to take the "snapshots" * For the OSMContributionView it
    * will set the time interval in which to look for osm contributions (only the first and last
    * timestamp of this list are contributing). Additionally, the timestamps are used in the
-   * `aggregateByTimestamps` functionality.
+   * `aggregateByTimestamp` functionality.
    *
    * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the
    *        timestamps to do the analysis for
@@ -747,7 +747,7 @@ public abstract class MapReducer<X> implements
   /**
    * Sets up automatic aggregation by geometries.
    *
-   * Cannot be used together with the `groupByEntity()` setting enabled. // todo: really?
+   * Cannot be used together with the `groupByEntity()` setting enabled.
    *
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
@@ -762,8 +762,7 @@ public abstract class MapReducer<X> implements
   {
     if (this._grouping != Grouping.NONE) {
       throw new UnsupportedOperationException(
-          "aggregateByGeometry() cannot be used together with the groupByEntity() " +
-          "functionality -> try using aggregateByTimestamp(customTimestampIndex) instead"
+          "aggregateByGeometry() cannot be used together with the groupByEntity() functionality"
       );
     }
 

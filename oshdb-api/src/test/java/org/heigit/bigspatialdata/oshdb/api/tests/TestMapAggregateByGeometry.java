@@ -8,17 +8,16 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.Polygonal;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndIndex;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -134,5 +133,54 @@ public class TestMapAggregateByGeometry {
         .zerofill(Collections.emptyList())
         .collect();
     assertEquals(3, resultNotZerofilled.entrySet().size());
+  }
+
+  @Test
+  public void testCombinedWithAggregateByTimestamp() throws Exception {
+    SortedMap<OSHDBTimestampAndIndex<String>, Integer> result = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps1)
+        .aggregateByTimestamp()
+        .aggregateByGeometry(getSubRegions())
+        .reduce(() -> 0, (x,ignored) -> x+1, (x,y) -> x+y);
+
+    assertEquals(4, result.entrySet().size());
+    Set<String> keys = result.keySet().stream()
+        .map(OSHDBTimestampAndIndex<String>::getOtherIndex)
+        .collect(Collectors.toSet());
+    assertTrue(keys.contains("left"));
+    assertTrue(keys.contains("right"));
+    assertTrue(keys.contains("total"));
+    assertTrue(keys.contains("null island"));
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
+    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
+    createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps1)
+        .map(ignored -> null)
+        .aggregateByTimestamp()
+        .aggregateByGeometry(getSubRegions())
+        .collect();
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testCombinedWithAggregateByTimestampUnsupportedOrder2() throws Exception {
+    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
+    createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps1)
+        .aggregateByGeometry(getSubRegions())
+        .aggregateByTimestamp()
+        .collect();
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
+    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
+    createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps1)
+        .groupByEntity()
+        .aggregateByGeometry(getSubRegions())
+        .collect();
   }
 }

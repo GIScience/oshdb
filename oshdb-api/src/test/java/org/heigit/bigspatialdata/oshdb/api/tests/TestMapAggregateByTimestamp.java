@@ -178,4 +178,36 @@ public class TestMapAggregateByTimestamp {
     assertEquals(1, resultCustom.entrySet().size());
   }
 
+  @Test(expected = UnsupportedOperationException.class)
+  public void testUnsupportedUsage() throws Exception {
+    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
+    createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .groupByEntity()
+        .aggregateByTimestamp()
+        .collect();
+  }
+
+  @Test
+  public void testMapperFunctions() throws Exception {
+    // check if it produces the same result whether the map function was set before or after aggr.
+    SortedMap<OSHDBTimestamp, Number> result1 = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .aggregateByTimestamp()
+        .map(x -> 7)
+        .sum();
+    SortedMap<OSHDBTimestamp, Number> result2 = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .map(x -> 7)
+        .aggregateByTimestamp()
+        .sum();
+
+    assertEquals(result1.entrySet().size(), result2.entrySet().size());
+    for (OSHDBTimestamp t : result1.keySet()) {
+      assertEquals(
+          result1.get(t).intValue(),
+          result2.get(t).intValue()
+      );
+    }
+  }
 }
