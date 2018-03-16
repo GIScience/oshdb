@@ -47,7 +47,7 @@ public class TimestampFormatter {
   }
 
   /**
-   * Converts a data to the format {@code yyyy-MM-dd'T'HH:mm:ss'Z'}.
+   * Converts a date to the format {@code yyyy-MM-dd'T'HH:mm:ss'Z'}.
    *
    * @param date
    * @return
@@ -68,7 +68,7 @@ public class TimestampFormatter {
   }
 
   /**
-   * Converts a data to the format {@code yyyy-MM-dd'T'HH:mm:ss'Z'}.
+   * Converts a date to the format {@code yyyy-MM-dd'T'HH:mm:ss'Z'}.
    *
    * @param date
    * @return
