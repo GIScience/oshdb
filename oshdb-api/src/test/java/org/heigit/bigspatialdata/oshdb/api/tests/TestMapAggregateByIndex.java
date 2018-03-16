@@ -9,6 +9,8 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -26,6 +28,7 @@ public class TestMapAggregateByIndex {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
+  private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2010-01-01", "2015-12-01");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
   private final double DELTA = 1e-8;
@@ -37,14 +40,35 @@ public class TestMapAggregateByIndex {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
   }
+  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
+    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+  }
 
   @Test
-  public void test() throws Exception {
+  public void testOSMContribution() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+        .timestamps(timestamps2)
         .where(entity -> entity.getId() == 617308093)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .map(OSMContribution::getContributorUserId)
+        .reduce(
+            HashSet::new,
+            (x,y) -> { x.add(y); return x; },
+            (x,y) -> { Set<Integer> ret = new HashSet<>(x); ret.addAll(y); return ret; }
+        );
+
+    assertEquals(1, result.entrySet().size());
+    // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids
+    assertEquals(5, result.get(617308093L).size());
+  }
+
+  @Test
+  public void testOSMEntitySnapshot() throws Exception {
+    SortedMap<Long, Set<Integer>> result = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps72)
+        .where(entity -> entity.getId() == 617308093)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId())
+        .map(snapshot -> snapshot.getEntity().getUserId())
         .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },

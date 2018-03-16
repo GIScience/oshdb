@@ -1,9 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.api.object;
 
 import com.vividsolutions.jts.geom.Geometry;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
 
 /**
@@ -12,10 +13,23 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
  * Alongside the entity and the timestamp, also the entity's geometry is provided.
  */
 public class OSMEntitySnapshot implements OSHDBMapReducible {
-  private final CellIterator.IterateByTimestampEntry data;
+  private final IterateByTimestampEntry data;
   
-  public OSMEntitySnapshot(CellIterator.IterateByTimestampEntry data) {
+  public OSMEntitySnapshot(IterateByTimestampEntry data) {
     this.data = data;
+  }
+
+  /**
+   * creates a copy of the current entity snapshot with an updated geometry
+   */
+  public OSMEntitySnapshot(OSMEntitySnapshot other, Geometry reclippedGeometry) {
+    this.data = new IterateByTimestampEntry(
+        other.data.timestamp,
+        other.data.osmEntity,
+        other.data.oshEntity,
+        new LazyEvaluatedObject<>(reclippedGeometry),
+        other.data.unclippedGeometry
+    );
   }
 
   /**
@@ -56,5 +70,14 @@ public class OSMEntitySnapshot implements OSHDBMapReducible {
    */
   public OSMEntity getEntity() {
     return data.osmEntity;
+  }
+
+  /**
+   * The (parent) osh entity of the osm entity for which the snapshot has been obtained.
+   *
+   * @return the OSHEntity object corresponding to this snapshot
+   */
+  public OSHEntity getOSHEntity() {
+    return data.oshEntity;
   }
 }

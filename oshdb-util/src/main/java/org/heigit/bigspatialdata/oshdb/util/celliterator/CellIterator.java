@@ -95,15 +95,17 @@ public class CellIterator implements Serializable {
   public static class IterateByTimestampEntry {
     public final OSHDBTimestamp timestamp;
     public final OSMEntity osmEntity;
+    public final OSHEntity oshEntity;
     public final LazyEvaluatedObject<Geometry> geometry;
     public final LazyEvaluatedObject<Geometry> unclippedGeometry;
 
-    IterateByTimestampEntry(
-        OSHDBTimestamp timestamp, OSMEntity entity,
+    public IterateByTimestampEntry(
+        OSHDBTimestamp timestamp, @Nonnull OSMEntity osmEntity, @Nonnull OSHEntity oshEntity,
         LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> unclippedGeom
     ) {
       this.timestamp = timestamp;
-      this.osmEntity = entity;
+      this.osmEntity = osmEntity;
+      this.oshEntity = oshEntity;
       this.geometry = geom;
       this.unclippedGeometry = unclippedGeom;
     }
@@ -259,10 +261,14 @@ public class CellIterator implements Serializable {
           if (fullyInside || (geom.get() != null && !geom.get().isEmpty())) {
             LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
                 () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
-            results.add(new IterateByTimestampEntry(timestamp, osmEntity, geom, fullGeom));
+            results.add(
+                new IterateByTimestampEntry(timestamp, osmEntity, oshEntity, geom, fullGeom)
+            );
             // add skipped timestamps (where nothing has changed from the last timestamp) to result
-            for (OSHDBTimestamp additionalTstamp : queryTs.get(timestamp)) {
-              results.add(new IterateByTimestampEntry(additionalTstamp, osmEntity, geom, fullGeom));
+            for (OSHDBTimestamp additionalT : queryTs.get(timestamp)) {
+              results.add(
+                  new IterateByTimestampEntry(additionalT, osmEntity, oshEntity, geom, fullGeom)
+              );
             }
           }
         } catch (UnsupportedOperationException err) {
@@ -309,6 +315,7 @@ public class CellIterator implements Serializable {
     @Nonnull
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
+    public final OSHEntity oshEntity;
     public final LazyEvaluatedObject<Geometry> geometry;
     public final LazyEvaluatedObject<Geometry> previousGeometry;
     public final LazyEvaluatedObject<Geometry> unclippedGeometry;
@@ -318,7 +325,7 @@ public class CellIterator implements Serializable {
 
     public IterateAllEntry(
         OSHDBTimestamp timestamp,
-        @Nonnull OSMEntity entity, OSMEntity previousOsmEntity,
+        @Nonnull OSMEntity osmEntity, OSMEntity previousOsmEntity, @Nonnull OSHEntity oshEntity,
         LazyEvaluatedObject<Geometry> geometry, LazyEvaluatedObject<Geometry> previousGeometry,
         LazyEvaluatedObject<Geometry> unclippedGeometry,
         LazyEvaluatedObject<Geometry> previousUnclippedGeometry,
@@ -326,8 +333,9 @@ public class CellIterator implements Serializable {
         long changeset
     ) {
       this.timestamp = timestamp;
-      this.osmEntity = entity;
+      this.osmEntity = osmEntity;
       this.previousOsmEntity = previousOsmEntity;
+      this.oshEntity = oshEntity;
       this.geometry = geometry;
       this.previousGeometry = previousGeometry;
       this.unclippedGeometry = unclippedGeometry;
@@ -430,7 +438,7 @@ public class CellIterator implements Serializable {
           // todo: some of this may be refactorable between the two for loops
           if (prev != null && prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp,
-                osmEntity, prev.osmEntity,
+                osmEntity, prev.osmEntity, oshEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
@@ -471,7 +479,7 @@ public class CellIterator implements Serializable {
             // geometries for these?
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
-                  osmEntity, prev.osmEntity,
+                  osmEntity, prev.osmEntity, oshEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
@@ -515,7 +523,8 @@ public class CellIterator implements Serializable {
           if (!fullyInside && (geom.get() == null || geom.get().isEmpty())) {
             // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-              prev = new IterateAllEntry(timestamp, osmEntity, prev.osmEntity,
+              prev = new IterateAllEntry(timestamp,
+                  osmEntity, prev.osmEntity, oshEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
@@ -570,7 +579,7 @@ public class CellIterator implements Serializable {
           );
           if (prev != null) {
             result = new IterateAllEntry(timestamp,
-                osmEntity, prev.osmEntity,
+                osmEntity, prev.osmEntity, oshEntity,
                 geom, prev.geometry,
                 unclippedGeom, prev.unclippedGeometry,
                 activity,
@@ -578,7 +587,7 @@ public class CellIterator implements Serializable {
             );
           } else {
             result = new IterateAllEntry(timestamp,
-                osmEntity, null,
+                osmEntity, null, oshEntity,
                 geom, new LazyEvaluatedObject<>((Geometry)null),
                 unclippedGeom, new LazyEvaluatedObject<>((Geometry)null),
                 activity,

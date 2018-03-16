@@ -744,7 +744,54 @@ public abstract class MapReducer<X> implements
     });
   }
 
-  // -----------------------------------------------------------------------------------------------
+  /**
+   * Sets up automatic aggregation by geometries.
+   *
+   * Cannot be used together with the `groupByEntity()` setting enabled. // todo: really?
+   *
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
+   *         etc.) of the current MapReducer object
+   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has been
+   *         activated
+   * @throws UnsupportedOperationException when called after any map or flatMap functions are set
+   */
+  @Contract(pure = true)
+  public <U extends Comparable<U>, P extends Geometry & Polygonal>
+      MapAggregatorByIndex<U, X> aggregateByGeometry(Map<U, P> geometries) throws
+      UnsupportedOperationException
+  {
+    if (this._grouping != Grouping.NONE) {
+      throw new UnsupportedOperationException(
+          "aggregateByGeometry() cannot be used together with the groupByEntity() " +
+          "functionality -> try using aggregateByTimestamp(customTimestampIndex) instead"
+      );
+    }
+
+    GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
+    if (this._mappers.size() > 0) {
+      throw new UnsupportedOperationException(
+          "please call aggregateByGeometry before setting any map or flatMap functions"
+      );
+    } else {
+      MapAggregatorByIndex<U, ? extends OSHDBMapReducible> ret;
+      if (this._forClass.equals(OSMContribution.class)) {
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
+            .aggregateBy(Pair::getKey).map(Pair::getValue);
+      } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
+            .aggregateBy(Pair::getKey).map(Pair::getValue);
+      } else {
+        throw new UnsupportedOperationException(
+            "aggregateByGeometry not implemented for objects of type: " + this._forClass.toString()
+        );
+      }
+      ret = ret.zerofill(geometries.keySet());
+      //noinspection unchecked – this._mappers.size() is 0, so the type is still X
+      return (MapAggregatorByIndex<U, X>) ret;
+    }
+  }
+
+    // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.
   // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).

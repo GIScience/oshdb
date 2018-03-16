@@ -1,5 +1,6 @@
 ## 0.5.0 SNAPSHOT (current master)
 
+* oshdb-api: implemented aggregation by polygonal geometries
 * …
 
 ## 0.4.0

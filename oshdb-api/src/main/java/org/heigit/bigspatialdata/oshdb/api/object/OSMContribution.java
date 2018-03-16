@@ -5,13 +5,13 @@ import java.util.EnumSet;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedContributionTypes;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
 
 /**
@@ -26,10 +26,30 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
  * </ul>
  */
 public class OSMContribution implements OSHDBMapReducible {
-  private final CellIterator.IterateAllEntry data;
+  private final IterateAllEntry data;
 
-  public OSMContribution(CellIterator.IterateAllEntry data) {
+  public OSMContribution(IterateAllEntry data) {
     this.data = data;
+  }
+
+  /**
+   * creates a copy of the current entity snapshot with an updated geometry
+   */
+  public OSMContribution(
+      OSMContribution other, Geometry reclippedGeometryBefore, Geometry reclippedGeometryAfter
+      ) {
+    this.data = new IterateAllEntry(
+        other.data.timestamp,
+        other.data.osmEntity,
+        other.data.previousOsmEntity,
+        other.data.oshEntity,
+        new LazyEvaluatedObject<>(reclippedGeometryAfter),
+        new LazyEvaluatedObject<>(reclippedGeometryBefore),
+        other.data.unclippedGeometry,
+        other.data.unclippedPreviousGeometry,
+        other.data.activities,
+        other.data.changeset
+    );
   }
 
   /**
@@ -103,6 +123,15 @@ public class OSMContribution implements OSHDBMapReducible {
    */
   public OSMEntity getEntityAfter() {
     return data.osmEntity;
+  }
+
+  /**
+   * The (parent) osh entity of the osm entities involved in this contribution
+   *
+   * @return the OSHEntity object of this contribution
+   */
+  public OSHEntity getOSHEntity() {
+    return data.oshEntity;
   }
 
   /**
