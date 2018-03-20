@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
@@ -11,6 +12,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
@@ -40,6 +42,7 @@ public class OSHDBGeometryBuilderTest {
     OSMEntity entity = testData.nodes().get(1L).get(1);
     OSHDBTimestamp timestamp = toOSHDBTimestamp("2001-01-01");
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, null);
+    assertTrue(result instanceof Point);
     assertEquals(100, result.getCoordinates()[0].x, 100);
     assertEquals(80, result.getCoordinates()[0].y, 80);
   }
