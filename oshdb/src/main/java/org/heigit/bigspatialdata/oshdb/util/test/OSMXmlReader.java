@@ -283,11 +283,11 @@ public class OSMXmlReader {
 
   private void entity(MutableOSMEntity osm, Element e) {
     osm.setId(attrAsLong(e, "id"));
-    osm.isVisible(attrAsBoolean(e, "visible"));
+    osm.isVisible(attrAsBoolean(e, "visible", true));
     osm.setVersion(attrAsInt(e, "version"));
     osm.setChangeset(attrAsLong(e, "changeset"));
     osm.setTimestamp(attrAsTimestampInSeconds(e, "timestamp"));
-    osm.setUserId(attrAsInt(e, "uid"));
+    osm.setUserId(attrAsInt(e, "uid", -1));
     osm.setTags(tags(e));
   }
 
@@ -373,12 +373,28 @@ public class OSMXmlReader {
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
   }
 
+  public static int attrAsInt(Element e, String name, int defaultValue) {
+    Attr attr = e.getAttributeNode(name);
+    if (attr != null) {
+      return Integer.parseInt(attr.getValue());
+    }
+    return defaultValue;
+  }
+
   public static boolean attrAsBoolean(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
       return Boolean.parseBoolean(attr.getValue());
     }
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
+  }
+
+  public static boolean attrAsBoolean(Element e, String name, boolean defaultValue) {
+    Attr attr = e.getAttributeNode(name);
+    if (attr != null) {
+      return Boolean.parseBoolean(attr.getValue());
+    }
+    return defaultValue;
   }
 
   public static long attrAsTimestampInSeconds(Element e, String name) {
