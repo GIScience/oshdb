@@ -182,9 +182,9 @@ public class OSHDB2H2Handler extends OSHDbHandler {
         
         try(BufferedReader br = new BufferedReader(new FileReader(workDirectory.resolve("extract_meta").toFile()))){
           stmt.executeUpdate("drop table if exists " + TableNames.T_METADATA.toString() + "; create table if not exists "
-              + TableNames.T_METADATA.toString() + "(id varchar primary key, value varchar)");
+              + TableNames.T_METADATA.toString() + "(key varchar primary key, value varchar)");
           PreparedStatement insert = conn
-              .prepareStatement("insert into " + TableNames.T_METADATA.toString() + " (id,value) values (?,?)");
+              .prepareStatement("insert into " + TableNames.T_METADATA.toString() + " (key,value) values (?,?)");
           String line = null;
           while((line = br.readLine()) != null){
             if(line.trim().isEmpty())
