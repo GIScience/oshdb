@@ -196,7 +196,8 @@ public class MapAggregatorByTimestamps<X> extends MapAggregator<OSHDBTimestamp, 
         );
       }
       ret = ret.zerofillIndices(geometries.keySet());
-      //noinspection unchecked – this._mappers.size() is 0, so the type is still X
+      ret = ret.zerofillTimestamps(this._zerofill);
+      //noinspection unchecked – no mapper functions have been applied, so the type is still X
       return (MapAggregatorByTimestampAndIndex<U, X>) ret;
     }
   }

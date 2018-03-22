@@ -31,4 +31,10 @@ public class OSHDBTimestampAndIndex<V> implements Comparable<OSHDBTimestampAndIn
   public String toString() {
     return this.getOtherIndex().toString() + "@" + this.getTimeIndex().toString();
   }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof OSHDBTimestampAndIndex &&
+        this._payload.equals(((OSHDBTimestampAndIndex) other)._payload);
+  }
 }

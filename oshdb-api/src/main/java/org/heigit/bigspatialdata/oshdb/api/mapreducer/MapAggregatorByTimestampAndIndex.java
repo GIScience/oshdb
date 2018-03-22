@@ -18,7 +18,7 @@ import java.util.*;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the second index used to group results
  */
-public class MapAggregatorByTimestampAndIndex<U, X> extends MapAggregator<OSHDBTimestampAndIndex<U>, X> {
+public class MapAggregatorByTimestampAndIndex<U extends Comparable<U>, X> extends MapAggregator<OSHDBTimestampAndIndex<U>, X> {
   private boolean _zerofillTimestamps = true;
   private Collection<U> _zerofillKeys = Collections.emptyList();
 
@@ -38,6 +38,27 @@ public class MapAggregatorByTimestampAndIndex<U, X> extends MapAggregator<OSHDBT
         new OSHDBTimestampAndIndex<U>(
             data.getKey(),
             indexer.apply(data.getValue())
+        ),
+        data.getValue()
+    ));
+  }
+
+  /**
+   * constructor that takes an existing mapAggregatorByIndex object and adds a time index to it.
+   *
+   * @param indexMapAggregator already existing mapAggregatorByIndex object that should be
+   *        aggregated by another time index as well
+   * @param timeIndexer function that returns the timestamp by which to aggregate the results also
+   */
+  MapAggregatorByTimestampAndIndex(
+      MapAggregatorByIndex<U, X> indexMapAggregator,
+      SerializableFunction<X, OSHDBTimestamp> timeIndexer
+  ) {
+    super();
+    this._mapReducer = indexMapAggregator._mapReducer.map(data -> new MutablePair<OSHDBTimestampAndIndex<U>, X>(
+        new OSHDBTimestampAndIndex<U>(
+            timeIndexer.apply(data.getValue()),
+            data.getKey()
         ),
         data.getValue()
     ));

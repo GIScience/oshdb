@@ -4,12 +4,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.TreeSet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.jetbrains.annotations.Contract;
 
 /**
@@ -130,11 +136,22 @@ public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggrega
   }
 
   /**
-   * …
+   * Sets up aggregation by a custom time index.
+   *
+   * The timestamps returned by the supplied indexing function are matched to the corresponding time intervals
+   *
+   * @param indexer a callback function that return a timestamp object for each given data. Note that
+   *                if this function returns timestamps outside of the supplied timestamps() interval
+   *                results may be undefined
+   * @return a MapAggregatorByTimestampAndIndex object with the equivalent state (settings,
+   *         filters, map function, etc.) of the current MapReducer object
    */
   @Contract(pure = true)
-  public MapAggregatorByTimestampAndIndex<U, X> aggregateByTimestamp() {
-    throw new UnsupportedOperationException("aggregateByTimestamp not yet implemented / try aggregating the other way around");
-    //return new MapAggregatorByTimestampAndIndex<U, X>(this, /*timeIndexer*/).zerofillTimestamps(this._zerofill);
+  public MapAggregatorByTimestampAndIndex<U, X> aggregateByTimestamp(SerializableFunction<X, OSHDBTimestamp> indexer) {
+    final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._mapReducer._tstamps.get());
+    return new MapAggregatorByTimestampAndIndex<U, X>(this, data -> {
+      // match timestamps to the given timestamp list
+      return timestamps.floor(indexer.apply(data));
+    }).zerofillIndices(this._zerofill);
   }
 }

@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.vividsolutions.jts.geom.Polygon;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -153,6 +154,25 @@ public class TestMapAggregateByGeometry {
     assertTrue(keys.contains("null island"));
   }
 
+  @Test
+  public void testCombinedWithAggregateByTimestampOrder() throws Exception {
+    SortedMap<OSHDBTimestampAndIndex<String>, List<Long>> resultGT =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps2)
+            .aggregateByGeometry(getSubRegions())
+            .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+            .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
+            .collect();
+    SortedMap<OSHDBTimestampAndIndex<String>, List<Long>> resultTG =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps2)
+            .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+            .aggregateByGeometry(getSubRegions())
+            .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
+            .collect();
+    assertEquals(resultTG, resultGT);
+  }
+
   @Test(expected = UnsupportedOperationException.class)
   public void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
     //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
@@ -161,16 +181,6 @@ public class TestMapAggregateByGeometry {
         .map(ignored -> null)
         .aggregateByTimestamp()
         .aggregateByGeometry(getSubRegions())
-        .collect();
-  }
-
-  @Test(expected = UnsupportedOperationException.class)
-  public void testCombinedWithAggregateByTimestampUnsupportedOrder2() throws Exception {
-    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps1)
-        .aggregateByGeometry(getSubRegions())
-        .aggregateByTimestamp()
         .collect();
   }
 

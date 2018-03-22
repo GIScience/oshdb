@@ -688,6 +688,7 @@ public abstract class MapReducer<X> implements
     SerializableFunction<X, OSHDBTimestamp> indexer;
     if (this._forClass.equals(OSMContribution.class)) {
       final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._tstamps.get());
+      this._tstamps.get().toArray(new OSHDBTimestamp[] {})[0].getRawUnixTimestamp();
       indexer = data -> timestamps.floor(((OSMContribution) data).getTimestamp());
     } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
       indexer = data -> ((OSMEntitySnapshot) data).getTimestamp();
@@ -734,7 +735,7 @@ public abstract class MapReducer<X> implements
    *                if this function returns timestamps outside of the supplied timestamps() interval
    *                results may be undefined
    * @return a MapAggregator object with the equivalent state (settings,
-   * filters, map function, etc.) of the current MapReducer object
+   *         filters, map function, etc.) of the current MapReducer object
    */
   public MapAggregatorByTimestamps<X> aggregateByTimestamp(SerializableFunction<X, OSHDBTimestamp> indexer) throws UnsupportedOperationException {
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._tstamps.get());
@@ -785,7 +786,7 @@ public abstract class MapReducer<X> implements
         );
       }
       ret = ret.zerofill(geometries.keySet());
-      //noinspection unchecked – this._mappers.size() is 0, so the type is still X
+      //noinspection unchecked – no mapper functions have been applied, so the type is still X
       return (MapAggregatorByIndex<U, X>) ret;
     }
   }
