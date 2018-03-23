@@ -181,7 +181,7 @@ public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggrega
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
   @Contract(pure = true)
-  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(SerializableFunction<X, V> indexer) {
+  public <V extends Comparable<V>> MapAggregatorByIndex<OSHDBCombinedIndex<U, V>, X> aggregateBy(SerializableFunction<X, V> indexer) {
     return this.mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
         existingIndex,
         indexer.apply(data)
