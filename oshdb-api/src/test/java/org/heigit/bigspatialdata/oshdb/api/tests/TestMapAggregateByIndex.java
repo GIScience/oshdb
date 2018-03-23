@@ -108,6 +108,10 @@ public class TestMapAggregateByIndex {
 
     assertEquals(1, result.entrySet().size());
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids
+    //noinspection unchecked – types actually match, not sure why java's complaining ¯\_(ツ)_/¯
     assertEquals(1, (int)result.get(new OSHDBCombinedIndex(617308093L, OSMType.NODE)));
+
+    SortedMap<Long, SortedMap<OSMType, Integer>> nestedResult = OSHDBCombinedIndex.nest(result);
+    assertEquals(1, (int)nestedResult.get(617308093L).get(OSMType.NODE));
   }
 }

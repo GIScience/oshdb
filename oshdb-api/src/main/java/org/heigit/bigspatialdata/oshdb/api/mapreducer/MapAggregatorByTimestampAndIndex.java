@@ -194,15 +194,11 @@ public class MapAggregatorByTimestampAndIndex<U extends Comparable<U>, X> extend
    * @param <A> an arbitrary data type, used for the data value items
    * @param <U> an arbitrary data type, used for the index'es key items
    * @return a nested data structure, where for each index part there is a separate level of nested maps
+   * @deprecated use {@link OSHDBTimestampAndIndex#nestIndexThenTime(Map)} instead
    */
+  @Deprecated
   public static <A,U> SortedMap<U, SortedMap<OSHDBTimestamp, A>> nest_IndexThenTime(Map<OSHDBTimestampAndIndex<U>, A> result) {
-    TreeMap<U, SortedMap<OSHDBTimestamp, A>> ret = new TreeMap<>();
-    result.forEach((index, data) -> {
-      if (!ret.containsKey(index.getOtherIndex()))
-        ret.put(index.getOtherIndex(), new TreeMap<OSHDBTimestamp, A>());
-      ret.get(index.getOtherIndex()).put(index.getTimeIndex(), data);
-    });
-    return ret;
+    return OSHDBTimestampAndIndex.nestIndexThenTime(result);
   }
 
   /**
@@ -217,14 +213,10 @@ public class MapAggregatorByTimestampAndIndex<U extends Comparable<U>, X> extend
    * @param <A> an arbitrary data type, used for the data value items
    * @param <U> an arbitrary data type, used for the index'es key items
    * @return a nested data structure, where for each index part there is a separate level of nested maps
+   * @deprecated use {@link OSHDBTimestampAndIndex#nestTimeThenIndex(Map)} instead
    */
+  @Deprecated
   public static <A,U> SortedMap<OSHDBTimestamp, SortedMap<U, A>> nest_TimeThenIndex(Map<OSHDBTimestampAndIndex<U>, A> result) {
-    TreeMap<OSHDBTimestamp, SortedMap<U, A>> ret = new TreeMap<>();
-    result.forEach((index, data) -> {
-      if (!ret.containsKey(index.getTimeIndex()))
-        ret.put(index.getTimeIndex(), new TreeMap<U, A>());
-      ret.get(index.getTimeIndex()).put(index.getOtherIndex(), data);
-    });
-    return ret;
+    return OSHDBTimestampAndIndex.nestTimeThenIndex(result);
   }
 }

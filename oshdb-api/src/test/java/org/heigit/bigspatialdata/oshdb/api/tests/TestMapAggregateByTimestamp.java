@@ -226,6 +226,12 @@ public class TestMapAggregateByTimestamp {
     assertEquals(timestamps1.get().first(), result.firstKey().getTimeIndex());
     assertEquals(OSMType.WAY, result.firstKey().getOtherIndex());
     assertEquals(42, (int)result.values().toArray(new Integer[] {})[0]);
+
+    SortedMap<OSHDBTimestamp, SortedMap<OSMType, Integer>> nestedResult1 = OSHDBTimestampAndIndex.nestTimeThenIndex(result);
+    assertEquals(42, (int)nestedResult1.get(timestamps1.get().first()).get(OSMType.WAY));
+
+    SortedMap<OSMType, SortedMap<OSHDBTimestamp, Integer>> nestedResult2 = OSHDBTimestampAndIndex.nestIndexThenTime(result);
+    assertEquals(42, (int)nestedResult2.get(OSMType.WAY).get(timestamps1.get().first()));
   }
 
   @Test
