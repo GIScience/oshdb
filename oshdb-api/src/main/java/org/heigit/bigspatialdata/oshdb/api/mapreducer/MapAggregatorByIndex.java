@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeSet;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
@@ -48,6 +50,22 @@ public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggrega
   @Contract(pure = true)
   protected <R> MapAggregatorByIndex<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer) {
     return new MapAggregatorByIndex<>(this, mapReducer);
+  }
+  @Contract(pure = true)
+  private <V extends Comparable<V>> MapAggregatorByIndex<V, X> copyTransformKey(MapReducer<Pair<V, X>> mapReducer) {
+    //noinspection unchecked – we do want to convert the mapAggregator to a different key type "V"
+    return new MapAggregatorByIndex<V, X>((MapAggregatorByIndex<V, ?>) this, mapReducer);
+  }
+
+  /**
+   * …
+   */
+  @Contract(pure = true)
+  private <V extends Comparable<V>> MapAggregatorByIndex<V, X> mapIndex(SerializableBiFunction<U, X, V> keyMapper) {
+    return this.copyTransformKey(this._mapReducer.map(inData -> new MutablePair<>(
+        keyMapper.apply(inData.getKey(), inData.getValue()),
+        inData.getValue()
+    )));
   }
 
   /**
@@ -138,11 +156,12 @@ public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggrega
   /**
    * Sets up aggregation by a custom time index.
    *
-   * The timestamps returned by the supplied indexing function are matched to the corresponding time intervals
+   * The timestamps returned by the supplied indexing function are matched to the corresponding
+   * time intervals
    *
-   * @param indexer a callback function that return a timestamp object for each given data. Note that
-   *                if this function returns timestamps outside of the supplied timestamps() interval
-   *                results may be undefined
+   * @param indexer a callback function that returns a timestamp object for each given data.
+   *                Note that if this function returns timestamps outside of the supplied
+   *                timestamps() interval results may be undefined
    * @return a MapAggregatorByTimestampAndIndex object with the equivalent state (settings,
    *         filters, map function, etc.) of the current MapReducer object
    */
@@ -153,5 +172,20 @@ public class MapAggregatorByIndex<U extends Comparable<U>, X> extends MapAggrega
       // match timestamps to the given timestamp list
       return timestamps.floor(indexer.apply(data));
     }).zerofillIndices(this._zerofill);
+  }
+
+  /**
+   * Sets up aggregation by another custom index.
+   *
+   * @param indexer a callback function that returns an index object for each given data.
+   * @return a MapAggregatorByIndex object with the new index applied as well
+   */
+  @Contract(pure = true)
+  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(SerializableFunction<X, V> indexer) {
+    return this.mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
+        existingIndex,
+        indexer.apply(data)
+    ));
+    //todo: .zerofillIndices(this._zerofill);
   }
 }

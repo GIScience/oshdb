@@ -7,6 +7,7 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -28,6 +29,7 @@ public class TestMapAggregateByIndex {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
+  private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-12-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2010-01-01", "2015-12-01");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
@@ -93,5 +95,19 @@ public class TestMapAggregateByIndex {
     assertEquals(true, result.containsKey(-1L));
     assertEquals(0, (int)result.get(-1L));
     assertEquals(7, (int)result.get(617308093L));
+  }
+
+  @Test
+  public void testMultiple() throws Exception {
+    SortedMap<OSHDBCombinedIndex<Long, OSMType>, Integer> result = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps1)
+        .where(entity -> entity.getId() == 617308093)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId())
+        .aggregateBy(snapshot -> snapshot.getEntity().getType())
+        .count();
+
+    assertEquals(1, result.entrySet().size());
+    // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids
+    assertEquals(1, (int)result.get(new OSHDBCombinedIndex(617308093L, OSMType.NODE)));
   }
 }

@@ -1,25 +1,21 @@
 package org.heigit.bigspatialdata.oshdb.api.generic;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serializable;
-
-public class OSHDBTimestampAndIndex<V> implements Comparable<OSHDBTimestampAndIndex<V>>, Serializable {
-  private Pair<V, OSHDBTimestamp> _payload;
+public class OSHDBTimestampAndIndex<V> extends OSHDBBiIndex<OSHDBTimestamp, V> implements
+    Comparable<OSHDBTimestampAndIndex<V>> {
 
   public OSHDBTimestampAndIndex(OSHDBTimestamp timeIndex, V otherIndex) {
-    this._payload = new ImmutablePair<>(otherIndex, timeIndex);
+    super(timeIndex, otherIndex);
   }
 
   public OSHDBTimestamp getTimeIndex() {
-    return this._payload.getRight();
+    return this._payload.getLeft();
   }
 
   public V getOtherIndex() {
-    return this._payload.getLeft();
+    return this._payload.getRight();
   }
 
   @Override
@@ -30,11 +26,5 @@ public class OSHDBTimestampAndIndex<V> implements Comparable<OSHDBTimestampAndIn
   @Override
   public String toString() {
     return this.getOtherIndex().toString() + "@" + this.getTimeIndex().toString();
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    return other instanceof OSHDBTimestampAndIndex &&
-        this._payload.equals(((OSHDBTimestampAndIndex) other)._payload);
   }
 }
