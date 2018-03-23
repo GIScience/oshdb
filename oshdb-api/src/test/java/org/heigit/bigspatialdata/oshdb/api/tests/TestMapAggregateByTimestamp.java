@@ -7,6 +7,7 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBTimestampAndIndex;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -202,6 +203,7 @@ public class TestMapAggregateByTimestamp {
         .aggregateByTimestamp()
         .sum();
 
+    assertEquals(result1, result2);
     assertEquals(result1.entrySet().size(), result2.entrySet().size());
     for (OSHDBTimestamp t : result1.keySet()) {
       assertEquals(
@@ -209,5 +211,58 @@ public class TestMapAggregateByTimestamp {
           result2.get(t).intValue()
       );
     }
+  }
+
+  @Test
+  public void testCombinedWithAggregateByIndex() throws Exception {
+    SortedMap<OSHDBTimestampAndIndex<OSMType>, Integer> result =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps1)
+            .aggregateByTimestamp()
+            .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
+            .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
+            .count();
+    assertEquals(1, result.entrySet().size());
+    assertEquals(timestamps1.get().first(), result.firstKey().getTimeIndex());
+    assertEquals(OSMType.WAY, result.firstKey().getOtherIndex());
+    assertEquals(42, (int)result.values().toArray(new Integer[] {})[0]);
+  }
+
+  @Test
+  public void testCombinedWithAggregateByIndexAuto() throws Exception {
+    SortedMap<OSHDBTimestampAndIndex<OSMType>, List<Long>> result =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps2)
+            .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+            .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
+            .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
+            .collect();
+    SortedMap<OSHDBTimestampAndIndex<OSMType>, List<Long>> resultAuto =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps2)
+            .aggregateByTimestamp()
+            .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
+            .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
+            .collect();
+    assertEquals(result, resultAuto);
+  }
+
+  @Test
+  public void testCombinedWithAggregateByIndexOrder() throws Exception {
+    SortedMap<OSHDBTimestampAndIndex<OSMType>, List<Long>> resultIT =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps2)
+            .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
+            .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+            .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
+            .collect();
+    SortedMap<OSHDBTimestampAndIndex<OSMType>, List<Long>> resultTI =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps2)
+            .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+            .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
+            .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
+            .collect();
+    assertEquals(resultIT, resultTI);
   }
 }
