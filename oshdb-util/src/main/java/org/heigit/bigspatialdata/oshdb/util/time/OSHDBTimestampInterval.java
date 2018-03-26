@@ -2,9 +2,10 @@ package org.heigit.bigspatialdata.oshdb.util.time;
 
 import java.io.Serializable;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
-public class OSHDBTimestampInterval implements Serializable {
+public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTimestamp> {
   private final OSHDBTimestamp fromTimestamp;
   private final OSHDBTimestamp toTimestamp;
 
@@ -31,7 +32,8 @@ public class OSHDBTimestampInterval implements Serializable {
         && timestamp.getRawUnixTimestamp() < this.toTimestamp.getRawUnixTimestamp();
   }
 
-  public int compareTo(OSHDBTimestamp timestamp) {
+  @Override
+  public int compareTo(@Nonnull OSHDBTimestamp timestamp) {
     if (this.includes(timestamp)) {
       return 0;
     }

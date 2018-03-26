@@ -4,7 +4,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import java.util.EnumSet;
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -13,6 +12,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 
 /**
  * Holds information about a single modification ("contribution") of a single entity in database.
@@ -40,6 +40,7 @@ public class OSMContribution implements OSHDBMapReducible {
       ) {
     this.data = new IterateAllEntry(
         other.data.timestamp,
+        other.data.aggregationTimestampInterval,
         other.data.osmEntity,
         other.data.previousOsmEntity,
         other.data.oshEntity,
@@ -59,6 +60,15 @@ public class OSMContribution implements OSHDBMapReducible {
    */
   public OSHDBTimestamp getTimestamp() {
     return data.timestamp;
+  }
+
+  /**
+   * Returns the timestamp at which this data modification has happened.
+   *
+   * @return the modification timestamp as a OSHDBTimestamp object
+   */
+  public OSHDBTimestampInterval getAggregationTimestampInterval() {
+    return data.aggregationTimestampInterval.get();
   }
 
   /**

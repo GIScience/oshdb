@@ -129,6 +129,33 @@ public class MapAggregatorByTimestampAndIndex<U extends Comparable<U>, X> extend
     return (MapAggregatorByTimestampAndIndex<U, R>)super.flatMap(flatMapper);
   }
 
+  /**todo
+   * Aggregates the results by a second index as well, in addition to the timestamps.
+   *
+   * @param indexer a function the returns the values that should be used as an additional index on
+   *        the aggregated results
+   * @param <V> the (arbitrary) data type of this index
+   * @return a special MapAggregator object that performs aggregation by two separate indices
+   */
+  @Contract(pure = true)
+  public <V extends Comparable<V>> MapAggregatorByTimestampAndIndex<V, X> aggregateBy(
+      SerializableFunction<X, U> indexer
+  ) {
+    //return new MapAggregatorByTimestampAndIndex<U, X>(this, indexer)
+    //todo .zerofillTimestamps(this._zerofill);
+    return null;/*return this.mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
+        existingIndex,
+        indexer.apply(data)
+    ));
+    /*
+    public <V extends Comparable<V>> MapAggregatorByIndex<OSHDBCombinedIndex<U, V>, X> aggregateBy(SerializableFunction<X, V> indexer) {
+    return this.mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
+        existingIndex,
+        indexer.apply(data)
+    ));
+     */
+  }
+
   /**
    * Map-reduce routine with built-in aggregation by timestamp
    *

@@ -16,13 +16,11 @@ import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.resources.IgniteInstanceResource;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -33,8 +31,6 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,7 +186,6 @@ class IgniteLocalPeekHelper {
     final Iterable<Pair<CellId, CellId>> cellIdRanges;
     final OSHDBBoundingBox bbox;
     final CellIterator cellIterator;
-    final SortedSet<OSHDBTimestamp> tstamps;
     final SerializableFunction<V, MR> mapper;
     final SerializableSupplier<S> identitySupplier;
     final SerializableBiFunction<S, R, S> accumulator;
@@ -206,8 +201,9 @@ class IgniteLocalPeekHelper {
       this.cacheNames = cacheNames;
       this.cellIdRanges = cellIdRanges;
       this.bbox = bbox;
-      this.cellIterator = new CellIterator(bbox, poly, tagInterpreter, preFilter, filter, false);
-      this.tstamps = tstamps;
+      this.cellIterator = new CellIterator(
+          tstamps, bbox, poly, tagInterpreter, preFilter, filter, false
+      );
       this.mapper = mapper;
       this.identitySupplier = identitySupplier;
       this.accumulator = accumulator;
@@ -276,7 +272,7 @@ class IgniteLocalPeekHelper {
       return super.execute(node, oshEntityCell -> {
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+        cellIterator.iterateByContribution(oshEntityCell)
             .forEach(contribution -> {
               if (this.canceled)
                 return;
@@ -309,7 +305,7 @@ class IgniteLocalPeekHelper {
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         List<OSMContribution> contributions = new ArrayList<>();
-        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+        cellIterator.iterateByContribution(oshEntityCell)
             .forEach(contribution -> {
               if (this.canceled)
                 return;
@@ -353,7 +349,7 @@ class IgniteLocalPeekHelper {
       return super.execute(node, oshEntityCell -> {
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
           if (this.canceled) return;
           OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
           // immediately fold the result
@@ -383,7 +379,7 @@ class IgniteLocalPeekHelper {
         // iterate over the history of all OSM objects in the current cell
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
           if (this.canceled)
             return;
           OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
