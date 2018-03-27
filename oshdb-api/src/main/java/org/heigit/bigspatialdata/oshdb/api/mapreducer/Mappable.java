@@ -33,7 +33,7 @@ public interface Mappable<X> {
    * transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
-  <R> Mappable<R> flatMap(SerializableFunction<X, List<R>> flatMapper);
+  <R> Mappable<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper);
 
   /**
    * Adds a custom arbitrary filter that gets executed in the current

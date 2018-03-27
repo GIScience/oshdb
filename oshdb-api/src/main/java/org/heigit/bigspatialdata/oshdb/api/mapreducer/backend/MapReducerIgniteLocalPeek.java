@@ -80,7 +80,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, List<R>> mapper,
+      SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
@@ -105,7 +105,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
@@ -287,12 +287,12 @@ class IgniteLocalPeekHelper {
   }
 
   private static class FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
-      extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMContribution>, R, List<R>, S, P> {
+      extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMContribution>, R, Iterable<R>, S, P> {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
-        SerializableFunction<List<OSMContribution>, List<R>> mapper,
+        SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
@@ -361,12 +361,12 @@ class IgniteLocalPeekHelper {
   }
 
   private static class FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P extends Geometry & Polygonal>
-      extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMEntitySnapshot>, R, List<R>, S, P> {
+      extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMEntitySnapshot>, R, Iterable<R>, S, P> {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<Pair<CellId, CellId>> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
-        SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
+        SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
@@ -447,7 +447,7 @@ class IgniteLocalPeekHelper {
       TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
-      SerializableFunction<List<OSMContribution>, List<R>> mapper,
+      SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
     return _mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
@@ -475,7 +475,7 @@ class IgniteLocalPeekHelper {
       TagInterpreter tagInterpreter,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
-      SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) {
     return _mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,

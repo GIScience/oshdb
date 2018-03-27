@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import com.google.common.collect.Iterables;
 import java.sql.Connection;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
@@ -587,7 +588,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer object operating on the transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
-  public <R> MapReducer<R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
+  public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
     ret._mappers.add(flatMapper);
     ret._flatMappers.add(flatMapper);
@@ -884,14 +885,14 @@ public abstract class MapReducer<X> implements
                 "Unimplemented data view: " + this._forClass.toString());
           }
         } else {
-          final SerializableFunction<Object, List<X>> flatMapper = this._getFlatMapper();
+          final SerializableFunction<Object, Iterable<X>> flatMapper = this._getFlatMapper();
           if (this._forClass.equals(OSMContribution.class)) {
             return this.flatMapReduceCellsOSMContributionGroupedById(
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                      .map((SerializableFunction<OSMContribution, List<X>>) flatMapper::apply)
-                      .forEach(outputList::addAll);
+                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
@@ -899,8 +900,8 @@ public abstract class MapReducer<X> implements
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                      .map((SerializableFunction<OSMEntitySnapshot, List<X>>) flatMapper::apply)
-                      .forEach(outputList::addAll);
+                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
           } else {
@@ -909,7 +910,7 @@ public abstract class MapReducer<X> implements
           }
         }
       case BY_ID:
-        final SerializableFunction<Object, List<X>> flatMapper;
+        final SerializableFunction<Object, Iterable<X>> flatMapper;
         if (this._flatMappers.size() == 0) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           flatMapper = data -> Collections.singletonList(mapper.apply(data));
@@ -920,14 +921,14 @@ public abstract class MapReducer<X> implements
         }
         if (this._forClass.equals(OSMContribution.class)) {
           return this.flatMapReduceCellsOSMContributionGroupedById(
-              (SerializableFunction<List<OSMContribution>, List<X>>) flatMapper::apply,
+              (SerializableFunction<List<OSMContribution>, Iterable<X>>) flatMapper::apply,
               identitySupplier,
               accumulator,
               combiner
           );
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
-              (SerializableFunction<List<OSMEntitySnapshot>, List<X>>) flatMapper::apply,
+              (SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>>) flatMapper::apply,
               identitySupplier, accumulator, combiner);
         } else {
           throw new UnsupportedOperationException(
@@ -1254,7 +1255,7 @@ public abstract class MapReducer<X> implements
    *         `accumulator` and `combiner` steps)
    */
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, List<R>> mapper,
+      SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
@@ -1344,7 +1345,7 @@ public abstract class MapReducer<X> implements
    *         `accumulator` and `combiner` steps)
    */
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     throw new UnsupportedOperationException("Reduce function not yet implemented");
@@ -1436,17 +1437,17 @@ public abstract class MapReducer<X> implements
   }
 
   // concatenates all applied `flatMap` and `map` functions
-  private SerializableFunction<Object, List<X>> _getFlatMapper() {
+  private SerializableFunction<Object, Iterable<X>> _getFlatMapper() {
     // todo: maybe we can somehow optimize this?? at least for special cases like
     // this._mappers.size() == 1
-    return (SerializableFunction<Object, List<X>>) (data -> {
+    return (SerializableFunction<Object, Iterable<X>>) (data -> {
       List<Object> results = new LinkedList<>();
       results.add(data);
       for (SerializableFunction mapper : this._mappers) {
         List<Object> newResults = new LinkedList<>();
         if (this._flatMappers.contains(mapper)) {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
-          results.forEach(result -> newResults.addAll((List<?>) mapper.apply(result)));
+          results.forEach(result -> Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result)));
         } else {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           results.forEach(result -> newResults.add(mapper.apply(result)));
@@ -1454,7 +1455,7 @@ public abstract class MapReducer<X> implements
         results = newResults;
       }
       //noinspection unchecked – after applying all mapper functions, the result type is List<X>
-      return (List<X>) results;
+      return (Iterable<X>) results;
     });
   }
 

@@ -129,7 +129,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, List<R>> mapper,
+      SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return runOnIgnite((oshEntityCell, cellIterator) -> {
@@ -180,7 +180,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return runOnIgnite((oshEntityCell, cellIterator) -> {

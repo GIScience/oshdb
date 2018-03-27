@@ -550,7 +550,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
-  public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
+  public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     return this.copyTransform(this._mapReducer.flatMap(inData -> {
       List<Pair<U, R>> outData = new LinkedList<>();
       flatMapper.apply(inData.getValue()).forEach(flatMappedData ->
