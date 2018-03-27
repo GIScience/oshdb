@@ -35,15 +35,15 @@ public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V> implements Comp
    * This version creates a map for each &lt;U&gt; index value, containing maps containing results
    * by timestamps.
    *
-   * See also {@link OSHDBTimestampAndIndex#nestIndexThenTime(Map)} and
-   * {@link OSHDBTimestampAndIndex#nestTimeThenIndex(Map)}.
-   *
    * @param result the "flat" result data structure that should be converted to a nested structure
    * @param <A> an arbitrary data type, used for the data value items
    * @param <U> an arbitrary data type, used for the index'es key items
+   * @param <V> an arbitrary data type, used for the index'es key items
    * @return a nested data structure: for each index part there is a separate level of nested maps
    */
-  public static <A, U, V> SortedMap<U, SortedMap<V, A>> nest(Map<OSHDBCombinedIndex<U, V>, A> result) {
+  public static <A, U, V> SortedMap<U, SortedMap<V, A>> nest(
+      Map<OSHDBCombinedIndex<U, V>, A> result
+  ) {
     TreeMap<U, SortedMap<V, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
       if (!ret.containsKey(index.getFirstIndex()))
