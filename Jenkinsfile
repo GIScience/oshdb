@@ -4,6 +4,7 @@ pipeline {
             image 'maven:3-jdk-8'
         }
     }
+    
     stages {
         stage ('Build') {
             steps {
