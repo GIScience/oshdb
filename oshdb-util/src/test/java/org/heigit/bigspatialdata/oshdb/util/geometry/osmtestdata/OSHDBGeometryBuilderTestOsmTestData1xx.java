@@ -42,7 +42,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
     assertEquals(1.02, ((Point) result).getY(), DELTA);
   }
 
-  // 101: 4 single nodes
+  @Test
+  public void test101() {
+    // 101: 4 single nodes
+    // the same like test100() just with 4 nodes
+  }
 
   @Test
   public void test102() {
@@ -66,7 +70,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
     assertEquals(2, result1.getCoordinates().length, DELTA);
   }
 
-  // 111 : Way with 4 nodes
+  @Test
+  public void test111() {
+    // 111 : Way with 4 nodes
+    // the same like test110() just with 4 nodes
+  }
 
   @Test
   public void test112() {
