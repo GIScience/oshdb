@@ -2,6 +2,8 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
+import com.vividsolutions.jts.geom.TopologyException;
+import com.vividsolutions.jts.index.strtree.STRtree;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
@@ -26,12 +29,14 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 class GeometrySplitter<U extends Comparable<U>> {
   private Set<U> indices;
 
+  private STRtree spatialIndex = new STRtree();
   private Map<U, FastBboxInPolygon> bips = new HashMap<>();
   private Map<U, FastBboxOutsidePolygon> bops = new HashMap<>();
   private Map<U, FastPolygonOperations> poops = new HashMap<>();
 
   <P extends Geometry & Polygonal> GeometrySplitter(Map<U, P> subregions) {
     subregions.forEach((index, geometry) -> {
+      spatialIndex.insert(geometry.getEnvelopeInternal(), index);
       bips.put(index, new FastBboxInPolygon(geometry));
       bops.put(index, new FastBboxOutsidePolygon(geometry));
       poops.put(index, new FastPolygonOperations(geometry));
@@ -47,16 +52,20 @@ class GeometrySplitter<U extends Comparable<U>> {
    */
   public List<Pair<U, OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
-    return indices.stream()
-        // todo: optimization: rtree of subregion geometries -> limit indices to check -- worth it?
+    //noinspection unchecked – STRtree works with raw types unfortunately :-/
+    List<U> candidates = (List<U>) spatialIndex.query(OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal());
+    return candidates.stream()
         .filter(index -> !bops.get(index).test(oshBoundingBox)) // fully outside -> skip
         .flatMap(index -> {
           if (bips.get(index).test(oshBoundingBox)) {
             return Stream.of(new ImmutablePair<>(index, data)); // fully inside -> directly return
           }
           FastPolygonOperations poop = poops.get(index);
-          Geometry intersection = poop.intersection(data.getGeometry());
-          if (intersection.isEmpty()) {
+          Geometry intersection = null;
+          try {
+            intersection = poop.intersection(data.getGeometry());
+          } catch (TopologyException ignored) {}
+          if (intersection == null || intersection.isEmpty()) {
             return Stream.empty(); // not actually intersecting -> skip
           } else {
             return Stream.of(new ImmutablePair<>(
