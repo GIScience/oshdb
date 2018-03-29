@@ -53,7 +53,9 @@ class GeometrySplitter<U extends Comparable<U>> {
   public List<Pair<U, OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
-    List<U> candidates = (List<U>) spatialIndex.query(OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal());
+    List<U> candidates = (List<U>) spatialIndex.query(
+        OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
+    );
     return candidates.stream()
         .filter(index -> !bops.get(index).test(oshBoundingBox)) // fully outside -> skip
         .flatMap(index -> {
@@ -61,17 +63,18 @@ class GeometrySplitter<U extends Comparable<U>> {
             return Stream.of(new ImmutablePair<>(index, data)); // fully inside -> directly return
           }
           FastPolygonOperations poop = poops.get(index);
-          Geometry intersection = null;
           try {
-            intersection = poop.intersection(data.getGeometry());
-          } catch (TopologyException ignored) {}
-          if (intersection == null || intersection.isEmpty()) {
-            return Stream.empty(); // not actually intersecting -> skip
-          } else {
-            return Stream.of(new ImmutablePair<>(
-                index,
-                new OSMEntitySnapshot(data, intersection)
-            ));
+            Geometry intersection = poop.intersection(data.getGeometry());
+            if (intersection == null || intersection.isEmpty()) {
+              return Stream.empty(); // not actually intersecting -> skip
+            } else {
+              return Stream.of(new ImmutablePair<>(
+                  index,
+                  new OSMEntitySnapshot(data, intersection)
+              ));
+            }
+          } catch (TopologyException ignored) {
+            return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
           }
         }).collect(Collectors.toCollection(LinkedList::new));
   }
@@ -90,23 +93,31 @@ class GeometrySplitter<U extends Comparable<U>> {
    */
   public List<Pair<U, OSMContribution>> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
-    return indices.stream()
-        // todo: optimization: rtree of subregion geometries -> limit indices to check -- worth it?
+    //noinspection unchecked – STRtree works with raw types unfortunately :-/
+    List<U> candidates = (List<U>) spatialIndex.query(
+        OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
+    );
+    return candidates.stream()
         .filter(index -> !bops.get(index).test(oshBoundingBox)) // fully outside -> skip
         .flatMap(index -> {
           if (bips.get(index).test(oshBoundingBox))
             return Stream.of(new ImmutablePair<>(index, data)); // fully inside -> directly return
           FastPolygonOperations poop = poops.get(index);
-          Geometry intersectionBefore = poop.intersection(data.getGeometryBefore());
-          Geometry intersectionAfter = poop.intersection(data.getGeometryAfter());
-          if ((intersectionBefore == null || intersectionBefore.isEmpty()) &&
-              (intersectionAfter == null || intersectionAfter.isEmpty()))
-            return Stream.empty(); // not actually intersecting -> skip
-          else
-            return Stream.of(new ImmutablePair<>(
-                index,
-                new OSMContribution(data, intersectionBefore, intersectionAfter)
-            ));
+          try {
+            Geometry intersectionBefore = poop.intersection(data.getGeometryBefore());
+            Geometry intersectionAfter = poop.intersection(data.getGeometryAfter());
+            if ((intersectionBefore == null || intersectionBefore.isEmpty()) &&
+                (intersectionAfter == null || intersectionAfter.isEmpty())) {
+              return Stream.empty(); // not actually intersecting -> skip
+            } else {
+              return Stream.of(new ImmutablePair<>(
+                  index,
+                  new OSMContribution(data, intersectionBefore, intersectionAfter)
+              ));
+            }
+          } catch (TopologyException ignored) {
+            return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
+          }
         }).collect(Collectors.toCollection(LinkedList::new));
   }
 
