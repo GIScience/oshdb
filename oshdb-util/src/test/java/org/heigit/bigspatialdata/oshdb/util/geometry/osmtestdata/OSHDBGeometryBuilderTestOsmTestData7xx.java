@@ -43,6 +43,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.ways().get(700800L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     // check if coordinates of polygon are the correct ones
     assertEquals(7.01, ((Polygon) result).getExteriorRing().getCoordinateN(0).x, DELTA);
@@ -67,7 +68,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(701900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(5, result.getCoordinates().length, DELTA);
 
@@ -84,7 +85,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(702900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(9, result.getCoordinates().length, DELTA);
 
@@ -101,7 +102,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(703900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(9, result.getCoordinates().length, DELTA);
 
@@ -119,7 +120,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(704900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(13, result.getCoordinates().length, DELTA);
 
@@ -138,7 +139,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(705900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(14, result.getCoordinates().length, DELTA);
 
@@ -157,6 +158,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(706900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
+    assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
     assertEquals(11, result.getCoordinates().length, DELTA);
 
@@ -175,6 +177,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(707900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
+    assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
     assertEquals(10, result.getCoordinates().length, DELTA);
 
@@ -193,6 +196,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(708900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
+    assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
     assertEquals(18, result.getCoordinates().length, DELTA);
 
@@ -212,6 +216,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(709900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
+    assertTrue(result.isValid());
     assertEquals(3,result.getNumGeometries());
     assertEquals(15, result.getCoordinates().length, DELTA);
 
@@ -231,6 +236,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(720900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
     assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     assertEquals(10, result.getCoordinates().length, DELTA);
@@ -269,6 +275,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(724900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
     assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     assertEquals(14, result.getCoordinates().length, DELTA);
@@ -287,6 +294,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(725900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     assertEquals(7, result.getCoordinates().length, DELTA);
@@ -307,12 +315,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Valid multipolygon with one inner and one outer
     // the same as test(724) apart from anti-clockwise
   }
+
   @Test
   public void test728() throws ParseException {
     // Multipolygon with one simple outer ring and a node member
     OSMEntity entity = testData.relations().get(728900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     assertEquals(9, result.getCoordinates().length, DELTA);
@@ -323,13 +333,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
+
   @Test
   public void test729() throws ParseException {
     // Valid multipolygon with second outer ring in inner ring.
     OSMEntity entity = testData.relations().get(729900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
-
+    assertTrue(result.isValid());
     assertFalse((result.getGeometryN(1)).intersects((result.getGeometryN(0))));
     assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(1, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
@@ -351,7 +362,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     OSMEntity entity = testData.relations().get(730900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-
+    assertTrue(result.isValid());
     assertEquals(3, ((Polygon)result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     assertEquals(21, result.getCoordinates().length, DELTA);
@@ -365,13 +376,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
+
   @Test
   public void test731() throws ParseException {
     // "Valid complex multipolygon with one outer and two inner rings made up of several ways. Roles are tagged correctly
     OSMEntity entity = testData.relations().get(731900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-
+    assertTrue(result.isValid());
     assertEquals(2, ((Polygon)result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     assertEquals(25, result.getCoordinates().length, DELTA);
@@ -384,13 +396,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
+
   @Test
   public void test732() throws ParseException {
     // Valid multipolygon with two outer rings, one containing an inner. One ring contains a node twice in succession in data.osm
     OSMEntity entity = testData.relations().get(732900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
-
+    assertTrue(result.isValid());
     assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(1, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
     assertEquals(2,result.getNumGeometries());
@@ -401,6 +414,233 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
         "MULTIPOLYGON(((7.21 1.36,7.22 1.37,7.23 1.36,7.22 1.35,7.21 1.36)),"
             + "((7.21 1.33,7.21 1.31,7.26 1.31,7.26 1.34,7.24 1.36,7.21 1.33),"
             + "(7.24 1.34,7.22 1.32,7.25 1.32,7.24 1.34)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test733() throws ParseException {
+    // Valid multipolygon with two outer rings
+    // The same as test 706
+  }
+
+  @Test
+  public void test734() throws ParseException {
+    // Valid multipolygon with three outer rings
+    // the same as test 709
+  }
+  @Test
+  public void test750() throws ParseException {
+    // "Valid OSM multipolygon with touching inner rings."
+    OSMEntity entity = testData.relations().get(750900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(1, ((Polygon)result).getNumInteriorRing());
+    // In the result are 12 points, but it does not matter that we get 19, because the intersection is correct
+    //assertEquals(19, result.getCoordinates().length, DELTA);
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.01 1.51,7.01 1.57,7.06 1.57,7.06 1.51,7.01 1.51),"
+            + "(7.02 1.52,7.02 1.55,7.04 1.55,7.05 1.55,7.05 1.52,7.03 1.52,7.02 1.52)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test751() throws ParseException {
+    // "Valid OSM multipolygon with touching inner rings."
+    OSMEntity entity = testData.relations().get(751900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(1, ((Polygon)result).getNumInteriorRing());
+    // In the result are 11 points, but it does not matter that we get 16, because the intersection is correct
+    //assertEquals(16, result.getCoordinates().length, DELTA);
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.12 1.51,7.15 1.51,7.16 1.57,7.13 1.57,7.11 1.54,7.12 1.51),"
+            + "(7.12 1.54,7.14 1.52,7.15 1.55,7.13 1.56,7.12 1.54)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test755() throws ParseException {
+    // Inner ring touching outer in node.
+    OSMEntity entity = testData.relations().get(755900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
+    assertEquals(1,result.getNumGeometries());
+    assertEquals(11, result.getCoordinates().length, DELTA);
+    //assertEquals(10, entity., DELTA);
+
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.57 1.51,7.51 1.51,7.51 1.57,7.57 1.57,7.57 1.54,7.57 1.51),"
+            + "(7.55 1.56,7.57 1.54,7.55 1.52,7.53 1.54,7.55 1.56)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test758() throws ParseException {
+    // Inner ring touching outer in node.
+    // the same as test 755
+  }
+
+  @Test
+  public void test759() throws ParseException {
+    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/132
+    // Outer going back on itself in single node.
+    OSMEntity entity = testData.relations().get(759900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
+    assertEquals(1,result.getNumGeometries());
+    // In the result are 11 points, but it does not matter that we get 10, because the intersection is correct
+    assertEquals(10, result.getCoordinates().length, DELTA);
+    //assertEquals(10, entity., DELTA);
+
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.91 1.53,7.91 1.57,7.94 1.59,7.96 1.55,7.94 1.51,7.91 1.53),"
+            + "(7.96 1.55,7.94 1.53,7.92 1.55,7.94 1.57,7.96 1.55)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test760() throws ParseException {
+    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/132
+    // Faking inner ring with outer going back on itself (with relation).
+    OSMEntity entity = testData.relations().get(760900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
+    assertEquals(1, result.getNumGeometries());
+
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.01 1.67,7.07 1.67,7.07 1.61,7.01 1.61,7.01 1.67),"
+            + "(7.05 1.65,7.03 1.65,7.03 1.63,7.05 1.63,7.05 1.65)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test761() throws ParseException {
+    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/132
+    // Faking inner ring with outer going back on itself (with relation).
+    OSMEntity entity = testData.ways().get(761800L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
+    assertEquals(1, result.getNumGeometries());
+
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.11 1.67,7.17 1.67,7.17 1.61,7.11 1.61,7.11 1.67),"
+            + "(7.15 1.65,7.13 1.65,7.13 1.63,7.15 1.63,7.15 1.65)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test762() throws ParseException {
+    // Touching outer rings.
+    OSMEntity entity = testData.relations().get(762900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(1, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
+    assertEquals(1, result.getNumGeometries());
+
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.21 1.67,7.27 1.67,7.27 1.61,7.21 1.61,7.21 1.67),"
+            + "(7.25 1.65,7.23 1.65,7.23 1.63,7.25 1.63,7.25 1.65)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test763() throws ParseException {
+    // Valid multipolygon with four outer rings touching in a single point
+    OSMEntity entity = testData.relations().get(763900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof MultiPolygon);
+    assertTrue(result.isValid());
+    assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
+    assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
+    assertEquals(0, ((Polygon)result.getGeometryN(2)).getNumInteriorRing());
+    assertEquals(0, ((Polygon)result.getGeometryN(3)).getNumInteriorRing());
+    assertEquals(4,result.getNumGeometries());
+    assertEquals(28, result.getCoordinates().length, DELTA);
+
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.35 1.65,7.33 1.64,7.32 1.63,7.32 1.62,7.33 1.62,7.34 1.63,7.35 1.65)),"
+            + "((7.35 1.65,7.36 1.63,7.37 1.62,7.38 1.62,7.38 1.63,7.37 1.64,7.35 1.65)),"
+            + "((7.35 1.65,7.33 1.66,7.32 1.67,7.32 1.68,7.33 1.68,7.34 1.67,7.35 1.65)),"
+            + "((7.35 1.65,7.36 1.67,7.37 1.68,7.38 1.68,7.38 1.67,7.37 1.66,7.35 1.65)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test764() throws ParseException {
+    // Valid multipolygon with one outer ring and four inner rings touching in a single point.
+    OSMEntity entity = testData.relations().get(764900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+    assertTrue(result.isValid());
+    assertEquals(4, ((Polygon) result).getNumInteriorRing());
+    assertEquals(1,result.getNumGeometries());
+    assertEquals(33, result.getCoordinates().length, DELTA);
+
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.41 1.61,7.41 1.69,7.49 1.69,7.49 1.61,7.41 1.61),"
+            + "(7.45 1.65,7.43 1.64,7.42 1.63,7.42 1.62,7.43 1.62,7.44 1.63,7.45 1.65),"
+            + "(7.45 1.65,7.46 1.63,7.47 1.62,7.48 1.62,7.48 1.63,7.47 1.64,7.45 1.65),"
+            + "(7.45 1.65,7.43 1.66,7.42 1.67,7.42 1.68,7.43 1.68,7.44 1.67,7.45 1.65),"
+            + "(7.45 1.65,7.46 1.67,7.47 1.68,7.48 1.68,7.48 1.67,7.47 1.66,7.45 1.65)))"
+    );
+    Geometry intersection = result.intersection(expectedPolygon);
+    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+  }
+
+  @Test
+  public void test765() throws ParseException {
+    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/134
+    // Multipolygon with one outer ring that should be split into two components.
+    OSMEntity entity = testData.relations().get(765900L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof MultiPolygon);
+    assertTrue(result.isValid());
+    assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
+    assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
+    assertEquals(2,result.getNumGeometries());
+    assertEquals(11, result.getCoordinates().length, DELTA);
+    // compare if coordinates of created points equals the coordinates of polygon
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "MULTIPOLYGON(((7.57 1.66,7.55 1.68,7.53 1.66,7.55 1.64,7.57 1.66)),"
+            + "((7.55 1.63,7.58 1.63,7.58 1.62,7.52 1.62,7.52 1.63,7.55 1.63)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
