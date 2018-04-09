@@ -48,7 +48,7 @@ pipeline {
                     rtMaven.deployer.deployArtifacts buildInfo
                     server.publishBuildInfo buildInfo
                     BUILDNR=env.BUILD_NUMBER.toInteger()%10
-                    echo BUILDNR
+                    echo BUILDNR.toString()
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: 'oshdb/target/apidocs', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
 
 
