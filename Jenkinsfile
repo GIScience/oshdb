@@ -20,7 +20,7 @@ pipeline {
                     rtMaven.deployer server: server, releaseRepo: 'libs-release-local', snapshotRepo: 'libs-snapshot-local'
                     rtMaven.deployer.addProperty("deployer", "jenkinsOhsome")
                     rtMaven.deployer.deployArtifacts = false
-                    env.MAVEN_HOME = '/usr/share/maven/bin/mvn'
+                    env.MAVEN_HOME = '/usr/share/maven'
                 }
                 script {
                     buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install'
