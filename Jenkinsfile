@@ -37,7 +37,12 @@ pipeline {
         }
 
         stage ('deploy'){
-            //when { branch '(^[0-9]+$)|(^(([0-9]+)(\\.))+([0-9]+)?$)|(^master$)' }
+            when {
+                expression {
+                    GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+                    return GIT_BRANCH ==~ /(^[0-9]+$)|(^(([0-9]+)(\\.))+([0-9]+)?$)|(^master$)/
+                }
+            }
             steps {
                 script {
                     rtMaven.deployer.deployArtifacts buildInfo
