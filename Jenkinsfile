@@ -49,7 +49,8 @@ pipeline {
                     server.publishBuildInfo buildInfo
                     BUILDNR=env.BUILD_NUMBER.toInteger()%10
                     echo BUILDNR
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: 'target/apidocs', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: 'oshdb/target/apidocs', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+
 
                 }
             }
