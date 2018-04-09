@@ -39,8 +39,7 @@ pipeline {
         stage ('deploy'){
             when {
                 expression {
-                    GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
-                    echo GIT_BRANCH
+                    GIT_BRANCH = env.BRANCH_NAME
                     return GIT_BRANCH =~ /(^[0-9]+$)|(^(([0-9]+)(\\.))+([0-9]+)?$)|(^master$)/
                 }
             }
@@ -48,6 +47,11 @@ pipeline {
                 script {
                     rtMaven.deployer.deployArtifacts buildInfo
                     server.publishBuildInfo buildInfo
+                }
+            }
+            post {
+                failure {
+                    rocketSend channel: 'jenkinsohsome', message: "Deployment of Build Nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
                 }
             }
         }
