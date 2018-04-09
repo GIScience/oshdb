@@ -14,6 +14,7 @@ pipeline {
         stage ('Build and Test') {
             steps {
                 script {
+                    sh(returnStdout: true, script: 'git clean -fdx')
                     server = Artifactory.server 'HeiGIT Repo'
                     rtMaven = Artifactory.newMavenBuild()
                     rtMaven.resolver server: server, releaseRepo: 'main', snapshotRepo: 'main'
