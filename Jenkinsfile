@@ -14,7 +14,7 @@ pipeline {
         stage ('Build and Test') {
             steps {
                 script {
-                    def server = Artifactory.server 'HeiGIT Repo'
+                    server = Artifactory.server 'HeiGIT Repo'
                     def rtMaven = Artifactory.newMavenBuild()
                     rtMaven.resolver server: server, releaseRepo: 'main', snapshotRepo: 'main'
                     rtMaven.deployer server: server, releaseRepo: 'libs-release-local', snapshotRepo: 'libs-snapshot-local'
