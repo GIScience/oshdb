@@ -17,6 +17,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.TimestampParser;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 
 import static org.junit.Assert.assertEquals;
@@ -27,7 +28,7 @@ import org.junit.Test;
 
 public class OSHDBGeometryBuilderTestOsmTestData7xx {
   private final OSMXmlReader testData = new OSMXmlReader();
-  private final OSMXmlReaderTagInterpreter tagInterpreter;
+  private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private final double DELTA = 1E-6;
@@ -79,6 +80,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
+
   @Test
   public void test702() throws ParseException {
     // Valid multipolygon relation with two ways (8 points) making up an outer ring."
@@ -96,6 +98,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
+
   @Test
   public void test703() throws ParseException {
     // Valid multipolygon relation with two ways (8 points) making up an outer ring."
@@ -114,6 +117,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
+
   @Test
   public void test704() throws ParseException {
     // Valid multipolygon relation with three ways making up an outer ring in the form of a cross.
