@@ -40,7 +40,8 @@ pipeline {
             when {
                 expression {
                     GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
-                    return GIT_BRANCH ==~ /(^[0-9]+$)|(^(([0-9]+)(\\.))+([0-9]+)?$)|(^master$)/
+sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD')
+                    return GIT_BRANCH =~ /(^[0-9]+$)|(^(([0-9]+)(\\.))+([0-9]+)?$)|(^master$)/
                 }
             }
             steps {
