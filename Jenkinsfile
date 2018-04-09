@@ -1,12 +1,13 @@
 pipeline {
 
-    # tried slave dockers but only had disadvantages
-    # agent {
-    #     docker{
-    #         image 'maven:3-jdk-8'
-    #         args '-v /root/.m2:/root/.m2'
-    #     }
-    # }
+/*tried slave dockers but only had disadvantages
+    agent {
+        docker{
+            image 'maven:3-jdk-8'
+            args '-v /root/.m2:/root/.m2'
+        }
+    }
+*/
 
     agent any
     stages {
