@@ -59,7 +59,7 @@ pipeline {
             }
         }
 
-        stage ('encourage' {
+        stage ('encourage') {
 
             when { equals expected: 0  , actual: BUILDNR}
             steps {
