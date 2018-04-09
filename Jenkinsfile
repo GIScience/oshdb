@@ -14,7 +14,6 @@ pipeline {
         stage ('Build and Test') {
             steps {
                 script {
-                    sh(returnStdout: true, script: 'git clean -fdx')
                     server = Artifactory.server 'HeiGIT Repo'
                     rtMaven = Artifactory.newMavenBuild()
                     rtMaven.resolver server: server, releaseRepo: 'main', snapshotRepo: 'main'
@@ -48,12 +47,23 @@ pipeline {
                 script {
                     rtMaven.deployer.deployArtifacts buildInfo
                     server.publishBuildInfo buildInfo
+                    BUILDNR=env.BUILD_NUMBER.toInteger()%10
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: 'target/apidocs', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+
                 }
             }
             post {
                 failure {
                     rocketSend channel: 'jenkinsohsome', message: "Deployment of Build Nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
                 }
+            }
+        }
+
+        stage ('encourage' {
+
+            when { equals expected: 0  , actual: BUILDNR}
+            steps {
+                rocketSend channel: 'jenkinsohsome', message: "Happily deployed anther 10 builds! Keep it up!" , rawMessage: true
             }
         }
 
