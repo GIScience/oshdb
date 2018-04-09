@@ -15,7 +15,7 @@ pipeline {
             steps {
                 script {
                     server = Artifactory.server 'HeiGIT Repo'
-                    def rtMaven = Artifactory.newMavenBuild()
+                    rtMaven = Artifactory.newMavenBuild()
                     rtMaven.resolver server: server, releaseRepo: 'main', snapshotRepo: 'main'
                     rtMaven.deployer server: server, releaseRepo: 'libs-release-local', snapshotRepo: 'libs-snapshot-local'
                     rtMaven.deployer.addProperty("deployer", "jenkinsOhsome")
@@ -23,7 +23,7 @@ pipeline {
                     env.MAVEN_HOME = '/usr/share/maven/bin/mvn'
                 }
                 script {
-                    def buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install'
+                    buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install'
                 } 
             }
             post{
