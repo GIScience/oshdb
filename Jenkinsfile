@@ -37,7 +37,7 @@ pipeline {
         }
 
         stage ('deploy'){
-            when { branch '(^[0-9]+$)|(^(([0-9]+)(\\.))+([0-9]+)?$)|(^master$)' }
+            //when { branch '(^[0-9]+$)|(^(([0-9]+)(\\.))+([0-9]+)?$)|(^master$)' }
             steps {
                 script {
                     rtMaven.deployer.deployArtifacts buildInfo
