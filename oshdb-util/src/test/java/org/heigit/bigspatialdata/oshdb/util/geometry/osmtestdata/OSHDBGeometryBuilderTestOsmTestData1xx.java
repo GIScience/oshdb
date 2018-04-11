@@ -167,7 +167,6 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
     );
   }
 
-
   @Test
   public void test120() {
     // Way without any nodes
