@@ -182,6 +182,58 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
   }
 
   @Test
+  public void test121() {
+    // Way with a single node
+    OSMEntity entity1 = testData.ways().get(121800L).get(0);
+    try {
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
+  }
+
+  @Test
+  public void test122() {
+    // Same node twice in way
+    OSMEntity entity1 = testData.ways().get(122800L).get(0);
+    try {
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
+  }
+
+  @Test
+  public void test123() {
+    // Way with two nodes at same position
+    OSMEntity entity1 = testData.ways().get(123800L).get(0);
+    try {
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
+  }
+
+  @Test
+  public void test124() {
+    // Way with three nodes, first two nodes have the same position
+    OSMEntity entity1 = testData.ways().get(124800L).get(0);
+    try {
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
+  }
+
+  @Test
   public void test130() {
     // Crossing ways without common node
     OSMEntity entity1 = testData.ways().get(130800L).get(0);
