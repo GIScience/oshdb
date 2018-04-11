@@ -171,7 +171,8 @@ public class LoaderWay extends Loader {
       //TODO or should we ignore them?
       grid.nodesSet.forEach(id -> {
         TransformOSHNode node = nodeLoader.invalidNodes.get(id.longValue());
-        grid.forGrid.add(node);
+        if(node != null)
+        	grid.forGrid.add(node);
       });
       
       handler.handleWayGrid(grid.cellId, grid.entities, grid.forGrid);
