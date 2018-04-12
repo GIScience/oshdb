@@ -38,6 +38,7 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }
 
+
   @Test
   public void test100() {
     // A single node
@@ -73,7 +74,7 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
     OSMEntity entity1 = testData.ways().get(110800L).get(0);
     Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
     assertTrue(result1 instanceof LineString);
-    assertEquals(2, result1.getCoordinates().length, DELTA);
+    assertEquals(2, result1.getCoordinates().length);
   }
 
   @Test
@@ -88,7 +89,7 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
     OSMEntity entity1 = testData.ways().get(112800L).get(0);
     Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
     assertTrue(result1 instanceof LineString);
-    assertEquals(5, result1.getCoordinates().length, DELTA);
+    assertEquals(5, result1.getCoordinates().length);
     assertEquals(
         ((LineString) result1).getCoordinateN(result1.getNumPoints()-1),
         ((LineString) result1).getCoordinateN(0)
@@ -316,7 +317,7 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
         (((LineString) result1).getCoordinateN(3))};
     LineString lineString2 = geometryFactory.createLineString(xy2);
     assertTrue(lineString1.crosses(lineString2));
-    assertEquals(4, result1.getCoordinates().length, DELTA);
+    assertEquals(4, result1.getCoordinates().length);
   }
 
   @Test
@@ -335,6 +336,8 @@ public class OSHDBGeometryBuilderTestOsmTestData1xx {
         (((LineString) result1).getCoordinateN(5))};
     LineString lineString2 = geometryFactory.createLineString(xy2);
     assertTrue(lineString1.intersects(lineString2));
-    assertEquals(6, result1.getCoordinates().length, DELTA);
+    assertEquals(6, result1.getCoordinates().length);
   }
+
+
 }
