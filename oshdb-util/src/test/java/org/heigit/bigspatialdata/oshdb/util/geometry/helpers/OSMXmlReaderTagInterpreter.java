@@ -16,12 +16,12 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
   private int inner;
 
   public OSMXmlReaderTagInterpreter(OSMXmlReader osmXmlReader) {
-    area = osmXmlReader.keys().get("area");
-    areaYes = osmXmlReader.keyValues().get(area).get("yes");
-    type = osmXmlReader.keys().get("type");
-    typeMultipolygon = osmXmlReader.keyValues().get(type).get("multipolygon");
-    outer = osmXmlReader.roles().get("outer");
-    inner = osmXmlReader.roles().get("inner");
+    area = osmXmlReader.keys().getOrDefault("area", -1);
+    areaYes = area == -1 ? -1 : osmXmlReader.keyValues().get(area).getOrDefault("yes", -1);
+    type = osmXmlReader.keys().getOrDefault("type", -1);
+    typeMultipolygon = type == -1 ? -1 : osmXmlReader.keyValues().get(type).getOrDefault("multipolygon", -1);
+    outer = osmXmlReader.roles().getOrDefault("outer", -1);
+    inner = osmXmlReader.roles().getOrDefault("inner", -1);
   }
 
   @Override
