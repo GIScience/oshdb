@@ -60,7 +60,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertEquals(1.01, ((Polygon) result).getExteriorRing().getCoordinateN(4).y, DELTA);
 
     // check if result has 5 points
-    assertEquals(5, result.getCoordinates().length, DELTA);
+    assertEquals(5, result.getCoordinates().length);
 
   }
 
@@ -72,7 +72,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
-    assertEquals(5, result.getCoordinates().length, DELTA);
+    assertEquals(5, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -90,7 +90,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
-    assertEquals(9, result.getCoordinates().length, DELTA);
+    assertEquals(9, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -108,7 +108,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
-    assertEquals(9, result.getCoordinates().length, DELTA);
+    assertEquals(9, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -127,7 +127,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
-    assertEquals(13, result.getCoordinates().length, DELTA);
+    assertEquals(13, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -146,7 +146,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
-    assertEquals(14, result.getCoordinates().length, DELTA);
+    assertEquals(14, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -165,7 +165,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
-    assertEquals(11, result.getCoordinates().length, DELTA);
+    assertEquals(11, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -184,7 +184,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
-    assertEquals(10, result.getCoordinates().length, DELTA);
+    assertEquals(10, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -203,7 +203,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
-    assertEquals(18, result.getCoordinates().length, DELTA);
+    assertEquals(18, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -223,7 +223,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(3,result.getNumGeometries());
-    assertEquals(15, result.getCoordinates().length, DELTA);
+    assertEquals(15, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -298,7 +298,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    assertEquals(10, result.getCoordinates().length, DELTA);
+    assertEquals(10, result.getCoordinates().length);
     //assertEquals(10, entity., DELTA);
 
     // compare if coordinates of created points equals the coordinates of polygon
@@ -337,7 +337,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    assertEquals(14, result.getCoordinates().length, DELTA);
+    assertEquals(14, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.44 1.22,7.47 1.21,7.41 1.21,7.42 1.22,7.41 1.24,7.43 1.26,7.46 1.26,7.45 1.23,7.44 1.22),"
@@ -356,7 +356,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    assertEquals(7, result.getCoordinates().length, DELTA);
+    assertEquals(7, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.53 1.21,7.54 1.21,7.52 1.23,7.54 1.25,7.53 1.25,7.51 1.23,7.53 1.21)))"
@@ -384,7 +384,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    assertEquals(9, result.getCoordinates().length, DELTA);
+    assertEquals(9, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.85 1.23,7.86 1.22,7.87 1.22,7.87 1.24,7.86 1.25,7.83 1.25,7.82 1.26,7.84 1.23,7.85 1.23)))"
@@ -404,7 +404,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(1, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
     assertEquals(2,result.getNumGeometries());
-    assertEquals(15, result.getCoordinates().length, DELTA);
+    assertEquals(15, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.91 1.21,7.91 1.29,7.99 1.29,7.99 1.21,7.91 1.21),"
@@ -424,7 +424,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result.isValid());
     assertEquals(3, ((Polygon)result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    assertEquals(21, result.getCoordinates().length, DELTA);
+    assertEquals(21, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.06 1.31,7.01 1.31,7.01 1.34,7.04 1.37,7.06 1.34,7.06 1.31),"
@@ -445,7 +445,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result.isValid());
     assertEquals(2, ((Polygon)result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    assertEquals(25, result.getCoordinates().length, DELTA);
+    assertEquals(25, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.18 1.33,7.17 1.31,7.12 1.31,7.11 1.33,7.11 1.38,7.18 1.38,7.18 1.33),"
@@ -467,7 +467,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertEquals(1, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
     assertEquals(2,result.getNumGeometries());
     // 16 because of double node
-    assertEquals(16, result.getCoordinates().length, DELTA);
+    assertEquals(16, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.21 1.36,7.22 1.37,7.23 1.36,7.22 1.35,7.21 1.36)),"
@@ -699,7 +699,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    assertEquals(11, result.getCoordinates().length, DELTA);
+    assertEquals(11, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.57 1.51,7.51 1.51,7.51 1.57,7.57 1.57,7.57 1.54,7.57 1.51),"
