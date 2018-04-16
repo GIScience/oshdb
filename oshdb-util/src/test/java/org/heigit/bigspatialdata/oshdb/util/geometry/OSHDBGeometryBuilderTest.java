@@ -1,8 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
@@ -149,6 +152,22 @@ public class OSHDBGeometryBuilderTest {
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("GeometryCollection", result.getGeometryType());
     assertEquals(1, result.getNumGeometries());
+  }
+
+  @Test
+  public void testBoundingGetGeometry() throws ParseException {
+    Polygon clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
+    Geometry expectedPolygon = (new WKTReader()).read(
+        "POLYGON((-180.0 -90.0, 180.0 -90.0, 180.0 90.0, -180.0 90.0, -180.0 -90.0))"
+    );
+    assertEquals(expectedPolygon,clipPoly);
+  }
+
+  @Test
+  public void testBoundingBoxOf() throws ParseException {
+    OSHDBBoundingBox clipPoly = OSHDBGeometryBuilder.boundingBoxOf(new Envelope(-180, 180, -90, 90));
+    Envelope expectedPolygon = new Envelope(-180, 180, -90, 90);
+    assertEquals(new String("(-180.000000,-90.000000) (180.000000,90.000000)"),clipPoly.toString());
   }
 }
 
