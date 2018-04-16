@@ -9,26 +9,6 @@
 	<node id="8" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="1.42" lat="1.25"/>
     <node id="9" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="1.42" lat="1.26"/>
     <node id="10" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="1.42" lat="1.27"/>
-	
-	<node id="11" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.01"/>
-    <node id="12" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.01"/>
-    <node id="13" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.05"/>
-	
-    <node id="14" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
-    <node id="15" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.04"/>
-    <node id="16" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
-    
-    
-	
-    <node id="21" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.05"/>
-    <node id="22" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
-    <node id="23" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.04"/>
-	
-    <node id="24" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
-    <node id="25" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.03"/>
-    <node id="26" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.02"/>
-	<node id="27" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
-    <node id="28" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.01"/>
     <way id="100" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
         <nd ref="1"/>
         <nd ref="2"/>
@@ -44,47 +24,4 @@
 		<nd ref="10"/>
 		<tag k="area" v="yes"/>
     </way>
-	<way id="102" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
-        <nd ref="11"/>
-        <nd ref="12"/>
-        <nd ref="13"/>
-        <tag k="test:section" v="mp-geom"/>
-        <tag k="test:id" v="703"/>
-    </way>
-    <way id="103" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
-        <nd ref="13"/>
-		<nd ref="14"/>
-        <nd ref="15"/>
-        <nd ref="16"/>
-        <nd ref="17"/>
-        <nd ref="18"/>
-        <nd ref="11"/>
-        <tag k="test:section" v="mp-geom"/>
-        <tag k="test:id" v="703"/>
-    </way>
-    <way id="105" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
-        <nd ref="24"/>
-        <nd ref="25"/>
-        <nd ref="26"/>
-        <nd ref="27"/>
-        <nd ref="28"/>
-        <tag k="test:section" v="mp-geom"/>
-        <tag k="test:id" v="703"/>
-    </way>
-    <relation id="500" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
-        <member type="way" ref="102" role="outer"/>
-        <member type="way" ref="103" role="outer"/>
-        <tag k="type" v="multipolygon"/>
-        <tag k="test:section" v="mp-geom"/>
-        <tag k="test:id" v="703"/>
-        <tag k="landuse" v="forest"/>
-    </relation>
-	<relation id="501" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
-        <member type="way" ref="104" role="outer"/>
-        <member type="way" ref="105" role="outer"/>
-        <tag k="type" v="multipolygon"/>
-        <tag k="test:section" v="mp-geom"/>
-        <tag k="test:id" v="703"/>
-        <tag k="landuse" v="forest"/>
-    </relation>
 </osm>
