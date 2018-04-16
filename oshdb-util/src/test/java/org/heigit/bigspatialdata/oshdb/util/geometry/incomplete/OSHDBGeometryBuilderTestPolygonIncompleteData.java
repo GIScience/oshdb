@@ -4,6 +4,7 @@ import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
@@ -26,7 +27,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
   private final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestPolygonIncompleteData() {
-    testData.add("./src/test/resources/incomplete-osm/way.osm");
+    testData.add("./src/test/resources/incomplete-osm/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }
 
@@ -34,6 +35,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
   public void test1() throws ParseException {
     // Valid multipolygon relation with two ways (8 points) making up an outer ring, in second ring 2 node
     // references to not existing nodes
+    //TODO https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/138
     OSMEntity entity = testData.relations().get(500L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertTrue(result instanceof Polygon);
@@ -50,8 +52,9 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
   }
 
   @Test
-  public void test() throws ParseException {
+  public void test2() throws ParseException {
     // Valid multipolygon relation with two way references, one way does not exist
+    //TODO https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/138
     OSMEntity entity = testData.relations().get(501L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertTrue(result instanceof Polygon);
