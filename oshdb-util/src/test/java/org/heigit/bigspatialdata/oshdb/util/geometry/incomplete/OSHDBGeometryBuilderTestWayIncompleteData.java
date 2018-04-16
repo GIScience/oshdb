@@ -40,6 +40,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteData {
   @Test
   public void test1() {
     // Way with four node references, one node missing
+    // TODO https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/140
     OSMEntity entity1 = testData.ways().get(100L).get(0);
     Geometry result1 = null;
     try {
@@ -57,6 +58,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteData {
   @Test
   public void test2() {
     // Way with four nodes, area = yes
+    // TODO https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/140
     OSMEntity entity1 = testData.ways().get(101L).get(0);
     Geometry result1 = null;
     try {
