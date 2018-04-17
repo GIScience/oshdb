@@ -67,7 +67,8 @@ public class OSHDBGeometryBuilder {
       // todo: handle old-style multipolygons here???
       GeometryFactory geometryFactory = new GeometryFactory();
       Coordinate[] coords =
-          way.getRefEntities(timestamp).filter(node -> node != null && node.isVisible())
+          way.getRefEntities(timestamp)
+              .filter(OSMEntity::isVisible)
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
       if (areaDecider.isArea(entity)) {
@@ -158,21 +159,22 @@ public class OSHDBGeometryBuilder {
 
     Stream<OSMWay> outerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember)
-            .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
+            .map(osm -> (OSMWay) osm)
+            .filter(OSMEntity::isVisible);
 
     Stream<OSMWay> innerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonInnerMember)
-            .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
+            .map(osm -> (OSMWay) osm).filter(OSMEntity::isVisible);
 
     OSMNode[][] outerLines =
         outerMembers
             .map(way -> way.getRefEntities(timestamp)
-                .filter(node -> node != null && node.isVisible()).toArray(OSMNode[]::new))
+                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
     OSMNode[][] innerLines =
         innerMembers
             .map(way -> way.getRefEntities(timestamp)
-                .filter(node -> node != null && node.isVisible()).toArray(OSMNode[]::new))
+                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
 
     // construct rings from polygons

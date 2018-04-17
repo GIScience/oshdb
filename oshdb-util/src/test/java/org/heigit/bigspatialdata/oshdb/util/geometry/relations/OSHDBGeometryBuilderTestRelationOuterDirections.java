@@ -1,17 +1,10 @@
-package org.heigit.bigspatialdata.oshdb.util.geometry.OuterRingWaysTwoDifferentDirections;
+package org.heigit.bigspatialdata.oshdb.util.geometry.relations;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
 
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -27,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class OSHDBGeometryBuilderTestOsmTwoDifferentDirectionsOnOuter {
+public class OSHDBGeometryBuilderTestRelationOuterDirections {
 
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
@@ -35,8 +28,8 @@ public class OSHDBGeometryBuilderTestOsmTwoDifferentDirectionsOnOuter {
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmTwoDifferentDirectionsOnOuter() {
-    testData.add("./src/test/resources/start_partial_ring_match_start_curr_line.osm");
+  public OSHDBGeometryBuilderTestRelationOuterDirections() {
+    testData.add("./src/test/resources/relations/outer-directions.osm");
     tagInterpreter = new OSMXmlReaderTagInterpreter(testData);
   }
 
@@ -58,4 +51,6 @@ public class OSHDBGeometryBuilderTestOsmTwoDifferentDirectionsOnOuter {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
+
+  //todo: all other combinations as well
 }
