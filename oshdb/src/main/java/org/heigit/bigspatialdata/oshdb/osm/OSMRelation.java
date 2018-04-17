@@ -31,8 +31,11 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
 
   public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp, Predicate<OSMMember> memberFilter) {
-    return Arrays.stream(this.getMembers()).filter(memberFilter).map(OSMMember::getEntity)
-        .filter(Objects::nonNull).map(entity -> entity.getByTimestamp(timestamp));
+    return Arrays.stream(this.getMembers())
+        .filter(memberFilter)
+        .map(OSMMember::getEntity)
+        .filter(Objects::nonNull)
+        .map(entity -> entity.getByTimestamp(timestamp));
   }
 
   public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp) {

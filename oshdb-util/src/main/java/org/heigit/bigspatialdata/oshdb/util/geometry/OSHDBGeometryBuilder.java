@@ -71,7 +71,8 @@ public class OSHDBGeometryBuilder {
       // todo: handle old-style multipolygons here???
       GeometryFactory geometryFactory = new GeometryFactory();
       Coordinate[] coords =
-          way.getRefEntities(timestamp).filter(node -> node != null && node.isVisible())
+          way.getRefEntities(timestamp)
+              .filter(OSMEntity::isVisible)
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
       if (areaDecider.isArea(entity)) {
@@ -156,21 +157,22 @@ public class OSHDBGeometryBuilder {
 
     Stream<OSMWay> outerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember)
-            .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
+            .map(osm -> (OSMWay) osm)
+            .filter(OSMEntity::isVisible);
 
     Stream<OSMWay> innerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonInnerMember)
-            .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
+            .map(osm -> (OSMWay) osm).filter(OSMEntity::isVisible);
 
     OSMNode[][] outerLines =
         outerMembers
             .map(way -> way.getRefEntities(timestamp)
-                .filter(node -> node != null && node.isVisible()).toArray(OSMNode[]::new))
+                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
     OSMNode[][] innerLines =
         innerMembers
             .map(way -> way.getRefEntities(timestamp)
-                .filter(node -> node != null && node.isVisible()).toArray(OSMNode[]::new))
+                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
 
     // construct rings from polygons
@@ -226,29 +228,29 @@ public class OSHDBGeometryBuilder {
         boolean joinable = false;
         for (int i = 0; i < ways.size(); i++) {
           List<OSMNode> what = ways.get(i);
-          if (lastId == what.get(0).getId()) { // end of partial ring matches to start of current
-                                               // line
+          if (lastId == what.get(0).getId()) {
+            // end of partial ring matches to start of current line
             what.remove(0);
             current.addAll(what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(what.size() - 1).getId()) { // start of partial ring
-                                                                     // matches end of current line
+          } else if (firstId == what.get(what.size() - 1).getId()) {
+            // start of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(0, what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (lastId == what.get(what.size() - 1).getId()) { // end of partial ring matches
-                                                                    // end of current line
+          } else if (lastId == what.get(what.size() - 1).getId()) {
+            // end of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(Lists.reverse(what));
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(0).getId()) { // start of partial ring matches start of
-                                                       // current line
+          } else if (firstId == what.get(0).getId()) {
+            // start of partial ring matches start of current line
             what.remove(0);
             current.addAll(0, Lists.reverse(what));
             ways.remove(i);
