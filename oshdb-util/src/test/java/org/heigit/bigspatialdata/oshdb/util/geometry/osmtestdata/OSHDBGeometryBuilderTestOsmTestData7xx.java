@@ -2,17 +2,21 @@ package org.heigit.bigspatialdata.oshdb.util.geometry.osmtestdata;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Polygonal;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
@@ -240,7 +244,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon relation: Three ways make up two outer rings, but the outer rings overlap.
     OSMEntity entity1 = testData.relations().get(710900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 2);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -253,7 +259,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon relation: Two ways, both containing one of the segments."
     OSMEntity entity1 = testData.relations().get(711900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 2);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -266,7 +274,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon relation: Open ring.
     OSMEntity entity1 = testData.relations().get(714900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 1);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -279,7 +289,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon relation: Two open rings
     OSMEntity entity1 = testData.relations().get(715900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 2);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -495,7 +507,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon because the outer ring crosses itself.
     OSMEntity entity1 = testData.relations().get(740900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -508,7 +521,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon with a line only as 'outer ring'
     OSMEntity entity1 = testData.relations().get(741900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -521,7 +535,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon because of a 'spike'
     OSMEntity entity1 = testData.relations().get(742900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -540,7 +555,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon with single outer ring not closed.
     OSMEntity entity1 = testData.relations().get(744900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 2);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -553,7 +570,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Impossible multipolygon out of one way.
     OSMEntity entity1 = testData.relations().get(745900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 1);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -566,7 +585,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // IImpossible multipolygon out of two way.
     OSMEntity entity1 = testData.relations().get(746900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 2);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -579,7 +600,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon because there are two nodes with same location. Created from relation
     OSMEntity entity1 = testData.relations().get(747900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -592,7 +614,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Invalid multipolygon because there are two nodes with same location. Created from way
     OSMEntity entity1 = testData.ways().get(748800L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof LineString);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -605,7 +628,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Valid multipolygon with two outer rings
     OSMEntity entity1 = testData.ways().get(749800L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof LineString);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -656,7 +680,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Touching inner without common nodes
     OSMEntity entity1 = testData.relations().get(752900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -669,7 +694,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Touching inner with one common node missing.
     OSMEntity entity1 = testData.relations().get(753900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -682,7 +708,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Inner ring touching outer, but not in node
     OSMEntity entity1 = testData.relations().get(754900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -714,7 +741,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Inner ring touches outer ring in line, no common nodes
     OSMEntity entity1 = testData.relations().get(756900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -724,10 +752,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
 
   @Test
   public void test757() {
-    //Inner ring touches outer ring in line using common nodes.
+    // Inner ring touches outer ring in line using common nodes.
     OSMEntity entity1 = testData.relations().get(757900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -938,7 +967,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon with two overlapping ways
     OSMEntity entity1 = testData.relations().get(768900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -957,7 +987,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon with two outer rings touching in single point, but no common node there
     OSMEntity entity1 = testData.relations().get(771900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
+      assertTrue(result.getNumGeometries() == 2);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -990,7 +1022,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon with two inner rings touching in single point, but no common node there.
     OSMEntity entity1 = testData.relations().get(773900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1133,7 +1166,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Way with different nodes as start and endpoint, but same location of those nodes
     OSMEntity entity1 = testData.ways().get(780800L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof LineString);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1146,7 +1180,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon with one outer ring from single way that has different end-nodes, but they have same location
     OSMEntity entity1 = testData.relations().get(781900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1159,7 +1194,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon with correct outer ring, but inner ring made up out of two ways where locations match but not node ids
     OSMEntity entity1 = testData.relations().get(782900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1234,7 +1270,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon relation containing the same way twice.
     OSMEntity entity1 = testData.relations().get(790900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1247,7 +1284,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon relation containing the two ways using the same nodes in the same order
     OSMEntity entity1 = testData.relations().get(791900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      assertTrue(result instanceof GeometryCollection);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1260,7 +1298,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon relation containing two ways using the same nodes in different order
     OSMEntity entity1 = testData.relations().get(792900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1273,7 +1311,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon relation containing the two ways using nearly the same nodes
     OSMEntity entity1 = testData.relations().get(793900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1292,7 +1330,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xx {
     // Multipolygon with one outer and one duplicated inner ring
     OSMEntity entity1 = testData.relations().get(795900L).get(0);
     try {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
     }
     catch(Exception e){
       e.printStackTrace();
