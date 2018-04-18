@@ -78,6 +78,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteData {
     Geometry result1 = null;
     try {
       result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+      assertTrue(result1.getCoordinates().length == 0);
     }
     catch(Exception e){
       e.printStackTrace();
