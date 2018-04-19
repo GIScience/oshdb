@@ -14,6 +14,9 @@ pipeline {
         stage ('Build and Test') {
             steps {
                 script {
+                    author = sh(returnStdout: true, script: 'git show -s --pretty=%an')
+                }
+                script {
                     server = Artifactory.server 'HeiGIT Repo'
                     rtMaven = Artifactory.newMavenBuild()
                     rtMaven.resolver server: server, releaseRepo: 'main', snapshotRepo: 'main'
@@ -28,10 +31,7 @@ pipeline {
             }
             post{
                 failure {
-                    script {
-                        author = sh(returnStdout: true, script: 'git show -s --pretty=%an')
-                    }
-                    rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "Build Nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Review the code!" , rawMessage: true
+                    rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Review the code!" , rawMessage: true
                 }
             }
         }
@@ -47,12 +47,25 @@ pipeline {
                 script {
                     rtMaven.deployer.deployArtifacts buildInfo
                     server.publishBuildInfo buildInfo
+                    BUILDNR=env.BUILD_NUMBER.toInteger()%10
+                    echo BUILDNR.toString()
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: 'oshdb/target/apidocs', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+
+
                 }
             }
             post {
                 failure {
-                    rocketSend channel: 'jenkinsohsome', message: "Deployment of Build Nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+                    rocketSend channel: 'jenkinsohsome', message: "Deployment of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
                 }
+            }
+        }
+
+        stage ('encourage') {
+
+            when { equals expected: 0  , actual: BUILDNR}
+            steps {
+                rocketSend channel: 'jenkinsohsome', message: "Happily deployed anther 10 oshdb-builds! Keep it up!" , rawMessage: true
             }
         }
 

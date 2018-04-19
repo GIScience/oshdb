@@ -31,6 +31,7 @@ nbactions*.xml
 
 # gedit stuff
 *~
+*.swp
 
 # DB stuff
 temp_*
