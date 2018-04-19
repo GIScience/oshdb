@@ -14,7 +14,7 @@ Oshdb offers a distributed data base that splits storage and computation load. I
         .timestamps("2007-10-07", "2009-04-09")
         .where("highway")
         .map(contribution -> contribution.getContributorUserId())
-        .countUnique();
+        .countUniq();
         
     System.out.println(numberOfUsersEditingHighways);
 ```
