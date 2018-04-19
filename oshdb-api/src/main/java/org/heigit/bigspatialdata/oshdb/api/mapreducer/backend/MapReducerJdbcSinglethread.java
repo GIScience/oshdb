@@ -48,8 +48,6 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     void apply (
         GridOSHEntity oshEntityCell,
         CellIterator cellIterator,
-        OSHDBTimestampInterval timestampInterval,
-        SortedSet<OSHDBTimestamp> timestamps,
         AtomicReference<S> inputOutputReference
     );
   }
@@ -60,12 +58,10 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     CellIterator cellIterator = new CellIterator(
+        this._tstamps.get(),
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
-
-    SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
-    OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(timestamps);
 
     AtomicReference<S> result = new AtomicReference<>(identitySupplier.get());
     for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
@@ -73,7 +69,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
       while (oshCellsRawData.next()) {
         GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
-        callback.apply(oshCellRawData, cellIterator, timestampInterval, timestamps, result);
+        callback.apply(oshCellRawData, cellIterator, result);
       }
     }
     return combiner.apply(identitySupplier.get(), result.get());
@@ -83,9 +79,9 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.run((oshEntityCell, cellIterator, timestampInterval, ignored, accInternal) -> {
+    return this.run((oshEntityCell, cellIterator, accInternal) -> {
       // iterate over the history of all OSM objects in the current cell
-      cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
+      cellIterator.iterateByContribution(oshEntityCell)
           .forEach(contribution -> {
             OSMContribution osmContribution = new OSMContribution(contribution);
             accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
@@ -95,13 +91,13 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, List<R>> mapper,
+      SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.run((oshEntityCell, cellIterator, timestampInterval, ignored, accInternal) -> {
+    return this.run((oshEntityCell, cellIterator, accInternal) -> {
       // iterate over the history of all OSM objects in the current cell
       List<OSMContribution> contributions = new ArrayList<>();
-      cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
+      cellIterator.iterateByContribution(oshEntityCell)
           .forEach(contribution -> {
             OSMContribution thisContribution = new OSMContribution(contribution);
             if (contributions.size() > 0
@@ -130,9 +126,9 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
-    return this.run((oshEntityCell, cellIterator, ignored, timestamps, accInternal) -> {
+    return this.run((oshEntityCell, cellIterator, accInternal) -> {
       // iterate over the history of all OSM objects in the current cell
-      cellIterator.iterateByTimestamps(oshEntityCell, timestamps).forEach(data -> {
+      cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
         OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
         // immediately fold the result
         accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
@@ -142,13 +138,13 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, List<R>> mapper,
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return this.run((oshEntityCell, cellIterator, ignored, timestamps, accInternal) -> {
+    return this.run((oshEntityCell, cellIterator, accInternal) -> {
         // iterate over the history of all OSM objects in the current cell
         List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-        cellIterator.iterateByTimestamps(oshEntityCell, timestamps).forEach(data -> {
+        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
           OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
           if (osmEntitySnapshots.size() > 0
               && thisSnapshot.getEntity().getId() != osmEntitySnapshots

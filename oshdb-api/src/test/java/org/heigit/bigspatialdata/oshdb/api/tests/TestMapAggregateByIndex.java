@@ -87,8 +87,10 @@ public class TestMapAggregateByIndex {
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .where(entity -> entity.getId() == 617308093)
-        .aggregateBy(contribution -> contribution.getEntityAfter().getId())
-        .zerofill(Collections.singletonList(-1L))
+        .aggregateBy(
+            contribution -> contribution.getEntityAfter().getId(),
+            Collections.singletonList(-1L)
+        )
         .count();
 
     assertEquals(2, result.entrySet().size());
@@ -98,7 +100,7 @@ public class TestMapAggregateByIndex {
   }
 
   @Test
-  public void testMultiple() throws Exception {
+  public void testMultiple2() throws Exception {
     SortedMap<OSHDBCombinedIndex<Long, OSMType>, Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .where(entity -> entity.getId() == 617308093)
@@ -107,11 +109,25 @@ public class TestMapAggregateByIndex {
         .count();
 
     assertEquals(1, result.entrySet().size());
-    // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids
     //noinspection unchecked – types actually match, not sure why java's complaining ¯\_(ツ)_/¯
     assertEquals(1, (int)result.get(new OSHDBCombinedIndex(617308093L, OSMType.NODE)));
-
     SortedMap<Long, SortedMap<OSMType, Integer>> nestedResult = OSHDBCombinedIndex.nest(result);
     assertEquals(1, (int)nestedResult.get(617308093L).get(OSMType.NODE));
+  }
+
+  @Test
+  public void testMultiple3() throws Exception {
+    SortedMap<OSHDBCombinedIndex<OSHDBCombinedIndex<Long, OSMType>, Integer>, Integer> result = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps1)
+        .where(entity -> entity.getId() == 617308093)
+        .aggregateBy(snapshot -> snapshot.getEntity().getId())
+        .aggregateBy(snapshot -> snapshot.getEntity().getType())
+        .aggregateBy(snapshot -> snapshot.getEntity().getUserId())
+        .count();
+
+    assertEquals(1, result.entrySet().size());
+    SortedMap<Long, SortedMap<OSMType, SortedMap<Integer, Integer>>> nestedResult =
+        OSHDBCombinedIndex.nest(OSHDBCombinedIndex.nest(result));
+    assertEquals(1, (int)nestedResult.get(617308093L).get(OSMType.NODE).get(165061));
   }
 }

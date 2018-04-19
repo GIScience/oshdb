@@ -59,4 +59,32 @@ public class TestFlatMapReduce {
 
     assertEquals(2, result.size());
   }
+
+  @Test
+  public void testSet() throws Exception {
+    Set<Integer> input = new TreeSet<>();
+    input.add(1);
+    input.add(2);
+    input.add(3);
+    Set<Integer> result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .flatMap(contribution -> input)
+        .uniq();
+
+    assertEquals(input, result);
+  }
+
+  @Test
+  public void testIterable() throws Exception {
+    Set<Integer> input = new TreeSet<>();
+    input.add(1);
+    input.add(2);
+    input.add(3);
+    Set<Integer> result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .flatMap(contribution -> input.stream()::iterator)
+        .uniq();
+
+    assertEquals(input, result);
+  }
 }

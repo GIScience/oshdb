@@ -1,14 +1,20 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.jetbrains.annotations.Contract;
@@ -31,28 +37,36 @@ import java.util.stream.Collectors;
  * @param <X> the type that is returned by the currently set of mapper function. the next added mapper function will be called with a parameter of this type as input
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
-public abstract class MapAggregator<U extends Comparable<U>, X> implements
+public class MapAggregator<U extends Comparable<U>, X> implements
     Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X>
 {
-  MapReducer<Pair<U, X>> _mapReducer;
+  private MapReducer<Pair<U, X>> _mapReducer;
+  private final List<Collection<?>> _zerofill;
 
   /**
    * basic constructor
-   *
    * @param mapReducer mapReducer object which will be doing all actual calculations
    * @param indexer function that returns the index value into which to aggregate the respective result
+   * @param zerofill
    */
-  MapAggregator(MapReducer<X> mapReducer, SerializableFunction<X, U> indexer) {
+  MapAggregator(
+      MapReducer<X> mapReducer,
+      SerializableFunction<X, U> indexer,
+      Collection<U> zerofill
+  ) {
     this._mapReducer = mapReducer.map(data -> new MutablePair<U, X>(
         indexer.apply(data),
         data
     ));
+    this._zerofill = new ArrayList<>(1);
+    this._zerofill.add(zerofill);
   }
 
-  /**
-   * empty dummy constructor, used by MapAggregatorByTimestampAndIndex (which sets the _mapReducer property by itself)
-   */
-  MapAggregator() {}
+  // "copy/transform" constructor
+  private MapAggregator(MapAggregator<U, ?> obj, MapReducer<Pair<U, X>> mapReducer) {
+    this._mapReducer = mapReducer;
+    this._zerofill = new ArrayList<>(obj._zerofill);
+  }
 
   /**
    * Creates new mapAggregator object for a specific mapReducer that already contains an aggregation index.
@@ -64,7 +78,122 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
    * @return
    */
   @Contract(pure = true)
-  protected abstract <R> MapAggregator<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer);
+  private <R> MapAggregator<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer) {
+    return new MapAggregator<>(this, mapReducer);
+  }
+
+  @Contract(pure = true)
+  private <V extends Comparable<V>> MapAggregator<V, X> copyTransformKey(MapReducer<Pair<V, X>> mapReducer) {
+    //noinspection unchecked – we do want to convert the mapAggregator to a different key type "V"
+    return new MapAggregator<V, X>((MapAggregator<V, ?>) this, mapReducer);
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // MapAggregator specific methods
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Sets up aggregation by another custom index.
+   *
+   * @param indexer a callback function that returns an index object for each given data
+   * @param zerofill a collection of values that are expected to be present in the result
+   * @return a MapAggregatorByIndex object with the new index applied as well
+   */
+  @Contract(pure = true)
+  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
+      SerializableFunction<X, V> indexer,
+      Collection<V> zerofill
+  ) {
+    MapAggregator<OSHDBCombinedIndex<U, V>, X> res = this
+        .mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
+            existingIndex,
+            indexer.apply(data)
+        ));
+    res._zerofill.add(zerofill);
+    return res;
+  }
+
+  /**
+   * Sets up aggregation by another custom index.
+   *
+   * @param indexer a callback function that returns an index object for each given data.
+   * @return a MapAggregatorByIndex object with the new index applied as well
+   */
+  @Contract(pure = true)
+  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
+      SerializableFunction<X, V> indexer
+  ) {
+    return this.aggregateBy(indexer, Collections.emptyList());
+  }
+
+  /**
+   * Sets up aggregation by a custom time index.
+   *
+   * The timestamps returned by the supplied indexing function are matched to the corresponding
+   * time intervals
+   *
+   * @param indexer a callback function that returns a timestamp object for each given data.
+   *                Note that if this function returns timestamps outside of the supplied
+   *                timestamps() interval results may be undefined
+   * @return a MapAggregatorByTimestampAndIndex object with the equivalent state (settings,
+   *         filters, map function, etc.) of the current MapReducer object
+   */
+  @Contract(pure = true)
+  public MapAggregator<OSHDBCombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp(
+      SerializableFunction<X, OSHDBTimestamp> indexer
+  ) {
+    final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._mapReducer._tstamps.get());
+    return this.aggregateBy(data -> {
+      // match timestamps to the given timestamp list
+      return timestamps.floor(indexer.apply(data));
+    }, this._mapReducer.getZerofillTimestamps());
+  }
+  
+  /**
+   * Aggregates the results by sub-regions as well, in addition to the timestamps.
+   *
+   * Cannot be used together with the `groupByEntity()` setting enabled.
+   *
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
+   *         etc.) of the current MapReducer object
+   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has been
+   *         activated
+   * @throws UnsupportedOperationException when called after any map or flatMap functions are set
+   */
+  @Contract(pure = true)
+  public <V extends Comparable<V>, P extends Geometry & Polygonal>
+  MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(Map<V, P> geometries) throws
+      UnsupportedOperationException
+  {
+    if (this._mapReducer._grouping != Grouping.NONE) {
+      throw new UnsupportedOperationException(
+          "aggregateByGeometry() cannot be used together with the groupByEntity() functionality"
+      );
+    }
+
+    GeometrySplitter<V> gs = new GeometrySplitter<>(geometries);
+    if (this._mapReducer._mappers.size() > 1) {
+      // todo: fix
+      throw new UnsupportedOperationException(
+          "please call aggregateByGeometry before setting any map or flatMap functions"
+      );
+    } else {
+      MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
+      if (this._mapReducer._forClass.equals(OSMContribution.class)) {
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
+            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+      } else if (this._mapReducer._forClass.equals(OSMEntitySnapshot.class)) {
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
+            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+      } else {
+        throw new UnsupportedOperationException(
+            "aggregateByGeometry not implemented for objects of type: " + this._mapReducer._forClass.toString()
+        );
+      }
+      //noinspection unchecked – no mapper functions have been applied, so the type is still X
+      return (MapAggregator<OSHDBCombinedIndex<U, V>, X>) ret;
+    }
+  }
 
   // -----------------------------------------------------------------------------------------------
   // Filtering methods
@@ -421,7 +550,7 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
-  public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, List<R>> flatMapper) {
+  public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     return this.copyTransform(this._mapReducer.flatMap(inData -> {
       List<Pair<U, R>> outData = new LinkedList<>();
       flatMapper.apply(inData.getValue()).forEach(flatMappedData ->
@@ -475,7 +604,7 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
    */
   @Contract(pure = true)
   public <S> SortedMap<U, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
-    return this._mapReducer.reduce(
+    SortedMap<U, S> result = this._mapReducer.reduce(
         TreeMap::new,
         (TreeMap<U, S> m, Pair<U, X> r) -> {
           m.put(r.getKey(), accumulator.apply(
@@ -492,6 +621,18 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
           return combined;
         }
     );
+    // fill nodata entries with "0"
+    //noinspection unchecked – all zerofills must "add up" to <U>
+    Collection<U> zerofill = (Collection<U>) this._completeZerofill(
+        result.keySet(),
+        Lists.reverse(this._zerofill)
+    );
+    zerofill.forEach(zerofillKey -> {
+      if (!result.containsKey(zerofillKey)) {
+        result.put(zerofillKey, identitySupplier.get());
+      }
+    });
+    return result;
   }
 
   /**
@@ -532,5 +673,44 @@ public abstract class MapAggregator<U extends Comparable<U>, X> implements
         throw new UnsupportedOperationException("Cannot convert to non-numeric values of type: " + x.getClass().toString());
       return (Number)x;
     });
+  }
+
+  // maps from one index type to a different one
+  @Contract(pure = true)
+  private <V extends Comparable<V>> MapAggregator<V, X> mapIndex(SerializableBiFunction<U, X, V> keyMapper) {
+    return this.copyTransformKey(this._mapReducer.map(inData -> new MutablePair<>(
+        keyMapper.apply(inData.getKey(), inData.getValue()),
+        inData.getValue()
+    )));
+  }
+
+  // calculate complete set of indices to use for zerofilling
+  private Collection<?> _completeZerofill(Set<?> keys, List<Collection<?>> zerofills) {
+    if (zerofills.isEmpty()) return Collections.emptyList();
+    SortedSet<Object> seen = new TreeSet<>(zerofills.get(0));
+    SortedSet<Object> nextLevelKeys = new TreeSet<>();
+    boolean last = false;
+    for (Object index : keys) {
+      Object v;
+      if (index instanceof OSHDBCombinedIndex) {
+        v = ((OSHDBCombinedIndex) index).getSecondIndex();
+        nextLevelKeys.add(((OSHDBCombinedIndex) index).getFirstIndex());
+      } else {
+        last = true;
+        v = index;
+      }
+      seen.add(v);
+    }
+    if (last) {
+      return seen;
+    } else {
+      Collection<?> nextLevel = this._completeZerofill(
+          nextLevelKeys,
+          zerofills.subList(1, zerofills.size())
+      );
+      return nextLevel.stream().flatMap(u ->
+          seen.stream().map(v -> new OSHDBCombinedIndex<>(u, v))
+      ).collect(Collectors.toList());
+    }
   }
 }
