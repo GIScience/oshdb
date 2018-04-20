@@ -1,39 +1,75 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <osm version="0.6" generator="testdata" upload="false">
-	<node id="11" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.01"/>
-    <node id="12" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.01"/>
-    <node id="13" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.05"/>
-    <node id="14" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
-    <node id="15" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.04"/>
-    <node id="16" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
-    <node id="21" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.05"/>
-    <node id="22" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
-    <node id="23" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.04"/>
-    <node id="24" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
-    <node id="25" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.03"/>
-    <node id="26" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.02"/>
-	<node id="27" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
-    <node id="28" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.01"/>
-	<way id="102" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <!--104 MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05,7.32 1.05, 7.32 1.04,7.33 1.04)))-->
+    <node id="1" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.30" lat="1.01"/>
+    <node id="2" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.29" lat="1.01"/>
+    <node id="3" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.29" lat="1.05"/>
+	  <node id="11" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.01"/>
+    <node id="12" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.01"/>
+    <node id="13" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.05"/>
+    <node id="14" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
+    <node id="15" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.04"/>
+    <node id="16" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
+
+    <node id="17" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.05"/>
+    <node id="18" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.06"/>
+    <node id="19" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.06"/>
+    <node id="20" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
+
+    <node id="21" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.05"/>
+    <node id="22" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
+    <node id="23" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.04"/>
+    <node id="24" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.04"/>
+    <node id="25" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.33" lat="1.03"/>
+    <node id="26" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.02"/>
+    <node id="27" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.04"/>
+    <node id="28" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.01"/>
+    <node id="29" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.34" lat="1.02"/>
+    <node id="30" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.35" lat="1.02"/>
+    <node id="31" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.35" lat="1.01"/>
+
+    <node id="32" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.05"/>
+    <node id="33" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.32" lat="1.07"/>
+    <node id="34" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.07"/>
+    <node id="35" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1" lon="7.31" lat="1.05"/>
+    <!--104,102+3,105, MULTIPOLYGON((( 7.31 1.01,7.34 1.01,7.34 1.05,7.32 1.05, 7.32 1.04,7.33 1.04),(7.34 1.01,7.34 1.02, 7.35 1.02, 7.35 1.01, 7.34 1.01),(7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04),(7.33 1.04,7.30 1.01, 7.29 1.01, 7.29 1.05, 7.30 1.01)))-->
+    <!--105 MULTIPOLYGON(((7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04)))-->
+    <!--,102 MULTIPOLYGON(((7.34 1.01,7.34 1.02, 7.35 1.02, 7.35 1.01, 7.34 1.01)))-->
+    <!--,103 MULTIPOLYGON(((7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04)))-->
+    <!--106 MULTIPOLYGON((( 7.30 1.01, 7.29 1.01, 7.29 1.05, 7.30 1.01)))-->
+    <!--107 MULTIPOLYGON((( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05)))-->
+    <!--108 MULTIPOLYGON((( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))-->
+    <!--,102+3+7+8 MULTIPOLYGON((( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05),(7.34 1.01,7.34 1.02, 7.35 1.02, 7.35 1.01, 7.34 1.01),(7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04),( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))-->
+    <!--,102+3+7 MULTIPOLYGON((( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05),(7.34 1.01,7.34 1.02, 7.35 1.02, 7.35 1.01, 7.34 1.01),(7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04)))-->
+    <!--,102+3+8 MULTIPOLYGON(((7.34 1.01,7.34 1.02, 7.35 1.02, 7.35 1.01, 7.34 1.01),(7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04),( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))-->
+
+    <!--104 + 6 MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05,7.32 1.05, 7.32 1.04,7.33 1.04),( 7.30 1.01, 7.29 1.01, 7.29 1.05, 7.30 1.01)))-->
+	   <way id="102" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1">
         <nd ref="11"/>
         <nd ref="12"/>
         <nd ref="13"/>
         <tag k="test:section" v="mp-geom"/>
         <tag k="test:id" v="703"/>
     </way>
-    <way id="103" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <way id="103" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="1">
         <nd ref="13"/>
-		<nd ref="14"/>
+		    <nd ref="14"/>
         <nd ref="15"/>
         <nd ref="16"/>
-        <nd ref="17"/>
-        <nd ref="18"/>
         <nd ref="11"/>
         <tag k="test:section" v="mp-geom"/>
         <tag k="test:id" v="703"/>
     </way>
-    <way id="105" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
-        <nd ref="24"/>
+    <way id="104" visible="true" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+        <nd ref="29"/>
+        <nd ref="30"/>
+        <nd ref="31"/>
+        <nd ref="28"/>
+        <tag k="test:section" v="mp-geom"/>
+        <tag k="test:id" v="703"/>
+    </way>
+    <way id="105" visible="true" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+       <nd ref="24"/>
         <nd ref="25"/>
         <nd ref="26"/>
         <nd ref="27"/>
@@ -41,13 +77,24 @@
         <tag k="test:section" v="mp-geom"/>
         <tag k="test:id" v="703"/>
     </way>
-	<way id="106" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    	<way id="106" visible="true" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
         <nd ref="1"/>
         <nd ref="2"/>
+        <nd ref="3"/>
+        <nd ref="1"/>
         <tag k="test:section" v="mp-geom"/>
         <tag k="test:id" v="731"/>
     </way>
-    <relation id="500" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <way id="107" visible="true" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+        <nd ref="17"/>
+        <nd ref="18"/>
+        <nd ref="19"/>
+        <nd ref="20"/>
+        <tag k="test:section" v="mp-geom"/>
+        <tag k="test:id" v="731"/>
+    </way>
+    <!--relation getting more ways, one disappears-->
+    <relation id="500" visible="true" version="1" timestamp="2009-01-01T00:00:00Z" uid="1" user="A" changeset="100">
         <member type="way" ref="102" role="outer"/>
         <member type="way" ref="103" role="outer"/>
         <tag k="type" v="multipolygon"/>
@@ -55,7 +102,28 @@
         <tag k="test:id" v="703"/>
         <tag k="landuse" v="forest"/>
     </relation>
-	<relation id="501" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <relation id="500" visible="true" version="2" timestamp="2010-01-01T00:00:00Z" uid="2" user="B" changeset="101">
+        <member type="way" ref="102" role="outer"/>
+        <member type="way" ref="103" role="outer"/>
+        <member type="way" ref="107" role="outer"/>
+        <tag k="type" v="multipolygon"/>
+        <tag k="test:section" v="mp-geom"/>
+        <tag k="test:id" v="703"/>
+        <tag k="landuse" v="forest"/>
+    </relation>
+    <relation id="500" visible="true" version="3" timestamp="2012-01-01T00:00:00Z" uid="2" user="B" changeset="102">
+        <member type="way" ref="102" role="outer"/>
+        <member type="way" ref="107" role="outer"/>
+        <member type="way" ref="108" role="outer"/>
+        <tag k="type" v="multipolygon"/>
+        <tag k="test:section" v="mp-geom"/>
+        <tag k="test:id" v="703"/>
+        <tag k="landuse" v="forest"/>
+    </relation>
+
+
+    <!--realtion  visible tag changed -->
+    <relation id="501" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="1" user="test" changeset="103">
         <member type="way" ref="104" role="outer"/>
         <member type="way" ref="105" role="outer"/>
         <tag k="type" v="multipolygon"/>
@@ -63,7 +131,19 @@
         <tag k="test:id" v="703"/>
         <tag k="landuse" v="forest"/>
     </relation>
-	<relation id="502" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <relation id="501" visible="false" version="2" timestamp="2016-01-01T00:00:00Z" uid="1" user="test" changeset="104">
+    </relation>
+    <relation id="501" visible="true" version="3" timestamp="2018-01-01T00:00:00Z" uid="1" user="test" changeset="105">
+        <member type="way" ref="104" role="outer"/>
+        <member type="way" ref="105" role="outer"/>
+        <tag k="type" v="multipolygon"/>
+        <tag k="test:section" v="mp-geom"/>
+        <tag k="test:id" v="703"/>
+        <tag k="landuse" v="forest"/>
+    </relation>
+
+
+	  <relation id="502" visible="true" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="103">
         <member type="way" ref="106" role="outer"/>
         <tag k="type" v="multipolygon"/>
         <tag k="test:section" v="mp-geom"/>
