@@ -103,6 +103,19 @@
   <node id="15" visible="true" version="3" timestamp="2010-02-03T00:00:00Z" uid="1" user="A" changeset="30" lon="1.44" lat="1.23">
     <tag k="created_by" v="test"/>
   </node>
+
+  <node id="16" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.45" lat="1.45">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="17" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.46" lat="1.45">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="18" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.46" lat="1.144">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="19" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.45" lat="1.44">
+    <tag k="created_by" v="test"/>
+  </node>
   <!--way getting more nodes, one disappears-->
   <way id="100"  visible="true" version="1" timestamp="2009-01-01T00:00:00Z" uid="1" user="test" changeset="31">
     <nd ref="1"/>
@@ -142,5 +155,135 @@
     <nd ref="15"/>
     <nd ref="9"/>
   </way>
+  <!--way  visible tag changed -->
+  <way id="102" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="2" user="B" changeset="36">
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+  </way>
+  <way id="102" visible="false" version="2" timestamp="2017-01-01T00:00:00Z" uid="2" user="B" changeset="37">
+  </way>
+  <way id="102" visible="true" version="3" timestamp="2018-01-01T00:00:00Z" uid="3" user="C" changeset="38">
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+  </way>
 
+  <!--way tags changed -->
+  <way id="103" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="2" user="B" changeset="39">
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+  </way>
+  <way id="103" visible="true" version="2" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="40">
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <nd ref="10"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+  <way id="103" visible="true" version="3" timestamp="2018-01-01T00:00:00Z" uid="3" user="C" changeset="41">
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <nd ref="10"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="secondary"/>
+    <tag k="maxspeed" v="30"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+  <!--way nodes have different changes -->
+  <way id="104" visible="true" version="1" timestamp="2011-01-01T00:00:00Z" uid="1" user="A" changeset="42">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+  </way>
+  <way id="104" visible="true" version="2" timestamp="2018-01-01T00:00:00Z" uid="2" user="B" changeset="43">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+  </way>
+  <!--way and nodes have different changes -->
+  <way id="105" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="44">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+  </way>
+  <way id="105" visible="true" version="2" timestamp="2010-01-01T00:00:00Z" uid="2" user="B" changeset="45">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+    <nd ref="15"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="secondary"/>
+    <tag k="maxspeed" v="30"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+  <way id="105" visible="false" version="3" timestamp="2014-01-01T00:00:00Z" uid="2" user="B" changeset="46">
+  </way>
+  <way id="105" visible="true" version="4" timestamp="2018-01-01T00:00:00Z" uid="2" user="B" changeset="47">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+    <nd ref="15"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="secondary"/>
+    <tag k="maxspeed" v="30"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+
+  <!--way seems to be polygon with area=yes, later linestring because area=yes deleted-->
+  <way id="106" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="348">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+    <nd ref="16"/>
+    <tag k="area" v="yes"/>
+  </way>
+  <way id="106" visible="true" version="2" timestamp="2016-01-01T00:00:00Z" uid="1" user="test" changeset="49">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+    <nd ref="16"/>
+  </way>
+  <!--way seems to be polygon with area=yes, later linestring because one node deleted-->
+  <way id="107" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="50">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+    <nd ref="16"/>
+    <tag k="area" v="yes"/>
+  </way>
+  <way id="107" visible="true" version="2" timestamp="2016-01-01T00:00:00Z" uid="1" user="test" changeset="60">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+
+    <tag k="area" v="yes"/>
+  </way>
 </osm>
