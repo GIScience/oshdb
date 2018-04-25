@@ -20,7 +20,7 @@
 		<tag k="highway" v="traffic_signals"/>
 	</node>
 	<node id="2" visible="true" version="3" timestamp="2014-01-01T00:00:00Z" uid="13" user="test3" changeset="5" lon="1.43" lat="1.24">
-		<tag k="highway" v="traffic_signals"/>
+		<tag k="highway" v="street_lamp"/>
 	</node>
 	
 	<!--visible ändert sich-->
