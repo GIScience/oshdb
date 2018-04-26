@@ -20,7 +20,7 @@ pipeline {
           echo commiti
           reponame=sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
           echo reponame
-          gittiid=sh(returnStdout: true, script: 'git describe --tags --long').trim()
+          gittiid=sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
           echo gittiid
           echo env.BRANCH_NAME
           echo env.BUILD_NUMBER
@@ -181,3 +181,4 @@ pipeline {
 
   }
 }
+
