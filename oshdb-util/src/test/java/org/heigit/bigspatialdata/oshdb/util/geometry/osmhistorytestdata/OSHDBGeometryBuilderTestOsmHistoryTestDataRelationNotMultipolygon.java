@@ -39,30 +39,27 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation getting more ways, one disappears, last version not valid
     OSMEntity entity = testData.relations().get(500L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof MultiPolygon);
-    assertTrue(result.isValid());
-    assertEquals(9, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05, 7.31 1.01)),"
-            + "((7.34 1.05, 7.32 1.05, 7.32 1.04, 7.33 1.04, 7.34 1.05)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // second version
     OSMEntity entity1 = testData.relations().get(500L).get(1);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-    assertTrue(result1 instanceof MultiPolygon);
-    assertTrue(result1.isValid());
-    assertEquals(14, result1.getCoordinates().length);
-    Geometry expectedPolygon1 = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05, 7.31 1.01)),"
-            + "((7.34 1.05, 7.32 1.05, 7.32 1.04, 7.33 1.04, 7.34 1.05)),"
-            + "(( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05)))"
-    );
-    Geometry intersection1 = result1.intersection(expectedPolygon1);
-    assertEquals(expectedPolygon1.getArea(), intersection1.getArea(), DELTA);
+    try {
+      Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
+      assertTrue(result1 instanceof GeometryCollection);
+      assertTrue(result1.isValid());
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // third version
     OSMEntity entity2 = testData.relations().get(500L).get(2);
     OSHDBTimestamp timestamp2 = entity2.getTimestamp();
@@ -82,44 +79,57 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation  visible tag changed
     OSMEntity entity = testData.relations().get(501L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof MultiPolygon);
-    assertTrue(result.isValid());
-    assertEquals(10, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.35 1.01, 7.34 1.01,7.34 1.02,7.35 1.02, 7.35 1.01)),"
-            + "((7.33 1.04,7.33 1.03, 7.31 1.02, 7.31 1.04, 7.33 1.04)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 2);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+      assertTrue(result.getGeometryN(1) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // second version
     OSMEntity entity1 = testData.relations().get(501L).get(1);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-    assertTrue(result1.isEmpty());
+    try {
+      Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
+      assertTrue(result1.isEmpty());
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // third version
     OSMEntity entity2 = testData.relations().get(501L).get(2);
     OSHDBTimestamp timestamp2 = entity2.getTimestamp();
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof MultiPolygon);
-    assertTrue(result2.isValid());
-    assertEquals(10, result2.getCoordinates().length);
-    Geometry expectedPolygon2 = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.35 1.01, 7.34 1.01,7.34 1.02,7.35 1.02, 7.35 1.01)),"
-            + "((7.33 1.04,7.33 1.03, 7.31 1.02, 7.31 1.04, 7.33 1.04)))"
-    );
-    Geometry intersection2 = result2.intersection(expectedPolygon2);
-    assertEquals(expectedPolygon2.getArea(), intersection2.getArea(), DELTA);
+    try {
+      Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
+      assertTrue(result2 instanceof GeometryCollection);
+      assertTrue(result2.isValid());
+      assertTrue(result2.getNumGeometries() == 2);
+      assertTrue(result2.getGeometryN(0) instanceof LineString);
+      assertTrue(result2.getGeometryN(1) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
   public void test3() {
-    // relation with two ways, both missing
+    // relation with three ways, all not existing
     OSMEntity entity = testData.relations().get(502L).get(0);
     Geometry result = null;
     try {
       OSHDBTimestamp timestamp = entity.getTimestamp();
       result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.isEmpty());
     }
     catch(Exception e){
       e.printStackTrace();
@@ -132,39 +142,45 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation tags changing
     OSMEntity entity = testData.relations().get(503L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(5, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 1);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // second version
     OSMEntity entity1 = testData.relations().get(503L).get(1);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-    assertTrue(result1 instanceof Polygon);
-    assertTrue(result1.isValid());
-    assertEquals(5, result1.getCoordinates().length);
-    Geometry expectedPolygon1 = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))"
-    );
-    Geometry intersection1 = result1.intersection(expectedPolygon1);
-    assertEquals(expectedPolygon1.getArea(), intersection1.getArea(), DELTA);
+    try {
+      Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
+      assertTrue(result1 instanceof GeometryCollection);
+      assertTrue(result1.isValid());
+      assertTrue(result1.getNumGeometries() == 1);
+      assertTrue(result1.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // third version
     OSMEntity entity2 = testData.relations().get(503L).get(2);
     OSHDBTimestamp timestamp2 = entity2.getTimestamp();
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof Polygon);
-    assertTrue(result2.isValid());
-    assertEquals(5, result2.getCoordinates().length);
-    Geometry expectedPolygon2 = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))"
-    );
-    Geometry intersection2 = result2.intersection(expectedPolygon2);
-    assertEquals(expectedPolygon2.getArea(), intersection2.getArea(), DELTA);
+    try {
+      Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
+      assertTrue(result2 instanceof GeometryCollection);
+      assertTrue(result2.isValid());
+      assertTrue(result2.getNumGeometries() == 1);
+      assertTrue(result2.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -172,42 +188,49 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, way 109 -inner- and 110 -outer- ways changed node refs
     OSMEntity entity = testData.relations().get(504L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(10, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.24 1.04, 7.24 1.07, 7.30 1.07, 7.30 1.04, 7.24 1.04),"
-            + "(7.26 1.055, 7.265 1.06, 7.28 1.06,7.265 1.065, 7.26 1.055)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 2);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+      assertTrue(result.getGeometryN(1) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // second version
     OSMEntity entity1 = testData.relations().get(504L).get(1);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-    assertTrue(result1 instanceof Polygon);
-    assertTrue(result1.isValid());
-    assertEquals(10, result1.getCoordinates().length);
-    Geometry expectedPolygon1 = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.24 1.04, 7.24 1.07, 7.30 1.07, 7.30 1.04, 7.24 1.04),"
-            + "( 7.26 1.05,7.265 1.06, 7.28 1.06, 7.265 1.05,7.26 1.05)))"
-    );
-    Geometry intersection1 = result1.intersection(expectedPolygon1);
-    assertEquals(expectedPolygon1.getArea(), intersection1.getArea(), DELTA);
+    try {
+      Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
+      assertTrue(result1 instanceof GeometryCollection);
+      assertTrue(result1.isValid());
+      assertTrue(result1.getNumGeometries() == 2);
+      assertTrue(result1.getGeometryN(0) instanceof LineString);
+      assertTrue(result1.getGeometryN(1) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // version in between
     OSMEntity entity_between = testData.relations().get(504L).get(0);
     OSHDBTimestamp timestamp_between =  TimestampParser.toOSHDBTimestamp("2012-02-01T00:00:00Z");
-    Geometry result_between = OSHDBGeometryBuilder.getGeometry(entity_between, timestamp_between, areaDecider);
-    assertTrue(result_between instanceof Polygon);
-    assertTrue(result_between.isValid());
-    assertEquals(10, result_between.getCoordinates().length);
-    Geometry expectedPolygon_between = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.24 1.04, 7.24 1.07, 7.31 1.07, 7.31 1.04 , 7.24 1.04),"
-            + "(7.26 1.055, 7.265 1.06, 7.28 1.06,7.265 1.065, 7.26 1.055)))"
-    );
-    Geometry intersection_between = result_between.intersection(expectedPolygon_between);
-    assertEquals(expectedPolygon_between.getArea(), intersection_between.getArea(), DELTA);
+    try {
+      Geometry result_between = OSHDBGeometryBuilder
+          .getGeometry(entity_between, timestamp_between, areaDecider);
+      assertTrue(result_between instanceof GeometryCollection);
+      assertTrue(result_between.isValid());
+      assertTrue(result_between.getNumGeometries() == 2);
+      assertTrue(result_between.getGeometryN(0) instanceof LineString);
+      assertTrue(result_between.getGeometryN(1) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -215,27 +238,32 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, way 112  changed node coordinates
     OSMEntity entity = testData.relations().get(505L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(5, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.24 1.048, 7.245 1.072, 7.305 1.078, 7.303 1.042 , 7.24 1.048)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 1);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // version after
     OSMEntity entity_after = testData.relations().get(505L).get(0);
     OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2012-02-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
-    assertTrue(result_after instanceof Polygon);
-    assertTrue(result_after.isValid());
-    assertEquals(5, result_after.getCoordinates().length);
-    Geometry expectedPolygon_after = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.24 1.042, 7.242 1.07, 7.305 1.07, 7.295 1.039 , 7.24 1.042)))"
-    );
-    Geometry intersection_after = result_after.intersection(expectedPolygon_after);
-    assertEquals(expectedPolygon_after.getArea(), intersection_after.getArea(), DELTA);
+    try {
+      Geometry result_after = OSHDBGeometryBuilder
+          .getGeometry(entity_after, timestamp_after, areaDecider);
+      assertTrue(result_after instanceof GeometryCollection);
+      assertTrue(result_after.isValid());
+      assertTrue(result_after.getNumGeometries() == 1);
+      assertTrue(result_after.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -243,27 +271,35 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, with node members, nodes changed coordinates
     OSMEntity entity = testData.relations().get(506L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(4, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.24 1.048, 7.245 1.072,  7.303 1.042 , 7.24 1.048)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 3);
+      assertTrue(result.getGeometryN(0) instanceof Point);
+      assertTrue(result.getGeometryN(1) instanceof Point);
+      assertTrue(result.getGeometryN(2) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // version after
     OSMEntity entity_after = testData.relations().get(506L).get(0);
     OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2012-02-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
-    assertTrue(result_after instanceof Polygon);
-    assertTrue(result_after.isValid());
-    assertEquals(4, result_after.getCoordinates().length);
-    Geometry expectedPolygon_after = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.24 1.042, 7.242 1.07, 7.295 1.039 , 7.24 1.042)))"
-    );
-    Geometry intersection_after = result_after.intersection(expectedPolygon_after);
-    assertEquals(expectedPolygon_after.getArea(), intersection_after.getArea(), DELTA);
+    try {
+      Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
+      assertTrue(result_after instanceof GeometryCollection);
+      assertTrue(result_after.isValid());
+      assertTrue(result_after.getNumGeometries() == 3);
+      assertTrue(result_after.getGeometryN(0) instanceof Point);
+      assertTrue(result_after.getGeometryN(1) instanceof Point);
+      assertTrue(result_after.getGeometryN(2) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -292,6 +328,8 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     try {
       OSHDBTimestamp timestamp = entity.getTimestamp();
       result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
     }
     catch(Exception e){
       e.printStackTrace();
@@ -305,28 +343,32 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     OSMEntity entity = testData.relations().get(509L).get(0);
     // timestamp where node 52 visible is false
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(4, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.303 1.042, 7.32 1.07, 7.32 1.04,7.303 1.042)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 1);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // version after
     OSMEntity entity_after = testData.relations().get(509L).get(0);
     // timestamp where node 52 visible is true
     OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2014-02-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
-    assertTrue(result_after instanceof Polygon);
-    assertTrue(result_after.isValid());
-    assertEquals(5, result_after.getCoordinates().length);
-    Geometry expectedPolygon_after = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.303 1.042, 7.31 1.06, 7.32 1.07, 7.32 1.04, 7.303 1.042)))"
-    );
-    Geometry intersection_after = result_after.intersection(expectedPolygon_after);
-    assertEquals(expectedPolygon_after.getArea(), intersection_after.getArea(), DELTA);
+    try {
+      Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
+      assertTrue(result_after instanceof GeometryCollection);
+      assertTrue(result_after.isValid());
+      assertTrue(result_after.getNumGeometries() == 1);
+      assertTrue(result_after.getGeometryN(0) instanceof LineString);
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -334,27 +376,32 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, way member: node 53 changes tags, 51 changes coordinates
     OSMEntity entity = testData.relations().get(510L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(4, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.303 1.042,1.43 1.24,7.32 1.04,7.303 1.042)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 1);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // version after
     OSMEntity entity_after = testData.relations().get(510L).get(0);
     OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2014-02-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
-    assertTrue(result_after instanceof Polygon);
-    assertTrue(result_after.isValid());
-    assertEquals(4, result_after.getCoordinates().length);
-    Geometry expectedPolygon_after = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.295 1.039, 1.43 1.24, 7.32 1.04, 7.295 1.039)))"
-    );
-    Geometry intersection_after = result_after.intersection(expectedPolygon_after);
-    assertEquals(expectedPolygon_after.getArea(), intersection_after.getArea(), DELTA);
+    try {
+      Geometry result_after = OSHDBGeometryBuilder
+          .getGeometry(entity_after, timestamp_after, areaDecider);
+      assertTrue(result_after instanceof GeometryCollection);
+      assertTrue(result_after.isValid());
+      assertTrue(result_after.getNumGeometries() == 1);
+      assertTrue(result_after.getGeometryN(0) instanceof LineString);
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -362,20 +409,30 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, way member: way 119 changes visible tag
     OSMEntity entity = testData.relations().get(511L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(4, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.29 1.01, 7.29 1.05, 7.30 1.01, 7.29 1.01)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 1);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // version after, visible false
     OSMEntity entity_after = testData.relations().get(511L).get(0);
     OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2017-02-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
-    assertTrue(result_after.isEmpty());
+    try {
+      Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
+      assertTrue(result_after instanceof GeometryCollection);
+      System.out.println(result_after);
+      assertTrue(result_after.isEmpty());
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -383,21 +440,32 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, 2 way members making outer ring: way 120 changes visible tag later, 121 not
     OSMEntity entity = testData.relations().get(512L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(5, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.5 1.04, 7.5 1.6, 7.4 1.6, 7.4 1.04,7.5 1.04)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 2);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+      assertTrue(result.getGeometryN(1) instanceof LineString);
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // version after: way 120 does not exit any more
     OSMEntity entity_after = testData.relations().get(512L).get(0);
-    OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2018-02-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
-    assertTrue(result_after instanceof GeometryCollection);
-    assertTrue(result_after.getNumGeometries() == 2);
+    OSHDBTimestamp timestamp_after = TimestampParser.toOSHDBTimestamp("2018-02-01T00:00:00Z");
+    try {
+      Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
+      assertTrue(result_after instanceof GeometryCollection);
+      assertTrue(result_after.getNumGeometries() == 2);
+      assertTrue(result_after.getGeometryN(0) instanceof Point);
+      assertTrue(result_after.getGeometryN(1) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
@@ -405,44 +473,50 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, way member: way 122 changes tags
     OSMEntity entity = testData.relations().get(513L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(5, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.34 1.01, 7.34 1.05, 7.32 1.05, 7.32 1.04,7.34 1.01)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 1);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // way first version
     OSMEntity entity1 = testData.relations().get(513L).get(0);
     OSHDBTimestamp timestamp1 =  TimestampParser.toOSHDBTimestamp("2009-02-01T00:00:00Z");
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-    assertTrue(result1 instanceof Polygon);
-    assertTrue(result1.isValid());
-    assertEquals(5, result1.getCoordinates().length);
-    Geometry expectedPolygon1 = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.34 1.01, 7.34 1.05, 7.32 1.05, 7.32 1.04,7.34 1.01)))"
-    );
-    Geometry intersection1 = result1.intersection(expectedPolygon1);
-    assertEquals(expectedPolygon1.getArea(), intersection1.getArea(), DELTA);
+    try {
+      Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
+      assertTrue(result1 instanceof GeometryCollection);
+      assertTrue(result1.isValid());
+      assertTrue(result1.getNumGeometries() == 1);
+      assertTrue(result1.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
     // way second version
     OSMEntity entity2 = testData.relations().get(513L).get(0);
     OSHDBTimestamp timestamp2 =  TimestampParser.toOSHDBTimestamp("2012-02-01T00:00:00Z");
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof Polygon);
-    assertTrue(result2.isValid());
-    assertEquals(5, result2.getCoordinates().length);
-    Geometry expectedPolygon2 = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.34 1.01, 7.34 1.05, 7.32 1.05, 7.32 1.04,7.34 1.01)))"
-    );
-    Geometry intersection2 = result2.intersection(expectedPolygon2);
-    assertEquals(expectedPolygon2.getArea(), intersection2.getArea(), DELTA);
+    try {
+      Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
+      assertTrue(result2 instanceof GeometryCollection);
+      assertTrue(result2.isValid());
+      assertTrue(result2.getNumGeometries() == 1);
+      assertTrue(result2.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
   public void test15() throws ParseException {
-    // relation getting more ways, one disappears, last version not valid
+    // relation, at the beginning two polygons, one disappears later
     OSMEntity entity = testData.relations().get(514L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
     try {
@@ -456,7 +530,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     catch(Exception e){
         e.printStackTrace();
         fail("Should not have thrown any exception");
-      }
+    }
     // second version
     OSMEntity entity1 = testData.relations().get(514L).get(1);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
@@ -478,33 +552,38 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
     // relation, at the beginning one way, split up later into 2 ways
     OSMEntity entity = testData.relations().get(515L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(5, result.getCoordinates().length);
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.0 1.04, 7.0 1.6, 7.2 1.6, 7.2 1.04,7.0 1.04)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    try {
+      Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result.isValid());
+      assertTrue(result.getNumGeometries() == 1);
+      assertTrue(result.getGeometryN(0) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+  }
     // second version
     OSMEntity entity1 = testData.relations().get(515L).get(1);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-    assertTrue(result1 instanceof Polygon);
-    assertTrue(result1.isValid());
-    assertEquals(5, result1.getCoordinates().length);
-    Geometry expectedPolygon1 = (new WKTReader()).read(
-        "MULTIPOLYGON((( 7.0 1.04, 7.0 1.6, 7.2 1.6, 7.2 1.04,7.0 1.04)))"
-    );
-    Geometry intersection1 = result1.intersection(expectedPolygon1);
-    assertEquals(expectedPolygon1.getArea(), intersection1.getArea(), DELTA);
+    try {
+      Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
+      assertTrue(result1 instanceof GeometryCollection);
+      assertTrue(result1.isValid());
+      assertTrue(result1.getNumGeometries() == 2);
+      assertTrue(result1.getGeometryN(0) instanceof LineString);
+      assertTrue(result1.getGeometryN(1) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
   }
 
   @Test
-  public void test100() {
-    // relation type restriction
-    OSMEntity entity1 = testData.relations().get(710900L).get(0);
+  public void test17() {
+    // relation, restriction, role changes
+    OSMEntity entity1 = testData.relations().get(516L).get(0);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
@@ -521,56 +600,31 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test101() {
-    // relation type associatedStreet
-    OSMEntity entity1 = testData.relations().get(710901L).get(0);
+  public void test19() {
+    // relation as building with role=part and outline
+    OSMEntity entity1 = testData.relations().get(517L).get(0);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result instanceof GeometryCollection );
-      assertTrue(result.getNumGeometries() == 3);
-      assertTrue(result.getGeometryN(0) instanceof Point);
-      assertTrue(result.getGeometryN(1) instanceof Point);
-      assertTrue(result.getGeometryN(2) instanceof Point);
-    }
-    catch(Exception e){
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
-  }
-
-  @Test
-  public void test102() {
-    // relation type public_transport
-    OSMEntity entity1 = testData.relations().get(710902L).get(0);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
-    try {
-      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-      assertTrue(result instanceof GeometryCollection );
-      assertTrue(result.getNumGeometries() == 4);
-      assertTrue(result.getGeometryN(0) instanceof LineString);
-      assertTrue(result.getGeometryN(1) instanceof Point);
-      assertTrue(result.getGeometryN(2) instanceof LineString);
-      assertTrue(result.getGeometryN(3) instanceof Point);
-    }
-    catch(Exception e){
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
-  }
-
-  @Test
-  public void test103() {
-    // relation type building
-    OSMEntity entity1 = testData.relations().get(710903L).get(0);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
-    try {
-      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
-      assertTrue(result instanceof GeometryCollection );
-      assertTrue(result.getNumGeometries() == 3);
+      assertTrue(result.getNumGeometries() == 2);
       assertTrue(result.getGeometryN(0) instanceof LineString);
       assertTrue(result.getGeometryN(1) instanceof LineString);
-      assertTrue(result.getGeometryN(2) instanceof LineString);
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      fail("Should not have thrown any exception");
+    }
+    // second version
+    OSMEntity entity2 = testData.relations().get(517L).get(1);
+    OSHDBTimestamp timestamp2 = entity2.getTimestamp();
+    try {
+      Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
+      assertTrue(result2 instanceof GeometryCollection );
+      assertTrue(result2.getNumGeometries() == 3);
+      assertTrue(result2.getGeometryN(0) instanceof LineString);
+      assertTrue(result2.getGeometryN(1) instanceof LineString);
+      assertTrue(result2.getGeometryN(2) instanceof LineString);
     }
     catch(Exception e){
       e.printStackTrace();
