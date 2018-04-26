@@ -1,17 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <osm version="0.6" generator="testdata" upload="false">
-    <!--104 MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05,7.32 1.05, 7.32 1.04,7.33 1.04)))-->
     <node id="1" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="7.30" lat="1.01"/>
     <node id="2" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="2" lon="7.29" lat="1.01"/>
     <node id="3" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="3" lon="7.29" lat="1.05"/>
-    <!--119 MULTIPOLYGON(((7.29 1.01, 7.29 1.05, 7.30 1.01, 7.29 1.01)))-->
 	  <node id="11" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="4" lon="7.31" lat="1.01"/>
     <node id="12" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="5" lon="7.34" lat="1.01"/>
     <node id="13" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="6" lon="7.34" lat="1.05"/>
     <node id="14" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="7" lon="7.32" lat="1.05"/>
     <node id="15" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="8" lon="7.32" lat="1.04"/>
     <node id="16" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="9" lon="7.33" lat="1.04"/>
-    <!--122 MULTIPOLYGON(((7.34 1.01, 7.34 1.05, 7.32 1.05, 7.32 1.04,7.34 1.01)))-->
     <node id="17" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="10" lon="7.33" lat="1.05"/>
     <node id="18" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="11" lon="7.33" lat="1.06"/>
     <node id="19" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="12" lon="7.32" lat="1.06"/>
@@ -40,18 +37,18 @@
     <node id="37" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="7.265" lat="1.06"/>
     <node id="38" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="31" lon="7.28" lat="1.06"/>
     <node id="39" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="32" lon="7.265" lat="1.05"/>
-    <!--,109 inner MULTIPOLYGON(((7.28 1.05,7.28 1.07, 7.26 1.07, 7.26 1.05, 7.28 1.05)))-->
+
     <node id="40" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="33" lon="7.24" lat="1.04"/>
     <node id="41" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="34" lon="7.24" lat="1.07"/>
     <node id="42" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="35" lon="7.30" lat="1.07"/>
     <node id="43" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="36" lon="7.30" lat="1.04"/>
-    <!--,110 outer MULTIPOLYGON(((7.24 1.04,7.24 1.07, 7.30 1.07, 7.30 1.04, 7.24 1.04),(7.28 1.05,7.28 1.06, 7.26 1.06, 7.26 1.05, 7.28 1.05)))-->
+
     <node id="44" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="37" lon="7.26" lat="1.055"/>
     <node id="45" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="38" lon="7.265" lat="1.065"/>
-    <!--,110 outer MULTIPOLYGON(((7.24 1.04,7.24 1.07, 7.30 1.07, 7.30 1.04, 7.24 1.04),(7.28 1.05,7.28 1.06, 7.26 1.055, 7.265 1.055, 7.28 1.05)))-->
+
     <node id="46" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="39" lon="7.31" lat="1.07"/>
     <node id="47" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="40" lon="7.31" lat="1.04"/>
-    <!--,110 outer MULTIPOLYGON(((7.24 1.04,7.24 1.07, 7.31 1.07, 7.31 1.04, 7.24 1.04),(7.28 1.05,7.28 1.06, 7.26 1.06, 7.26 1.05, 7.28 1.05)))-->
+
 
     <node id="48" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="41" lon="7.24" lat="1.045"/>
     <node id="48" visible="true" version="2" timestamp="2010-01-01T00:00:00Z" uid="11" user="test" changeset="42" lon="7.24" lat="1.048"/>
@@ -84,7 +81,7 @@
         <tag k="created_by" v="test"/>
         <tag k="highway" v="traffic_signals"/>
     </node>
-    <!--MULTIPOLYGON(((7.303 1.042, 1.44 1.24, 7.3 1.04,7.303 1.042)))-->
+
     <!--node: tag changes-->
     <node id="53" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="56" lon="1.43" lat="1.24">
         <tag k="created_by" v="test"/>
@@ -107,32 +104,7 @@
     <node id="60" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="65" lon="7.0" lat="1.6"/>
     <node id="61" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="66" lon="7.2" lat="1.6"/>
     <node id="62" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="67" lon="7.2" lat="1.04"/>
-    <!--512 MULTIPOLYGON((( 7.5 1.04, 7.5 1.6, 7.4 1.6, 7.4 1.04,7.5 1.04)))-->
-    <!--515 MULTIPOLYGON((( 7.0 1.04, 7.0 1.6, 7.2 1.6, 7.2 1.04,7.0 1.04)))-->
-    <!--104,105, MULTIPOLYGON(((7.35 1.01, 7.34 1.01,7.34 1.02,7.35 1.02, 7.35 1.01),(7.33 1.04,7.33 1.03, 7.31 1.02, 7.31 1.04, 7.33 1.04)))-->
-    <!--105, MULTIPOLYGON(((7.33 1.04,7.33 1.03, 7.31 1.02, 7.31 1.04, 7.33 1.04)))-->
-    <!--105 MULTIPOLYGON(((7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04)))-->
-    <!--102 +3 MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05, 7.31 1.01),(7.34 1.05, 7.32 1.05, 7.32 1.04, 7.33 1.04, 7.34 1.05)))-->
-    <!--103   7.34 1.05, 7.32 1.05, 7.32 1.04, 7.33 1.04 7.31 1.01-->
-    <!--,103 MULTIPOLYGON(((7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04)))-->
-    <!--106 MULTIPOLYGON((( 7.30 1.01, 7.29 1.01, 7.29 1.05, 7.30 1.01)))-->
-    <!--107 MULTIPOLYGON((( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05)))-->
-    <!--108 MULTIPOLYGON((( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))-->
-    <!--109  1 MULTIPOLYGON(((7.26 1.055, 7.265 1.06, 7.28 1.06,7.265 1.065, 7.26 1.055)))-->
-    <!--109  2 MULTIPOLYGON((( 7.26 1.05,7.265 1.06, 7.28 1.06, 7.265 1.05,7.26 1.05)))-->
-    <!--110  1 MULTIPOLYGON((( 7.24 1.04, 7.24 1.07, 7.30 1.07, 7.30 1.04, 7.24 1.04)))-->
-    <!--110  2 MULTIPOLYGON(((7.24 1.04, 7.24 1.07, 7.31 1.07, 7.31 1.04 , 7.24 1.04)))-->
-    <!--112  1 MULTIPOLYGON(((7.24 1.048, 7.245 1.072, 7.305 1.078, 7.303 1.042 , 7.24 1.048)))-->
-    <!--112  2 MULTIPOLYGON(((7.24 1.042, 7.242 1.07, 7.305 1.07, 7.295 1.039 , 7.24 1.042)))-->
-    <!--113 MULTIPOLYGON(((7.24 1.048, 7.245 1.072,  7.303 1.042 , 7.24 1.048)))-->
-    <!--110  1 109 1 MULTIPOLYGON((( 7.24 1.04, 7.24 1.07, 7.30 1.07, 7.30 1.04, 7.24 1.04),(7.26 1.055, 7.265 1.06, 7.28 1.06,7.265 1.065, 7.26 1.055)))-->
-    <!--,102+3+7+8 MULTIPOLYGON((( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05),(7.34 1.01,7.34 1.02, 7.35 1.02, 7.35 1.01, 7.34 1.01),(7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04),( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))-->
-    <!--102 +3+7 MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05, 7.31 1.01)),((7.34 1.05, 7.32 1.05, 7.32 1.04, 7.33 1.04, 7.34 1.05)),(( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05)))-->
-    <!--102 +7+8 MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05, 7.31 1.01)),(( 7.32 1.05,7.32 1.07,7.31 1.07,7.31 1.05,7.32 1.05)),((7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))-->
 
-    <!--,102+3+8 MULTIPOLYGON(((7.34 1.01,7.34 1.02, 7.35 1.02, 7.35 1.01, 7.34 1.01),(7.33 1.04, 7.33 1.03, 7.31 1.02, 7.31 1.01, 7.34 1.01, 7.33 1.04),( 7.33 1.05,7.33 1.06,7.32 1.06,7.32 1.05,7.33 1.05)))-->
-
-    <!--104 + 6 MULTIPOLYGON(((7.31 1.01,7.34 1.01,7.34 1.05,7.32 1.05, 7.32 1.04,7.33 1.04),( 7.30 1.01, 7.29 1.01, 7.29 1.05, 7.30 1.01)))-->
 	   <way id="102" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="3" user="C" changeset="201">
         <nd ref="11"/>
         <nd ref="12"/>
