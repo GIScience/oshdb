@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.util;
 import java.io.Serializable;
 
 public class OSHDBTagKey implements Serializable {
+  private static final long serialVersionUID = 1L;
   private int key;
 
   public OSHDBTagKey(int key) {

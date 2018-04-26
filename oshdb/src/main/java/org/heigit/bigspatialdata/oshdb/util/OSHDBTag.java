@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class OSHDBTag implements Serializable {
+  private static final long serialVersionUID = 1L;
   private int key;
   private int value;
 

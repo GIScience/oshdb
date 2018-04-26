@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class OSHDBTimestamp implements Comparable<OSHDBTimestamp>, Serializable {
+  private static final long serialVersionUID = 1L;
   private long _tstamp;
 
   public OSHDBTimestamp(long tstamp) {
