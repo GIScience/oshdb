@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import java.util.List;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.jetbrains.annotations.Contract;
