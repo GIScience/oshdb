@@ -44,7 +44,7 @@ pipeline {
       }
     }
 
-    stage ('deploy'){
+    stage ('Deploy'){
       when {
         expression {
           return env.BRANCH_NAME ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)|(^master$)/
@@ -79,7 +79,7 @@ pipeline {
       }
     }
         
-    stage ('publish Javadoc'){
+    stage ('Publish Javadoc'){
       when {
         expression {
           return env.BRANCH_NAME ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)|(^master$)/
@@ -115,7 +115,7 @@ pipeline {
       }     
     }
     
-    stage ('reports and statistics'){
+    stage ('Reports and Statistics'){
       steps {
         script{
           projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+:)"').trim()
@@ -139,7 +139,7 @@ pipeline {
     
 
     
-    stage ('encourage') {
+    stage ('Encourage') {
       when {         
         expression {
           if(currentBuild.number > 1){
@@ -162,7 +162,7 @@ pipeline {
       }  
     }
     
-    stage ('Report status change'){
+    stage ('Report Status Change'){
       when {
         expression {
           return ((currentBuild.number > 1) && (currentBuild.getPreviousBuild().result == 'FAILURE'))
