@@ -8,6 +8,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 
 import java.util.LinkedList;
@@ -20,20 +21,23 @@ import java.util.List;
 public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, List<OSMEntitySnapshot>> {
 
     private OSHDBJdbc oshdb;
+    private OSHDBTimestampList timestamps;
     private String key;
     private String tag;
     private Double distanceInMeter;
 
-    protected NeighbourFinder(OSHDBJdbc oshdb, String key, String tag, Double distanceInMeter) {
+    protected NeighbourFinder(OSHDBJdbc oshdb, OSHDBTimestampList timestamps, String key, String tag, Double distanceInMeter) {
         this.oshdb = oshdb;
         this.key = key;
         this.tag = tag;
         this.distanceInMeter = distanceInMeter;
+        this.timestamps = timestamps;
     }
 
     public List<OSMEntitySnapshot> apply(OSMEntitySnapshot snapshot) {
 
         List<OSMEntitySnapshot> result = new LinkedList<>();
+        result.add(snapshot);
         DefaultTagInterpreter defaultTagInterpreter;
 
         try {
@@ -52,7 +56,6 @@ public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, 
                 */
 
             // Get geometry of feature
-
             defaultTagInterpreter = new DefaultTagInterpreter(this.oshdb.getConnection());
             Geometry geom = OSHDBGeometryBuilder.getGeometry(snapshot.getEntity(),
                     snapshot.getTimestamp(),
@@ -67,13 +70,14 @@ public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, 
             double minLon = geomBuffered.getMinX();
             double maxLon = geomBuffered.getMaxX();
 
-            OSMEntitySnapshotView.on(this.oshdb)
+            System.out.println(snapshot.getTimestamp().toString());
+
+            result = OSMEntitySnapshotView.on(this.oshdb)
                 .keytables(this.oshdb)
                 .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
-                .timestamps("2014-01-01", "2014-02-01", OSHDBTimestamps.Interval.MONTHLY)
+                .timestamps(snapshot.getTimestamp().toString())
                 .where(key, tag)
-                .collect()
-                .forEach((snapshot2) -> {
+                .filter((snapshot2) -> {
 
                     try {
                         // Get geometry of object and convert it to projected CRS
@@ -83,14 +87,15 @@ public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, 
                                 defaultTagInterpreter);
 
                         // Check if geometry is within buffer distance
-                        if (geom2.isWithinDistance(geom, distanceInMeter)) {
-                            result.add(snapshot2);
-                        }
+                        return geom2.isWithinDistance(geom, distanceInMeter);
 
                     } catch (Exception e) {
                         e.printStackTrace();
+                        return false;
                     }
-                });
+
+                    })
+                .collect();
 
         } catch (Exception e) {
             e.printStackTrace();
