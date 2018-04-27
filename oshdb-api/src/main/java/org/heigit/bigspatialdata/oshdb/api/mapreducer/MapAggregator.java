@@ -242,8 +242,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(SerializablePredicate<OSMEntity> f) {
-    return this.copyTransform(this._mapReducer.where(f));
+  public MapAggregator<U, X> osmEntityFilter(SerializablePredicate<OSMEntity> f) {
+    return this.copyTransform(this._mapReducer.osmEntityFilter(f));
   }
 
   /**
@@ -253,8 +253,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(OSMTagKey key) {
-    return this.copyTransform(this._mapReducer.where(key));
+  public MapAggregator<U, X> osmTag(OSMTagKey key) {
+    return this.copyTransform(this._mapReducer.osmTag(key));
   }
 
   /**
@@ -264,8 +264,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(String key) {
-    return this.copyTransform(this._mapReducer.where(key));
+  public MapAggregator<U, X> osmTag(String key) {
+    return this.copyTransform(this._mapReducer.osmTag(key));
   }
 
   /**
@@ -275,8 +275,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(OSMTag tag) {
-    return this.copyTransform(this._mapReducer.where(tag));
+  public MapAggregator<U, X> osmTag(OSMTag tag) {
+    return this.copyTransform(this._mapReducer.osmTag(tag));
   }
 
   /**
@@ -287,8 +287,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(String key, String value) {
-    return this.copyTransform(this._mapReducer.where(key, value));
+  public MapAggregator<U, X> osmTag(String key, String value) {
+    return this.copyTransform(this._mapReducer.osmTag(key, value));
   }
 
   /**
@@ -300,8 +300,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(String key, Collection<String> values) {
-    return this.copyTransform(this._mapReducer.where(key, values));
+  public MapAggregator<U, X> osmTag(String key, Collection<String> values) {
+    return this.copyTransform(this._mapReducer.osmTag(key, values));
   }
 
   /**
@@ -313,8 +313,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(String key, Pattern valuePattern) {
-    return this.copyTransform(this._mapReducer.where(key, valuePattern));
+  public MapAggregator<U, X> osmTag(String key, Pattern valuePattern) {
+    return this.copyTransform(this._mapReducer.osmTag(key, valuePattern));
   }
 
   /**
@@ -325,8 +325,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> where(Collection<OSMTag> keyValuePairs) {
-    return this.copyTransform(this._mapReducer.where(keyValuePairs));
+  public MapAggregator<U, X> osmTag(Collection<OSMTag> keyValuePairs) {
+    return this.copyTransform(this._mapReducer.osmTag(keyValuePairs));
   }
 
   // -----------------------------------------------------------------------------------------------

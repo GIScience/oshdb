@@ -37,14 +37,14 @@ public class TestFilter {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void testFilter() throws Exception {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .filter(contribution -> contribution.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)
         .uniq();
@@ -57,7 +57,7 @@ public class TestFilter {
   public void testAggregateFilter() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .filter(contribution -> contribution.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)

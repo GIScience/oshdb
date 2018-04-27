@@ -48,10 +48,10 @@ public class TestMapAggregateByGeometry {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).where("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).osmTag("highway").areaOfInterest(bbox);
   }
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.WAY).where("highway").areaOfInterest(bbox);
+    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.WAY).osmTag("highway").areaOfInterest(bbox);
   }
   private Map<String, Polygon> getSubRegions() {
     Map<String, Polygon> res = new TreeMap<>();

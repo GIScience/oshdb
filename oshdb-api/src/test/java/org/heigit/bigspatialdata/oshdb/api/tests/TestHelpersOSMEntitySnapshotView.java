@@ -39,7 +39,7 @@ public class TestHelpersOSMEntitySnapshotView {
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducer() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.WAY).where("building", "yes").areaOfInterest(bbox);
+    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<OSHDBTimestamp, Number> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateByTimestamp()
         .sum(snapshot -> 1);
 
@@ -69,7 +69,7 @@ public class TestHelpersOSMEntitySnapshotView {
     Number result3 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .sum(snapshot -> 1);
 
     assertEquals(42, result3);
@@ -78,7 +78,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<Boolean, Number> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .sum(snapshot -> 1);
 
@@ -92,7 +92,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<OSHDBTimestamp, Integer> result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateByTimestamp()
         .count();
 
@@ -103,7 +103,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<OSHDBTimestamp, Integer> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateByTimestamp()
         .count();
 
@@ -115,7 +115,7 @@ public class TestHelpersOSMEntitySnapshotView {
     Integer result3 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .count();
 
     assertEquals(42, result3.intValue());
@@ -124,7 +124,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<Boolean, Integer> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .count();
 
@@ -138,7 +138,7 @@ public class TestHelpersOSMEntitySnapshotView {
     Double result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .map(snapshot -> snapshot.getEntity().getId() % 2)
         .average();
 
@@ -148,7 +148,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateByTimestamp()
         .map(snapshot -> snapshot.getEntity().getId() % 2)
         .average();
@@ -161,7 +161,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .average(snapshot -> snapshot.getEntity().getId() % 2);
 
@@ -175,7 +175,7 @@ public class TestHelpersOSMEntitySnapshotView {
     Double result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .weightedAverage(snapshot -> new WeightedValue<>(snapshot.getEntity().getId() % 2,1 * (snapshot.getEntity().getId() % 2)));
 
     assertEquals(1.0, result1.doubleValue(), DELTA);
@@ -184,7 +184,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateByTimestamp()
         .weightedAverage(snapshot -> new WeightedValue<>(snapshot.getEntity().getId() % 2,2 * (snapshot.getEntity().getId() % 2)));
 
@@ -196,7 +196,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .weightedAverage(snapshot -> new WeightedValue<>(snapshot.getEntity().getId() % 2, 2 * (snapshot.getEntity().getId() % 2)));
 
@@ -210,7 +210,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateByTimestamp()
         .uniq(snapshot -> snapshot.getEntity().getId());
 
@@ -221,7 +221,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<OSHDBTimestamp, Set<Long>> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateByTimestamp()
         .uniq(snapshot -> snapshot.getEntity().getId());
 
@@ -233,7 +233,7 @@ public class TestHelpersOSMEntitySnapshotView {
     Set<Long> result3 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .uniq(snapshot -> snapshot.getEntity().getId());
 
     assertEquals(42, result3.size());
@@ -242,7 +242,7 @@ public class TestHelpersOSMEntitySnapshotView {
     SortedMap<Boolean, Set<Long>> result4 = this.createMapReducer()
         .timestamps(timestamps1)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .uniq(snapshot -> snapshot.getEntity().getId());
 

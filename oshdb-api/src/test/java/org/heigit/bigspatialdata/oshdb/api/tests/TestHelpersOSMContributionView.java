@@ -43,7 +43,7 @@ public class TestHelpersOSMContributionView {
   }
 
   private MapReducer<OSMContribution> createMapReducer() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).where("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
@@ -77,7 +77,7 @@ public class TestHelpersOSMContributionView {
     SortedMap<String, Number> result4 = this.createMapReducer()
         .timestamps(timestamps72)
         .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmTag("building", "yes")
         .aggregateBy(contribution -> contribution.getContributionTypes().toString())
         .sum(contribution -> 1);
 
