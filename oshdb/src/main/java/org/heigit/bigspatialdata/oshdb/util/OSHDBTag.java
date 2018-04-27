@@ -1,8 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class OSHDBTag implements Serializable {
+  private static final long serialVersionUID = 1L;
   private int key;
   private int value;
 
@@ -31,7 +33,7 @@ public class OSHDBTag implements Serializable {
 
   @Override
   public int hashCode() {
-    return this.key << 12 + this.value;
+    return Objects.hash(this.key, this.value);
   }
 
   @Override

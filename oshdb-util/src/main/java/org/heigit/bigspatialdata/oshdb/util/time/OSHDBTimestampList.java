@@ -1,10 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.time;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;

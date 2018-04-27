@@ -1,8 +1,6 @@
 package org.heigit.bigspatialdata.oshdb;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -91,7 +89,6 @@ public enum TableNames {
       case WAY: return Optional.of(T_WAYS);
       case RELATION: return Optional.of(T_RELATIONS);
       default:
-        LoggerFactory.getLogger(TableNames.class).error("no table found for osm type: " + type.toString());
         return Optional.empty();
     }
   }

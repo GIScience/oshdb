@@ -7,7 +7,6 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;

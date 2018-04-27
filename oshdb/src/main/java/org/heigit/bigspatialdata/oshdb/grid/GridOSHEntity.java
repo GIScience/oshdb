@@ -6,13 +6,10 @@ import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("rawtypes")
 public abstract class GridOSHEntity<HOSM extends OSHEntity>
     implements Iterable<HOSM>, Serializable {
-  private static final Logger LOG = LoggerFactory.getLogger(GridOSHEntity.class);
 
   private static final long serialVersionUID = 1L;
   protected final long id;
