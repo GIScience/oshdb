@@ -35,14 +35,14 @@ public class TestMapAggregateByIndex {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void test() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .map(OSMContribution::getContributorUserId)
         .reduce(
@@ -60,7 +60,7 @@ public class TestMapAggregateByIndex {
   public void testZerofill() throws Exception {
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .zerofill(Collections.singletonList(-1L))
         .count();
