@@ -428,7 +428,7 @@ public class CellIterator implements Serializable {
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
           // todo: some of this may be refactorable between the two for loops
-          if (prev != null && prev.activities.contains(ContributionType.DELETION)) {
+          if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp,
                 osmEntity, prev.osmEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
