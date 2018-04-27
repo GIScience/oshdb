@@ -39,13 +39,13 @@ abstract class TestMapReduce {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     MapReducer<OSMContribution> mapRed = OSMContributionView.on(oshdb);
     if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
-    return mapRed.osmTypes(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     MapReducer<OSMEntitySnapshot> mapRed = OSMEntitySnapshotView.on(oshdb);
     if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
-    return mapRed.osmTypes(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test

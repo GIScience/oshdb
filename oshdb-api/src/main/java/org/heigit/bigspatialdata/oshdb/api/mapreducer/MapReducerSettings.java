@@ -45,7 +45,15 @@ interface MapReducerSettings<M> {
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M osmTypes(EnumSet<OSMType> typeFilter);
+  M osmType(EnumSet<OSMType> typeFilter);
+
+  /**
+   * replaced by {@link #osmType(OSMType, OSMType...)}
+   */
+  @Deprecated
+  default M osmTypes(EnumSet<OSMType> typeFilter) {
+    return this.osmType(typeFilter);
+  }
 
   /**
    * Limits the analysis to the given osm entity types.
@@ -54,8 +62,16 @@ interface MapReducerSettings<M> {
    * @param otherTypes more osm types which should be analyzed
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
+  default M osmType(OSMType type1, OSMType... otherTypes) {
+    return osmType(EnumSet.of(type1, otherTypes));
+  }
+
+  /**
+   * replaced by {@link #osmType(OSMType, OSMType...)}
+   */
+  @Deprecated
   default M osmTypes(OSMType type1, OSMType... otherTypes) {
-    return osmTypes(EnumSet.of(type1, otherTypes));
+    return this.osmType(type1, otherTypes);
   }
 
   /**
