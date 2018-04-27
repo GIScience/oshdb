@@ -39,13 +39,13 @@ abstract class TestMapReduce {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     MapReducer<OSMContribution> mapRed = OSMContributionView.on(oshdb);
     if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
-    return mapRed.osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     MapReducer<OSMEntitySnapshot> mapRed = OSMEntitySnapshotView.on(oshdb);
     if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
-    return mapRed.osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test
@@ -53,7 +53,7 @@ abstract class TestMapReduce {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .map(OSMContribution::getContributorUserId)
         .uniq();
 
@@ -63,7 +63,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
         .uniq();
@@ -77,7 +77,7 @@ abstract class TestMapReduce {
     // simple query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .map(snapshot -> snapshot.getEntity().getUserId())
         .uniq();
 
@@ -86,7 +86,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .map(snapshot -> snapshot.getEntity().getUserId())
         .filter(uid -> uid > 0)
         .uniq();

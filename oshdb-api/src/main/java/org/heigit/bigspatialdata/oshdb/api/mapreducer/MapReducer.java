@@ -345,7 +345,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmTypes(EnumSet<OSMType> typeFilter) {
+  public MapReducer<X> osmType(EnumSet<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
     ret._typeFilter = typeFilter;
     return ret;
@@ -359,7 +359,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(SerializablePredicate<OSMEntity> f) {
+  public MapReducer<X> osmEntityFilter(SerializablePredicate<OSMEntity> f) {
     MapReducer<X> ret = this.copy();
     ret._filters.add(f);
     return ret;
@@ -373,8 +373,8 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(String key) {
-    return this.where(new OSMTagKey(key));
+  public MapReducer<X> osmTag(String key) {
+    return this.osmTag(new OSMTagKey(key));
   }
 
   /**
@@ -385,7 +385,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(OSMTagKey key) {
+  public MapReducer<X> osmTag(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
     OSHDBTagKey keyId = this._getTagTranslator().getOSHDBTagKeyOf(key);
     if (!keyId.isPresentInKeytables()) {
@@ -408,8 +408,8 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(String key, String value) {
-    return this.where(new OSMTag(key, value));
+  public MapReducer<X> osmTag(String key, String value) {
+    return this.osmTag(new OSMTag(key, value));
   }
 
   /**
@@ -420,7 +420,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(OSMTag tag) {
+  public MapReducer<X> osmTag(OSMTag tag) {
     MapReducer<X> ret = this.copy();
     OSHDBTag keyValueId = this._getTagTranslator().getOSHDBTagOf(tag);
     if (!keyValueId.isPresentInKeytables()) {
@@ -446,7 +446,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(String key, Collection<String> values) {
+  public MapReducer<X> osmTag(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
     OSHDBTagKey oshdbKey = this._getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
@@ -489,7 +489,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(String key, Pattern valuePattern) {
+  public MapReducer<X> osmTag(String key, Pattern valuePattern) {
     MapReducer<X> ret = this.copy();
     OSHDBTagKey oshdbKey = this._getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
@@ -522,7 +522,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> where(Collection<OSMTag> tags) {
+  public MapReducer<X> osmTag(Collection<OSMTag> tags) {
     MapReducer<X> ret = this.copy();
     if (tags.size() == 0) {
       LOG.warn("Empty tag list. No data will match this filter.");
