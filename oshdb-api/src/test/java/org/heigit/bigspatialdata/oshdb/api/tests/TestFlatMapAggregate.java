@@ -37,7 +37,7 @@ public class TestFlatMapAggregate {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test

@@ -345,7 +345,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmTypes(EnumSet<OSMType> typeFilter) {
+  public MapReducer<X> osmType(EnumSet<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
     ret._typeFilter = typeFilter;
     return ret;

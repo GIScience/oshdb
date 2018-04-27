@@ -231,8 +231,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> osmTypes(EnumSet<OSMType> typeFilter) {
-    return this.copyTransform(this._mapReducer.osmTypes(typeFilter));
+  public MapAggregator<U, X> osmType(EnumSet<OSMType> typeFilter) {
+    return this.copyTransform(this._mapReducer.osmType(typeFilter));
   }
 
   /**

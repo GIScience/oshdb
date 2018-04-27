@@ -56,7 +56,7 @@ public class TestOSMDataFilters {
   @Test
   public void bbox() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .osmTypes(OSMType.NODE)
+        .osmType(OSMType.NODE)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -66,7 +66,7 @@ public class TestOSMDataFilters {
   @Test
   public void polygon() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .osmTypes(OSMType.NODE)
+        .osmType(OSMType.NODE)
         .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
         .count();
@@ -77,7 +77,7 @@ public class TestOSMDataFilters {
   public void multiPolygon() throws Exception {
     GeometryFactory gf = new GeometryFactory();
     Integer result = createMapReducerOSMEntitySnapshot()
-        .osmTypes(OSMType.NODE)
+        .osmType(OSMType.NODE)
         .areaOfInterest(gf.createMultiPolygon(new Polygon[] {
             OSHDBGeometryBuilder.getGeometry(bbox)
         }))
@@ -104,7 +104,7 @@ public class TestOSMDataFilters {
   public void tagKeyValue() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag("highway", "residential")
-        .osmTypes(OSMType.WAY)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -115,7 +115,7 @@ public class TestOSMDataFilters {
   public void tagKeyValues() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag("highway", Arrays.asList("residential", "unclassified"))
-        .osmTypes(OSMType.WAY)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -126,7 +126,7 @@ public class TestOSMDataFilters {
   public void tagKeyValueRegexp() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag("highway", Pattern.compile("residential|unclassified"))
-        .osmTypes(OSMType.WAY)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -140,7 +140,7 @@ public class TestOSMDataFilters {
             new OSMTag("highway", "residential"),
             new OSMTag("highway", "unclassified"))
         )
-        .osmTypes(OSMType.WAY)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -152,7 +152,7 @@ public class TestOSMDataFilters {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .osmTag("name")
         .osmTag("highway")
-        .osmTypes(OSMType.WAY)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> {
@@ -195,7 +195,7 @@ public class TestOSMDataFilters {
   public void custom() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .osmEntityFilter(entity -> entity.getVersion() > 2)
-        .osmTypes(OSMType.WAY)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> snapshot.getEntity().getVersion());

@@ -40,10 +40,10 @@ public class TestMapAggregateByIndex {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmTypes(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return OSMEntitySnapshotView.on(oshdb).osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test
