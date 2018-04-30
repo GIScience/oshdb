@@ -12,8 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
-
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;

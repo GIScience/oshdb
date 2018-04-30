@@ -7,7 +7,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 
 
 public class OSHDBBoundingBox implements Serializable {
-    
+  private static final long serialVersionUID = 1L;
   public static final OSHDBBoundingBox EMPTY = new OSHDBBoundingBox(0L, 0L, 0L, 0L);
   public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(Long.MAX_VALUE,Long.MAX_VALUE,Long.MIN_VALUE,Long.MIN_VALUE);
 

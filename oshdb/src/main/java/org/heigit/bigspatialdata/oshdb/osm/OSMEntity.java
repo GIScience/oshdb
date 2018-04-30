@@ -7,12 +7,8 @@ import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class OSMEntity {
-
-  private static final Logger LOG = LoggerFactory.getLogger(OSMEntity.class);
 
   protected final long id;
 

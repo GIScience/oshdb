@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
  * A wrapper class for cellIds consisting of a zoom level and an zoom-level specific id
  */
 public class CellId implements Serializable {
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOG = LoggerFactory.getLogger(CellId.class);
 
   private final int zoomLevel;
