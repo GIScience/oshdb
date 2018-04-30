@@ -608,6 +608,45 @@ public abstract class MapReducer<X> implements
   }
 
   // -----------------------------------------------------------------------------------------------
+  // Neighbourhood
+  // Find neighbouring objects with a certain tag and within a certain distance
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Filter by neighbouring objects (implemented as mapper)
+   *
+   * @param key string describing the OSM key
+   * @param tag string describing the OSM tag
+   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
+   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
+   * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
+  */
+  @Contract(pure = true)
+  public <R> MapReducer<R> neighbouring(String key, String tag, Double distanceInMeter) {
+    MapReducer<?> ret = this.copy();
+    NeighbourFinder neighbourMapper = new NeighbourFinder(ret._oshdbForTags, key, tag, distanceInMeter);
+    ret._mappers.add(neighbourMapper);
+    return (MapReducer<R>) ret;
+  }
+
+
+  /**
+   * Filter by neighbouring objects using boolean return value (implemented as mapper)
+   *
+   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
+   * @param MapReduce MapReduce function that is applied to all elements
+   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
+   * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
+   */
+  @Contract(pure = true)
+  public <R> MapReducer<R> neighbouring2(Double distanceInMeter, SerializableFunctionWithException<MapReducer, Boolean> MapReduce) {
+    MapReducer<?> ret = this.copy();
+    NeighbourFilter neighbourMapper2 = new NeighbourFilter(ret._oshdbForTags, distanceInMeter, MapReduce);
+    ret._mappers.add(neighbourMapper2);
+    return (MapReducer<R>) ret;
+  }
+
+  // -----------------------------------------------------------------------------------------------
   // Grouping and Aggregation
   // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
   // -----------------------------------------------------------------------------------------------

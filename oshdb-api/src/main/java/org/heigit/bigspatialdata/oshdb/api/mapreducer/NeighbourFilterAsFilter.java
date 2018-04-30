@@ -3,44 +3,33 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * Finds objects with a certain tag nearby the input object
  *
  **/
-public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, List<Object>> {
+public class NeighbourFilterAsFilter implements SerializablePredicate<OSMEntitySnapshot> {
 
     private OSHDBJdbc oshdb;
-    private String key;
-    private String tag;
     private Double distanceInMeter;
+    private SerializableFunctionWithException<MapReducer, Boolean> MapReduce;
 
-    protected NeighbourFinder(OSHDBJdbc oshdb, String key, String tag, Double distanceInMeter) {
+    public NeighbourFilterAsFilter(OSHDBJdbc oshdb, Double distanceInMeter, SerializableFunctionWithException<MapReducer, Boolean> MapReduce) {
         this.oshdb = oshdb;
-        this.key = key;
-        this.tag = tag;
         this.distanceInMeter = distanceInMeter;
+        this.MapReduce = MapReduce;
     }
 
-    public List<Object> apply(OSMEntitySnapshot snapshot) {
-
-        List<OSMEntitySnapshot> subquery_result = new LinkedList<>();
-        List<Object> result = new LinkedList<>();
+    public boolean test(OSMEntitySnapshot snapshot) {
 
         DefaultTagInterpreter defaultTagInterpreter;
+        boolean result = false;
 
         try {
 
@@ -58,7 +47,7 @@ public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, 
                 */
 
             // Get geometry of feature
-            defaultTagInterpreter = new DefaultTagInterpreter(this.oshdb.getConnection());
+            defaultTagInterpreter = new DefaultTagInterpreter(oshdb.getConnection());
             Geometry geom = OSHDBGeometryBuilder.getGeometry(snapshot.getEntity(),
                     snapshot.getTimestamp(),
                     defaultTagInterpreter);
@@ -72,15 +61,14 @@ public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, 
             double minLon = geomBuffered.getMinX();
             double maxLon = geomBuffered.getMaxX();
 
-            System.out.println(snapshot.getTimestamp().toString());
             System.out.println(snapshot.getEntity().getId());
+            System.out.println(snapshot.getTimestamp());
 
-            subquery_result = OSMEntitySnapshotView.on(this.oshdb)
-                .keytables(this.oshdb)
+            MapReducer SubMapReducer = OSMEntitySnapshotView.on(oshdb)
+                .keytables(oshdb)
                 .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
                 .timestamps(snapshot.getTimestamp().toString())
                 .filter((snapshot2) -> {
-
                     try {
                         // Get geometry of object and convert it to projected CRS
                         //Geometry geom2 = JTS.transform(snapshot2.getGeometry(), transform);
@@ -95,20 +83,17 @@ public class NeighbourFinder implements SerializableFunction<OSMEntitySnapshot, 
                         e.printStackTrace();
                         return false;
                     }
+                });
 
-                    })
-                    .where(key, tag)
-                    .collect();
-
-            System.out.println(subquery_result.size());
+            // Apply mapReducer given by user
+            result = MapReduce.apply(SubMapReducer);
+            System.out.println(SubMapReducer.where("natural", "tree").count());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        result.add(snapshot);
-        result.add(subquery_result);
-
         return result;
+
     }
 }
