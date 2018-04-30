@@ -140,7 +140,7 @@ pipeline {
 
     
     stage ('Encourage') {
-      when {         
+      when {
         expression {
           if(currentBuild.number > 1){
             datepre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis()).clearTime()
