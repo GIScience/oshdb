@@ -89,7 +89,7 @@ can query. You have several options:
 
 * [Download an H2-database] from our database repository (recommended for this tutorial),
 * [Create your own local H2-database],
-* [Deploy oshdb on ignite].
+* [Deploy oshdb on ignite]. (not covered in this tutorial)
 
 ## Preparing the Main Class
 
