@@ -73,7 +73,6 @@ public class NewIterateByTimestampsWaysTest {
       )).iterateByTimestamps(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-      result.iterator().forEachRemaining(k ->System.out.println(k.osmEntity.toString()));
       assertEquals(10, result.size());
       assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
       assertEquals(4, result.get(0).geometry.get().getNumPoints());
@@ -89,10 +88,6 @@ public class NewIterateByTimestampsWaysTest {
       assertEquals(31, result.get(0).osmEntity.getChangeset());
       assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
       assertNotEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
-      /*assertNotEquals(result.get(1).geometry.get().getCoordinates(),
-          result.get(0).geometry.get().getCoordinates());
-      assertNotEquals(result.get(2).geometry.get().getCoordinates(),
-          result.get(1).geometry.get().getCoordinates());*/
     }
 
   @Test
@@ -148,7 +143,7 @@ public class NewIterateByTimestampsWaysTest {
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z",
+            "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
@@ -172,7 +167,7 @@ public class NewIterateByTimestampsWaysTest {
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z",
+            "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
@@ -183,22 +178,22 @@ public class NewIterateByTimestampsWaysTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k ->System.out.println(k.osmEntity.toString()));
-    assertEquals(3, result.size());
+    assertEquals(11, result.size());
 
     assertEquals(3, result.get(0).geometry.get().getNumPoints());
-    assertEquals(5, result.get(1).geometry.get().getNumPoints());
     assertEquals(5, result.get(2).geometry.get().getNumPoints());
+    assertEquals(5, result.get(10).geometry.get().getNumPoints());
 
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof LineString);
-    Geometry geom2 = result.get(1).geometry.get();
+    Geometry geom2 = result.get(2).geometry.get();
     assertTrue(geom2 instanceof LineString);
-    Geometry geom3 = result.get(2).geometry.get();
+    Geometry geom3 = result.get(10).geometry.get();
     assertTrue(geom3 instanceof LineString);
-
-    assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
-    assertEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
+    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertNotEquals(result.get(10).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
+    assertNotEquals(result.get(2).geometry.get(), result.get(0).geometry.get());
+    assertEquals(result.get(10).geometry.get(), result.get(2).geometry.get());
   }
 
   @Test
@@ -210,7 +205,7 @@ public class NewIterateByTimestampsWaysTest {
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z",
+            "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
@@ -240,7 +235,7 @@ public class NewIterateByTimestampsWaysTest {
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z",
+            "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
@@ -266,7 +261,7 @@ public class NewIterateByTimestampsWaysTest {
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z",
+            "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
@@ -296,7 +291,7 @@ public class NewIterateByTimestampsWaysTest {
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z",
+            "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
