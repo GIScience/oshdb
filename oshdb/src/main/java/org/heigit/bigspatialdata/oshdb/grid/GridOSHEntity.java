@@ -7,8 +7,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 
-@SuppressWarnings("rawtypes")
-public abstract class GridOSHEntity<HOSM extends OSHEntity>
+public abstract class GridOSHEntity<HOSM extends OSHEntity<?>>
     implements Iterable<HOSM>, Serializable {
 
   private static final long serialVersionUID = 1L;
