@@ -47,3 +47,5 @@ temp_*
 # shade plugin results
 **/dependency-reduced-pom.xml
 
+# mac stuff
+.DS_Store

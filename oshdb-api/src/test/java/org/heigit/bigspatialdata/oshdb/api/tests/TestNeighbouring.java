@@ -29,13 +29,13 @@ public class TestNeighbouring {
     private final OSHDBJdbc oshdb;
 
     // create bounding box from coordinates
-    private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(85.3406012, 27.6991942, 85.3585444, 27.7121143);
-    //private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
-    private final OSHDBTimestamps timestamps = new OSHDBTimestamps("2017-05-01", "2017-05-02", OSHDBTimestamps.Interval.MONTHLY);
+    //private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(85.3406012, 27.6991942, 85.3585444, 27.7121143);
+    private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
+    private final OSHDBTimestamps timestamps = new OSHDBTimestamps("2017-01-01", "2017-01-02", OSHDBTimestamps.Interval.MONTHLY);
 
     public TestNeighbouring() throws Exception {
-        oshdb = (new OSHDBH2("/Users/chludwig/Documents/oshdb/nepal_20180201_z12_keytables.compressed.oshdb")).multithreading(true);
-        //oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(true);
+        //oshdb = (new OSHDBH2("/Users/chludwig/Documents/oshdb/nepal_20180201_z12_keytables.compressed.oshdb")).multithreading(true);
+        oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(true);
     }
 
     private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
@@ -43,7 +43,8 @@ public class TestNeighbouring {
                 .keytables(oshdb)
                 .timestamps(timestamps)
                 .areaOfInterest(bbox)
-                .osmTag("leisure", "park");
+                //.osmTag("leisure", "park");
+                .osmTag("building");
     }
 
     // todo add tests for OSMContribution
@@ -56,9 +57,11 @@ public class TestNeighbouring {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(0.0005, "amenity")
+                .neighbouring(0.0005, "highway")
+                //.neighbouring(0.0005, "amenity")
                 .count();
-        assertEquals( 2, result);
+        //assertEquals( 2, result);
+        assertEquals( 108, result);
     }
 
     @Test
@@ -66,9 +69,11 @@ public class TestNeighbouring {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(0.0005, "amenity", "post_box")
+                .neighbouring(0.0005, "highway", "primary")
+                //.neighbouring(0.0005, "amenity", "post_box")
                 .count();
-        assertEquals( 1, result);
+        //assertEquals( 1, result);
+        assertEquals( 2, result);
     }
 
     @Test
@@ -76,9 +81,11 @@ public class TestNeighbouring {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(0.0005, mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
+                .neighbouring(0.0005, mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
+                //.neighbouring(0.0005, mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
                 .count();
-        assertEquals( 1, result);
+        //assertEquals( 1, result);
+        assertEquals( 2, result);
     }
 
     @Test
@@ -86,9 +93,12 @@ public class TestNeighbouring {
 
         // Create MapReducer
         List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
-                .neighbourhood(.0005, mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
+                .neighbourhood(.0005, mapReduce -> mapReduce.osmTag("highway", "primary").collect())
+                //.neighbourhood(.0005, mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
                 .collect();
-        assertEquals( 1, result.get(0).getRight().size());
+        //assertEquals( 1, result.get(0).getRight().size());
+        //assertEquals( 0, result.get(1).getRight().size());
+        assertEquals( 3, result.get(0).getRight().size());
         assertEquals( 0, result.get(1).getRight().size());
     }
 }

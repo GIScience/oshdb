@@ -615,37 +615,63 @@ public abstract class MapReducer<X> implements
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Filter by neighbouring objects (implemented as mapper)
+   * Filter by neighbouring objects
    *
-   * @param key string describing the OSM key
-   * @param tag string describing the OSM tag
    * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
-   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
-   * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
-  */
+   * @param key OSM key of neighbouring objects
+   * @return a modified copy of this MapReducer
+  **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbouring(String key, String tag, Double distanceInMeter) {
-    MapReducer<?> ret = this.copy();
-    NeighbourFinder neighbourMapper = new NeighbourFinder(ret._oshdbForTags, key, tag, distanceInMeter);
-    ret._mappers.add(neighbourMapper);
-    return (MapReducer<R>) ret;
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter, String key) {
+    return this.neighbouring(distanceInMeter, mapReducer -> mapReducer.osmTag(key).count() > 0);
   }
 
-
   /**
-   * Filter by neighbouring objects using boolean return value (implemented as mapper)
+   * Filter by neighbouring objects
    *
    * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
-   * @param MapReduce MapReduce function that is applied to all elements
-   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
-   * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
-   */
+   * @param key OSM key of neighbouring objects
+   * @param value OSM value of neighbouring objects
+   * @return a modified copy of this MapReducer
+   **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbouring2(Double distanceInMeter, SerializableFunctionWithException<MapReducer, Boolean> MapReduce) {
-    MapReducer<?> ret = this.copy();
-    NeighbourFilter neighbourMapper2 = new NeighbourFilter(ret._oshdbForTags, distanceInMeter, MapReduce);
-    ret._mappers.add(neighbourMapper2);
-    return (MapReducer<R>) ret;
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter, String key, String value) {
+    return this.neighbouring(distanceInMeter, mapReducer -> mapReducer.osmTag(key, value).count() > 0);
+  }
+
+  /**
+   * Filter by neighbouring objects
+   *
+   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
+   * @param MapReducer MapReducer function to identify the objects of interest in the neighbourhood
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter, SerializableFunctionWithException<MapReducer, Boolean> MapReducer) {
+    return this.neighbourhood(distanceInMeter, MapReducer)
+            .filter(p -> p.getRight())
+            .map(p -> (R) p.getLeft());
+  }
+
+  /**
+   * Find objects in the neighbourhood
+   *
+   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
+   * @param MapReducer MapReducer function that specifies which objects should be searched
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhood(Double distanceInMeter, SerializableFunctionWithException<MapReducer, Y> MapReducer) {
+    ///// todo INSERT ERROR HANDLING!!!
+    ///// todo Add handling of OSMContribution
+    return this.map(snapshot -> {
+      try {
+        if (this._forClass == OSMEntitySnapshot.class) return (Pair<R, Y>) Pair.of(snapshot, NeighbourhoodFilter.apply(this._oshdbForTags, distanceInMeter, MapReducer, (OSMEntitySnapshot) snapshot));
+        else return null;
+      } catch (Exception e) {
+        return null;
+      }
+    });
   }
 
   // -----------------------------------------------------------------------------------------------
