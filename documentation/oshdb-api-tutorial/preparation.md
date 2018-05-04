@@ -42,7 +42,7 @@ the repositories-section of your pom.xml:
   <repository>
       <id>HeiGIT main</id>
       <name>Central Repository for OSHDB dependency related artefacts</name>
-      <url>http://129.206.7.121:8081/artifactory/main</url>
+      <url>http://repo.heigit.org/artifactory/main</url>
   </repository>
 
   <repository>
