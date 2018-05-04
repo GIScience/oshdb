@@ -51,14 +51,14 @@ the repositories-section of your pom.xml:
     </snapshots>
     <id>oshdb-releases</id>
     <name>Heigit/GIScience maven repository (releases)</name>
-    <url>http://129.206.7.121:8081/artifactory/libs-release-local</url>
+    <url>http://repo.heigit.org/artifactory/libs-release-local</url>
   </repository>
 
   <repository>
     <snapshots />
     <id>oshdb-snapshots</id>
     <name>Heigit/GIScience maven repository (snapshots)</name>
-    <url>http://129.206.7.121:8081/artifactory/libs-snapshot-local</url>
+    <url>http://repo.heigit.org/artifactory/libs-snapshot-local</url>
   </repository>
 </repositories>
 ```
