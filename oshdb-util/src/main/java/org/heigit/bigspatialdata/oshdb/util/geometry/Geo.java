@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
 import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.operation.distance.DistanceOp;
 import org.geotools.geometry.jts.JTS;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
@@ -152,5 +153,26 @@ public class Geo {
 
 	public static <P extends Geometry & Polygonal> Geometry clip(Geometry obj, P poly) {
 		return obj.intersection(poly);
+	}
+
+	// ======================
+	// = geometry relations =
+	// ======================
+
+	/**
+	 * Checks whether a geometry lies within a distance from another geometry
+	 * @param geom1 Geometry 1
+	 * @param geom2 Geometry 2
+	 * @param distanceInMeter distance in meters within which that two geometries should lie
+	 * @return True, if the geometry is within the distance of the other geometry, otherwise false
+	 */
+	public static boolean isWithinDistance(Geometry geom1, Geometry geom2, double distanceInMeter) {
+
+		// Find nearest points of the geometries
+		Coordinate[] nearestPoints = DistanceOp.nearestPoints(geom1, geom2);
+		// Calculate distance between nearest points in meters
+		double dist = Geo.distanceBetweenCoordinatesHaversine(nearestPoints[0].y, nearestPoints[0].x, nearestPoints[1].y, nearestPoints[1].x);
+		return dist <= distanceInMeter;
+
 	}
 }

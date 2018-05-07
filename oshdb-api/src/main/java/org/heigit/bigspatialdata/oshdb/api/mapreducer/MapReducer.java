@@ -617,7 +617,7 @@ public abstract class MapReducer<X> implements
   /**
    * Filter by neighbouring objects
    *
-   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
+   * @param distanceInMeter distance of radius in meters
    * @param key OSM key of neighbouring objects
    * @return a modified copy of this MapReducer
   **/
@@ -629,7 +629,7 @@ public abstract class MapReducer<X> implements
   /**
    * Filter by neighbouring objects
    *
-   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
+   * @param distanceInMeter distance of radius in meters
    * @param key OSM key of neighbouring objects
    * @param value OSM value of neighbouring objects
    * @return a modified copy of this MapReducer
@@ -642,7 +642,7 @@ public abstract class MapReducer<X> implements
   /**
    * Filter by neighbouring objects
    *
-   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
+   * @param distanceInMeter distance of radius in meters
    * @param MapReducer MapReducer function to identify the objects of interest in the neighbourhood
    * @return a modified copy of this MapReducer
    **/
@@ -656,8 +656,8 @@ public abstract class MapReducer<X> implements
   /**
    * Find objects in the neighbourhood
    *
-   * @param distanceInMeter distance of radius in meters (so far only implemented in degree)
-   * @param MapReducer MapReducer function that specifies which objects should be searched
+   * @param distanceInMeter distance of radius in meters
+   * @param MapReducer MapReducer function with search parameters for neighbourhoood filter
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)

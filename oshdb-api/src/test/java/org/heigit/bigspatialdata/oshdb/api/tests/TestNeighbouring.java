@@ -49,11 +49,11 @@ public class TestNeighbouring {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(0.0005, "highway")
-                //.neighbouring(0.0005, "amenity")
+                .neighbouring(54., "highway")
+                //.neighbouring(54., "amenity")
                 .count();
         //assertEquals( 2, result);
-        assertEquals( 108, result);
+        assertEquals( 30, result);
     }
 
     @Test
@@ -61,8 +61,8 @@ public class TestNeighbouring {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(0.0005, "highway", "primary")
-                //.neighbouring(0.0005, "amenity", "post_box")
+                .neighbouring(54., "highway", "primary")
+                //.neighbouring(54., "amenity", "post_box")
                 .count();
         //assertEquals( 1, result);
         assertEquals( 2, result);
@@ -73,8 +73,8 @@ public class TestNeighbouring {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(0.0005, mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
-                //.neighbouring(0.0005, mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
+                .neighbouring(54., mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
+                //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
                 .count();
         //assertEquals( 1, result);
         assertEquals( 2, result);
@@ -85,12 +85,12 @@ public class TestNeighbouring {
 
         // Create MapReducer
         List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
-                .neighbourhood(.0005, mapReduce -> mapReduce.osmTag("highway", "primary").collect())
-                //.neighbourhood(.0005, mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
+                .neighbourhood(54., mapReduce -> mapReduce.osmTag("highway", "primary").collect())
+                //.neighbourhood(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
                 .collect();
         //assertEquals( 1, result.get(0).getRight().size());
         //assertEquals( 0, result.get(1).getRight().size());
-        assertEquals( 3, result.get(0).getRight().size());
+        assertEquals( 1, result.get(0).getRight().size());
         assertEquals( 0, result.get(1).getRight().size());
     }
 }
