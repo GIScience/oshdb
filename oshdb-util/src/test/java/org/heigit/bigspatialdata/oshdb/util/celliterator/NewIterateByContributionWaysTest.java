@@ -59,7 +59,6 @@ public class NewIterateByContributionWaysTest {
   public void testGeometryChange() {
     // way: creation and two geometry changes, but no tag changes
     // way getting more nodes, one disappears
-
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -160,7 +159,6 @@ public class NewIterateByContributionWaysTest {
   public void testVisibleChange() {
     // way: creation and 2 visible changes, but no geometry and no tag changes
     // way visible tag changed
-
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -194,7 +192,6 @@ public class NewIterateByContributionWaysTest {
   @Test
   public void testTagChange() {
     // way: creation and two tag changes, one geometry change
-
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -246,7 +243,6 @@ public class NewIterateByContributionWaysTest {
     // node 12: tag change
     // node 13: visible change
     // node 14: multiple changes
-
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -285,7 +281,6 @@ public class NewIterateByContributionWaysTest {
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
         result.get(3).activities.get()
     );
-
     assertEquals(42, result.get(0).changeset);
   }
 
