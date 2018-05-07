@@ -1,33 +1,33 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <osm version="0.6" generator="testdata" upload="false">
-  <node id="1" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.42" lat="1.22">
+  <node id="1" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.42" lat="1.22">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="2" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.42" lat="1.23">
+  <node id="2" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="2" lon="1.42" lat="1.23">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="3" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.42" lat="1.24">
+  <node id="3" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="3" lon="1.42" lat="1.24">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="4" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="2" user="B" changeset="1" lon="1.42" lat="1.25">
+  <node id="4" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="2" user="B" changeset="4" lon="1.42" lat="1.25">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="5" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="2" user="B" changeset="1" lon="1.42" lat="1.26">
+  <node id="5" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="2" user="B" changeset="5" lon="1.42" lat="1.26">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="6" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.42" lat="1.27">
+  <node id="6" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="6" lon="1.42" lat="1.27">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="7" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="2" user="B" changeset="1" lon="1.42" lat="1.28">
+  <node id="7" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="2" user="B" changeset="7" lon="1.42" lat="1.28">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="8" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.43" lat="1.29">
+  <node id="8" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="8" lon="1.43" lat="1.29">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="9" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.43" lat="1.30">
+  <node id="9" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="9" lon="1.43" lat="1.30">
     <tag k="created_by" v="test"/>
   </node>
-  <node id="10" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="3" user="C" changeset="1" lon="1.43" lat="1.31">
+  <node id="10" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="3" user="C" changeset="10" lon="1.43" lat="1.31">
     <tag k="created_by" v="test"/>
   </node>
   <!--lon lat ändert sich-->
@@ -94,7 +94,7 @@
   </node>
 
   <!--lon lat ändert sich-->
-  <node id="15" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="28" lon="1.44" lat="1.22">
+  <node id="15" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="28" lon="1.44" lat="1.22">
     <tag k="created_by" v="test"/>
   </node>
   <node id="15" visible="true" version="2" timestamp="2009-02-01T00:00:00Z" uid="2" user="B" changeset="29" lon="1.445" lat="1.225">
@@ -145,7 +145,7 @@
     <nd ref="10"/>
   </way>
 
-  <!--way with two nodes, nodes changed lat lon-->
+  <!--way with two nodes, nodes changed lat lon, way creation at same time as node creation-->
   <way id="101" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="34">
     <nd ref="11"/>
     <nd ref="15"/>
@@ -285,5 +285,15 @@
     <nd ref="19"/>
 
     <tag k="area" v="yes"/>
+  </way>
+  <!--way with two nodes, nodes changed lat lon, way creation after node creation-->
+  <way id="108" visible="true" version="1" timestamp="2009-02-01T00:00:00Z" uid="1" user="test" changeset="34">
+    <nd ref="11"/>
+    <nd ref="15"/>
+  </way>
+  <way id="108" visible="true" version="2" timestamp="2018-01-01T00:00:00Z" uid="1" user="test" changeset="35">
+    <nd ref="11"/>
+    <nd ref="15"/>
+    <nd ref="9"/>
   </way>
 </osm>
