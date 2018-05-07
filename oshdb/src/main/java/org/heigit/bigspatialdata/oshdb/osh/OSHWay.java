@@ -11,10 +11,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -127,7 +129,7 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   @Override
   public Iterator<OSMWay> iterator() {
     try {
-      final List<OSHNode> nodes = getNodes();
+      final List<OSHNode> nodes = this.getNodes();
       return new Iterator<OSMWay>() {
         ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
@@ -560,15 +562,18 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
 
     List<OSMWay> ways = this.getVersions();
     ways.forEach(osmWay -> {
-      result.putIfAbsent(osmWay.getTimestamp(), osmWay.getChangeset());
-      // recurse way nds
-      if (!osmWay.isVisible()) {
-        return;
-      }
-      Arrays.stream(osmWay.getRefs()).map(osmNd -> ((OSHNode) osmNd.getEntity())).filter(Objects::nonNull)
-          .forEach(oshNode -> oshNode.getVersions()
-              .forEach(osmNode -> result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())));
+      result.put(osmWay.getTimestamp(), osmWay.getChangeset());
     });
+
+    // recurse way nodes
+    try {
+      this.getNodes().forEach(oshNode -> {
+        if (oshNode != null)
+          oshNode.getVersions().forEach(osmNode ->
+              result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
+          );
+      });
+    } catch (IOException e) {}
 
     return result;
   }
