@@ -313,4 +313,26 @@ public class NewIterateByTimestampsWaysTest {
     assertEquals(result.get(8).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
     assertNotEquals(result.get(8).geometry.get(), result.get(0).geometry.get());
   }
+
+  @Test
+  public void testTimestampInclusion() {
+    // rule for contributions that fall exactly at time interval limits:
+    // start timestamp: included, end timestamp: excluded
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2009-02-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 108,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    // should be 2: entity has created at start time, modified in between and at end time (excluded)
+    assertEquals(9, result.size());
+  }
 }
