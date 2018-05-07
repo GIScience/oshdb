@@ -1,9 +1,9 @@
-# Query by neighbouring objects 
+# Query by Neighbouring Objects 
 
 
 In addition, to [map()](map.md) and [filter()](filter.md), OSM features can also be queried by neighbouring objects using `neighbouring()` and `neighbourhood()`. Both require a distance parameter given in meters and a second parameter specifying the nearby objects. 
 
-### Filter by neighbouring obejcts
+### Filter by neighbouring objects
 
 Using `neighbouring()` the OSM features are filtered depending on the objects that are located nearby. 
 
@@ -36,7 +36,7 @@ The same result can be achieved by passing a call back function to `neighbouring
   .collect()
 ```
 
-### Query neighbouring objects 
+### Query objects in the neighbourhood 
 
 Using the `neighbouring()` function features are only filtered based on the presence of other objects in the neighbourhood, but no information about these objects is returned. This can be achieved using the `neighourhood()`function, which returns all OSM features and their respective neighbouring objects as a list.  
 
@@ -44,8 +44,7 @@ __Example__: The following query will return a list of tuples whose first elemen
 
 ```
 ...
-  .areaOfInterest(...)
-  .timestamps(...)
+List<Pair<OSHDBMapReducible, List>> result = MapReducer
   .osmTag("amenity", "bench")
   .neighbourhood(5, mapReduce -> mapReduce.where("natural", "tree").collect())
   .collect()
