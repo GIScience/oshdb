@@ -26,10 +26,10 @@ either by key or by key and value:
 
 ```
 // by tag (key only)
-mapReducer = mapReducer.where("highway");
+mapReducer = mapReducer.osmTag("highway");
 
 // by tag (key and value)
-mapReducer = mapReducer.where("highway", "motorway");
+mapReducer = mapReducer.osmTag("highway", "motorway");
 ```
 
 
@@ -49,7 +49,7 @@ public static void main(...) throws [...] {
   [...]
 
   // by entity-definition
-  mapReducer = mapReducer.where(new EntityFilter());
+  mapReducer = mapReducer.osmTag(new EntityFilter());
 }
 
 private static class EntityFilter implements SerializablePredicate<OSMEntity> {

@@ -13,7 +13,7 @@ __Example__: A query for all benches that are located within a 5 meter distance 
 ...
   .areaOfInterest(...)
   .timestamps(...)
-  .where("amenity", "bench")
+  .osmTag("amenity", "bench")
   .neighbouring(5, "natural")
   .collect()
 ```
@@ -22,7 +22,7 @@ Neighbouring objects can be filtered either by key or by key and value e.g.
 
 ```
 ...
-  .where("amenity", "bench")
+  .osmTag("amenity", "bench")
   .neighbouring(5, "natural", "tree")
   .collect()
 ```
@@ -31,7 +31,7 @@ The same result can be achieved by passing a call back function to `neighbouring
 
 ```
 ...
-  .where("amenity", "bench")
+  .osmTag("amenity", "bench")
   .neighbouring(5, mapReduce -> mapReduce.where("natural", "tree").count() > 0)
   .collect()
 ```
@@ -46,7 +46,7 @@ __Example__: The following query will return a list of tuples whose first elemen
 ...
   .areaOfInterest(...)
   .timestamps(...)
-  .where("amenity", "bench")
+  .osmTag("amenity", "bench")
   .neighbourhood(5, mapReduce -> mapReduce.where("natural", "tree").collect())
   .collect()
 ```
