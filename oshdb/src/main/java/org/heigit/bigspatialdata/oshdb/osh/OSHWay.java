@@ -9,9 +9,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
@@ -399,5 +405,59 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
       }
       return null;
     }
+  }
+
+  @Override
+  public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
+    List<OSHDBTimestamp> wayTs = new ArrayList<>(this.iterator().next().getVersion());
+    for (OSMWay osmWay : this) {
+      wayTs.add(osmWay.getTimestamp());
+    }
+    if (!recurse) {
+      return Lists.reverse(wayTs);
+    }
+
+    SortedSet<OSHDBTimestamp> result = new TreeSet<>(wayTs);
+    int i = -1;
+    for (OSMWay osmWay : this) {
+      i++;
+      if (!osmWay.isVisible()) continue;
+      OSHDBTimestamp thisT = wayTs.get(i);
+      OSHDBTimestamp nextT = i>0 ? wayTs.get(i-1) : new OSHDBTimestamp(Long.MAX_VALUE);
+      OSMMember[] nds = osmWay.getRefs();
+      for (OSMMember nd : nds) {
+        OSHNode oshNode = (OSHNode)nd.getEntity();
+        if (oshNode == null) continue;
+        for (OSMNode osmNode : oshNode) {
+          OSHDBTimestamp nodeTs = osmNode.getTimestamp();
+          if (nodeTs.compareTo(nextT) >= 0) continue;
+          if (nodeTs.compareTo(thisT) <= 0) break;
+          result.add(nodeTs);
+        }
+      }
+    }
+    return new ArrayList<>(result);
+  }
+
+  @Override
+  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+    Map<OSHDBTimestamp, Long> result = new TreeMap<>();
+
+    List<OSMWay> ways = this.getVersions();
+    ways.forEach(osmWay -> {
+      result.put(osmWay.getTimestamp(), osmWay.getChangeset());
+    });
+
+    // recurse way nodes
+    try {
+      this.getNodes().forEach(oshNode -> {
+        if (oshNode != null)
+          oshNode.getVersions().forEach(osmNode ->
+              result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
+          );
+      });
+    } catch (IOException e) {}
+
+    return result;
   }
 }

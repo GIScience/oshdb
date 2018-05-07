@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -13,6 +15,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
@@ -537,6 +544,123 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       }
       return null;
     }
+  }
+
+  @Override
+  public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
+    List<OSHDBTimestamp> relTs = new ArrayList<>(this.iterator().next().getVersion());
+    for (OSMRelation osmRelation : this) {
+      relTs.add(osmRelation.getTimestamp());
+    }
+    if (!recurse) {
+      return Lists.reverse(relTs);
+    }
+
+    Map<Long, LinkedList<OSHDBTimestamp>> childNodes = new TreeMap<>();
+    Map<Long, LinkedList<OSHDBTimestamp>> childWays = new TreeMap<>();
+    int i = -1;
+    for (OSMRelation osmRelation : this) {
+      i++;
+      OSHDBTimestamp thisT = relTs.get(i);
+      OSHDBTimestamp nextT = i > 0 ? relTs.get(i - 1) : new OSHDBTimestamp(Long.MAX_VALUE);
+      OSMMember[] members = osmRelation.getMembers();
+      for (OSMMember member : members) {
+        switch (member.getType()) {
+          case NODE:
+            childNodes.putIfAbsent(member.getId(), new LinkedList<>());
+            LinkedList<OSHDBTimestamp> childNodeValidityTimestamps = childNodes.get(member.getId());
+            if (childNodeValidityTimestamps.size() > 0 &&
+                childNodeValidityTimestamps.getLast().equals(thisT)) {
+              // merge consecutive time intervals
+              childNodeValidityTimestamps.pop();
+              childNodeValidityTimestamps.add(thisT);
+            } else {
+              childNodeValidityTimestamps.add(nextT);
+              childNodeValidityTimestamps.add(thisT);
+            }
+            break;
+          case WAY:
+            childWays.putIfAbsent(member.getId(), new LinkedList<>());
+            LinkedList<OSHDBTimestamp> childWayValidityTimestamps = childWays.get(member.getId());
+            if (childWayValidityTimestamps.size() > 0 &&
+                childWayValidityTimestamps.getLast().equals(thisT)) {
+              // merge consecutive time intervals
+              childWayValidityTimestamps.pop();
+              childWayValidityTimestamps.add(thisT);
+            } else {
+              childWayValidityTimestamps.add(nextT);
+              childWayValidityTimestamps.add(thisT);
+            }
+            break;
+        }
+      }
+    }
+
+    SortedSet<OSHDBTimestamp> result = new TreeSet<>(relTs);
+    for (OSMRelation osmRelation : this) {
+      OSMMember[] members = osmRelation.getMembers();
+      for (OSMMember member : members) {
+        Iterator<OSHDBTimestamp> validMemberTs;
+        List<OSHDBTimestamp> modTs;
+        OSHEntity entity = member.getEntity();
+        if (entity == null) continue;
+        switch (member.getType()) {
+          case NODE:
+            OSHNode oshNode = (OSHNode)entity;
+            modTs = oshNode.getModificationTimestamps();
+            validMemberTs = childNodes.get(member.getId()).iterator();
+            break;
+          case WAY:
+            OSHWay oshWay = (OSHWay)entity;
+            modTs = oshWay.getModificationTimestamps(true);
+            validMemberTs = childWays.get(member.getId()).iterator();
+            break;
+          default:
+            continue;
+        }
+        while (validMemberTs.hasNext()) {
+          OSHDBTimestamp toTs = validMemberTs.next();
+          OSHDBTimestamp fromTs = validMemberTs.next();
+          for (OSHDBTimestamp ts : modTs) {
+            if (ts.compareTo(fromTs) >= 0 && ts.compareTo(toTs) < 0) {
+              result.add(ts);
+            }
+          }
+        }
+      }
+    }
+
+    return new ArrayList<>(result);
+  }
+
+  @Override
+  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
+    Map<OSHDBTimestamp, Long> result = new TreeMap<>();
+
+    List<OSMRelation> rels = this.getVersions();
+    rels.forEach(osmRel -> {
+      result.putIfAbsent(osmRel.getTimestamp(), osmRel.getChangeset());
+    });
+
+    // recurse rel members
+    try {
+      Stream.concat(
+          this.getNodes().stream(),
+          this.getWays().stream()
+      ).forEach(oshEntity -> {
+        if (oshEntity != null)
+          oshEntity.getVersions().forEach(osmEntity ->
+              result.putIfAbsent(osmEntity.getTimestamp(), osmEntity.getChangeset())
+          );
+      });
+    } catch (IOException e) {}
+
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("OSHRelation %s", super.toString());
   }
 
 }
