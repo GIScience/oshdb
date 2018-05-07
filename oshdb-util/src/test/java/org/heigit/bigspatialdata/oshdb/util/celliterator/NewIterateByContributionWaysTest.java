@@ -10,12 +10,14 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
@@ -28,30 +30,29 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
-import scala.collection.LinearSeq;
 
 public class NewIterateByContributionWaysTest {
   private GridOSHWays oshdbDataGridCell;
-  private GridOSHNodes oshdbDataGridCellNodes;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
   public NewIterateByContributionWaysTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    List<OSHNode> oshNodes = new ArrayList<>();
+    Map<Long, OSHNode> oshNodes = new TreeMap<>();
     for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.add(OSHNode.build(new ArrayList<>(entry.getValue())));
+      oshNodes.put(entry.getKey(), OSHNode.build(new ArrayList<>(entry.getValue())));
     }
-    oshdbDataGridCellNodes = GridOSHNodes.rebase(-1, -1, 0, 0, 0, 0,
-        oshNodes
-    );
     List<OSHWay> oshWays = new ArrayList<>();
     for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
-      oshWays.add(OSHWay.build(new ArrayList<>(entry.getValue()),oshNodes));
+      Collection<OSMWay> wayVersions = entry.getValue();
+      oshWays.add(OSHWay.build(new ArrayList<>(wayVersions),
+          wayVersions.stream().flatMap(osmWay ->
+              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
+          ).collect(Collectors.toSet())
+      ));
     }
-    oshdbDataGridCell = GridOSHWays.compact(-1, -1, 0, 0, 0, 0,oshWays
-    );
+    oshdbDataGridCell = GridOSHWays.compact(-1, -1, 0, 0, 0, 0, oshWays);
   }
 
   @Test
@@ -121,7 +122,7 @@ public class NewIterateByContributionWaysTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k ->System.out.println(k.osmEntity.toString()));
+
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -135,24 +136,17 @@ public class NewIterateByContributionWaysTest {
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
         result.get(2).activities.get()
     );
-    assertEquals(
-        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(3).activities.get()
-    );
-    System.out.println(result.get(0).osmEntity.getChangeset());
-    //assertEquals(34, result.get(0).changeset);
+
+    assertEquals(34, result.get(0).changeset);
 
     assertEquals(2, result.get(0).geometry.get().getNumPoints());
     assertEquals(2, result.get(1).geometry.get().getNumPoints());
-    assertEquals(2, result.get(2).geometry.get().getNumPoints());
     assertEquals(3, result.get(3).geometry.get().getNumPoints());
 
     assertEquals(null, result.get(0).previousGeometry.get());
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof LineString);
-    Geometry geom2 = result.get(1).geometry.get();
-    assertTrue(geom2 instanceof LineString);
-    Geometry geom3 = result.get(2).geometry.get();
+    Geometry geom3 = result.get(1).geometry.get();
     assertTrue(geom3 instanceof LineString);
     Geometry geom4 = result.get(3).geometry.get();
     assertTrue(geom4 instanceof LineString);
@@ -170,7 +164,7 @@ public class NewIterateByContributionWaysTest {
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z"
+            "2020-01-01T00:00:00Z"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
@@ -180,7 +174,7 @@ public class NewIterateByContributionWaysTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k ->System.out.println(k.osmEntity.toString()));
+
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -194,12 +188,6 @@ public class NewIterateByContributionWaysTest {
         EnumSet.of(ContributionType.CREATION),
         result.get(2).activities.get()
     );
-    System.out.println(result.get(0).osmEntity.getChangeset());
-    System.out.println(result.get(0).osmEntity.toString());
-    System.out.println(result.get(0).changeset);
-    System.out.println(result.get(1).changeset);
-    System.out.println(result.get(2).changeset);
-
     assertEquals(36, result.get(0).changeset);
   }
 
@@ -220,7 +208,7 @@ public class NewIterateByContributionWaysTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k ->System.out.println(k.osmEntity.toString()));
+
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -234,17 +222,11 @@ public class NewIterateByContributionWaysTest {
         EnumSet.of(ContributionType.TAG_CHANGE),
         result.get(2).activities.get()
     );
-
-    System.out.println(result.get(0).osmEntity.getChangeset());
-    System.out.println(result.get(0).changeset);
-    System.out.println(result.get(1).changeset);
-    System.out.println(result.get(2).changeset);
     assertEquals(39, result.get(0).changeset);
 
     assertEquals(3, result.get(0).geometry.get().getNumPoints());
     assertEquals(5, result.get(1).geometry.get().getNumPoints());
     assertEquals(5, result.get(2).geometry.get().getNumPoints());
-
 
     assertEquals(null, result.get(0).previousGeometry.get());
     Geometry geom = result.get(0).geometry.get();
@@ -278,9 +260,7 @@ public class NewIterateByContributionWaysTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k ->System.out.println(k.osmEntity.toString()));
-    // warum kriegt man alle zw schritte wo  sich node ändert?
-    // 5 mal version 1: zählt node 14 version 4 nicht?
+
     assertEquals(6, result.size());
     assertEquals(2, result.get(0).geometry.get().getNumPoints());
     assertEquals(3, result.get(1).geometry.get().getNumPoints());
@@ -289,13 +269,10 @@ public class NewIterateByContributionWaysTest {
     assertEquals(3, result.get(4).geometry.get().getNumPoints());
     assertEquals(3, result.get(5).geometry.get().getNumPoints());
 
-    System.out.println(result.get(3).geometry.get());
-    System.out.println(result.get(4).geometry.get());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
         result.get(0).activities.get()
     );
-
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
@@ -308,26 +285,14 @@ public class NewIterateByContributionWaysTest {
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
         result.get(3).activities.get()
     );
-    /*assertEquals(
-        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(4).activities.get()
-    );
-    assertEquals(
-        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(5).activities.get()
-    );*/
-   // assertEquals(42, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertNotEquals(result.get(3).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
-    assertEquals(result.get(4).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
-    assertNotEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
+
+    assertEquals(42, result.get(0).changeset);
   }
 
 
   @Test
   public void testMultipleChanges() {
     // way and nodes have different changes
-
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -341,7 +306,6 @@ public class NewIterateByContributionWaysTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k ->System.out.println(k.osmEntity.toString()));
     assertEquals(6, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -371,7 +335,6 @@ public class NewIterateByContributionWaysTest {
     assertEquals(44, result.get(0).changeset);
     assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
     assertEquals(result.get(5).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
-
   }
 
   @Test
@@ -395,7 +358,6 @@ public class NewIterateByContributionWaysTest {
         EnumSet.of(ContributionType.CREATION),
         result.get(0).activities.get()
     );
-    // auch geometrychange wenn area=yes wegfällt?
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE,ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
@@ -453,5 +415,26 @@ public class NewIterateByContributionWaysTest {
     assertTrue(geom2 instanceof LineString);
 
     assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
+  }
+
+  @Test
+  public void testTimestampInclusion() {
+    // rule for contributions that fall exactly at time interval limits:
+    // start timestamp: included, end timestamp: excluded
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2009-02-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 108,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    // should be 2: entity has created at start time, modified in between and at end time (excluded)
+    assertEquals(2, result.size());
   }
 }
