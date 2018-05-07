@@ -44,7 +44,7 @@ __Example__: The following query will return a list of tuples whose first elemen
 
 ```
 ...
-List<Pair<OSHDBMapReducible, List>> result = MapReducer
+List<Pair<OSHDBSnapshot, List<OSHDBSnapshot>>> result = MapReducer
   .osmTag("amenity", "bench")
   .neighbourhood(5, mapReduce -> mapReduce.where("natural", "tree").collect())
   .collect()
