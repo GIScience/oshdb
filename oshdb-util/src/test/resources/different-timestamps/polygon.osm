@@ -271,7 +271,7 @@
     </way>
     <way id="116" visible="true" version="1" changeset="222" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
         <nd ref="484"/>
-        <nd ref="514git"/>
+        <nd ref="514"/>
     </way>
     <way id="117" visible="true" version="1" changeset="223" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
         <nd ref="51"/>
