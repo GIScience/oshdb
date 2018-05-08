@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
@@ -627,15 +628,20 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     List<OSMRelation> rels = this.getVersions();
     rels.forEach(osmRel -> {
       result.putIfAbsent(osmRel.getTimestamp(), osmRel.getChangeset());
-      // recurse rel members
-      if (!osmRel.isVisible()) {
-        return;
-      }
-      Arrays.stream(osmRel.getMembers())
-          .map(member -> ((OSHEntity) member.getEntity()))
-          .filter(Objects::nonNull)
-          .forEach(oshEntity -> result.putAll(oshEntity.getChangesetTimestamps()));
     });
+
+    // recurse rel members
+    try {
+      Stream.concat(
+          this.getNodes().stream(),
+          this.getWays().stream()
+      ).forEach(oshEntity -> {
+        if (oshEntity != null)
+          oshEntity.getVersions().forEach(osmEntity ->
+              result.putIfAbsent(osmEntity.getTimestamp(), osmEntity.getChangeset())
+          );
+      });
+    } catch (IOException e) {}
 
     return result;
   }

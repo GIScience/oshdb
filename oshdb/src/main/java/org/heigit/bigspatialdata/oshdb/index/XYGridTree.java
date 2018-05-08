@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
  * Multi zoomlevel functionality for the XYGrid.
  */
 public class XYGridTree implements Serializable {
+  private static final long serialVersionUID = 1L;
   private final int maxLevel;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
 
