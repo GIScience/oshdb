@@ -153,7 +153,7 @@ pipeline {
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you! Happy and for free! Keep it up!" , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you on OSHDB-Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
       }
       post {
         failure {
