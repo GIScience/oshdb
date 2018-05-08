@@ -664,9 +664,12 @@ public abstract class MapReducer<X> implements
   public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhood(Double distanceInMeter, SerializableFunctionWithException<MapReducer, Y> MapReducer) {
     ///// todo INSERT ERROR HANDLING!!!
     ///// todo Add handling of OSMContribution
-    return this.map(snapshot -> {
+    return this.map(entity -> {
       try {
-        if (this._forClass == OSMEntitySnapshot.class) return (Pair<R, Y>) Pair.of(snapshot, NeighbourhoodFilter.apply(this._oshdbForTags, distanceInMeter, MapReducer, (OSMEntitySnapshot) snapshot));
+        if (this._forClass == OSMEntitySnapshot.class)
+          return (Pair<R, Y>) Pair.of(entity, NeighbourhoodFilter.applyToOSMSnapshot(this._oshdbForTags, distanceInMeter, MapReducer, (OSMEntitySnapshot) entity));
+        else if (this._forClass == OSMContribution.class)
+          return (Pair<R, Y>) Pair.of(entity, NeighbourhoodFilter.applyToOSMContribution(this._oshdbForTags, distanceInMeter, MapReducer, (OSMContribution) entity));
         else return null;
       } catch (Exception e) {
         return null;
