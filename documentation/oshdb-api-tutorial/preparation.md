@@ -101,7 +101,7 @@ your analysis. In the main-method, declare the link to your database
 ```
 // -- PREPARATION --
 // declare and open link to OSHDB
-OSHDB_Databse oshdb = new OSHDB_H2("path/to/extract.oshdb");
+OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
 ```
 
 ### Contribution View or Snapshot View?
