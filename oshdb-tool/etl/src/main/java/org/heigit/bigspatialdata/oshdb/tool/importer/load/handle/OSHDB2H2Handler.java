@@ -214,6 +214,12 @@ public class OSHDB2H2Handler extends OSHDbHandler {
           insert.executeBatch();
         }
 
+        
+        PreparedStatement insertKey = null;
+        PreparedStatement insertValue = null; 
+        PreparedStatement insertRole = null;
+        
+
         if (!withOutKeyTables) {
           stmt.executeUpdate("drop table if exists " + TableNames.E_KEY.toString() + "; create table if not exists "
               + TableNames.E_KEY.toString() + "(id int primary key, txt varchar)");
@@ -222,15 +228,16 @@ public class OSHDB2H2Handler extends OSHDbHandler {
               + "(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
           stmt.executeUpdate("drop table if exists " + TableNames.E_ROLE.toString() + "; create table if not exists "
               + TableNames.E_ROLE.toString() + "(id int primary key, txt varchar)");
-        }
+        
 
-        PreparedStatement insertKey = conn
+        insertKey = conn
             .prepareStatement("insert into " + TableNames.E_KEY.toString() + " (id,txt) values (?,?)");
-        PreparedStatement insertValue = conn.prepareStatement(
+        insertValue = conn.prepareStatement(
             "insert into " + TableNames.E_KEYVALUE.toString() + " ( keyId, valueId, txt ) values(?,?,?)");
-        PreparedStatement insertRole = conn
+        insertRole = conn
             .prepareStatement("insert into " + TableNames.E_ROLE.toString() + " (id,txt) values(?,?)");
-
+        }
+        
         stmt.executeUpdate("drop table if exists " + TableNames.T_NODES.toString() + "; create table if not exists "
             + TableNames.T_NODES.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
         PreparedStatement insertNode = conn
