@@ -131,8 +131,6 @@
         <nd ref="26"/>
         <nd ref="27"/>
         <nd ref="24"/>
-        <tag k="test:section" v="mp-geom"/>
-        <tag k="test:id" v="703"/>
     </way>
     	<way id="106" visible="true" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="A" changeset="205">
         <nd ref="1"/>
@@ -382,8 +380,6 @@
         <member type="way" ref="103" role="outer"/>
         <member type="way" ref="107" role="outer"/>
         <tag k="type" v="multipolygon"/>
-        <tag k="test:section" v="mp-geom"/>
-        <tag k="test:id" v="703"/>
         <tag k="landuse" v="forest"/>
     </relation>
     <relation id="500" visible="true" version="3" timestamp="2012-01-01T00:00:00Z" uid="2" user="B" changeset="302">
@@ -411,7 +407,7 @@
     </relation>
 
     <!--relation  way members do not exist-->
-	  <relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
+	  <<relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
         <member type="way" ref="206" role="outer"/>
         <member type="way" ref="207" role="outer"/>
         <member type="way" ref="208" role="outer"/>
@@ -427,7 +423,7 @@
     <relation id="503" visible="true" version="2" timestamp="2009-01-01T00:00:00Z" uid="3" user="C" changeset="308">
         <member type="way" ref="108" role="outer"/>
         <tag k="type" v="multipolygon"/>
-        <tag k="landuse" v="forest"/>
+        <tag k="landuse" v="agriculture"/>
     </relation>
     <relation id="503" visible="true" version="3" timestamp="2011-01-01T00:00:00Z" uid="11" user="test" changeset="309">
         <member type="way" ref="108" role="outer"/>
@@ -437,18 +433,16 @@
     </relation>
 
     <!--relation, way 109 -inner- and 110 -outer- ways changed node refs-->
-    <relation id="504" visible="true" version="1" changeset="310" timestamp="2010-05-01T22:10:54Z" user="gkai" uid="74224">
+    <relation id="504" visible="true" version="1" changeset="310" timestamp="2010-07-01T22:10:54Z" user="gkai" uid="74224">
         <member type="way" ref="109" role="inner"/>
         <member type="way" ref="110" role="outer"/>
         <tag k="building" v="yes"/>
         <tag k="type" v="multipolygon"/>
     </relation>
-    <relation id="504" visible="true" version="2" changeset="311" timestamp="2016-11-23T23:02:16Z" user="RoterEmil" uid="4179530">
+    <relation id="504" visible="true" version="2" changeset="311" timestamp="2016-11-26T23:02:16Z" user="RoterEmil" uid="4179530">
         <member type="way" ref="109" role="inner"/>
         <member type="way" ref="110" role="outer"/>
-        <tag k="building" v="apartments"/>
-        <tag k="building:levels" v="6"/>
-        <tag k="height" v="27"/>
+        <tag k="building" v="yes"/>
         <tag k="type" v="multipolygon"/>
     </relation>
 
@@ -493,7 +487,7 @@
     </relation>
 
     <!--relation, way member: node 53 changes tags-->
-    <relation id="510" visible="true" version="1" changeset="317" timestamp="2010-05-01T22:10:54Z" user="gkai" uid="74224">
+    <relation id="510" visible="true" version="1" changeset="317" timestamp="2007-05-01T22:10:54Z" user="gkai" uid="74224">
         <member type="way" ref="118" role="outer"/>
         <tag k="type" v="multipolygon"/>
     </relation>
