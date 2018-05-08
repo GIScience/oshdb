@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.osh;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.io.Externalizable;
 import java.io.IOException;
@@ -639,7 +638,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
     List<OSMRelation> rels = this.getVersions();
     rels.forEach(osmRel -> {
-      result.putIfAbsent(osmRel.getTimestamp(), osmRel.getChangeset());
+      result.put(osmRel.getTimestamp(), osmRel.getChangeset());
     });
 
     // recurse rel members
@@ -649,9 +648,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
           this.getWays().stream()
       ).forEach(oshEntity -> {
         if (oshEntity != null)
-          oshEntity.getVersions().forEach(osmEntity ->
-              result.putIfAbsent(osmEntity.getTimestamp(), osmEntity.getChangeset())
-          );
+          oshEntity.getChangesetTimestamps().forEach(result::putIfAbsent);
       });
     } catch (IOException e) {}
 
