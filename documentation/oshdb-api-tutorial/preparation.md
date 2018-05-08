@@ -112,7 +112,7 @@ The oshdb-API currently supports the following views on the data:
   given point in time.
 * The **contribution view** processes OSM elements at the points in time
   where an actual contribution (e.g., creation, change, deletion) happend
-  within a given time interval.
+  within a given time period.
 
 We will use a snaphot view in this tutorial but contribution views are
 used analogously:
