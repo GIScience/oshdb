@@ -106,12 +106,13 @@ public class OSHDB2H2Handler extends OSHDbHandler {
         oos.flush();
       }
       FastByteArrayInputStream in = new FastByteArrayInputStream(out.array, 0, out.length);
-
+      System.out.print("insert "+grid.getLevel()+":"+grid.getId());
       insertNode.setInt(1, grid.getLevel());
       insertNode.setLong(2, grid.getId());
       insertNode.setBinaryStream(3, in);
       insertNode.executeUpdate();
-
+      System.out.println(" done!");
+      
     } catch (IOException | SQLException e) {
       throw new RuntimeException(e);
     }
@@ -172,7 +173,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
 
     boolean onlyNodesWithTags = config.onlyNodesWithTags;
 
-    boolean withKeyTables = config.withKeyTables;
+    boolean withOutKeyTables = config.withOutKeyTables;
 
     
     Class.forName("org.h2.Driver");
@@ -213,7 +214,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
           insert.executeBatch();
         }
 
-        if (withKeyTables) {
+        if (!withOutKeyTables) {
           stmt.executeUpdate("drop table if exists " + TableNames.E_KEY.toString() + "; create table if not exists "
               + TableNames.E_KEY.toString() + "(id int primary key, txt varchar)");
           stmt.executeUpdate("drop table if exists " + TableNames.E_KEYVALUE.toString()
@@ -255,7 +256,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
             insertValue, insertRole, insertNode, insertWay, insertRelation);
            
         Stopwatch loadingWatch = Stopwatch.createUnstarted();
-        if (withKeyTables) {
+        if (!withOutKeyTables) {
           LoaderKeyTables keyTables = new LoaderKeyTables(workDirectory, handler);
           System.out.print("loading tags ... ");
           loadingWatch.reset().start();

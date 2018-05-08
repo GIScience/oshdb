@@ -24,8 +24,8 @@ public class DBH2Arg {
   @Parameter(names={"--nodesWithTagsOnly"}, description ="only nodes with tags in the nodes grid")
   public boolean onlyNodesWithTags = true;
   
-  @Parameter(names={"--withKeyTables"}, description ="load also keytables in to h2 db")
-  public boolean withKeyTables = true;
+  @Parameter(names={"--withOutKeyTables"}, description ="load also keytables in to h2 db")
+  public boolean withOutKeyTables;
   
   @Parameter(names={"--out"}, description="output path", required = true)
   public Path h2db;
