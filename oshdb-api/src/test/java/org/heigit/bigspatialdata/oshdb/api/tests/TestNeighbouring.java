@@ -53,7 +53,7 @@ public class TestNeighbouring {
                 //.neighbouring(54., "amenity")
                 .count();
         //assertEquals( 2, result);
-        assertEquals( 30, result);
+        assertEquals( 108, result);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class TestNeighbouring {
                 .collect();
         //assertEquals( 1, result.get(0).getRight().size());
         //assertEquals( 0, result.get(1).getRight().size());
-        assertEquals( 1, result.get(0).getRight().size());
+        assertEquals( 3, result.get(0).getRight().size());
         assertEquals( 0, result.get(1).getRight().size());
     }
 }

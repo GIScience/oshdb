@@ -11,6 +11,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 public class Geo {
 
 	public static double earthRadius = 6371000; //meters
+	public static double ONE_DEGREE_IN_METERS_AT_EQUATOR = 110567; //meters
 
 	// =====================
 	// = line calculations =
@@ -33,6 +34,10 @@ public class Geo {
 		dLng *= Math.cos(Math.toRadians((lat2+lat1)/2));
 
 		return earthRadius * Math.sqrt(dLng*dLng + dLat*dLat);
+	}
+
+	public static double convertMetricDistanceToDegreeLongitude(double latitude, double distanceInMeters) {
+		return distanceInMeters / (Math.cos(Math.toRadians(latitude)) * ONE_DEGREE_IN_METERS_AT_EQUATOR);
 	}
 
 	public static double lengthOf(LineString line) {
