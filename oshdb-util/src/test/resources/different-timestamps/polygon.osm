@@ -265,11 +265,11 @@
     </way>
     <way id="115" visible="true" version="1" changeset="221" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
         <nd ref="484"/>
-        <nd ref="514"/>
+        <nd ref="515"/>
     </way>
     <way id="116" visible="true" version="1" changeset="222" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
         <nd ref="484"/>
-        <nd ref="514"/>
+        <nd ref="515"/>
     </way>
     <way id="117" visible="true" version="1" changeset="223" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
         <nd ref="51"/>
@@ -407,7 +407,7 @@
     </relation>
 
     <!--relation  way members do not exist-->
-	  <<relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
+	  <relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
         <member type="way" ref="206" role="outer"/>
         <member type="way" ref="207" role="outer"/>
         <member type="way" ref="208" role="outer"/>
