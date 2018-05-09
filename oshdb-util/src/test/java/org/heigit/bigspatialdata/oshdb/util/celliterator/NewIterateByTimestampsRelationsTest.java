@@ -234,8 +234,7 @@ public class NewIterateByTimestampsRelationsTest {
     assertTrue(geom instanceof Polygon);
     Geometry geom3 = result.get(1).geometry.get();
     assertTrue(geom3 instanceof Polygon);
-    result.iterator().forEachRemaining(k->System.out.println(k.osmEntity.toString()));
-    System.out.println(result.get(0).timestamp.toString());
+
     assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(6).geometry.get(), result.get(1).geometry.get());
   }
