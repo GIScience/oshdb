@@ -135,7 +135,7 @@ pipeline {
           //infer
           if(env.BRANCH_NAME ==~ /(^master$)/){
             report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
-          
+          sh "mvn clean"
             sh "infer run -r -- mvn compile"
             sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
           }
