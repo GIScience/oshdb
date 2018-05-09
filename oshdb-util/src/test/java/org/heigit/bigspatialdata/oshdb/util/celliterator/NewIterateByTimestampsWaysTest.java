@@ -9,10 +9,13 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
@@ -39,56 +42,57 @@ public class NewIterateByTimestampsWaysTest {
   public NewIterateByTimestampsWaysTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    List<OSHNode> oshNodes = new ArrayList<>();
+    Map<Long, OSHNode> oshNodes = new TreeMap<>();
     for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.add(OSHNode.build(new ArrayList<>(entry.getValue())));
+      oshNodes.put(entry.getKey(), OSHNode.build(new ArrayList<>(entry.getValue())));
     }
-    oshdbDataGridCellNodes = GridOSHNodes.rebase(-1, -1, 0, 0, 0, 0,
-        oshNodes
-    );
     List<OSHWay> oshWays = new ArrayList<>();
     for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
-      oshWays.add(OSHWay.build(new ArrayList<>(entry.getValue()),oshNodes));
+      Collection<OSMWay> wayVersions = entry.getValue();
+      oshWays.add(OSHWay.build(new ArrayList<>(wayVersions),
+          wayVersions.stream().flatMap(osmWay ->
+              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
+          ).collect(Collectors.toSet())
+      ));
     }
-    oshdbDataGridCell = GridOSHWays.compact(-1, -1, 0, 0, 0, 0,oshWays
-    );
+    oshdbDataGridCell = GridOSHWays.compact(-1, -1, 0, 0, 0, 0, oshWays);
   }
 
-    @Test
-    public void testGeometryChange() {
-      // way: creation and two geometry changes, but no tag changes
-      // way getting more nodes, one disappears
+  @Test
+  public void testGeometryChange() {
+    // way: creation and two geometry changes, but no tag changes
+    // way getting more nodes, one disappears
 
-      List<IterateByTimestampEntry> result = (new CellIterator(
-          new OSHDBTimestamps(
-              "2000-01-01T00:00:00Z",
-              "2018-01-01T00:00:00Z",
-              "P1Y"
-          ).get(),
-          new OSHDBBoundingBox(-180, -90, 180, 90),
-          areaDecider,
-          oshEntity -> oshEntity.getId() == 100,
-          osmEntity -> true,
-          false
-      )).iterateByTimestamps(
-          oshdbDataGridCell
-      ).collect(Collectors.toList());
-      assertEquals(10, result.size());
-      assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-      assertEquals(4, result.get(0).geometry.get().getNumPoints());
-      assertEquals(8, result.get(1).geometry.get().getNumPoints());
-      assertEquals(9, result.get(2).geometry.get().getNumPoints());
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 100,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertEquals(10, result.size());
+    assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertEquals(4, result.get(0).geometry.get().getNumPoints());
+    assertEquals(8, result.get(1).geometry.get().getNumPoints());
+    assertEquals(9, result.get(2).geometry.get().getNumPoints());
 
-      Geometry geom = result.get(0).geometry.get();
-      assertTrue(geom instanceof LineString);
-      Geometry geom2 = result.get(1).geometry.get();
-      assertTrue(geom2 instanceof LineString);
-      Geometry geom3 = result.get(2).geometry.get();
-      assertTrue(geom3 instanceof LineString);
-      assertEquals(31, result.get(0).osmEntity.getChangeset());
-      assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
-      assertNotEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
-    }
+    Geometry geom = result.get(0).geometry.get();
+    assertTrue(geom instanceof LineString);
+    Geometry geom2 = result.get(1).geometry.get();
+    assertTrue(geom2 instanceof LineString);
+    Geometry geom3 = result.get(2).geometry.get();
+    assertTrue(geom3 instanceof LineString);
+    assertEquals(31, result.get(0).osmEntity.getChangeset());
+    assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
+    assertNotEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
+  }
 
   @Test
   public void testGeometryChangeOfNodeInWay() {
@@ -108,31 +112,16 @@ public class NewIterateByTimestampsWaysTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(11, result.size());
+
+    assertEquals(10, result.size());
 
     assertEquals(34, result.get(0).osmEntity.getChangeset());
     assertEquals(35, result.get(8).osmEntity.getChangeset());
 
-    assertEquals(2, result.get(0).geometry.get().getNumPoints());
-    assertEquals(2, result.get(1).geometry.get().getNumPoints());
-    assertEquals(2, result.get(2).geometry.get().getNumPoints());
-    assertEquals(2, result.get(7).geometry.get().getNumPoints());
-    assertEquals(3, result.get(8).geometry.get().getNumPoints());
-
-    Geometry geom = result.get(0).geometry.get();
-    assertTrue(geom instanceof LineString);
-    Geometry geom2 = result.get(7).geometry.get();
-    assertTrue(geom2 instanceof LineString);
-    Geometry geom3 = result.get(8).geometry.get();
-    assertTrue(geom3 instanceof LineString);
-    Geometry geom4 = result.get(10).geometry.get();
-    assertTrue(geom4 instanceof LineString);
-
-    assertEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
+    assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
-    assertNotEquals(result.get(3).geometry.get(), result.get(2).geometry.get());
     assertEquals(result.get(5).geometry.get(), result.get(4).geometry.get());
-    assertNotEquals(result.get(8).geometry.get(), result.get(7).geometry.get());
+    assertNotEquals(result.get(9).geometry.get(), result.get(1).geometry.get());
   }
 
   @Test
