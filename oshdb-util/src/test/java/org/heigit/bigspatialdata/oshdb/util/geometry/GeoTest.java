@@ -24,10 +24,9 @@ public class GeoTest {
     }
 
     @Test
-    public void TestConvertMetricDistanceToDegree() {
+    public void TestConvertMetricDistanceToDegreeLongitude() {
         assertEquals(1., Geo.convertMetricDistanceToDegreeLongitude(0, ONE_DEGREE_IN_METERS_AT_EQUATOR), 0.001 );
         assertEquals(1., Geo.convertMetricDistanceToDegreeLongitude(48, 74000.), 0.001);
     }
 
 }
-
