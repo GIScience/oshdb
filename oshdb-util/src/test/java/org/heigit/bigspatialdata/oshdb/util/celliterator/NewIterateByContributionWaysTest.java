@@ -195,7 +195,7 @@ public class NewIterateByContributionWaysTest {
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:01Z"
+            "2020-01-01T00:00:01Z"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
@@ -431,5 +431,36 @@ public class NewIterateByContributionWaysTest {
     ).collect(Collectors.toList());
     // should be 2: entity has created at start time, modified in between and at end time (excluded)
     assertEquals(2, result.size());
+    assertEquals(61, result.get(0).changeset);
+  }
+
+  @Test
+  public void testTwoNodesChangedAtSameTimeDifferentChangesets() {
+    // way with two nodes, nodes changed lat lon, both at same time, different changesets
+    // which changeset is shown in result.get(1).changeset? -> from node 20, not 21
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 109,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertEquals(2, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
+        result.get(1).activities.get()
+    );
+    assertEquals(332, result.get(1).changeset);
   }
 }
