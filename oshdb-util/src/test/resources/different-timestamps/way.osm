@@ -116,6 +116,21 @@
   <node id="19" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.45" lat="1.44">
     <tag k="created_by" v="test"/>
   </node>
+
+  <node id="20" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="331" lon="1.94" lat="1.4">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="20" visible="true" version="2" timestamp="2009-07-01T01:01:01Z" uid="3" user="C" changeset="332" lon="1.941" lat="1.45">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="21" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="333" lon="1.92" lat="1.22">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="21" visible="true" version="2" timestamp="2009-07-01T01:01:01Z" uid="2" user="B" changeset="334" lon="1.921" lat="1.2251">
+    <tag k="created_by" v="test"/>
+  </node>
+
   <!--way getting more nodes, one disappears-->
   <way id="100"  visible="true" version="1" timestamp="2009-01-01T00:00:00Z" uid="1" user="test" changeset="31">
     <nd ref="1"/>
@@ -146,7 +161,7 @@
   </way>
 
   <!--way with two nodes, nodes changed lat lon, way creation at same time as node creation-->
-  <way id="101" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="34">
+  <way id="101" visible="true" version="1" timestamp="2008-02-01T00:00:00Z" uid="1" user="test" changeset="34">
     <nd ref="11"/>
     <nd ref="15"/>
   </way>
@@ -286,14 +301,20 @@
 
     <tag k="area" v="yes"/>
   </way>
-  <!--way with two nodes, nodes changed lat lon, way creation after node creation-->
-  <way id="108" visible="true" version="1" timestamp="2009-02-01T00:00:00Z" uid="1" user="test" changeset="34">
+  <!--rule for contributions that fall exactly at time interval limits:
+  start timestamp: included, end timestamp: excluded-->
+  <way id="108" visible="true" version="1" timestamp="2009-02-01T00:00:00Z" uid="1" user="test" changeset="61">
     <nd ref="11"/>
     <nd ref="15"/>
   </way>
-  <way id="108" visible="true" version="2" timestamp="2018-01-01T00:00:00Z" uid="1" user="test" changeset="35">
+  <way id="108" visible="true" version="2" timestamp="2018-01-01T00:00:00Z" uid="1" user="test" changeset="62">
     <nd ref="11"/>
     <nd ref="15"/>
     <nd ref="9"/>
+  </way>
+  <!--way with two nodes, nodes changed lat lon, both at same time, different changesets-->
+  <way id="109" visible="true" version="1" timestamp="2009-03-01T01:01:01Z" uid="1" user="test" changeset="63">
+    <nd ref="20"/>
+    <nd ref="21"/>
   </way>
 </osm>
