@@ -228,7 +228,7 @@ public class NewIterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(8, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -268,7 +268,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -286,10 +286,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     assertTrue(geom instanceof Polygon);
     Geometry geom3 = result.get(1).geometry.get();
     assertTrue(geom3 instanceof Polygon);
-    System.out.println(result.get(1).timestamp.toString());
-    System.out.println(result.get(2).timestamp.toString());
-    System.out.println(result.get(1).geometry.get());
-    System.out.println(result.get(2).geometry.get());
+
     assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
     assertNotEquals(result.get(2).geometry.get(), result.get(2).previousGeometry.get());
   }
@@ -311,7 +308,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -350,7 +347,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -407,7 +404,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(5, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -464,7 +461,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -491,7 +488,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -528,7 +525,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(2, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -562,7 +559,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -592,7 +589,7 @@ result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString(
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+
     assertEquals(2, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
