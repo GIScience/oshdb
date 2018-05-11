@@ -37,6 +37,7 @@ public class NeighbourhoodFilter {
         DefaultTagInterpreter defaultTagInterpreter = new DefaultTagInterpreter(oshdb.getConnection());
         MapReducer SubMapReducer;
         OSHDBTimestamp end;
+        OSHDBTimestamps timestamps = (OSHDBTimestamps) timestampList;
 
         // Get geometry of feature
         Geometry geom = OSHDBGeometryBuilder.getGeometry(snapshot.getEntity(),
@@ -59,8 +60,7 @@ public class NeighbourhoodFilter {
         // Get start and end timestamp of current snapshot
         ArrayList<OSHDBTimestamp> timestampArrayList = new ArrayList(timestampList.get().tailSet(snapshot.getTimestamp()));
         if (timestampArrayList.size() <=1) {
-            end = timestampList.getEnd();
-            //end = timestampArrayList.get(1);
+            end = timestamps.getEnd();
         } else {
             //todo subtract one day from date
             end = timestampArrayList.get(1);
@@ -145,7 +145,8 @@ public class NeighbourhoodFilter {
                 // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
                 distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getX(), distanceInMeter);
             } catch (Exception e) {
-                if (geometryVersion == geometryOptions.AFTER) throw new Exception("Invalid geometry.");
+                System.out.println("invalid geometry.1");
+                if (geometryVersion == geometryOptions.AFTER) throw new Exception();
             }
         }
 
@@ -158,6 +159,7 @@ public class NeighbourhoodFilter {
                 // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
                 distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getX(), distanceInMeter);
             } catch (Exception e) {
+                System.out.println("invalid geometry.2");
                 if (geometryVersion == geometryOptions.BEFORE) throw new Exception("Invalid geometry.");
             }
         }
@@ -169,6 +171,7 @@ public class NeighbourhoodFilter {
             } else if (geomAfter == null & geomBefore != null) {
                 geomAfter = geomBefore;
             } else if (((geomAfter == null) & (geomBefore == null)) | (distanceInDegreeLongitude == null)) {
+                System.out.println("invalid geometry.3");
                 throw new Exception("Invalid geometry.");
             }
         }
@@ -203,7 +206,11 @@ public class NeighbourhoodFilter {
                         // Check if geometry is within buffer distance
                         switch (geometryVersion) {
                             case BEFORE: return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter);
-                            case AFTER: return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
+                            case AFTER: {
+                                boolean res = Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
+                                System.out.print(res);
+                                return res;
+                            }
                             case BOTH: return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter) | Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
                             default: return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
                         }
