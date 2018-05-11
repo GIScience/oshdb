@@ -611,11 +611,11 @@ public abstract class MapReducer<X> implements
 
   // -----------------------------------------------------------------------------------------------
   // Neighbourhood
-  // Find neighbouring objects with a certain tag and within a certain distance
+  // Functions for querying and filtering objects based on other objects in the neighbourhood
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Filter by neighbouring objects
+   * Filter by neighbouring objects by key
    *
    * @param distanceInMeter distance of radius in meters
    * @param key OSM key of neighbouring objects
@@ -627,7 +627,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring objects
+   * Filter by neighbouring objects by key/value
    *
    * @param distanceInMeter distance of radius in meters
    * @param key OSM key of neighbouring objects
@@ -640,15 +640,33 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring objects
+   * Filter by neighbouring objects using callback function
    *
    * @param distanceInMeter distance of radius in meters
    * @param MapReducer MapReducer function to identify the objects of interest in the neighbourhood
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbouring(Double distanceInMeter, SerializableFunctionWithException<MapReducer, Boolean> MapReducer) {
-    return this.neighbourhood(distanceInMeter, MapReducer, NeighbourhoodFilter.targetOptions.SNAPSHOT)
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter,
+                                        SerializableFunctionWithException<MapReducer, Boolean> MapReducer,
+                                        boolean queryContributions) {
+    return this.neighbourhood(distanceInMeter, MapReducer, queryContributions)
+            .filter(p -> p.getRight())
+            .map(p -> (R) p.getKey());
+  }
+
+
+  /**
+   * Filter by neighbouring objects using callback function
+   *
+   * @param distanceInMeter distance of radius in meters
+   * @param MapReducer MapReducer function to identify the objects of interest in the neighbourhood
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter,
+                                        SerializableFunctionWithException<MapReducer, Boolean> MapReducer) {
+    return this.neighbourhood(distanceInMeter, MapReducer, false)
             .filter(p -> p.getRight())
             .map(p -> (R) p.getKey());
   }
@@ -666,7 +684,7 @@ public abstract class MapReducer<X> implements
                                                                                SerializableFunctionWithException<MapReducer, Y> MapReducer,
                                                                                NeighbourhoodFilter.geometryOptions geometryVersion) {
     return this.neighbourhood(distanceInMeter, MapReducer,
-            NeighbourhoodFilter.targetOptions.SNAPSHOT,
+            false,
             geometryVersion);
   }
 
@@ -680,23 +698,23 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhood(Double distanceInMeter,
                                                                                SerializableFunctionWithException<MapReducer, Y> MapReducer,
-                                                                               NeighbourhoodFilter.targetOptions target) {
+                                                                               boolean queryContributions) {
     return this.neighbourhood(distanceInMeter, MapReducer,
-            target,
+            queryContributions,
             NeighbourhoodFilter.geometryOptions.BOTH);
   }
 
-    /**
-     * Find objects in the neighbourhood
-     *
-     * @param distanceInMeter distance of radius in meters
-     * @param MapReducer MapReducer function with search parameters for neighbourhoood filter
-     * @return a modified copy of the MapReducer
-     **/
+  /**
+   * Find objects in the neighbourhood
+   *
+   * @param distanceInMeter distance of radius in meters
+   * @param MapReducer MapReducer function with search parameters for neighbourhoood filter
+   * @return a modified copy of the MapReducer
+   **/
   @Contract(pure = true)
   public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhood(Double distanceInMeter,
                                                                                SerializableFunctionWithException<MapReducer, Y> MapReducer,
-                                                                               NeighbourhoodFilter.targetOptions target,
+                                                                               boolean queryContributions,
                                                                                NeighbourhoodFilter.geometryOptions geometryVersion) {
     return this.map(entity -> {
       try {
@@ -706,20 +724,20 @@ public abstract class MapReducer<X> implements
                   distanceInMeter,
                   MapReducer,
                   (OSMEntitySnapshot) entity,
-                  target));
+                  queryContributions));
         } else if (this._forClass == OSMContribution.class) {
-          return (Pair<R, Y>) Pair.of(entity,
-                  NeighbourhoodFilter.applyToOSMContribution(this._oshdbForTags,
-                          distanceInMeter,
-                          MapReducer,
-                          (OSMContribution) entity,
-                          geometryVersion));
+          return (Pair<R, Y>) Pair.of(entity, NeighbourhoodFilter.applyToOSMContribution(this._oshdbForTags,
+                  distanceInMeter,
+                  MapReducer,
+                  (OSMContribution) entity,
+                  geometryVersion));
         } else {
-          System.out.println("Invalid forClass of MapReducer.");
+          //System.out.println("Invalid forClass of MapReducer.");
           throw new Exception();
         }
       } catch (Exception e) {
-        return (Pair<R, Y>) Pair.of(entity, e);
+        //return (Pair<R, Y>) Pair.of(entity, e);
+        return (Pair<R, Y>) Pair.of(entity, new LinkedList());
       }
     });
   }

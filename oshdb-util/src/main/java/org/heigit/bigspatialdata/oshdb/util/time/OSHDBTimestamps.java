@@ -109,6 +109,10 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
     }
   }
 
+  public OSHDBTimestamp getEnd() throws Exception {
+    return new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(this.end).toEpochSecond());
+  }
+
   private static List<Long> _getTimestampsAsEpochSeconds(String isoStringStart, String isoStringEnd, String isoStringPeriod) {
     try {
       ZonedDateTime start = ISODateTimeParser.parseISODateTime(isoStringStart);
