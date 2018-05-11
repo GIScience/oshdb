@@ -35,7 +35,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test1() throws ParseException {
+  public void testGeometryChange() throws ParseException {
     // relation getting more ways, one disappears, last version not valid
     OSMEntity entity = testData.relations().get(500L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -75,7 +75,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test2() throws ParseException {
+  public void testVisibleChange() throws ParseException {
     // relation  visible tag changed
     OSMEntity entity = testData.relations().get(501L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -120,7 +120,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test3() {
+  public void testWaysNotExistent() {
     // relation with three ways, all not existing
     OSMEntity entity = testData.relations().get(502L).get(0);
     Geometry result = null;
@@ -138,7 +138,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test4() throws ParseException {
+  public void testTagChange() throws ParseException {
     // relation tags changing
     OSMEntity entity = testData.relations().get(503L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -184,7 +184,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test5() throws ParseException {
+  public void testGeometryChangeOfNodeRefsInWays() throws ParseException {
     // relation, way 109 -inner- and 110 -outer- ways changed node refs
     OSMEntity entity = testData.relations().get(504L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -234,7 +234,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test6() throws ParseException {
+  public void testGeometryChangeOfNodeCoordinatesInWay() throws ParseException {
     // relation, way 112  changed node coordinates
     OSMEntity entity = testData.relations().get(505L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -267,7 +267,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test7() throws ParseException {
+  public void testGeometryChangeOfNodeCoordinatesInRelationAndWay() throws ParseException {
     // relation, with node members, nodes changed coordinates
     OSMEntity entity = testData.relations().get(506L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -303,7 +303,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test8() {
+  public void testGeometryCollection() {
     // relation, not valid, should be a not empty geometryCollection
     // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/143
     OSMEntity entity = testData.relations().get(507L).get(0);
@@ -321,7 +321,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test9() {
+  public void testNodesOfWaysNotExistent() {
     // relation with two ways, all nodes not existing
     OSMEntity entity = testData.relations().get(508L).get(0);
     Geometry result = null;
@@ -338,7 +338,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test10() throws ParseException {
+  public void testVisibleChangeOfNodeInWay() throws ParseException {
     // relation, way member: node 52 changes visible tag
     OSMEntity entity = testData.relations().get(509L).get(0);
     // timestamp where node 52 visible is false
@@ -372,7 +372,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test11() throws ParseException {
+  public void testTagChangeOfNodeInWay() throws ParseException {
     // relation, way member: node 53 changes tags, 51 changes coordinates
     OSMEntity entity = testData.relations().get(510L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -405,7 +405,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test12() throws ParseException {
+  public void testVisibleChangeOfWay() throws ParseException {
     // relation, way member: way 119 changes visible tag
     OSMEntity entity = testData.relations().get(511L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -436,7 +436,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test13() throws ParseException {
+  public void testVisibleChangeOfOneWayOfOuterRing() throws ParseException {
     // relation, 2 way members making outer ring: way 120 changes visible tag later, 121 not
     OSMEntity entity = testData.relations().get(512L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -469,7 +469,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test14() throws ParseException {
+  public void testTagChangeOfWay() throws ParseException {
     // relation, way member: way 122 changes tags
     OSMEntity entity = testData.relations().get(513L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -515,7 +515,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test15() throws ParseException {
+  public void testOneOfTwoPolygonDisappears() throws ParseException {
     // relation, at the beginning two polygons, one disappears later
     OSMEntity entity = testData.relations().get(514L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -548,7 +548,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test16() throws ParseException {
+  public void testWaySplitUpInTwo() throws ParseException {
     // relation, at the beginning one way, split up later into 2 ways
     OSMEntity entity = testData.relations().get(515L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -581,7 +581,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test17() {
+  public void testRestrictionRoles() {
     // relation, restriction, role changes
     OSMEntity entity1 = testData.relations().get(516L).get(0);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
@@ -600,7 +600,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   }
 
   @Test
-  public void test19() {
+  public void testRolesArePartAndOutline() {
     // relation as building with role=part and outline
     OSMEntity entity1 = testData.relations().get(517L).get(0);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();

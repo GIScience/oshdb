@@ -39,7 +39,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodes {
 
 
   @Test
-  public void test1() {
+  public void testGeometryChange() {
     // A single node, lat lon changed over time
     OSMEntity entity = testData.nodes().get(1L).get(0);
     // timestamp before oldest timestamp
@@ -78,7 +78,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodes {
   }
 
   @Test
-  public void test2() {
+  public void testTagChange() {
     // A single node, tags changed over time
     OSMEntity entity = testData.nodes().get(2L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
@@ -101,7 +101,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodes {
   }
 
   @Test
-  public void test3() {
+  public void testVisibleChange() {
     // A single node, visible changes
     // todo https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/141
     OSMEntity entity = testData.nodes().get(3L).get(0);
@@ -135,7 +135,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodes {
   }
 
   @Test
-  public void test4() {
+  public void testMultipleChanges() {
     // A single node, various changes over time
     // todo https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/141
     OSMEntity entity = testData.nodes().get(4L).get(0);
