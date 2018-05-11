@@ -37,7 +37,7 @@ public class OSHDBGeometryBuilderTestRelationTypeNotMultipolygon {
   }
 
   @Test
-  public void test1() {
+  public void testTypeRestriction() {
     // relation type restriction
     OSMEntity entity1 = testData.relations().get(710900L).get(0);
     try {
@@ -55,7 +55,7 @@ public class OSHDBGeometryBuilderTestRelationTypeNotMultipolygon {
   }
 
   @Test
-  public void test2() {
+  public void testTypeAssociatedStreet() {
     // relation type associatedStreet
     OSMEntity entity1 = testData.relations().get(710901L).get(0);
     try {
@@ -73,7 +73,7 @@ public class OSHDBGeometryBuilderTestRelationTypeNotMultipolygon {
   }
 
   @Test
-  public void test3() {
+  public void testTypePublicTransport() {
     // relation type public_transport
     OSMEntity entity1 = testData.relations().get(710902L).get(0);
     try {
@@ -92,7 +92,7 @@ public class OSHDBGeometryBuilderTestRelationTypeNotMultipolygon {
   }
 
   @Test
-  public void test4() {
+  public void testTypeBuilding() {
     // relation type building
     OSMEntity entity1 = testData.relations().get(710903L).get(0);
     try {

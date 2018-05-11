@@ -38,7 +38,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteData {
 
 
   @Test
-  public void test1() {
+  public void testOneOfNodesNotExistent() {
     // Way with four node references, one node missing
     OSMEntity entity1 = testData.ways().get(100L).get(0);
     Geometry result1 = null;
@@ -55,7 +55,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteData {
   }
 
   @Test
-  public void test2() {
+  public void testWayAreaYes() {
     // Way with four nodes, area = yes
     OSMEntity entity1 = testData.ways().get(101L).get(0);
     Geometry result1 = null;
@@ -72,7 +72,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteData {
   }
 
   @Test
-  public void test3() {
+  public void testAllNodesNotExistent() {
     // Way with two nodes, both missing
     OSMEntity entity1 = testData.ways().get(102L).get(0);
     Geometry result1 = null;
