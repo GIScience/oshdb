@@ -31,12 +31,12 @@ import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
-public class NewIterateByContributionWaysTest {
+public class IterateByContributionWaysTest {
   private GridOSHWays oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
-  public NewIterateByContributionWaysTest() throws IOException {
+  public IterateByContributionWaysTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     Map<Long, OSHNode> oshNodes = new TreeMap<>();

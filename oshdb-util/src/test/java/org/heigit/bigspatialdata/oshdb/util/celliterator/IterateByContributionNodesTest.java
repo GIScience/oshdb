@@ -15,26 +15,23 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
-public class NewIterateByTimestampsNodesTest {
+public class IterateByContributionNodesTest {
   private GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
-  public NewIterateByTimestampsNodesTest() throws IOException {
+  public IterateByContributionNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     List<OSHNode> oshNodes = new ArrayList<>();
@@ -50,77 +47,118 @@ public class NewIterateByTimestampsNodesTest {
   public void testGeometryChange() {
     // node 1: creation and two geometry changes, but no tag changes
 
-    List<IterateByTimestampEntry> result = (new CellIterator(
+    List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z",
-            "P1Y"
+            "2018-01-01T00:00:00Z"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
         false
-    )).iterateByTimestamps(
+    )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
 
-    assertEquals(11, result.size());
-    assertNotEquals(result.get(1).geometry.get().getCoordinates(), result.get(0).geometry.get().getCoordinates());
-    assertNotEquals(result.get(2).geometry.get().getCoordinates(), result.get(1).geometry.get().getCoordinates());
+    assertEquals(3, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
+        result.get(2).activities.get()
+    );
+    assertEquals(1, result.get(0).changeset);
+    assertEquals(null, result.get(0).previousGeometry.get());
+    Geometry geom = result.get(0).geometry.get();
+    assertTrue(geom instanceof Point);
+    assertEquals(result.get(0).geometry.get(), result.get(1).previousGeometry.get());
+    assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
+    assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
   }
 
   @Test
   public void testTagChange() {
     // node 2: creation and two tag changes, but no geometry changes
 
-    List<IterateByTimestampEntry> result = (new CellIterator(
+    List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z",
-            "P1Y"
+            "2018-01-01T00:00:00Z"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 2,
         osmEntity -> true,
         false
-    )).iterateByTimestamps(
+    )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(12, result.size());
+
+    assertEquals(3, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.TAG_CHANGE),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.TAG_CHANGE),
+        result.get(2).activities.get()
+    );
+    assertEquals(3, result.get(0).changeset);
     assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
-    assertEquals(result.get(3).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
-    assertEquals(result.get(4).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
-    assertEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
-    assertEquals(result.get(6).osmEntity.getRawTags(), result.get(5).osmEntity.getRawTags());
-    assertNotEquals(result.get(7).osmEntity.getRawTags(), result.get(6).osmEntity.getRawTags());
-    assertEquals(result.get(8).osmEntity.getRawTags(), result.get(7).osmEntity.getRawTags());
-    assertEquals(result.get(9).osmEntity.getRawTags(), result.get(8).osmEntity.getRawTags());
-    assertEquals(result.get(10).osmEntity.getRawTags(), result.get(9).osmEntity.getRawTags());
-    assertEquals(result.get(11).osmEntity.getRawTags(), result.get(10).osmEntity.getRawTags());
+    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
   }
 
   @Test
   public void testVisibleChange() {
     // node 3: creation and 4 visible changes, but no geometry and no tag changes
 
-    List<IterateByTimestampEntry> result = (new CellIterator(
+    List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z",
-            "P1Y"
+            "2018-01-01T00:00:00Z"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 3,
         osmEntity -> true,
         false
-    )).iterateByTimestamps(
+    )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
+
     assertEquals(5, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(2).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(3).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(4).activities.get()
+    );
+    assertEquals(6, result.get(0).changeset);
   }
 
   @Test
@@ -132,32 +170,49 @@ public class NewIterateByTimestampsNodesTest {
     // geometry
     // tag
 
-    List<IterateByTimestampEntry> result = (new CellIterator(
+    List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z",
-            "P1Y"
+            "2018-01-01T00:00:00Z"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 4,
         osmEntity -> true,
         false
-    )).iterateByTimestamps(
+    )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
 
-    assertEquals(11, result.size());
-    assertNotEquals(result.get(1).geometry.get().getCoordinates(), result.get(0).geometry.get().getCoordinates());
-    assertEquals(result.get(2).geometry.get().getCoordinates(), result.get(1).geometry.get().getCoordinates());
-    assertNotEquals(result.get(3).geometry.get().getCoordinates(), result.get(2).geometry.get().getCoordinates());
-    assertEquals(result.get(5).geometry.get().getCoordinates(), result.get(3).geometry.get().getCoordinates());
-    assertNotEquals(result.get(6).geometry.get().getCoordinates(), result.get(3).geometry.get().getCoordinates());
-    assertEquals(result.get(9).geometry.get().getCoordinates(), result.get(6).geometry.get().getCoordinates());
+    assertEquals(6, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.TAG_CHANGE,ContributionType.GEOMETRY_CHANGE),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(2).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(3).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
+        result.get(4).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.TAG_CHANGE),
+        result.get(5).activities.get()
+    );
+    assertEquals(11, result.get(0).changeset);
     assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
-    assertNotEquals(result.get(3).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
-    assertEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
-    assertNotEquals(result.get(9).osmEntity.getRawTags(), result.get(6).osmEntity.getRawTags());
+    assertNotEquals(result.get(3).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
+    assertEquals(result.get(4).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
+    assertNotEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
   }
 }
