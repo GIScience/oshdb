@@ -3,7 +3,7 @@
 
 In addition, to [map()](map.md) and [filter()](filter.md), OSM features can also be queried by neighbouring objects using `neighbouring()` and `neighbourhood()`. Both require a distance parameter given in meters and a second parameter specifying the nearby objects. 
 
-### Filter by neighbouring objects
+### Filter OSMEntitySnapshots by neighbouring OSMEntitySnapshots
 
 Using `neighbouring()` the OSM features are filtered depending on the objects that are located nearby. 
 
@@ -36,7 +36,8 @@ The same result can be achieved by passing a call back function to `neighbouring
   .collect()
 ```
 
-### Query objects in the neighbourhood 
+
+### Query OSMEntitySnapshots in the neighbourhood of an OSMEntitySnapshot
 
 Using the `neighbouring()` function features are only filtered based on the presence of other objects in the neighbourhood, but no information about these objects is returned. This can be achieved using the `neighbourhood()`function, which returns all OSM features and their respective neighbouring objects as a list.  
 
@@ -49,4 +50,19 @@ List<Pair<OSHDBSnapshot, List<OSHDBSnapshot>>> result = MapReducer
   .neighbourhood(5, mapReduce -> mapReduce.where("natural", "tree").collect())
   .collect()
 ```
+
+### Query OSMContributions in the neighbourhood of an OSMEntitySnapshot
+
+It is also possible to find OSMContributions in the neighbourhood of an OSMEntitySnapshot. This option can be enabled by passing a third argument `queryContributions = true` to the neighbourhood function.  
+
+__Example__: The following query will return a list of tuples whose first element is a bench and the second element is a list of trees that are located within a 5 meter distance of the respective bench and that have been edited between the timestamp of this snapshot and the following snapshot. 
+
+```
+...
+List<Pair<OSHDBSnapshot, List<OSHDBSnapshot>>> result = MapReducer
+  .osmTag("amenity", "bench")
+  .neighbourhood(5, mapReduce -> mapReduce.where("natural", "tree").collect(), queryContributions = true)
+  .collect()
+```
+
 
