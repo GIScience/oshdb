@@ -131,6 +131,28 @@
     <tag k="created_by" v="test"/>
   </node>
 
+  <node id="22" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="1.94" lat="1.4">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="23" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="4.92" lat="4.22">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="23" visible="true" version="2" timestamp="2009-07-01T01:01:01Z" uid="2" user="B" changeset="336" lon="4.94" lat="4.24">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="24" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="2.5" lat="2.5">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="25" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="3.5" lat="3.5">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="25" visible="true" version="2" timestamp="2011-07-01T01:01:01Z" uid="2" user="B" changeset="337" lon="3.65" lat="3.5">
+    <tag k="created_by" v="test"/>
+  </node>
+
   <!--way getting more nodes, one disappears-->
   <way id="100"  visible="true" version="1" timestamp="2009-01-01T00:00:00Z" uid="1" user="test" changeset="31">
     <nd ref="1"/>
@@ -316,5 +338,12 @@
   <way id="109" visible="true" version="1" timestamp="2009-03-01T01:01:01Z" uid="1" user="test" changeset="63">
     <nd ref="20"/>
     <nd ref="21"/>
+  </way>
+  <!--way with 4 nodes, to check what happens if change is on nodes outside Bbox-->
+  <way id="110" visible="true" version="1" timestamp="2008-03-01T01:01:01Z" uid="1" user="test" changeset="64">
+    <nd ref="22"/>
+    <nd ref="24"/>
+    <nd ref="25"/>
+    <nd ref="23"/>
   </way>
 </osm>
