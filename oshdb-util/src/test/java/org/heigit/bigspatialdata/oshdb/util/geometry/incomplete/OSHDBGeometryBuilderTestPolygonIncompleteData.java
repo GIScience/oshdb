@@ -32,7 +32,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
   }
 
   @Test
-  public void test1() throws ParseException {
+  public void testSomeNodesOfWayNotExistent() throws ParseException {
     // Valid multipolygon relation with two ways (8 points) making up an outer ring, in second ring 2 node
     // references to not existing nodes
     //TODO https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/138
@@ -52,7 +52,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
   }
 
   @Test
-  public void test2() throws ParseException {
+  public void testWayNotExistent() throws ParseException {
     // Valid multipolygon relation with two way references, one way does not exist
     //TODO https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/138
     OSMEntity entity = testData.relations().get(501L).get(0);
@@ -71,7 +71,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
   }
 
   @Test
-  public void test3() {
+  public void testAllNodesOfWayNotExistent() {
     // relation with one way with two nodes, both missing
     OSMEntity entity1 = testData.relations().get(502L).get(0);
     Geometry result1 = null;

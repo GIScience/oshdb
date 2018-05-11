@@ -35,7 +35,7 @@ public class OSHDBGeometryBuilderTestRelationOuterDirections {
 
 
   @Test
-  public void test1() throws ParseException {
+  public void testFromPointTwoWaysGoingToDiffDirections() throws ParseException {
     // start of partial ring matches start of current line
     // from one point in outer ring two ways are going to different directions
     OSMEntity entity = testData.relations().get(1L).get(0);
@@ -53,7 +53,7 @@ public class OSHDBGeometryBuilderTestRelationOuterDirections {
   }
 
   @Test
-  public void test2() throws ParseException {
+  public void testToPointTwoWaysPointingFromDiffDirections() throws ParseException {
     // end of partial ring matches end of current line
     // to one point in outer ring two ways are pointing from different directions
     OSMEntity entity = testData.relations().get(2L).get(0);
@@ -71,9 +71,9 @@ public class OSHDBGeometryBuilderTestRelationOuterDirections {
   }
 
   @Test
-  public void test3() throws ParseException {
+  public void testStartMatchesEnd() throws ParseException {
     // start of partial ring matches end of current line
-    // to one point in outer ring two ways are pointing from different directions
+    //
     OSMEntity entity = testData.relations().get(3L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
@@ -89,9 +89,9 @@ public class OSHDBGeometryBuilderTestRelationOuterDirections {
   }
 
   @Test
-  public void test4() throws ParseException {
+  public void testEndMatchesStart() throws ParseException {
     // end of partial ring matches to start of current line
-    // to one point in outer ring two ways are pointing from different directions
+    //
     OSMEntity entity = testData.relations().get(4L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
