@@ -215,4 +215,85 @@ public class IterateByContributionNodesTest {
     assertEquals(result.get(4).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
     assertNotEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
   }
+
+  @Test
+  public void testBboxMinAndMaxNotCorrect() {
+    // node 1: creation and two geometry changes, but no tag changes
+    // OSHDBBoundingBox: MinLon and MinLat as well as MaxLon and MaxLat incorrect
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(8, 9, 49, 50),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 1,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(result.isEmpty());
+    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.getType().toString()));
+  }
+
+  @Test
+  public void testBboxMinExactlyAtDataMinMaxExcluded() {
+    // node 1: creation and two geometry changes, but no tag changes
+    // OSHDBBoundingBox: MinLon and MinLat like Version 1, MaxLon and MaxLat incorrect
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(1.42, 1.22, 1.3, 1.1),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 1,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  public void testBboxMaxExactlyAtDataMaxMinExcluded() {
+    // node 1: creation and two geometry changes, but no tag changes
+    // OSHDBBoundingBox: MinLon and MinLat incorrect, MaxLon and MaxLat like Version 3
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(3.2, 3.3, 1.425, 1.23),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 1,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  public void testBboxMinMaxExactlyAtDataMinMax() {
+    // node 1: creation and two geometry changes, but no tag changes
+    // OSHDBBoundingBox: MinLon and MinLat like Version 1, MaxLon and MaxLat like Version 3
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(1.42, 1.22, 1.425, 1.23),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 1,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertEquals(3, result.size());
+  }
 }
