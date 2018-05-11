@@ -321,7 +321,6 @@ public class IterateByTimestampsWaysTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    // should be 2: entity has created at start time, modified in between and at end time (excluded)
     assertEquals(9, result.size());
   }
 }
