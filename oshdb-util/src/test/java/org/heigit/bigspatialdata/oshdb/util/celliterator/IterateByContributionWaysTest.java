@@ -463,4 +463,68 @@ public class IterateByContributionWaysTest {
     );
     assertEquals(332, result.get(1).changeset);
   }
+
+  @Test
+  public void testNodeChangeOutsideBboxIsNotGeometryChange() {
+    // way: creation and one geometry change, but no tag changes
+    // node 23 outside bbox with lon lat change
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2009-08-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 110,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertEquals(2, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertTrue(result.get(1).activities.get().isEmpty());
+    assertEquals(3, result.get(1).geometry.get().getNumPoints());
+  }
+
+  @Test
+  public void testNodeChangeOutsideBboxAffectsPartOfLineStringInBbox() {
+    // way: creation and one geometry change, but no tag changes
+    // node 23 outside bbox with lon lat change, way between 24 and 25 intersects bbox
+    // Node 25 outside bbox with lonlat change, way between 24 and 25 changes
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2012-08-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 110,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+    System.out.println(result.get(0).geometry.get().toString());
+    System.out.println(result.get(1).geometry.get().toString());
+    System.out.println(result.get(2).geometry.get().toString());
+    assertEquals(3, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertTrue(result.get(1).activities.get().isEmpty());
+    assertEquals(
+        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
+        result.get(2).activities.get()
+    );
+    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+    System.out.println(result.get(0).geometry.get().toString());
+    assertEquals(3, result.get(1).geometry.get().getNumPoints());
+  }
 }
