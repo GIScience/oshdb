@@ -30,7 +30,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
   }
 
   @Test
-  public void test1() throws ParseException {
+  public void testGeometryChange() throws ParseException {
     // Way getting more nodes, one disappears
     // first appearance
     OSMEntity entity1 = testData.ways().get(100L).get(0);
@@ -118,7 +118,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
   }
 
   @Test
-  public void test2() throws ParseException {
+  public void testGeometryChangeOfNodeInWay() throws ParseException {
     // Way with two then three nodes, changing lat lon
     // first appearance
     OSMEntity entity1 = testData.ways().get(101L).get(0);
@@ -155,7 +155,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
   }
 
   @Test
-  public void test3() throws ParseException {
+  public void testVisibleChange() throws ParseException {
     // Way visible schanged
     // first appearance
     OSMEntity entity1 = testData.ways().get(102L).get(0);
@@ -172,7 +172,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
   }
 
   @Test
-  public void test4() throws ParseException {
+  public void testTagChange() throws ParseException {
     // Way tags schanged
     // first appearance
     OSMEntity entity1 = testData.ways().get(103L).get(0);
@@ -196,7 +196,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
   }
 
   @Test
-  public void test5() throws ParseException {
+  public void testMultipleChangesOnNodesOfWay() throws ParseException {
     // Way various things schanged
     // first appearance
     OSMEntity entity1 = testData.ways().get(104L).get(0);
@@ -214,7 +214,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
   }
 
   @Test
-  public void test6() throws ParseException {
+  public void testMultipleChangesOnNodesAndWays() throws ParseException {
     // way and nodes have different changes
     // first appearance
     OSMEntity entity1 = testData.ways().get(105L).get(0);
@@ -243,7 +243,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
   }
   // MULTIPOLYGON(((1.45 1.45,1.46 1.45,1.46 1.44,1.45 1.44)))
   @Test
-  public void test7() throws ParseException {
+  public void testPolygonAreaYesTagDisappears() throws ParseException {
     // way seems to be polygon with area=yes, later linestring because area=yes deleted
     // first appearance
     OSMEntity entity1 = testData.ways().get(106L).get(0);
@@ -262,7 +262,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
 
 
   @Test
-  public void test8() throws ParseException {
+  public void testPolygonAreaYesNodeDisappears() throws ParseException {
     // way seems to be polygon with area=yes, later linestring because area=yes deleted
     // first appearance
     OSMEntity entity1 = testData.ways().get(107L).get(0);
@@ -277,6 +277,5 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWays {
     Geometry result4 = OSHDBGeometryBuilder.getGeometry(entity4, timestamp4, areaDecider);
     assertTrue(result4 instanceof LineString);
     assertEquals(4, result4.getNumPoints());
-
   }
 }
