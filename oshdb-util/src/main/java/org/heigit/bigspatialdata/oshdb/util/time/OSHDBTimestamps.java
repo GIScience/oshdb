@@ -34,22 +34,43 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
   private String start;
   private String end;
   private String period;
+  private Boolean fromEnd;
 
   /**
    * Creates regularly spaced timestamps between a start and end date by time intervals defined by an ISO 8601 "period" identifier.
+   *
+   * The timestamps are computed starting with the start date.
    *
    * @param isoDateStart ISO 8601 date string representing the start date
    * @param isoDateEnd ISO 8601 date string representing the start date
    * @param isoPeriod ISO 8601 time period string representing the interval between the generated timestamps
    */
   public OSHDBTimestamps(String isoDateStart, String isoDateEnd, String isoPeriod) {
+    this(isoDateStart, isoDateEnd, isoPeriod, false);
+  }
+
+  /**
+   * Creates regularly spaced timestamps between a start and end date by time intervals defined by an ISO 8601 "period" identifier.
+   *
+   * If fromEnd is true, the timestamps are computed starting with the end date, otherwise starting with the start
+   * date of the interval.
+   *
+   * @param isoDateStart ISO 8601 date string representing the start date
+   * @param isoDateEnd ISO 8601 date string representing the start date
+   * @param isoPeriod ISO 8601 time period string representing the interval between the generated timestamps
+   * @param fromEnd computation of the timestamps starting with the end date of the interval (instead of the start date)
+   */
+  public OSHDBTimestamps(String isoDateStart, String isoDateEnd, String isoPeriod, Boolean fromEnd) {
     this.start = isoDateStart;
     this.end = isoDateEnd;
     this.period = isoPeriod;
+    this.fromEnd = fromEnd;
   }
 
   /**
    * Creates regularly spaced timestamps between a start and end date by predefined time intervals.
+   *
+   * The timestamps are computed starting with the start date.
    *
    * @param isoDateStart ISO 8601 date string representing the start date
    * @param isoDateEnd ISO 8601 date string representing the start date
@@ -57,6 +78,21 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
    */
   public OSHDBTimestamps(String isoDateStart, String isoDateEnd, Interval interval) {
     this(isoDateStart, isoDateEnd, interval.value);
+  }
+
+  /**
+   * Creates regularly spaced timestamps between a start and end date by predefined time intervals.
+   *
+   * If fromEnd is true, the timestamps are computed starting with the end date, otherwise starting with the start
+   * date of the interval.
+   *
+   * @param isoDateStart ISO 8601 date string representing the start date
+   * @param isoDateEnd ISO 8601 date string representing the start date
+   * @param interval interval between the generated timestamps
+   * @param fromEnd computation of the timestamps starting with the end date of the interval (instead of the start date)
+   */
+  public OSHDBTimestamps(String isoDateStart, String isoDateEnd, Interval interval, Boolean fromEnd) {
+    this(isoDateStart, isoDateEnd, interval.value, fromEnd);
   }
 
   /**
@@ -94,7 +130,7 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
   public SortedSet<OSHDBTimestamp> get() {
     if (period != null) {
       return new TreeSet<>(
-          _getTimestampsAsEpochSeconds(start, end, period).stream().map(OSHDBTimestamp::new).collect(Collectors.toList())
+          _getTimestampsAsEpochSeconds(start, end, period, fromEnd).stream().map(OSHDBTimestamp::new).collect(Collectors.toList())
       );
     } else {
       SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
@@ -113,7 +149,7 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
     return new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(this.end).toEpochSecond());
   }
 
-  private static List<Long> _getTimestampsAsEpochSeconds(String isoStringStart, String isoStringEnd, String isoStringPeriod) {
+  private static List<Long> _getTimestampsAsEpochSeconds(String isoStringStart, String isoStringEnd, String isoStringPeriod, Boolean fromEnd) {
     try {
       ZonedDateTime start = ISODateTimeParser.parseISODateTime(isoStringStart);
       ZonedDateTime end = ISODateTimeParser.parseISODateTime(isoStringEnd);
@@ -130,12 +166,22 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
 
       List<Long> timestamps = new ArrayList<>();
 
-      ZonedDateTime currentTimestamp = ZonedDateTime.from(start);
-      long endTimestamp = end.toEpochSecond();
+      if (fromEnd) {
+        ZonedDateTime currentTimestamp = ZonedDateTime.from(end);
+        long startTimestamp = start.toEpochSecond();
 
-      while (currentTimestamp.toEpochSecond() <= endTimestamp) {
-        timestamps.add(currentTimestamp.toEpochSecond());
-        currentTimestamp = currentTimestamp.plus(period).plus(duration);
+        while (currentTimestamp.toEpochSecond() >= startTimestamp) {
+          timestamps.add(currentTimestamp.toEpochSecond());
+          currentTimestamp = currentTimestamp.minus(period).minus(duration);
+        }
+      } else {
+        ZonedDateTime currentTimestamp = ZonedDateTime.from(start);
+        long endTimestamp = end.toEpochSecond();
+
+        while (currentTimestamp.toEpochSecond() <= endTimestamp) {
+          timestamps.add(currentTimestamp.toEpochSecond());
+          currentTimestamp = currentTimestamp.plus(period).plus(duration);
+        }
       }
 
       return timestamps;
