@@ -85,6 +85,23 @@ public class CellIterator implements Serializable {
       this.fastPolygonClipper = new FastPolygonOperations(boundingPolygon);
     }
   }
+  public <P extends Geometry & Polygonal> CellIterator(
+      SortedSet<OSHDBTimestamp> timestamps,
+      @Nonnull P boundingPolygon,
+      TagInterpreter tagInterpreter,
+      OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
+      boolean includeOldStyleMultipolygons
+  ) {
+    this(
+        timestamps,
+        OSHDBGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal()),
+        boundingPolygon,
+        tagInterpreter,
+        oshEntityPreFilter,
+        osmEntityFilter,
+        includeOldStyleMultipolygons
+    );
+  }
   public CellIterator(
       SortedSet<OSHDBTimestamp> timestamps,
       OSHDBBoundingBox boundingBox,
