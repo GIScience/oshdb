@@ -583,7 +583,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   @Test
   public void testRestrictionRoles() {
     // relation, restriction, role changes
-    OSMEntity entity1 = testData.relations().get(516L).get(0);
+    OSMEntity entity1 = testData.relations().get(518L).get(0);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
@@ -602,7 +602,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
   @Test
   public void testRolesArePartAndOutline() {
     // relation as building with role=part and outline
-    OSMEntity entity1 = testData.relations().get(517L).get(0);
+    OSMEntity entity1 = testData.relations().get(519L).get(0);
     OSHDBTimestamp timestamp1 = entity1.getTimestamp();
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
@@ -616,7 +616,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygon {
       fail("Should not have thrown any exception");
     }
     // second version
-    OSMEntity entity2 = testData.relations().get(517L).get(1);
+    OSMEntity entity2 = testData.relations().get(519L).get(1);
     OSHDBTimestamp timestamp2 = entity2.getTimestamp();
     try {
       Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
