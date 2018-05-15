@@ -21,6 +21,7 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAll
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
@@ -296,4 +297,61 @@ public class IterateByContributionNodesTest {
     ).collect(Collectors.toList());
     assertEquals(3, result.size());
   }
+
+  @Test
+  public void testTagChangeTagFilterWithSuccess() {
+    // node: creation then tag changes, but no geometry changes
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 5,
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    )
+        .collect(Collectors.toList());
+    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+    assertEquals(4, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(2).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(3).activities.get()
+    );
+  }
+
+  @Test
+  public void testTagChangeTagFilterWithoutSuccess() {
+    // node: creation then tag changes, but no geometry changes
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 5,
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(result.isEmpty());
+  }
+
 }
