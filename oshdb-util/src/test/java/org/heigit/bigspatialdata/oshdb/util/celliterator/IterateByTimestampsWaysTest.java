@@ -211,8 +211,6 @@ public class IterateByTimestampsWaysTest {
     assertEquals(2, result.get(4).geometry.get().getNumPoints());
 
     assertEquals(42, result.get(0).osmEntity.getChangeset());
-    assertEquals(43, result.get(7).osmEntity.getChangeset());
-
     assertEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(3).geometry.get(), result.get(1).geometry.get());
     assertNotEquals(result.get(4).geometry.get(), result.get(3).geometry.get());
@@ -322,5 +320,55 @@ public class IterateByTimestampsWaysTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertEquals(9, result.size());
+  }
+
+  @Test
+  public void testNodeChangeOutsideBboxIsNotGeometryChange() {
+    // way: creation and one geometry change, but no tag changes
+    // node 23 outside bbox with lon lat change, should not be change in geometry inside bbox
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2010-02-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 110,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertEquals(2, result.size());
+    assertEquals(result.get(0).geometry.get(), result.get(1).geometry.get());
+  }
+
+  @Test
+  public void testNodeChangeOutsideBboxAffectsPartOfLineStringInBbox() {
+    // way: creation and one geometry change, but no tag changes
+    // node 23 outside bbox with lon lat change, way between 24 and 25 intersects bbox
+    // Node 25 outside bbox with lonlat change, way between 24 and 25 changes
+    // should be geometry change
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2012-08-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 110,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertNotEquals(result.get(0).geometry.get(),result.get(3).geometry.get());
+    assertEquals(4, result.size());
+    assertEquals(3, result.get(1).geometry.get().getNumPoints());
+    assertEquals(4, result.get(0).unclippedGeometry.get().getNumPoints());
   }
 }
