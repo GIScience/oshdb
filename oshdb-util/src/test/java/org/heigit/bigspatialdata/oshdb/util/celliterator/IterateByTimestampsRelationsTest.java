@@ -5,14 +5,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -505,5 +508,267 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom2 instanceof Polygon);
     assertEquals(323, result.get(0).osmEntity.getChangeset());
     assertNotEquals(result.get(9).geometry.get(), result.get(0).geometry.get());
+  }
+
+  @Test
+  public void testBboxNotIntersectsAndBboxPolygonIntersectsPartly() {
+    // node 1: creation and two geometry changes, but no tag changes
+
+    // Create a GeometryFactory if you don't have one already
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    // Simply pass an array of Coordinate or a CoordinateSequence to its method
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,22.7);
+    coords[2]=new Coordinate(22.7,22.7);
+    coords[3]=new Coordinate(22.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(48, 49, 49, 50),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(resultPoly.isEmpty());
+  }
+
+  @Test
+  public void testBboxEqualToBboxPolygonIntersectingDataPartly() {
+    // node 1: creation and two geometry changes, but no tag changes
+
+    // Create a GeometryFactory if you don't have one already
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    // Simply pass an array of Coordinate or a CoordinateSequence to its method
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,22.7);
+    coords[2]=new Coordinate(22.7,22.7);
+    coords[3]=new Coordinate(22.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    //assertTrue(resultPoly.isEmpty());
+  }
+
+  @Test
+  public void testBboxEqualToBboxPolygonIntersectingDataCompletely() {
+    // node 1: creation and two geometry changes, but no tag changes
+
+    // Create a GeometryFactory if you don't have one already
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    // Simply pass an array of Coordinate or a CoordinateSequence to its method
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,52.7);
+    coords[2]=new Coordinate(52.7,52.7);
+    coords[3]=new Coordinate(52.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    //assertTrue(resultPoly.isEmpty());
+  }
+
+  @Test
+  public void testBboxAndBboxPolygonNotIntersecting() {
+    // node 1: creation and two geometry changes, but no tag changes
+
+    // Create a GeometryFactory if you don't have one already
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    // Simply pass an array of Coordinate or a CoordinateSequence to its method
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(48,49);
+    coords[1]=new Coordinate(48 ,50);
+    coords[2]=new Coordinate(49,50);
+    coords[3]=new Coordinate(49,49);
+    coords[4]=new Coordinate(48,49);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(50,51, 51, 52),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(resultPoly.isEmpty());
+  }
+
+  @Test
+  public void testNodeChangeOutsideBbox() {
+    // relation: 2 ways, each has 5 points, making polygon
+    // nodes outside bbox have lon lat change in 2009 and 2011, the latest one affects geometry of
+    // polygon inside bbox
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2019-08-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertNotEquals(result.get(3).geometry.get(), result.get(0).geometry.get());
+  }
+
+  @Test
+  public void testPolygonIntersectingDataCompletelyTimeIntervalAfterChanges() {
+
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,52.7);
+    coords[2]=new Coordinate(52.7,52.7);
+    coords[3]=new Coordinate(52.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2016-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 517,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+    assertEquals(3,result.size());
+  }
+
+  @Test
+  public void testTimeIntervalAfterChanges() {
+
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2016-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 517,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertEquals(3,result.size());
+  }
+
+  @Test
+  public void testBboxOutsidePolygon() {
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(50,50, 52, 52),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(resultPoly.isEmpty());
+  }
+  // todo: in new test class for non osmtype specific cases
+  @Test
+  public void testCellOutsidePolygon() throws IOException {
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(12, 69120, 0, 0, 0, 0, Collections
+        .emptyList());
+
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    // Simply pass an array of Coordinate or a CoordinateSequence to its method
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,12.7);
+    coords[2]=new Coordinate(12.7,12.7);
+    coords[3]=new Coordinate(12.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(resultPoly.isEmpty());
   }
 }
