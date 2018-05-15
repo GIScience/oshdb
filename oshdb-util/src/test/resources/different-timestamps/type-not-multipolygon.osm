@@ -107,10 +107,54 @@
     <node id="60" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="65" lon="7.0" lat="1.6"/>
     <node id="61" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="66" lon="7.2" lat="1.6"/>
     <node id="62" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="67" lon="7.2" lat="1.04"/>
+    <node id="63" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="10.94" lat="10.4">
+        <tag k="created_by" v="test"/>
+    </node>
 
-    <node id="63" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="68" lon="7.03" lat="1.12"/>
-    <node id="64" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="69" lon="7.07" lat="1.11"/>
-    <node id="65" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="70" lon="7.03" lat="1.11"/>
+    <node id="64" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="20.5" lat="20.55">
+        <tag k="created_by" v="test"/>
+    </node>
+
+    <node id="65" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="30.5" lat="30.55">
+        <tag k="created_by" v="test"/>
+    </node>
+    <node id="65" visible="true" version="2" timestamp="2009-01-01T01:01:01Z" uid="1" user="A" changeset="69" lon="30.5" lat="30.55">
+        <tag k="created_by" v="test"/>
+        <tag k="highway" v="traffic_signals"/>
+    </node>
+
+    <node id="66" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="40.92" lat="40.22">
+        <tag k="created_by" v="test"/>
+    </node>
+    <node id="66" visible="true" version="2" timestamp="2011-01-01T01:01:01Z" uid="2" user="B" changeset="70" lon="40.92" lat="40.22">
+        <tag k="highway" v="traffic_signals"/>
+    </node>
+
+    <node id="67" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="10.94" lat="10.9">
+        <tag k="created_by" v="test"/>
+    </node>
+
+    <node id="68" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="20.5" lat="22.55">
+        <tag k="created_by" v="test"/>
+    </node>
+
+    <node id="69" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="30.5" lat="32.55">
+        <tag k="created_by" v="test"/>
+    </node>
+    <node id="69" visible="true" version="2" timestamp="2011-01-01T01:01:01Z" uid="1" user="A" changeset="70" lon="30.5" lat="34.55">
+        <tag k="created_by" v="test"/>
+        <tag k="highway" v="traffic_signals"/>
+    </node>
+
+    <node id="70" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="68" lon="40.92" lat="42.22">
+        <tag k="created_by" v="test"/>
+    </node>
+    <node id="70" visible="true" version="2" timestamp="2009-01-01T01:01:01Z" uid="2" user="B" changeset="69" lon="40.92" lat="44.22">
+        <tag k="highway" v="traffic_signals"/>
+    </node>
+    <node id="71" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="71" lon="7.03" lat="1.12"/>
+    <node id="72" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="72" lon="7.07" lat="1.11"/>
+    <node id="73" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="73" lon="7.03" lat="1.11"/>
 
     <way id="102" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="3" user="C" changeset="201">
         <nd ref="11"/>
@@ -273,12 +317,12 @@
         <nd ref="51"/>
     </way>
     <way id="115" visible="true" version="1" changeset="221" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
-        <nd ref="484"/>
-        <nd ref="514"/>
+        <nd ref="48"/>
+        <nd ref="51"/>
     </way>
     <way id="116" visible="true" version="1" changeset="222" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
-        <nd ref="484"/>
-        <nd ref="514"/>
+        <nd ref="48"/>
+        <nd ref="51"/>
     </way>
     <way id="117" visible="true" version="1" changeset="223" timestamp="2007-03-06T22:08:47Z" user="hdy3er" uid="799014">
         <nd ref="51"/>
@@ -376,17 +420,31 @@
         <nd ref="59"/>
         <nd ref="60"/>
     </way>
-    <way id="125" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="237">
+    <way id="125" visible="true" version="1" timestamp="2008-02-01T00:00:00Z" uid="3" user="C" changeset="237">
         <nd ref="63"/>
-        <nd ref="65"/>
-    </way>
-    <way id="126" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="238">
         <nd ref="64"/>
         <nd ref="65"/>
+        <nd ref="66"/>
+        <nd ref="70"/>
     </way>
-    <way id="127" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="239">
-        <nd ref="64"/>
+    <way id="126" visible="true" version="1" timestamp="2008-02-01T00:00:00Z" uid="3" user="C" changeset="237">
         <nd ref="63"/>
+        <nd ref="67"/>
+        <nd ref="68"/>
+        <nd ref="69"/>
+        <nd ref="70"/>
+    </way>
+    <way id="127" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="238">
+        <nd ref="71"/>
+        <nd ref="73"/>
+    </way>
+    <way id="128" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="239">
+        <nd ref="72"/>
+        <nd ref="73"/>
+    </way>
+    <way id="129" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="240">
+        <nd ref="72"/>
+        <nd ref="71"/>
     </way>
 
     <!--relation getting more ways, one disappears-->
@@ -423,12 +481,12 @@
     </relation>
 
     <!--relation  way members do not exist-->
-    <relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
+    <!--relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
         <member type="way" ref="206" role="outer"/>
         <member type="way" ref="207" role="outer"/>
         <member type="way" ref="208" role="outer"/>
         <tag k="type" v="building"/>
-    </relation>
+    </relation-->
     <!--relation tags changing-->
     <relation id="503" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="3" user="C" changeset="307">
         <member type="way" ref="108" role="outer"/>
@@ -500,7 +558,7 @@
     </relation>
 
     <!--relation, way member: node 53 changes tags-->
-    <relation id="510" visible="true" version="1" changeset="317" timestamp="2010-05-01T22:10:54Z" user="gkai" uid="74224">
+    <relation id="510" visible="true" version="1" changeset="317" timestamp="2007-05-01T22:10:54Z" user="gkai" uid="74224">
         <member type="way" ref="118" role="outer"/>
         <tag k="type" v="building"/>
     </relation>
@@ -540,30 +598,44 @@
         <member type="way" ref="124" role="outer"/>
         <tag k="type" v="building"/>
     </relation>
+
+
+    <relation id="516" visible="true" version="1" timestamp="2008-03-01T00:00:00Z" uid="1" user="A" changeset="327">
+        <member type="way" ref="125" role="outer"/>
+        <member type="way" ref="126" role="outer"/>
+        <tag k="type" v="building"/>
+    </relation>
+
+    <relation id="517" visible="true" version="1" timestamp="2015-03-01T00:00:00Z" uid="1" user="A" changeset="328">
+        <member type="way" ref="125" role="outer"/>
+        <member type="way" ref="126" role="outer"/>
+        <tag k="type" v="building"/>
+    </relation>
+
     <!--relation, restriction, role changes-->
-    <relation id="516" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="325">
-        <member type="way" ref="125" role="to"/>
-        <member type="node" ref="65" role="via"/>
-        <member type="way" ref="126" role="from"/>
+    <relation id="518" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="325">
+        <member type="way" ref="127" role="to"/>
+        <member type="node" ref="73" role="via"/>
+        <member type="way" ref="128" role="from"/>
         <tag k="type" v="restriction"/>
     </relation>
-    <relation id="516" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="326">
-        <member type="way" ref="125" role="from"/>
-        <member type="node" ref="65" role="via"/>
-        <member type="way" ref="126" role="to"/>
+    <relation id="518" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="326">
+        <member type="way" ref="127" role="from"/>
+        <member type="node" ref="73" role="via"/>
+        <member type="way" ref="128" role="to"/>
         <tag k="type" v="restriction"/>
     </relation>
 
     <!--relation as building with role=part and outline-->
-    <relation id="517" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="327">
-        <member type="way" ref="125" role="part"/>
-        <member type="way" ref="127" role="outline"/>
+    <relation id="519" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="test" changeset="329">
+        <member type="way" ref="127" role="part"/>
+        <member type="way" ref="129" role="outline"/>
         <tag k="type" v="building"/>
     </relation>
-    <relation id="517" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="328">
-        <member type="way" ref="125" role="part"/>
-        <member type="way" ref="126" role="part"/>
-        <member type="way" ref="127" role="outline"/>
+    <relation id="519" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="330">
+        <member type="way" ref="127" role="part"/>
+        <member type="way" ref="128" role="part"/>
+        <member type="way" ref="129" role="outline"/>
         <tag k="type" v="building"/>
     </relation>
 </osm>
