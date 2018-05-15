@@ -153,6 +153,8 @@
     <tag k="created_by" v="test"/>
   </node>
 
+
+
   <!--way getting more nodes, one disappears-->
   <way id="100"  visible="true" version="1" timestamp="2009-01-01T00:00:00Z" uid="1" user="test" changeset="31">
     <nd ref="1"/>
@@ -248,11 +250,7 @@
     <nd ref="13"/>
     <nd ref="14"/>
   </way>
-  <way id="104" visible="true" version="2" timestamp="2018-01-01T00:00:00Z" uid="2" user="B" changeset="43">
-    <nd ref="12"/>
-    <nd ref="13"/>
-    <nd ref="14"/>
-  </way>
+
   <!--way and nodes have different changes -->
   <way id="105" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="44">
     <nd ref="12"/>
@@ -320,7 +318,6 @@
     <nd ref="17"/>
     <nd ref="18"/>
     <nd ref="19"/>
-
     <tag k="area" v="yes"/>
   </way>
   <!--rule for contributions that fall exactly at time interval limits:
@@ -339,11 +336,12 @@
     <nd ref="20"/>
     <nd ref="21"/>
   </way>
-  <!--way with 4 nodes, to check what happens if change is on nodes outside Bbox-->
+  <!--way with 4 nodes, to check what happens if geometry change is on nodes outside Bbox-->
   <way id="110" visible="true" version="1" timestamp="2008-03-01T01:01:01Z" uid="1" user="test" changeset="64">
     <nd ref="22"/>
     <nd ref="24"/>
     <nd ref="25"/>
     <nd ref="23"/>
   </way>
+
 </osm>
