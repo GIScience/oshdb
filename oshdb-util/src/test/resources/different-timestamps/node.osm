@@ -62,6 +62,19 @@
 		<tag k="leaf_type" v="broadleaved"/>
 		<tag k="natural" v="tree"/>
 	</node>
-	
+
+	<!--tag ändert sich variante 2-->
+	<node id="5" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="17" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="5" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="18" lon="3.43" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+	<node id="5" visible="true" version="3" timestamp="2010-01-01T00:00:00Z" uid="13" user="test3" changeset="19" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="5" visible="true" version="4" timestamp="2016-01-01T00:00:00Z" uid="12" user="test2" changeset="20" lon="3.43" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
 
 </osm>
