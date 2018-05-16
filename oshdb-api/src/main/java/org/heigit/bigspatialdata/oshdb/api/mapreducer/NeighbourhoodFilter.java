@@ -2,8 +2,10 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -23,16 +25,18 @@ import java.util.*;
 public class NeighbourhoodFilter {
     public enum GEOMETRY_OPTIONS {BEFORE, AFTER, BOTH}
 
-    public static <Y> Y applyToOSMEntitySnapshot(OSHDBJdbc oshdb,
-                                           OSHDBTimestampList timestampList,
-                                           Double distanceInMeter,
-                                           SerializableFunctionWithException<MapReducer, Y> MapReduce,
-                                           OSMEntitySnapshot snapshot,
-                                           boolean queryContributions
+    public static <Y> Y applyToOSMEntitySnapshot(
+        OSHDBJdbc oshdb,
+        OSHDBTimestampList timestampList,
+        Double distanceInMeter,
+        SerializableFunctionWithException<MapReducer, Y> mapReduce,
+        OSMEntitySnapshot snapshot,
+        boolean queryContributions
     ) throws Exception {
-      MapReducer SubMapReducer;
+
       OSHDBTimestamp end;
       OSHDBTimestamps timestamps = (OSHDBTimestamps) timestampList;
+      MapReducer subMapReducer;
 
       // Get geometry of feature
       Geometry geom = snapshot.getGeometryUnclipped();
@@ -57,7 +61,7 @@ public class NeighbourhoodFilter {
       }
 
       if (queryContributions) {
-        SubMapReducer = OSMContributionView.on(oshdb)
+        subMapReducer = OSMContributionView.on(oshdb)
             .keytables(oshdb)
             .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
             .timestamps(new OSHDBTimestamps(snapshot.getTimestamp().toString(), end.toString()))
@@ -68,7 +72,7 @@ public class NeighbourhoodFilter {
 
                 // Check if geometry before editing is within distance of entity snapshot geometry
                 try {
-                  Geometry geometryBefore = contribution.getGeometryUnclippedAfter();
+                  Geometry geometryBefore = contribution.getGeometryUnclippedBefore();
                   geomBeforeWithinDistance = Geo.isWithinDistance(geom, geometryBefore, distanceInMeter);
                 } catch (Exception e) {
                   geomBeforeWithinDistance = false;
@@ -90,31 +94,35 @@ public class NeighbourhoodFilter {
               }
             });
       } else {
-        SubMapReducer = OSMEntitySnapshotView.on(oshdb)
+        subMapReducer = OSMEntitySnapshotView.on(oshdb)
             .keytables(oshdb)
             .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
             .timestamps(snapshot.getTimestamp().toString())
             .filter((snapshotNgb) -> {
               try {
-                  // Get geometry of object
                 Geometry geomNgb = snapshotNgb.getGeometryUnclipped();
-
-                // Check if geometry is within buffer distance
                 return Geo.isWithinDistance(geom, geomNgb, distanceInMeter);
               } catch (Exception e) {
                 return false;
               }
             });
       }
-
       // Apply mapReducer given by user
-      return MapReduce.apply(SubMapReducer);
+      return mapReduce.apply(subMapReducer);
     }
 
-    public static <Y> Y applyToOSMContribution(OSHDBJdbc oshdb, Double distanceInMeter,
-                                               SerializableFunctionWithException<MapReducer, Y> MapReduce,
-                                               OSMContribution contribution,
-                                               GEOMETRY_OPTIONS geometryVersion) throws Exception {
+    /* ----- under construction -------
+    Function that returns neighbours of contributions
+    Still needs discussion what it should return exactly and based on which attributes the contributions
+    and neighbours should be filtered
+     */
+    public static <Y> Y applyToOSMContribution(
+        OSHDBJdbc oshdb, Double distanceInMeter,
+        SerializableFunctionWithException<MapReducer, Y> mapReduce,
+        OSMContribution contribution,
+        GEOMETRY_OPTIONS geometryVersion
+    ) throws Exception {
+
       Geometry geomBefore = null;
       Geometry geomAfter = null;
       Double distanceInDegreeLongitude = null;
@@ -149,7 +157,7 @@ public class NeighbourhoodFilter {
           geomBefore = geomAfter;
         } else if (geomAfter == null && geomBefore != null) {
           geomAfter = geomBefore;
-        } else if (((geomAfter == null) & (geomBefore == null)) || (distanceInDegreeLongitude == null)) {
+        } else if (((geomAfter == null) && (geomBefore == null)) || (distanceInDegreeLongitude == null)) {
           System.out.println("invalid geometry.3");
           throw new Exception("Invalid geometry.");
         }
@@ -180,7 +188,7 @@ public class NeighbourhoodFilter {
       Geometry finalGeomAfter = geomAfter;
 
       // Find neighbours of geometry
-      MapReducer SubMapReducer = OSMEntitySnapshotView.on(oshdb)
+      MapReducer subMapReducer = OSMEntitySnapshotView.on(oshdb)
           .keytables(oshdb)
           .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
           .timestamps(contribution.getTimestamp().toString())
@@ -203,7 +211,7 @@ public class NeighbourhoodFilter {
           });
 
       // Apply mapReducer given by user
-      return MapReduce.apply(SubMapReducer);
+      return mapReduce.apply(subMapReducer);
   }
 
 }
