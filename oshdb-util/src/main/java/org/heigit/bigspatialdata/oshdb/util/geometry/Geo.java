@@ -11,7 +11,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 public class Geo {
 
 	public static double earthRadius = 6371000; //meters
-	public static double ONE_DEGREE_IN_METERS_AT_EQUATOR = 110567; //meters
+	public static double ONE_DEGREE_IN_METERS_AT_EQUATOR = earthRadius * Math.PI/180.;
 
 	// =====================
 	// = line calculations =

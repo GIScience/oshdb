@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import it.unimi.dsi.fastutil.longs.LongList;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -15,7 +14,6 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 
-import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -23,42 +21,34 @@ import java.util.*;
  *
  **/
 public class NeighbourhoodFilter {
+    public enum GEOMETRY_OPTIONS {BEFORE, AFTER, BOTH}
 
-    private static final double ONE_DEGREE_IN_METERS_AT_EQUATOR = 110567.;
-    public enum geometryOptions {BEFORE, AFTER, BOTH}
-
-    public static <Y> Y applyToOSMSnapshot(OSHDBJdbc oshdb,
+    public static <Y> Y applyToOSMEntitySnapshot(OSHDBJdbc oshdb,
                                            OSHDBTimestampList timestampList,
                                            Double distanceInMeter,
                                            SerializableFunctionWithException<MapReducer, Y> MapReduce,
                                            OSMEntitySnapshot snapshot,
-                                           boolean queryContributions) throws Exception {
-
-      DefaultTagInterpreter defaultTagInterpreter = new DefaultTagInterpreter(oshdb.getConnection());
+                                           boolean queryContributions
+    ) throws Exception {
       MapReducer SubMapReducer;
       OSHDBTimestamp end;
       OSHDBTimestamps timestamps = (OSHDBTimestamps) timestampList;
 
       // Get geometry of feature
-      Geometry geom = OSHDBGeometryBuilder.getGeometry(snapshot.getEntity(),
-          snapshot.getTimestamp(),
-          defaultTagInterpreter);
+      Geometry geom = snapshot.getGeometryUnclipped();
 
       // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
       double distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geom.getCentroid().getX(), distanceInMeter);
 
-      // Buffer geometry twice with different buffer distances in degrees for latitude and longitude
-      Envelope geomBufferedLng = geom.buffer(distanceInDegreeLongitude).getEnvelopeInternal();
-      Envelope geomBufferedLat = geom.buffer(distanceInMeter / ONE_DEGREE_IN_METERS_AT_EQUATOR).getEnvelopeInternal();
-
       // Get coordinates of bounding box
-      double minLat = geomBufferedLat.getMinY();
-      double maxLat = geomBufferedLat.getMaxY();
-      double minLon = geomBufferedLng.getMinX();
-      double maxLon = geomBufferedLng.getMaxX();
+      Envelope envelope = geom.getEnvelopeInternal();
+      double minLon = envelope.getMinX() - distanceInDegreeLongitude;
+      double maxLon = envelope.getMaxX() + distanceInDegreeLongitude;
+      double minLat = envelope.getMinY() - distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+      double maxLat = envelope.getMaxY() + distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
 
       // Get start and end timestamp of current snapshot
-      ArrayList<OSHDBTimestamp> timestampArrayList = new ArrayList(timestampList.get().tailSet(snapshot.getTimestamp()));
+      ArrayList<OSHDBTimestamp> timestampArrayList = new ArrayList<>(timestampList.get().tailSet(snapshot.getTimestamp()));
       if (timestampArrayList.size() <=1) {
         end = timestamps.getEnd();
       } else {
@@ -78,9 +68,7 @@ public class NeighbourhoodFilter {
 
                 // Check if geometry before editing is within distance of entity snapshot geometry
                 try {
-                  Geometry geometryBefore = OSHDBGeometryBuilder.getGeometry(contribution.getEntityAfter(),
-                          contribution.getTimestamp(),
-                          defaultTagInterpreter);
+                  Geometry geometryBefore = contribution.getGeometryUnclippedAfter();
                   geomBeforeWithinDistance = Geo.isWithinDistance(geom, geometryBefore, distanceInMeter);
                 } catch (Exception e) {
                   geomBeforeWithinDistance = false;
@@ -88,16 +76,14 @@ public class NeighbourhoodFilter {
 
                 // Check if geometry after editing is within distance of entity snapshot geometry
                 try {
-                  Geometry geometryAfter = OSHDBGeometryBuilder.getGeometry(contribution.getEntityAfter(),
-                          contribution.getTimestamp(),
-                          defaultTagInterpreter);
+                  Geometry geometryAfter = contribution.getGeometryUnclippedAfter();
                   geomAfterWithinDistance = Geo.isWithinDistance(geom, geometryAfter, distanceInMeter);
                 } catch (Exception e) {
                   geomAfterWithinDistance = false;
                 }
 
                 // Check if either one of the geometries are within the buffer distance
-                return geomBeforeWithinDistance | geomAfterWithinDistance;
+                return geomBeforeWithinDistance || geomAfterWithinDistance;
 
               } catch (Exception e) {
                 return false;
@@ -111,9 +97,8 @@ public class NeighbourhoodFilter {
             .filter((snapshotNgb) -> {
               try {
                   // Get geometry of object
-                Geometry geomNgb = OSHDBGeometryBuilder.getGeometry(snapshotNgb.getEntity(),
-                    snapshotNgb.getTimestamp(),
-                    defaultTagInterpreter);
+                Geometry geomNgb = snapshotNgb.getGeometryUnclipped();
+
                 // Check if geometry is within buffer distance
                 return Geo.isWithinDistance(geom, geomNgb, distanceInMeter);
               } catch (Exception e) {
@@ -129,64 +114,66 @@ public class NeighbourhoodFilter {
     public static <Y> Y applyToOSMContribution(OSHDBJdbc oshdb, Double distanceInMeter,
                                                SerializableFunctionWithException<MapReducer, Y> MapReduce,
                                                OSMContribution contribution,
-                                               geometryOptions geometryVersion) throws Exception {
-
-      DefaultTagInterpreter defaultTagInterpreter = new DefaultTagInterpreter(oshdb.getConnection());
+                                               GEOMETRY_OPTIONS geometryVersion) throws Exception {
       Geometry geomBefore = null;
       Geometry geomAfter = null;
       Double distanceInDegreeLongitude = null;
 
       // Get geometry of feature after editing
-      if (geometryVersion == geometryOptions.BOTH | geometryVersion == geometryOptions.AFTER) {
+      if (geometryVersion == GEOMETRY_OPTIONS.BOTH || geometryVersion == GEOMETRY_OPTIONS.AFTER) {
         try {
-          geomAfter = OSHDBGeometryBuilder.getGeometry(contribution.getEntityAfter(),
-              contribution.getTimestamp(),
-              defaultTagInterpreter);
+          geomAfter = contribution.getGeometryUnclippedAfter();
           // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
           distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getX(), distanceInMeter);
         } catch (Exception e) {
           System.out.println("invalid geometry.1");
-          if (geometryVersion == geometryOptions.AFTER) throw new Exception();
+          if (geometryVersion == GEOMETRY_OPTIONS.AFTER) throw new Exception();
         }
       }
 
-      if (geometryVersion == geometryOptions.BOTH | geometryVersion == geometryOptions.BEFORE) {
+      if (geometryVersion == GEOMETRY_OPTIONS.BOTH || geometryVersion == GEOMETRY_OPTIONS.BEFORE) {
         // Get geometry of feature before editing.
         try {
-          geomBefore = OSHDBGeometryBuilder.getGeometry(contribution.getEntityBefore(),
-                  contribution.getTimestamp(),
-                  defaultTagInterpreter);
+          geomBefore = contribution.getGeometryUnclippedBefore();
           // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
           distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getX(), distanceInMeter);
         } catch (Exception e) {
           System.out.println("invalid geometry.2");
-          if (geometryVersion == geometryOptions.BEFORE) throw new Exception("Invalid geometry.");
+          if (geometryVersion == GEOMETRY_OPTIONS.BEFORE) throw new Exception("Invalid geometry.");
         }
       }
 
       // Check if either one of the geometries is invalid. If so
-      if (geometryVersion == geometryOptions.BOTH) {
-        if (geomBefore == null & geomAfter != null) {
+      if (geometryVersion == GEOMETRY_OPTIONS.BOTH) {
+        if (geomBefore == null && geomAfter != null) {
           geomBefore = geomAfter;
-        } else if (geomAfter == null & geomBefore != null) {
+        } else if (geomAfter == null && geomBefore != null) {
           geomAfter = geomBefore;
-        } else if (((geomAfter == null) & (geomBefore == null)) | (distanceInDegreeLongitude == null)) {
+        } else if (((geomAfter == null) & (geomBefore == null)) || (distanceInDegreeLongitude == null)) {
           System.out.println("invalid geometry.3");
           throw new Exception("Invalid geometry.");
         }
       }
 
-      // Buffer geometries
-      Envelope geomBeforeBufferedLng = geomBefore.buffer(distanceInDegreeLongitude).getEnvelopeInternal();
-      Envelope geomBeforeBufferedLat = geomBefore.buffer(distanceInMeter / ONE_DEGREE_IN_METERS_AT_EQUATOR).getEnvelopeInternal();
-      Envelope geomAfterBufferedLng = geomAfter.buffer(distanceInDegreeLongitude).getEnvelopeInternal();
-      Envelope geomAfterBufferedLat = geomAfter.buffer(distanceInMeter / ONE_DEGREE_IN_METERS_AT_EQUATOR).getEnvelopeInternal();
+      // Get coordinates of bounding box
+      Envelope envelopeBefore = geomBefore.getEnvelopeInternal();
+      double minLonB = envelopeBefore.getMinX() - distanceInDegreeLongitude;
+      double maxLonB = envelopeBefore.getMaxX() + distanceInDegreeLongitude;
+      double minLatB = envelopeBefore.getMinY() - distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+      double maxLatB = envelopeBefore.getMaxY() + distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+
+      // Get coordinates of bounding box
+      Envelope envelopeAfter = geomAfter.getEnvelopeInternal();
+      double minLonA = envelopeAfter.getMinX() - distanceInDegreeLongitude;
+      double maxLonA = envelopeAfter.getMaxX() + distanceInDegreeLongitude;
+      double minLatA = envelopeAfter.getMinY() - distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+      double maxLatA = envelopeAfter.getMaxY() + distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
 
       // Get min/max coordinates of bounding box
-      double minLat = Math.min(geomBeforeBufferedLat.getMinY(), geomAfterBufferedLat.getMinY());
-      double maxLat = Math.max(geomBeforeBufferedLat.getMaxY(), geomAfterBufferedLat.getMinY());
-      double minLon = Math.min(geomBeforeBufferedLng.getMinX(), geomAfterBufferedLng.getMinX());
-      double maxLon = Math.max(geomBeforeBufferedLng.getMaxX(), geomAfterBufferedLng.getMaxX());
+      double minLat = Math.min(minLatA, minLatB);
+      double maxLat = Math.max(maxLatA, maxLatB);
+      double minLon = Math.min(minLonA, minLonB);
+      double maxLon = Math.max(maxLonA, maxLonB);
 
       // Make geom variables final for lambda function
       Geometry finalGeomBefore = geomBefore;
@@ -199,11 +186,7 @@ public class NeighbourhoodFilter {
           .timestamps(contribution.getTimestamp().toString())
           .filter((snapshot) -> {
               try {
-                // Get geometry of object and convert it to projected CRS
-                Geometry geomNeighbour = OSHDBGeometryBuilder.getGeometry(snapshot.getEntity(),
-                        snapshot.getTimestamp(),
-                        defaultTagInterpreter);
-                // Check if geometry is within buffer distance
+                Geometry geomNeighbour = snapshot.getGeometryUnclipped();
                 switch (geometryVersion) {
                     case BEFORE: return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter);
                     case AFTER: {
@@ -211,7 +194,7 @@ public class NeighbourhoodFilter {
                         System.out.print(res);
                         return res;
                     }
-                    case BOTH: return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter) | Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
+                    case BOTH: return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter) || Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
                     default: return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
                   }
               } catch (Exception e) {

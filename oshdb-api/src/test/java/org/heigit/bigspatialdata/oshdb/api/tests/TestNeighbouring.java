@@ -177,7 +177,7 @@ public class TestNeighbouring {
         List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMContribution()
                 .neighbourhood(54.,
                         mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
-                        NeighbourhoodFilter.geometryOptions.BOTH)
+                        NeighbourhoodFilter.GEOMETRY_OPTIONS.BOTH)
                 .collect();
 
         //assertEquals( 1, result.get(0).getRight().size());
