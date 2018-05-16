@@ -37,6 +37,19 @@ nbactions*.xml
 temp_*
 *.mv.db
 *.trace.db
+extract_keys
+extract_keyvalues
+extract_meta
+extract_roles
+*.idx
+*.map
+*.bitmap
+transform_node_00_00
+transform_relation_00_00
+transform_role2Id
+transform_tag2Id
+transform_way_00_00
+
 
 ## But track these files:
 !oshdb/src/test/resources/keytables.mv.db
