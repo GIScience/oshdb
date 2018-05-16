@@ -5,7 +5,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -32,7 +34,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
 
   @Test
   public void testSomeNodesOfWayNotExistent() throws ParseException {
-    // Valid multipolygon relation with two ways (8 points) making up an outer ring, in second ring 2 node
+    // Valid multipolygon relation with two ways making up an outer ring, in second ring 2 node
     // references to not existing nodes
     //TODO https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/138
     OSMEntity entity = testData.relations().get(500L).get(0);
@@ -40,7 +42,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
-    assertEquals(9, result.getCoordinates().length, DELTA);
+    assertEquals(7, result.getCoordinates().length, DELTA);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -58,12 +60,12 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteData {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(0, ((Polygon) result).getNumInteriorRing());
-    assertEquals(9, result.getCoordinates().length, DELTA);
+
+    assertEquals(6, result.getCoordinates().length, DELTA);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.34 1.01,7.31 1.02,7.33 1.03,7.33 1.04,7.34 1.01)))"
+        "MULTIPOLYGON(((7.31 1.04, 7.33 1.05, 7.33 1.04, 7.32 1.04, 7.31 1.01,7.31 1.01,7.31 1.04)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
