@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>oshdb-tool</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.0-neighbours-SNAPSHOT</version>
   </parent>
   <artifactId>updater</artifactId>
   <packaging>jar</packaging>

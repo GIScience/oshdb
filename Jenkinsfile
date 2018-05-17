@@ -47,7 +47,7 @@ pipeline {
     stage ('Deploy'){
       when {
         expression {
-          return env.BRANCH_NAME ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)|(^master$)/
+          return env.BRANCH_NAME ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)|(^master$)|(^neighbours$)/
         }
       }
       steps {
