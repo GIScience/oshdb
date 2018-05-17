@@ -788,6 +788,7 @@ public abstract class MapReducer<X> implements
               mapReduce,
               (OSMEntitySnapshot) data,
               queryContributions));
+        /* --- under construction ----
         } else if (this._forClass == OSMContribution.class) {
           return (Pair<R, Y>) Pair.of(data, NeighbourhoodFilter.applyToOSMContribution(
               this._oshdbForTags,
@@ -795,6 +796,7 @@ public abstract class MapReducer<X> implements
               mapReduce,
               (OSMContribution) data,
               geometryVersion));
+              */
         } else {
           throw new UnsupportedOperationException("Operation for mapReducer of this class is not implemented.");
         }
