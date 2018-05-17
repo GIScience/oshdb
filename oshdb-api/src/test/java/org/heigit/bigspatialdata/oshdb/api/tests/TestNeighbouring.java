@@ -6,6 +6,7 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.NeighbourhoodFilter;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.NeighbourhoodFilter.GEOMETRY_OPTIONS;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
@@ -15,6 +16,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -27,8 +29,8 @@ public class TestNeighbouring {
     // create bounding box from coordinates
     //private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(85.3406012, 27.6991942, 85.3585444, 27.7121143);
     private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
-    private final OSHDBTimestamps timestamps = new OSHDBTimestamps("2017-01-01", "2017-01-02", OSHDBTimestamps.Interval.MONTHLY);
-    private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2013-01-01", "2014-01-02", OSHDBTimestamps.Interval.YEARLY);
+    private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2010-01-01", "2014-01-02", Interval.YEARLY);
+    private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2013-01-01", "2014-01-02", Interval.YEARLY);
 
     public TestNeighbouring() throws Exception {
         //oshdb = (new OSHDBH2("/Users/chludwig/Documents/oshdb/nepal_20180201_z12_keytables.compressed.oshdb")).multithreading(true);
@@ -47,7 +49,7 @@ public class TestNeighbouring {
     private MapReducer<OSMContribution> createMapReducerOSMContribution() {
         return OSMContributionView.on(oshdb)
                 .keytables(oshdb)
-                .timestamps(timestamps2)
+                .timestamps(timestamps1)
                 .areaOfInterest(bbox)
                 .osmTag("building");
     }
@@ -159,23 +161,34 @@ public class TestNeighbouring {
         assertEquals( 0, result.get(1).getRight().size());
     }
 
+  @Test
+  public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
+
+    // Create MapReducer
+    List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMContribution()
+        .neighbourhood(54.,
+            mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+            GEOMETRY_OPTIONS.BOTH)
+        .collect();
+
+    //assertEquals( 1, result.get(0).getRight().size());
+    //assertEquals( 0, result.get(1).getRight().size());
+    assertEquals( 2, result.get(1).getRight().size());
+
+    // Create MapReducer
+    List<Pair<OSHDBMapReducible, List>> resultAfter = createMapReducerOSMContribution()
+        .neighbourhood(54.,
+            mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+            GEOMETRY_OPTIONS.AFTER)
+        .collect();
+
+    //assertEquals( 1, result.get(0).getRight().size());
+    //assertEquals( 0, result.get(1).getRight().size());
+    assertEquals( 2, resultAfter.get(1).getRight().size());
+  }
+  
     /*
-    @Test
-    public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
 
-        // Create MapReducer
-        List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMContribution()
-            .neighbourhood(54.,
-                mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
-                NeighbourhoodFilter.GEOMETRY_OPTIONS.BEFORE)
-            .collect();
-
-        //assertEquals( 1, result.get(0).getRight().size());
-        //assertEquals( 0, result.get(1).getRight().size());
-        //todo make test more specific
-        assertEquals( 0, result.get(0).getRight().size());
-        assertEquals( 0, result.get(1).getRight().size());
-    }
 
     /*
     @Test
