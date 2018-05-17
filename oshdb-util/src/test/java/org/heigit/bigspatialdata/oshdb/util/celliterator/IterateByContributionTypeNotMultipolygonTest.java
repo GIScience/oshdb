@@ -32,6 +32,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
@@ -641,7 +642,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
   }
 
 
- /* @Test
+  @Test
   public void testPolygonIntersectingDataPartly() {
 
     GeometryFactory geometryFactory = new GeometryFactory();
@@ -666,11 +667,9 @@ public class IterateByContributionTypeNotMultipolygonTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
-    result.iterator().forEachRemaining(k -> System.out.println(k.geometry.get().toString()));
     assertEquals(3,result.size());
-  }*/
-/*
+  }
+
   @Test
   public void testPolygonIntersectingDataCompletely() {
 
@@ -697,7 +696,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertEquals(3,result.size());
-  }*/
+  }
 
   @Test
   public void testPolygonNotIntersectingData() {
@@ -745,7 +744,6 @@ public class IterateByContributionTypeNotMultipolygonTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
 
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -834,8 +832,6 @@ public class IterateByContributionTypeNotMultipolygonTest {
         .emptyList());
 
     GeometryFactory geometryFactory = new GeometryFactory();
-
-    // Simply pass an array of Coordinate or a CoordinateSequence to its method
     Coordinate[] coords=new Coordinate[5];
     coords[0]=new Coordinate(10.8,10.3);
     coords[1]=new Coordinate(10.8 ,12.7);
