@@ -185,64 +185,29 @@ public class TestNeighbouring {
     //assertEquals( 1, result.get(0).getRight().size());
     //assertEquals( 0, result.get(1).getRight().size());
     assertEquals( 2, resultAfter.get(1).getRight().size());
+
+    // todo add test for BEFORE that checks exception
   }
-  
-    /*
 
+  @Test
+  public void testNeighbouringKeyForOSMContributionAndNearbySnapshots() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMContribution()
+        .neighbouring(54., "highway")
+        .count();
+    //assertEquals( 2, result);
+    assertEquals( 92, result);
+  }
 
-    /*
-    @Test
-    public void testNeighbouringKeyForOSMContribution() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMContribution()
-                .neighbouring(54., "highway")
-                .count();
-
-        //assertEquals( 2, result);
-        assertEquals( 37, result);
-    }
-
-    @Test
-    public void testContributions() throws Exception {
-
-        // Create MapReducer
-        List<Boolean> result = createMapReducerOSMContribution()
-            .map(contribution -> {
-                //boolean geomBeforeWithinDistance;
-                // Check if geometry before editing is within distance of entity snapshot geometry
-                //try {
-              System.out.println(contribution.getContributionTypes().contains(ContributionType.DELETION));
-              System.out.println("----");
-                return contribution.getGeometryAfter().isValid();
-                //geomBeforeWithinDistance = Geo.isWithinDistance(geom, geometryBefore, distanceInMeter);
-                //} catch (Exception e) {
-                //geomBeforeWithinDistance = false;
-                //}
-            })
-            .collect();
-
-        System.out.println(result.size());
-
-        //assertEquals( 1, result.get(0).getRight().size());
-        //assertEquals( 0, result.get(1).getRight().size());
-        //todo make test more specific
-        //assertEquals( 0, result.get(0).getRight().size());
-        //assertEquals( 0, result.get(1).getRight().size());
-    }
-
-
-    @Test
-    public void testNeighbouringCallbackForContributionAndNearbySnapshots() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMContribution()
-                .neighbouring(54., mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
-                //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
-                .count();
-        //assertEquals( 1, result);
-        assertEquals( 2, result);
-    }
-    */
+  @Test
+  public void testNeighbouringCallbackForContributionAndNearbySnapshots() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMContribution()
+        .neighbouring(54., mapReduce -> mapReduce.osmTag("highway").count() > 2)
+        //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
+        .count();
+    //assertEquals( 1, result);
+    assertEquals( 55, result);
+  }
 
 }

@@ -671,22 +671,6 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring objects using callback function for snapshots
-   *
-   * @param distanceInMeter distance of radius in meters
-   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public <R, Y extends Boolean> MapReducer<R> neighbouring(
-      Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer, Y> mapReduce) {
-    return this.neighbourhood(distanceInMeter, mapReduce, false)
-            .filter(p -> p.getRight())
-            .map(p -> (R) p.getKey());
-  }
-
-  /**
    * Filter by neighbouring objects using callback function
    *
    * @param distanceInMeter distance of radius in meters
@@ -711,21 +695,22 @@ public abstract class MapReducer<X> implements
    * @param MapReducer MapReducer function to identify the objects of interest in the neighbourhood
    * @return a modified copy of this MapReducer
    **/
-  /*
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbouring(Double distanceInMeter,
-                                        SerializableFunctionWithException<MapReducer, Boolean> MapReducer) {
+  public <R> MapReducer<R> neighbouring(
+      Double distanceInMeter,
+      SerializableFunctionWithException<MapReducer, Boolean> MapReducer) {
     if (this._forClass == OSMEntitySnapshot.class) {
       return this.neighbourhood(distanceInMeter, MapReducer, false)
               .filter(p -> p.getRight())
               .map(p -> (R) p.getKey());
-    } else {
+    } else if (this._forClass == OSMContribution.class){
       return this.neighbourhood(distanceInMeter, MapReducer, true)
               .filter(p -> p.getRight())
               .map(p -> (R) p.getKey());
+    } else {
+      throw new UnsupportedOperationException("Operation for mapReducer of this class is not implemented.");
     }
   }
-  */
 
   /**
    * Find objects in the neighbourhood
