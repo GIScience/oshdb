@@ -77,4 +77,12 @@
 		<tag k="disused:shop" v="supermarket"/>
 	</node>
 
+	<!--lon lat changes, so that node in v2 is outside bbox-->
+	<node id="6" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="21" lon="10.9" lat="12.1">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="6" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="22" lon="8.1" lat="8.4">
+		<tag k="shop" v="supermarket"/>
+	</node>
+
 </osm>
