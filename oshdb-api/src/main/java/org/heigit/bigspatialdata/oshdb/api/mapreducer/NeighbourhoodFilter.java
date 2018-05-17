@@ -10,6 +10,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.DefaultTagInterpreter;
@@ -66,32 +67,20 @@ public class NeighbourhoodFilter {
             .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
             .timestamps(new OSHDBTimestamps(snapshot.getTimestamp().toString(), end.toString()))
             .filter((contribution) -> {
-              try {
-                boolean geomBeforeWithinDistance;
-                boolean geomAfterWithinDistance;
-
-                // Check if geometry before editing is within distance of entity snapshot geometry
-                try {
-                  Geometry geometryBefore = contribution.getGeometryUnclippedBefore();
-                  geomBeforeWithinDistance = Geo.isWithinDistance(geom, geometryBefore, distanceInMeter);
-                } catch (Exception e) {
-                  geomBeforeWithinDistance = false;
-                }
-
-                // Check if geometry after editing is within distance of entity snapshot geometry
-                try {
+              boolean geomBeforeWithinDistance = false;
+              boolean geomAfterWithinDistance = false;
+              // Check if geometry before editing is within distance of entity snapshot geometry
+              if (!contribution.getContributionTypes().contains(ContributionType.CREATION)) {
+                Geometry geometryBefore = contribution.getGeometryUnclippedBefore();
+                geomBeforeWithinDistance = Geo.isWithinDistance(geom, geometryBefore, distanceInMeter);
+              }
+              // Check if geometry after editing is within distance of entity snapshot geometry
+              if (!contribution.getContributionTypes().contains(ContributionType.DELETION)) {
                   Geometry geometryAfter = contribution.getGeometryUnclippedAfter();
                   geomAfterWithinDistance = Geo.isWithinDistance(geom, geometryAfter, distanceInMeter);
-                } catch (Exception e) {
-                  geomAfterWithinDistance = false;
-                }
-
-                // Check if either one of the geometries are within the buffer distance
-                return geomBeforeWithinDistance || geomAfterWithinDistance;
-
-              } catch (Exception e) {
-                return false;
               }
+              // Check if either one of the geometries are within the buffer distance
+              return geomBeforeWithinDistance || geomAfterWithinDistance;
             });
       } else {
         subMapReducer = OSMEntitySnapshotView.on(oshdb)
@@ -134,7 +123,6 @@ public class NeighbourhoodFilter {
           // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
           distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getX(), distanceInMeter);
         } catch (Exception e) {
-          System.out.println("invalid geometry.1");
           if (geometryVersion == GEOMETRY_OPTIONS.AFTER) throw new Exception();
         }
       }
@@ -146,7 +134,6 @@ public class NeighbourhoodFilter {
           // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
           distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getX(), distanceInMeter);
         } catch (Exception e) {
-          System.out.println("invalid geometry.2");
           if (geometryVersion == GEOMETRY_OPTIONS.BEFORE) throw new Exception("Invalid geometry.");
         }
       }
@@ -158,7 +145,6 @@ public class NeighbourhoodFilter {
         } else if (geomAfter == null && geomBefore != null) {
           geomAfter = geomBefore;
         } else if (((geomAfter == null) && (geomBefore == null)) || (distanceInDegreeLongitude == null)) {
-          System.out.println("invalid geometry.3");
           throw new Exception("Invalid geometry.");
         }
       }

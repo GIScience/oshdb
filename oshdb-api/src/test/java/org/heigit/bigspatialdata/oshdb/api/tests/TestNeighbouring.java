@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -11,6 +12,8 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
@@ -158,6 +161,24 @@ public class TestNeighbouring {
 
     /*
     @Test
+    public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
+
+        // Create MapReducer
+        List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMContribution()
+            .neighbourhood(54.,
+                mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+                NeighbourhoodFilter.GEOMETRY_OPTIONS.BEFORE)
+            .collect();
+
+        //assertEquals( 1, result.get(0).getRight().size());
+        //assertEquals( 0, result.get(1).getRight().size());
+        //todo make test more specific
+        assertEquals( 0, result.get(0).getRight().size());
+        assertEquals( 0, result.get(1).getRight().size());
+    }
+
+    /*
+    @Test
     public void testNeighbouringKeyForOSMContribution() throws Exception {
 
         // Create MapReducer
@@ -169,23 +190,34 @@ public class TestNeighbouring {
         assertEquals( 37, result);
     }
 
-
     @Test
-    public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
+    public void testContributions() throws Exception {
 
         // Create MapReducer
-        List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMContribution()
-                .neighbourhood(54.,
-                        mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
-                        NeighbourhoodFilter.GEOMETRY_OPTIONS.BOTH)
-                .collect();
+        List<Boolean> result = createMapReducerOSMContribution()
+            .map(contribution -> {
+                //boolean geomBeforeWithinDistance;
+                // Check if geometry before editing is within distance of entity snapshot geometry
+                //try {
+              System.out.println(contribution.getContributionTypes().contains(ContributionType.DELETION));
+              System.out.println("----");
+                return contribution.getGeometryAfter().isValid();
+                //geomBeforeWithinDistance = Geo.isWithinDistance(geom, geometryBefore, distanceInMeter);
+                //} catch (Exception e) {
+                //geomBeforeWithinDistance = false;
+                //}
+            })
+            .collect();
+
+        System.out.println(result.size());
 
         //assertEquals( 1, result.get(0).getRight().size());
         //assertEquals( 0, result.get(1).getRight().size());
         //todo make test more specific
-        assertEquals( 0, result.get(0).getRight().size());
-        assertEquals( 0, result.get(1).getRight().size());
+        //assertEquals( 0, result.get(0).getRight().size());
+        //assertEquals( 0, result.get(1).getRight().size());
     }
+
 
     @Test
     public void testNeighbouringCallbackForContributionAndNearbySnapshots() throws Exception {

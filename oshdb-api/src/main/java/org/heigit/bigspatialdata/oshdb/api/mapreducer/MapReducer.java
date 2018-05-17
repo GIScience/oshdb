@@ -734,7 +734,6 @@ public abstract class MapReducer<X> implements
    * @param MapReducer MapReducer function with search parameters for neighbourhoood filter
    * @return a modified copy of the MapReducer
    **/
-  /*
   @Contract(pure = true)
   public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhood(
       Double distanceInMeter,
@@ -744,7 +743,7 @@ public abstract class MapReducer<X> implements
             false,
             geometryVersion);
   }
-  */
+
 
   /**
    * Find objects in the neighbourhood
@@ -771,6 +770,7 @@ public abstract class MapReducer<X> implements
    * @param R Class of MapReducer (OSMEntitySnapshot or OSMContribution)
    * @param Y Result of mapReduce function
    * @return a modified copy of the MapReducer
+   * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
   public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhood(
@@ -788,20 +788,18 @@ public abstract class MapReducer<X> implements
               mapReduce,
               (OSMEntitySnapshot) data,
               queryContributions));
-        /* --- under construction ----
-        } else if (this._forClass == OSMContribution.class) {
+        /*} else if (this._forClass == OSMContribution.class) {
           return (Pair<R, Y>) Pair.of(data, NeighbourhoodFilter.applyToOSMContribution(
               this._oshdbForTags,
               distanceInMeter,
               mapReduce,
               (OSMContribution) data,
-              geometryVersion));
-              */
+              geometryVersion));*/
         } else {
           throw new UnsupportedOperationException("Operation for mapReducer of this class is not implemented.");
         }
       } catch (Exception e) {
-        return (Pair<R, Y>) Pair.of(data, null);
+        return (Pair<R, Y>) Pair.of(data, e);
       }
     });
   }
