@@ -70,7 +70,7 @@ pipeline {
         }
       }
       steps {
-        build job: 'oshdb-benchmark/addinghtmlreport', quietPeriod: 120, wait: false
+        build job: 'oshdb-benchmark/master', quietPeriod: 120, wait: false
       }
       post {
         failure {
