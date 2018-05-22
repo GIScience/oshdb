@@ -9,7 +9,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
@@ -59,19 +58,15 @@ public class IterateAllTest {
           oshCellsRawData.getBinaryStream(1))
       ).readObject();
 
-      TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>();
-      timestamps.add(new OSHDBTimestamp(1325376000L));
-      timestamps.add(new OSHDBTimestamp(1516375698L));
-
       List<IterateAllEntry> result = (new CellIterator(
-          timestamps,
           new OSHDBBoundingBox(8, 9, 49, 50),
           new DefaultTagInterpreter(conn),
           oshEntity -> oshEntity.getId() == 617308093,
           osmEntity -> true,
           false
       )).iterateByContribution(
-          oshCellRawData
+          oshCellRawData,
+          new OSHDBTimestampInterval(new OSHDBTimestamp(1325376000L), new OSHDBTimestamp(1516375698L))
       ).collect(Collectors.toList());
       countTotal += result.size();
       for (IterateAllEntry entry : result) {

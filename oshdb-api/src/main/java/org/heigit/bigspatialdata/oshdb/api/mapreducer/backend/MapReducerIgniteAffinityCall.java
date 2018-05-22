@@ -71,7 +71,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
   interface Callback<S> extends Serializable {
     S apply(
         GridOSHEntity oshEntityCell,
-        CellIterator cellIterator
+        CellIterator cellIterator,
+        OSHDBTimestampInterval timestampInterval,
+        SortedSet<OSHDBTimestamp> timestamps
     );
   }
 
@@ -81,10 +83,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
         this._bboxFilter, this._getPolyFilter(),
         this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
     );
+    SortedSet<OSHDBTimestamp> timestamps = this._tstamps.get();
+    OSHDBTimestampInterval timestampInterval = new OSHDBTimestampInterval(timestamps);
 
     final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
 
@@ -103,7 +106,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null)
               return identitySupplier.get();
-            return callback.apply(oshEntityCell, cellIterator);
+            return callback.apply(oshEntityCell, cellIterator, timestampInterval, timestamps);
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
   }
@@ -112,10 +115,10 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
+    return runOnIgnite((oshEntityCell, cellIterator, timestampInterval, ignored) -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByContribution(oshEntityCell)
+      cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
           .forEach(contribution -> {
             OSMContribution osmContribution = new OSMContribution(contribution);
             accInternal
@@ -130,11 +133,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
+    return runOnIgnite((oshEntityCell, cellIterator, timestampInterval, ignored) -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       List<OSMContribution> contributions = new ArrayList<>();
-      cellIterator.iterateByContribution(oshEntityCell)
+      cellIterator.iterateByContribution(oshEntityCell, timestampInterval)
           .forEach(contribution -> {
             OSMContribution thisContribution = new OSMContribution(contribution);
             if (contributions.size() > 0
@@ -164,10 +167,10 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
+    return runOnIgnite((oshEntityCell, cellIterator, ignored, timestamps) -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
+      cellIterator.iterateByTimestamps(oshEntityCell, timestamps).forEach(data -> {
         OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
         // immediately fold the result
         accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
@@ -181,11 +184,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
+    return runOnIgnite((oshEntityCell, cellIterator, ignored, timestamps) -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-      cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
+      cellIterator.iterateByTimestamps(oshEntityCell, timestamps).forEach(data -> {
         OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
         if (osmEntitySnapshots.size() > 0
             && thisSnapshot.getEntity().getId() != osmEntitySnapshots

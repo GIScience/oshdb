@@ -29,7 +29,6 @@ public class CellIterator implements Serializable {
   public interface OSHEntityFilter extends Predicate<OSHEntity>, Serializable {};
   public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {};
 
-  private TreeSet<OSHDBTimestamp> timestamps;
   private OSHDBBoundingBox boundingBox;
   private boolean isBoundByPolygon;
   private FastBboxInPolygon bboxInPolygon;
@@ -43,7 +42,6 @@ public class CellIterator implements Serializable {
   /**
    * todo…
    *
-   * @param timestamps a list of timestamps to return data for
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are
    *        clipped to this extent
    * @param boundingPolygon only entities inside or intersecting this polygon are returned,
@@ -62,16 +60,11 @@ public class CellIterator implements Serializable {
    *        the data analysis! The includeOldStyleMultipolygons is also quite a bit less efficient
    *        (both CPU and memory) as the default path.
    */
-  public <P extends Geometry & Polygonal> CellIterator(
-      SortedSet<OSHDBTimestamp> timestamps,
-      OSHDBBoundingBox boundingBox,
-      P boundingPolygon,
-      TagInterpreter tagInterpreter,
+  public <P extends Geometry & Polygonal> CellIterator(OSHDBBoundingBox boundingBox,
+      P boundingPolygon, TagInterpreter tagInterpreter,
       OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
-      boolean includeOldStyleMultipolygons
-  ) {
+      boolean includeOldStyleMultipolygons) {
     this(
-        timestamps,
         boundingBox,
         tagInterpreter,
         oshEntityPreFilter,
@@ -85,15 +78,9 @@ public class CellIterator implements Serializable {
       this.fastPolygonClipper = new FastPolygonOperations(boundingPolygon);
     }
   }
-  public CellIterator(
-      SortedSet<OSHDBTimestamp> timestamps,
-      OSHDBBoundingBox boundingBox,
-      TagInterpreter tagInterpreter,
-      OSHEntityFilter oshEntityPreFilter,
-      OSMEntityFilter osmEntityFilter,
-      boolean includeOldStyleMultipolygons
-  ) {
-    this.timestamps = new TreeSet<>(timestamps);
+  public CellIterator(OSHDBBoundingBox boundingBox, TagInterpreter tagInterpreter,
+      OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
+      boolean includeOldStyleMultipolygons) {
     this.boundingBox = boundingBox;
     this.isBoundByPolygon = false; // todo: is this flag even needed? -> replace by "dummy" polygonClipper?
     this.bboxInPolygon = null;
@@ -129,6 +116,7 @@ public class CellIterator implements Serializable {
    * as they existed at the given timestamps.
    *
    * @param cell the data cell
+   * @param timestamps a list of timestamps to return data for
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries at each
    *         timestamp. If an object has not been modified between timestamps, the output may
@@ -136,7 +124,9 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<IterateByTimestampEntry> iterateByTimestamps(GridOSHEntity cell) {
+  public Stream<IterateByTimestampEntry> iterateByTimestamps(
+      GridOSHEntity cell, SortedSet<OSHDBTimestamp> timestamps
+  ) {
     List<IterateByTimestampEntry> results = new LinkedList<>();
 
     boolean allFullyInside = false;
@@ -322,7 +312,6 @@ public class CellIterator implements Serializable {
 
   public static class IterateAllEntry {
     public final OSHDBTimestamp timestamp;
-    public final LazyEvaluatedObject<OSHDBTimestampInterval> aggregationTimestampInterval;
     @Nonnull
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
@@ -336,7 +325,6 @@ public class CellIterator implements Serializable {
 
     public IterateAllEntry(
         OSHDBTimestamp timestamp,
-        LazyEvaluatedObject<OSHDBTimestampInterval> aggregationTimestampInterval,
         @Nonnull OSMEntity osmEntity, OSMEntity previousOsmEntity, @Nonnull OSHEntity oshEntity,
         LazyEvaluatedObject<Geometry> geometry, LazyEvaluatedObject<Geometry> previousGeometry,
         LazyEvaluatedObject<Geometry> unclippedGeometry,
@@ -345,7 +333,6 @@ public class CellIterator implements Serializable {
         long changeset
     ) {
       this.timestamp = timestamp;
-      this.aggregationTimestampInterval = aggregationTimestampInterval;
       this.osmEntity = osmEntity;
       this.previousOsmEntity = previousOsmEntity;
       this.oshEntity = oshEntity;
@@ -358,26 +345,20 @@ public class CellIterator implements Serializable {
     }
   }
 
-  class LazyEvaluatedAggregationTimestampInterval extends LazyEvaluatedObject<OSHDBTimestampInterval> {
-    LazyEvaluatedAggregationTimestampInterval(OSHDBTimestamp timestamp, TreeSet<OSHDBTimestamp> timestamps) {
-      super(() -> new OSHDBTimestampInterval(
-          timestamps.floor(timestamp),
-          timestamps.ceiling(timestamp)
-      ));
-    }
-  }
-
   /**
    * Helper method to easily iterate over all entity modifications in a cell that match a given
    * condition/filter.
    *
    * @param cell the data cell
+   * @param timeInterval time range of interest – only modifications inside this interval are
+   *        included in the result
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateByContribution(GridOSHEntity cell) {
-    OSHDBTimestampInterval timeInterval = new OSHDBTimestampInterval(timestamps);
+  public Stream<IterateAllEntry> iterateByContribution(
+      GridOSHEntity cell, OSHDBTimestampInterval timeInterval
+  ) {
     List<IterateAllEntry> results = new LinkedList<>();
 
     boolean allFullyInside = false;
@@ -457,7 +438,6 @@ public class CellIterator implements Serializable {
           // todo: some of this may be refactorable between the two for loops
           if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp,
-                new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                 osmEntity, prev.osmEntity, oshEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
@@ -499,7 +479,6 @@ public class CellIterator implements Serializable {
             // geometries for these?
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
-                  new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                   osmEntity, prev.osmEntity, oshEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
@@ -545,7 +524,6 @@ public class CellIterator implements Serializable {
             // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
-                  new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                   osmEntity, prev.osmEntity, oshEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
@@ -601,7 +579,6 @@ public class CellIterator implements Serializable {
           );
           if (prev != null) {
             result = new IterateAllEntry(timestamp,
-                new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                 osmEntity, prev.osmEntity, oshEntity,
                 geom, prev.geometry,
                 unclippedGeom, prev.unclippedGeometry,
@@ -610,7 +587,6 @@ public class CellIterator implements Serializable {
             );
           } else {
             result = new IterateAllEntry(timestamp,
-                new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                 osmEntity, null, oshEntity,
                 geom, new LazyEvaluatedObject<>((Geometry)null),
                 unclippedGeom, new LazyEvaluatedObject<>((Geometry)null),
