@@ -34,7 +34,7 @@ pipeline {
           env.MAVEN_HOME = '/usr/share/maven'
         }
         script {
-          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P git'
+          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar verify -P git'
         }
       }
       post{
@@ -129,7 +129,7 @@ pipeline {
           //jacoco
           report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/jacoco/"
           
-          rtMaven.run pom: 'pom.xml', goals: 'clean install -Pjacoco'
+          rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco'
           sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
 
           //infer
