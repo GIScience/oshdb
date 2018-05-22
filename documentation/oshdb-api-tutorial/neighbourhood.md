@@ -32,7 +32,7 @@ The same result can be achieved by passing a call back function to `neighbouring
 ```
 ...
   .osmTag("amenity", "bench")
-  .neighbouring(5, mapReduce -> mapReduce.where("natural", "tree").count() > 0)
+  .neighbouring(5, mapReduce -> mapReduce.osmTag("natural", "tree").count() > 0)
   .collect()
 ```
 
@@ -47,7 +47,7 @@ __Example__: The following query will return a list of tuples whose first elemen
 ...
 List<Pair<OSHDBSnapshot, List<OSHDBSnapshot>>> result = MapReducer
   .osmTag("amenity", "bench")
-  .neighbourhood(5, mapReduce -> mapReduce.where("natural", "tree").collect())
+  .neighbourhood(5, mapReduce -> mapReduce.osmTag("natural", "tree").collect())
   .collect()
 ```
 
@@ -61,7 +61,7 @@ __Example__: The following query will return a list of tuples whose first elemen
 ...
 List<Pair<OSHDBSnapshot, List<OSHDBSnapshot>>> result = MapReducer
   .osmTag("amenity", "bench")
-  .neighbourhood(5, mapReduce -> mapReduce.where("natural", "tree").collect(), queryContributions = true)
+  .neighbourhood(5, mapReduce -> mapReduce.osmTag("natural", "tree").collect(), queryContributions = true)
   .collect()
 ```
 
