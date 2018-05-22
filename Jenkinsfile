@@ -70,7 +70,7 @@ pipeline {
         }
       }
       steps {
-        build job: 'oshdb-benchmark', quietPeriod: 120, wait: false
+        build job: 'oshdb-benchmark/master', quietPeriod: 120, wait: false
       }
       post {
         failure {
@@ -119,15 +119,26 @@ pipeline {
       steps {
         script{
           projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+:)"').trim()
+          
+          //maven site
           report_dir="/srv/reports/" + reponame + "/" +  projver+ "_"  + env.BRANCH_NAME +"/" +  env.BUILD_NUMBER + "_" +gittiid+ "/site/"
           
           rtMaven.run pom: 'pom.xml', goals: 'clean site'
           sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site' | while read line; do echo \$line; neu=\${line/target\\/site/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
           
+          //jacoco
           report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/jacoco/"
           
           rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco'
           sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
+
+          //infer
+          if(env.BRANCH_NAME ==~ /(^master$)/){
+            report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
+          sh "mvn clean"
+            sh "infer run -r -- mvn compile"
+            sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
+          }
         }
       }   
       post {
@@ -153,7 +164,7 @@ pipeline {
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you! Happy and for free! Keep it up!" , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you on OSHDB-Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
       }
       post {
         failure {
@@ -169,7 +180,7 @@ pipeline {
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "We had some problems, bu we are BACK TO NORMAL! Nice debugging: oshdb-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: oshdb-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
       }
       post {
         failure {

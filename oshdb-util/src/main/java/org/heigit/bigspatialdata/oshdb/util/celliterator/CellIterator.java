@@ -339,7 +339,6 @@ public class CellIterator implements Serializable {
 
   public static class IterateAllEntry {
     public final OSHDBTimestamp timestamp;
-    public final LazyEvaluatedObject<OSHDBTimestampInterval> aggregationTimestampInterval;
     @Nonnull
     public final OSMEntity osmEntity;
     public final OSMEntity previousOsmEntity;
@@ -353,7 +352,6 @@ public class CellIterator implements Serializable {
 
     public IterateAllEntry(
         OSHDBTimestamp timestamp,
-        LazyEvaluatedObject<OSHDBTimestampInterval> aggregationTimestampInterval,
         @Nonnull OSMEntity osmEntity, OSMEntity previousOsmEntity, @Nonnull OSHEntity oshEntity,
         LazyEvaluatedObject<Geometry> geometry, LazyEvaluatedObject<Geometry> previousGeometry,
         LazyEvaluatedObject<Geometry> unclippedGeometry,
@@ -362,7 +360,6 @@ public class CellIterator implements Serializable {
         long changeset
     ) {
       this.timestamp = timestamp;
-      this.aggregationTimestampInterval = aggregationTimestampInterval;
       this.osmEntity = osmEntity;
       this.previousOsmEntity = previousOsmEntity;
       this.oshEntity = oshEntity;
@@ -372,15 +369,6 @@ public class CellIterator implements Serializable {
       this.unclippedPreviousGeometry = previousUnclippedGeometry;
       this.activities = activities;
       this.changeset = changeset;
-    }
-  }
-
-  class LazyEvaluatedAggregationTimestampInterval extends LazyEvaluatedObject<OSHDBTimestampInterval> {
-    LazyEvaluatedAggregationTimestampInterval(OSHDBTimestamp timestamp, TreeSet<OSHDBTimestamp> timestamps) {
-      super(() -> new OSHDBTimestampInterval(
-          timestamps.floor(timestamp),
-          timestamps.ceiling(timestamp)
-      ));
     }
   }
 
@@ -474,7 +462,6 @@ public class CellIterator implements Serializable {
           // todo: some of this may be refactorable between the two for loops
           if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp,
-                new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                 osmEntity, prev.osmEntity, oshEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
@@ -516,7 +503,6 @@ public class CellIterator implements Serializable {
             // geometries for these?
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
-                  new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                   osmEntity, prev.osmEntity, oshEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
@@ -562,7 +548,6 @@ public class CellIterator implements Serializable {
             // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
-                  new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                   osmEntity, prev.osmEntity, oshEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
@@ -618,7 +603,6 @@ public class CellIterator implements Serializable {
           );
           if (prev != null) {
             result = new IterateAllEntry(timestamp,
-                new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                 osmEntity, prev.osmEntity, oshEntity,
                 geom, prev.geometry,
                 unclippedGeom, prev.unclippedGeometry,
@@ -627,7 +611,6 @@ public class CellIterator implements Serializable {
             );
           } else {
             result = new IterateAllEntry(timestamp,
-                new LazyEvaluatedAggregationTimestampInterval(timestamp, timestamps),
                 osmEntity, null, oshEntity,
                 geom, new LazyEvaluatedObject<>((Geometry)null),
                 unclippedGeom, new LazyEvaluatedObject<>((Geometry)null),

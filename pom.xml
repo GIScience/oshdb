@@ -39,7 +39,7 @@
     <osmosis.version>0.45</osmosis.version>
     <postgresql.version>42.1.4</postgresql.version>
     <protobuf.version>2.6.1</protobuf.version>
-    <roaringbitmap.version>0.6.37</roaringbitmap.version>
+    <roaringbitmap.version>0.6.59</roaringbitmap.version>
     <rxjava2.version>2.1.9</rxjava2.version>
     <wololo.version>0.10.0</wololo.version>
   </properties>
@@ -144,7 +144,7 @@
         <reportSets>
           <reportSet>
             <reports>
-              <!--             <report>dependencies</report>
+              <!--<report>dependencies</report>
               <report>project-team</report>
               <report>mailing-list</report>
               <report>cim</report>
