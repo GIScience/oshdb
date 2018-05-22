@@ -30,10 +30,7 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.jetbrains.annotations.NotNull;
@@ -166,7 +163,6 @@ class IgniteScanQueryHelper {
     final String cacheName;
     final Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel;
     final CellIterator cellIterator;
-    final SortedSet<OSHDBTimestamp> tstamps;
     final SerializableFunction<V, MR> mapper;
     final SerializableSupplier<S> identitySupplier;
     final SerializableBiFunction<S, R, S> accumulator;
@@ -180,8 +176,9 @@ class IgniteScanQueryHelper {
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       this.cacheName = cacheName;
       this.cellIdRangesByLevel = cellIdRangesByLevel;
-      this.cellIterator = new CellIterator(bbox, poly, tagInterpreter, preFilter, filter, false);
-      this.tstamps = tstamps;
+      this.cellIterator = new CellIterator(
+          tstamps, bbox, poly, tagInterpreter, preFilter, filter, false
+      );
       this.mapper = mapper;
       this.identitySupplier = identitySupplier;
       this.accumulator = accumulator;
@@ -251,7 +248,7 @@ class IgniteScanQueryHelper {
     public S call() {
       return super.call(oshEntityCell -> {
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+        cellIterator.iterateByContribution(oshEntityCell)
             .forEach(contribution -> {
               OSMContribution osmContribution = new OSMContribution(contribution);
               // immediately fold the result
@@ -281,7 +278,7 @@ class IgniteScanQueryHelper {
       return super.call(oshEntityCell -> {
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         List<OSMContribution> contributions = new ArrayList<>();
-        cellIterator.iterateByContribution(oshEntityCell, new OSHDBTimestampInterval(tstamps))
+        cellIterator.iterateByContribution(oshEntityCell)
             .forEach(contribution -> {
               OSMContribution thisContribution = new OSMContribution(contribution);
               if (contributions.size() > 0
@@ -323,7 +320,7 @@ class IgniteScanQueryHelper {
     public S call() {
       return super.call(oshEntityCell -> {
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
           OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
           // immediately fold the result
           accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
@@ -351,7 +348,7 @@ class IgniteScanQueryHelper {
       return super.call(oshEntityCell -> {
         AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
         List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-        cellIterator.iterateByTimestamps(oshEntityCell, tstamps).forEach(data -> {
+        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
           OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
           if (osmEntitySnapshots.size() > 0
               && thisSnapshot.getEntity().getId() != osmEntitySnapshots
