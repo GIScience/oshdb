@@ -371,4 +371,27 @@ public class IterateByTimestampsWaysTest {
     assertEquals(3, result.get(1).geometry.get().getNumPoints());
     assertEquals(4, result.get(0).unclippedGeometry.get().getNumPoints());
   }
+
+  @Test
+  public void testNodeRefsDeletedInVersion2() {
+    // way with three nodes,  node refs deleted in version 2
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 112,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+    assertEquals(3, result.get(0).geometry.get().getNumPoints());
+    // only 4 timestamps in result, because after 03/2012 no more node refs
+    assertEquals(3, result.size());
+  }
 }
