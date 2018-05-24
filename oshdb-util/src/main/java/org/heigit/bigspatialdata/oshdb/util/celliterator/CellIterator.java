@@ -617,13 +617,7 @@ public class CellIterator implements Serializable {
                   return tagsChange;
                 case GEOMETRY_CHANGE:
                   // look if geometry has been changed between versions
-                  boolean geometryChange = false;
-                  if (geom.get() != null && prevGeometry.get() != null) {
-                    // todo: what if both are null? -> maybe fall back to MEMBER_CHANGE?
-                    // todo: check: does this work as expected?
-                    geometryChange = !prevGeometry.equals(geom);
-                  }
-                  return geometryChange;
+                  return !prevGeometry.equals(geom);
                 default:
                   return false;
               }
