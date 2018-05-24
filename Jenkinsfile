@@ -34,7 +34,7 @@ pipeline {
           env.MAVEN_HOME = '/usr/share/maven'
         }
         script {
-          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar verify -P git'
+          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P git -Dmaven.repo.local=.m2'
         }
       }
       post{
