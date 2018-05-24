@@ -522,4 +522,62 @@ public class IterateByContributionWaysTest {
     );
     assertEquals(3, result.get(1).geometry.get().getNumPoints());
   }
+
+  @Test
+  public void testTagChangeOfNodeInWay() {
+    // way: creation and geometry change of nodes, but no tag changes
+    // way with two then 3 nodes, first two nodes changed lat lon
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 111,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertEquals(3, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertTrue(result.get(1).activities.get().isEmpty());
+    assertTrue(result.get(2).activities.get().isEmpty());
+  }
+
+  @Test
+  public void testNodeRefsDeletedInVersion2() {
+    // way with three nodes,  node refs deleted in version 2
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 112,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertEquals(3, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );assertEquals(
+        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.GEOMETRY_CHANGE),
+        result.get(2).activities.get()
+    );
+  }
 }
