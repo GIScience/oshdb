@@ -806,7 +806,8 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
   @Test
   public void testBboxOutsidePolygon() {
-    // node 1: creation and two geometry changes, but no tag changes
+    // OSM Polygon coordinates between: minLon 10, maxLon 41, minLat 10, maxLat 45
+    // OSHDBBoundingBox outside this coordinates
 
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -824,6 +825,35 @@ public class IterateByContributionTypeNotMultipolygonTest {
     assertTrue(result.isEmpty());
   }
 
+  @Test
+  public void testSelfIntersectingPolygonClipped() {
+    // Polygon with self crossing way
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(7.31,1.0);
+    coords[1]=new Coordinate(7.335,1.0);
+    coords[2]=new Coordinate(7.335,2.0);
+    coords[3]=new Coordinate(7.31,2.0);
+    coords[4]=new Coordinate(7.31,1.0);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 520,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    Geometry geom1 = result.get(0).geometry.get();
+    assertTrue(geom1 instanceof GeometryCollection);
+    assertEquals(1,result.size());
+  }
 
   // todo: in new test class for non osmtype specific cases
   @Test
