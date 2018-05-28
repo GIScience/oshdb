@@ -24,6 +24,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
@@ -34,6 +35,7 @@ public class IterateByContributionNotOsmTypeSpecific {
   private GridOSHRelations oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
+  private final List<OSHRelation> oshRelations = new ArrayList<>();
   private final double DELTA = 1E-6;
 
   public IterateByContributionNotOsmTypeSpecific() throws IOException {
@@ -52,7 +54,7 @@ public class IterateByContributionNotOsmTypeSpecific {
           ).collect(Collectors.toSet())
       ));
     }
-    List<OSHRelation> oshRelations = new ArrayList<>();
+
     for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
       Collection<OSMRelation> relationVersions = entry.getValue();
       oshRelations.add(OSHRelation.build(new ArrayList<>(relationVersions),
@@ -100,4 +102,63 @@ public class IterateByContributionNotOsmTypeSpecific {
     ).collect(Collectors.toList());
     assertTrue(resultPoly.isEmpty());
   }
+  @Test
+  public void testCellCoveringPolygon() throws IOException {
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
+
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    Coordinate[] coords=new Coordinate[4];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(12.7,12.7);
+    coords[2]=new Coordinate(12.7,10.3);
+    coords[3]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateAllEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 80,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(resultPoly.isEmpty());
+  }
+
+  @Test
+  public void testCellFullyInsidePolygon() throws IOException {
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
+
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(-180,-90);
+    coords[1]=new Coordinate(180 ,-90);
+    coords[2]=new Coordinate(180,90);
+    coords[3]=new Coordinate(-180,90);
+    coords[4]=new Coordinate(-180,-90);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateAllEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> true,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(!resultPoly.isEmpty());
+  }
+
 }

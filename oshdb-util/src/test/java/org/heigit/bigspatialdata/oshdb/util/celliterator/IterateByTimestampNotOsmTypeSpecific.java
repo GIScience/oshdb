@@ -31,9 +31,9 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 public class IterateByTimestampNotOsmTypeSpecific {
-  private GridOSHRelations oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
+  private final List<OSHRelation> oshRelations = new ArrayList<>();
 
   public IterateByTimestampNotOsmTypeSpecific() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
@@ -51,7 +51,6 @@ public class IterateByTimestampNotOsmTypeSpecific {
           ).collect(Collectors.toSet())
       ));
     }
-    List<OSHRelation> oshRelations = new ArrayList<>();
     for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
       Collection<OSMRelation> relationVersions = entry.getValue();
       oshRelations.add(OSHRelation.build(new ArrayList<>(relationVersions),
@@ -67,17 +66,14 @@ public class IterateByTimestampNotOsmTypeSpecific {
           ).collect(Collectors.toSet())
       ));
     }
-    oshdbDataGridCell = GridOSHRelations.compact(-1, -1, 0, 0, 0, 0, oshRelations);
   }
 
   @Test
   public void testCellOutsidePolygon() throws IOException {
-    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(12, 69120, 0, 0, 0, 0, Collections
-        .emptyList());
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
 
     GeometryFactory geometryFactory = new GeometryFactory();
 
-    // Simply pass an array of Coordinate or a CoordinateSequence to its method
     Coordinate[] coords=new Coordinate[5];
     coords[0]=new Coordinate(10.8,10.3);
     coords[1]=new Coordinate(10.8 ,12.7);
@@ -94,12 +90,73 @@ public class IterateByTimestampNotOsmTypeSpecific {
         ).get(),
         polygonFromCoordinates,
         areaDecider,
-        oshEntity -> oshEntity.getId() == 516,
+        oshEntity -> true,
         osmEntity -> true,
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertTrue(resultPoly.isEmpty());
+  }
+
+  @Test
+  public void testCellCoveringPolygon() throws IOException {
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
+
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    Coordinate[] coords=new Coordinate[4];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(12.7,12.7);
+    coords[2]=new Coordinate(12.7,10.3);
+    coords[3]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 80,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(resultPoly.isEmpty());
+  }
+
+  @Test
+  public void testCellFullyInsidePolygon() throws IOException {
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
+
+    GeometryFactory geometryFactory = new GeometryFactory();
+
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(-180,-90);
+    coords[1]=new Coordinate(180 ,-90);
+    coords[2]=new Coordinate(180,90);
+    coords[3]=new Coordinate(-180,90);
+    coords[4]=new Coordinate(-180,-90);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> true,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(!resultPoly.isEmpty());
   }
 }
