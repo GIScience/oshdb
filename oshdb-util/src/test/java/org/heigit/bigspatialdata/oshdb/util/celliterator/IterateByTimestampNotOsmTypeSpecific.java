@@ -23,6 +23,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -36,7 +37,7 @@ public class IterateByTimestampNotOsmTypeSpecific {
   private final List<OSHRelation> oshRelations = new ArrayList<>();
 
   public IterateByTimestampNotOsmTypeSpecific() throws IOException {
-    osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
+    osmXmlTestData.add("./src/test/resources/different-timestamps/not-osm-type-specific.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     Map<Long, OSHNode> oshNodes = new TreeMap<>();
     for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
@@ -51,6 +52,7 @@ public class IterateByTimestampNotOsmTypeSpecific {
           ).collect(Collectors.toSet())
       ));
     }
+
     for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
       Collection<OSMRelation> relationVersions = entry.getValue();
       oshRelations.add(OSHRelation.build(new ArrayList<>(relationVersions),
@@ -82,7 +84,7 @@ public class IterateByTimestampNotOsmTypeSpecific {
     coords[4]=new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
-    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+    List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z",
@@ -96,7 +98,7 @@ public class IterateByTimestampNotOsmTypeSpecific {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertTrue(resultPoly.isEmpty());
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -112,7 +114,7 @@ public class IterateByTimestampNotOsmTypeSpecific {
     coords[3]=new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
-    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+    List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z",
@@ -126,7 +128,7 @@ public class IterateByTimestampNotOsmTypeSpecific {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertTrue(resultPoly.isEmpty());
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -143,7 +145,7 @@ public class IterateByTimestampNotOsmTypeSpecific {
     coords[4]=new Coordinate(-180,-90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
-    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+    List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z",
@@ -157,6 +159,8 @@ public class IterateByTimestampNotOsmTypeSpecific {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertTrue(!resultPoly.isEmpty());
+    assertTrue(!result.isEmpty());
   }
+
+
 }
