@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,6 +25,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
@@ -32,7 +35,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 public class IterateByContributionNotOsmTypeSpecific {
-  private GridOSHRelations oshdbDataGridCell;
+
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations = new ArrayList<>();
@@ -70,7 +73,6 @@ public class IterateByContributionNotOsmTypeSpecific {
           ).collect(Collectors.toSet())
       ));
     }
-    oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
   }
 
   @Test
@@ -160,5 +162,28 @@ public class IterateByContributionNotOsmTypeSpecific {
     ).collect(Collectors.toList());
     assertTrue(!resultPoly.isEmpty());
   }
+
+  /*@Test
+  public void testPolygonIsNull() throws IOException {
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
+
+    Polygon polygonFromCoordinates = null;
+
+    List<IterateAllEntry> resultPoly = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> true,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(!resultPoly.isEmpty());
+  }*/
+
 
 }
