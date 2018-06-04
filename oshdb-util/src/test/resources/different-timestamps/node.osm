@@ -63,7 +63,7 @@
 		<tag k="natural" v="tree"/>
 	</node>
 
-	<!--tag ändert sich variante 2-->
+	<!--tag ändert sich variante 2, focus: shop-->
 	<node id="5" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="17" lon="3.43" lat="1.24">
 		<tag k="shop" v="supermarket"/>
 	</node>
@@ -83,6 +83,20 @@
 	</node>
 	<node id="6" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="22" lon="8.1" lat="8.4">
 		<tag k="shop" v="supermarket"/>
+	</node>
+
+	<!--tag ändert sich variante 3, focus: disused:shop-->
+	<node id="7" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="23" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="7" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="24" lon="3.4" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+	<node id="7" visible="true" version="3" timestamp="2014-01-01T00:00:00Z" uid="13" user="test3" changeset="25" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="7" visible="true" version="4" timestamp="2015-01-01T00:00:00Z" uid="12" user="test2" changeset="26" lon="3.43" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
 	</node>
 
 </osm>

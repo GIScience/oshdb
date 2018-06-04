@@ -403,6 +403,7 @@
         <tag k="postal_code" v="10625"/>
         <tag k="surface" v="asphalt"/>
     </way>
+
     <way id="123" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="3" user="C" changeset="234">
         <nd ref="59"/>
         <nd ref="60"/>
@@ -434,17 +435,28 @@
         <nd ref="69"/>
         <nd ref="70"/>
     </way>
-    <way id="127" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="238">
+    <way id="127" visible="true" version="1" timestamp="2007-02-01T00:00:00Z" uid="11" user="test" changeset="238">
         <nd ref="71"/>
         <nd ref="73"/>
     </way>
-    <way id="128" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="239">
+    <way id="128" visible="true" version="1" timestamp="2007-02-01T00:00:00Z" uid="11" user="test" changeset="239">
         <nd ref="72"/>
         <nd ref="73"/>
     </way>
-    <way id="129" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="240">
+    <way id="129" visible="true" version="1" timestamp="2007-02-01T00:00:00Z" uid="11" user="test" changeset="240">
         <nd ref="72"/>
         <nd ref="71"/>
+    </way>
+    <!--building with crossing linestrings-->
+    <way id="130" visible="true" version="1" timestamp="2007-02-01T00:00:00Z" uid="11" user="test" changeset="241">
+        <nd ref="13"/>
+        <nd ref="15"/>
+        <nd ref="14"/>
+        <nd ref="16"/>
+        <nd ref="13"/>
+    </way>
+
+    <way id="131" visible="true" version="1" timestamp="2007-02-01T00:00:00Z" uid="11" user="test" changeset="242">
     </way>
 
     <!--relation getting more ways, one disappears-->
@@ -487,6 +499,7 @@
         <member type="way" ref="208" role="outer"/>
         <tag k="type" v="building"/>
     </relation-->
+
     <!--relation tags changing-->
     <relation id="503" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="3" user="C" changeset="307">
         <member type="way" ref="108" role="outer"/>
@@ -604,6 +617,7 @@
         <member type="way" ref="125" role="outer"/>
         <member type="way" ref="126" role="outer"/>
         <tag k="type" v="building"/>
+        <tag k="landuse" v="water"/>
     </relation>
 
     <relation id="517" visible="true" version="1" timestamp="2015-03-01T00:00:00Z" uid="1" user="A" changeset="328">
@@ -639,6 +653,22 @@
         <tag k="type" v="building"/>
     </relation>
 
+    <!--relation as building with crossing linestrings-->
+    <relation id="520" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="331">
+        <member type="way" ref="130" role="outline"/>
+        <tag k="type" v="building"/>
+    </relation>
 
+    <!--relation in second version without members-->
+    <relation id="521" visible="true" version="1" timestamp="2008-03-01T00:00:00Z" uid="1" user="test" changeset="332">
+        <member type="way" ref="125" role="outer"/>
+        <member type="way" ref="126" role="outer"/>
+        <tag k="landuse" v="water"/>
+        <tag k="type" v="multipolygon"/>
+    </relation>
+    <relation id="521" visible="true" version="2" timestamp="2012-01-01T00:00:00Z" uid="1" user="test" changeset="333">
+        <member type="way" ref="108" role="outer"/>
+        <tag k="landuse" v="water"/>
+    </relation>
 </osm>
 
