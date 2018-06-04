@@ -39,6 +39,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -55,36 +56,7 @@ public class IterateByContributionRelationsTest {
   public IterateByContributionRelationsTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    Map<Long, OSHNode> oshNodes = new TreeMap<>();
-    for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.put(entry.getKey(), OSHNode.build(new ArrayList<>(entry.getValue())));
-    }
-    Map<Long, OSHWay> oshWays = new TreeMap<>();
-    for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
-      Collection<OSMWay> wayVersions = entry.getValue();
-      oshWays.put(entry.getKey(), OSHWay.build(new ArrayList<>(wayVersions),
-          wayVersions.stream().flatMap(osmWay ->
-              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
-    List<OSHRelation> oshRelations = new ArrayList<>();
-    for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
-      Collection<OSMRelation> relationVersions = entry.getValue();
-      oshRelations.add(OSHRelation.build(new ArrayList<>(relationVersions),
-          relationVersions.stream().flatMap(osmRelation ->
-              Arrays.stream(osmRelation.getMembers())
-                  .filter(member -> member.getType() == OSMType.NODE)
-                  .map(member -> oshNodes.get(member.getId()))
-          ).collect(Collectors.toSet()),
-          relationVersions.stream().flatMap(osmRelation ->
-              Arrays.stream(osmRelation.getMembers())
-                  .filter(member -> member.getType() == OSMType.WAY)
-                  .map(member -> oshWays.get(member.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
-    oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
+    oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
   }
 
   @Test
@@ -285,7 +257,6 @@ public class IterateByContributionRelationsTest {
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
     );
-    result.iterator().forEachRemaining(k->System.out.println(k.activities.get()));
     assertEquals(312, result.get(0).changeset);
 
     assertEquals(null, result.get(0).previousGeometry.get());
@@ -887,19 +858,9 @@ public class IterateByContributionRelationsTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
 
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
-    // .unclippedPreviousGeometry Returns the geometry of the entity before this modification. This is the full (unclipped)
-    // geometry of the entity
-    // .unclippedGeometry Returns the geometry of the entity after this modification. This is the full (unclipped)
-    // geometry of the entity
-
     // full geom of same timestamp with unclippedPreviousGeometry and unclippedGeometry
     assertEquals(result.get(1).unclippedPreviousGeometry.get().getArea(),
         result.get(0).unclippedGeometry.get().getArea(),DELTA);
-    // .geometry Returns the geometry of the entity after this modification clipped to the requested area
-    // .unclippedGeometry Returns the geometry of the entity after this modification. This is the full (unclipped)
-    // geometry of the entity
-
     // geom of requested area vs full geom after modification
     assertNotEquals(result.get(0).geometry.get().getArea(),
         result.get(0).unclippedGeometry.get().getArea());
@@ -957,13 +918,12 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
         result.get(0).activities.get()
     );
-    result.iterator().forEachRemaining(k->System.out.println(k.activities.get()));
     assertTrue(result.get(3).geometry.get().isEmpty());
   }
 
@@ -983,7 +943,6 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
     assertEquals(1, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -1008,7 +967,6 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
     assertEquals(1, result.size());
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
@@ -1033,7 +991,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(1, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -1067,7 +1025,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -1077,10 +1035,7 @@ public class IterateByContributionRelationsTest {
         EnumSet.of(ContributionType.DELETION),
         result.get(3).activities.get()
     );
-    result.iterator().forEachRemaining(k->System.out.println(k.activities.get()));
-    //result.iterator().forEachRemaining(k->System.out.println(k.geometry.get().toString()));
 
-    assertTrue(result.get(3).geometry.get().isEmpty());
   }
 
   @Test
@@ -1108,7 +1063,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(1, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -1142,7 +1097,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(1, result.size());
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
@@ -1175,7 +1130,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(1, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -1209,7 +1164,27 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(3, result.size());
   }
+
+  @Test
+  public void testPrevIsNullSKipOutputIsTrue() {
+    // relation, visible = false
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2015-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 525,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+  }
+
 }

@@ -21,6 +21,8 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -38,13 +40,7 @@ public class IterateByContributionNodesTest {
   public IterateByContributionNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    List<OSHNode> oshNodes = new ArrayList<>();
-    for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.add(OSHNode.build(new ArrayList<>(entry.getValue())));
-    }
-    oshdbDataGridCell = GridOSHNodes.rebase(-1, -1, 0, 0, 0, 0,
-        oshNodes
-    );
+    oshdbDataGridCell = GridOSHFactory.getGridOSHNodes(osmXmlTestData);
   }
 
   @Test
@@ -238,7 +234,6 @@ public class IterateByContributionNodesTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertTrue(result.isEmpty());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.getType().toString()));
   }
 
   @Test
@@ -304,6 +299,7 @@ public class IterateByContributionNodesTest {
   @Test
   public void testTagChangeTagFilterWithSuccess() {
     // node: creation then tag changes, but no geometry changes
+    // check if results are correct if we filter for a special tag
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -316,9 +312,8 @@ public class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    )
-        .collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
+    ).collect(Collectors.toList());
+
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -339,8 +334,27 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
+  public void testTagChangeTagFilterDisused() {
+    // check if results are correct if we filter for a special tag
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2007-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 7,
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("disused:shop")),
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+  }
+
+  @Test
   public void testTagChangeTagFilterWithoutSuccess() {
-    // node: creation then tag changes, but no geometry changes
+    // check if results are correct if we filter for a special tag
+    // tag not in data
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -382,9 +396,26 @@ public class IterateByContributionNodesTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-
-    result.iterator().forEachRemaining(k -> System.out.println(k.osmEntity.toString()));
     assertEquals(2,result.size());
   }
 
+  @Test
+  public void testTagChangeTagFilterPrevNotNull() {
+
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2008-01-01T00:00:00Z",
+            "2009-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 5,
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertTrue(result.isEmpty());
+  }
 }

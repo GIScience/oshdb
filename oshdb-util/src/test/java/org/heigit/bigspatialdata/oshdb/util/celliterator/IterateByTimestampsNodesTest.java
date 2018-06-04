@@ -20,6 +20,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
@@ -37,14 +38,9 @@ public class IterateByTimestampsNodesTest {
   public IterateByTimestampsNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    List<OSHNode> oshNodes = new ArrayList<>();
-    for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.add(OSHNode.build(new ArrayList<>(entry.getValue())));
-    }
-    oshdbDataGridCell = GridOSHNodes.rebase(-1, -1, 0, 0, 0, 0,
-        oshNodes
-    );
+    oshdbDataGridCell = GridOSHFactory.getGridOSHNodes(osmXmlTestData);
   }
+
 
   @Test
   public void testGeometryChange() {
@@ -200,4 +196,6 @@ public class IterateByTimestampsNodesTest {
     ).collect(Collectors.toList());
     assertTrue(result.isEmpty());
   }
+
+
 }

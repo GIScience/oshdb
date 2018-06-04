@@ -32,6 +32,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -47,36 +48,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
   public IterateByContributionTypeNotMultipolygonTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/type-not-multipolygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    Map<Long, OSHNode> oshNodes = new TreeMap<>();
-    for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.put(entry.getKey(), OSHNode.build(new ArrayList<>(entry.getValue())));
-    }
-    Map<Long, OSHWay> oshWays = new TreeMap<>();
-    for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
-      Collection<OSMWay> wayVersions = entry.getValue();
-      oshWays.put(entry.getKey(), OSHWay.build(new ArrayList<>(wayVersions),
-          wayVersions.stream().flatMap(osmWay ->
-              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
-    List<OSHRelation> oshRelations = new ArrayList<>();
-    for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
-      Collection<OSMRelation> relationVersions = entry.getValue();
-      oshRelations.add(OSHRelation.build(new ArrayList<>(relationVersions),
-          relationVersions.stream().flatMap(osmRelation ->
-              Arrays.stream(osmRelation.getMembers())
-                  .filter(member -> member.getType() == OSMType.NODE)
-                  .map(member -> oshNodes.get(member.getId()))
-          ).collect(Collectors.toSet()),
-          relationVersions.stream().flatMap(osmRelation ->
-              Arrays.stream(osmRelation.getMembers())
-                  .filter(member -> member.getType() == OSMType.WAY)
-                  .map(member -> oshWays.get(member.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
-    oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
+    oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
   }
 
   @Test
@@ -460,8 +432,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
-    result.iterator().forEachRemaining(k -> System.out.println(k.geometry.get().toString()));
+
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
@@ -599,6 +570,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
     assertEquals(321, result.get(0).changeset);
     assertEquals(null, result.get(0).previousGeometry.get());
     assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
+
   }
 
   @Test
@@ -755,6 +727,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
         result.get(2).activities.get()
     );
     assertEquals(7, result.get(1).geometry.get().getNumPoints());
+
   }
 
   @Test
@@ -855,34 +828,31 @@ public class IterateByContributionTypeNotMultipolygonTest {
     assertEquals(1,result.size());
   }
 
-  // todo: in new test class for non osmtype specific cases
   @Test
-  public void testCellOutsidePolygon() throws IOException {
-    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(12, 69120, 0, 0, 0, 0, Collections
-        .emptyList());
-
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,12.7);
-    coords[2]=new Coordinate(12.7,12.7);
-    coords[3]=new Coordinate(12.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
-    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
-
-    List<IterateAllEntry> resultPoly = (new CellIterator(
+  public void testMembersDisappear() {
+    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member is deleted
+    List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z"
+            "2020-01-01T00:00:00Z"
         ).get(),
-        polygonFromCoordinates,
+        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
         areaDecider,
-        oshEntity -> oshEntity.getId() == 516,
+        oshEntity -> oshEntity.getId() == 521,
         osmEntity -> true,
         false
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertTrue(resultPoly.isEmpty());
+
+    assertEquals(4, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+
+    //assertTrue(result.get(3).geometry.get().isEmpty());
   }
+
+
 }
