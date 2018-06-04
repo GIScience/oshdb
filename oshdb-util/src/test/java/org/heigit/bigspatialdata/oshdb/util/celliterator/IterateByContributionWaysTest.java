@@ -25,6 +25,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
@@ -39,20 +40,7 @@ public class IterateByContributionWaysTest {
   public IterateByContributionWaysTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    Map<Long, OSHNode> oshNodes = new TreeMap<>();
-    for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.put(entry.getKey(), OSHNode.build(new ArrayList<>(entry.getValue())));
-    }
-    List<OSHWay> oshWays = new ArrayList<>();
-    for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
-      Collection<OSMWay> wayVersions = entry.getValue();
-      oshWays.add(OSHWay.build(new ArrayList<>(wayVersions),
-          wayVersions.stream().flatMap(osmWay ->
-              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
-    oshdbDataGridCell = GridOSHWays.compact(-1, -1, 0, 0, 0, 0, oshWays);
+    oshdbDataGridCell = GridOSHFactory.getGridOSHWays(osmXmlTestData);
   }
 
   @Test

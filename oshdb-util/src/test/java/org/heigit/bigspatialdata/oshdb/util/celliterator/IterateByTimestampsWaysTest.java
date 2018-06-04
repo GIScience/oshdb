@@ -26,6 +26,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
@@ -42,20 +43,7 @@ public class IterateByTimestampsWaysTest {
   public IterateByTimestampsWaysTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    Map<Long, OSHNode> oshNodes = new TreeMap<>();
-    for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.put(entry.getKey(), OSHNode.build(new ArrayList<>(entry.getValue())));
-    }
-    List<OSHWay> oshWays = new ArrayList<>();
-    for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
-      Collection<OSMWay> wayVersions = entry.getValue();
-      oshWays.add(OSHWay.build(new ArrayList<>(wayVersions),
-          wayVersions.stream().flatMap(osmWay ->
-              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
-    oshdbDataGridCell = GridOSHWays.compact(-1, -1, 0, 0, 0, 0, oshWays);
+    oshdbDataGridCell = GridOSHFactory.getGridOSHWays(osmXmlTestData);
   }
 
   @Test
@@ -389,9 +377,8 @@ public class IterateByTimestampsWaysTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
     assertEquals(3, result.get(0).geometry.get().getNumPoints());
     // only 4 timestamps in result, because after 03/2012 no more node refs
-    assertEquals(3, result.size());
+    assertEquals(4, result.size());
   }
 }
