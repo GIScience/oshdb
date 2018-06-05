@@ -34,7 +34,7 @@ pipeline {
           env.MAVEN_HOME = '/usr/share/maven'
         }
         script {
-          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar verify -P git'
+          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P git -Dmaven.repo.local=.m2'
         }
       }
       post{
@@ -70,7 +70,7 @@ pipeline {
         }
       }
       steps {
-        build job: 'oshdb-benchmark/addinghtmlreport', quietPeriod: 120, wait: false
+        build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
       }
       post {
         failure {
@@ -88,14 +88,14 @@ pipeline {
       steps {
         script{
           //load dependencies to artifactory
-          rtMaven.run pom: 'pom.xml', goals: 'org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version'
+          rtMaven.run pom: 'pom.xml', goals: 'org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2'
           projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+:)"').trim()
 
           javadc_dir="/srv/javadoc/java/" + reponame + "/" + projver + "/"
           echo javadc_dir
         
         
-          rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:javadoc -Dadditionalparam=-Xdoclint:none'
+          rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:javadoc -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2'
           sh "echo $javadc_dir"
           //make sure jenkins uses bash not dash!
           sh "mkdir -p $javadc_dir && rm -Rf $javadc_dir* && find . -path '*/target/site/apidocs' -exec cp -R --parents {} $javadc_dir \\; && find $javadc_dir -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find $javadc_dir -type d -empty -delete"
@@ -104,7 +104,7 @@ pipeline {
         script{
           
           javadc_dir=javadc_dir + "aggregated/"
-          rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:aggregate -Dadditionalparam=-Xdoclint:none'
+          rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:aggregate -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2'
           sh "mkdir -p $javadc_dir && rm -Rf $javadc_dir* && find . -path './target/site/apidocs' -exec cp -R --parents {} $javadc_dir \\; && find $javadc_dir -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find $javadc_dir -type d -empty -delete"
         }
       }
@@ -123,13 +123,13 @@ pipeline {
           //maven site
           report_dir="/srv/reports/" + reponame + "/" +  projver+ "_"  + env.BRANCH_NAME +"/" +  env.BUILD_NUMBER + "_" +gittiid+ "/site/"
           
-          rtMaven.run pom: 'pom.xml', goals: 'clean site'
+          rtMaven.run pom: 'pom.xml', goals: 'clean site -Dmaven.repo.local=.m2'
           sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site' | while read line; do echo \$line; neu=\${line/target\\/site/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
           
           //jacoco
           report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/jacoco/"
-          
-          rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco'
+
+          rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco -Dmaven.repo.local=.m2'
           sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
 
           //infer
