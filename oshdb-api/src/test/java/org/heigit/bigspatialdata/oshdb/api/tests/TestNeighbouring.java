@@ -150,14 +150,17 @@ public class TestNeighbouring {
 
         // Create MapReducer
         List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
-                .neighbourhood(54.,
-                        mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
-                        true)
+                .neighbourhood(
+                    54.,
+                    mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+                    true,
+                    ContributionType.CREATION,
+                    GEOMETRY_OPTIONS.BOTH)
                 //.neighbourhood(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
                 .collect();
         //assertEquals( 1, result.get(0).getRight().size());
         //assertEquals( 0, result.get(1).getRight().size());
-        assertEquals( 14, result.get(0).getRight().size());
+        assertEquals( 2, result.get(0).getRight().size());
         assertEquals( 0, result.get(1).getRight().size());
     }
 

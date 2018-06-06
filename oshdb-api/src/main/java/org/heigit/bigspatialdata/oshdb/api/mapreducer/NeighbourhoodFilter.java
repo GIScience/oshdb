@@ -30,7 +30,8 @@ public class NeighbourhoodFilter {
         Double distanceInMeter,
         SerializableFunctionWithException<MapReducer, Y> mapReduce,
         OSMEntitySnapshot snapshot,
-        boolean queryContributions
+        boolean queryContributions,
+        ContributionType contributionType
     ) throws Exception {
 
       OSHDBTimestamp end;
@@ -67,6 +68,8 @@ public class NeighbourhoodFilter {
             .filter((contribution) -> {
               boolean geomBeforeWithinDistance = false;
               boolean geomAfterWithinDistance = false;
+              // Filter by contribution type if given
+              if (contributionType != null && !contribution.getContributionTypes().contains(contributionType)) return false;
               // Check if geometry before editing is within distance of entity snapshot geometry
               if (!contribution.getContributionTypes().contains(ContributionType.CREATION)) {
                 Geometry geometryBefore = contribution.getGeometryUnclippedBefore();

@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import java.sql.Connection;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.NeighbourhoodFilter.GEOMETRY_OPTIONS;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -633,6 +634,7 @@ public abstract class MapReducer<X> implements
    *
    * @param distanceInMeter distance of radius in meters
    * @param key OSM key of neighbouring objects
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
@@ -661,10 +663,15 @@ public abstract class MapReducer<X> implements
    * @param distanceInMeter distance of radius in meters
    * @param key OSM key of neighbouring objects
    * @param value OSM value of neighbouring objects
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbouring(Double distanceInMeter, String key, String value, boolean queryContributions) {
+  public <R> MapReducer<R> neighbouring(Double
+      distanceInMeter,
+      String key,
+      String value,
+      boolean queryContributions) {
     return this.neighbouring(distanceInMeter,
             mapReducer -> mapReducer.osmTag(key, value).count() > 0,
             queryContributions);
@@ -717,6 +724,7 @@ public abstract class MapReducer<X> implements
    *
    * @param distanceInMeter distance of radius in meters
    * @param MapReducer MapReducer function with search parameters for neighbourhoood filter
+   * @param geometryVersion Specify which geometry of a contribution should be used to identify neighbours (before, after or both)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
@@ -726,6 +734,7 @@ public abstract class MapReducer<X> implements
       NeighbourhoodFilter.GEOMETRY_OPTIONS geometryVersion) {
     return this.neighbourhood(distanceInMeter, MapReducer,
             false,
+            null,
             geometryVersion);
   }
 
@@ -735,6 +744,7 @@ public abstract class MapReducer<X> implements
    *
    * @param distanceInMeter distance of radius in meters
    * @param mapReduce MapReducer function with search parameters for neighbourhoood filter
+   * @param queryContributions If true, nearby OSMCOntributions are queried. If false, OSMEntitySnapshots are queried
    * @param R Class of MapReducer
    * @param Y List with neighbouring
    * @return a modified copy of the MapReducer
@@ -744,7 +754,37 @@ public abstract class MapReducer<X> implements
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> mapReduce,
       boolean queryContributions) {
-    return this.neighbourhood(distanceInMeter, mapReduce, queryContributions, GEOMETRY_OPTIONS.BOTH);
+    return this.neighbourhood(
+        distanceInMeter,
+        mapReduce,
+        queryContributions,
+        null,
+        GEOMETRY_OPTIONS.BOTH);
+  }
+
+  /**
+   * Find objects in the neighbourhood
+   *
+   * @param distanceInMeter distance of radius in meters
+   * @param mapReduce MapReducer function with search parameters for neighbourhoood filter
+   * @param queryContributions If true, nearby OSMCOntributions are queried. If false, OSMEntitySnapshots are queried
+   * @param contributionType Filter result by type of contribution
+   * @param R Class of MapReducer
+   * @param Y List with neighbouring
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhood(
+      Double distanceInMeter,
+      SerializableFunctionWithException<MapReducer, Y> mapReduce,
+      boolean queryContributions,
+      ContributionType contributionType) {
+    return this.neighbourhood(
+        distanceInMeter,
+        mapReduce,
+        queryContributions,
+        contributionType,
+        GEOMETRY_OPTIONS.BOTH);
   }
 
   /**
@@ -762,6 +802,7 @@ public abstract class MapReducer<X> implements
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> mapReduce,
       boolean queryContributions,
+      ContributionType contributionType,
       GEOMETRY_OPTIONS geometryVersion) {
     return this.map(data -> {
       try {
@@ -772,7 +813,8 @@ public abstract class MapReducer<X> implements
               distanceInMeter,
               mapReduce,
               (OSMEntitySnapshot) data,
-              queryContributions));
+              queryContributions,
+              contributionType));
         } else if (this._forClass == OSMContribution.class) {
           return (Pair<R, Y>) Pair.of(data, NeighbourhoodFilter.applyToOSMContribution(
               this._oshdbForTags,
