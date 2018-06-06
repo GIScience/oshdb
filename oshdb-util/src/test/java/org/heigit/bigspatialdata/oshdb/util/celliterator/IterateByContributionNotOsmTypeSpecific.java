@@ -77,7 +77,7 @@ public class IterateByContributionNotOsmTypeSpecific {
 
   @Test
   public void testCellOutsidePolygon() throws IOException {
-    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(12, 69120, 0, 0, 0, 0, Collections
+    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, Collections
         .emptyList());
 
     GeometryFactory geometryFactory = new GeometryFactory();
@@ -163,27 +163,7 @@ public class IterateByContributionNotOsmTypeSpecific {
     assertTrue(!resultPoly.isEmpty());
   }
 
-  /*@Test
-  public void testPolygonIsNull() throws IOException {
-    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
 
-    Polygon polygonFromCoordinates = null;
-
-    List<IterateAllEntry> resultPoly = (new CellIterator(
-        new OSHDBTimestamps(
-            "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z"
-        ).get(),
-        polygonFromCoordinates,
-        areaDecider,
-        oshEntity -> true,
-        osmEntity -> true,
-        false
-    )).iterateByContribution(
-        oshdbDataGridCell
-    ).collect(Collectors.toList());
-    assertTrue(!resultPoly.isEmpty());
-  }*/
 
 
 }
