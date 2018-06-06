@@ -165,6 +165,24 @@ public class TestNeighbouring {
     }
 
   @Test
+  public void testNeighbourhoodForSnapshotAndNearbyContributions2() throws Exception {
+
+    // Create MapReducer
+    List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
+        .neighbourhood(
+            54.,
+            mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+            true,
+            ContributionType.CREATION)
+        //.neighbourhood(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
+        .collect();
+    //assertEquals( 1, result.get(0).getRight().size());
+    //assertEquals( 0, result.get(1).getRight().size());
+    assertEquals( 2, result.get(0).getRight().size());
+    assertEquals( 0, result.get(1).getRight().size());
+  }
+
+  @Test
   public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
 
     // Create MapReducer
