@@ -850,9 +850,63 @@ public class IterateByContributionTypeNotMultipolygonTest {
         EnumSet.of(ContributionType.CREATION),
         result.get(0).activities.get()
     );
-
-    //assertTrue(result.get(3).geometry.get().isEmpty());
   }
 
+  @Test
+  public void testMembersDisappearAndPreviousIsNull() {
 
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2012-01-01T00:00:00Z",
+            "2020-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 522,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+
+    assertEquals(1, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+  }
+
+  @Test
+  public void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
+    // relation in first and third version visible = false, timeinterval includes version 3
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,22.7);
+    coords[2]=new Coordinate(22.7,22.7);
+    coords[3]=new Coordinate(22.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2016-01-01T00:00:00Z",
+            "2020-01-01T00:00:00Z"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 523,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+    result.iterator().forEachRemaining(k -> System.out.println(k.activities.get().toString()));
+    assertEquals(1, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(0).activities.get()
+    );
+  }
 }
