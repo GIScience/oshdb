@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
@@ -72,10 +73,9 @@ public class IterateByTimestampNotOsmTypeSpecific {
 
   @Test
   public void testCellOutsidePolygon() throws IOException {
+    // GridOSHRelations cell-bbox is not covering query polygon
     GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
-
     GeometryFactory geometryFactory = new GeometryFactory();
-
     Coordinate[] coords=new Coordinate[5];
     coords[0]=new Coordinate(10.8,10.3);
     coords[1]=new Coordinate(10.8 ,12.7);
@@ -103,10 +103,9 @@ public class IterateByTimestampNotOsmTypeSpecific {
 
   @Test
   public void testCellCoveringPolygon() throws IOException {
+    // GridOSHRelations cell-bbox is completely covering query polygon
     GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
-
     GeometryFactory geometryFactory = new GeometryFactory();
-
     Coordinate[] coords=new Coordinate[4];
     coords[0]=new Coordinate(10.8,10.3);
     coords[1]=new Coordinate(12.7,12.7);
@@ -133,10 +132,9 @@ public class IterateByTimestampNotOsmTypeSpecific {
 
   @Test
   public void testCellFullyInsidePolygon() throws IOException {
+    // GridOSHRelations cell-bbox is inside query polygon
     GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
-
     GeometryFactory geometryFactory = new GeometryFactory();
-
     Coordinate[] coords=new Coordinate[5];
     coords[0]=new Coordinate(-180,-90);
     coords[1]=new Coordinate(180 ,-90);
@@ -161,6 +159,4 @@ public class IterateByTimestampNotOsmTypeSpecific {
     ).collect(Collectors.toList());
     assertTrue(!result.isEmpty());
   }
-
-
 }
