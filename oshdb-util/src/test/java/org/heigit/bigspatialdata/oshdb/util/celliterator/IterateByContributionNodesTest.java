@@ -474,27 +474,6 @@ public class IterateByContributionNodesTest {
     assertEquals(1,result.size());// one version with tag shop
   }
 
-
-  @Test
-  public void testTagChangeTagFilterPrevNotNull() {
-    //  check if results are correct if we filter for a special tag
-    // tag not in data, timeinterval stops after version 2
-    List<IterateAllEntry> result = (new CellIterator(
-        new OSHDBTimestamps(
-            "2008-01-01T00:00:00Z",
-            "2009-01-01T00:00:00Z"
-        ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
-        areaDecider,
-        oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
-        false
-    )).iterateByContribution(
-        oshdbDataGridCell
-    ).collect(Collectors.toList());
-    assertTrue(result.isEmpty());
-  }
-
   @Test
   public void testCoordinatesRelativeToPolygon() throws IOException {
     //different cases of relative position between node coordinate(s) and cell bbox / query polygon
