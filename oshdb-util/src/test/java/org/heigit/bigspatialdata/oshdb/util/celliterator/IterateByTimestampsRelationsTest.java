@@ -370,7 +370,7 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-
+    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
     assertEquals(10, result.size());
     assertEquals(318, result.get(0).osmEntity.getChangeset());
 
@@ -547,7 +547,6 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    //assertTrue(resultPoly.isEmpty());
   }
 
   /*@Test
@@ -607,7 +606,6 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    //assertTrue(resultPoly.isEmpty());
   }
 
   @Test
@@ -762,7 +760,6 @@ public class IterateByTimestampsRelationsTest {
         result.get(0).unclippedGeometry.get().getArea());
     assertNotEquals(result.get(2).unclippedGeometry.get().getArea(),
         result.get(4).unclippedGeometry.get().getArea());
-
   }
 
   @Test
@@ -815,7 +812,6 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(3, result.size());
-    //assertTrue(result.get(2).geometry.get().isEmpty());
   }
 
   @Test
@@ -837,8 +833,6 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(5, result.size());
-
-
   }
 
   @Test
@@ -859,7 +853,6 @@ public class IterateByTimestampsRelationsTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertEquals(0, result.size());
-
   }
 
   @Test
@@ -920,7 +913,6 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(5, result.size());
-
   }
 
   @Test
@@ -951,8 +943,6 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(0, result.size());
-
-
   }
 
   @Test
@@ -983,8 +973,6 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(3, result.size());
-
-
   }
 
   @Test
@@ -1017,33 +1005,4 @@ public class IterateByTimestampsRelationsTest {
     assertEquals(12, result.size());
   }
 
-  @Test
-  public void testGeomEmptyAndNull() {
-    // relation, way member: way 119 changes visible tag-
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(7.28,1);
-    coords[1]=new Coordinate(7.28,1.06);
-    coords[2]=new Coordinate(7.295,1.06);
-    coords[3]=new Coordinate(7.295,1);
-    coords[4]=new Coordinate(7.28,1);
-    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
-    List<IterateByTimestampEntry> result = (new CellIterator(
-        new OSHDBTimestamps(
-            "2000-01-01T00:00:00Z",
-            "2017-01-01T00:00:00Z",
-            "P1Y"
-        ).get(),
-        new OSHDBBoundingBox(7.28,1, 7.295, 1.06),
-        areaDecider,
-        oshEntity -> oshEntity.getId() == 511,
-        osmEntity -> true,
-        false
-    )).iterateByTimestamps(
-        oshdbDataGridCell
-    ).collect(Collectors.toList());
-
-    assertEquals(6, result.size());
-    //assertTrue(result.get(6).geometry.get().isEmpty());
-  }
 }
