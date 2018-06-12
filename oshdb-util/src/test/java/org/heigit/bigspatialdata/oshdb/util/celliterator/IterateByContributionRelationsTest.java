@@ -54,9 +54,11 @@ public class IterateByContributionRelationsTest {
   private final double DELTA = 1E-6;
 
   public IterateByContributionRelationsTest() throws IOException {
-    osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
-    areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
+    osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");// read osm xml data
+    areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);// Used to provided information
+    // needed to create actual geometries from OSM data
+    oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);// get GridOSH's
+    // (Holds the basic information, every OSM-Object has at a specific level) out of osm-xml file
   }
 
   @Test
@@ -67,17 +69,18 @@ public class IterateByContributionRelationsTest {
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
-        ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
-        areaDecider,
-        oshEntity -> oshEntity.getId() == 500,
-        osmEntity -> true,
+        ).get(),// get in this timeinterval every contribution
+        new OSHDBBoundingBox(-180,-90, 180, 90),// look at dat in this bbox
+        areaDecider,// needed to create actual geometries from OSM data
+        oshEntity -> oshEntity.getId() == 500,// oshEntityPreFilter: get data of relation with id 500
+        osmEntity -> true,// osmEntityFilter: true -> get all
         false
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-
+    // one creation and two gemotry changes should give a result with 3 elements
     assertEquals(3, result.size());
+    // check if the contribution types are correct
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
         result.get(0).activities.get()
@@ -90,7 +93,9 @@ public class IterateByContributionRelationsTest {
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
         result.get(2).activities.get()
     );
+    // check if changeset number si correct
     assertEquals(300, result.get(0).changeset);
+    // check if geometry types of in every contribution are correct
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof MultiPolygon);
     Geometry geom3 = result.get(1).geometry.get();
@@ -710,7 +715,33 @@ public class IterateByContributionRelationsTest {
     ).collect(Collectors.toList());
     assertEquals(3,result.size());
   }
+  @Test
+  public void testZeile416FalseOderTrue() {
 
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,52.7);
+    coords[2]=new Coordinate(52.7,52.7);
+    coords[3]=new Coordinate(52.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 516,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertEquals(3,result.size());
+  }
   @Test
   public void testPolygonNotIntersectingData() {
 
@@ -1168,23 +1199,6 @@ public class IterateByContributionRelationsTest {
     assertEquals(3, result.size());
   }
 
-  @Test
-  public void testPrevIsNullSKipOutputIsTrue() {
-    // relation, visible = false
-    List<IterateAllEntry> result = (new CellIterator(
-        new OSHDBTimestamps(
-            "2015-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z"
-        ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
-        areaDecider,
-        oshEntity -> oshEntity.getId() == 525,
-        osmEntity -> true,
-        false
-    )).iterateByContribution(
-        oshdbDataGridCell
-    ).collect(Collectors.toList());
 
-  }
 
 }
