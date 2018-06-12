@@ -63,7 +63,7 @@
 		<tag k="natural" v="tree"/>
 	</node>
 
-	<!--tag ändert sich variante 2, focus: shop-->
+	<!--tag change, variante 2, focus: shop-->
 	<node id="5" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="17" lon="3.43" lat="1.24">
 		<tag k="shop" v="supermarket"/>
 	</node>
@@ -114,5 +114,24 @@
 	</node>
 	<node id="8" visible="true" version="5" timestamp="2015-01-01T00:00:00Z" uid="12" user="test2" changeset="31" lon="3.43" lat="1.24">
 		<tag k="disused:shop" v="supermarket"/>
+	</node>
+
+	<!--different cases of relative position between node coordinate(s) and cell bbox / query polygon-->
+	<!--outside cell bbox-->
+	<node id="10" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="32" lon="-1.0" lat="-1.0">
+	</node>
+	<!--outside query bbox-->
+	<node id="11" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="33" lon="2.0" lat="2.0">
+	</node>
+	<!--outside query polygon-->
+	<node id="12" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="34" lon="1.0" lat="1.0">
+	</node>
+	<!--inside query polygon-->
+	<node id="13" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="35" lon="0.5" lat="0.5">
+	</node>
+	<!--overlapping query polygon-->
+	<node id="14" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="36" lon="1.0" lat="1.0">
+	</node>
+	<node id="14" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="11" user="test" changeset="37" lon="0.5" lat="0.5">
 	</node>
 </osm>

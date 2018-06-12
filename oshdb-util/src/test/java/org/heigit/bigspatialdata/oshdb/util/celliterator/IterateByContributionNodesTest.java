@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -476,21 +477,51 @@ public class IterateByContributionNodesTest {
 
   @Test
   public void testTagChangeTagFilterPrevNotNull() {
-
-    List<IterateByTimestampEntry> result = (new CellIterator(
+    //  check if results are correct if we filter for a special tag
+    // tag not in data, timeinterval stops after version 2
+    List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2008-01-01T00:00:00Z",
-            "2009-01-01T00:00:00Z",
-            "P1Y"
+            "2009-01-01T00:00:00Z"
         ).get(),
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
-    )).iterateByTimestamps(
+    )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  public void testCoordinatesRelativeToPolygon() throws IOException {
+    //different cases of relative position between node coordinate(s) and cell bbox / query polygon
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords=new Coordinate[4];
+    coords[0]=new Coordinate(0.0,0.0);
+    coords[1]=new Coordinate(1.5,0.0);
+    coords[2]=new Coordinate(0.0,1.5);
+    coords[3]=new Coordinate(0.0,0.0);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2007-01-01T00:00:00Z",
+            "2009-01-01T00:00:00Z"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() >= 10 && oshEntity.getId() < 20,
+        osmEntity -> true,
+        false
+    )).iterateByContribution(
+        GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6)).getId(1.0, 1.0)/* approx. 0,0,5.6,5.6*/)
+    ).collect(Collectors.toList());
+
+    assertEquals(2, result.size());
+    assertTrue(result.get(0).osmEntity.getId() == 13);
+    assertTrue(result.get(1).osmEntity.getId() == 14);
   }
 }
