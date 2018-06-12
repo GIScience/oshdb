@@ -468,8 +468,6 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
     assertEquals(318, result.get(0).changeset);
     assertEquals(null, result.get(0).previousGeometry.get());
-
-    //assertTrue(result.get(1).geometry.get().isEmpty());
   }
 
   @Test
@@ -570,7 +568,6 @@ public class IterateByContributionTypeNotMultipolygonTest {
     assertEquals(321, result.get(0).changeset);
     assertEquals(null, result.get(0).previousGeometry.get());
     assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
-
   }
 
   @Test
@@ -727,7 +724,6 @@ public class IterateByContributionTypeNotMultipolygonTest {
         result.get(2).activities.get()
     );
     assertEquals(7, result.get(1).geometry.get().getNumPoints());
-
   }
 
   @Test
@@ -854,7 +850,8 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
   @Test
   public void testMembersDisappearAndPreviousIsNull() {
-
+    // relation in last version without members, previous version visible=false
+    // timeinterval includes only last version
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2012-01-01T00:00:00Z",
@@ -868,12 +865,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-
-    assertEquals(1, result.size());
-    assertEquals(
-        EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
-    );
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -901,8 +893,6 @@ public class IterateByContributionTypeNotMultipolygonTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
-    result.iterator().forEachRemaining(k -> System.out.println(k.activities.get().toString()));
     assertEquals(1, result.size());
     assertEquals(
         EnumSet.of(ContributionType.DELETION),

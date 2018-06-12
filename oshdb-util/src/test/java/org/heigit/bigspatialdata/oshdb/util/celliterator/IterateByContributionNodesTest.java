@@ -471,7 +471,8 @@ public class IterateByContributionNodesTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(1,result.size());// one version with tag shop
+    // result size =2 becuase if tag filtered for disappears it's a deletion
+    assertEquals(2,result.size());// one version with tag shop
   }
 
   @Test
