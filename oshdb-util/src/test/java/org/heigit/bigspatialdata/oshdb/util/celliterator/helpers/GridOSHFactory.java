@@ -23,21 +23,38 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInte
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 
+/**
+ * Helper class to get GridOSH's (Holds the basic information, every OSM-Object has at a
+ * specific level) out of osm-xml file
+ */
+
 public class GridOSHFactory {
-  public static GridOSHNodes  getGridOSHNodes(OSMXmlReader osmXmlReader) throws IOException {
+
+  public static GridOSHNodes getGridOSHNodes(OSMXmlReader osmXmlReader) throws IOException {
+    return getGridOSHNodes(osmXmlReader, -1, -1);
+  }
+
+  public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader) throws IOException {
+    return getGridOSHWays(osmXmlReader, -1, -1);
+  }
+
+  public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader) throws IOException {
+    return getGridOSHRelations(osmXmlReader, -1, -1);
+  }
+
+  public static GridOSHNodes getGridOSHNodes(OSMXmlReader osmXmlReader, int cellZoom, long cellId) throws IOException {
     GridOSHNodes oshdbDataGridCellNodes;
     List<OSHNode> oshNodes = new ArrayList<>();
     for (Entry<Long, Collection<OSMNode>> entry : osmXmlReader.nodes().asMap().entrySet()) {
       oshNodes.add(OSHNode.build(new ArrayList<>(entry.getValue())));
     }
-    oshdbDataGridCellNodes = GridOSHNodes.rebase(-1, -1, 0, 0, 0, 0,
+    oshdbDataGridCellNodes = GridOSHNodes.rebase(cellId, cellZoom, 0, 0, 0, 0,
         oshNodes
     );
     return oshdbDataGridCellNodes;
   }
 
-  public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader) throws IOException {
-
+  public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader, int cellZoom, long cellId) throws IOException {
     GridOSHWays oshdbDataGridCellWays;
     Map<Long, OSHNode> oshNodes = getOSHNodes(osmXmlReader);
     List<OSHWay> oshWays = new ArrayList<>();
@@ -53,8 +70,7 @@ public class GridOSHFactory {
     return oshdbDataGridCellWays;
   }
 
-  public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader) throws IOException {
-
+  public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader, int cellZoom, long cellId) throws IOException {
     Map<Long, OSHNode> oshNodes = getOSHNodes(osmXmlReader);
     Map<Long, OSHWay> oshWays = getOSHWays(osmXmlReader);
 
