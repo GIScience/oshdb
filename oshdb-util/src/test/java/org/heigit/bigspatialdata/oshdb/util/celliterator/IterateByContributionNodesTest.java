@@ -349,6 +349,52 @@ public class IterateByContributionNodesTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
+
+    assertEquals(3, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(2).activities.get()
+    );
+  }
+
+  @Test
+  public void testMoreComplicatedFilter() {
+    // check if results are correct if we filter for a special tag
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2007-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        new OSHDBBoundingBox(0,0, 180, 90),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 8,
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    result.iterator().forEachRemaining(k -> System.out.println(k.activities.get().toString()));
+    assertEquals(4, result.size());
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(0).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.DELETION),
+        result.get(1).activities.get()
+    );
+    assertEquals(
+        EnumSet.of(ContributionType.CREATION),
+        result.get(2).activities.get()
+    );
   }
 
   @Test
@@ -398,6 +444,35 @@ public class IterateByContributionNodesTest {
     ).collect(Collectors.toList());
     assertEquals(2,result.size());
   }
+
+  @Test
+  public void testTagFilterAndPolygonIntersectingDataPartly() {
+    // lon lat changes, so that node in v2 is outside bbox
+    GeometryFactory geometryFactory = new GeometryFactory(); // create clipping polygon for area of interest
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,22.7);
+    coords[2]=new Coordinate(22.7,22.7);
+    coords[3]=new Coordinate(22.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
+
+    List<IterateAllEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z"
+        ).get(),
+        polygonFromCoordinates,// clipping polygon
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 6,
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),// filter entity for tag = shop
+        false
+    )).iterateByContribution(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertEquals(1,result.size());// one version with tag shop
+  }
+
 
   @Test
   public void testTagChangeTagFilterPrevNotNull() {
