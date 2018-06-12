@@ -685,7 +685,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    //assertEquals(3,result.size());
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -715,33 +715,7 @@ public class IterateByContributionRelationsTest {
     ).collect(Collectors.toList());
     assertEquals(3,result.size());
   }
-  @Test
-  public void testZeile416FalseOderTrue() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,52.7);
-    coords[2]=new Coordinate(52.7,52.7);
-    coords[3]=new Coordinate(52.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
-    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
-
-    List<IterateAllEntry> result = (new CellIterator(
-        new OSHDBTimestamps(
-            "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z"
-        ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
-        areaDecider,
-        oshEntity -> oshEntity.getId() == 516,
-        osmEntity -> true,
-        false
-    )).iterateByContribution(
-        oshdbDataGridCell
-    ).collect(Collectors.toList());
-    assertEquals(3,result.size());
-  }
   @Test
   public void testPolygonNotIntersectingData() {
 

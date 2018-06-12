@@ -370,7 +370,7 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.timestamp.toString()));
+
     assertEquals(10, result.size());
     assertEquals(318, result.get(0).osmEntity.getChangeset());
 
@@ -486,40 +486,6 @@ public class IterateByTimestampsRelationsTest {
     assertNotEquals(result.get(9).geometry.get(), result.get(0).geometry.get());
   }
 
-  /*@Test
-  public void testBboxNotIntersectsAndBboxPolygonIntersectsPartly() {
-    // node 1: creation and two geometry changes, but no tag changes
-
-    // Create a GeometryFactory if you don't have one already
-    GeometryFactory geometryFactory = new GeometryFactory();
-
-    // Simply pass an array of Coordinate or a CoordinateSequence to its method
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
-    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
-
-    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
-        new OSHDBTimestamps(
-            "2000-01-01T00:00:00Z",
-            "2018-01-01T00:00:00Z",
-            "P1Y"
-        ).get(),
-        new OSHDBBoundingBox(48, 49, 49, 50),
-        polygonFromCoordinates,
-        areaDecider,
-        oshEntity -> oshEntity.getId() == 516,
-        osmEntity -> true,
-        false
-    )).iterateByTimestamps(
-        oshdbDataGridCell
-    ).collect(Collectors.toList());
-    assertTrue(resultPoly.isEmpty());
-  }*/
-
   @Test
   public void testPolygonIntersectingDataPartly() {
 
@@ -532,7 +498,7 @@ public class IterateByTimestampsRelationsTest {
     coords[4]=new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
-    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+    List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z",
@@ -547,18 +513,19 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
+    assertEquals(10,result.size());
   }
 
-  /*@Test
+  @Test
   public void testPolygonIntersectingDataOnlyAtBorderLine() {
 
     GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(-180,-90);
-    coords[1]=new Coordinate(180 ,-90);
-    coords[2]=new Coordinate(180,90);
-    coords[3]=new Coordinate(-180,90);
-    coords[4]=new Coordinate(-180,-90);
+    coords[0]=new Coordinate(10.7,10.4);
+    coords[1]=new Coordinate(10.94,10.4);
+    coords[2]=new Coordinate(10.94,10.9);
+    coords[3]=new Coordinate(10.7,10.9);
+    coords[4]=new Coordinate(10.7,10.4);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -569,15 +536,14 @@ public class IterateByTimestampsRelationsTest {
         ).get(),
         polygonFromCoordinates,
         areaDecider,
-        oshEntity -> oshEntity.getId() == 511,
+        oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.geometry.get().toString()));
-    assertTrue(result.get(0).geometry.get().isEmpty());
-  }*/
+    assertEquals(0,result.size());
+  }
 
   @Test
   public void testPolygonIntersectingDataCompletely() {
@@ -591,7 +557,7 @@ public class IterateByTimestampsRelationsTest {
     coords[4]=new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
-    List<IterateByTimestampEntry> resultPoly = (new CellIterator(
+    List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z",
@@ -606,6 +572,7 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
+    assertEquals(10,result.size());
   }
 
   @Test
