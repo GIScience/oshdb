@@ -4,8 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -197,5 +200,32 @@ public class IterateByTimestampsNodesTest {
     assertTrue(result.isEmpty());
   }
 
+  @Test
+  public void testTagFilterAndPolygonIntersectingDataPartly() {
+    // lon lat changes, so that node in v2 is outside bbox
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords=new Coordinate[5];
+    coords[0]=new Coordinate(10.8,10.3);
+    coords[1]=new Coordinate(10.8 ,22.7);
+    coords[2]=new Coordinate(22.7,22.7);
+    coords[3]=new Coordinate(22.7,10.3);
+    coords[4]=new Coordinate(10.8,10.3);
+    Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-01-01T00:00:00Z",
+            "2018-01-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        polygonFromCoordinates,
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 6,
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).collect(Collectors.toList());
+    assertEquals(1,result.size());
+  }
 }
