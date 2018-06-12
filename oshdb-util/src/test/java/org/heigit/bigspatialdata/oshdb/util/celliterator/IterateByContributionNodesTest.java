@@ -382,7 +382,7 @@ public class IterateByContributionNodesTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    result.iterator().forEachRemaining(k -> System.out.println(k.activities.get().toString()));
+
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
