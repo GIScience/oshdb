@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -225,7 +228,7 @@ public class SpatialRelations {
             return geomCandidate.contains(geom);
           })
           .collect(Collectors.toList());
-    } else if (candidates.get(0).getClass() == OSMEntitySnapshot.class) {
+    } else if (candidates.get(0).getClass() == OSMContribution.class) {
       result = candidates
           .stream()
           .filter(candidate -> {

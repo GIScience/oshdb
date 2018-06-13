@@ -199,7 +199,7 @@ public abstract class MapReducer<X> implements
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Set the area of interest to the given bounding box. Only objects insideToOSMEntitySnapshot or clipped by this bbox
+   * Set the area of interest to the given bounding box. Only objects inside or clipped by this bbox
    * will be passed on to the analysis' `mapper` function.
    *
    * @param bboxFilter the bounding box to query the data in
@@ -218,7 +218,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Set the area of interest to the given polygon. Only objects insideToOSMEntitySnapshot or clipped by this polygon
+   * Set the area of interest to the given polygon. Only objects inside or clipped by this polygon
    * will be passed on to the analysis' `mapper` function.
    *
    * @param polygonFilter the bounding box to query the data in
@@ -851,7 +851,7 @@ public abstract class MapReducer<X> implements
 
   // -----------------------------------------------------------------------------------------------
   // Inside queries
-  // Check if an element is located insideToOSMEntitySnapshot another element
+  // Check if an element is located inside another element
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -862,10 +862,10 @@ public abstract class MapReducer<X> implements
    * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(String key, String value)
+  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(String key, String value, boolean queryContributions)
       throws Exception {
     STRtree outerElements = new STRtree();
-    if (this._forClass == OSMEntitySnapshot.class) {
+    if (!queryContributions) {
       OSMEntitySnapshotView.on(this._oshdbForTags)
           .keytables(this._oshdbForTags)
           .areaOfInterest(this._bboxFilter)
@@ -875,7 +875,7 @@ public abstract class MapReducer<X> implements
           .forEach(snapshot -> outerElements
               .insert(snapshot.getGeometryUnclipped().getEnvelopeInternal(), snapshot));
       return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
-    } else if (this._forClass == OSMContribution.class) {
+    } else {
       OSMContributionView.on(this._oshdbForTags)
           .keytables(this._oshdbForTags)
           .areaOfInterest(this._bboxFilter)
@@ -885,10 +885,55 @@ public abstract class MapReducer<X> implements
           .forEach(contribution -> outerElements
               .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(), contribution));
       return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
-    } else {
-      throw new UnsupportedOperationException("Operation is not implemented for mapReducer instance of this class.");
     }
   }
+
+  /**
+   * @param key OSMtag key
+   * @param <R> Result of mapReduce function
+   * @return a modified copy of the MapReducer
+   * @throws UnsupportedOperationException
+   **/
+  @Contract(pure = true)
+  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(String key, boolean queryContributions)
+      throws Exception {
+    STRtree outerElements = new STRtree();
+    if (!queryContributions) {
+      OSMEntitySnapshotView.on(this._oshdbForTags)
+          .keytables(this._oshdbForTags)
+          .areaOfInterest(this._bboxFilter)
+          .timestamps(this._tstamps)
+          .osmTag(key)
+          .collect()
+          .forEach(snapshot -> outerElements
+              .insert(snapshot.getGeometryUnclipped().getEnvelopeInternal(), snapshot));
+      return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
+    } else {
+      OSMContributionView.on(this._oshdbForTags)
+          .keytables(this._oshdbForTags)
+          .areaOfInterest(this._bboxFilter)
+          .timestamps(this._tstamps)
+          .osmTag(key)
+          .collect()
+          .forEach(contribution -> outerElements
+              .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(), contribution));
+      return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
+    }
+  }
+
+
+  /**
+   * @param key OSMtag key
+   * @param <R> Result of mapReduce function
+   * @return a modified copy of the MapReducer
+   * @throws UnsupportedOperationException
+   **/
+  @Contract(pure = true)
+  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(String key)
+      throws Exception {
+    return this.insideMap(key, false);
+  }
+
 
   /**
    * @param key OSMtag key
@@ -899,8 +944,20 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public <R extends OSHDBMapReducible> MapReducer<R> inside(String key, String value)
       throws Exception {
-    return this.insideMap(key, value).filter(p -> p.getRight().size() > 0).map(p -> (R) p.getLeft());
+    return this.insideMap(key, value, false).filter(p -> p.getRight().size() > 0).map(p -> (R) p.getLeft());
   }
+
+  /**
+   * @param key OSMtag key
+   * @return a modified copy of the MapReducer
+   * @throws UnsupportedOperationException
+   **/
+  @Contract(pure = true)
+  public <R extends OSHDBMapReducible> MapReducer<R> inside(String key)
+      throws Exception {
+    return this.insideMap(key, false).filter(p -> p.getRight().size() > 0).map(p -> (R) p.getLeft());
+  }
+
 
 
   // -----------------------------------------------------------------------------------------------

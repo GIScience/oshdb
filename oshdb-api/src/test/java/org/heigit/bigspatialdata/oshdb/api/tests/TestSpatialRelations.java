@@ -229,15 +229,13 @@ public class TestSpatialRelations {
   }
 
   @Test
-  public void testNeighbourhoodFilterCallbackForContributionAndNearbySnapshots() throws Exception {
+  public void testInsideForSnapshots() throws Exception {
     // Create MapReducer
-    Number result = createMapReducerOSMContribution()
-        .neighbourhoodFilter(54., mapReduce -> mapReduce.osmTag("highway").count() > 2)
-        //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
+    Number result = createMapReducerOSMEntitySnapshot()
+        .inside("landuse")
         .count();
-    //assertEquals( 1, result);
-    assertEquals( 55, result);
+    //todo improve test
+    assertEquals( 0, result);
   }
 
-  
 }
