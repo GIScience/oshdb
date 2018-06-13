@@ -223,18 +223,28 @@ public class SpatialRelations {
       result = candidates
           .stream()
           .filter(candidate -> {
-            OSMEntitySnapshot candidate1 = (OSMEntitySnapshot) candidate;
-            Geometry geomCandidate = candidate1.getGeometryUnclipped();
-            return geomCandidate.contains(geom);
+            try {
+              OSMEntitySnapshot candidate1 = (OSMEntitySnapshot) candidate;
+              Geometry geomCandidate = candidate1.getGeometryUnclipped();
+              return geomCandidate.contains(geom);
+            } catch (TopologyException e) {
+              System.out.println(e);
+              return false;
+            }
           })
           .collect(Collectors.toList());
     } else if (candidates.get(0).getClass() == OSMContribution.class) {
       result = candidates
           .stream()
           .filter(candidate -> {
-            OSMContribution candidate1 = (OSMContribution) candidate;
-            Geometry geomCandidate = candidate1.getGeometryUnclippedAfter();
-            return geomCandidate.contains(geom);
+            try {
+              OSMContribution candidate1 = (OSMContribution) candidate;
+              Geometry geomCandidate = candidate1.getGeometryUnclippedAfter();
+              return geomCandidate.contains(geom);
+            } catch (TopologyException e) {
+              System.out.println(e);
+              return false;
+            }
           })
           .collect(Collectors.toList());
     } else {
