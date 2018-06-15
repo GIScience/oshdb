@@ -10,13 +10,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
@@ -227,7 +223,7 @@ public class SpatialRelations {
               OSMEntitySnapshot candidate1 = (OSMEntitySnapshot) candidate;
               Geometry geomCandidate = candidate1.getGeometryUnclipped();
               return geomCandidate.contains(geom);
-            } catch (TopologyException e) {
+            } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
             }
@@ -241,7 +237,7 @@ public class SpatialRelations {
               OSMContribution candidate1 = (OSMContribution) candidate;
               Geometry geomCandidate = candidate1.getGeometryUnclippedAfter();
               return geomCandidate.contains(geom);
-            } catch (TopologyException e) {
+            } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
             }
@@ -250,6 +246,7 @@ public class SpatialRelations {
     } else {
       throw new UnsupportedOperationException("Method 'inside' is not implemented for this class.");
     }
+    System.out.println(snapshot.getEntity().getId() + " - " + result.size());
     return Pair.of(snapshot, result);
   }
 
