@@ -246,7 +246,6 @@ public class SpatialRelations {
     } else {
       throw new UnsupportedOperationException("Method 'inside' is not implemented for this class.");
     }
-    System.out.println(snapshot.getEntity().getId() + " - " + result.size());
     return Pair.of(snapshot, result);
   }
 

@@ -232,7 +232,7 @@ public class TestSpatialRelations {
   public void testInsideForSnapshots() throws Exception {
     // Create MapReducer
     Number result = createMapReducerOSMEntitySnapshot()
-        .inside("landuse")
+        .inside("landuse", "residential")
         .count();
     //todo improve test
     assertEquals( 0, result);
