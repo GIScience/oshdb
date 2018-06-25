@@ -9,7 +9,6 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -30,11 +29,11 @@ import java.util.*;
 public class SpatialRelations {
   public enum GEOMETRY_OPTIONS {BEFORE, AFTER, BOTH}
 
-  public static <R, S> S neighbourhood(
+  public static <X, Y> Y neighbourhood(
       OSHDBJdbc oshdb,
       OSHDBTimestampList timestampList,
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
+      SerializableFunctionWithException<MapReducer<X>, Y> mapReduce,
       OSMEntitySnapshot snapshot,
       boolean queryContributions,
       ContributionType contributionType
@@ -89,7 +88,7 @@ public class SpatialRelations {
             return geomBeforeWithinDistance || geomAfterWithinDistance;
           });
       // Apply mapReducer given by user
-      return mapReduce.apply((MapReducer<R>) subMapReducer);
+      return mapReduce.apply((MapReducer<X>) subMapReducer);
     } else {
       MapReducer<OSMEntitySnapshot> subMapReducer = OSMEntitySnapshotView.on(oshdb)
           .keytables(oshdb)
@@ -104,14 +103,14 @@ public class SpatialRelations {
             }
           });
       // Apply mapReducer given by user
-      return mapReduce.apply((MapReducer<R>) subMapReducer);
+      return mapReduce.apply((MapReducer<X>) subMapReducer);
     }
   }
 
-  public static <R, S> S neighbourhood(
+  public static <X, Y> Y neighbourhood(
       OSHDBJdbc oshdb,
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
+      SerializableFunctionWithException<MapReducer<X>, Y> mapReduce,
       OSMContribution contribution,
       GEOMETRY_OPTIONS geometryVersion
   ) throws Exception {
@@ -196,7 +195,7 @@ public class SpatialRelations {
               }
         });
     // Apply mapReducer given by user
-    return mapReduce.apply((MapReducer<R>) subMapReducer);
+    return mapReduce.apply((MapReducer<X>) subMapReducer);
 }
 
 

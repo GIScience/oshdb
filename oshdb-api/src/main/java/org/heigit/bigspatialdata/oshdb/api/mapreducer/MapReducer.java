@@ -670,8 +670,8 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbouring(Double
-      distanceInMeter,
+  public <R> MapReducer<R> neighbouring(
+      Double distanceInMeter,
       String key,
       String value,
       boolean queryContributions) {
@@ -689,11 +689,11 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R, S extends Boolean, T> MapReducer<R> neighbouring(
+  public <R, Y extends Boolean> MapReducer<R> neighbouring(
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
+      SerializableFunctionWithException<MapReducer<R>, Y> mapReduce,
       boolean queryContributions) {
-    MapReducer<Pair<R, S>> mr = this.neighbourhood(distanceInMeter, mapReduce, queryContributions);
+    MapReducer<Pair<R, Y>> mr = this.neighbourhood(distanceInMeter, mapReduce, queryContributions);
     return mr.filter(p -> p.getRight()).map(p -> p.getKey());
   }
 
@@ -705,14 +705,14 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R, S extends Boolean> MapReducer<R> neighbouring(
+  public <R, Y extends Boolean> MapReducer<R> neighbouring(
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce) {
+      SerializableFunctionWithException<MapReducer<R>, Y> mapReduce) {
     if (this._forClass == OSMEntitySnapshot.class) {
-      MapReducer<Pair<R, S>> pairMapReducer = this.neighbourhood(distanceInMeter, mapReduce, false);
+      MapReducer<Pair<R, Y>> pairMapReducer = this.neighbourhood(distanceInMeter, mapReduce, false);
       return pairMapReducer.filter(p -> p.getRight()).map(p -> p.getKey());
     } else if (this._forClass == OSMContribution.class){
-      MapReducer<Pair<R, S>> pairMapReducer =  this.neighbourhood(distanceInMeter, mapReduce, true);
+      MapReducer<Pair<R, Y>> pairMapReducer =  this.neighbourhood(distanceInMeter, mapReduce, true);
       return pairMapReducer.filter(p -> p.getRight()).map(p -> p.getKey());
     } else {
       throw new UnsupportedOperationException("Operation for mapReducer of this class is not implemented.");
@@ -747,9 +747,9 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <R, S> MapReducer<Pair<R, S>> neighbourhood(
+  public <R, Y> MapReducer<Pair<R, Y>> neighbourhood(
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
+      SerializableFunctionWithException<MapReducer<R>, Y> mapReduce,
       SpatialRelations.GEOMETRY_OPTIONS geometryVersion) {
     return this.neighbourhood(
         distanceInMeter,
@@ -767,13 +767,13 @@ public abstract class MapReducer<X> implements
    * @param mapReduce MapReducer function with search parameters for neighbourhoood filter
    * @param queryContributions If true, nearby OSMCOntributions are queried. If false, OSMEntitySnapshots are queried
    * @param <R> Class of MapReducer
-   * @param <S> List with neighbouring
+   * @param <Y> List with neighbouring
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <R, S> MapReducer<Pair<R,S>> neighbourhood(
+  public <R, Y> MapReducer<Pair<R, Y>> neighbourhood(
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
+      SerializableFunctionWithException<MapReducer<R>, Y> mapReduce,
       boolean queryContributions) {
       return  this.neighbourhood(
           distanceInMeter,
@@ -791,13 +791,13 @@ public abstract class MapReducer<X> implements
    * @param queryContributions If true, nearby OSMCOntributions are queried. If false, OSMEntitySnapshots are queried
    * @param contributionType Filter result by type of contribution
    * @param <R> Class of MapReducer
-   * @param <S> List with neighbouring
+   * @param <Y> List with neighbouring
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <R, S> MapReducer<Pair<R,S>> neighbourhood(
+  public <R, Y> MapReducer<Pair<R, Y>> neighbourhood(
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
+      SerializableFunctionWithException<MapReducer<R>, Y> mapReduce,
       boolean queryContributions,
       ContributionType contributionType) {
     return this.neighbourhood(
@@ -814,21 +814,21 @@ public abstract class MapReducer<X> implements
    * @param distanceInMeter distance of radius in meters
    * @param mapReduce MapReducer function with search parameters for neighbourhoood filter
    * @param <R> Class of MapReducer (OSMEntitySnapshot or OSMContribution)
-   * @param <S> Result of mapReduce function
+   * @param <Y> Result of mapReduce function
    * @return a modified copy of the MapReducer
    * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
-  public <R, S> MapReducer<Pair<R,S>> neighbourhood(
+  public <R, Y> MapReducer<Pair<R, Y>> neighbourhood(
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
+      SerializableFunctionWithException<MapReducer<R>, Y> mapReduce,
       boolean queryContributions,
       ContributionType contributionType,
       GEOMETRY_OPTIONS geometryVersion) {
     return this.map(data -> {
       try {
         if (this._forClass == OSMEntitySnapshot.class) {
-          return (Pair<R, S>) Pair.of(data, SpatialRelations.neighbourhood(
+          return (Pair<R, Y>) Pair.of(data, SpatialRelations.neighbourhood(
               this._oshdbForTags,
               this._tstamps,
               distanceInMeter,
@@ -837,7 +837,7 @@ public abstract class MapReducer<X> implements
               queryContributions,
               contributionType));
         } else if (this._forClass == OSMContribution.class) {
-          return (Pair<R, S>) Pair.of(data, SpatialRelations.neighbourhood(
+          return (Pair<R, Y>) Pair.of(data, SpatialRelations.neighbourhood(
               this._oshdbForTags,
               distanceInMeter,
               mapReduce,
@@ -848,7 +848,7 @@ public abstract class MapReducer<X> implements
         }
     } catch (Exception e) {
         System.out.println(e.getMessage());
-        return (Pair<R, S>) Pair.of(data, null);
+        return (Pair<R, Y>) Pair.of(data, null);
     }
     });
   }
@@ -859,15 +859,19 @@ public abstract class MapReducer<X> implements
   // -----------------------------------------------------------------------------------------------
 
   /**
+   * Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <R> Result of mapReduce function
+   * @param <R> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
-   * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(String key, String value, boolean queryContributions)
+  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(
+      String key,
+      String value,
+      boolean queryContributions)
       throws Exception {
+    // STR tree to store all with the given key and value
     STRtree outerElements = new STRtree();
     if (!queryContributions) {
       OSMEntitySnapshotView.on(this._oshdbForTags)
@@ -878,6 +882,7 @@ public abstract class MapReducer<X> implements
           .collect()
           .forEach(snapshot -> outerElements
               .insert(snapshot.getGeometryUnclipped().getEnvelopeInternal(), snapshot));
+      // Check for each snapshot whether it is inside an element of outerElements
       return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
     } else {
       OSMContributionView.on(this._oshdbForTags)
@@ -888,19 +893,23 @@ public abstract class MapReducer<X> implements
           .collect()
           .forEach(contribution -> outerElements
               .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(), contribution));
+      // Check for each snapshot whether it is inside an element of outerElements
       return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
     }
   }
 
   /**
+   * Map all elements filtered by key that contain a given OSMContribution
    * @param key OSMtag key
-   * @param <R> Result of mapReduce function
+   * @param <R> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
-   * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(String key, boolean queryContributions)
+  public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(
+      String key,
+      boolean queryContributions)
       throws Exception {
+    // STR tree to store all with the given key and value
     STRtree outerElements = new STRtree();
     if (!queryContributions) {
       OSMEntitySnapshotView.on(this._oshdbForTags)
@@ -911,6 +920,7 @@ public abstract class MapReducer<X> implements
           .collect()
           .forEach(snapshot -> outerElements
               .insert(snapshot.getGeometryUnclipped().getEnvelopeInternal(), snapshot));
+      // Check for each contribution whether it is inside an element of outerElements
       return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
     } else {
       OSMContributionView.on(this._oshdbForTags)
@@ -921,16 +931,15 @@ public abstract class MapReducer<X> implements
           .collect()
           .forEach(contribution -> outerElements
               .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(), contribution));
+      // Check for each contribution whether it is inside an element of outerElements
       return this.map(data -> SpatialRelations.inside((OSMEntitySnapshot) data, outerElements));
     }
   }
-
 
   /**
    * @param key OSMtag key
    * @param <R> Result of mapReduce function
    * @return a modified copy of the MapReducer
-   * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
   public <R extends OSHDBMapReducible> MapReducer<Pair<OSMEntitySnapshot, List<R>>> insideMap(String key)
@@ -943,25 +952,26 @@ public abstract class MapReducer<X> implements
    * @param key OSMtag key
    * @param value OSMtag value
    * @return a modified copy of the MapReducer
-   * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible> MapReducer<R> inside(String key, String value)
+  public <R> MapReducer<R> inside(String key, String value)
       throws Exception {
-    return this.insideMap(key, value, false).filter(p -> p.getRight().size() > 0).map(p -> (R) p.getLeft());
+    return this.insideMap(key, value, false)
+        .filter(p -> p.getRight().size() > 0)
+        .map(p -> (R) p.getLeft());
   }
 
   /**
    * @param key OSMtag key
    * @return a modified copy of the MapReducer
-   * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
   public <R extends OSHDBMapReducible> MapReducer<R> inside(String key)
       throws Exception {
-    return this.insideMap(key, false).filter(p -> p.getRight().size() > 0).map(p -> (R) p.getLeft());
+    return this.insideMap(key, false)
+        .filter(p -> p.getRight().size() > 0)
+        .map(p -> (R) p.getLeft());
   }
-
 
 
   // -----------------------------------------------------------------------------------------------
