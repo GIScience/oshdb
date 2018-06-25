@@ -56,7 +56,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodFilter(54., "highway")
+                .neighbouring(54., "highway")
                 //.neighbouring(54., "amenity")
                 .count();
         //assertEquals( 2, result);
@@ -68,7 +68,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodFilter(54., "highway", true)
+                .neighbouring(54., "highway", true)
                 //.neighbouring(54., "amenity")
                 .count();
         //assertEquals( 2, result);
@@ -80,7 +80,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodFilter(54., "highway", "primary")
+                .neighbouring(54., "highway", "primary")
                 //.neighbouring(54., "amenity", "post_box")
                 .count();
         //assertEquals( 1, result);
@@ -92,7 +92,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodFilter(54., "highway", "primary", true)
+                .neighbouring(54., "highway", "primary", true)
                 //.neighbouring(54., "amenity", "post_box")
                 .count();
         //assertEquals( 1, result);
@@ -104,7 +104,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodFilter(54., mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
+                .neighbouring(54., mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
                 //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
                 .count();
         //assertEquals( 1, result);
@@ -117,7 +117,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         Number result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodFilter(54.,
+                .neighbouring(54.,
                         mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0, true)
                 //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
                 .count();
@@ -131,7 +131,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodMap(54.,
+                .neighbourhood(54.,
                         mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
                         false)
                 //.neighbourhood(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
@@ -147,7 +147,7 @@ public class TestSpatialRelations {
 
         // Create MapReducer
         List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
-                .neighbourhoodMap(
+                .neighbourhood(
                     54.,
                     mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
                     true,
@@ -166,7 +166,7 @@ public class TestSpatialRelations {
 
     // Create MapReducer
     List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
-        .neighbourhoodMap(
+        .neighbourhood(
             54.,
             mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
             true,
@@ -184,7 +184,7 @@ public class TestSpatialRelations {
 
     // Create MapReducer
     List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMContribution()
-        .neighbourhoodMap(54.,
+        .neighbourhood(54.,
             mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
             GEOMETRY_OPTIONS.BOTH)
         .collect();
@@ -195,7 +195,7 @@ public class TestSpatialRelations {
 
     // Create MapReducer
     List<Pair<OSHDBMapReducible, List>> resultAfter = createMapReducerOSMContribution()
-        .neighbourhoodMap(54.,
+        .neighbourhood(54.,
             mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
             GEOMETRY_OPTIONS.AFTER)
         .collect();
@@ -211,7 +211,7 @@ public class TestSpatialRelations {
   public void testNeighbourhoodFilterKeyForOSMContributionAndNearbySnapshots() throws Exception {
     // Create MapReducer
     Number result = createMapReducerOSMContribution()
-        .neighbourhoodFilter(54., "highway")
+        .neighbouring(54., "highway")
         .count();
     //assertEquals( 2, result);
     assertEquals( 92, result);
@@ -221,7 +221,7 @@ public class TestSpatialRelations {
   public void testNeighbourhoodFilterCallbackForContributionAndNearbySnapshots() throws Exception {
     // Create MapReducer
     Number result = createMapReducerOSMContribution()
-        .neighbourhoodFilter(54., mapReduce -> mapReduce.osmTag("highway").count() > 2)
+        .neighbouring(54., mapReduce -> mapReduce.osmTag("highway").count() > 2)
         //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
         .count();
     //assertEquals( 1, result);

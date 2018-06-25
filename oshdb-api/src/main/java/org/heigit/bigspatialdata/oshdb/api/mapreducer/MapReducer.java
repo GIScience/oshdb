@@ -617,6 +617,9 @@ public abstract class MapReducer<X> implements
   // Functions for querying and filtering objects based on other objects in the neighbourhood
   // -----------------------------------------------------------------------------------------------
 
+  
+
+
   /**
    * Filter by neighbouring objects by key
    *
@@ -625,8 +628,8 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
   **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbourhoodFilter(Double distanceInMeter, String key) {
-    return this.neighbourhoodFilter(distanceInMeter,
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter, String key) {
+    return this.neighbouring(distanceInMeter,
             mapReducer -> mapReducer.osmTag(key).count() > 0);
   }
 
@@ -639,8 +642,8 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbourhoodFilter(Double distanceInMeter, String key, boolean queryContributions) {
-    return this.neighbourhoodFilter(distanceInMeter,
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter, String key, boolean queryContributions) {
+    return this.neighbouring(distanceInMeter,
             mapReducer -> mapReducer.osmTag(key).count() > 0,
             queryContributions);
   }
@@ -654,8 +657,8 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbourhoodFilter(Double distanceInMeter, String key, String value) {
-    return this.neighbourhoodFilter(distanceInMeter, mapReducer -> mapReducer.osmTag(key, value).count() > 0);
+  public <R> MapReducer<R> neighbouring(Double distanceInMeter, String key, String value) {
+    return this.neighbouring(distanceInMeter, mapReducer -> mapReducer.osmTag(key, value).count() > 0);
   }
 
   /**
@@ -668,12 +671,12 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbourhoodFilter(Double
+  public <R> MapReducer<R> neighbouring(Double
       distanceInMeter,
       String key,
       String value,
       boolean queryContributions) {
-    return this.neighbourhoodFilter(distanceInMeter,
+    return this.neighbouring(distanceInMeter,
             mapReducer -> mapReducer.osmTag(key, value).count() > 0,
             queryContributions);
   }
@@ -687,11 +690,11 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R, Y extends Boolean> MapReducer<R> neighbourhoodFilter(
+  public <R, Y extends Boolean> MapReducer<R> neighbouring(
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> mapReduce,
       boolean queryContributions) {
-    return this.neighbourhoodMap(distanceInMeter, mapReduce, queryContributions)
+    return this.neighbourhood(distanceInMeter, mapReduce, queryContributions)
             .filter(p -> p.getRight())
             .map(p -> (R) p.getKey());
   }
@@ -704,15 +707,15 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <R> MapReducer<R> neighbourhoodFilter(
+  public <R> MapReducer<R> neighbouring(
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Boolean> MapReducer) {
     if (this._forClass == OSMEntitySnapshot.class) {
-      return this.neighbourhoodMap(distanceInMeter, MapReducer, false)
+      return this.neighbourhood(distanceInMeter, MapReducer, false)
               .filter(p -> p.getRight())
               .map(p -> (R) p.getKey());
     } else if (this._forClass == OSMContribution.class){
-      return this.neighbourhoodMap(distanceInMeter, MapReducer, true)
+      return this.neighbourhood(distanceInMeter, MapReducer, true)
               .filter(p -> p.getRight())
               .map(p -> (R) p.getKey());
     } else {
@@ -728,10 +731,10 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhoodMap(
+  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhood(
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> MapReducer) {
-    return this.neighbourhoodMap(distanceInMeter, MapReducer,
+    return this.neighbourhood(distanceInMeter, MapReducer,
         false,
         null,
         GEOMETRY_OPTIONS.BOTH);
@@ -746,11 +749,11 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhoodMap(
+  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R, Y>> neighbourhood(
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> MapReducer,
       SpatialRelations.GEOMETRY_OPTIONS geometryVersion) {
-    return this.neighbourhoodMap(distanceInMeter, MapReducer,
+    return this.neighbourhood(distanceInMeter, MapReducer,
             false,
             null,
             geometryVersion);
@@ -768,11 +771,11 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhoodMap(
+  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhood(
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> mapReduce,
       boolean queryContributions) {
-    return this.neighbourhoodMap(
+    return this.neighbourhood(
         distanceInMeter,
         mapReduce,
         queryContributions,
@@ -792,12 +795,12 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhoodMap(
+  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhood(
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> mapReduce,
       boolean queryContributions,
       ContributionType contributionType) {
-    return this.neighbourhoodMap(
+    return this.neighbourhood(
         distanceInMeter,
         mapReduce,
         queryContributions,
@@ -816,7 +819,7 @@ public abstract class MapReducer<X> implements
    * @throws UnsupportedOperationException
    **/
   @Contract(pure = true)
-  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhoodMap(
+  public <R extends OSHDBMapReducible, Y> MapReducer<Pair<R,Y>> neighbourhood(
       Double distanceInMeter,
       SerializableFunctionWithException<MapReducer, Y> mapReduce,
       boolean queryContributions,
