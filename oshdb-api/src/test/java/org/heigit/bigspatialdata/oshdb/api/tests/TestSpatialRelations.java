@@ -21,146 +21,136 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 public class TestSpatialRelations {
-    private final OSHDBJdbc oshdb;
+  private final OSHDBJdbc oshdb;
 
-    // create bounding box from coordinates
-    //private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(85.3406012, 27.6991942, 85.3585444, 27.7121143);
-    private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
-    private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2010-01-01", "2014-01-02", Interval.YEARLY);
-    private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2013-01-01", "2014-01-02", Interval.YEARLY);
+  // create bounding box from coordinates
+  //private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(85.3406012, 27.6991942, 85.3585444, 27.7121143);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
+  private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2010-01-01", "2014-01-02", Interval.YEARLY);
+  private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2013-01-01", "2014-01-02", Interval.YEARLY);
 
-    public TestSpatialRelations() throws Exception {
-        //oshdb = (new OSHDBH2("/Users/chludwig/Documents/oshdb/nepal_20180201_z12_keytables.compressed.oshdb")).multithreading(true);
-        oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(true);
-    }
+  public TestSpatialRelations() throws Exception {
+      //oshdb = (new OSHDBH2("/Users/chludwig/Documents/oshdb/nepal_20180201_z12_keytables.compressed.oshdb")).multithreading(true);
+      oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(true);
+  }
 
-    private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() {
-        return OSMEntitySnapshotView.on(oshdb)
-                .keytables(oshdb)
-                .timestamps(timestamps2)
-                .areaOfInterest(bbox)
-                //.osmTag("leisure", "park");
-                .osmTag("building");
-    }
+  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() {
+      return OSMEntitySnapshotView.on(oshdb)
+              .keytables(oshdb)
+              .timestamps(timestamps2)
+              .areaOfInterest(bbox)
+              //.osmTag("leisure", "park");
+              .osmTag("building");
+  }
 
-    private MapReducer<OSMContribution> createMapReducerOSMContribution() {
-        return OSMContributionView.on(oshdb)
-                .keytables(oshdb)
-                .timestamps(timestamps1)
-                .areaOfInterest(bbox)
-                .osmTag("building");
-    }
-
-    @Test
-    public void testNeighbourhoodFilterKeyForSnapshotAndNearbySnapshots() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(54., "highway")
-                //.neighbouring(54., "amenity")
-                .count();
-        //assertEquals( 2, result);
-        assertEquals( 148, result);
-    }
-
-    @Test
-    public void testNeighbourhoodFilterKeyForSnapshotAndNearbyContributions() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(54., "highway", true)
-                //.neighbouring(54., "amenity")
-                .count();
-        //assertEquals( 2, result);
-        assertEquals( 6, result);
-    }
-
-    @Test
-    public void testNeighbourhoodFilterKeyAndValueForSnapshotAndNearbySnapshots() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(54., "highway", "primary")
-                //.neighbouring(54., "amenity", "post_box")
-                .count();
-        //assertEquals( 1, result);
-        assertEquals( 2, result);
-    }
-
-    @Test
-    public void testNeighbourhoodFilterKeyAndValueForSnapshotAndNearbyContributions() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(54., "highway", "primary", true)
-                //.neighbouring(54., "amenity", "post_box")
-                .count();
-        //assertEquals( 1, result);
-        assertEquals( 1, result);
-    }
-
-    @Test
-    public void testNeighbourhoodFilterCallbackForSnapshotAndNearbySnapshots() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(54., mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
-                //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
-                .count();
-        //assertEquals( 1, result);
-        assertEquals( 2, result);
-    }
-
-
-    @Test
-    public void testNeighbourhoodFilterCallbackForSnapshotAndNearbyContributions() throws Exception {
-
-        // Create MapReducer
-        Number result = createMapReducerOSMEntitySnapshot()
-                .neighbouring(54.,
-                        mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0, true)
-                //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
-                .count();
-        //assertEquals( 1, result);
-        assertEquals( 1, result);
-    }
-
-
-    @Test
-    public void testNeighbourhoodMapForSnapshotAndNearbySnapshots() throws Exception {
-      // Create MapReducer
-      List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot().neighbourhood(54.,
-          mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
-          false)
-          .collect();
-      //assertEquals( 1, result.get(0).getRight().size());
-        //assertEquals( 0, result.get(1).getRight().size());
-        assertEquals( 2, result.get(0).getRight().size());
-        assertEquals( 4, result.get(1).getRight().size());
-    }
-
-    @Test
-    public void testNeighbourhoodMapForSnapshotAndNearbyContributions() throws Exception {
-
-        // Create MapReducer
-        List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot()
-                .neighbourhood(
-                    54.,
-                    mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
-                    true,
-                    ContributionType.CREATION,
-                    GEOMETRY_OPTIONS.BOTH)
-                //.neighbourhood(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
-                .collect();
-        //assertEquals( 1, result.get(0).getRight().size());
-        //assertEquals( 0, result.get(1).getRight().size());
-        assertEquals( 2, result.get(0).getRight().size());
-        assertEquals( 0, result.get(1).getRight().size());
-    }
+  private MapReducer<OSMContribution> createMapReducerOSMContribution() {
+      return OSMContributionView.on(oshdb)
+              .keytables(oshdb)
+              .timestamps(timestamps1)
+              .areaOfInterest(bbox)
+              .osmTag("building");
+  }
 
   @Test
-  public void testNeighbourhoodMapForSnapshotAndNearbyContributions2() throws Exception {
+  public void testNeighbouringKeyForSnapshotAndNearbySnapshots() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMEntitySnapshot()
+            .neighbouring(54., "highway")
+            //.neighbouring(54., "amenity")
+            .count();
+    //assertEquals( 2, result);
+    assertEquals( 148, result);
+  }
 
+  @Test
+  public void testNeighbouringKeyForSnapshotAndNearbyContributions() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMEntitySnapshot()
+            .neighbouring(54., "highway", true)
+            //.neighbouring(54., "amenity")
+            .count();
+    //assertEquals( 2, result);
+    assertEquals( 6, result);
+  }
+
+  @Test
+  public void testNeighbouringKeyAndValueForSnapshotAndNearbySnapshots() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMEntitySnapshot()
+            .neighbouring(54., "highway", "primary")
+            //.neighbouring(54., "amenity", "post_box")
+            .count();
+    //assertEquals( 1, result);
+    assertEquals( 2, result);
+  }
+
+  @Test
+  public void testNeighbouringKeyAndValueForSnapshotAndNearbyContributions() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMEntitySnapshot()
+            .neighbouring(54., "highway", "primary", true)
+            //.neighbouring(54., "amenity", "post_box")
+            .count();
+    //assertEquals( 1, result);
+    assertEquals( 1, result);
+  }
+
+  @Test
+  public void testNeighbouringCallbackForSnapshotAndNearbySnapshots() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMEntitySnapshot()
+            .neighbouring(54., mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0)
+            //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
+            .count();
+    //assertEquals( 1, result);
+    assertEquals( 2, result);
+  }
+
+  @Test
+  public void testNeighbouringCallbackForSnapshotAndNearbyContributions() throws Exception {
+    // Create MapReducer
+    Number result = createMapReducerOSMEntitySnapshot()
+            .neighbouring(54.,
+                    mapReduce -> mapReduce.osmTag("highway", "primary").count() > 0, true)
+            //.neighbouring(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").count() > 0)
+            .count();
+    //assertEquals( 1, result);
+    assertEquals( 1, result);
+  }
+
+  @Test
+  public void testNeighbourhoodForSnapshotAndNearbySnapshots() throws Exception {
+    // Create MapReducer
+    List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot().neighbourhood(54.,
+        mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+        false)
+        .collect();
+    //assertEquals( 1, result.get(0).getRight().size());
+      //assertEquals( 0, result.get(1).getRight().size());
+      assertEquals( 2, result.get(0).getRight().size());
+      assertEquals( 4, result.get(1).getRight().size());
+  }
+
+  @Test
+  public void testNeighbourhoodForSnapshotAndNearbyContributions() throws Exception {
+    // Create MapReducer
+    List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot()
+            .neighbourhood(
+                54.,
+                mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+                true,
+                ContributionType.CREATION,
+                GEOMETRY_OPTIONS.BOTH)
+            //.neighbourhood(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
+            .collect();
+    //assertEquals( 1, result.get(0).getRight().size());
+    //assertEquals( 0, result.get(1).getRight().size());
+    assertEquals( 2, result.get(0).getRight().size());
+    assertEquals( 0, result.get(1).getRight().size());
+  }
+
+  @Test
+  public void testNeighbourhoodForSnapshotAndNearbyContributions2() throws Exception {
     // Create MapReducer
     List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot()
         .neighbourhood(
@@ -177,8 +167,7 @@ public class TestSpatialRelations {
   }
 
   @Test
-  public void testNeighbourhoodMapForContributionAndNearbySnapshots() throws Exception {
-
+  public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
     // Create MapReducer
     List<Pair<Object, List<Object>>> result = createMapReducerOSMContribution()
         .neighbourhood(54.,
@@ -205,7 +194,7 @@ public class TestSpatialRelations {
   }
 
   @Test
-  public void testNeighbourhoodFilterKeyForOSMContributionAndNearbySnapshots() throws Exception {
+  public void testNeighbouringKeyForOSMContributionAndNearbySnapshots() throws Exception {
     // Create MapReducer
     Number result = createMapReducerOSMContribution()
         .neighbouring(54., "highway")
@@ -215,7 +204,7 @@ public class TestSpatialRelations {
   }
 
   @Test
-  public void testNeighbourhoodFilterCallbackForContributionAndNearbySnapshots() throws Exception {
+  public void testNeighbouringCallbackForContributionAndNearbySnapshots() throws Exception {
     // Create MapReducer
     Number result = createMapReducerOSMContribution()
         .neighbouring(54., mapReduce -> mapReduce.osmTag("highway").count() > 2)
@@ -234,5 +223,4 @@ public class TestSpatialRelations {
     //todo improve test
     assertEquals( 0, result);
   }
-
 }

@@ -9,6 +9,7 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -41,7 +42,6 @@ public class SpatialRelations {
 
     OSHDBTimestamp end;
     OSHDBTimestamps timestamps = (OSHDBTimestamps) timestampList;
-    MapReducer subMapReducer;
 
     // Get geometry of feature
     Geometry geom = snapshot.getGeometryUnclipped();
@@ -66,7 +66,7 @@ public class SpatialRelations {
     }
 
     if (queryContributions) {
-      subMapReducer = OSMContributionView.on(oshdb)
+      MapReducer<OSMContribution> subMapReducer = OSMContributionView.on(oshdb)
           .keytables(oshdb)
           .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
           .timestamps(new OSHDBTimestamps(snapshot.getTimestamp().toString(), end.toString()))
@@ -88,8 +88,10 @@ public class SpatialRelations {
             // Check if either one of the geometries are within the buffer distance
             return geomBeforeWithinDistance || geomAfterWithinDistance;
           });
+      // Apply mapReducer given by user
+      return mapReduce.apply((MapReducer<R>) subMapReducer);
     } else {
-      subMapReducer = OSMEntitySnapshotView.on(oshdb)
+      MapReducer<OSMEntitySnapshot> subMapReducer = OSMEntitySnapshotView.on(oshdb)
           .keytables(oshdb)
           .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
           .timestamps(snapshot.getTimestamp().toString())
@@ -101,9 +103,9 @@ public class SpatialRelations {
               return false;
             }
           });
+      // Apply mapReducer given by user
+      return mapReduce.apply((MapReducer<R>) subMapReducer);
     }
-    // Apply mapReducer given by user
-    return (S) mapReduce.apply(subMapReducer);
   }
 
   public static <R, S> S neighbourhood(
@@ -180,7 +182,7 @@ public class SpatialRelations {
     Geometry finalGeomAfter = geomAfter;
 
     // Find neighbours of geometry
-    MapReducer subMapReducer = OSMEntitySnapshotView.on(oshdb)
+    MapReducer<OSMEntitySnapshot> subMapReducer = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
         .timestamps(contribution.getTimestamp().toString())
@@ -193,9 +195,8 @@ public class SpatialRelations {
                 default: return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
               }
         });
-
     // Apply mapReducer given by user
-    return (S) mapReduce.apply(subMapReducer);
+    return mapReduce.apply((MapReducer<R>) subMapReducer);
 }
 
 
