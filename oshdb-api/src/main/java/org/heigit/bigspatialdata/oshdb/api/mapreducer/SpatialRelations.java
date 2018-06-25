@@ -29,11 +29,11 @@ import java.util.*;
 public class SpatialRelations {
   public enum GEOMETRY_OPTIONS {BEFORE, AFTER, BOTH}
 
-  public static <Y> Y neighbourhood(
+  public static <R, S> S neighbourhood(
       OSHDBJdbc oshdb,
       OSHDBTimestampList timestampList,
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer, Y> mapReduce,
+      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
       OSMEntitySnapshot snapshot,
       boolean queryContributions,
       ContributionType contributionType
@@ -103,13 +103,13 @@ public class SpatialRelations {
           });
     }
     // Apply mapReducer given by user
-    return mapReduce.apply(subMapReducer);
+    return (S) mapReduce.apply(subMapReducer);
   }
 
-  public static <Y> Y neighbourhood(
+  public static <R, S> S neighbourhood(
       OSHDBJdbc oshdb,
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer, Y> mapReduce,
+      SerializableFunctionWithException<MapReducer<R>, S> mapReduce,
       OSMContribution contribution,
       GEOMETRY_OPTIONS geometryVersion
   ) throws Exception {
@@ -195,7 +195,7 @@ public class SpatialRelations {
         });
 
     // Apply mapReducer given by user
-    return mapReduce.apply(subMapReducer);
+    return (S) mapReduce.apply(subMapReducer);
 }
 
 

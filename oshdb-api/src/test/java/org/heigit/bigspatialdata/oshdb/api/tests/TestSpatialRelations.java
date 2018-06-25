@@ -128,15 +128,12 @@ public class TestSpatialRelations {
 
     @Test
     public void testNeighbourhoodMapForSnapshotAndNearbySnapshots() throws Exception {
-
-        // Create MapReducer
-        List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
-                .neighbourhood(54.,
-                        mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
-                        false)
-                //.neighbourhood(54., mapReduce -> mapReduce.osmTag("amenity", "post_box").collect())
-                .collect();
-        //assertEquals( 1, result.get(0).getRight().size());
+      // Create MapReducer
+      List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot().neighbourhood(54.,
+          mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
+          false)
+          .collect();
+      //assertEquals( 1, result.get(0).getRight().size());
         //assertEquals( 0, result.get(1).getRight().size());
         assertEquals( 2, result.get(0).getRight().size());
         assertEquals( 4, result.get(1).getRight().size());
@@ -146,7 +143,7 @@ public class TestSpatialRelations {
     public void testNeighbourhoodMapForSnapshotAndNearbyContributions() throws Exception {
 
         // Create MapReducer
-        List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
+        List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot()
                 .neighbourhood(
                     54.,
                     mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
@@ -165,7 +162,7 @@ public class TestSpatialRelations {
   public void testNeighbourhoodMapForSnapshotAndNearbyContributions2() throws Exception {
 
     // Create MapReducer
-    List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMEntitySnapshot()
+    List<Pair<Object, List<Object>>> result = createMapReducerOSMEntitySnapshot()
         .neighbourhood(
             54.,
             mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
@@ -183,7 +180,7 @@ public class TestSpatialRelations {
   public void testNeighbourhoodMapForContributionAndNearbySnapshots() throws Exception {
 
     // Create MapReducer
-    List<Pair<OSHDBMapReducible, List>> result = createMapReducerOSMContribution()
+    List<Pair<Object, List<Object>>> result = createMapReducerOSMContribution()
         .neighbourhood(54.,
             mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
             GEOMETRY_OPTIONS.BOTH)
@@ -194,7 +191,7 @@ public class TestSpatialRelations {
     assertEquals( 2, result.get(1).getRight().size());
 
     // Create MapReducer
-    List<Pair<OSHDBMapReducible, List>> resultAfter = createMapReducerOSMContribution()
+    List<Pair<Object, List<Object>>> resultAfter = createMapReducerOSMContribution()
         .neighbourhood(54.,
             mapReduce -> mapReduce.osmTag("highway", "primary").collect(),
             GEOMETRY_OPTIONS.AFTER)
