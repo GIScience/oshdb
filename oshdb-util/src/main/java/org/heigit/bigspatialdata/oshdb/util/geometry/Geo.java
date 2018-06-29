@@ -10,7 +10,8 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
  */
 public class Geo {
 
-	public static double earthRadius = 6371000; //meters
+	// todo what radius is this? At equator it should be 6378 km
+	public static double earthRadius = 6371000.; //meters
 	public static double ONE_DEGREE_IN_METERS_AT_EQUATOR = earthRadius * Math.PI/180.;
 
 	// =====================

@@ -4,6 +4,9 @@ import static org.heigit.bigspatialdata.oshdb.util.geometry.Geo.isWithinDistance
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.TopologyException;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import java.util.stream.Collectors;
@@ -13,6 +16,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
@@ -42,7 +46,6 @@ public class SpatialRelations {
     OSHDBTimestamp end;
     OSHDBTimestamps timestamps = (OSHDBTimestamps) timestampList;
 
-    // Get geometry of feature
     Geometry geom = snapshot.getGeometryUnclipped();
 
     // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
@@ -50,10 +53,11 @@ public class SpatialRelations {
 
     // Get coordinates of bounding box
     Envelope envelope = geom.getEnvelopeInternal();
-    double minLon = envelope.getMinX() - distanceInDegreeLongitude;
-    double maxLon = envelope.getMaxX() + distanceInDegreeLongitude;
-    double minLat = envelope.getMinY() - distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
-    double maxLat = envelope.getMaxY() + distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+    // Multiply by 1.2 to avoid excluding
+    double minLon = envelope.getMinX() - distanceInDegreeLongitude * 1.2;
+    double maxLon = envelope.getMaxX() + distanceInDegreeLongitude * 1.2;
+    double minLat = envelope.getMinY() - (distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
+    double maxLat = envelope.getMaxY() + (distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
 
     // Get start and end timestamp of current snapshot
     ArrayList<OSHDBTimestamp> timestampArrayList = new ArrayList<>(timestampList.get().tailSet(snapshot.getTimestamp()));
@@ -72,6 +76,7 @@ public class SpatialRelations {
           .filter((contribution) -> {
             boolean geomBeforeWithinDistance = false;
             boolean geomAfterWithinDistance = false;
+            if (contribution.getEntityAfter().getId() == snapshot.getEntity().getId()) return false;
             // Filter by contribution type if given
             if (contributionType != null && !contribution.getContributionTypes().contains(contributionType)) return false;
             // Check if geometry before editing is within distance of entity snapshot geometry
@@ -87,8 +92,13 @@ public class SpatialRelations {
             // Check if either one of the geometries are within the buffer distance
             return geomBeforeWithinDistance || geomAfterWithinDistance;
           });
+
       // Apply mapReducer given by user
-      return mapReduce.apply((MapReducer<X>) subMapReducer);
+      if (mapReduce != null) {
+        return mapReduce.apply((MapReducer<X>) subMapReducer);
+      } else {
+        return (Y) subMapReducer.collect();
+      }
     } else {
       MapReducer<OSMEntitySnapshot> subMapReducer = OSMEntitySnapshotView.on(oshdb)
           .keytables(oshdb)
@@ -96,6 +106,7 @@ public class SpatialRelations {
           .timestamps(snapshot.getTimestamp().toString())
           .filter((snapshotNgb) -> {
             try {
+              if (snapshot.getEntity().getId() == snapshotNgb.getEntity().getId()) return false;
               Geometry geomNgb = snapshotNgb.getGeometryUnclipped();
               return isWithinDistance(geom, geomNgb, distanceInMeter);
             } catch (Exception e) {
@@ -103,7 +114,11 @@ public class SpatialRelations {
             }
           });
       // Apply mapReducer given by user
-      return mapReduce.apply((MapReducer<X>) subMapReducer);
+      if (mapReduce != null) {
+        return mapReduce.apply((MapReducer<X>) subMapReducer);
+      } else {
+        return (Y) subMapReducer.collect();
+      }
     }
   }
 
@@ -210,6 +225,7 @@ public class SpatialRelations {
       OSMEntitySnapshot snapshot,
       STRtree outerElements) {
     Geometry geom = snapshot.getGeometryUnclipped();
+
     List<Y> candidates = outerElements.query(snapshot.getGeometryUnclipped().getEnvelopeInternal());
     List<Y> result = new ArrayList<>();
     // No candidates are found return null
@@ -221,8 +237,18 @@ public class SpatialRelations {
           .filter(candidate -> {
             try {
               OSMEntitySnapshot candidate1 = (OSMEntitySnapshot) candidate;
+              // Skip if it is snapshot belongs to the same entity
+              if (snapshot.getEntity().getId() == candidate1.getEntity().getId()) return false;
+              // Skip if it is a relation
+              if (candidate1.getEntity().getType().equals(OSMType.RELATION)) return false;
               Geometry geomCandidate = candidate1.getGeometryUnclipped();
-              return geomCandidate.contains(geom);
+              // Check if geometry is a closed line string or polygon. If yes, convert it to Polygon.
+              if (geomCandidate instanceof Polygon || (geomCandidate instanceof LineString & ((LineString) geomCandidate).isClosed()) ) {
+                Polygon geomCandidatePoly = new GeometryFactory().createPolygon(geomCandidate.getCoordinates());
+                return geomCandidatePoly.contains(geom);
+              } else {
+                return geomCandidate.contains(geom);
+              }
             } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
@@ -236,7 +262,13 @@ public class SpatialRelations {
             try {
               OSMContribution candidate1 = (OSMContribution) candidate;
               Geometry geomCandidate = candidate1.getGeometryUnclippedAfter();
-              return geomCandidate.contains(geom);
+              // Check if geometry is a closed line string or polygon. If yes, convert it to Polygon.
+              if (geomCandidate instanceof Polygon || (geomCandidate instanceof LineString & ((LineString) geomCandidate).isClosed()) ) {
+                Polygon geomCandidatePoly = new GeometryFactory().createPolygon(geomCandidate.getCoordinates());
+                return geomCandidatePoly.contains(geom);
+              } else {
+                return geomCandidate.contains(geom);
+              }
             } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
