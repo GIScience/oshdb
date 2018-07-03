@@ -70,10 +70,7 @@ public class StatsCollector {
     default:
       entity = unknown;
     }
-
-    entity[0]++;
-    entity[1] += osh.getVersions().size();
-
+    
     int highesVersion = Integer.MIN_VALUE;
     boolean alive = false;
 
