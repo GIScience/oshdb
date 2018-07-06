@@ -29,7 +29,7 @@ public class SortedLong2LongMap implements LongToLongMap {
   public static class Sink implements Closeable {
     private final int pageSizePower;
     private final int pageSize;
-    private final int pageOffsetMask;
+    private final long pageOffsetMask;
 
     private ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
     private RoaringBitmap bitmap = new RoaringBitmap();
@@ -64,7 +64,7 @@ public class SortedLong2LongMap implements LongToLongMap {
         throw new IllegalArgumentException(
             "id must in strict acsending order lastId was " + lastId + " new id is " + id);
 
-      final int pageNumber = (int) (id >>> pageSizePower);
+      final int pageNumber = (int) (id / pageOffsetMask);
       final int pageOffset = (int) (id & pageOffsetMask);
 
       if (pageNumber != lastPageNumber) {
@@ -158,7 +158,7 @@ public class SortedLong2LongMap implements LongToLongMap {
       LongIterator itr = ids.iterator();
       while (itr.hasNext()) {
         long id = itr.nextLong();
-        int pageNumber = (int) (id >>> pageSizePower);
+        int pageNumber = (int) (id / pageOffsetMask);
         int pageOffset = (int) (id & pageOffsetMask);
         if (currentPageNumber != pageNumber) {
           page = cache.get(pageNumber);
@@ -180,7 +180,7 @@ public class SortedLong2LongMap implements LongToLongMap {
     if (id < 0)
       throw new IllegalArgumentException("id must greater than 0 but is " + id);
 
-    final int pageNumber = (int) (id >>> pageSizePower);
+    final int pageNumber = (int) (id / pageOffsetMask);
     final int pageOffset = (int) (id & pageOffsetMask);
 
     try {
