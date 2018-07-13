@@ -1,6 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.tagtranslator;
 
-public class OSMTag {
+public class OSMTag implements OSMTagInterface {
   private String key;
   private String value;
 

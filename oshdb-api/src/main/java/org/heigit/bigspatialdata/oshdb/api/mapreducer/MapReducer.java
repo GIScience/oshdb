@@ -7,6 +7,7 @@ import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundExc
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import com.vividsolutions.jts.geom.*;
@@ -379,13 +380,27 @@ public abstract class MapReducer<X> implements
 
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value).
+   * (with an arbitrary value), or this tag key and value.
    *
-   * @param key the tag key to filter the osm entities for
+   * @param tag the tag (key, or key and value) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmTag(OSMTagKey key) {
+  public MapReducer<X> osmTag(OSMTagInterface tag) {
+    if (tag instanceof OSMTag) return this._osmTag((OSMTag) tag);
+    if (tag instanceof OSMTagKey) return this._osmTag((OSMTagKey) tag);
+    throw new UnsupportedOperationException("Unknown object implementing OSMTagInterface.");
+  }
+
+    /**
+     * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
+     * (with an arbitrary value).
+     *
+     * @param key the tag key to filter the osm entities for
+     * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+     */
+  @Contract(pure = true)
+  private MapReducer<X> _osmTag(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
     OSHDBTagKey keyId = this._getTagTranslator().getOSHDBTagKeyOf(key);
     if (!keyId.isPresentInKeytables()) {
@@ -403,7 +418,7 @@ public abstract class MapReducer<X> implements
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
    * and value.
    *
-   * @param key the tag key to filter the osm entities for
+   * @param key the tag to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
@@ -420,7 +435,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmTag(OSMTag tag) {
+  private MapReducer<X> _osmTag(OSMTag tag) {
     MapReducer<X> ret = this.copy();
     OSHDBTag keyValueId = this._getTagTranslator().getOSHDBTagOf(tag);
     if (!keyValueId.isPresentInKeytables()) {
