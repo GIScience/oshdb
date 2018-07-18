@@ -49,7 +49,7 @@ public static void main(...) throws [...] {
   [...]
 
   // by entity-definition
-  mapReducer = mapReducer.where(new EntityFilter());
+  mapReducer = mapReducer.osmEntityFilter(new EntityFilter());
 }
 
 private static class EntityFilter implements SerializablePredicate<OSMEntity> {
