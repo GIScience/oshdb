@@ -49,12 +49,15 @@ public static void main(...) throws [...] {
   [...]
 
   // by entity-definition
-  mapReducer = mapReducer.osmEntityFilter(osmEntity -> {
-          // filter objects for your needs
-          return osmEntity.getVersion() > 2
-          };
+  mapReducer = mapReducer.where(new EntityFilter());
 }
 
+private static class EntityFilter implements SerializablePredicate<OSMEntity> {
+
+  public boolean test(OSMEntity t) {
+    return t.getVersion() > 2;
+  }
+}
 
 ```
 
