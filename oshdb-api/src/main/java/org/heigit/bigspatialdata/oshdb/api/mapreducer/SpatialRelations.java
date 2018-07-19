@@ -4,19 +4,10 @@ import static org.heigit.bigspatialdata.oshdb.util.geometry.Geo.isWithinDistance
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.TopologyException;
-import com.vividsolutions.jts.index.strtree.STRtree;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
@@ -53,7 +44,7 @@ public class SpatialRelations {
 
     // Get coordinates of bounding box
     Envelope envelope = geom.getEnvelopeInternal();
-    // Multiply by 1.2 to avoid excluding
+    // Multiply by 1.2 to avoid excluding possible candidates
     double minLon = envelope.getMinX() - distanceInDegreeLongitude * 1.2;
     double maxLon = envelope.getMaxX() + distanceInDegreeLongitude * 1.2;
     double minLat = envelope.getMinY() - (distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
@@ -211,74 +202,6 @@ public class SpatialRelations {
         });
     // Apply mapReducer given by user
     return mapReduce.apply((MapReducer<X>) subMapReducer);
-}
-
-
-  /**
-   * Checks if elements are located inside another object
-   * @param snapshot
-   * @param outerElements
-   * @param <Y>
-   * @return
-   */
-  public static <Y extends OSHDBMapReducible> Pair<OSMEntitySnapshot, List<Y>> inside(
-      OSMEntitySnapshot snapshot,
-      STRtree outerElements) {
-    Geometry geom = snapshot.getGeometryUnclipped();
-
-    List<Y> candidates = outerElements.query(snapshot.getGeometryUnclipped().getEnvelopeInternal());
-    List<Y> result = new ArrayList<>();
-    // No candidates are found return null
-    if (candidates.size() == 0) return Pair.of(snapshot, result);
-    // Check which of the candidates contain snapshot
-    if (candidates.get(0).getClass() == OSMEntitySnapshot.class) {
-      result = candidates
-          .stream()
-          .filter(candidate -> {
-            try {
-              OSMEntitySnapshot candidate1 = (OSMEntitySnapshot) candidate;
-              // Skip if it is snapshot belongs to the same entity
-              if (snapshot.getEntity().getId() == candidate1.getEntity().getId()) return false;
-              // Skip if it is a relation
-              if (candidate1.getEntity().getType().equals(OSMType.RELATION)) return false;
-              Geometry geomCandidate = candidate1.getGeometryUnclipped();
-              // Check if geometry is a closed line string or polygon. If yes, convert it to Polygon.
-              if (geomCandidate instanceof Polygon || (geomCandidate instanceof LineString & ((LineString) geomCandidate).isClosed()) ) {
-                Polygon geomCandidatePoly = new GeometryFactory().createPolygon(geomCandidate.getCoordinates());
-                return geomCandidatePoly.contains(geom);
-              } else {
-                return geomCandidate.contains(geom);
-              }
-            } catch (TopologyException | IllegalArgumentException e) {
-              System.out.println(e);
-              return false;
-            }
-          })
-          .collect(Collectors.toList());
-    } else if (candidates.get(0).getClass() == OSMContribution.class) {
-      result = candidates
-          .stream()
-          .filter(candidate -> {
-            try {
-              OSMContribution candidate1 = (OSMContribution) candidate;
-              Geometry geomCandidate = candidate1.getGeometryUnclippedAfter();
-              // Check if geometry is a closed line string or polygon. If yes, convert it to Polygon.
-              if (geomCandidate instanceof Polygon || (geomCandidate instanceof LineString & ((LineString) geomCandidate).isClosed()) ) {
-                Polygon geomCandidatePoly = new GeometryFactory().createPolygon(geomCandidate.getCoordinates());
-                return geomCandidatePoly.contains(geom);
-              } else {
-                return geomCandidate.contains(geom);
-              }
-            } catch (TopologyException | IllegalArgumentException e) {
-              System.out.println(e);
-              return false;
-            }
-          })
-          .collect(Collectors.toList());
-    } else {
-      throw new UnsupportedOperationException("Method 'inside' is not implemented for this class.");
-    }
-    return Pair.of(snapshot, result);
   }
 
 }

@@ -167,18 +167,20 @@ public class Geo {
 
 	/**
 	 * Checks whether a geometry lies within a distance from another geometry
+	 * The algorithm searches for the two closest points and calcualtes the distance between them.
 	 * @param geom1 Geometry 1
 	 * @param geom2 Geometry 2
 	 * @param distanceInMeter distance in meters within which that two geometries should lie
 	 * @return True, if the geometry is within the distance of the other geometry, otherwise false
 	 */
+	//todo: check what is returned, if one polygon contains the other. It should be 0 but it will
+	// probabily return something else
 	public static boolean isWithinDistance(Geometry geom1, Geometry geom2, double distanceInMeter) {
-
 		// Find nearest points of the geometries
 		Coordinate[] nearestPoints = DistanceOp.nearestPoints(geom1, geom2);
 		// Calculate distance between nearest points in meters
 		double dist = Geo.distanceBetweenCoordinatesHaversine(nearestPoints[0].y, nearestPoints[0].x, nearestPoints[1].y, nearestPoints[1].x);
 		return dist <= distanceInMeter;
-
 	}
+
 }

@@ -8,6 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelations.GEOMETRY_OPTIONS;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -15,6 +16,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.jetbrains.annotations.Contract;
@@ -575,6 +577,342 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       f.test(data.getValue())
     ));
   }
+
+  // -----------------------------------------------------------------------------------------------
+  // Neighbourhood
+  // Functions for querying and filtering objects based on other objects in the neighbourhood
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Filter by neighbouring snapshots or contributions with call back function
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @param <Y> Return type of mapReduce function
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <S, Y> MapAggregator<U, Pair<X, Y>> neighbourhood(
+      Double distanceInMeter,
+      SerializableFunctionWithException<MapReducer<S>, Y> mapReduce,
+      boolean queryContributions,
+      ContributionType contributionType ) {
+    return this.copyTransform(this._mapReducer.map(inData -> {
+            try {
+              Pair<U, Pair<X, Y>> outData = (Pair<U, Pair<X, Y>>)inData;
+              if (this._mapReducer._forClass == OSMEntitySnapshot.class) {
+                outData.setValue(Pair.of(inData.getValue(), SpatialRelations.neighbourhood(
+                    this._mapReducer._oshdbForTags,
+                    this._mapReducer._tstamps,
+                    distanceInMeter,
+                    mapReduce,
+                    (OSMEntitySnapshot) inData.getValue(),
+                    queryContributions,
+                    contributionType)));
+                return outData;
+              } else if (this._mapReducer._forClass == OSMContribution.class) {
+                outData.setValue(Pair.of(inData.getValue(), SpatialRelations.neighbourhood(
+                    this._mapReducer._oshdbForTags,
+                    distanceInMeter,
+                    mapReduce,
+                    (OSMContribution) inData.getValue(),
+                    GEOMETRY_OPTIONS.BOTH)));
+                return outData;
+              } else {
+                throw new UnsupportedOperationException("Operation for mapReducer of this class is not implemented.");
+              }
+            } catch (Exception e) {
+              Pair<U, Pair<X, Y>> outData = (Pair<U, Pair<X, Y>>)inData;
+              System.out.println(e.getMessage());
+              outData.setValue(Pair.of(inData.getValue(),  null));
+              return outData;
+            }
+    }));
+  }
+
+  /**
+   * Get objects (snapshots or contributions) in the neighbourhood filtered by key and value
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param value OSM tag value for filtering neighbouring objects
+   * @param queryContributions If true, nearby OSMCOntributions are queried. If false, OSMEntitySnapshots are queried
+   * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <S> MapAggregator<U, Pair<X, List<S>>> neighbourhood(
+      Double distanceInMeter,
+      String key,
+      String value,
+      boolean queryContributions,
+      ContributionType contributionType) {
+    return this.neighbourhood(
+        distanceInMeter,
+        (SerializableFunctionWithException<MapReducer<S>, List<S>>) mapReduce -> mapReduce.osmTag(key, value).collect(),
+        queryContributions,
+        contributionType);
+  }
+
+  /**
+   * Get objects (snapshots or contributions) in the neighbourhood filtered by key
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param queryContributions If true, nearby OSMContributions are queried. If false, OSMEntitySnapshots are queried
+   * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <S> MapAggregator<U, Pair<X, List<S>>> neighbourhood(
+      Double distanceInMeter,
+      String key,
+      boolean queryContributions,
+      ContributionType contributionType) {
+    return this.neighbourhood(
+        distanceInMeter,
+        (SerializableFunctionWithException<MapReducer<S>, List<S>>) mapReduce -> mapReduce.osmTag(key).collect(),
+        queryContributions,
+        contributionType);
+  }
+
+  /**
+   * Get snapshots in the neighbourhood filtered by call back function
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param mapReduce MapReducer function with search parameters for neighbourhoood filter
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @param <Y> Return type of mapReduce function
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <S, Y> MapAggregator<U, Pair<X, Y>> neighbourhood(
+      Double distanceInMeter,
+      SerializableFunctionWithException<MapReducer<S>, Y> mapReduce) {
+    return this.neighbourhood(
+        distanceInMeter,
+        mapReduce,
+        false,
+        null);
+  }
+
+  /**
+   * Get objects (snapshots or contributions) in the neighbourhood without filtering
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param queryContributions If true, nearby OSMCOntributions are queried. If false, OSMEntitySnapshots are queried
+   * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <S> MapAggregator<U, Pair<X, List<S>>> neighbourhood(
+      Double distanceInMeter,
+      boolean queryContributions,
+      ContributionType contributionType) {
+    return this.neighbourhood(
+        distanceInMeter,
+        (SerializableFunctionWithException<MapReducer<S>, List<S>>) null,
+        queryContributions,
+        contributionType);
+  }
+
+  /**
+   * Get snapshots in the neighbourhood filtered by key and value
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param value OSM tag value for filtering neighbouring objects
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <S> MapAggregator<U, Pair<X, List<S>>> neighbourhood(
+      Double distanceInMeter,
+      String key,
+      String value) {
+    return this.neighbourhood(
+        distanceInMeter,
+        (SerializableFunctionWithException<MapReducer<S>, List<S>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get snapshots in the neighbourhood filtered by key
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <S> MapAggregator<U, Pair<X, List<S>>> neighbourhood(
+      Double distanceInMeter,
+      String key) {
+    return this.neighbourhood(
+        distanceInMeter,
+        (SerializableFunctionWithException<MapReducer<S>, List<S>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get snapshots in the neighbourhood without filtering
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <S> MapAggregator<U, Pair<X, List<S>>> neighbourhood(
+      Double distanceInMeter) {
+    return this.neighbourhood(
+        distanceInMeter,
+        (SerializableFunctionWithException<MapReducer<S>, List<S>>) null);
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // Neighbouring
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Filter by neighbouring objects using call back function
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
+   * @param <S> Class of neighbouring objects (OSMEntitySnapshot or OSMContribution)
+   * @param <Y> Return type of mapReduce function
+   * @return a modified copy of this MapAggregator
+   **/
+  @Contract(pure = true)
+  public <S,Y extends Boolean> MapAggregator<U, X> neighbouring(Double distanceInMeter,
+      SerializableFunctionWithException<MapReducer<S>, Y> mapReduce,
+      boolean queryContributions,
+      ContributionType contributionType) {
+    if (this._mapReducer._forClass == OSMEntitySnapshot.class) {
+      MapAggregator<U, Pair<X, Y>> pairMapReducer = this.neighbourhood(
+          distanceInMeter,
+          mapReduce,
+          queryContributions,
+          contributionType);
+      return pairMapReducer.filter(p -> p.getRight()).map(p -> p.getKey());
+    } else if (this._mapReducer._forClass == OSMContribution.class) {
+      MapAggregator<U, Pair<X, Y>> pairMapReducer = this.neighbourhood(
+          distanceInMeter,
+          mapReduce,
+          false,
+          null);
+      return pairMapReducer.filter(p -> p.getRight()).map(p -> p.getKey());
+    } else {
+      throw new UnsupportedOperationException(
+          "Operation for mapReducer of this class is not implemented.");
+    }
+  }
+
+  /**
+   * Filter by neighbouring contributions with key and value
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM key for filtering neighbouring objects
+   * @param value OSM value for filtering neighbouring objects
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U,X> neighbouring(
+      Double distanceInMeter,
+      String key,
+      String value,
+      boolean queryContributions,
+      ContributionType contributionType) {
+    return this.neighbouring(
+        distanceInMeter,
+        mapReducer -> mapReducer.osmTag(key, value).count() > 0,
+        queryContributions,
+        contributionType);
+  }
+
+  /**
+   * Filter by neighbouring contributions with key
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> neighbouring(
+      Double distanceInMeter,
+      String key,
+      boolean queryContributions,
+      ContributionType contributionType) {
+    return this.neighbouring(
+        distanceInMeter,
+        mapReducer -> mapReducer.osmTag(key).count() > 0,
+        queryContributions,
+        contributionType);
+  }
+
+  /**
+   * Filter by neighbouring snapshots with key and value
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param value OSM tag value for filtering neighbouring objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U,X> neighbouring(
+      Double distanceInMeter,
+      String key,
+      String value) {
+    return this.neighbouring(
+        distanceInMeter,
+        mapReducer -> mapReducer.osmTag(key, value).count() > 0);
+  }
+
+
+  /**
+   * Filter by neighbouring snapshots with key
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param key OSM tag key for filtering neighbouring objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> neighbouring(Double distanceInMeter, String key) {
+    return this.neighbouring(
+        distanceInMeter,
+        mapReducer -> mapReducer.osmTag(key).count() > 0);
+  }
+
+
+  /**
+   * Filter by neighbouring snapshots with call back function
+   *
+   * @param distanceInMeter radius that defines neighbourhood in meters
+   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <S,Y extends Boolean> MapAggregator<U, X> neighbouring(
+      Double distanceInMeter,
+      SerializableFunctionWithException<MapReducer<S>, Y> mapReduce) {
+    return this.neighbouring(
+        distanceInMeter,
+        mapReduce,
+        false,
+        null);
+  }
+
+
+
 
   // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
