@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.regex.Pattern;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 
 /**
@@ -90,14 +91,6 @@ interface MapReducerSettings<M> {
   }
 
   /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   */
-  M osmTag(OSMTagKey key);
-
-  /**
    * @deprecated replaced by {@link #osmTag(OSMTagKey)}
    */
   @Deprecated
@@ -122,12 +115,13 @@ interface MapReducerSettings<M> {
   }
 
   /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
+   * (with an arbitrary value), or this tag key and value.
    *
-   * @param tag the tag (key-value pair) to filter the osm entities for
+   * @param tag the tag (key, or key and value) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M osmTag(OSMTag tag);
+  M osmTag(OSMTagInterface tag);
 
   /**
    * @deprecated replaced by {@link #osmTag(OSMTag)}

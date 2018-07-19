@@ -18,6 +18,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.jetbrains.annotations.Contract;
 
@@ -248,15 +249,17 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     return this.copyTransform(this._mapReducer.osmEntityFilter(f));
   }
 
+
   /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key (with an arbitrary value).
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
+   * (with an arbitrary value), or this tag key and value.
    *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @param tag the tag (key, or key and value) to filter the osm entities for
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(OSMTagKey key) {
-    return this.copyTransform(this._mapReducer.osmTag(key));
+  public MapAggregator<U, X> osmTag(OSMTagInterface tag) {
+    return this.copyTransform(this._mapReducer.osmTag(tag));
   }
 
   /**
@@ -268,17 +271,6 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key) {
     return this.copyTransform(this._mapReducer.osmTag(key));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key and value.
-   *
-   * @param tag the tag (key-value pair) to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   */
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(OSMTag tag) {
-    return this.copyTransform(this._mapReducer.osmTag(tag));
   }
 
   /**
