@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
@@ -19,14 +20,16 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 
-public class EgenhoferRelation {
+public class DE9IM {
 
   public enum relationType {
     EQUALS, OVERLAPS, DISJOINT, CONTAINS, COVEREDBY, COVERS, TOUCHES, INSIDE, UNKNOWN
   }
   private final STRtree candidateTree = new STRtree();
+  private OSHDBBoundingBox bbox;
 
-  public EgenhoferRelation(
+  // todo replace key and value with mapReduce function
+  public DE9IM(
       OSHDBJdbc oshdb,
       OSHDBBoundingBox bbox,
       OSHDBTimestampList tstamps,
@@ -53,7 +56,7 @@ public class EgenhoferRelation {
           .forEach(snapshot -> this.candidateTree
               .insert(snapshot.getGeometryUnclipped().getEnvelopeInternal(), snapshot));
     } else {
-      // Search for snapshots that might contain snapshot
+      // Search for contributions that might contain snapshot
       MapReducer<OSMContribution> mapReduceCandidates = OSMContributionView
           .on(oshdb)
           .keytables(oshdb)
@@ -67,8 +70,15 @@ public class EgenhoferRelation {
       }
       // Store all elements in str tree
         mapReduceCandidates.collect()
-          .forEach(contribution -> this.candidateTree
-              .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(), contribution));
+          .forEach(contribution -> {
+            if (!contribution.getContributionTypes().contains(ContributionType.DELETION)) {
+              candidateTree
+                  .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(), contribution);
+            } else {
+              candidateTree
+                  .insert(contribution.getGeometryUnclippedBefore().getEnvelopeInternal(), contribution);
+            }
+          });
     }
   }
 
@@ -100,7 +110,6 @@ public class EgenhoferRelation {
       // Get boundary and interior of both geometries
       Geometry boundary1 = geom1converted.getBoundary();
       Geometry boundary2 = geom2converted.getBoundary();
-
       if (geom1converted.equalsNorm(geom2converted)) {
         return relationType.EQUALS;
       } else if (geom1converted.touches(geom2converted)) {
@@ -122,14 +131,45 @@ public class EgenhoferRelation {
       } else {
         return relationType.UNKNOWN;
       }
+    } else if (geom1converted instanceof Polygon && geom2converted instanceof LineString) {
+      Geometry boundary1 = geom1converted.getBoundary();
+      if (geom1converted.touches(geom2converted)) {
+        return relationType.TOUCHES;
+      } else if (geom1converted.contains(geom2converted) & boundary1.touches(geom2converted)) {
+        return relationType.COVERS;
+      } else if (geom1converted.contains(geom2converted) & !boundary1.intersects(geom2converted)) {
+        return relationType.CONTAINS;
+      } else if (geom1converted.intersects(geom2converted)) {
+        return relationType.OVERLAPS;
+      } else if (geom1converted.disjoint(geom2converted)) {
+        return relationType.DISJOINT;
+      } else {
+        return relationType.UNKNOWN;
+      }
+    } else if (geom1converted instanceof Polygon && geom2converted instanceof Point) {
+      if (geom1converted.contains(geom2converted)) {
+        return relationType.CONTAINS;
+      } else {
+        return relationType.DISJOINT;
+      }
+    } else if (geom1converted instanceof LineString && geom2converted instanceof Polygon) {
+      /*
+      Geometry boundary2 = geom2converted.getBoundary();
 
-    } else if (geom1 instanceof Polygon && geom2converted instanceof LineString) {
+      if (geom1converted.within(geom2converted) & !geom1converted.intersects(boundary2)) {
+        return relationType.INSIDE;
+      } else if (geom1converted.intersects(geom2converted) & !geom1converted.intersects(boundary2)) {
+        return relationType.COVEREDBY;
+      } else if (geom1converted.intersects(geom2converted) & geom1converted.intersects(boundary2)) {
+        return relationType.OVERLAPS;
+      } else if (geom1converted.touches(geom2converted)) {
+        return relationType.TOUCHES;
+      } else if (!geom1converted.intersects(geom2converted) & !geom1converted.equalsNorm(geom2converted)) {
+        return relationType.DISJOINT;
+      }
+      */
       throw new UnsupportedOperationException("Not implemented yet.");
-    } else if (geom1 instanceof Polygon && geom2converted instanceof Point) {
-      throw new UnsupportedOperationException("Not implemented yet.");
-    } else if (geom1 instanceof LineString && geom2converted instanceof Polygon) {
-      throw new UnsupportedOperationException("Not implemented yet.");
-    } else if (geom1 instanceof LineString && geom2converted instanceof LineString) {
+    } else if (geom1converted instanceof LineString && geom2converted instanceof LineString) {
       if (geom1.equalsNorm(geom2converted)) {
         return relationType.EQUALS;
       } else if (geom1converted.contains(geom2converted) & !geom1converted.equalsNorm(geom2converted)) {
@@ -146,13 +186,35 @@ public class EgenhoferRelation {
         return relationType.UNKNOWN;
       }
     } else if (geom1converted instanceof LineString && geom2converted instanceof Point) {
-      throw new UnsupportedOperationException("Not implemented yet.");
+      if (geom1converted.contains(geom2converted)) {
+        return relationType.CONTAINS;
+      } else if (geom1converted.touches(geom2converted)) {
+        return relationType.TOUCHES;
+      } else if (!geom1converted.intersects(geom2converted)) {
+        return relationType.DISJOINT;
+      }
     } else if (geom1converted instanceof Point && geom2converted instanceof Polygon) {
-      throw new UnsupportedOperationException("Not implemented yet.");
+      if (geom1converted.within(geom2converted)) {
+        return relationType.INSIDE;
+      } else if (geom1converted.touches(geom2converted)) {
+        return relationType.TOUCHES;
+      } else if (geom1converted.disjoint(geom2converted)) {
+        return relationType.DISJOINT;
+      }
     } else if (geom1converted instanceof Point  && geom2converted instanceof LineString) {
-      throw new UnsupportedOperationException("Not implemented yet.");
+      if (geom1converted.within(geom2converted)) {
+        return relationType.INSIDE;
+      } else if (geom1converted.touches(geom2converted)) {
+        return relationType.TOUCHES;
+      } else if (geom1converted.disjoint(geom2converted)) {
+        return relationType.DISJOINT;
+      }
     } else if (geom1converted instanceof Point  && geom2converted instanceof Point ) {
-      throw new UnsupportedOperationException("Not implemented yet.");
+      if (geom1.equalsNorm(geom2converted)) {
+        return relationType.EQUALS;
+      } else {
+        return relationType.DISJOINT;
+      }
     } else {
       System.out.println("Unknown geometry type.");
     }
@@ -167,68 +229,97 @@ public class EgenhoferRelation {
    * @return
    */
   private <Y> Pair<OSMEntitySnapshot, List<Y>> filter(
-      OSMEntitySnapshot snapshot,
-      relationType relationType) {
+    OSMEntitySnapshot snapshot,
+    relationType relationType) {
 
-      // Get geometry of snapshot
-      Geometry geom = snapshot.getGeometryUnclipped();
-      List<Y> result = new ArrayList<>();
+    // Get geometry of snapshot
+    Geometry geom = snapshot.getGeometryUnclipped();
+    List<Y> result = new ArrayList<>();
 
-      // Get candidate objects in the neighbourhood of snapshot
-      List<Y> candidates = this.candidateTree.query(snapshot.getGeometryUnclipped().getEnvelopeInternal());
+    // Get candidate objects in the neighbourhood of snapshot
+    List<Y> candidates = this.candidateTree.query(snapshot.getGeometryUnclipped().getEnvelopeInternal());
 
-      // If no candidates are found, return empty list
-      if (candidates.size() == 0) return Pair.of(snapshot, result);
+    // If no candidates are found, return empty list
+    if (candidates.size() == 0) return Pair.of(snapshot, result);
 
-      // Check the spatial relation of each candidate to the snapshot
-      if (candidates.get(0).getClass() == OSMEntitySnapshot.class) {
-        result = candidates
-            .stream()
-            .filter(candidate -> {
-              try {
-                OSMEntitySnapshot candidateSnapshot = (OSMEntitySnapshot) candidate;
-                // Skip if this candidate snapshot belongs to the same entity
-                if (snapshot.getEntity().getId() == candidateSnapshot.getEntity().getId()) return false;
-                // Skip if it is a relation
-                if (candidateSnapshot.getEntity().getType().equals(OSMType.RELATION)) return false;
-                // Get geometry of candidate and filter based on relationType
-                Geometry candidateGeom = candidateSnapshot.getGeometryUnclipped();
-                return getRelation(geom, candidateGeom).equals(relationType);
-              } catch (TopologyException | IllegalArgumentException e) {
-                System.out.println(e);
-                return false;
-              }
-            })
-            .collect(Collectors.toList());
-      } else if (candidates.get(0).getClass() == OSMContribution.class) {
-        result = candidates
-            .stream()
-            .filter(candidate -> {
-              try {
-                OSMContribution candidateContribution = (OSMContribution) candidate;
-                // Skip if this candidate snapshot belongs to the same entity
-                if (snapshot.getEntity().getId() == candidateContribution.getEntityAfter().getId()) return false;
-                // Skip if it is a relation
-                if (candidateContribution.getEntityAfter().getType().equals(OSMType.RELATION)) return false;
-                // Get geometry of candidate and filter based on relationType
-                // todo add option to choose whether geometry before or after should be used as reference
-                Geometry candidateGeom;
-                if (!candidateContribution.getContributionTypes().contains(ContributionType.DELETION)) {
-                  candidateGeom = candidateContribution.getGeometryUnclippedAfter();
-                } else {
-                  candidateGeom = candidateContribution.getGeometryUnclippedBefore();
-                }
-                return getRelation(geom, candidateGeom).equals(relationType);
-              } catch (TopologyException | IllegalArgumentException e) {
-                System.out.println(e);
-                return false;
-              }
-            })
-            .collect(Collectors.toList());
-      } else {
-        throw new UnsupportedOperationException("Method is not implemented for this class.");
+    // Check the spatial relation of each candidate to the snapshot
+    if (candidates.get(0).getClass() == OSMEntitySnapshot.class) {
+      result = candidates
+          .stream()
+          .filter(candidate -> {
+            try {
+              OSMEntitySnapshot candidateSnapshot = (OSMEntitySnapshot) candidate;
+              // Skip if this candidate snapshot belongs to the same entity
+              if (snapshot.getEntity().getId() == candidateSnapshot.getEntity().getId()) return false;
+              // Skip if it is a relation
+              if (candidateSnapshot.getEntity().getType().equals(OSMType.RELATION)) return false;
+              // Get geometry of candidate and filter based on relationType
+              Geometry candidateGeom = candidateSnapshot.getGeometryUnclipped();
+              return getRelation(geom, candidateGeom).equals(relationType);
+            } catch (TopologyException | IllegalArgumentException e) {
+              System.out.println(e);
+              return false;
+            }
+          })
+          .collect(Collectors.toList());
+
+      // If disjoint, add all objects that are outside the bounding box of snapshot
+      if (relationType.equals(DE9IM.relationType.DISJOINT)) {
+        STRtree disjointObjects = new STRtree();
+        candidates.stream().forEach(x -> disjointObjects.remove(
+                ((OSMEntitySnapshot) x).getGeometryUnclipped().getEnvelopeInternal(), x));
+        List<Y> disjointObjectList = this.candidateTree.query(new Envelope(this.bbox.getMinLon(),
+            this.bbox.getMaxLon(), this.bbox.getMinLat(), this.bbox.getMaxLat()));
+        result.addAll(disjointObjectList);
+        return Pair.of(snapshot, result);
       }
-      return Pair.of(snapshot, result);
+
+    } else if (candidates.get(0).getClass() == OSMContribution.class) {
+      result = candidates
+          .stream()
+          .filter(candidate -> {
+            try {
+              OSMContribution candidateContribution = (OSMContribution) candidate;
+              // Skip if this candidate snapshot belongs to the same entity
+              if (snapshot.getEntity().getId() == candidateContribution.getEntityAfter().getId()) return false;
+              // Skip if it is a relation
+              if (candidateContribution.getEntityAfter().getType().equals(OSMType.RELATION)) return false;
+              // Get geometry of candidate and filter based on relationType
+              // todo add option to choose whether geometry before or after should be used as reference
+              Geometry candidateGeom;
+              if (!candidateContribution.getContributionTypes().contains(ContributionType.DELETION)) {
+                candidateGeom = candidateContribution.getGeometryUnclippedAfter();
+              } else {
+                candidateGeom = candidateContribution.getGeometryUnclippedBefore();
+              }
+              return getRelation(geom, candidateGeom).equals(relationType);
+            } catch (TopologyException | IllegalArgumentException e) {
+              System.out.println(e);
+              return false;
+            }
+          })
+          .collect(Collectors.toList());
+
+      // If disjoint, add all objects that are outside the bounding box of snapshot
+      if (relationType.equals(DE9IM.relationType.DISJOINT)) {
+        STRtree disjointObjects = this.candidateTree;
+        candidates.stream().forEach(contribution -> {
+          if (!((OSMContribution) contribution).getContributionTypes().contains(ContributionType.DELETION)) {
+            disjointObjects.remove(((OSMContribution) contribution).getGeometryUnclippedAfter().getEnvelopeInternal(), contribution);
+          } else {
+            disjointObjects.remove(((OSMContribution) contribution).getGeometryUnclippedBefore().getEnvelopeInternal(), contribution);
+          }
+        });
+        List<Y> disjointObjectList = this.candidateTree.query(new Envelope(this.bbox.getMinLon(),
+            this.bbox.getMaxLon(), this.bbox.getMinLat(), this.bbox.getMaxLat()));
+        result.addAll(disjointObjectList);
+        return Pair.of(snapshot, result);
+      }
+
+    } else {
+      throw new UnsupportedOperationException("Method is not implemented for this class.");
+    }
+    return Pair.of(snapshot, result);
   }
 
   /**
@@ -237,7 +328,7 @@ public class EgenhoferRelation {
    * @return
    */
   public <Y> Pair<OSMEntitySnapshot, List<Y>> overlaps(OSMEntitySnapshot snapshot) {
-    return this.filter( snapshot, relationType.OVERLAPS);
+    return this.filter(snapshot, relationType.OVERLAPS);
   }
 
   /**
