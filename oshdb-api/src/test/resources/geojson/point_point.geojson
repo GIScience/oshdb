@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1, "relation": "disjoint" }, "geometry": { "type": "Point", "coordinates": [ 8.624077415082525, 49.389761455319722 ] } },
+{ "type": "Feature", "properties": { "id": 2, "relation": "equals" }, "geometry": { "type": "Point", "coordinates": [ 8.615581980825977, 49.38959428079076 ] } }
+]
+}

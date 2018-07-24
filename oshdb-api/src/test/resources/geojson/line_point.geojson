@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 3, "relation": "disjoint" }, "geometry": { "type": "Point", "coordinates": [ 8.621246900162873, 49.3898570862467 ] } },
+{ "type": "Feature", "properties": { "id": 2, "relation": "contains" }, "geometry": { "type": "Point", "coordinates": [ 8.625428643563385, 49.390144181637297 ] } },
+{ "type": "Feature", "properties": { "id": 3, "relation": "touches" }, "geometry": { "type": "Point", "coordinates": [ 8.633832996925877, 49.389948275964507 ] } }
+]
+}

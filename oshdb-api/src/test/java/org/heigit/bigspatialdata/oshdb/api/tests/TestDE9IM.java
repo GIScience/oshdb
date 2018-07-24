@@ -42,15 +42,14 @@ public class TestDE9IM {
 
   @Test
   public void testPolygonVsPolygon() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/polygon_polygon.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/polygon_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/polygon_polygon.geojson";
+    String filePathCentral = "./src/test/resources/geojson/polygon_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
     Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
 
     for (Feature feat : features) {
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relationType relation = DE9IM.getRelation(geomCentral, geom2);
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
@@ -59,33 +58,31 @@ public class TestDE9IM {
 
   @Test
   public void testPolygonVsLine() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/polygon_line.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/polygon_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/polygon_line.geojson";
+    String filePathCentral = "./src/test/resources/geojson/polygon_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
     Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
 
     for (Feature feat : features) {
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relationType relation = DE9IM.getRelation(geomCentral, geom2);
       //assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
-      System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
+      //System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
     }
   }
 
   @Test
   public void testPolygonVsPoint() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/polygon_point.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/polygon_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/polygon_point.geojson";
+    String filePathCentral = "./src/test/resources/geojson/polygon_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
     Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
 
     for (Feature feat : features) {
-      System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relationType relation = DE9IM.getRelation(geomCentral, geom2);
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
@@ -115,8 +112,8 @@ public class TestDE9IM {
 
   @Test
   public void testLineVsLine() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/line_line.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/line_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/line_line.geojson";
+    String filePathCentral = "./src/test/resources/geojson/line_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
@@ -133,8 +130,8 @@ public class TestDE9IM {
   // vertices of a line
   @Test
   public void testLineVsPoint() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/line_point.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/line_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/line_point.geojson";
+    String filePathCentral = "./src/test/resources/geojson/line_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
@@ -149,15 +146,14 @@ public class TestDE9IM {
 
   @Test
   public void testPointVsPolygon() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/point_polygon.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/point_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/point_polygon.geojson";
+    String filePathCentral = "./src/test/resources/geojson/point_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
     Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
 
     for (Feature feat : features) {
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relationType relation = DE9IM.getRelation(geomCentral, geom2);
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
@@ -166,15 +162,14 @@ public class TestDE9IM {
 
   @Test
   public void testPointVsline() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/point_line.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/point_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/point_line.geojson";
+    String filePathCentral = "./src/test/resources/geojson/point_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
     Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
 
     for (Feature feat : features) {
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relationType relation = DE9IM.getRelation(geomCentral, geom2);
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
@@ -183,15 +178,14 @@ public class TestDE9IM {
 
   @Test
   public void testPointVsPoint() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/point_point.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/point_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/point_point.geojson";
+    String filePathCentral = "./src/test/resources/geojson/point_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
     Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
 
     for (Feature feat : features) {
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relationType relation = DE9IM.getRelation(geomCentral, geom2);
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());

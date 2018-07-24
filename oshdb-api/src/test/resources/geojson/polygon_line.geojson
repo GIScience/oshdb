@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 0, "relation": "overlaps" }, "geometry": { "type": "LineString", "coordinates": [ [ 8.625350281294271, 49.393474578074645 ], [ 8.625428643563385, 49.390144181637297 ], [ 8.629405528720927, 49.38859652682229 ], [ 8.633832996925877, 49.389948275964507 ] ] } },
+{ "type": "Feature", "properties": { "id": 1, "relation": "contains" }, "geometry": { "type": "LineString", "coordinates": [ [ 8.62868176609647, 49.391646608846358 ], [ 8.626704328095615, 49.387691732844644 ] ] } },
+{ "type": "Feature", "properties": { "id": 2, "relation": "disjoint" }, "geometry": { "type": "LineString", "coordinates": [ [ 8.629033912589774, 49.394355428025612 ], [ 8.635372549469228, 49.394517957176369 ], [ 8.636428988949138, 49.392675960134476 ] ] } },
+{ "type": "Feature", "properties": { "id": 1, "relation": "covers" }, "geometry": { "type": "LineString", "coordinates": [ [ 8.62837363573518, 49.388326981941397 ], [ 8.628603445641668, 49.387663029789053 ], [ 8.627285217032085, 49.38711637756618 ] ] } },
+{ "type": "Feature", "properties": { "id": 3, "relation": "touches" }, "geometry": { "type": "LineString", "coordinates": [ [ 8.622664260035956, 49.386167667300917 ], [ 8.624777887982841, 49.386442149025051 ], [ 8.624058764439477, 49.38710593139426 ] ] } }
+]
+}
