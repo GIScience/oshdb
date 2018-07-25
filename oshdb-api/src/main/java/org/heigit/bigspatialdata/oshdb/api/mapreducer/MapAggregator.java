@@ -17,6 +17,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
@@ -568,6 +569,17 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     return this.copyTransform(this._mapReducer.filter(data ->
       f.test(data.getValue())
     ));
+  }
+
+  /**
+   * Adds a custom arbitrary filter that gets executed in the current transformation chain.
+   *
+   * @param tagInterpreter
+   * @return a modified copy of this object (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapAggregator<U, X> tagInterpreter(TagInterpreter tagInterpreter) {
+    return this.copyTransform(this._mapReducer.tagInterpreter(tagInterpreter));
   }
 
   // -----------------------------------------------------------------------------------------------
