@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
@@ -87,6 +88,17 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   private <V extends Comparable<V>> MapAggregator<V, X> copyTransformKey(MapReducer<Pair<V, X>> mapReducer) {
     //noinspection unchecked – we do want to convert the mapAggregator to a different key type "V"
     return new MapAggregator<V, X>((MapAggregator<V, ?>) this, mapReducer);
+  }
+
+  /**
+   * Gets the tagInterpreter
+   *
+   * @return tagInterpreter the tagInterpreter object
+   */
+  @SuppressWarnings("unused")
+  @Contract(pure = true)
+  public TagInterpreter getTagInterpreter() {
+    return this._mapReducer.getTagInterpreter();
   }
 
   // -----------------------------------------------------------------------------------------------

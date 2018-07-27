@@ -192,6 +192,17 @@ public abstract class MapReducer<X> implements
     return ret;
   }
 
+  /**
+   * Gets the tagInterpreter
+   *
+   * @return tagInterpreter the tagInterpreter object
+   */
+  @SuppressWarnings("unused")
+  @Contract(pure = true)
+  public TagInterpreter getTagInterpreter() {
+    return this._tagInterpreter;
+  }
+
   // -----------------------------------------------------------------------------------------------
   // Filtering methods
   // -----------------------------------------------------------------------------------------------
