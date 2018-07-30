@@ -92,6 +92,17 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     return new MapAggregator<V, X>((MapAggregator<V, ?>) this, mapReducer);
   }
 
+  /**
+   * Gets the tagInterpreter
+   *
+   * @return tagInterpreter the tagInterpreter object
+   */
+  @SuppressWarnings("unused")
+  @Contract(pure = true)
+  public TagInterpreter getTagInterpreter() {
+    return this._mapReducer.getTagInterpreter();
+  }
+
   // -----------------------------------------------------------------------------------------------
   // MapAggregator specific methods
   // -----------------------------------------------------------------------------------------------
