@@ -595,6 +595,19 @@ public abstract class MapReducer<X> implements
   }
 
   /**
+   * Set an arbitrary `map` transformation function.
+   *
+   * @param mapper1 function that will be applied to each data entry (osm entity snapshot or
+   *        contribution)
+   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
+   * @return a modified copy of this MapReducer object operating on the transformed type (&lt;R&gt;)
+   */
+  @Contract(pure = true)
+  public <R, S> MapReducer<Pair<R, S>> mapPair(SerializableFunction<X, R> mapper1, SerializableFunction<X, S> mapper2) {
+    return this.map(x -> Pair.of(mapper1.apply(x), mapper2.apply(x)));
+  }
+
+  /**
    * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number
    * of results per input data entry. The results of this function will be "flattened", meaning that
    * they can be for example transformed again by setting additional `map` functions.
