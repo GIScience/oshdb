@@ -177,6 +177,24 @@ public abstract class MapReducer<X> implements
   }
 
   /**
+   * Sets the tagInterpreter to use in the analysis. The tagInterpreter is used internally to
+   * determine the geometry type of osm entities (e.g. an osm way can become either a LineString or
+   * a Polygon, depending on its tags). Normally, this is generated automatically for the user. But
+   * for example, if one doesn't want to use the DefaultTagInterpreter, it is possible to use this
+   * function to supply their own tagInterpreter.
+   *
+   * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  @SuppressWarnings("unused")
+  @Contract(pure = true)
+  public MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter) {
+    MapReducer<X> ret = this.copy();
+    ret._tagInterpreter = tagInterpreter;
+    return ret;
+  }
+
+  /**
    * Gets the tagInterpreter
    *
    * @return tagInterpreter the tagInterpreter object
