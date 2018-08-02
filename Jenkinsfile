@@ -114,7 +114,8 @@ pipeline {
         }
       }     
     }
-    
+
+    /*
     stage ('Reports and Statistics'){
       steps {
         script{
@@ -150,7 +151,7 @@ pipeline {
         }
       }  
     }
-    
+    */
 
     
     stage ('Encourage') {
