@@ -89,8 +89,7 @@ public class TestDE9IM {
     }
   }
 
-  // todo: coveredby does not work
-  /*
+  // todo: FIX TEST !!!! coveredby does not work
   @Test
   public void testLineVsPolygon() throws Exception {
     String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/line_polygon.geojson";
@@ -108,7 +107,7 @@ public class TestDE9IM {
       //assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
   }
-  */
+
 
   @Test
   public void testLineVsLine() throws Exception {

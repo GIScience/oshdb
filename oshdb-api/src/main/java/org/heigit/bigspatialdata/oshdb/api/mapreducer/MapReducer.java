@@ -984,11 +984,10 @@ public abstract class MapReducer<X> implements
    * Filter objects by querying whether they are located inside other elements
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type of MapReducer
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> contains(
+  public MapReducer<X> contains(
       String key,
       String value,
       boolean queryContributions)
@@ -1031,11 +1030,10 @@ public abstract class MapReducer<X> implements
    * Filter objects by querying whether they are located inside other elements
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type of MapReducer
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> covers(
+  public MapReducer<X> covers(
       String key,
       String value,
       boolean queryContributions)
@@ -1078,11 +1076,10 @@ public abstract class MapReducer<X> implements
    * Filter objects by querying whether they are located inside other elements
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type of MapReducer
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> coveredBy(
+  public MapReducer<X> coveredBy(
       String key,
       String value,
       boolean queryContributions)
@@ -1124,11 +1121,10 @@ public abstract class MapReducer<X> implements
   /** Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> equals(
+  public MapReducer<X> equals(
       String key,
       String value,
       boolean queryContributions)
@@ -1171,11 +1167,10 @@ public abstract class MapReducer<X> implements
   /** Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> disjoint(
+  public MapReducer<X> disjoint(
       String key,
       String value,
       boolean queryContributions)
@@ -1219,11 +1214,10 @@ public abstract class MapReducer<X> implements
    * Filter objects by querying whether they are located inside other elements
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type of MapReducer
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> inside(
+  public MapReducer<X> inside(
       String key,
       String value,
       boolean queryContributions)
@@ -1266,11 +1260,10 @@ public abstract class MapReducer<X> implements
    * Filter objects by querying whether they overlap other elements
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> overlaps(
+  public MapReducer<X> overlaps(
       String key,
       String value,
       boolean queryContributions)
@@ -1317,7 +1310,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <X> MapReducer<X> touches(
+  public MapReducer<X> touches(
       String key,
       String value,
       boolean queryContributions)

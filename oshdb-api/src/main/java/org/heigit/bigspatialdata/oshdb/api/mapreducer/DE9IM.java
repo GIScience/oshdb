@@ -153,7 +153,7 @@ public class DE9IM {
         return relationType.DISJOINT;
       }
     } else if (geom1converted instanceof LineString && geom2converted instanceof Polygon) {
-      /*
+
       Geometry boundary2 = geom2converted.getBoundary();
 
       if (geom1converted.within(geom2converted) & !geom1converted.intersects(boundary2)) {
@@ -167,8 +167,8 @@ public class DE9IM {
       } else if (!geom1converted.intersects(geom2converted) & !geom1converted.equalsNorm(geom2converted)) {
         return relationType.DISJOINT;
       }
-      */
-      throw new UnsupportedOperationException("Not implemented yet.");
+
+      //throw new UnsupportedOperationException("Not implemented yet.");
     } else if (geom1converted instanceof LineString && geom2converted instanceof LineString) {
       if (geom1.equalsNorm(geom2converted)) {
         return relationType.EQUALS;
@@ -238,6 +238,7 @@ public class DE9IM {
 
     // Get candidate objects in the neighbourhood of snapshot
     List<Y> candidates = this.candidateTree.query(snapshot.getGeometryUnclipped().getEnvelopeInternal());
+    // todo: filter out candidates that were not present at the same time as snapshot
 
     // If no candidates are found, return empty list
     if (candidates.size() == 0) return Pair.of(snapshot, result);

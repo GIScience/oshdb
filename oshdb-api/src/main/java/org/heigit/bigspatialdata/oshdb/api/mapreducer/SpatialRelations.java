@@ -40,7 +40,7 @@ public class SpatialRelations {
     Geometry geom = snapshot.getGeometryUnclipped();
 
     // Convert distanceInMeters to degree longitude for bounding box of second mapreducer
-    double distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geom.getCentroid().getX(), distanceInMeter);
+    double distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geom.getCentroid().getY(), distanceInMeter);
 
     // Get coordinates of bounding box
     Envelope envelope = geom.getEnvelopeInternal();
@@ -128,7 +128,7 @@ public class SpatialRelations {
       case BEFORE:
         if (contribution.getContributionTypes().contains(ContributionType.CREATION)) {
           geomBefore = contribution.getGeometryUnclippedAfter();
-          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getX(),distanceInMeter);
+          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getY(),distanceInMeter);
         } else {
           throw new Exception("Contribution of type CREATION. No geometry before contribution available.");
         }
@@ -138,7 +138,7 @@ public class SpatialRelations {
         if (!contribution.getContributionTypes().contains(ContributionType.DELETION)) {
           geomAfter = contribution.getGeometryUnclippedAfter();
           distanceInDegreeLongitude = Geo
-              .convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getX(),
+              .convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getY(),
                   distanceInMeter);
         } else {
           throw new Exception("Contribution of type DELETION. No geometry after contribution available.");
@@ -148,11 +148,11 @@ public class SpatialRelations {
       case BOTH:
         if (!contribution.getContributionTypes().contains(ContributionType.DELETION)) {
           geomAfter = contribution.getGeometryUnclippedAfter();
-          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getX(),distanceInMeter);
+          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getY(),distanceInMeter);
         }
         if (!contribution.getContributionTypes().contains(ContributionType.CREATION)) {
           geomBefore = contribution.getGeometryUnclippedBefore();
-          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getX(),distanceInMeter);
+          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getY(),distanceInMeter);
         }
         if (geomAfter == null) geomAfter = geomBefore;
         if (geomBefore == null) geomBefore = geomAfter;
