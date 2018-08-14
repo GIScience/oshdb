@@ -1306,7 +1306,6 @@ public abstract class MapReducer<X> implements
   /** Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <X> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)

@@ -548,6 +548,25 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
+   * Set an arbitrary `mapPair` transformation function.
+   *
+   * @param mapper1 function that will be applied to each data entry (osm entity snapshot or contribution)
+   * @param mapper2 function that will be applied to each data entry (osm entity snapshot or contribution
+   * @param <R> an arbitrary data type which is the return type of the first map function mapper1
+   * @param <S> an arbitrary data type which is the return type of the second map function mapper2
+   * @return a modified copy of this MapAggregator object operating on the transformed type (&lt;R&gt;)
+   */
+  @Contract(pure = true)
+  public <R, S> MapAggregator<U, Pair<R, S>> mapPair(SerializableFunction<X, R> mapper1, SerializableFunction<X, S> mapper2) {
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      //noinspection unchecked – trick/hack to replace mapped values without copying pair objects
+      Pair<U,Pair<R, S>> outData = (Pair<U,Pair<R, S>>)inData;
+      outData.setValue(Pair.of(mapper1.apply(inData.getValue()), mapper2.apply(inData.getValue())));
+      return outData;
+    }));
+  }
+
+  /**
    * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number of results per input data entry.
    * The results of this function will be "flattened", meaning that they can be for example transformed again by setting additional `map` functions.
    *
