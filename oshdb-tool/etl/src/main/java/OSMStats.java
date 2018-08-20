@@ -23,11 +23,22 @@ public class OSMStats {
 
   private final Path pbf;
 
+  private boolean isNODE = false;
+  private boolean isWAY = false;
+  private boolean isRELATION = false;
+
 
   private long globalNumberOfTags = 0;
   private long globalNumberOfEntrys = 0;
   private long globalNumberOfVersions = 0;
   private List<Integer> numberOfTagsForHistogramm = new ArrayList<Integer>();
+
+  private long globalMaxNumberOfTags = 0;
+  private long globalMaxNumberOfTagsID;
+
+  private long globalIDMin = 0;
+  private long globalIDMax = 0;
+
 
   public OSMStats(Path pbf) {
     this.pbf = pbf;
@@ -36,68 +47,77 @@ public class OSMStats {
   public void run() {
     Flowable<Osh> flow = RxOshPbfReader //
         .readOsh(pbf, 0, -1, -1) //
-        .filter(osh -> osh.getType() == OSMType.RELATION)//
+    // .filter(osh -> osh.getType() == OSMType.RELATION)//
     // .limit(100)
 
     ;
 
     subscribe(flow, this::compute, this::error, this::done);
 
-    System.out.println("Average number of Tags per Version: "
-        + (double) globalNumberOfTags / globalNumberOfVersions);
-    System.out.println(
-        "Average number of Tags per Entity: " + (double) globalNumberOfTags / globalNumberOfEntrys);
+    printAndReset();
+
+  }
+
+  private void printAndReset() {
+
     System.out.println("number of entrys: " + globalNumberOfEntrys);
     System.out.println("number of all tags: " + globalNumberOfTags);
     System.out.println("number of all Versions: " + globalNumberOfVersions);
+    System.out.println("Average number of Tags per Version: "
+        + (double) globalNumberOfTags / globalNumberOfVersions);
     System.out.println("Average number of Versions per Entity: "
         + (double) globalNumberOfVersions / globalNumberOfEntrys);
+    System.out.println(
+        "Max number of tags: ID " + globalMaxNumberOfTagsID + " NUMBER " + globalMaxNumberOfTags);
 
-
-  }
-
-
-  /**
-   * generalize per Entity!!!
-   * 
-   * @param versions
-   * @return
-   */
-  private int computeNumberOfTagsNODE(List<Node> versions) {
-    int numberOfTags = 0;
-    for (Node node : versions) {
-      numberOfTags = numberOfTags + node.getTags().length;
+    for (Integer integer : numberOfTagsForHistogramm) {
+      System.out.print(integer + " ");
     }
-    return numberOfTags;
-  }
+    System.out.println("");
+    System.out.println("ID min: "+globalIDMin+" ID max: "+globalIDMax);
+    System.out.println("-------------------");
 
-  private int computeNumberOfTagsWAY(List<Way> versions) {
-    int numberOfTags = 0;
-    for (Way way : versions) {
-      numberOfTags = numberOfTags + way.getTags().length;
-    }
-    return numberOfTags;
-  }
+    globalNumberOfEntrys = 0;
+    globalNumberOfTags = 0;
+    globalNumberOfVersions = 0;
+    globalMaxNumberOfTags = 0;
+    globalMaxNumberOfTagsID = 0;
 
-  private int computeNumberOfTagsRELATION(List<Relation> versions) {
-    int numberOfTags = 0;
-    for (Relation relation : versions) {
-      numberOfTags = numberOfTags + relation.getTags().length;
-    }
-    return numberOfTags;
-  }
+    numberOfTagsForHistogramm.clear();
+    
+    globalIDMin = 0;
+    globalIDMax = 0;
 
+  }
 
 
   public void compute(Osh osh) {
     switch (osh.getType()) {
       case NODE:
+        if (isNODE == false) {
+          isNODE = true;
+          globalIDMin = osh.getId();
+        }
         nodes(osh.getId(), (List<Node>) (Object) osh.getVersions());
         break;
       case WAY:
+        if (isWAY == false) {
+          printAndReset();
+          isNODE = false;
+          isWAY = true;
+          globalIDMin = osh.getId();
+
+        }
+
         ways(osh.getId(), (List<Way>) (Object) osh.getVersions());
         break;
       case RELATION:
+        if (isRELATION == false) {
+          printAndReset();
+          isWAY = false;
+          isRELATION = true;
+          globalIDMin = osh.getId();
+        }
         relations(osh.getId(), (List<Relation>) (Object) osh.getVersions());
         break;
       default:
@@ -106,33 +126,89 @@ public class OSMStats {
   }
 
 
+  // Folgenden Code umbedingt noch in Methode auslagern...
+
   private void nodes(long id, List<Node> versions) {
 
     globalNumberOfVersions = globalNumberOfVersions + versions.size();
-    globalNumberOfTags = globalNumberOfTags + computeNumberOfTagsNODE(versions);
+    globalNumberOfTags = globalNumberOfTags + computeNumberOfTagsNODE(versions, id);
     globalNumberOfEntrys++;
-
+    globalIDMax = id;
 
     // System.out.println(versions);
-
   }
-
-
 
   private void ways(long id, List<Way> versions) {
     globalNumberOfVersions = globalNumberOfVersions + versions.size();
-    globalNumberOfTags = globalNumberOfTags + computeNumberOfTagsWAY(versions);
+    globalNumberOfTags = globalNumberOfTags + computeNumberOfTagsWAY(versions, id);
     globalNumberOfEntrys++;
+    globalIDMax = id;
 
     // System.out.println(versions);
   }
 
   private void relations(long id, List<Relation> versions) {
     globalNumberOfVersions = globalNumberOfVersions + versions.size();
-    globalNumberOfTags = globalNumberOfTags + computeNumberOfTagsRELATION(versions);
+    globalNumberOfTags = globalNumberOfTags + computeNumberOfTagsRELATION(versions, id);
     globalNumberOfEntrys++;
+    globalIDMax = id;
 
     // System.out.println(versions);
+  }
+
+  /**
+   * TODO generalize per Entity!!!
+   * 
+   * @param versions
+   * @return
+   */
+  private int computeNumberOfTagsNODE(List<Node> versions, long id) {
+    int numberOfTags = 0;
+    for (Node node : versions) {
+      numberOfTags = numberOfTagsVersion(id, numberOfTags, node);
+    }
+    return numberOfTags;
+  }
+
+
+  private int computeNumberOfTagsWAY(List<Way> versions, long id) {
+    int numberOfTags = 0;
+    for (Way way : versions) {
+      numberOfTags = numberOfTagsVersion(id, numberOfTags, way);
+    }
+    return numberOfTags;
+  }
+
+  private int computeNumberOfTagsRELATION(List<Relation> versions, long id) {
+    int numberOfTags = 0;
+    for (Relation relation : versions) {
+      numberOfTags = numberOfTagsVersion(id, numberOfTags, relation);
+    }
+    return numberOfTags;
+  }
+
+
+  private int numberOfTagsVersion(long id, int numberOfTags, Entity entity) {
+    int tagsPerVersion = entity.getTags().length;
+    numberOfTags = numberOfTags + tagsPerVersion;
+    computeMaxNumberOfTags(tagsPerVersion, id);
+
+    // Histogramm
+    int init = tagsPerVersion - numberOfTagsForHistogramm.size() + 1;
+    for (int i = 0; i < init; i++)
+      numberOfTagsForHistogramm.add(0);
+    int element = numberOfTagsForHistogramm.get(tagsPerVersion) + 1;
+    numberOfTagsForHistogramm.set(tagsPerVersion, element);
+
+    return numberOfTags;
+  }
+
+
+  private void computeMaxNumberOfTags(int number, long id) {
+    if (number > globalMaxNumberOfTags) {
+      globalMaxNumberOfTags = number;
+      globalMaxNumberOfTagsID = id;
+    }
   }
 
 
@@ -143,6 +219,7 @@ public class OSMStats {
 
   public void done() {
     // clean up
+
   }
 
   public static void main(String[] args) {
@@ -150,7 +227,6 @@ public class OSMStats {
     Path pbf;
 
     pbf = dir.resolve("heidelberg.osh.pbf");
-    // pbf = dir.resolve("baden-wuerttemberg.osh.pbf");
 
     OSMStats osmStats = new OSMStats(pbf);
 
