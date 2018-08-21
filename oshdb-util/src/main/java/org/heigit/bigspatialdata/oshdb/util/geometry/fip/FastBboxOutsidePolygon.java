@@ -1,7 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
@@ -13,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 
 /**
  * Fast bounding-box in (multi)polygon test inspired by
@@ -44,14 +45,14 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
    */
   @Override
   public boolean test(OSHDBBoundingBox boundingBox) {
-    Polygon g = OSHDBGeometryBuilder.getGeometry(boundingBox);
-    Point p1 = g.getExteriorRing().getPointN(0);
+    GeometryFactory gf = new GeometryFactory();
+    Point p1 = gf.createPoint(new Coordinate(boundingBox.getMinLon(), boundingBox.getMinLat()));
     if (crossingNumber(p1, true) % 2 == 1) {
       return false;
     }
-    Point p2 = g.getExteriorRing().getPointN(1);
-    Point p3 = g.getExteriorRing().getPointN(2);
-    Point p4 = g.getExteriorRing().getPointN(3);
+    Point p2 = gf.createPoint(new Coordinate(boundingBox.getMaxLon(), boundingBox.getMinLat()));
+    Point p3 = gf.createPoint(new Coordinate(boundingBox.getMaxLon(), boundingBox.getMaxLat()));
+    Point p4 = gf.createPoint(new Coordinate(boundingBox.getMinLon(), boundingBox.getMaxLat()));
     if (crossingNumber(p1, true) != crossingNumber(p2, true) ||
         crossingNumber(p3, true) != crossingNumber(p4, true) ||
         crossingNumber(p2, false) != crossingNumber(p3, false) ||
