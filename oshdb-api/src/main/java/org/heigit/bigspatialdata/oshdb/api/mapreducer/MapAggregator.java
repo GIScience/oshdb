@@ -21,6 +21,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -101,6 +102,17 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public TagInterpreter getTagInterpreter() {
     return this._mapReducer.getTagInterpreter();
+  }
+
+  /**
+   * Gets the tagTranslator
+   *
+   * @return tagTranslator the TagTranslator object
+   */
+  @SuppressWarnings("unused")
+  @Contract(pure = true)
+  public TagTranslator getTagTranslator() {
+    return this._mapReducer.getTagTranslator();
   }
 
   // -----------------------------------------------------------------------------------------------
