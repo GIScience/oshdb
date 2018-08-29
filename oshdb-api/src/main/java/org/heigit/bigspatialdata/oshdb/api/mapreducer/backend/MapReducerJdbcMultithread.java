@@ -5,9 +5,12 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
@@ -172,16 +175,31 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
   private Stream<? extends GridOSHEntity> getOshCellsStream(Pair<CellId, CellId> cellIdRange) {
     try {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
-      // iterate over the result
-      List<GridOSHEntity> cellsData = new ArrayList<>();
-      while (oshCellsRawData.next()) {
-        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
-        cellsData.add(oshCellRawData);
-      }
-      return cellsData.stream();
-    } catch (SQLException | IOException | ClassNotFoundException e) {
-      e.printStackTrace();
-      return Stream.empty();
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+          new Iterator<GridOSHEntity>() {
+            @Override
+            public boolean hasNext() {
+              try {
+                boolean hasMore = oshCellsRawData.next();
+                if (!hasMore) oshCellsRawData.close();
+                return hasMore;
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+            }
+
+            @Override
+            public GridOSHEntity next() {
+              try {
+                return readOshCellRawData(oshCellsRawData);
+              } catch (IOException | ClassNotFoundException | SQLException e) {
+                throw new RuntimeException(e);
+              }
+            }
+          }, 0
+      ), false);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 }
