@@ -15,7 +15,7 @@ as follows:
 ```
 // -- ENTITY FILTER --
 // by type
-mapReducer = mapReducer.osmTypes(OSMType.WAY);
+mapReducer = mapReducer.osmType(OSMType.WAY);
 ```
 
 
