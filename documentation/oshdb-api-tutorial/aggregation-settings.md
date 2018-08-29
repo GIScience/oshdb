@@ -14,7 +14,7 @@ where each timestamp holds your specified result.
 ```
 // -- AGGREGATION --
 // aggreate by timestamp into periods
-MapAggregatorByTimestamps<OSMEntitySnapshot> mapAggregatorByTimestamp = mapReducer.aggregateByTimestamp();
+MapAggregator<OSHDBTimestamp, OSMEntitySnapshot> mapAggregatorByTimestamp = mapReducer.aggregateByTimestamp();
 ```
 
 
