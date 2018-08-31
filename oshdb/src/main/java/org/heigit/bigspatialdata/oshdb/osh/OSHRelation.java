@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
@@ -538,20 +539,40 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   }
 
   @Override
+  public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
+    return _getModificationTimestamps(true, osmEntityFilter);
+  }
+
+  @Override
   public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
+    return _getModificationTimestamps(recurse, null);
+  }
+
+  private List<OSHDBTimestamp> _getModificationTimestamps(
+      boolean recurse,
+      Predicate<OSMEntity> osmEntityFilter
+  ) {
     List<OSHDBTimestamp> relTs = new ArrayList<>(this.iterator().next().getVersion());
+    OSHDBTimestamp prevNonmatch = null;
     for (OSMRelation osmRelation : this) {
-      relTs.add(osmRelation.getTimestamp());
+      if (osmRelation.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osmRelation))) {
+        if (prevNonmatch != null) {
+          relTs.add(prevNonmatch);
+          prevNonmatch = null;
+        }
+        relTs.add(osmRelation.getTimestamp());
+      } else {
+        prevNonmatch = osmRelation.getTimestamp();
+      }
     }
     if (!recurse) {
       return Lists.reverse(relTs);
     }
 
     Map<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityTs = new TreeMap<>();
-    int i = 0;
     OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
     for (OSMRelation osmRelation : this) {
-      OSHDBTimestamp thisT = relTs.get(i++);
+      OSHDBTimestamp thisT = osmRelation.getTimestamp();
       if (!osmRelation.isVisible()) {
         nextT = thisT;
         continue;

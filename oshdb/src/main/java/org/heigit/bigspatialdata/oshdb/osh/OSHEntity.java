@@ -318,48 +318,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
    * @return a list of timestamps where this entity has been modified
    */
-  public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
-    List<OSM> versions = this.getVersions();
-    List<Boolean> versionMatches = versions.stream()
-        .map(osmEntityFilter::test)
-        .collect(Collectors.toList());
-    if (versionMatches.stream().noneMatch(match -> match)) {
-      return Collections.emptyList();
-    }
-
-    List<OSHDBTimestamp> allModTs = this.getModificationTimestamps(true);
-    List<OSHDBTimestamp> filteredModTs = new ArrayList<>(allModTs.size());
-
-    int timeIdx = allModTs.size() - 1;
-
-    long lastOsmEntityTs = Long.MAX_VALUE;
-    for (int i=0; i<versions.size(); i++) {
-      OSMEntity osmEntity = versions.get(i);
-      OSHDBTimestamp osmEntityTs = osmEntity.getTimestamp();
-      if (osmEntityTs.getRawUnixTimestamp() >= lastOsmEntityTs) {
-        continue; // skip versions with identical (or invalid*) timestamps
-      }
-      OSHDBTimestamp modTs = allModTs.get(timeIdx);
-
-      boolean matches = versionMatches.get(i);
-
-      if (matches) {
-        while (modTs.getRawUnixTimestamp() >= osmEntityTs.getRawUnixTimestamp()) {
-          filteredModTs.add(0, modTs);
-          if (--timeIdx < 0) {
-            break;
-          }
-          modTs = allModTs.get(timeIdx);
-        }
-      } else {
-        while (timeIdx >= 0 && allModTs.get(timeIdx).getRawUnixTimestamp() > osmEntityTs.getRawUnixTimestamp()) {
-          timeIdx--;
-        }
-      }
-      lastOsmEntityTs = osmEntityTs.getRawUnixTimestamp();
-    }
-    return filteredModTs;
-  }
+  public abstract List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter);
 
   /**
    * Returns all timestamps at which this entity (or one or more of its child entities) has been

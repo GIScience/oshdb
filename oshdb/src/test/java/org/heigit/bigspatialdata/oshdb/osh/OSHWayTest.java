@@ -182,7 +182,7 @@ public class OSHWayTest {
 
     tss = hway.getModificationTimestamps(osmEntity -> osmEntity.hasTagValue(2, 1));
     assertNotNull(tss);
-    //assertEquals(5, tss.size());
+    assertEquals(5, tss.size());
     assertEquals(5l, tss.get(0).getRawUnixTimestamp());
     assertEquals(6l, tss.get(1).getRawUnixTimestamp());
     assertEquals(7l, tss.get(2).getRawUnixTimestamp());
