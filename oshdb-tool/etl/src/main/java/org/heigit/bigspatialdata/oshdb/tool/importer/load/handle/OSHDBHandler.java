@@ -27,7 +27,7 @@ import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 
-public abstract class OSHDbHandler extends LoaderHandler {
+public abstract class OSHDBHandler extends LoaderHandler {
 
 	public abstract void handleNodeGrid(GridOSHNodes grid);
 
@@ -38,7 +38,7 @@ public abstract class OSHDbHandler extends LoaderHandler {
 	protected final Roaring64NavigableMap bitmapNodeRelation;
 	protected final Roaring64NavigableMap bitmapWayRelation;
 
-	protected OSHDbHandler(Roaring64NavigableMap bitmapNodeRelation, Roaring64NavigableMap bitmapWayRelation) {
+	protected OSHDBHandler(Roaring64NavigableMap bitmapNodeRelation, Roaring64NavigableMap bitmapWayRelation) {
 		this.bitmapNodeRelation = bitmapNodeRelation;
 		this.bitmapWayRelation = bitmapWayRelation;
 	}

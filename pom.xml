@@ -62,14 +62,14 @@
   
   <scm>
     <!-- https://maven.apache.org/pom.html#SCM -->
-    <connection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb.git</connection>
-    <developerConnection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb.git</developerConnection>
-    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb.git</url>
+    <connection>scm:git:git@github.com/GIScience/oshdb.git</connection>
+    <developerConnection>scm:git:git@github.com/GIScience/oshdb.git</developerConnection>
+    <url>https://github.com/GIScience/oshdb.git</url>
   </scm>
   
   <issueManagement>
-    <system>GitLab</system>
-    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues</url>
+    <system>GitHub</system>
+    <url>https://github.com/GIScience/oshdb/issues</url>
   </issueManagement>
   
   <profiles>
