@@ -153,12 +153,12 @@ public abstract class MapReducer<X> implements
    * into internally used identifiers. If this function is never called, the main database
    * (specified during the construction of this object) is used for this.
    *
-   * @param keytablesOshdb the database to use for resolving strings into internal identifiers
+   * @param keytables the database to use for resolving strings into internal identifiers
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> keytables(OSHDBJdbc keytablesOshdb) {
-    if (keytablesOshdb != this._oshdb && this._oshdb instanceof OSHDBJdbc) {
+  public MapReducer<X> keytables(OSHDBJdbc keytables) {
+    if (keytables != this._oshdb && this._oshdb instanceof OSHDBJdbc) {
       Connection c = ((OSHDBJdbc) this._oshdb).getConnection();
       try {
         new TagTranslator(c);
@@ -170,7 +170,7 @@ public abstract class MapReducer<X> implements
       }
     }
     MapReducer<X> ret = this.copy();
-    ret._oshdbForTags = keytablesOshdb;
+    ret._oshdbForTags = keytables;
     return ret;
   }
 

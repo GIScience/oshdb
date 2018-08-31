@@ -1,18 +1,18 @@
-# Setup a Local Oshdb
+# Setup a Local OSHDB
 
-In order to create a local database instance of the oshdb yourself, you
-need a .osh.pbf-file of your area of interest. You can get one, e.g., from
-[geofabrik](http://download.geofabrik.de/). The oshdb instance may then
+In order to create a local database instance of the OSHDB yourself, you
+need an .osh.pbf-file of your area of interest. You can get one, e.g., from
+[geofabrik](http://download.geofabrik.de/). The OSHDB instance may then
 be created by the steps extract, transform and load as follows:
 
 ## Extract
 
-The first step is to extract data by from your .osh.pbf-File. To do so,
+The first step is to extract data from your .osh.pbf-File. To do so,
 you have to figure out the valid time period contained in this file and
 to provide the start of this period in the ISO date-time format. The
 actual extraction is performed by running the following commands, assuming
 that you are in the base directory of the downloaded
-[OSH-Code](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/core/tree/master).
+[OSHDB-Code](https://github.com/GIScience/oshdb).
 
 
 ```bash
@@ -33,7 +33,7 @@ to get help and more options.
 
 ## Transform
 
-After extraction, a transformation step creates the actual Oshdb using
+After extraction, a transformation step creates the actual OSHDB using
 the H2 database engine:
 
 ```bash
@@ -61,7 +61,7 @@ output directory (the file extension .mv.db is appended automatically).
 
 ### Deploy on Apache Ignite (optional)
 
-If you wish to deploy the Oshdb on [Apache ignite](https://ignite.apache.org),
+If you wish to deploy the OSHDB on [Apache ignite](https://ignite.apache.org),
 the previously created H2 database has to be loaded into ignite. You can 
 [download ignite](https://ignite.apache.org/download.cgi#binaries) from the
 Apache website.

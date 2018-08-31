@@ -33,7 +33,7 @@ import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import it.unimi.dsi.fastutil.io.FastByteArrayOutputStream;
 
-public class OSHDB2H2Handler extends OSHDbHandler {
+public class OSHDB2H2Handler extends OSHDBHandler {
 
   private PreparedStatement insertKey;
   private PreparedStatement insertValue;

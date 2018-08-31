@@ -127,7 +127,7 @@ MapReducer<OSMContribution> mapReducerContribution = OSMContributionView.on(oshd
 ## Summary
 
 After the preparation step, your project should be similar to
-[pom.xml](example-pom.xml) and [OshdbApiTutorial.java](OshdbApiTutorial.java).
+[pom.xml](example-pom.xml) and [OSHDBApiTutorial.java](OSHDBApiTutorial.java).
 TODO: update the links
 
 The next step is to setup the [mandatory settings](mandatory-settings.md).
