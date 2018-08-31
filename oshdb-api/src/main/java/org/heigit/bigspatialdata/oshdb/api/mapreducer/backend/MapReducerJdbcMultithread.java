@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -175,14 +176,14 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
   private Stream<? extends GridOSHEntity> getOshCellsStream(Pair<CellId, CellId> cellIdRange) {
     try {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
+      if (!oshCellsRawData.next())
+        return Stream.empty();
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
           new Iterator<GridOSHEntity>() {
             @Override
             public boolean hasNext() {
               try {
-                boolean hasMore = oshCellsRawData.next();
-                if (!hasMore) oshCellsRawData.close();
-                return hasMore;
+                return !oshCellsRawData.isClosed();
               } catch (SQLException e) {
                 throw new RuntimeException(e);
               }
@@ -191,7 +192,14 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
             @Override
             public GridOSHEntity next() {
               try {
-                return readOshCellRawData(oshCellsRawData);
+                if (!hasNext()) {
+                  throw new NoSuchElementException();
+                }
+                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
+                if (!oshCellsRawData.next()) {
+                  oshCellsRawData.close();
+                }
+                return data;
               } catch (IOException | ClassNotFoundException | SQLException e) {
                 throw new RuntimeException(e);
               }
