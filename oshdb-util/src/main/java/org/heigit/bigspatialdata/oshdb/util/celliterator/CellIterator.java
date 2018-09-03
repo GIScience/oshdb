@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import com.google.common.collect.Streams;
 import com.vividsolutions.jts.geom.*;
 import java.io.Serializable;
 import java.util.*;
@@ -148,6 +149,10 @@ public class CellIterator implements Serializable {
       )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
+        continue;
+      }
+      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+        // none of this osh entity's versions matches the filter -> skip it
         continue;
       }
       boolean fullyInside = allFullyInside || (
@@ -377,6 +382,10 @@ public class CellIterator implements Serializable {
       )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
+        continue;
+      }
+      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+        // none of this osh entity's versions matches the filter -> skip it
         continue;
       }
 

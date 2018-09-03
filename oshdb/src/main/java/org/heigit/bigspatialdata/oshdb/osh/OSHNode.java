@@ -12,8 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
-
+import java.util.function.Predicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -398,6 +397,24 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
     List<OSHDBTimestamp> result = new ArrayList<>(this.iterator().next().getVersion());
     for (OSMNode osmNode : this) {
       result.add(osmNode.getTimestamp());
+    }
+    return Lists.reverse(result);
+  }
+
+  @Override
+  public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
+    List<OSHDBTimestamp> result = new ArrayList<>(this.iterator().next().getVersion());
+    OSHDBTimestamp prevNonmatch = null;
+    for (OSMNode osmNode : this) {
+      if (osmNode.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osmNode))) {
+        if (prevNonmatch != null) {
+          result.add(prevNonmatch);
+          prevNonmatch = null;
+        }
+        result.add(osmNode.getTimestamp());
+      } else {
+        prevNonmatch = osmNode.getTimestamp();
+      }
     }
     return Lists.reverse(result);
   }
