@@ -573,7 +573,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
     for (OSMRelation osmRelation : this) {
       OSHDBTimestamp thisT = osmRelation.getTimestamp();
-      if (!osmRelation.isVisible()) {
+      if (!osmRelation.isVisible() || (osmEntityFilter != null && !osmEntityFilter.test(osmRelation))) {
         nextT = thisT;
         continue;
       }

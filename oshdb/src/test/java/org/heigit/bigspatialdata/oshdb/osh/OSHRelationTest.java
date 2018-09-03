@@ -187,6 +187,37 @@ public class OSHRelationTest {
     assertEquals(20l, tss.get(6).getRawUnixTimestamp());
   }
 
+  @Test
+  public void testGetModificationTimestampsWithFilter() throws IOException {
+    List<OSMNode> n1versions = new ArrayList<>();
+    n1versions.add(new OSMNode(123l, 7, new OSHDBTimestamp(17l), 17l, 0, new int[]{}, 0, 0));
+    n1versions.add(new OSMNode(123l, 6, new OSHDBTimestamp(6l), 16l, 0, new int[]{}, 0, 0));
+    n1versions.add(new OSMNode(123l, 5, new OSHDBTimestamp(5l), 15l, 0, new int[]{}, 0, 0));
+    n1versions.add(new OSMNode(123l, 4, new OSHDBTimestamp(4l), 14l, 0, new int[]{}, 0, 0));
+    n1versions.add(new OSMNode(123l, 3, new OSHDBTimestamp(3l), 13l, 0, new int[]{}, 0, 0));
+    n1versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 12l, 0, new int[]{}, 0, 0));
+    n1versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 11l, 0, new int[]{}, 0, 0));
+    OSHNode hnode1 = OSHNode.build(n1versions);
+
+    List<OSMRelation> versions = new ArrayList<>();
+    versions.add(new OSMRelation(1, -4, new OSHDBTimestamp(6l), 10004l, 1, new int[]{}, new OSMMember[]{}));
+    versions.add(new OSMRelation(1, 3, new OSHDBTimestamp(5l), 10003l, 1, new int[]{}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0)}));
+    versions.add(new OSMRelation(1, 2, new OSHDBTimestamp(3l), 10002l, 1, new int[]{}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 1)}));
+    versions.add(new OSMRelation(1, 1, new OSHDBTimestamp(1l), 10001l, 1, new int[]{}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0)}));
+    OSHRelation hrelation = OSHRelation.build(versions, Arrays.asList(hnode1), Arrays.asList());
+
+    List<OSHDBTimestamp> tss = hrelation.getModificationTimestamps(entity -> entity.getVersion() != 2);
+    assertNotNull(tss);
+    assertEquals(5, tss.size());
+    assertEquals(1l, tss.get(0).getRawUnixTimestamp());
+    assertEquals(2l, tss.get(1).getRawUnixTimestamp());
+    assertEquals(3l, tss.get(2).getRawUnixTimestamp());
+    // ts 4 missing since entity filter doesn't match then
+    assertEquals(5l, tss.get(3).getRawUnixTimestamp());
+    assertEquals(6l, tss.get(4).getRawUnixTimestamp());
+
+  }
+
   static OSHNode buildHOSMNode(List<OSMNode> versions) {
     try {
       return OSHNode.build(versions);
