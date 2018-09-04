@@ -248,6 +248,18 @@ public abstract class OSHEntity<OSM extends OSMEntity>
   }
 
   /**
+   * Returns all timestamps at which this entity (or one or more of its child entities) has been
+   * modified.
+   *
+   * @return a list of timestamps where this entity has been modified
+   * @deprecated use {@link OSHEntities#getModificationTimestamps(OSHEntity)}
+   */
+  @Deprecated
+  public List<OSHDBTimestamp> getModificationTimestamps() {
+    return OSHEntities.getModificationTimestamps(this);
+  }
+
+  /**
    * Returns the list of timestamps at which this entity was modified.
    *
    * If the parameter "recurse" is set to true, it will also include modifications of the object's
@@ -256,27 +268,11 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * @param recurse specifies if times of modifications of child entities should also be returned or
    *        not
    * @return a list of timestamps where this entity has been modified
+   * @deprecated use {@link OSHEntities#getModificationTimestamps(OSHEntity, boolean)}
    */
   @Deprecated
   public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
-    if (this instanceof OSHWay) {
-      return OSHEntities.getModificationTimestamps((OSHWay) this, recurse);
-    }
-    if (this instanceof OSHRelation) {
-      return OSHEntities.getModificationTimestamps((OSHRelation) this, recurse);
-    }
     return OSHEntities.getModificationTimestamps(this, recurse);
-  }
-
-  /**
-   * Returns all timestamps at which this entity (or one or more of its child entities) has been
-   * modified.
-   *
-   * @return a list of timestamps where this entity has been modified
-   */
-  @Deprecated
-  public List<OSHDBTimestamp> getModificationTimestamps() {
-    return OSHEntities.getModificationTimestamps(this);
   }
 
   /**
@@ -285,15 +281,10 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    *
    * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
    * @return a list of timestamps where this entity has been modified
+   * @deprecated use {@link OSHEntities#getModificationTimestamps(OSHEntity, Predicate)}
    */
   @Deprecated
   public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
-    if (this instanceof OSHWay) {
-      return OSHEntities.getModificationTimestamps((OSHWay) this, osmEntityFilter);
-    }
-    if (this instanceof OSHRelation) {
-      return OSHEntities.getModificationTimestamps((OSHRelation) this, osmEntityFilter);
-    }
     return OSHEntities.getModificationTimestamps(this, osmEntityFilter);
   }
 
@@ -311,6 +302,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * @param changesetTimestamps association between timestamps and changeset-ids, can be obtained
    *        from oshEntity by calling {@link #getChangesetTimestamps}.
    * @return a list of timestamps where this entity has been modified
+   * @deprecated use {@link OSHEntities#getModificationTimestamps(OSHEntity, Predicate, Map)}
    */
   @Deprecated
   public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter,
@@ -324,15 +316,10 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    * Used internally to group modifications by changeset.
    *
    * @return a map between timestamps and changeset ids
+   * @deprecated use {@link OSHEntities#getChangesetTimestamps(OSHEntity)}
    */
   @Deprecated
   public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
-    if (this instanceof OSHWay) {
-      return OSHEntities.getChangesetTimestamps((OSHWay) this);
-    }
-    if (this instanceof OSHRelation) {
-      return OSHEntities.getChangesetTimestamps((OSHRelation) this);
-    }
     return OSHEntities.getChangesetTimestamps(this);
   }
 

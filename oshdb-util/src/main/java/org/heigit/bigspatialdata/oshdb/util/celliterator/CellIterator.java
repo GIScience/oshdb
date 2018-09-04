@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -176,7 +177,7 @@ public class CellIterator implements Serializable {
       // where not needed
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
-        List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+        List<OSHDBTimestamp> modTs = OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
@@ -198,7 +199,7 @@ public class CellIterator implements Serializable {
       }
 
       SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
-          oshEntity.getByTimestamps(new ArrayList<>(queryTs.keySet()));
+          OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
 
       osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
