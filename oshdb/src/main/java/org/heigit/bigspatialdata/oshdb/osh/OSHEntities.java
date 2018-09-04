@@ -225,7 +225,7 @@ public abstract class OSHEntities {
     } else if (osh instanceof OSHRelation) {
       allModificationTimestamps = getModificationTimestamps((OSHRelation) osh, osmEntityFilter);
     } else {
-      allModificationTimestamps = getModificationTimestamps(osh, osmEntityFilter);
+      allModificationTimestamps = getModificationTimestamps((OSHNode) osh, osmEntityFilter);
     }
 
     if (allModificationTimestamps.size() <= 1) {
