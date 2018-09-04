@@ -317,42 +317,6 @@ public class OSHNode extends OSHEntity<OSMNode> implements Iterable<OSMNode>, Se
   }
 
   @Override
-  public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
-    List<OSHDBTimestamp> result = new ArrayList<>(this.iterator().next().getVersion());
-    for (OSMNode osmNode : this) {
-      result.add(osmNode.getTimestamp());
-    }
-    return Lists.reverse(result);
-  }
-
-  @Override
-  public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
-    List<OSHDBTimestamp> result = new ArrayList<>(this.iterator().next().getVersion());
-    OSHDBTimestamp prevNonmatch = null;
-    for (OSMNode osmNode : this) {
-      if (osmNode.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osmNode))) {
-        if (prevNonmatch != null) {
-          result.add(prevNonmatch);
-          prevNonmatch = null;
-        }
-        result.add(osmNode.getTimestamp());
-      } else {
-        prevNonmatch = osmNode.getTimestamp();
-      }
-    }
-    return Lists.reverse(result);
-  }
-
-  @Override
-  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
-    Map<OSHDBTimestamp, Long> result = new TreeMap<>();
-    this.getVersions().forEach(osmNode ->
-        result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
-    );
-    return result;
-  }
-
-  @Override
   public String toString() {
     return String.format("OSHNode %s", super.toString());
   }
