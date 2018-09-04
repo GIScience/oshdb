@@ -24,7 +24,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import com.google.common.collect.Lists;
 
-public abstract class OSHDBTimestamps {
+public abstract class OSHEntities {
 
   public static <OSM extends OSMEntity> SortedMap<OSHDBTimestamp, OSM> getByTimestamps(
       Iterable<OSM> versions, List<OSHDBTimestamp> byTimestamps) {

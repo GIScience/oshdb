@@ -2,29 +2,23 @@ package org.heigit.bigspatialdata.oshdb.osh;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
-import com.google.common.collect.Lists;
 
 public abstract class OSHEntity<OSM extends OSMEntity>
     implements Comparable<OSHEntity<OSM>>, Iterable<OSM> {
@@ -201,22 +195,22 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    */
   @Deprecated
   public SortedMap<OSHDBTimestamp, OSM> getByTimestamps(List<OSHDBTimestamp> byTimestamps) {
-    return OSHDBTimestamps.getByTimestamps(this.getVersions(), byTimestamps);
+    return OSHEntities.getByTimestamps(this.getVersions(), byTimestamps);
   }
 
   @Deprecated
   public Map<OSHDBTimestamp, OSM> getByTimestamps() { // todo: name of method?
-    return OSHDBTimestamps.getByTimestamps(this.getVersions());
+    return OSHEntities.getByTimestamps(this.getVersions());
   }
 
   @Deprecated
   public OSM getByTimestamp(OSHDBTimestamp timestamp) {
-    return OSHDBTimestamps.getByTimestamp(this.getVersions(), timestamp);
+    return OSHEntities.getByTimestamp(this.getVersions(), timestamp);
   }
 
   @Deprecated
   public List<OSM> getBetweenTimestamps(final OSHDBTimestamp t1, final OSHDBTimestamp t2) {
-    return OSHDBTimestamps.getBetweenTimestamps(this.getVersions(), t1, t2);
+    return OSHEntities.getBetweenTimestamps(this.getVersions(), t1, t2);
   }
 
   public boolean hasTagKey(OSHDBTagKey tag) {
@@ -267,12 +261,12 @@ public abstract class OSHEntity<OSM extends OSMEntity>
   @Deprecated
   public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
     if (this instanceof OSHWay) {
-      return OSHDBTimestamps.getModificationTimestamps((OSHWay) this, recurse);
+      return OSHEntities.getModificationTimestamps((OSHWay) this, recurse);
     }
     if (this instanceof OSHRelation) {
-      return OSHDBTimestamps.getModificationTimestamps((OSHRelation) this, recurse);
+      return OSHEntities.getModificationTimestamps((OSHRelation) this, recurse);
     }
-    return OSHDBTimestamps.getModificationTimestamps(this, recurse);
+    return OSHEntities.getModificationTimestamps(this, recurse);
   }
 
   /**
@@ -283,7 +277,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
    */
   @Deprecated
   public List<OSHDBTimestamp> getModificationTimestamps() {
-    return OSHDBTimestamps.getModificationTimestamps(this);
+    return OSHEntities.getModificationTimestamps(this);
   }
 
   /**
@@ -296,12 +290,12 @@ public abstract class OSHEntity<OSM extends OSMEntity>
   @Deprecated
   public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
     if (this instanceof OSHWay) {
-      return OSHDBTimestamps.getModificationTimestamps((OSHWay) this, osmEntityFilter);
+      return OSHEntities.getModificationTimestamps((OSHWay) this, osmEntityFilter);
     }
     if (this instanceof OSHRelation) {
-      return OSHDBTimestamps.getModificationTimestamps((OSHRelation) this, osmEntityFilter);
+      return OSHEntities.getModificationTimestamps((OSHRelation) this, osmEntityFilter);
     }
-    return OSHDBTimestamps.getModificationTimestamps(this, osmEntityFilter);
+    return OSHEntities.getModificationTimestamps(this, osmEntityFilter);
   }
 
   /**
@@ -322,7 +316,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
   @Deprecated
   public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter,
       Map<OSHDBTimestamp, Long> changesetTimestamps) {
-    return OSHDBTimestamps.getModificationTimestamps(this, osmEntityFilter, changesetTimestamps);
+    return OSHEntities.getModificationTimestamps(this, osmEntityFilter, changesetTimestamps);
   }
 
   /**
@@ -335,12 +329,12 @@ public abstract class OSHEntity<OSM extends OSMEntity>
   @Deprecated
   public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
     if (this instanceof OSHWay) {
-      return OSHDBTimestamps.getChangesetTimestamps((OSHWay) this);
+      return OSHEntities.getChangesetTimestamps((OSHWay) this);
     }
     if (this instanceof OSHRelation) {
-      return OSHDBTimestamps.getChangesetTimestamps((OSHRelation) this);
+      return OSHEntities.getChangesetTimestamps((OSHRelation) this);
     }
-    return OSHDBTimestamps.getChangesetTimestamps(this);
+    return OSHEntities.getChangesetTimestamps(this);
   }
 
   @Override
