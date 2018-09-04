@@ -50,12 +50,14 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   private final int nodeDataOffset;
   private final int nodeDataLength;
 
-  public static OSHWay instance(final byte[] data, final int offset, final int length) throws IOException {
+  public static OSHWay instance(final byte[] data, final int offset, final int length)
+      throws IOException {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
-  public static OSHWay instance(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+  public static OSHWay instance(final byte[] data, final int offset, final int length,
+      final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
 
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -101,16 +103,17 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     final int dataOffset = nodeDataOffset + nodeDataLength;
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHWay(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-        dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
+    return new OSHWay(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude,
+        header, id, bbox, keys, dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
   }
 
-  private OSHWay(final byte[] data, final int offset, final int length, final long baseId, final long baseTimestamp,
-          final long baseLongitude, final long baseLatitude, final byte header, final long id, final OSHDBBoundingBox bbox,
-          final int[] keys, final int dataOffset, final int dataLength, final int[] nodeIndex,
-          final int nodeDataOffset, final int nodeDataLength) {
-    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-            dataOffset, dataLength);
+  private OSHWay(final byte[] data, final int offset, final int length, final long baseId,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
+      final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
+      final int nodeDataLength) {
+    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+        bbox, keys, dataOffset, dataLength);
 
 
     this.nodeIndex = nodeIndex;
@@ -191,8 +194,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
               }
             }
 
-            return new OSMWay(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset, userId, keyValues,
-                    members);
+            return new OSMWay(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset,
+                userId, keyValues, members);
 
           } catch (IOException e) {
             e.printStackTrace();
@@ -210,8 +213,10 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     long lastId = 0;
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
-      int length = ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
-      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, lastId, 0, baseLongitude, baseLatitude);
+      int length =
+          ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
+      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, lastId, 0, baseLongitude,
+          baseLatitude);
       lastId = n.getId();
       nodes.add(n);
     }
@@ -219,7 +224,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   @Override
-  public OSHWay rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude) throws IOException {
+  public OSHWay rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude)
+      throws IOException {
     List<OSMWay> versions = getVersions();
     List<OSHNode> nodes = getNodes();
     return build(versions, nodes, baseId, baseTimestamp, baseLongitude, baseLatitude);
@@ -230,7 +236,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude)
+      throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 

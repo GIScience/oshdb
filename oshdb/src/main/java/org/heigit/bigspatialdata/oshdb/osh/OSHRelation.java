@@ -56,12 +56,14 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   private final int wayDataOffset;
   private final int wayDataLength;
 
-  public static OSHRelation instance(final byte[] data, final int offset, final int length) throws IOException {
+  public static OSHRelation instance(final byte[] data, final int offset, final int length)
+      throws IOException {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
-  public static OSHRelation instance(final byte[] data, final int offset, final int length, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+  public static OSHRelation instance(final byte[] data, final int offset, final int length,
+      final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -131,20 +133,21 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final int dataLength = length - (dataOffset - offset);
 
     return new OSHRelation(data, offset, length, //
-            baseId, baseTimestamp, baseLongitude, baseLatitude, //
-            header, id, bbox, keys, //
-            dataOffset, dataLength, //
-            nodeIndex, nodeDataOffset, nodeDataLength, //
-            wayIndex, wayDataOffset, wayDataLength);
+        baseId, baseTimestamp, baseLongitude, baseLatitude, //
+        header, id, bbox, keys, //
+        dataOffset, dataLength, //
+        nodeIndex, nodeDataOffset, nodeDataLength, //
+        wayIndex, wayDataOffset, wayDataLength);
   }
 
   private OSHRelation(final byte[] data, final int offset, final int length, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
-          final long id, final OSHDBBoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
-          final int[] nodeIndex, final int nodeDataOffset, final int nodeDataLength, final int[] wayIndex,
-          final int wayDataOffset, final int wayDataLength) {
-    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-            dataOffset, dataLength);
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
+      final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
+      final int nodeDataLength, final int[] wayIndex, final int wayDataOffset,
+      final int wayDataLength) {
+    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+        bbox, keys, dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
     this.nodeDataOffset = nodeDataOffset;
@@ -261,8 +264,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
                 members[i] = new OSMMember(memberId, memberType, memberRole, member);
               }
             }
-            return new OSMRelation(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset, userId, keyValues,
-                    members);
+            return new OSMRelation(id, version, new OSHDBTimestamp(baseTimestamp + timestamp),
+                changeset, userId, keyValues, members);
           } catch (IOException e) {
             e.printStackTrace();
             // TODO: handle exception(s)
@@ -279,8 +282,10 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     List<OSHNode> nodes = new ArrayList<>(nodeIndex.length);
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
-      int length = ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
-      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, 0, 0, baseLongitude, baseLatitude);
+      int length =
+          ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
+      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, 0, 0, baseLongitude,
+          baseLatitude);
       nodes.add(n);
     }
     return nodes;
@@ -291,20 +296,21 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     for (int index = 0; index < wayIndex.length; index++) {
       int offset = wayIndex[index];
       int length = ((index < wayIndex.length - 1) ? wayIndex[index + 1] : wayDataLength) - offset;
-      OSHWay w = OSHWay.instance(data, wayDataOffset + offset, length, 0, 0, baseLongitude, baseLatitude);
+      OSHWay w =
+          OSHWay.instance(data, wayDataOffset + offset, length, 0, 0, baseLongitude, baseLatitude);
       ways.add(w);
     }
     return ways;
   }
 
   public static OSHRelation build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
-          final Collection<OSHWay> ways) throws IOException {
+      final Collection<OSHWay> ways) throws IOException {
     return build(versions, nodes, ways, 0, 0, 0, 0);
   }
 
   public static OSHRelation build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
-          final Collection<OSHWay> ways, final long baseId, final long baseTimestamp, final long baseLongitude,
-          final long baseLatitude) throws IOException {
+      final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
+      final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
@@ -316,7 +322,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     long maxLon = Long.MIN_VALUE;
     long minLat = Long.MAX_VALUE;
     long maxLat = Long.MIN_VALUE;
-    
+
     Map<Long, Integer> nodeOffsets = new HashMap<>();
     int[] nodeByteArrayIndex = new int[nodes.size()];
     ByteArrayOutputWrapper nodeData = new ByteArrayOutputWrapper();
@@ -481,7 +487,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     }
 
     record.writeByteArray(output.array(), 0, output.length());
-    return OSHRelation.instance(record.array(), 0, record.length(), baseId, baseTimestamp, baseLongitude, baseLatitude);
+    return OSHRelation.instance(record.array(), 0, record.length(), baseId, baseTimestamp,
+        baseLongitude, baseLatitude);
   }
 
   public void writeTo(ByteArrayOutputWrapper out) throws IOException {
@@ -490,7 +497,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
   @Override
   public OSHRelation rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude)
-          throws IOException {
+      throws IOException {
 
     List<OSMRelation> versions = getVersions();
     List<OSHNode> nodes = getNodes();
