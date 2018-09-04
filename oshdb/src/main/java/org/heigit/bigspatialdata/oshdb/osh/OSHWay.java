@@ -13,13 +13,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
@@ -402,35 +405,94 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     }
   }
 
+
+  @Override
+  public List<OSHDBTimestamp> getModificationTimestamps(Predicate<OSMEntity> osmEntityFilter) {
+    return _getModificationTimestamps(true, osmEntityFilter);
+  }
+
   @Override
   public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
+    return _getModificationTimestamps(recurse, null);
+  }
+
+  private List<OSHDBTimestamp> _getModificationTimestamps(
+      boolean recurse,
+      Predicate<OSMEntity> osmEntityFilter
+  ) {
     List<OSHDBTimestamp> wayTs = new ArrayList<>(this.iterator().next().getVersion());
+    OSHDBTimestamp prevNonmatch = null;
     for (OSMWay osmWay : this) {
-      wayTs.add(osmWay.getTimestamp());
+      if (osmWay.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osmWay))) {
+        if (prevNonmatch != null) {
+          wayTs.add(prevNonmatch);
+          prevNonmatch = null;
+        }
+        wayTs.add(osmWay.getTimestamp());
+      } else {
+        prevNonmatch = osmWay.getTimestamp();
+      }
     }
     if (!recurse) {
       return Lists.reverse(wayTs);
     }
 
-    SortedSet<OSHDBTimestamp> result = new TreeSet<>(wayTs);
-    int i = -1;
+    Map<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityTs = new TreeMap<>();
+
+    OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
     for (OSMWay osmWay : this) {
-      i++;
-      if (!osmWay.isVisible()) continue;
-      OSHDBTimestamp thisT = wayTs.get(i);
-      OSHDBTimestamp nextT = i>0 ? wayTs.get(i-1) : new OSHDBTimestamp(Long.MAX_VALUE);
+      OSHDBTimestamp thisT = osmWay.getTimestamp();
+      if (!osmWay.isVisible() || (osmEntityFilter != null && !osmEntityFilter.test(osmWay))) {
+        nextT = thisT;
+        continue;
+      }
       OSMMember[] nds = osmWay.getRefs();
       for (OSMMember nd : nds) {
-        OSHNode oshNode = (OSHNode)nd.getEntity();
+        OSHNode oshNode = (OSHNode) nd.getEntity();
         if (oshNode == null) continue;
-        for (OSMNode osmNode : oshNode) {
-          OSHDBTimestamp nodeTs = osmNode.getTimestamp();
-          if (nodeTs.compareTo(nextT) >= 0) continue;
-          if (nodeTs.compareTo(thisT) <= 0) break;
-          result.add(nodeTs);
+        LinkedList<OSHDBTimestamp> childEntityValidityTimestamps;
+        if (!childEntityTs.containsKey(oshNode)) {
+          childEntityValidityTimestamps = new LinkedList<>();
+          childEntityTs.put(oshNode, childEntityValidityTimestamps);
+        } else {
+          childEntityValidityTimestamps = childEntityTs.get(oshNode);
+        }
+        if (childEntityValidityTimestamps.size() > 0 &&
+            childEntityValidityTimestamps.getFirst().equals(nextT)) {
+          // merge consecutive time intervals
+          childEntityValidityTimestamps.pop();
+          childEntityValidityTimestamps.push(thisT);
+        } else {
+          childEntityValidityTimestamps.push(nextT);
+          childEntityValidityTimestamps.push(thisT);
+        }
+      }
+      nextT = thisT;
+    }
+
+    SortedSet<OSHDBTimestamp> result = new TreeSet<>(wayTs);
+
+    for (Entry<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityT : childEntityTs.entrySet()) {
+      @SuppressWarnings("unchecked") Iterator<OSHDBTimestamp> modTs = (
+          childEntityT.getKey().getModificationTimestamps()
+      ).iterator();
+      LinkedList<OSHDBTimestamp> validMemberTs = childEntityT.getValue();
+      OSHDBTimestamp current = modTs.next();
+      outerTLoop: while (!validMemberTs.isEmpty()) {
+        OSHDBTimestamp fromTs = validMemberTs.pop();
+        OSHDBTimestamp toTs = validMemberTs.pop();
+        while (current.compareTo(fromTs) < 0)  {
+          if (!modTs.hasNext()) break outerTLoop;
+          current = modTs.next();
+        }
+        while (current.compareTo(toTs) <= 0)  {
+          result.add(current);
+          if (!modTs.hasNext()) break outerTLoop;
+          current = modTs.next();
         }
       }
     }
+
     return new ArrayList<>(result);
   }
 
