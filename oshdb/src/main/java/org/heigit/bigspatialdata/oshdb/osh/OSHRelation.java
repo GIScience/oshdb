@@ -509,6 +509,11 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     return new SerializationProxy(this);
   }
 
+  @Override
+  public String toString() {
+    return String.format("OSHRelation %s", super.toString());
+  }
+
   private static class SerializationProxy implements Externalizable {
 
     private final OSHRelation entity;
@@ -544,4 +549,5 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       return null;
     }
   }
+
 }
