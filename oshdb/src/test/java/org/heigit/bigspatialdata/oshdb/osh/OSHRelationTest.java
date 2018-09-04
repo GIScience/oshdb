@@ -165,7 +165,7 @@ public class OSHRelationTest {
     versions.add(new OSMRelation(1, 1, new OSHDBTimestamp(5l), 10001l, 1, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(1, OSMType.WAY, 0)}));
     OSHRelation hrelation = OSHRelation.build(versions, Arrays.asList(hnode1, hnode2, hnode3), Arrays.asList(hway1));
 
-    List<OSHDBTimestamp> tss = hrelation.getModificationTimestamps(false);
+    List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hrelation,false);
     assertNotNull(tss);
     assertEquals(4, tss.size());
     assertEquals(5l, tss.get(0).getRawUnixTimestamp());
@@ -173,7 +173,7 @@ public class OSHRelationTest {
     assertEquals(10l, tss.get(2).getRawUnixTimestamp());
     assertEquals(20l, tss.get(3).getRawUnixTimestamp());
 
-    tss = hrelation.getModificationTimestamps(true);
+    tss = OSHEntities.getModificationTimestamps(hrelation,true);
     assertNotNull(tss);
     assertEquals(7, tss.size());
     assertEquals(5l, tss.get(0).getRawUnixTimestamp());
@@ -206,7 +206,10 @@ public class OSHRelationTest {
     versions.add(new OSMRelation(1, 1, new OSHDBTimestamp(1l), 10001l, 1, new int[]{}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0)}));
     OSHRelation hrelation = OSHRelation.build(versions, Arrays.asList(hnode1), Arrays.asList());
 
-    List<OSHDBTimestamp> tss = hrelation.getModificationTimestamps(entity -> entity.getVersion() != 2);
+    List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(
+        hrelation,
+        entity -> entity.getVersion() != 2
+    );
     assertNotNull(tss);
     assertEquals(5, tss.size());
     assertEquals(1l, tss.get(0).getRawUnixTimestamp());

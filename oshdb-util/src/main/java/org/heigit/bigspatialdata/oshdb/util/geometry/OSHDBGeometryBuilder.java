@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.annotation.Nonnull;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
@@ -110,7 +110,7 @@ public class OSHDBGeometryBuilder {
       OSHEntity memberOSHEntity = relationMembers[i].getEntity();
       // memberOSHEntity might be null when working on an extract with incomplete relation members
       OSMEntity memberEntity = memberOSHEntity == null ? null :
-          memberOSHEntity.getByTimestamp(timestamp);
+          OSHEntities.getByTimestamp(memberOSHEntity, timestamp);
       /*
       memberEntity might be null when working with redacted data, for example:
        * user 1 creates node 1 (timestamp 1)

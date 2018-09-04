@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -176,7 +177,7 @@ public class CellIterator implements Serializable {
       // where not needed
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
-        List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+        List<OSHDBTimestamp> modTs = OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
@@ -198,7 +199,7 @@ public class CellIterator implements Serializable {
       }
 
       SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
-          oshEntity.getByTimestamps(new ArrayList<>(queryTs.keySet()));
+          OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
 
       osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
@@ -217,11 +218,12 @@ public class CellIterator implements Serializable {
         boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
             && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          OSMRelation rel = (OSMRelation) osmEntity;
+          final OSMRelation rel = (OSMRelation) osmEntity;
           for (int i = 0; i < rel.getMembers().length; i++) {
-            if (rel.getMembers()[i].getType() == OSMType.WAY
-                && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
-              OSMEntity way = rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
+            final OSMMember relMember = rel.getMembers()[i];
+            if (relMember.getType() == OSMType.WAY
+                && tagInterpreter.isMultipolygonOuterMember(relMember)) {
+              OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
               if (!osmEntityFilter.test(way)) {
                 // skip this old-style-multipolygon because it doesn't match our filter
                 continue osmEntityLoop;
@@ -409,23 +411,30 @@ public class CellIterator implements Serializable {
           (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
       );
 
-      Map<OSHDBTimestamp, Long> changesetTs = oshEntity.getChangesetTimestamps();
-      List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, changesetTs);
+      Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
+      List<OSHDBTimestamp> modTs =
+          OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
 
-      if (modTs.size() == 0 || !timeInterval
-          .intersects(new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1)))) {
-        continue; // ignore osh entity because it's edit history is fully outside of the given time
-      } // interval of interest
+      if (modTs.size() == 0 || !timeInterval.intersects(
+          new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1))
+      )) {
+        // ignore osh entity because it's edit history is fully outside of the given time interval
+        // of interest
+        continue;
+      }
 
-      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(modTs);
+      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
+          OSHEntities.getByTimestamps(oshEntity, modTs);
 
       IterateAllEntry prev = null;
-      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+      osmEntityLoop:
+      for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
         // prev = results.size() > 0 ? results.get(results.size()-1) : null;
-        // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
+        // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of
+        // the `|| prev.osmEntity.getId() != osmEntity.getId()`'s below)
         boolean skipOutput = false;
 
         OSHDBTimestamp nextTs = null;
@@ -471,11 +480,12 @@ public class CellIterator implements Serializable {
         boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
             && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          OSMRelation rel = (OSMRelation) osmEntity;
+          final OSMRelation rel = (OSMRelation) osmEntity;
           for (int i = 0; i < rel.getMembers().length; i++) {
-            if (rel.getMembers()[i].getType() == OSMType.WAY
-                && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
-              OSMEntity way = rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
+            final OSMMember relMember = rel.getMembers()[i];
+            if (relMember.getType() == OSMType.WAY
+                && tagInterpreter.isMultipolygonOuterMember(relMember)) {
+              OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
               if (!osmEntityFilter.test(way)) {
                 // skip this old-style-multipolygon because it doesn't match our filter
                 continue osmEntityLoop;

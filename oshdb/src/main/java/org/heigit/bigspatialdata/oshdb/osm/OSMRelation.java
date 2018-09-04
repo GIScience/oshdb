@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
 public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, Serializable {
@@ -28,7 +29,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
 
   public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp, Predicate<OSMMember> memberFilter) {
     return Arrays.stream(this.getMembers()).filter(memberFilter).map(OSMMember::getEntity)
-        .filter(Objects::nonNull).map(entity -> entity.getByTimestamp(timestamp));
+        .filter(Objects::nonNull).map(entity -> OSHEntities.getByTimestamp(entity, timestamp));
   }
 
   public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp) {

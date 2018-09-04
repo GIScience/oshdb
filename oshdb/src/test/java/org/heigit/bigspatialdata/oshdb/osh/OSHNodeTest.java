@@ -78,7 +78,7 @@ public class OSHNodeTest {
 
     OSHNode hnode = OSHNode.build(versions);
 
-    List<OSHDBTimestamp> tss = hnode.getModificationTimestamps();
+    List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hnode);
     assertNotNull(tss);
     assertEquals(2, tss.size());
     assertEquals(1l, tss.get(0).getRawUnixTimestamp());

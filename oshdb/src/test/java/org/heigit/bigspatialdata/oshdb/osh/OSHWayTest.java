@@ -123,14 +123,14 @@ public class OSHWayTest {
     versions.add(new OSMWay(123, 1, new OSHDBTimestamp(5l), 4444l, 23, new int[]{1, 1, 2, 1}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0), new OSMMember(125, OSMType.NODE, 0)}));
     OSHWay hway = OSHWay.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
 
-    List<OSHDBTimestamp> tss = hway.getModificationTimestamps(false);
+    List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hway, false);
     assertNotNull(tss);
     assertEquals(3, tss.size());
-    assertEquals(5l, (long) tss.get(0).getRawUnixTimestamp());
-    assertEquals(7l, (long) tss.get(1).getRawUnixTimestamp());
-    assertEquals(13l, (long) tss.get(2).getRawUnixTimestamp());
+    assertEquals(5l, tss.get(0).getRawUnixTimestamp());
+    assertEquals(7l, tss.get(1).getRawUnixTimestamp());
+    assertEquals(13l, tss.get(2).getRawUnixTimestamp());
 
-    tss = hway.getModificationTimestamps(true);
+    tss = OSHEntities.getModificationTimestamps(hway,true);
     assertNotNull(tss);
     assertEquals(6, tss.size());
     assertEquals(5l, tss.get(0).getRawUnixTimestamp());
@@ -138,7 +138,7 @@ public class OSHWayTest {
     assertEquals(7l, tss.get(2).getRawUnixTimestamp());
     assertEquals(8l, tss.get(3).getRawUnixTimestamp());
     assertEquals(12l, tss.get(4).getRawUnixTimestamp());
-    assertEquals(13l, (long) tss.get(5).getRawUnixTimestamp());
+    assertEquals(13l, tss.get(5).getRawUnixTimestamp());
   }
 
   @Test
@@ -168,7 +168,7 @@ public class OSHWayTest {
     versions.add(new OSMWay(123, 1, new OSHDBTimestamp(5l), 4444l, 23, new int[]{1, 1, 2, 1}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0), new OSMMember(125, OSMType.NODE, 0)}));
     OSHWay hway = OSHWay.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
 
-    List<OSHDBTimestamp> tss = hway.getModificationTimestamps(true);
+    List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hway,true);
     assertNotNull(tss);
     assertEquals(8, tss.size());
     assertEquals(5l, tss.get(0).getRawUnixTimestamp());
@@ -180,7 +180,10 @@ public class OSHWayTest {
     assertEquals(14l, tss.get(6).getRawUnixTimestamp());
     assertEquals(16l, tss.get(7).getRawUnixTimestamp());
 
-    tss = hway.getModificationTimestamps(osmEntity -> osmEntity.hasTagValue(2, 1));
+    tss = OSHEntities.getModificationTimestamps(
+        hway,
+        osmEntity -> osmEntity.hasTagValue(2, 1)
+    );
     assertNotNull(tss);
     assertEquals(5, tss.size());
     assertEquals(5l, tss.get(0).getRawUnixTimestamp());
