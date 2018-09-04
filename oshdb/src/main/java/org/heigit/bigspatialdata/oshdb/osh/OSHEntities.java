@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util;
+package org.heigit.bigspatialdata.oshdb.osh;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,14 +14,11 @@ import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
-import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
-import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import com.google.common.collect.Lists;
 
 public abstract class OSHEntities {
