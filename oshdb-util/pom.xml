@@ -26,13 +26,6 @@
       <artifactId>h2</artifactId>
       <version>${h2.version}</version>
     </dependency>
-    
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-shapefile</artifactId>
-      <version>${geotools.version}</version>
-      <type>jar</type>
-    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>

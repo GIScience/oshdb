@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.oshdb.util;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import org.geotools.geometry.jts.JTS;
 import org.junit.Test;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -88,15 +87,6 @@ public class OSHDBBoundingBoxTest {
     long[] expResult = new long[]{890000000L, 900000000L};
     long[] result = instance.getLat();
     assertArrayEquals(expResult, result);
-  }
-
-  @Test
-  public void testGetGeometry() {
-    OSHDBBoundingBox instance = new OSHDBBoundingBox(0.0, 0.0, 1.0, 1.0);
-    Polygon expResult = (new GeometryFactory()).createPolygon(new Coordinate[]{new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1), new Coordinate(0, 1), new Coordinate(0, 0)});
-
-    Polygon result = JTS.toGeometry(new Envelope(instance.getMinLon(), instance.getMaxLon(), instance.getMinLat(), instance.getMaxLat()));
-    assertEquals(expResult, result);
   }
 
   @Test

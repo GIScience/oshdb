@@ -24,7 +24,6 @@
     <apachecommons.version>3.1</apachecommons.version>
     <commonsio.version>2.5</commonsio.version>
     <fastutil.version>8.1.1</fastutil.version>
-    <geotools.version>18-RC1</geotools.version>
     <glassfish.version>1.1</glassfish.version>
     <googlejson.version>1.1.1</googlejson.version>
     <guava.version>23.6-jre</guava.version>

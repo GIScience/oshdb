@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.annotation.Nonnull;
-import org.geotools.geometry.jts.JTS;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -284,7 +282,12 @@ public class OSHDBGeometryBuilder {
   * @return com.vividsolutions.jts.geom.Geometry
   */
  public static Polygon getGeometry(OSHDBBoundingBox bbox) {
-   return JTS.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
+   GeometryFactory gf = new GeometryFactory();
+   Geometry g = gf.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
+   if (g instanceof Polygon)
+     return (Polygon) g;
+   else
+    return gf.createPolygon((LinearRing) null);
  }
  
  
