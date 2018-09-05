@@ -8,8 +8,7 @@ of mapping are available:
 * map is a 1-to-1 mapping that generates a single result for each data object,
 * flatMap is a 1-to-n mapping that generates a (possibly empty) list of
   results for each data object and automatically flattens the results of
-  several data objects into a single long list
-  (see [advanced options](advanced-options.md)).
+  several data objects into a single long list.
 
 We will again implement the mapping in a custom class for clarity. This simple
 mapping function calculates the length of the element's geometry.
