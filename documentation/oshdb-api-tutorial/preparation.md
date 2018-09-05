@@ -13,7 +13,7 @@ First you need to create a new maven java project.
 Add the following dependency to the dependencies section of your
 [pom.xml](https://maven.apache.org/guides/introduction/introduction-to-the-pom.html),
 where `${oshdb-version}` has to be replaced by the desired
-version of the oshdb-API.
+version of the oshdb-API (latest version 0.5.0-SNAPSHOT).
 
 ```
 <dependencies>
