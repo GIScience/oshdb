@@ -22,7 +22,7 @@ public class Init {
           // or
           MapReducer<OSMContribution> mapReducerContribution = OSMContributionView.on(oshdb);
           
-        }catch (Exception e) {
+        } catch (Exception e) {
           e.printStackTrace();
     }
 
