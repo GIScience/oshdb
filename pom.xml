@@ -1,172 +1,173 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <parent>
-    <groupId>org.heigit.bigspatialdata</groupId>
-    <artifactId>bigspatialdata-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
-  
-  <artifactId>bigspatialdata-core-parent</artifactId>
-  <version>0.5.0-SNAPSHOT</version>
-  <name>HeiGIT Big Spatial Data Core Parent POM</name>
-  <description>The set of base functionality provided for all configurations of BigSpatialData</description>	
-  <packaging>pom</packaging>
-  
-  <modules>
-    <module>oshdb</module>
-    <module>oshdb-api</module>
-    <module>oshdb-tool</module>
-    <module>oshdb-util</module>
-  </modules>
-  
-  <properties>
-    <apachecommons.version>3.1</apachecommons.version>
-    <commonsio.version>2.5</commonsio.version>
-    <fastutil.version>8.1.1</fastutil.version>
-    <glassfish.version>1.1</glassfish.version>
-    <googlejson.version>1.1.1</googlejson.version>
-    <guava.version>23.6-jre</guava.version>
-    <h2.version>1.4.193</h2.version>
-    <ignite.version>2.3.0</ignite.version>
-    <jcommander.version>1.72</jcommander.version>
-    <jetbrainsannotations.version>13.0</jetbrainsannotations.version>
-    <kafka.version>0.11.0.0</kafka.version>
-    <lz4.version>1.4.0</lz4.version>
-    <mapdb.version>3.0.5</mapdb.version>
-    <orgjson.version>20160810</orgjson.version>
-    <osmosis.version>0.45</osmosis.version>
-    <postgresql.version>42.1.4</postgresql.version>
-    <protobuf.version>2.6.1</protobuf.version>
-    <roaringbitmap.version>0.6.59</roaringbitmap.version>
-    <rxjava2.version>2.1.9</rxjava2.version>
-    <wololo.version>0.10.0</wololo.version>
-  </properties>
-  
-  <repositories>
-    <repository>
-      <!--This will resolve artefacts of Osgeo, Boundless and potentially others through our own reopository (https://www.jfrog.com/confluence/display/RTF/Maven+Repository#MavenRepository-ResolvingArtifactsthroughArtifactory).-->
-      <id>HeiGIT main</id>
-      <name>Central Repository for OSHDB dependency related artefacts</name>
-      <url>http://repo.heigit.org/artifactory/main</url>
-    </repository>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <repository>
-      <id>HeiGIT snapshots</id>
-      <name>Heigit/GIScience maven repository (snapshots)</name>
-      <url>http://repo.heigit.org/artifactory/libs-snapshot-local</url>
-      <snapshots />
-    </repository>
-  </repositories>
-  
-  <scm>
-    <!-- https://maven.apache.org/pom.html#SCM -->
-    <connection>scm:git:git@github.com/GIScience/oshdb.git</connection>
-    <developerConnection>scm:git:git@github.com/GIScience/oshdb.git</developerConnection>
-    <url>https://github.com/GIScience/oshdb.git</url>
-  </scm>
-  
-  <issueManagement>
-    <system>GitHub</system>
-    <url>https://github.com/GIScience/oshdb/issues</url>
-  </issueManagement>
-  
-  <profiles>
-    <profile>
-      <id>jacoco</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.1</version>
-            <executions>
-              <execution>
-                <id>default-prepare-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>default-report</id>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    
-    <profile>
-      <id>git</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>pl.project13.maven</groupId>
-            <artifactId>git-commit-id-plugin</artifactId>
-            <version>2.2.4</version>
-            <executions>
-              <execution>
-                <id>get-the-git-infos</id>
-                <goals>
-                  <goal>revision</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-              <prefix>git</prefix>
-              <verbose>false</verbose>
-              <generateGitPropertiesFile>true</generateGitPropertiesFile>
-              <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-              <format>json</format>
-              <gitDescribe>
-                <skip>false</skip>
-                <always>false</always>
-                <dirty>-dirty</dirty>
-              </gitDescribe>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-  
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.9</version>
-        <reportSets>
-          <reportSet>
-            <reports>
+	<parent>
+		<groupId>org.heigit.bigspatialdata</groupId>
+		<artifactId>bigspatialdata-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>bigspatialdata-core-parent</artifactId>
+	<version>0.5.0-SNAPSHOT</version>
+	<name>HeiGIT Big Spatial Data Core Parent POM</name>
+	<description>The set of base functionality provided for all configurations of BigSpatialData</description>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>oshdb</module>
+		<module>oshdb-api</module>
+		<module>oshdb-api-ignite</module>
+		<module>oshdb-tool</module>
+		<module>oshdb-util</module>
+	</modules>
+
+	<properties>
+		<apachecommons.version>3.1</apachecommons.version>
+		<commonsio.version>2.5</commonsio.version>
+		<fastutil.version>8.1.1</fastutil.version>
+		<glassfish.version>1.1</glassfish.version>
+		<googlejson.version>1.1.1</googlejson.version>
+		<guava.version>23.6-jre</guava.version>
+ 	    <h2.version>1.4.193</h2.version>
+		<jcommander.version>1.72</jcommander.version>
+		<jetbrainsannotations.version>13.0</jetbrainsannotations.version>
+		<kafka.version>0.11.0.0</kafka.version>
+		<lz4.version>1.4.0</lz4.version>
+		<mapdb.version>3.0.5</mapdb.version>
+		<orgjson.version>20160810</orgjson.version>
+		<osmosis.version>0.45</osmosis.version>
+		<protobuf.version>2.6.1</protobuf.version>
+		<roaringbitmap.version>0.6.59</roaringbitmap.version>
+		<rxjava2.version>2.1.9</rxjava2.version>
+		<wololo.version>0.10.0</wololo.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<!--This will resolve artefacts of Osgeo, Boundless and potentially others 
+				through our own reopository (https://www.jfrog.com/confluence/display/RTF/Maven+Repository#MavenRepository-ResolvingArtifactsthroughArtifactory). -->
+			<id>HeiGIT main</id>
+			<name>Central Repository for OSHDB dependency related artefacts</name>
+			<url>http://repo.heigit.org/artifactory/main</url>
+		</repository>
+
+		<repository>
+			<id>HeiGIT snapshots</id>
+			<name>Heigit/GIScience maven repository (snapshots)</name>
+			<url>http://repo.heigit.org/artifactory/libs-snapshot-local</url>
+			<snapshots />
+		</repository>
+	</repositories>
+
+	<scm>
+		<!-- https://maven.apache.org/pom.html#SCM -->
+		<connection>scm:git:git@github.com/GIScience/oshdb.git</connection>
+		<developerConnection>scm:git:git@github.com/GIScience/oshdb.git</developerConnection>
+		<url>https://github.com/GIScience/oshdb.git</url>
+	</scm>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/GIScience/oshdb/issues</url>
+	</issueManagement>
+
+	<profiles>
+		<profile>
+			<id>jacoco</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>0.8.1</version>
+						<executions>
+							<execution>
+								<id>default-prepare-agent</id>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>default-report</id>
+								<goals>
+									<goal>report</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>git</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>pl.project13.maven</groupId>
+						<artifactId>git-commit-id-plugin</artifactId>
+						<version>2.2.4</version>
+						<executions>
+							<execution>
+								<id>get-the-git-infos</id>
+								<goals>
+									<goal>revision</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+							<prefix>git</prefix>
+							<verbose>false</verbose>
+							<generateGitPropertiesFile>true</generateGitPropertiesFile>
+							<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+							<format>json</format>
+							<gitDescribe>
+								<skip>false</skip>
+								<always>false</always>
+								<dirty>-dirty</dirty>
+							</gitDescribe>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.9</version>
+				<reportSets>
+					<reportSet>
+						<reports>
               <!--<report>dependencies</report>
               <report>project-team</report>
               <report>mailing-list</report>
               <report>cim</report>
               <report>issue-tracking</report>
               <report>license</report>
-              <report>scm</report> -->
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.0.0</version>
-        <configuration>
-          <configLocation>google_checks.xml</configLocation>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>3.9.0</version>
-      </plugin>
-    </plugins>
-  </reporting>
+								<report>scm</report> -->
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<configLocation>google_checks.xml</configLocation>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.9.0</version>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>

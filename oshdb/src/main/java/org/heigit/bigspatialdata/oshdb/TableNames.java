@@ -1,8 +1,7 @@
 package org.heigit.bigspatialdata.oshdb;
 
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-
 import java.util.Optional;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
 /**
  * Names for JDBC-Tables.
