@@ -5,8 +5,14 @@ import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
@@ -51,5 +57,45 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> {
       throws IOException, ClassNotFoundException, SQLException {
     return (GridOSHEntity)
         (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+  }
+
+  @Nonnull
+  protected Stream<? extends GridOSHEntity> getOshCellsStream(Pair<CellId, CellId> cellIdRange) {
+    try {
+      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
+      if (!oshCellsRawData.next()) {
+        return Stream.empty();
+      }
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+          new Iterator<GridOSHEntity>() {
+            @Override
+            public boolean hasNext() {
+              try {
+                return !oshCellsRawData.isClosed();
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+            }
+
+            @Override
+            public GridOSHEntity next() {
+              try {
+                if (!hasNext()) {
+                  throw new NoSuchElementException();
+                }
+                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
+                if (!oshCellsRawData.next()) {
+                  oshCellsRawData.close();
+                }
+                return data;
+              } catch (IOException | ClassNotFoundException | SQLException e) {
+                throw new RuntimeException(e);
+              }
+            }
+          }, 0
+      ), false);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
