@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.io.Serializable;
@@ -8,6 +9,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
@@ -92,7 +94,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     IgniteCompute compute = ignite.compute();
 
     return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
-      assert(TableNames.forOSMType(osmType).isPresent());
+      assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
@@ -106,6 +108,40 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             return callback.apply(oshEntityCell, cellIterator);
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
+  }
+
+  private Stream<X> runOnIgnite(
+      Callback<Stream<X>> callback
+  ) throws ParseException, SQLException, IOException {
+    CellIterator cellIterator = new CellIterator(
+        this._tstamps.get(),
+        this._bboxFilter, this._getPolyFilter(),
+        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+    );
+
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
+
+    Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
+    IgniteCompute compute = ignite.compute();
+
+    return this._typeFilter.stream().map((Function<OSMType, Stream<X>> & Serializable) osmType -> {
+      assert TableNames.forOSMType(osmType).isPresent();
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
+
+      return Streams.stream(cellIdRanges)
+          .flatMapToLong(cellIdRangeToCellIds())
+          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+            @SuppressWarnings("SerializableStoresNonSerializable")
+            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+            if (oshEntityCell == null) {
+              return Stream.<X>empty();
+            } else {
+              return callback.apply(oshEntityCell, cellIterator);
+            }
+          }))
+          .flatMap(x -> x);
+    }).flatMap(x -> x);
   }
 
   @Override
@@ -137,9 +173,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       cellIterator.iterateByContribution(oshEntityCell)
           .forEach(contribution -> {
             OSMContribution thisContribution = new OSMContribution(contribution);
-            if (contributions.size() > 0
-                && thisContribution.getEntityAfter().getId() != contributions
-                .get(contributions.size() - 1).getEntityAfter().getId()) {
+            if (contributions.size() > 0 && thisContribution.getEntityAfter().getId()
+                != contributions.get(contributions.size() - 1).getEntityAfter().getId()) {
               // immediately fold the results
               for (R r : mapper.apply(contributions)) {
                 accInternal.set(accumulator.apply(accInternal.get(), r));
@@ -187,9 +222,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
       cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
         OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
-        if (osmEntitySnapshots.size() > 0
-            && thisSnapshot.getEntity().getId() != osmEntitySnapshots
-            .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
+        if (osmEntitySnapshots.size() > 0 && thisSnapshot.getEntity().getId()
+            != osmEntitySnapshots.get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
           // immediately fold the results
           for (R r : mapper.apply(osmEntitySnapshots)) {
             accInternal.set(accumulator.apply(accInternal.get(), r));
@@ -206,5 +240,81 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       }
       return accInternal.get();
     }, identitySupplier, combiner);
+  }
+
+  // === streams ===
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMContribution(
+      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+    return runOnIgnite((oshEntityCell, cellIterator) -> {
+      // iterate over the history of all OSM objects in the current cell
+      return cellIterator.iterateByContribution(oshEntityCell)
+          .map(OSMContribution::new)
+          .map(mapper);
+    });
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+    return runOnIgnite((oshEntityCell, cellIterator) -> {
+      // iterate over the history of all OSM objects in the current cell
+      List<OSMContribution> contributions = new ArrayList<>();
+      List<X> result = new LinkedList<>();
+      cellIterator.iterateByContribution(oshEntityCell)
+          .map(OSMContribution::new)
+          .forEach(contribution -> {
+            if (contributions.size() > 0 && contribution.getEntityAfter().getId()
+                != contributions.get(contributions.size() - 1).getEntityAfter().getId()) {
+              // immediately flatten the results
+              Iterables.addAll(result, mapper.apply(contributions));
+              contributions.clear();
+            }
+            contributions.add(contribution);
+          });
+      // apply mapper and fold results one more time for last entity in current cell
+      if (contributions.size() > 0) {
+        Iterables.addAll(result, mapper.apply(contributions));
+      }
+      return result.stream();
+    });
+  }
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+    return runOnIgnite((oshEntityCell, cellIterator) -> {
+      // iterate over the history of all OSM objects in the current cell
+      return cellIterator.iterateByTimestamps(oshEntityCell)
+          .map(OSMEntitySnapshot::new)
+          .map(mapper);
+    });
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+    return runOnIgnite((oshEntityCell, cellIterator) -> {
+      // iterate over the history of all OSM objects in the current cell
+      List<OSMEntitySnapshot> snapshots = new ArrayList<>();
+      List<X> result = new LinkedList<>();
+      cellIterator.iterateByTimestamps(oshEntityCell)
+          .map(OSMEntitySnapshot::new)
+          .forEach(contribution -> {
+            if (snapshots.size() > 0 && contribution.getEntity().getId()
+                != snapshots.get(snapshots.size() - 1).getEntity().getId()) {
+              // immediately flatten the results
+              Iterables.addAll(result, mapper.apply(snapshots));
+              snapshots.clear();
+            }
+            snapshots.add(contribution);
+          });
+      // apply mapper and fold results one more time for last entity in current cell
+      if (snapshots.size() > 0) {
+        Iterables.addAll(result, mapper.apply(snapshots));
+      }
+      return result.stream();
+    });
   }
 }

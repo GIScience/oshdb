@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
 import java.sql.Connection;
+import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -828,7 +829,7 @@ public abstract class MapReducer<X> implements
     }
   }
 
-    // -----------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.
   // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
@@ -1140,7 +1141,7 @@ public abstract class MapReducer<X> implements
   }
 
   // -----------------------------------------------------------------------------------------------
-  // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
+  // "Iterator" like helpers (stream, collect)
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -1180,6 +1181,116 @@ public abstract class MapReducer<X> implements
       combinedLists.addAll(list2);
       return combinedLists;
     });
+  }
+
+  /**
+   * Returns all results as a Stream
+   *
+   * @return a stream with all results returned by the `mapper` function
+   */
+  @Contract(pure = true)
+  public Stream<X> stream() throws Exception {
+    try {
+      return this._stream();
+    } catch(UnsupportedOperationException e) {
+      LOG.info("stream not directly supported by chosen backend, falling back to .collect().stream()");
+      return this.collect().stream();
+    }
+  }
+
+  @Contract(pure = true)
+  private Stream<X> _stream() throws Exception {
+    switch (this._grouping) {
+      case NONE:
+        if (this._flatMappers.size() == 0) {
+          final SerializableFunction<Object, X> mapper = this._getMapper();
+          if (this._forClass.equals(OSMContribution.class)) {
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            final SerializableFunction<OSMContribution, X> contributionMapper =
+                data -> mapper.apply(data);
+            return this.mapStreamCellsOSMContribution(contributionMapper);
+          } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
+                data -> mapper.apply(data);
+            return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
+          } else {
+            throw new UnsupportedOperationException(
+                "Unimplemented data view: " + this._forClass.toString());
+          }
+        } else {
+          final SerializableFunction<Object, Iterable<X>> flatMapper = this._getFlatMapper();
+          if (this._forClass.equals(OSMContribution.class)) {
+            return this.flatMapStreamCellsOSMContributionGroupedById(
+                (List<OSMContribution> inputList) -> {
+                  List<X> outputList = new LinkedList<>();
+                  inputList.stream()
+                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
+                  return outputList;
+                });
+          } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+            return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
+                (List<OSMEntitySnapshot> inputList) -> {
+                  List<X> outputList = new LinkedList<>();
+                  inputList.stream()
+                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
+                  return outputList;
+                });
+          } else {
+            throw new UnsupportedOperationException("Unimplemented data view: "
+                + this._forClass.toString());
+          }
+        }
+      case BY_ID:
+        final SerializableFunction<Object, Iterable<X>> flatMapper;
+        if (this._flatMappers.size() == 0) {
+          final SerializableFunction<Object, X> mapper = this._getMapper();
+          flatMapper = data -> Collections.singletonList(mapper.apply(data));
+          // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in this
+          // case? should we add this as optimization case to getFlatMapper()??
+        } else {
+          flatMapper = this._getFlatMapper();
+        }
+        if (this._forClass.equals(OSMContribution.class)) {
+          return this.flatMapStreamCellsOSMContributionGroupedById(
+              (SerializableFunction<List<OSMContribution>, Iterable<X>>) flatMapper::apply
+          );
+        } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+          return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
+              (SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>>) flatMapper::apply
+          );
+        } else {
+          throw new UnsupportedOperationException(
+              "Unimplemented data view: " + this._forClass.toString());
+        }
+      default:
+        throw new UnsupportedOperationException(
+            "Unsupported grouping: " + this._grouping.toString());
+    }
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // Generic map-stream functions (internal).
+  // These need to be implemented by the actual db/processing backend!
+  // -----------------------------------------------------------------------------------------------
+
+  protected Stream<X> mapStreamCellsOSMContribution(
+      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
   }
 
   // -----------------------------------------------------------------------------------------------
