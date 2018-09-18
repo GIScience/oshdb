@@ -3,6 +3,8 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
@@ -510,6 +512,31 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         (acc, cur) -> { acc.add(cur); return acc; },
         (list1, list2) -> { LinkedList<X> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
     );
+  }
+
+  /**
+   * Returns all results as a Stream
+   *
+   * @return a stream with all results returned by the `mapper` function
+   */
+  @Contract(pure = true)
+  public Stream<Entry<U, X>> stream() throws Exception {
+    return this._mapReducer.stream().map(d -> new Entry<U, X>() {
+      @Override
+      public U getKey() {
+        return d.getKey();
+      }
+
+      @Override
+      public X getValue() {
+        return d.getValue();
+      }
+
+      @Override
+      public X setValue(X value) {
+        throw new RuntimeException("cannot modify the value of this entry");
+      }
+    });
   }
 
   // -----------------------------------------------------------------------------------------------

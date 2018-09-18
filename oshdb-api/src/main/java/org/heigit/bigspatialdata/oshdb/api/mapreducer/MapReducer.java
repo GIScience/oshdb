@@ -1192,7 +1192,7 @@ public abstract class MapReducer<X> implements
   public Stream<X> stream() throws Exception {
     try {
       return this._stream();
-    } catch(UnsupportedOperationException e) {
+    } catch (UnsupportedOperationException e) {
       LOG.info("stream not directly supported by chosen backend, falling back to .collect().stream()");
       return this.collect().stream();
     }
