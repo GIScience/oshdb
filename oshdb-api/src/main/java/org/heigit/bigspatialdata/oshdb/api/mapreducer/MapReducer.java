@@ -1151,11 +1151,11 @@ public abstract class MapReducer<X> implements
    * This method can be handy for testing purposes. But note that since the `action` doesn't produce
    * a return value, it must facilitate its own way of producing output.
    *
-   * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()`
+   * If you'd like to use such a "forEach" in a non-test use case, use `.stream().forEach()`
    * instead.
    *
    * @param action function that gets called for each transformed data entry
-   * @deprecated only for testing purposes
+   * @deprecated only for testing purposes, use `.stream().forEach()` instead
    */
   @Deprecated
   public void forEach(SerializableConsumer<X> action) throws Exception {

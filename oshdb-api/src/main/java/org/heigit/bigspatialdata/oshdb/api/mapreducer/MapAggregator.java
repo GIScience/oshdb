@@ -488,12 +488,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   /**
    * Iterates over the results of this data aggregation
    *
-   * This method can be handy for testing purposes. But note that since the `action` doesn't produce a return value, it must facilitate its own way of producing output.
+   * This method can be handy for testing purposes. But note that since the `action` doesn't produce
+   * a return value, it must facilitate its own way of producing output.
    *
-   * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()` instead.
+   * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()` or
+   * `.stream().forEach()`  instead.
    *
    * @param action function that gets called for each transformed data entry
-   * @deprecated only for testing purposes
+   * @deprecated only for testing purposes. use `.collect().forEach()` or `.stream().forEach()` instead
    */
   @Deprecated
   public void forEach(SerializableBiConsumer<U, List<X>> action) throws Exception {
