@@ -22,6 +22,7 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -200,11 +201,7 @@ class IgniteScanQueryHelper {
       return cellIdRange.getLeft().getId() <= id && cellIdRange.getRight().getId() >= id;
     }
 
-    interface Callback<S> extends Serializable {
-      S apply (GridOSHEntity oshEntityCell);
-    }
-
-    S call(Callback<S> callback) {
+    S call(CellProcessor<S> cellProcessor) {
       cache = node.cache(cacheName);
       // Getting a list of the partitions owned by this node.
       List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
@@ -218,7 +215,7 @@ class IgniteScanQueryHelper {
         )).setPartition(part), cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
-          return callback.apply(oshEntityCell);
+          return cellProcessor.apply(oshEntityCell, this.cellIterator);
         })) {
           S accExternal = identitySupplier.get();
           // reduce the results
@@ -246,17 +243,11 @@ class IgniteScanQueryHelper {
 
     @Override
     public S call() {
-      return super.call(oshEntityCell -> {
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByContribution(oshEntityCell)
-            .forEach(contribution -> {
-              OSMContribution osmContribution = new OSMContribution(contribution);
-              // immediately fold the result
-              accInternal
-                  .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
-            });
-        return accInternal.get();
-      });
+      return super.call(Kernels.getOSMContributionCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator
+      ));
     }
   }
 
@@ -275,31 +266,11 @@ class IgniteScanQueryHelper {
 
     @Override
     public S call() {
-      return super.call(oshEntityCell -> {
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        List<OSMContribution> contributions = new ArrayList<>();
-        cellIterator.iterateByContribution(oshEntityCell)
-            .forEach(contribution -> {
-              OSMContribution thisContribution = new OSMContribution(contribution);
-              if (contributions.size() > 0
-                  && thisContribution.getEntityAfter().getId() != contributions
-                  .get(contributions.size() - 1).getEntityAfter().getId()) {
-                // immediately fold the results
-                for (R r : mapper.apply(contributions)) {
-                  accInternal.set(accumulator.apply(accInternal.get(), r));
-                }
-                contributions.clear();
-              }
-              contributions.add(thisContribution);
-            });
-        // apply mapper and fold results one more time for last entity in current cell
-        if (contributions.size() > 0) {
-          for (R r : mapper.apply(contributions)) {
-            accInternal.set(accumulator.apply(accInternal.get(), r));
-          }
-        }
-        return accInternal.get();
-      });
+      return super.call(Kernels.getOSMContributionGroupingCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator
+      ));
     }
   }
 
@@ -318,15 +289,11 @@ class IgniteScanQueryHelper {
 
     @Override
     public S call() {
-      return super.call(oshEntityCell -> {
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
-          OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
-          // immediately fold the result
-          accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
-        });
-        return accInternal.get();
-      });
+      return super.call(Kernels.getOSMEntitySnapshotCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator
+      ));
     }
   }
 
@@ -345,30 +312,11 @@ class IgniteScanQueryHelper {
 
     @Override
     public S call() {
-      return super.call(oshEntityCell -> {
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
-          OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
-          if (osmEntitySnapshots.size() > 0
-              && thisSnapshot.getEntity().getId() != osmEntitySnapshots
-              .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
-            // immediately fold the results
-            for (R r : mapper.apply(osmEntitySnapshots)) {
-              accInternal.set(accumulator.apply(accInternal.get(), r));
-            }
-            osmEntitySnapshots.clear();
-          }
-          osmEntitySnapshots.add(thisSnapshot);
-        });
-        // apply mapper and fold results one more time for last entity in current cell
-        if (osmEntitySnapshots.size() > 0) {
-          for (R r : mapper.apply(osmEntitySnapshots)) {
-            accInternal.set(accumulator.apply(accInternal.get(), r));
-          }
-        }
-        return accInternal.get();
-      });
+      return super.call(Kernels.getOSMEntitySnapshotGroupingCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator
+      ));
     }
   }
 
