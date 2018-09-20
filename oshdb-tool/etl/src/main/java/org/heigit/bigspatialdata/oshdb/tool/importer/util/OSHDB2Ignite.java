@@ -51,7 +51,7 @@ public class OSHDB2Ignite {
     IgniteConfiguration cfg = IgnitionEx.loadConfiguration(igniteXML.toString()).get1();
     cfg.setIgniteInstanceName("IgniteImportClientInstance");
     try (Ignite ignite = Ignition.start(cfg)) {
-      ignite.active(true);
+      ignite.cluster().active(true);
 
       try (Statement stmt = oshdb.createStatement()) {
 
@@ -62,15 +62,21 @@ public class OSHDB2Ignite {
       } catch (SQLException ex) {
         LOG.error("", ex);
       }
+      
+      //deactive  cluster after import, so that all caches get persist
+      ignite.cluster().active(false);
 
     }
 
   }
 
   private static <T> void doGridImport(Ignite ignite, Statement stmt, TableNames cacheName, String prefix) {
-    CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheName.toString(prefix));
+	final String cacheWithPrefix = cacheName.toString(prefix);
+    CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheWithPrefix);
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
+    
+    ignite.cluster().disableWal(cacheWithPrefix);
 
     IgniteCache<Long, T> cache = ignite.getOrCreateCache(cacheCfg);
     try (IgniteDataStreamer<Long, T> streamer = ignite.dataStreamer(cache.getName())) {
@@ -104,9 +110,10 @@ public class OSHDB2Ignite {
         System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into " + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException | SQLException e) {
         LOG.error("Could not import Grid!", e);
-
       }
     }
+    
+    ignite.cluster().enableWal(cacheWithPrefix);
 
   }
   
