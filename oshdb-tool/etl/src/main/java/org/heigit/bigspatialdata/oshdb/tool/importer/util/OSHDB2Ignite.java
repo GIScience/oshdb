@@ -71,7 +71,7 @@ public class OSHDB2Ignite {
   }
 
   private static <T> void doGridImport(Ignite ignite, Statement stmt, TableNames cacheName, String prefix) {
-	final String cacheWithPrefix = cacheName.toString(prefix);
+    final String cacheWithPrefix = cacheName.toString(prefix);
     CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheWithPrefix);
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
