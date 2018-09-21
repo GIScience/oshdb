@@ -31,7 +31,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
 
   public OSHDBIgnite(Ignite ignite) {
     this._ignite = ignite;
-    this._ignite.active(true);
+    this._ignite.cluster().active(true);
   }
 
   public OSHDBIgnite(String igniteConfigFilePath) {
@@ -42,7 +42,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
     Ignition.setClientMode(true);
 
     this._ignite = Ignition.start(igniteConfig.toString());
-    this._ignite.active(true);
+    this._ignite.cluster().active(true);
   }
 
   @Override
