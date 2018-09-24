@@ -3,6 +3,8 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
+import java.io.IOException;
+import java.sql.SQLException;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
@@ -27,6 +29,7 @@ import org.jetbrains.annotations.Contract;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.json.simple.parser.ParseException;
 
 /**
  * A MapReducer with built-in aggregation by an arbitrary index
@@ -100,8 +103,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    */
   @SuppressWarnings("unused")
   @Contract(pure = true)
-  public TagInterpreter getTagInterpreter() {
-    return this._mapReducer.getTagInterpreter();
+  public TagInterpreter getTagInterpreter() throws ParseException, SQLException, IOException {
+    return this._mapReducer._getTagInterpreter();
   }
 
   /**
@@ -112,7 +115,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @SuppressWarnings("unused")
   @Contract(pure = true)
   public TagTranslator getTagTranslator() {
-    return this._mapReducer.getTagTranslator();
+    return this._mapReducer._getTagTranslator();
   }
 
   // -----------------------------------------------------------------------------------------------
