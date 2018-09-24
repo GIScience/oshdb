@@ -4,7 +4,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 
-public abstract class OSHDBDatabase extends OSHDB {
+public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
     protected String prefix = "";
 
     /**
