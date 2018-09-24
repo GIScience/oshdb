@@ -46,6 +46,11 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   }
 
   @Override
+  public OSHDBIgnite prefix(String prefix) {
+    return (OSHDBIgnite) super.prefix(prefix);
+  }
+
+  @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     MapReducer<X> mapReducer;
     switch (this.computeMode()) {

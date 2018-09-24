@@ -24,9 +24,14 @@ public class OSHDBH2 extends OSHDBJdbc {
     super(conn);
   }
 
+  @Override
+  public OSHDBH2 prefix(String prefix) {
+    return (OSHDBH2) super.prefix(prefix);
+  }
+
+  @Override
   public OSHDBH2 multithreading(boolean useMultithreading) {
-    super.multithreading(useMultithreading);
-    return this;
+    return (OSHDBH2) super.multithreading(useMultithreading);
   }
 
   /**

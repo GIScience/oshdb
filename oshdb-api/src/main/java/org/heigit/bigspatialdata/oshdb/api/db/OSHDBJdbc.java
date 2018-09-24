@@ -31,6 +31,11 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
   }
 
   @Override
+  public OSHDBJdbc prefix(String prefix) {
+    return (OSHDBJdbc) super.prefix(prefix);
+  }
+
+  @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     MapReducer<X> mapReducer;
     if (this.useMultithreading)
