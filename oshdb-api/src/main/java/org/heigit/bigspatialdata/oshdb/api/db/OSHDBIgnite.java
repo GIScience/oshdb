@@ -3,10 +3,18 @@ package org.heigit.bigspatialdata.oshdb.api.db;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.OptionalLong;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
+import org.heigit.bigspatialdata.oshdb.TableNames;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
@@ -31,7 +39,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
 
   public OSHDBIgnite(Ignite ignite) {
     this._ignite = ignite;
-    this._ignite.active(true);
+    this._ignite.cluster().active(true);
   }
 
   public OSHDBIgnite(String igniteConfigFilePath) {
@@ -42,12 +50,25 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
     Ignition.setClientMode(true);
 
     this._ignite = Ignition.start(igniteConfig.toString());
-    this._ignite.active(true);
+    this._ignite.cluster().active(true);
+  }
+
+  @Override
+  public OSHDBIgnite prefix(String prefix) {
+    return (OSHDBIgnite) super.prefix(prefix);
   }
 
   @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     MapReducer<X> mapReducer;
+    Collection<String> allCaches = this.getIgnite().cacheNames();
+    Collection<String> expectedCaches = Stream.of(OSMType.values())
+        .map(TableNames::forOSMType).filter(Optional::isPresent).map(Optional::get)
+        .map(t -> t.toString(this.prefix()))
+        .collect(Collectors.toList());
+    if (!allCaches.containsAll(expectedCaches)) {
+      throw new OSHDBTableNotFoundException(StringUtils.join(expectedCaches, ", "));
+    }
     switch (this.computeMode()) {
       case LocalPeek:
         mapReducer = new MapReducerIgniteLocalPeek<X>(this, forClass);

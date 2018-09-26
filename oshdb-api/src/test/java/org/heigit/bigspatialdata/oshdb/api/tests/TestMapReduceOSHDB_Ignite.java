@@ -34,10 +34,8 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
     this.keytables = oshdb_h2;
 
     Ignite ignite = ((OSHDBIgnite) this.oshdb).getIgnite();
-    ignite.active(true);
+    ignite.cluster().active(true);
 
-    // todo: also ways+relations? (at the moment we don't use them in the actual TestMapReduce
-    // tests)
     CacheConfiguration<Long, GridOSHNodes> cacheCfg =
         new CacheConfiguration<>(TableNames.T_NODES.toString(prefix));
     cacheCfg.setStatisticsEnabled(true);
@@ -45,6 +43,9 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
     IgniteCache<Long, GridOSHNodes> cache = ignite.getOrCreateCache(cacheCfg);
     cache.clear();
+    // dummy caches for ways+relations (at the moment we don't use them in the actual TestMapReduce)
+    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_WAYS.toString(prefix)));
+    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_RELATIONS.toString(prefix)));
 
     // load test data into ignite cache
     try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache.getName())) {
