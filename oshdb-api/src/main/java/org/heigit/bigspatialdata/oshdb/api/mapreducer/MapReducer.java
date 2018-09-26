@@ -201,8 +201,8 @@ public abstract class MapReducer<X> implements
    */
   @SuppressWarnings("unused")
   @Contract(pure = true)
-  public TagInterpreter getTagInterpreter() {
-    return this._tagInterpreter;
+  public TagInterpreter getTagInterpreter() throws ParseException, SQLException, IOException {
+    return this._getTagInterpreter();
   }
 
   /**
@@ -213,7 +213,7 @@ public abstract class MapReducer<X> implements
   @SuppressWarnings("unused")
   @Contract(pure = true)
   public TagTranslator getTagTranslator() {
-    return this._tagTranslator;
+    return this._getTagTranslator();
   }
 
   // -----------------------------------------------------------------------------------------------

@@ -4,8 +4,6 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.TopologyException;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import java.util.ArrayList;
@@ -20,6 +18,10 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 
+/**
+ * Class that computes the DE9IM relations between two geometries
+ *
+ */
 public class DE9IM {
 
   public enum relationType {
@@ -28,6 +30,14 @@ public class DE9IM {
   private final STRtree candidateTree = new STRtree();
   private OSHDBBoundingBox bbox;
 
+  /**
+   * basic constructor
+   * @param oshdb OSHDB connection
+   * @param bbox Bounding box for query
+   * @param tstamps Timestamps of query
+   * @param key OSM key of objects that should be queried
+   * @param value OSM value of objects that should be queried
+   */
   // todo replace key and value with mapReduce function
   public DE9IM(
       OSHDBJdbc oshdb,
@@ -83,143 +93,87 @@ public class DE9IM {
   }
 
   /**
-   * Checks whether a geometry lies within a distance from another geometry
-   * The algorithm searches for the two closest points and calcualtes the distance between them.
+   * Returns the DE9IM relation type between two geometries
+   *
+   * Important note: COVERS and TOUCHES are only recognized, if the geometries share a
+   * vertex/node, not if they touch at a segment.
+   *
    * @param geom1 Geometry 1
    * @param geom2 Geometry 2
    * @return True, if the geometry is within the distance of the other geometry, otherwise false
    */
-  public static <X extends Geometry> relationType getRelation(X geom1, X geom2) {
+  public static <X extends Geometry> relationType relate(X geom1, X geom2) {
 
-    Geometry geom1converted = geom1;
-    Geometry geom2converted = geom2;
+    Geometry geom11 = geom1;
+    Geometry geom21 = geom2;
 
     // Check if geometry is closed line string
     if (geom1 instanceof LineString) {
       if (((LineString) geom1).isClosed()) {
-        geom1converted = new GeometryFactory().createPolygon(geom1.getCoordinates());
+        geom11 = new GeometryFactory().createPolygon(geom1.getCoordinates());
       }
     }
     if (geom2 instanceof LineString) {
       if (((LineString) geom2).isClosed()) {
-        geom2converted = new GeometryFactory().createPolygon(geom2.getCoordinates());
+        geom21 = new GeometryFactory().createPolygon(geom2.getCoordinates());
       }
     }
 
-    if (geom1converted instanceof Polygon & geom2converted instanceof Polygon) {
-      // Get boundary and interior of both geometries
-      Geometry boundary1 = geom1converted.getBoundary();
-      Geometry boundary2 = geom2converted.getBoundary();
-      if (geom1converted.equalsNorm(geom2converted)) {
+    // Get boundaries of geometries
+    Geometry boundary2 = geom21.getBoundary();
+    Geometry boundary1 = geom11.getBoundary();
+
+    if (geom1.disjoint(geom21)) {
+      return relationType.DISJOINT;
+
+    } else if (geom11.getDimension() == geom21.getDimension()) {
+      if (geom1.equalsNorm(geom21)) {
         return relationType.EQUALS;
-      } else if (geom1converted.touches(geom2converted)) {
+      } else if (geom11.touches(geom21)) {
         return relationType.TOUCHES;
-      } else if (geom1converted.covers(geom2converted)) {
-        if (!boundary1.touches(geom2converted)) {
-          return relationType.CONTAINS;
-        } else {
-          return relationType.COVERS;
-        }
-      } else if (geom1converted.overlaps(geom2converted)) {
-        return relationType.OVERLAPS;
-      } else if (geom1converted.coveredBy(geom2converted) & boundary1.intersects(boundary2)) {
-        return relationType.COVEREDBY;
-      } else if (geom1converted.within(geom2converted) & !boundary1.intersects(boundary2)) {
-        return relationType.INSIDE;
-      } else if (geom1converted.disjoint(geom2converted)) {
-        return relationType.DISJOINT;
-      } else {
-        return relationType.UNKNOWN;
-      }
-    } else if (geom1converted instanceof Polygon && geom2converted instanceof LineString) {
-      Geometry boundary1 = geom1converted.getBoundary();
-      if (geom1converted.touches(geom2converted)) {
-        return relationType.TOUCHES;
-      } else if (geom1converted.contains(geom2converted) & boundary1.touches(geom2converted)) {
+      } else if (geom11.contains(geom21) & !boundary1.intersects(boundary2)) {
+        return relationType.CONTAINS;
+      } else if (geom11.covers(geom21) & boundary1.intersects(boundary2)) {
         return relationType.COVERS;
-      } else if (geom1converted.contains(geom2converted) & !boundary1.intersects(geom2converted)) {
-        return relationType.CONTAINS;
-      } else if (geom1converted.intersects(geom2converted)) {
+      } else if (geom11.overlaps(geom21)) {
         return relationType.OVERLAPS;
-      } else if (geom1converted.disjoint(geom2converted)) {
-        return relationType.DISJOINT;
-      } else {
-        return relationType.UNKNOWN;
-      }
-    } else if (geom1converted instanceof Polygon && geom2converted instanceof Point) {
-      if (geom1converted.contains(geom2converted)) {
-        return relationType.CONTAINS;
-      } else {
-        return relationType.DISJOINT;
-      }
-    } else if (geom1converted instanceof LineString && geom2converted instanceof Polygon) {
-
-      Geometry boundary2 = geom2converted.getBoundary();
-
-      if (geom1converted.within(geom2converted) & !geom1converted.intersects(boundary2)) {
-        return relationType.INSIDE;
-      } else if (geom1converted.intersects(geom2converted) & !geom1converted.intersects(boundary2)) {
+      } else if (geom11.coveredBy(geom21) & boundary1.intersects(boundary2)) {
         return relationType.COVEREDBY;
-      } else if (geom1converted.intersects(geom2converted) & geom1converted.intersects(boundary2)) {
-        return relationType.OVERLAPS;
-      } else if (geom1converted.touches(geom2converted)) {
-        return relationType.TOUCHES;
-      } else if (!geom1converted.intersects(geom2converted) & !geom1converted.equalsNorm(geom2converted)) {
-        return relationType.DISJOINT;
+      } else if (geom11.within(geom21) & !boundary1.intersects(boundary2)) {
+        return relationType.INSIDE;
       }
 
-      //throw new UnsupportedOperationException("Not implemented yet.");
-    } else if (geom1converted instanceof LineString && geom2converted instanceof LineString) {
-      if (geom1.equalsNorm(geom2converted)) {
-        return relationType.EQUALS;
-      } else if (geom1converted.contains(geom2converted) & !geom1converted.equalsNorm(geom2converted)) {
-        return relationType.CONTAINS;
-      } else if (geom1converted.coveredBy(geom2converted)) {
+    } else if (geom11.getDimension() < geom21.getDimension()) {
+
+      if (geom11.touches(geom21)) {
+        return relationType.TOUCHES;
+      } else if (geom11.coveredBy(geom21) & boundary1.intersects(boundary2)) {
         return relationType.COVEREDBY;
-      } else if (geom1converted.touches(geom2converted)) {
-        return relationType.TOUCHES;
-      } else if (geom1converted.intersects(geom2converted) & !geom1converted.touches(geom2converted)) {
+      } else if (geom11.within(geom21) & !boundary1.intersects(boundary2)) {
+        return relationType.INSIDE;
+      } else if (geom11.intersects(geom21)) {
         return relationType.OVERLAPS;
-      } else if (!geom1converted.intersects(geom2converted) & !geom1converted.equalsNorm(geom2converted)) {
-        return relationType.DISJOINT;
-      } else {
-        return relationType.UNKNOWN;
       }
-    } else if (geom1converted instanceof LineString && geom2converted instanceof Point) {
-      if (geom1converted.contains(geom2converted)) {
+
+    } else if (geom11.getDimension() > geom21.getDimension()) {
+
+      if (geom11.touches(geom21)) {
+        return relationType.TOUCHES;
+      } else if (geom11.contains(geom21) & !boundary1.intersects(boundary2)) {
         return relationType.CONTAINS;
-      } else if (geom1converted.touches(geom2converted)) {
-        return relationType.TOUCHES;
-      } else if (!geom1converted.intersects(geom2converted)) {
-        return relationType.DISJOINT;
+      } else if (geom11.covers(geom21) & boundary1.intersects(boundary2)) {
+        return relationType.COVERS;
+      } else if (geom11.contains(geom21) & !boundary1.intersects(geom21)) {
+        return relationType.CONTAINS;
+      } else if (geom11.intersects(geom21)) {
+        return relationType.OVERLAPS;
       }
-    } else if (geom1converted instanceof Point && geom2converted instanceof Polygon) {
-      if (geom1converted.within(geom2converted)) {
-        return relationType.INSIDE;
-      } else if (geom1converted.touches(geom2converted)) {
-        return relationType.TOUCHES;
-      } else if (geom1converted.disjoint(geom2converted)) {
-        return relationType.DISJOINT;
-      }
-    } else if (geom1converted instanceof Point  && geom2converted instanceof LineString) {
-      if (geom1converted.within(geom2converted)) {
-        return relationType.INSIDE;
-      } else if (geom1converted.touches(geom2converted)) {
-        return relationType.TOUCHES;
-      } else if (geom1converted.disjoint(geom2converted)) {
-        return relationType.DISJOINT;
-      }
-    } else if (geom1converted instanceof Point  && geom2converted instanceof Point ) {
-      if (geom1.equalsNorm(geom2converted)) {
-        return relationType.EQUALS;
-      } else {
-        return relationType.DISJOINT;
-      }
-    } else {
-      System.out.println("Unknown geometry type.");
     }
+
     return relationType.UNKNOWN;
+
   }
+
 
   /**
    * Filter objects based on type of spatial relation to snapshot
@@ -256,7 +210,7 @@ public class DE9IM {
               if (candidateSnapshot.getEntity().getType().equals(OSMType.RELATION)) return false;
               // Get geometry of candidate and filter based on relationType
               Geometry candidateGeom = candidateSnapshot.getGeometryUnclipped();
-              return getRelation(geom, candidateGeom).equals(relationType);
+              return relate(geom, candidateGeom).equals(relationType);
             } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
@@ -293,7 +247,7 @@ public class DE9IM {
               } else {
                 candidateGeom = candidateContribution.getGeometryUnclippedBefore();
               }
-              return getRelation(geom, candidateGeom).equals(relationType);
+              return relate(geom, candidateGeom).equals(relationType);
             } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
