@@ -4,8 +4,8 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 
-public abstract class OSHDBDatabase extends OSHDB {
-    protected String prefix = "";
+public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
+    private String prefix = "";
 
     /**
      * Factory function that creates a mapReducer object of the appropriate data type class for this oshdb backend implemenation
