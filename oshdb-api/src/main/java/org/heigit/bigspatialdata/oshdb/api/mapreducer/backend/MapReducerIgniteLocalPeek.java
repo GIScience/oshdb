@@ -238,6 +238,7 @@ class IgniteLocalPeekHelper {
               .forEach(key -> localKeys.add(new ImmutablePair<>(cache, key)));
         });
       });
+      Collections.shuffle(localKeys);
       return localKeys;
     }
 
