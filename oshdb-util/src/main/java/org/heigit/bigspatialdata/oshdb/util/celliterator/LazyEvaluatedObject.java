@@ -35,4 +35,8 @@ public class LazyEvaluatedObject<T> implements Supplier<T> {
     }
     return false;
   }
+
+  public boolean wasEvaluated() {
+    return this.evaluated;
+  }
 }
