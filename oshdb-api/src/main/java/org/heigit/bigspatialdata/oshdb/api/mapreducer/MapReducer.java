@@ -111,8 +111,8 @@ public abstract class MapReducer<X> implements
   protected EnumSet<OSMType> _typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
-  final List<SerializableFunction> _mappers = new LinkedList<>();
-  private final Set<SerializableFunction> _flatMappers = new HashSet<>();
+  final List<MapFunction> _mappers = new LinkedList<>();
+
 
   // basic constructor
   protected MapReducer(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
@@ -138,7 +138,6 @@ public abstract class MapReducer<X> implements
     this._preFilters.addAll(obj._preFilters);
     this._filters.addAll(obj._filters);
     this._mappers.addAll(obj._mappers);
-    this._flatMappers.addAll(obj._flatMappers);
   }
 
   @NotNull
@@ -587,7 +586,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
     MapReducer<?> ret = this.copy();
-    ret._mappers.add(mapper);
+    ret._mappers.add(new MapFunction(mapper, false));
     //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
     return (MapReducer<R>) ret;
   }
@@ -605,8 +604,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
-    ret._mappers.add(flatMapper);
-    ret._flatMappers.add(flatMapper);
+    ret._mappers.add(new MapFunction(flatMapper, true));
     //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
     return (MapReducer<R>) ret;
   }
@@ -740,14 +738,12 @@ public abstract class MapReducer<X> implements
       // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
       // accordingly
       MapReducer<X> ret = this.copy();
-      List<SerializableFunction> mappers = new LinkedList<>(ret._mappers);
-      Set<SerializableFunction> flatMappers = new HashSet<>(ret._flatMappers);
+      List<MapFunction> mappers = new LinkedList<>(ret._mappers);
       ret._mappers.clear();
-      ret._flatMappers.clear();
       MapAggregator<OSHDBTimestamp, ?> mapAggregator =
           new MapAggregator<>(ret, indexer, this.getZerofillTimestamps());
-      for (SerializableFunction action : mappers) {
-        if (flatMappers.contains(action)) {
+      for (MapFunction action : mappers) {
+        if (action.isFlatMapper()) {
           //noinspection unchecked – applying untyped function (we don't know intermediate types)
           mapAggregator = mapAggregator.flatMap(action);
         } else {
@@ -873,7 +869,7 @@ public abstract class MapReducer<X> implements
       throws Exception {
     switch (this._grouping) {
       case NONE:
-        if (this._flatMappers.size() == 0) {
+        if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
             //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
@@ -926,7 +922,7 @@ public abstract class MapReducer<X> implements
         }
       case BY_ID:
         final SerializableFunction<Object, Iterable<X>> flatMapper;
-        if (this._flatMappers.size() == 0) {
+        if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           flatMapper = data -> Collections.singletonList(mapper.apply(data));
           // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in this
@@ -1438,8 +1434,9 @@ public abstract class MapReducer<X> implements
     // this._mappers.size() == 1
     return (SerializableFunction<Object, X>) (data -> {
       Object result = data;
-      for (SerializableFunction mapper : this._mappers) {
-        if (this._flatMappers.contains(mapper)) {
+      for (MapFunction mapper : this._mappers) {
+        if (mapper.isFlatMapper()) {
+          assert false : "flatMap callback requested in getMapper";
           throw new UnsupportedOperationException("cannot flat map this");
         } else {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
@@ -1458,11 +1455,13 @@ public abstract class MapReducer<X> implements
     return (SerializableFunction<Object, Iterable<X>>) (data -> {
       List<Object> results = new LinkedList<>();
       results.add(data);
-      for (SerializableFunction mapper : this._mappers) {
+      for (MapFunction mapper : this._mappers) {
         List<Object> newResults = new LinkedList<>();
-        if (this._flatMappers.contains(mapper)) {
+        if (mapper.isFlatMapper()) {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
-          results.forEach(result -> Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result)));
+          results.forEach(result ->
+              Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result))
+          );
         } else {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           results.forEach(result -> newResults.add(mapper.apply(result)));
@@ -1512,5 +1511,28 @@ class PayloadWithWeight<X> implements Serializable {
   PayloadWithWeight(X num, double weight) {
     this.num = num;
     this.weight = weight;
+  }
+}
+
+// function that has a flag: isFlatMapper
+class MapFunction implements SerializableFunction {
+  private SerializableFunction mapper;
+  private boolean isFlatMapper;
+
+  MapFunction(SerializableFunction mapper, boolean isFlatMapper) {
+    this.mapper = mapper;
+    this.isFlatMapper = isFlatMapper;
+  }
+
+  boolean isFlatMapper() {
+    return this.isFlatMapper;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  // mappers are using raw types because they work on arbitrary data types
+  // the necessary type checks are done at the respective setters
+  public Object apply(Object o) {
+    return this.mapper.apply(o);
   }
 }
