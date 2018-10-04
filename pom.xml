@@ -37,8 +37,8 @@
     <orgjson.version>20160810</orgjson.version>
     <osmosis.version>0.45</osmosis.version>
     <postgresql.version>42.1.4</postgresql.version>
-    <protobuf.version>2.6.1</protobuf.version>
-    <roaringbitmap.version>0.6.59</roaringbitmap.version>
+    <protobuf.version>3.6.1</protobuf.version>
+    <roaringbitmap.version>0.7.17</roaringbitmap.version>
     <rxjava2.version>2.1.9</rxjava2.version>
     <wololo.version>0.10.0</wololo.version>
   </properties>
