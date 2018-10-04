@@ -72,7 +72,13 @@ public class OSHDBGeometryBuilder {
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
       if (areaDecider.isArea(entity)) {
-        return geometryFactory.createPolygon(coords);
+        try {
+          return geometryFactory.createPolygon(coords);
+        } catch (IllegalArgumentException e) {
+          LOG.warn("way/{} should be closed - falling back to linestring geometry", way.getId());
+          System.out.println("way/"+way.getId()+" should be closed - falling back to linestring geometry");
+          return geometryFactory.createLineString(coords);
+        }
       } else if (coords.length >= 2) {
         return geometryFactory.createLineString(coords);
       } else if (coords.length == 1) {
