@@ -417,16 +417,21 @@ class IgniteLocalPeekHelper {
     ComputeTaskFuture<S> result = compute.executeAsync(
         new CancelableBroadcastTask<Object, S>(computeJob, identitySupplier, combiner), null);
 
+    S ret;
     if (!oshdb.timeoutInMilliseconds().isPresent()) {
-      return result.get();
+      ret = result.get();
     } else {
       try {
-        return result.get(oshdb.timeoutInMilliseconds().getAsLong());
+        ret = result.get(oshdb.timeoutInMilliseconds().getAsLong());
       } catch (IgniteFutureTimeoutException e) {
         result.cancel();
         throw new OSHDBTimeoutException();
       }
     }
+    if (oshdb.onClose().isPresent()) {
+      compute.broadcast(oshdb.onClose().get());
+    }
+    return ret;
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(
