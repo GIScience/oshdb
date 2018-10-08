@@ -86,7 +86,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    S ret = this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+    S ret = this._typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
@@ -121,10 +121,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
 
     final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
 
-    Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
+    OSHDBIgnite oshdb = ((OSHDBIgnite) this._oshdb);
+    Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    return this._typeFilter.stream().map((Function<OSMType, Stream<X>> & Serializable) osmType -> {
+    Stream<X> ret = _typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
@@ -142,6 +143,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
           }))
           .flatMap(Collection::stream);
     }).flatMap(x -> x);
+
+    if (oshdb.onClose().isPresent()) {
+      compute.broadcast(oshdb.onClose().get());
+    }
+    return ret;
   }
 
   // === map-reduce operations ===
