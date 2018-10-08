@@ -84,6 +84,7 @@ public class TestMapAggregateByIndex {
 
   @Test
   public void testZerofill() throws Exception {
+    // partially empty result
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .osmEntityFilter(entity -> entity.getId() == 617308093)
@@ -97,6 +98,20 @@ public class TestMapAggregateByIndex {
     assertEquals(true, result.containsKey(-1L));
     assertEquals(0, (int)result.get(-1L));
     assertEquals(7, (int)result.get(617308093L));
+
+    // totally empty result
+    result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .osmEntityFilter(entity -> false)
+        .aggregateBy(
+            contribution -> contribution.getEntityAfter().getId(),
+            Collections.singletonList(-1L)
+        )
+        .count();
+
+    assertEquals(1, result.entrySet().size());
+    assertEquals(true, result.containsKey(-1L));
+    assertEquals(0, (int)result.get(-1L));
   }
 
   @Test

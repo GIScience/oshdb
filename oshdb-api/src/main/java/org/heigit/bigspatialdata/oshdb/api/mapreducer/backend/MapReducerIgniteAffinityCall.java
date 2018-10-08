@@ -82,10 +82,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
 
     final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
 
-    Ignite ignite = ((OSHDBIgnite) this._oshdb).getIgnite();
+    OSHDBIgnite oshdb = ((OSHDBIgnite) this._oshdb);
+    Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+    S ret = this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
@@ -95,11 +96,18 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
           .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
             @SuppressWarnings("SerializableStoresNonSerializable")
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
-            if (oshEntityCell == null)
+            if (oshEntityCell == null) {
               return identitySupplier.get();
-            return cellProcessor.apply(oshEntityCell, cellIterator);
+            } else {
+              return cellProcessor.apply(oshEntityCell, cellIterator);
+            }
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
+
+    if (oshdb.onClose().isPresent()) {
+      compute.broadcast(oshdb.onClose().get());
+    }
+    return ret;
   }
 
   private Stream<X> stream(

@@ -206,7 +206,6 @@ class IgniteScanQueryHelper {
       // Getting a list of the partitions owned by this node.
       List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
       Collections.shuffle(myPartitions);
-      // ^ todo: check why this gives 2x speedup (regarding "uptime") on cluster!!??
       // run processing in parallel
       return myPartitions.parallelStream().map(part -> {
         // noinspection unchecked
@@ -342,6 +341,9 @@ class IgniteScanQueryHelper {
     IgniteCompute compute = ignite.compute(ignite.cluster().forNodeIds(nodesToPart.keySet()));
     computeJob.setNodesToPart(nodesToPart);
     Collection<S> nodeResults = compute.broadcast(computeJob);
+    if (oshdb.onClose().isPresent()) {
+      compute.broadcast(oshdb.onClose().get());
+    }
     return nodeResults.stream().reduce(identitySupplier.get(), combiner);
   }
 

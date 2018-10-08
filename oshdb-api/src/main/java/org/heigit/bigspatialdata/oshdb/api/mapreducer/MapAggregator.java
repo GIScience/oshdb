@@ -710,19 +710,17 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     if (zerofills.isEmpty()) return Collections.emptyList();
     SortedSet<Object> seen = new TreeSet<>(zerofills.get(0));
     SortedSet<Object> nextLevelKeys = new TreeSet<>();
-    boolean last = false;
     for (Object index : keys) {
       Object v;
       if (index instanceof OSHDBCombinedIndex) {
         v = ((OSHDBCombinedIndex) index).getSecondIndex();
         nextLevelKeys.add(((OSHDBCombinedIndex) index).getFirstIndex());
       } else {
-        last = true;
         v = index;
       }
       seen.add(v);
     }
-    if (last) {
+    if (zerofills.size() == 1) {
       return seen;
     } else {
       Collection<?> nextLevel = this._completeZerofill(

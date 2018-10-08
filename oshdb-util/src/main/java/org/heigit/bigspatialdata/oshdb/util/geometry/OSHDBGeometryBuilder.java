@@ -72,10 +72,16 @@ public class OSHDBGeometryBuilder {
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
       if (areaDecider.isArea(entity)) {
-        return geometryFactory.createPolygon(coords);
-      } else if (coords.length >= 2) {
+        if (coords.length >= 4 && coords[0].equals2D(coords[coords.length - 1])) {
+          return geometryFactory.createPolygon(coords);
+        } else {
+          LOG.warn("way/{} doesn't form a linear ring - falling back to linestring", way.getId());
+        }
+      }
+      if (coords.length >= 2) {
         return geometryFactory.createLineString(coords);
-      } else if (coords.length == 1) {
+      }
+      if (coords.length == 1) {
         LOG.info("way/{} is single-noded - falling back to point geometry", way.getId());
         return geometryFactory.createPoint(coords[0]);
       } else {

@@ -299,8 +299,9 @@ public class TagTranslator {
       return this.roleToString.get(role);
     }
     OSMRole roleString;
-    try (PreparedStatement Rolestmt = conn
-        .prepareStatement("select TXT from " + TableNames.E_ROLE.toString() + " WHERE ID = ?;")) {
+    try (PreparedStatement Rolestmt = conn.prepareStatement(
+        "select TXT from " + TableNames.E_ROLE.toString() + " WHERE ID = ?;"
+    )) {
       Rolestmt.setInt(1, role.toInt());
       ResultSet Roles = Rolestmt.executeQuery();
       Roles.next();
@@ -317,5 +318,9 @@ public class TagTranslator {
 
   private int getFakeId(String s) {
     return -Math.abs(s.hashCode());
+  }
+
+  public Connection getConnection() {
+    return conn;
   }
 }
