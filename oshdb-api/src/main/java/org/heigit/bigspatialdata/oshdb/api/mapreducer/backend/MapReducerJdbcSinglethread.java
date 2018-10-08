@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
@@ -68,7 +69,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   }
 
   private Stream<X> stream(
-      CellProcessor<Stream<X>> cellProcessor
+      CellProcessor<Collection<X>> cellProcessor
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     CellIterator cellIterator = new CellIterator(
         this._tstamps.get(),
@@ -78,7 +79,8 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
     return Streams.stream(this._getCellIdRanges())
         .flatMap(this::getOshCellsStream)
-        .flatMap(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator));
+        .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator))
+        .flatMap(Collection::stream);
   }
 
   // === map-reduce operations ===

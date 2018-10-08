@@ -3,9 +3,11 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
@@ -16,7 +18,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 
-class Kernels {
+class Kernels implements Serializable {
   interface CellProcessor<S> extends SerializableBiFunction<GridOSHEntity, CellIterator, S> {}
 
   interface CancelableProcessStatus {
@@ -187,19 +189,20 @@ class Kernels {
   // === stream processors ===
 
   @Nonnull
-  static <S> CellProcessor<Stream<S>> getOSMContributionCellStreamer(
+  static <S> CellProcessor<Collection<S>> getOSMContributionCellStreamer(
       SerializableFunction<OSMContribution, S> mapper
   ) {
     return (oshEntityCell, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       return cellIterator.iterateByContribution(oshEntityCell)
           .map(OSMContribution::new)
-          .map(mapper);
+          .map(mapper)
+          .collect(Collectors.toList());
     };
   }
 
   @Nonnull
-  static <S> CellProcessor<Stream<S>> getOSMContributionGroupingCellStreamer(
+  static <S> CellProcessor<Collection<S>> getOSMContributionGroupingCellStreamer(
       SerializableFunction<List<OSMContribution>, Iterable<S>> mapper
   ) {
     return (oshEntityCell, cellIterator) -> {
@@ -221,24 +224,25 @@ class Kernels {
       if (contributions.size() > 0) {
         Iterables.addAll(result, mapper.apply(contributions));
       }
-      return result.stream();
+      return result;
     };
   }
 
   @Nonnull
-  static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotCellStreamer(
+  static <S> CellProcessor<Collection<S>> getOSMEntitySnapshotCellStreamer(
       SerializableFunction<OSMEntitySnapshot, S> mapper
   ) {
     return (oshEntityCell, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       return cellIterator.iterateByTimestamps(oshEntityCell)
           .map(OSMEntitySnapshot::new)
-          .map(mapper);
+          .map(mapper)
+          .collect(Collectors.toList());
     };
   }
 
   @Nonnull
-  static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotGroupingCellStreamer(
+  static <S> CellProcessor<Collection<S>> getOSMEntitySnapshotGroupingCellStreamer(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<S>> mapper
   ) {
     return (oshEntityCell, cellIterator) -> {
@@ -260,7 +264,7 @@ class Kernels {
       if (snapshots.size() > 0) {
         Iterables.addAll(result, mapper.apply(snapshots));
       }
-      return result.stream();
+      return result;
     };
   }
 }

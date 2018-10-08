@@ -111,7 +111,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
   }
 
   private Stream<X> stream(
-      CellProcessor<Stream<X>> processor
+      CellProcessor<Collection<X>> processor
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
         this._tstamps.get(),
@@ -135,12 +135,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             @SuppressWarnings("SerializableStoresNonSerializable")
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             if (oshEntityCell == null) {
-              return Stream.<X>empty();
+              return Collections.<X>emptyList();
             } else {
               return processor.apply(oshEntityCell, cellIterator);
             }
           }))
-          .flatMap(x -> x);
+          .flatMap(Collection::stream);
     }).flatMap(x -> x);
   }
 

@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
@@ -63,7 +64,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
   }
 
   private Stream<X> stream(
-      CellProcessor<Stream<X>> processor
+      CellProcessor<Collection<X>> processor
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
         this._tstamps.get(),
@@ -76,7 +77,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
 
     return cellIdRanges.parallelStream()
         .flatMap(this::getOshCellsStream)
-        .flatMap(oshCell -> processor.apply(oshCell, cellIterator));
+        .map(oshCell -> processor.apply(oshCell, cellIterator))
+        .flatMap(Collection::stream);
   }
 
   // === map-reduce operations ===
