@@ -86,28 +86,27 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    S ret = this._typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
+    return this._typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
+          .parallel()
           .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
             @SuppressWarnings("SerializableStoresNonSerializable")
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+            S ret;
             if (oshEntityCell == null) {
-              return identitySupplier.get();
+              ret = identitySupplier.get();
             } else {
-              return cellProcessor.apply(oshEntityCell, cellIterator);
+              ret = cellProcessor.apply(oshEntityCell, cellIterator);
             }
+            oshdb.onClose().ifPresent(Runnable::run);
+            return ret;
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
-
-    if (oshdb.onClose().isPresent()) {
-      compute.broadcast(oshdb.onClose().get());
-    }
-    return ret;
   }
 
   private Stream<X> stream(
@@ -125,29 +124,29 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    Stream<X> ret = _typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
+    return _typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
+          .parallel()
           .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+            System.out.println("inside affinity call");
             @SuppressWarnings("SerializableStoresNonSerializable")
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+            Collection<X> ret;
             if (oshEntityCell == null) {
-              return Collections.<X>emptyList();
+              ret = Collections.<X>emptyList();
             } else {
-              return processor.apply(oshEntityCell, cellIterator);
+              ret = processor.apply(oshEntityCell, cellIterator);
             }
+            oshdb.onClose().ifPresent(Runnable::run);
+            return ret;
           }))
           .flatMap(Collection::stream);
     }).flatMap(x -> x);
-
-    if (oshdb.onClose().isPresent()) {
-      compute.broadcast(oshdb.onClose().get());
-    }
-    return ret;
   }
 
   // === map-reduce operations ===

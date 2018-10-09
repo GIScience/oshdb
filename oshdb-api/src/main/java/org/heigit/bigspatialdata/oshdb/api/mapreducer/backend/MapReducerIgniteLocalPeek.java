@@ -14,6 +14,7 @@ import org.apache.ignite.IgniteException;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
+import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
@@ -132,7 +133,8 @@ class IgniteLocalPeekHelper {
     private R resultAccumulator;
 
     public CancelableBroadcastTask(MapReduceCellsOnIgniteCacheComputeJob job,
-        SerializableSupplier<R> identitySupplier, SerializableBinaryOperator<R> combiner) {
+        SerializableSupplier<R> identitySupplier, SerializableBinaryOperator<R> combiner,
+        IgniteRunnable onClose) {
       this.job = job;
       this.combiner = combiner;
       this.resultAccumulator = identitySupplier.get();
@@ -361,7 +363,14 @@ class IgniteLocalPeekHelper {
     IgniteCompute compute = ignite.compute();
 
     ComputeTaskFuture<S> result = compute.executeAsync(
-        new CancelableBroadcastTask<Object, S>(computeJob, identitySupplier, combiner), null);
+        new CancelableBroadcastTask<Object, S>(
+            computeJob,
+            identitySupplier,
+            combiner,
+            oshdb.onClose().orElse(() -> {})
+        ),
+        null
+    );
 
     S ret;
     if (!oshdb.timeoutInMilliseconds().isPresent()) {
@@ -373,9 +382,6 @@ class IgniteLocalPeekHelper {
         result.cancel();
         throw new OSHDBTimeoutException();
       }
-    }
-    if (oshdb.onClose().isPresent()) {
-      compute.broadcast(oshdb.onClose().get());
     }
     return ret;
   }

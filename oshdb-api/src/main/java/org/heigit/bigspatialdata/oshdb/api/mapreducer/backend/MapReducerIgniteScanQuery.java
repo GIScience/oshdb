@@ -340,10 +340,11 @@ class IgniteScanQueryHelper {
     // execute compute job on all ignite nodes and further reduce+return result(s)
     IgniteCompute compute = ignite.compute(ignite.cluster().forNodeIds(nodesToPart.keySet()));
     computeJob.setNodesToPart(nodesToPart);
-    Collection<S> nodeResults = compute.broadcast(computeJob);
-    if (oshdb.onClose().isPresent()) {
-      compute.broadcast(oshdb.onClose().get());
-    }
+    Collection<S> nodeResults = compute.broadcast(() -> {
+      S ret = computeJob.call();
+      oshdb.onClose().ifPresent(Runnable::run);
+      return ret;
+    });
     return nodeResults.stream().reduce(identitySupplier.get(), combiner);
   }
 
