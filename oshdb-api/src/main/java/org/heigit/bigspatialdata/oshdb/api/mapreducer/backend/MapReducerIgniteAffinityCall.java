@@ -5,26 +5,27 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.TableNames;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 
@@ -68,15 +69,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     };
   }
 
-  interface Callback<S> extends Serializable {
-    S apply(
-        GridOSHEntity oshEntityCell,
-        CellIterator cellIterator
-    );
-  }
-
-  private <S> S runOnIgnite(
-      Callback<S> callback,
+  private <S> S reduce(
+      CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
@@ -92,126 +86,151 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    S ret = this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
-      assert(TableNames.forOSMType(osmType).isPresent());
+    return this._typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
+      assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
+          .parallel()
           .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
             @SuppressWarnings("SerializableStoresNonSerializable")
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
-            if (oshEntityCell == null)
-              return identitySupplier.get();
-            return callback.apply(oshEntityCell, cellIterator);
+            S ret;
+            if (oshEntityCell == null) {
+              ret = identitySupplier.get();
+            } else {
+              ret = cellProcessor.apply(oshEntityCell, cellIterator);
+            }
+            oshdb.onClose().ifPresent(Runnable::run);
+            return ret;
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
-
-    if (oshdb.onClose().isPresent()) {
-      compute.broadcast(oshdb.onClose().get());
-    }
-    return ret;
   }
 
-  @Override
-  protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
-      SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
+  private Stream<X> stream(
+      CellProcessor<Collection<X>> processor
+  ) throws ParseException, SQLException, IOException {
+    CellIterator cellIterator = new CellIterator(
+        this._tstamps.get(),
+        this._bboxFilter, this._getPolyFilter(),
+        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+    );
 
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
-      // iterate over the history of all OSM objects in the current cell
-      AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByContribution(oshEntityCell)
-          .forEach(contribution -> {
-            OSMContribution osmContribution = new OSMContribution(contribution);
-            accInternal
-                .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
-          });
-      return accInternal.get();
-    }, identitySupplier, combiner);
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
+
+    OSHDBIgnite oshdb = ((OSHDBIgnite) this._oshdb);
+    Ignite ignite = oshdb.getIgnite();
+    IgniteCompute compute = ignite.compute();
+
+    return _typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
+      assert TableNames.forOSMType(osmType).isPresent();
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
+
+      return Streams.stream(cellIdRanges)
+          .flatMapToLong(cellIdRangeToCellIds())
+          .parallel()
+          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
+            System.out.println("inside affinity call");
+            @SuppressWarnings("SerializableStoresNonSerializable")
+            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+            Collection<X> ret;
+            if (oshEntityCell == null) {
+              ret = Collections.<X>emptyList();
+            } else {
+              ret = processor.apply(oshEntityCell, cellIterator);
+            }
+            oshdb.onClose().ifPresent(Runnable::run);
+            return ret;
+          }))
+          .flatMap(Collection::stream);
+    }).flatMap(x -> x);
+  }
+
+  // === map-reduce operations ===
+
+  @Override
+  protected <R, S> S mapReduceCellsOSMContribution(
+      SerializableFunction<OSMContribution, R> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    return this.reduce(
+        Kernels.getOSMContributionCellReducer(mapper, identitySupplier, accumulator),
+        identitySupplier,
+        combiner
+    );
   }
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
-      SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
-      // iterate over the history of all OSM objects in the current cell
-      AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      List<OSMContribution> contributions = new ArrayList<>();
-      cellIterator.iterateByContribution(oshEntityCell)
-          .forEach(contribution -> {
-            OSMContribution thisContribution = new OSMContribution(contribution);
-            if (contributions.size() > 0
-                && thisContribution.getEntityAfter().getId() != contributions
-                .get(contributions.size() - 1).getEntityAfter().getId()) {
-              // immediately fold the results
-              for (R r : mapper.apply(contributions)) {
-                accInternal.set(accumulator.apply(accInternal.get(), r));
-              }
-              contributions.clear();
-            }
-            contributions.add(thisContribution);
-          });
-      // apply mapper and fold results one more time for last entity in current cell
-      if (contributions.size() > 0) {
-        for (R r : mapper.apply(contributions)) {
-          accInternal.set(accumulator.apply(accInternal.get(), r));
-        }
-      }
-      return accInternal.get();
-    }, identitySupplier, combiner);
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    return reduce(
+        Kernels.getOSMContributionGroupingCellReducer(mapper, identitySupplier, accumulator),
+        identitySupplier,
+        combiner
+    );
   }
 
 
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
-      throws Exception {
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
-      // iterate over the history of all OSM objects in the current cell
-      AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
-        OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
-        // immediately fold the result
-        accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
-      });
-      return accInternal.get();
-    }, identitySupplier, combiner);
+      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    return reduce(
+        Kernels.getOSMEntitySnapshotCellReducer(mapper, identitySupplier, accumulator),
+        identitySupplier,
+        combiner
+    );
   }
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
-      SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
-    return runOnIgnite((oshEntityCell, cellIterator) -> {
-      // iterate over the history of all OSM objects in the current cell
-      AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-      cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
-        OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
-        if (osmEntitySnapshots.size() > 0
-            && thisSnapshot.getEntity().getId() != osmEntitySnapshots
-            .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
-          // immediately fold the results
-          for (R r : mapper.apply(osmEntitySnapshots)) {
-            accInternal.set(accumulator.apply(accInternal.get(), r));
-          }
-          osmEntitySnapshots.clear();
-        }
-        osmEntitySnapshots.add(thisSnapshot);
-      });
-      // apply mapper and fold results one more time for last entity in current cell
-      if (osmEntitySnapshots.size() > 0) {
-        for (R r : mapper.apply(osmEntitySnapshots)) {
-          accInternal.set(accumulator.apply(accInternal.get(), r));
-        }
-      }
-      return accInternal.get();
-    }, identitySupplier, combiner);
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception {
+    return reduce(
+        Kernels.getOSMEntitySnapshotGroupingCellReducer(mapper, identitySupplier, accumulator),
+        identitySupplier,
+        combiner
+    );
+  }
+
+  // === stream operations ===
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMContribution(
+      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+    return stream(Kernels.getOSMContributionCellStreamer(mapper));
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+    return stream(Kernels.getOSMContributionGroupingCellStreamer(mapper));
+  }
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+    return stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper));
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+    return stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper));
   }
 }

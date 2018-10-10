@@ -22,4 +22,16 @@ public class TestMapReduceOSHDB_JdbcMissingTables extends TestMapReduce {
   public void testOSMEntitySnapshotView() throws Exception {
     super.testOSMEntitySnapshotView();
   }
+
+  @Override
+  @Test(expected = OSHDBTableNotFoundException.class)
+  public void testOSMContributionViewStream() throws Exception {
+    super.testOSMEntitySnapshotView();
+  }
+
+  @Override
+  @Test(expected = OSHDBTableNotFoundException.class)
+  public void testOSMEntitySnapshotViewStream() throws Exception {
+    super.testOSMEntitySnapshotView();
+  }
 }

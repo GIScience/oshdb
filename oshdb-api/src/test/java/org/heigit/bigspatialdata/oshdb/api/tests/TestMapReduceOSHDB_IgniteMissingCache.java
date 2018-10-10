@@ -21,4 +21,16 @@ public class TestMapReduceOSHDB_IgniteMissingCache extends TestMapReduceOSHDB_Ig
   public void testOSMEntitySnapshotView() throws Exception {
     super.testOSMEntitySnapshotView();
   }
+
+  @Override
+  @Test(expected = OSHDBTableNotFoundException.class)
+  public void testOSMContributionViewStream() throws Exception {
+    super.testOSMEntitySnapshotView();
+  }
+
+  @Override
+  @Test(expected = OSHDBTableNotFoundException.class)
+  public void testOSMEntitySnapshotViewStream() throws Exception {
+    super.testOSMEntitySnapshotView();
+  }
 }
