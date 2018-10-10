@@ -20,7 +20,7 @@ public class FastPolygonOperations implements Serializable {
   private double envHeight;
 
   public <P extends Geometry & Polygonal> FastPolygonOperations(P geom) {
-    double optNumBands = Math.sqrt(1.0 * geom.getNumPoints() / AVERAGE_VERTICES_PER_BLOCK);
+    double optNumBands = Math.max(1.0, Math.sqrt(1.0 * geom.getNumPoints() / AVERAGE_VERTICES_PER_BLOCK));
     final int bandIterations = (int) Math.ceil(Math.log(optNumBands) / Math.log(2));
     numBands = (int) Math.pow(2, bandIterations);
 
