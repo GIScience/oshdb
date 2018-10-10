@@ -133,7 +133,6 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
           .flatMapToLong(cellIdRangeToCellIds())
           .parallel()
           .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
-            System.out.println("inside affinity call");
             @SuppressWarnings("SerializableStoresNonSerializable")
             GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
             Collection<X> ret;
