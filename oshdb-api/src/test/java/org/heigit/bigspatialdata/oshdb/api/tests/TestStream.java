@@ -59,7 +59,6 @@ public class TestStream {
     assertEquals(42, result.entrySet().size());
   }
 
-  /*
   @Test
   public void testForEachAggregatedByTimestamp() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
@@ -67,12 +66,9 @@ public class TestStream {
         .timestamps(timestamps72)
         .aggregateByTimestamp()
         .stream()
-        .forEach((ts, contributions) -> {
-          contributions.forEach(contribution -> {
-            result.put(contribution.getEntityAfter().getId(), true);
-          });
-        });
+        .forEach(entry ->
+          result.put(entry.getValue().getEntityAfter().getId(), true)
+        );
     assertEquals(42, result.entrySet().size());
   }
-  */
 }
