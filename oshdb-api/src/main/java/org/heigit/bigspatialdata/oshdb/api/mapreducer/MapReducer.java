@@ -1,7 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
+import com.tdunning.math.stats.MergingDigest;
+import com.tdunning.math.stats.TDigest;
 import java.sql.Connection;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
@@ -1134,6 +1137,122 @@ public abstract class MapReducer<X> implements
           return acc;
         }, (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight + b.weight));
     return runningSums.num / runningSums.weight;
+  }
+
+  /**
+   * Returns an estimate of the median of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public Double median() throws Exception {
+    return this.quantile(0.5);
+  }
+
+  /**
+   * Returns an estimate of the median of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the mean for
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public <R extends Number> Double median(SerializableFunction<X, R> mapper) throws Exception {
+    return this.quantile(mapper, 0.5);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public Double quantile(double q) throws Exception {
+    return this.makeNumeric().quantile(n -> n, q);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results after applying the given map
+   * function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantile for
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public <R extends Number> Double quantile(SerializableFunction<X, R> mapper, double q)
+      throws Exception {
+    return this.digest(mapper).quantile(q);
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> Collection<Double> quantiles(Collection<Double> q) throws Exception {
+    return this.makeNumeric().quantiles(q);
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> Collection<Double> quantiles(
+      SerializableFunction<X, R> mapper,
+      Collection<Double> q
+  ) throws Exception {
+    TDigest digest = this.digest(mapper);
+    return q.stream().map(digest::quantile).collect(Collectors.toList());
+  }
+
+  /**
+   * generates the t-digest of the complete result set. see:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   */
+  @Contract(pure = true)
+  private <R extends Number> TDigest digest(SerializableFunction<X, R> mapper) throws Exception {
+    return this.map(mapper).reduce(
+        () -> new MergingDigest(1000 /*todo: tweak?*/),
+        (acc, cur) -> {
+          acc.add(cur.doubleValue(), 1);
+          return acc;
+        },
+        (a, b) -> {
+          if (a.size() == 0) {
+            return b;
+          } else if (b.size() == 0) {
+            return a;
+          }
+          MergingDigest r = new MergingDigest(1000);
+          r.add(Arrays.asList(a, b));
+          return r;
+        }
+    );
   }
 
   // -----------------------------------------------------------------------------------------------
