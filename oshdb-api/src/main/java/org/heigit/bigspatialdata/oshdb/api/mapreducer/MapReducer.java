@@ -1630,6 +1630,9 @@ public abstract class MapReducer<X> implements
   protected TagTranslator _getTagTranslator() {
     if (this._tagTranslator == null) {
       try {
+        if (this._oshdbForTags == null) {
+          throw new OSHDBKeytablesNotFoundException();
+        }
         this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
       } catch (OSHDBKeytablesNotFoundException e) {
         LOG.error(e.getMessage());
