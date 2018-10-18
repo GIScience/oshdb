@@ -28,8 +28,8 @@ public abstract class OSMEntity {
    * @param userId UserID
    * @param tags An array of OSHDB key-value ids. The format is [KID1,VID1,KID2,VID2...KIDn,VIDn].
    */
-  public OSMEntity(final long id, final int version, final OSHDBTimestamp timestamp, final long changesetId,
-      final int userId, final int[] tags) {
+  public OSMEntity(final long id, final int version, final OSHDBTimestamp timestamp,
+      final long changesetId, final int userId, final int[] tags) {
     this.id = id;
     this.version = version;
     this.timestamp = timestamp;
@@ -53,11 +53,11 @@ public abstract class OSMEntity {
   }
 
   public long getChangesetId() {
-	    return changesetId;
-	  }
-  
+    return changesetId;
+  }
+
   /**
-   * @deprecated use {@link #getChangesetId()} instead.  
+   * @deprecated use {@link #getChangesetId()} instead.
    */
   @Deprecated
   public long getChangeset() {
@@ -78,11 +78,13 @@ public abstract class OSMEntity {
       @Override
       public Iterator<OSHDBTag> iterator() {
         return new Iterator<OSHDBTag>() {
-          int i=0;
+          int i = 0;
+
           @Override
           public boolean hasNext() {
-            return i<tags.length;
+            return i < tags.length;
           }
+
           @Override
           public OSHDBTag next() {
             return new OSHDBTag(tags[i++], tags[i++]);
@@ -167,7 +169,7 @@ public abstract class OSMEntity {
   @Override
   public String toString() {
     return String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s UID:%d TAGS:%S", getId(), getVersion(),
-        getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(), Arrays.toString(
-            getRawTags()));
+        getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(),
+        Arrays.toString(getRawTags()));
   }
 }
