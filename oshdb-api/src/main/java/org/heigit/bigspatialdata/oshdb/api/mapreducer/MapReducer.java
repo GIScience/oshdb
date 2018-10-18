@@ -1196,7 +1196,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public <R extends Number> Double quantile(SerializableFunction<X, R> mapper, double q)
       throws Exception {
-    return this.digest(mapper).quantile(q);
+    return this.quantiles(mapper).applyAsDouble(q);
   }
 
   /**
@@ -1273,21 +1273,9 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   private <R extends Number> TDigest digest(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).reduce(
-        () -> new MergingDigest(1000 /*todo: tweak?*/),
-        (acc, cur) -> {
-          acc.add(cur.doubleValue(), 1);
-          return acc;
-        },
-        (a, b) -> {
-          if (a.size() == 0) {
-            return b;
-          } else if (b.size() == 0) {
-            return a;
-          }
-          MergingDigest r = new MergingDigest(1000);
-          r.add(Arrays.asList(a, b));
-          return r;
-        }
+        TDigestReducer::identitySupplier,
+        TDigestReducer::accumulator,
+        TDigestReducer::combiner
     );
   }
 
@@ -1800,5 +1788,29 @@ class MapFunction implements SerializableFunction {
   // the necessary type checks are done at the respective setters
   public Object apply(Object o) {
     return this.mapper.apply(o);
+  }
+}
+
+class TDigestReducer /*implements Serializable*/ {
+  private final static int COMPRESSION = 1000; // todo: tweak?
+
+  static TDigest identitySupplier() {
+    return new MergingDigest(COMPRESSION);
+  }
+
+  static <R extends Number> TDigest accumulator(TDigest acc, R cur) {
+    acc.add(cur.doubleValue(), 1);
+    return acc;
+  }
+
+  static TDigest combiner(TDigest a, TDigest b) {
+    if (a.size() == 0) {
+      return b;
+    } else if (b.size() == 0) {
+      return a;
+    }
+    MergingDigest r = new MergingDigest(COMPRESSION);
+    r.add(Arrays.asList(a, b));
+    return r;
   }
 }
