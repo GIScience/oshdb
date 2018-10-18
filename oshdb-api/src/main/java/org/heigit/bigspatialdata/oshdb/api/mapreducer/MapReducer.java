@@ -4,8 +4,10 @@ import com.google.common.collect.Iterables;
 import com.tdunning.math.stats.MergingDigest;
 import com.tdunning.math.stats.TDigest;
 import java.sql.Connection;
+import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -1207,8 +1209,8 @@ public abstract class MapReducer<X> implements
    * @return estimated quantile boundaries
    */
   @Contract(pure = true)
-  public <R extends Number> Collection<Double> quantiles(Collection<Double> q) throws Exception {
-    return this.makeNumeric().quantiles(q);
+  public List<Double> quantiles(Iterable<Double> q) throws Exception {
+    return this.makeNumeric().quantiles(n -> n, q);
   }
 
   /**
@@ -1222,12 +1224,46 @@ public abstract class MapReducer<X> implements
    * @return estimated quantile boundaries
    */
   @Contract(pure = true)
-  public <R extends Number> Collection<Double> quantiles(
+  public <R extends Number> List<Double> quantiles(
       SerializableFunction<X, R> mapper,
-      Collection<Double> q
+      Iterable<Double> q
+  ) throws Exception {
+    return StreamSupport.stream(q.spliterator(), false)
+        .mapToDouble(Double::doubleValue)
+        .map(this.quantiles(mapper))
+        .boxed()
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public DoubleUnaryOperator quantiles() throws Exception {
+    return this.makeNumeric().quantiles(n -> n);
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results after applying
+   * the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> DoubleUnaryOperator quantiles(
+      SerializableFunction<X, R> mapper
   ) throws Exception {
     TDigest digest = this.digest(mapper);
-    return q.stream().map(digest::quantile).collect(Collectors.toList());
+    return digest::quantile;
   }
 
   /**
