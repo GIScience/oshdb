@@ -14,7 +14,7 @@ public abstract class OSMEntity {
 
   protected final int version;
   protected final OSHDBTimestamp timestamp;
-  protected final long changeset;
+  protected final long changesetId;
   protected final int userId;
   protected final int[] tags;
 
@@ -24,16 +24,16 @@ public abstract class OSMEntity {
    * @param id ID
    * @param version Version. Versions &lt;=0 define visible Entities, &gt;0 deleted Entities.
    * @param timestamp Timestamp in seconds since 01.01.1970 00:00:00 UTC.
-   * @param changeset Changeset-ID
+   * @param changesetId Changeset-ID
    * @param userId UserID
    * @param tags An array of OSHDB key-value ids. The format is [KID1,VID1,KID2,VID2...KIDn,VIDn].
    */
-  public OSMEntity(final long id, final int version, final OSHDBTimestamp timestamp, final long changeset,
+  public OSMEntity(final long id, final int version, final OSHDBTimestamp timestamp, final long changesetId,
       final int userId, final int[] tags) {
     this.id = id;
     this.version = version;
     this.timestamp = timestamp;
-    this.changeset = changeset;
+    this.changesetId = changesetId;
     this.userId = userId;
     this.tags = tags;
   }
@@ -52,8 +52,16 @@ public abstract class OSMEntity {
     return timestamp;
   }
 
+  public long getChangesetId() {
+	    return changesetId;
+	  }
+  
+  /**
+   * @deprecated use {@link #getChangesetId()} instead.  
+   */
+  @Deprecated
   public long getChangeset() {
-    return changeset;
+    return changesetId;
   }
 
   public int getUserId() {
@@ -153,7 +161,7 @@ public abstract class OSMEntity {
 
   public boolean equalsTo(OSMEntity o) {
     return id == o.id && version == o.version && timestamp.equals(o.timestamp)
-        && changeset == o.changeset && userId == o.userId && Arrays.equals(tags, o.tags);
+        && changesetId == o.changesetId && userId == o.userId && Arrays.equals(tags, o.tags);
   }
 
   @Override
@@ -162,7 +170,4 @@ public abstract class OSMEntity {
         getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(), Arrays.toString(
             getRawTags()));
   }
-
-
-
 }
