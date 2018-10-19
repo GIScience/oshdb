@@ -145,9 +145,109 @@ interface MapReducerAggregations<X> {
   Object weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception;
 
   /**
+   * Returns an estimate of the median of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return estimated median
+   */
+  Object median() throws Exception;
+
+  /**
+   * Returns an estimate of the median of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the mean for
+   * @return estimated median
+   */
+  <R extends Number> Object median(SerializableFunction<X, R> mapper) throws Exception;
+
+  /**
+   * Returns an estimate of a requested quantile of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  Object quantile(double q) throws Exception;
+
+  /**
+   * Returns an estimate of a requested quantile of the results after applying the given map
+   * function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantile for
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  <R extends Number> Object quantile(SerializableFunction<X, R> mapper, double q) throws Exception;
+
+  /**
+   * Returns an estimate of the quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  Object quantiles(Iterable<Double> q) throws Exception;
+
+  /**
+   * Returns an estimate of the quantiles of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  <R extends Number> Object quantiles(
+      SerializableFunction<X, R> mapper,
+      Iterable<Double> q
+  ) throws Exception;
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return a function that computes estimated quantile boundaries
+   */
+  Object quantiles() throws Exception;
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results after applying
+   * the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @return a function that computes estimated quantile boundaries
+   */
+  <R extends Number> Object quantiles(SerializableFunction<X, R> mapper) throws Exception;
+
+  /**
    * Collects all results into List(s)
    *
    * @return list(s) with all results returned by the `mapper` function
    */
   Object collect() throws Exception;
+
+  /**
+   * Returns all results as a Stream
+   *
+   * @return a stream with all results returned by the `mapper` function
+   */
+  Object stream() throws Exception;
 }
