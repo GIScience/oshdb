@@ -103,8 +103,8 @@ public class TestDE9IM {
   // todo: FIX TEST !!!! coveredby does not work
   @Test
   public void testLineVsPolygon() throws Exception {
-    String filePathOthers = "/Users/chludwig/Data/oshdb/testdata/line_polygon.geojson";
-    String filePathCentral = "/Users/chludwig/Data/oshdb/testdata/line_central.geojson";
+    String filePathOthers = "./src/test/resources/geojson/line_polygon.geojson";
+    String filePathCentral = "./src/test/resources/geojson/line_central.geojson";
 
     LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
     LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
