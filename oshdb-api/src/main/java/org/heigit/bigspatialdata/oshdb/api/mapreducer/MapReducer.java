@@ -1794,8 +1794,17 @@ class MapFunction implements SerializableFunction {
   }
 }
 
-class TDigestReducer /*implements Serializable*/ {
-  private final static int COMPRESSION = 1000; // todo: tweak?
+class TDigestReducer {
+
+  /**
+   * a COMPRESSION parameter of 1000 should provide relatively precise results, while not being
+   * too demanding on memory usage. See page 20 in the paper [1]:
+   *
+   * > Compression parameter (1/δ) was […] 1000 in order to reliably achieve 0.1% accuracy
+   *
+   * [1] https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   */
+  private final static int COMPRESSION = 1000;
 
   static TDigest identitySupplier() {
     return new MergingDigest(COMPRESSION);
