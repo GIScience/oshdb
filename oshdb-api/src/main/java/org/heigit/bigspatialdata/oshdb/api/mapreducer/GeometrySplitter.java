@@ -27,8 +27,6 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
  * @param <U> an arbitrary index type to identify supplied sub-regions
  */
 class GeometrySplitter<U extends Comparable<U>> {
-  private Set<U> indices;
-
   private STRtree spatialIndex = new STRtree();
   private Map<U, FastBboxInPolygon> bips = new HashMap<>();
   private Map<U, FastBboxOutsidePolygon> bops = new HashMap<>();
@@ -41,7 +39,6 @@ class GeometrySplitter<U extends Comparable<U>> {
       bops.put(index, new FastBboxOutsidePolygon(geometry));
       poops.put(index, new FastPolygonOperations(geometry));
     });
-    this.indices = subregions.keySet();
   }
 
   /**
