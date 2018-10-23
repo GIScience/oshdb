@@ -135,10 +135,10 @@ public class DE9IM {
         return relationType.CONTAINS;
       } else if (geom11.covers(geom21) & boundary1.intersects(boundary2)) {
         return relationType.COVERS;
-      } else if (geom11.overlaps(geom21)) {
-        return relationType.OVERLAPS;
       } else if (geom11.coveredBy(geom21) & boundary1.intersects(boundary2)) {
         return relationType.COVEREDBY;
+      } else if (geom11.overlaps(geom21) || (geom11.intersects(geom21) && !geom11.within(geom21))) {
+        return relationType.OVERLAPS;
       } else if (geom11.within(geom21) & !boundary1.intersects(boundary2)) {
         return relationType.INSIDE;
       }
