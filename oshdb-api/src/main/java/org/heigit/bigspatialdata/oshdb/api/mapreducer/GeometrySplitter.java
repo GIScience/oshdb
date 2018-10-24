@@ -4,11 +4,20 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import com.vividsolutions.jts.geom.TopologyException;
 import com.vividsolutions.jts.index.strtree.STRtree;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
+import com.vividsolutions.jts.io.WKBWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -26,11 +35,15 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
  *
  * @param <U> an arbitrary index type to identify supplied sub-regions
  */
-class GeometrySplitter<U extends Comparable<U>> {
+class GeometrySplitter<U extends Comparable<U>> implements Serializable {
+  private static final long serialVersionUID = 1L;
+
   private STRtree spatialIndex = new STRtree();
   private Map<U, FastBboxInPolygon> bips = new HashMap<>();
   private Map<U, FastBboxOutsidePolygon> bops = new HashMap<>();
   private Map<U, FastPolygonOperations> poops = new HashMap<>();
+
+  private Map<U, ? extends Geometry> subregions;
 
   <P extends Geometry & Polygonal> GeometrySplitter(Map<U, P> subregions) {
     subregions.forEach((index, geometry) -> {
@@ -39,7 +52,10 @@ class GeometrySplitter<U extends Comparable<U>> {
       bops.put(index, new FastBboxOutsidePolygon(geometry));
       poops.put(index, new FastPolygonOperations(geometry));
     });
+    this.subregions = subregions;
   }
+
+
 
   /**
    * splits osm entity snapshot objects into sub-regions
@@ -118,5 +134,40 @@ class GeometrySplitter<U extends Comparable<U>> {
         }).collect(Collectors.toCollection(LinkedList::new));
   }
 
-
+  /* custom object serialization/deserialization
+   *
+   * Sometimes, a GeometrySplitter can end up containing quite many deeply nested child-objects.
+   * Which can lead to relatively slow object serialization. It is then faster to just transfer
+   * the geometries and re-create the indices at the destination after de-serializing.
+   */
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    WKBWriter writer = new WKBWriter();
+    out.writeInt(this.subregions.size());
+    for (Entry<U, ? extends Geometry> entry : this.subregions.entrySet()) {
+      out.writeObject(entry.getKey());
+      byte[] data = writer.write(entry.getValue());
+      out.writeInt(data.length);
+      out.write(data);
+    }
+  }
+  private <P extends Geometry & Polygonal> void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    WKBReader reader = new WKBReader();
+    int numEntries = in.readInt();
+    TreeMap<U, P> result = new TreeMap<>();
+    for (int i = 0; i < numEntries; i++) {
+      U key = (U) in.readObject();
+      int dataLength = in.readInt();
+      byte[] data = new byte[dataLength];
+      in.read(data);
+      try {
+        result.put(key, (P) reader.read(data));
+      } catch (ParseException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    this.subregions = result;
+  }
+  private <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
+    return new GeometrySplitter<>((Map<U, P>) this.subregions);
+  }
 }
