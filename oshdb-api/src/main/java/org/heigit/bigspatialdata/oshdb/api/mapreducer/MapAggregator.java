@@ -482,8 +482,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return estimated median
    */
   @Contract(pure = true)
-  public SortedMap<U, Double> median() throws Exception {
-    return this.quantile(0.5);
+  public SortedMap<U, Double> estimatedMedian() throws Exception {
+    return this.estimatedQuantile(0.5);
   }
 
   /**
@@ -496,8 +496,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return estimated median
    */
   @Contract(pure = true)
-  public <R extends Number> SortedMap<U, Double> median(SerializableFunction<X, R> mapper) throws Exception {
-    return this.quantile(mapper, 0.5);
+  public <R extends Number> SortedMap<U, Double> estimatedMedian(SerializableFunction<X, R> mapper) throws Exception {
+    return this.estimatedQuantile(mapper, 0.5);
   }
 
   /**
@@ -510,8 +510,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return estimated quantile boundary
    */
   @Contract(pure = true)
-  public SortedMap<U, Double> quantile(double q) throws Exception {
-    return this.makeNumeric().quantile(n -> n, q);
+  public SortedMap<U, Double> estimatedQuantile(double q) throws Exception {
+    return this.makeNumeric().estimatedQuantile(n -> n, q);
   }
 
   /**
@@ -526,11 +526,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return estimated quantile boundary
    */
   @Contract(pure = true)
-  public <R extends Number> SortedMap<U, Double> quantile(
+  public <R extends Number> SortedMap<U, Double> estimatedQuantile(
       SerializableFunction<X, R> mapper,
       double q
   ) throws Exception {
-    return transformSortedMap(this.quantiles(mapper), qFunction -> qFunction.applyAsDouble(q));
+    return transformSortedMap(this.estimatedQuantiles(mapper), qFunction -> qFunction.applyAsDouble(q));
   }
 
   /**
@@ -543,8 +543,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return estimated quantile boundaries
    */
   @Contract(pure = true)
-  public SortedMap<U, List<Double>> quantiles(Iterable<Double> q) throws Exception {
-    return this.makeNumeric().quantiles(n -> n, q);
+  public SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q) throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n, q);
   }
 
   /**
@@ -558,12 +558,12 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return estimated quantile boundaries
    */
   @Contract(pure = true)
-  public <R extends Number> SortedMap<U, List<Double>> quantiles(
+  public <R extends Number> SortedMap<U, List<Double>> estimatedQuantiles(
       SerializableFunction<X, R> mapper,
       Iterable<Double> q
   ) throws Exception {
     return transformSortedMap(
-        this.quantiles(mapper),
+        this.estimatedQuantiles(mapper),
         quantileFunction -> StreamSupport.stream(q.spliterator(), false)
             .mapToDouble(Double::doubleValue)
             .map(quantileFunction)
@@ -581,8 +581,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a function that computes estimated quantile boundaries
    */
   @Contract(pure = true)
-  public SortedMap<U, DoubleUnaryOperator> quantiles() throws Exception {
-    return this.makeNumeric().quantiles(n -> n);
+  public SortedMap<U, DoubleUnaryOperator> estimatedQuantiles() throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n);
   }
 
   /**
@@ -596,7 +596,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a function that computes estimated quantile boundaries
    */
   @Contract(pure = true)
-  public <R extends Number> SortedMap<U, DoubleUnaryOperator> quantiles(
+  public <R extends Number> SortedMap<U, DoubleUnaryOperator> estimatedQuantiles(
       SerializableFunction<X, R> mapper
   ) throws Exception {
     return transformSortedMap(this.digest(mapper), d -> d::quantile);

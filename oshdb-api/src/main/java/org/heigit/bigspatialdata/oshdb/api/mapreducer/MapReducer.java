@@ -1150,8 +1150,8 @@ public abstract class MapReducer<X> implements
    * @return estimated median
    */
   @Contract(pure = true)
-  public Double median() throws Exception {
-    return this.quantile(0.5);
+  public Double estimatedMedian() throws Exception {
+    return this.estimatedQuantile(0.5);
   }
 
   /**
@@ -1164,8 +1164,8 @@ public abstract class MapReducer<X> implements
    * @return estimated median
    */
   @Contract(pure = true)
-  public <R extends Number> Double median(SerializableFunction<X, R> mapper) throws Exception {
-    return this.quantile(mapper, 0.5);
+  public <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper) throws Exception {
+    return this.estimatedQuantile(mapper, 0.5);
   }
 
   /**
@@ -1178,8 +1178,8 @@ public abstract class MapReducer<X> implements
    * @return estimated quantile boundary
    */
   @Contract(pure = true)
-  public Double quantile(double q) throws Exception {
-    return this.makeNumeric().quantile(n -> n, q);
+  public Double estimatedQuantile(double q) throws Exception {
+    return this.makeNumeric().estimatedQuantile(n -> n, q);
   }
 
   /**
@@ -1194,9 +1194,9 @@ public abstract class MapReducer<X> implements
    * @return estimated quantile boundary
    */
   @Contract(pure = true)
-  public <R extends Number> Double quantile(SerializableFunction<X, R> mapper, double q)
+  public <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q)
       throws Exception {
-    return this.quantiles(mapper).applyAsDouble(q);
+    return this.estimatedQuantiles(mapper).applyAsDouble(q);
   }
 
   /**
@@ -1209,8 +1209,8 @@ public abstract class MapReducer<X> implements
    * @return estimated quantile boundaries
    */
   @Contract(pure = true)
-  public List<Double> quantiles(Iterable<Double> q) throws Exception {
-    return this.makeNumeric().quantiles(n -> n, q);
+  public List<Double> estimatedQuantiles(Iterable<Double> q) throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n, q);
   }
 
   /**
@@ -1224,13 +1224,13 @@ public abstract class MapReducer<X> implements
    * @return estimated quantile boundaries
    */
   @Contract(pure = true)
-  public <R extends Number> List<Double> quantiles(
+  public <R extends Number> List<Double> estimatedQuantiles(
       SerializableFunction<X, R> mapper,
       Iterable<Double> q
   ) throws Exception {
     return StreamSupport.stream(q.spliterator(), false)
         .mapToDouble(Double::doubleValue)
-        .map(this.quantiles(mapper))
+        .map(this.estimatedQuantiles(mapper))
         .boxed()
         .collect(Collectors.toList());
   }
@@ -1244,8 +1244,8 @@ public abstract class MapReducer<X> implements
    * @return a function that computes estimated quantile boundaries
    */
   @Contract(pure = true)
-  public DoubleUnaryOperator quantiles() throws Exception {
-    return this.makeNumeric().quantiles(n -> n);
+  public DoubleUnaryOperator estimatedQuantiles() throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n);
   }
 
   /**
@@ -1259,7 +1259,7 @@ public abstract class MapReducer<X> implements
    * @return a function that computes estimated quantile boundaries
    */
   @Contract(pure = true)
-  public <R extends Number> DoubleUnaryOperator quantiles(
+  public <R extends Number> DoubleUnaryOperator estimatedQuantiles(
       SerializableFunction<X, R> mapper
   ) throws Exception {
     TDigest digest = this.digest(mapper);

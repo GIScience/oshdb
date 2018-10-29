@@ -73,7 +73,7 @@ public class TestQuantiles {
     List<Integer> fullResult = mr.collect();
     Collections.sort(fullResult);
 
-    assertApproximateQuantiles(fullResult, 0.5, mr.median());
+    assertApproximateQuantiles(fullResult, 0.5, mr.estimatedMedian());
   }
 
   @Test
@@ -83,7 +83,7 @@ public class TestQuantiles {
     List<Integer> fullResult = mr.collect();
     Collections.sort(fullResult);
 
-    assertApproximateQuantiles(fullResult, 0.8, mr.quantile(0.8));
+    assertApproximateQuantiles(fullResult, 0.8, mr.estimatedQuantile(0.8));
   }
 
   @Test
@@ -94,7 +94,7 @@ public class TestQuantiles {
     Collections.sort(fullResult);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    List<Double> quantiles = mr.quantiles(qs);
+    List<Double> quantiles = mr.estimatedQuantiles(qs);
 
     for (Double quantile : quantiles) {
       assertApproximateQuantiles(fullResult, qs.get(quantiles.indexOf(quantile)), quantile);
@@ -109,7 +109,7 @@ public class TestQuantiles {
     Collections.sort(fullResult);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    DoubleUnaryOperator quantilesFunction = mr.quantiles();
+    DoubleUnaryOperator quantilesFunction = mr.estimatedQuantiles();
 
     for (Double q : qs) {
       assertApproximateQuantiles(fullResult, q, quantilesFunction.applyAsDouble(q));
@@ -134,7 +134,7 @@ public class TestQuantiles {
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
     fullResult.values().forEach(Collections::sort);
 
-    SortedMap<OSHDBTimestamp, Double> medians = mr.quantile(0.8);
+    SortedMap<OSHDBTimestamp, Double> medians = mr.estimatedQuantile(0.8);
 
     medians.forEach((ts, median) ->
         assertApproximateQuantiles(fullResult.get(ts), 0.8, median)
@@ -148,7 +148,7 @@ public class TestQuantiles {
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
     fullResult.values().forEach(Collections::sort);
 
-    SortedMap<OSHDBTimestamp, Double> quantiles = mr.quantile(0.8);
+    SortedMap<OSHDBTimestamp, Double> quantiles = mr.estimatedQuantile(0.8);
 
     quantiles.forEach((ts, quantile) ->
         assertApproximateQuantiles(fullResult.get(ts), 0.8, quantile)
@@ -163,7 +163,7 @@ public class TestQuantiles {
     fullResult.values().forEach(Collections::sort);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    SortedMap<OSHDBTimestamp, List<Double>> quantiless = mr.quantiles(qs);
+    SortedMap<OSHDBTimestamp, List<Double>> quantiless = mr.estimatedQuantiles(qs);
 
     quantiless.forEach((ts, quantiles) -> {
       for (Double quantile : quantiles) {
@@ -184,7 +184,7 @@ public class TestQuantiles {
     fullResult.values().forEach(Collections::sort);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    SortedMap<OSHDBTimestamp, DoubleUnaryOperator> quantilesFunctions = mr.quantiles();
+    SortedMap<OSHDBTimestamp, DoubleUnaryOperator> quantilesFunctions = mr.estimatedQuantiles();
 
     quantilesFunctions.forEach((ts, quantilesFunction) -> {
       for (Double q : qs) {

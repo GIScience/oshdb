@@ -152,7 +152,7 @@ interface MapReducerAggregations<X> {
    *
    * @return estimated median
    */
-  Object median() throws Exception;
+  Object estimatedMedian() throws Exception;
 
   /**
    * Returns an estimate of the median of the results after applying the given map function.
@@ -163,7 +163,7 @@ interface MapReducerAggregations<X> {
    * @param mapper function that returns the numbers to generate the mean for
    * @return estimated median
    */
-  <R extends Number> Object median(SerializableFunction<X, R> mapper) throws Exception;
+  <R extends Number> Object estimatedMedian(SerializableFunction<X, R> mapper) throws Exception;
 
   /**
    * Returns an estimate of a requested quantile of the results.
@@ -174,7 +174,7 @@ interface MapReducerAggregations<X> {
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
-  Object quantile(double q) throws Exception;
+  Object estimatedQuantile(double q) throws Exception;
 
   /**
    * Returns an estimate of a requested quantile of the results after applying the given map
@@ -187,7 +187,7 @@ interface MapReducerAggregations<X> {
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
-  <R extends Number> Object quantile(SerializableFunction<X, R> mapper, double q) throws Exception;
+  <R extends Number> Object estimatedQuantile(SerializableFunction<X, R> mapper, double q) throws Exception;
 
   /**
    * Returns an estimate of the quantiles of the results
@@ -198,7 +198,7 @@ interface MapReducerAggregations<X> {
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
-  Object quantiles(Iterable<Double> q) throws Exception;
+  Object estimatedQuantiles(Iterable<Double> q) throws Exception;
 
   /**
    * Returns an estimate of the quantiles of the results after applying the given map function.
@@ -210,7 +210,7 @@ interface MapReducerAggregations<X> {
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
-  <R extends Number> Object quantiles(
+  <R extends Number> Object estimatedQuantiles(
       SerializableFunction<X, R> mapper,
       Iterable<Double> q
   ) throws Exception;
@@ -223,7 +223,7 @@ interface MapReducerAggregations<X> {
    *
    * @return a function that computes estimated quantile boundaries
    */
-  Object quantiles() throws Exception;
+  Object estimatedQuantiles() throws Exception;
 
   /**
    * Returns a function that computes estimates of arbitrary quantiles of the results after applying
@@ -235,7 +235,7 @@ interface MapReducerAggregations<X> {
    * @param mapper function that returns the numbers to generate the quantiles for
    * @return a function that computes estimated quantile boundaries
    */
-  <R extends Number> Object quantiles(SerializableFunction<X, R> mapper) throws Exception;
+  <R extends Number> Object estimatedQuantiles(SerializableFunction<X, R> mapper) throws Exception;
 
   /**
    * Collects all results into List(s)
