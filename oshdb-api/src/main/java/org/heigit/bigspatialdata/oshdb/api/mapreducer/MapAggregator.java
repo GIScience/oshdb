@@ -969,6 +969,34 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * Filter by objects that are contained in the entity
    *
    * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, X> contains(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
+      boolean queryContributions) throws Exception {
+    return this.copyTransform(this._mapReducer.contains(mapReduce, queryContributions));
+  }
+
+  /**
+   * Filter by objects that are contained in the entity
+   *
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> contains(
+      String key,
+      boolean queryContributions) throws Exception {
+    return this.copyTransform(this._mapReducer.contains(key, queryContributions));
+  }
+
+
+  /**
+   * Filter by objects that are contained in the entity
+   *
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @param key OSMtag key
    * @param value OSMtag value
    * @return a modified copy of this MapReducer
@@ -980,6 +1008,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       boolean queryContributions) throws Exception {
     return this.copyTransform(this._mapReducer.contains(key, value, queryContributions));
   }
+
 
   /**
    * Filter by snapshots or contributions that are covered by the entity
@@ -1091,12 +1120,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
@@ -1119,12 +1147,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
@@ -1147,12 +1174,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
@@ -1175,12 +1201,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
@@ -1203,12 +1228,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
@@ -1231,12 +1255,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
@@ -1259,12 +1282,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
@@ -1287,12 +1309,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key,
       String value,
       boolean queryContributions) throws Exception {
-    DE9IM<X> egenhoferRelation = new DE9IM<>(
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        key,
-        value,
+        mapReduce -> mapReduce.osmTag(key, value).collect(),
         queryContributions);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
