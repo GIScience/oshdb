@@ -169,7 +169,7 @@ public class TestDE9IM {
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relationType relation = DE9IM.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
+      System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
   }

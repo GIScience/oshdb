@@ -995,46 +995,42 @@ public abstract class MapReducer<X> implements
    * Filter objects by querying whether they are located inside other elements
    * @param key OSMtag key
    * @param value OSMtag value
+   * @param <Y> either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> contains(
+  public <Y> MapReducer<X> contains(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.containsWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.contains((OSMEntitySnapshot) data))
-        .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /** Map all objects within which an object of mapReducer is located
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> containsWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> containsWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.contains((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.contains(data));
   }
 
   /**
@@ -1044,43 +1040,38 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> covers(
+  public <Y> MapReducer<X> covers(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coversWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.covers((OSMEntitySnapshot) data))
-        .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /** Map all objects within which an object of mapReducer is located
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> coversWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> coversWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.covers((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.covers(data));
   }
 
   /**
@@ -1090,43 +1081,38 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> coveredBy(
+  public <Y> MapReducer<X> coveredBy(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coveredByWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.coveredBy((OSMEntitySnapshot) data))
-        .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /** Map all objects within which an object of mapReducer is located
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> coveredByWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> coveredByWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.coveredBy((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.coveredBy(data));
   }
 
   /** Map all elements filtered by key that contain a given OSMEntitySnapshot
@@ -1135,44 +1121,39 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> equals(
+  public <Y> MapReducer<X> equals(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.equalsWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.equals((OSMEntitySnapshot) data))
-        .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /**
    * Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> equalsWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> equalsWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.equals((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.equalTo( data));
   }
 
   /** Map all elements filtered by key that contain a given OSMEntitySnapshot
@@ -1181,44 +1162,39 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> disjoint(
+  public <Y> MapReducer<X> disjoint(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.disjointWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.disjoint((OSMEntitySnapshot) data))
-        .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /**
    * Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> disjointWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> disjointWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.disjoint((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.disjoint( data));
   }
 
   /**
@@ -1228,43 +1204,38 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> inside(
+  public <Y> MapReducer<X> inside(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.insideWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.inside((OSMEntitySnapshot) data))
-        .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /** Map all objects within which an object of mapReducer is located
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> insideWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> insideWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.inside((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.inside(data));
   }
 
   /**
@@ -1274,44 +1245,39 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> overlaps(
+  public <Y> MapReducer<X> overlaps(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.overlapsWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.overlaps((OSMEntitySnapshot) data))
-    .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /**
    * Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> overlapsWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> overlapsWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.overlaps((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.overlaps(data));
   }
 
   /** Map all elements filtered by key that contain a given OSMEntitySnapshot
@@ -1320,44 +1286,39 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> touches(
+  public <Y> MapReducer<X> touches(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
-        this._oshdbForTags,
-        this._bboxFilter,
-        this._tstamps,
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.touchesWhich(
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.touches((OSMEntitySnapshot) data))
-        .filter(p -> p.getRight().size() > 0)
-        .map(p -> (X) p.getKey());
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(p -> p.getKey());
   }
 
   /**
    * Map all elements filtered by key that contain a given OSMEntitySnapshot
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param <S> return type either OSMContribution or OSMEntitySnapshot
+   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <S> MapReducer<Pair<OSMEntitySnapshot, List<S>>> touchesWhich(
+  public <Y> MapReducer<Pair<X, List<Y>>> touchesWhich(
       String key,
       String value,
       boolean queryContributions)
       throws Exception {
-    DE9IM egenhoferRelation = new DE9IM(
+    DE9IM<X> egenhoferRelation = new DE9IM<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         key,
         value,
         queryContributions);
-    return this.map(data -> egenhoferRelation.touches((OSMEntitySnapshot) data));
+    return this.map(data -> egenhoferRelation.touches(data));
   }
 
 

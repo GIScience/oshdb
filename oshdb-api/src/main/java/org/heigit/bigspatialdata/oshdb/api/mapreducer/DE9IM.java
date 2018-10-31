@@ -20,73 +20,96 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 
 /**
  * Class that computes the DE9IM relations between two geometries
- *
  */
-public class DE9IM {
+public class DE9IM<X> {
 
   public enum relationType {
     EQUALS, OVERLAPS, DISJOINT, CONTAINS, COVEREDBY, COVERS, TOUCHES, INSIDE, UNKNOWN
   }
-  private final STRtree candidateTree = new STRtree();
+
+  private final STRtree featuresToCompareTree = new STRtree();
   private OSHDBBoundingBox bbox;
+  private OSHDBJdbc oshdb;
+  private OSHDBTimestampList tstamps;
 
   /**
    * basic constructor
-   * @param oshdb OSHDB connection
-   * @param bbox Bounding box for query
-   * @param tstamps Timestamps of query
+   * @param oshdb osdhb connection
+   * @param bbox bounding box for querying nearby features to compare with
+   * @param tstamps timestamps for querying nearby features to compare with
    * @param key OSM key of objects that should be queried
    * @param value OSM value of objects that should be queried
    */
   // todo replace key and value with mapReduce function
-  public DE9IM(
-      OSHDBJdbc oshdb,
-      OSHDBBoundingBox bbox,
-      OSHDBTimestampList tstamps,
+  DE9IM(
+    OSHDBJdbc oshdb,
+    OSHDBBoundingBox bbox,
+    OSHDBTimestampList tstamps,
+    String key,
+    String value,
+    // SerializableFunctionWithException<MapReducer<X>, Y> mapReduce,
+    boolean queryContributions) throws Exception {
+
+    this.oshdb = oshdb;
+    this.bbox = bbox;
+    this.tstamps = tstamps;
+
+    // todo: check how big the data will be to decide whether storing data in a local strtree is possible
+    createSTRtree(key, value, queryContributions);
+
+  }
+
+  /**
+   * Creates a STRtree that contains all features to which the main features should be compared to.
+   *
+   * The oshdb conntection, bbox and tstamps are taken from the main MapReducer. Optionally a filter
+   * is applied using the key and value tags.
+   *
+   * @param key OSM key of objects that should be queried
+   * @param value OSM value of objects that should be queried
+   * @param queryContributions Query OSMcontributions (true) or OSMEntitySnapshots (false)
+   */
+  public void createSTRtree(
       String key,
       String value,
-      //SerializableFunctionWithException<MapReducer<X>, Y> mapReduce,
       boolean queryContributions) throws Exception {
-
     if (!queryContributions) {
-      // Search for snapshots that might contain snapshot
-      MapReducer<OSMEntitySnapshot> mapReduceCandidates = OSMEntitySnapshotView
-          .on(oshdb)
-          .keytables(oshdb)
-          .areaOfInterest(bbox)
-          .timestamps(tstamps);
+      MapReducer<OSMEntitySnapshot> featuresToCompare = OSMEntitySnapshotView
+          .on(this.oshdb)
+          .keytables(this.oshdb)
+          .areaOfInterest(this.bbox)
+          .timestamps(this.tstamps);
       // Filter by key and value if given
       if (key != null & value != null) {
-        mapReduceCandidates = mapReduceCandidates.osmTag(key, value);
+        featuresToCompare = featuresToCompare.osmTag(key, value);
       } else if (key != null & value == null) {
-        mapReduceCandidates = mapReduceCandidates.osmTag(key);
+        featuresToCompare = featuresToCompare.osmTag(key);
       }
-      // Store all elements in str tree
-      mapReduceCandidates.collect()
-          .forEach(snapshot -> this.candidateTree
+      featuresToCompare.collect()
+          .forEach(snapshot -> this.featuresToCompareTree
               .insert(snapshot.getGeometryUnclipped().getEnvelopeInternal(), snapshot));
     } else {
-      // Search for contributions that might contain snapshot
-      MapReducer<OSMContribution> mapReduceCandidates = OSMContributionView
-          .on(oshdb)
-          .keytables(oshdb)
-          .areaOfInterest(bbox)
-          .timestamps(tstamps);
-      // Filter by key and value if given
+      MapReducer<OSMContribution> featuresToCompare = OSMContributionView
+          .on(this.oshdb)
+          .keytables(this.oshdb)
+          .areaOfInterest(this.bbox)
+          .timestamps(this.tstamps);
+      // Filter by key and value of features used for comparison
       if (key != null & value != null) {
-        mapReduceCandidates = mapReduceCandidates.osmTag(key, value);
+        featuresToCompare = featuresToCompare.osmTag(key, value);
       } else if (key != null & value == null) {
-        mapReduceCandidates = mapReduceCandidates.osmTag(key);
+        featuresToCompare = featuresToCompare.osmTag(key);
       }
-      // Store all elements in str tree
-        mapReduceCandidates.collect()
+      featuresToCompare.collect()
           .forEach(contribution -> {
-            if (!contribution.getContributionTypes().contains(ContributionType.DELETION)) {
-              candidateTree
-                  .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(), contribution);
-            } else {
-              candidateTree
-                  .insert(contribution.getGeometryUnclippedBefore().getEnvelopeInternal(), contribution);
+            try{
+              featuresToCompareTree
+                  .insert(contribution.getGeometryUnclippedAfter().getEnvelopeInternal(),
+                      contribution);
+            } catch(Exception e) {
+              featuresToCompareTree
+                  .insert(contribution.getGeometryUnclippedBefore().getEnvelopeInternal(),
+                      contribution);
             }
           });
     }
@@ -102,115 +125,133 @@ public class DE9IM {
    * @param geom2 Geometry 2
    * @return True, if the geometry is within the distance of the other geometry, otherwise false
    */
-  public static <X extends Geometry> relationType relate(X geom1, X geom2) {
+  public static <S extends Geometry> relationType relate(S geom1, S geom2) {
 
-    Geometry geom11 = geom1;
-    Geometry geom21 = geom2;
+    // Variables that hold transformed geometry which is either LineString or Polygon
+    // todo: is this necessary or does getGeometry() already return a Polygon if the linestring is closed?
+    Geometry geomTrans1 = geom1;
+    Geometry geomTrans2 = geom2;
 
     // Check if geometry is closed line string
     if (geom1 instanceof LineString) {
       if (((LineString) geom1).isClosed()) {
-        geom11 = new GeometryFactory().createPolygon(geom1.getCoordinates());
+        geomTrans1 = new GeometryFactory().createPolygon(geom1.getCoordinates());
       }
     }
     if (geom2 instanceof LineString) {
       if (((LineString) geom2).isClosed()) {
-        geom21 = new GeometryFactory().createPolygon(geom2.getCoordinates());
+        geomTrans2 = new GeometryFactory().createPolygon(geom2.getCoordinates());
       }
     }
 
     // Get boundaries of geometries
-    Geometry boundary2 = geom21.getBoundary();
-    Geometry boundary1 = geom11.getBoundary();
+    Geometry boundary2 = geomTrans2.getBoundary();
+    Geometry boundary1 = geomTrans1.getBoundary();
 
-    if (geom1.disjoint(geom21)) {
+    if (geom1.disjoint(geomTrans2)) {
       return relationType.DISJOINT;
 
-    } else if (geom11.getDimension() == geom21.getDimension()) {
-      if (geom1.equalsNorm(geom21)) {
+    } else if (geomTrans1.getDimension() == geomTrans2.getDimension()) {
+      if (geom1.equalsNorm(geomTrans2)) {
         return relationType.EQUALS;
-      } else if (geom11.touches(geom21)) {
+      } else if (geomTrans1.touches(geomTrans2)) {
         return relationType.TOUCHES;
-      } else if (geom11.contains(geom21) & !boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.contains(geomTrans2) & !boundary1.intersects(boundary2)) {
         return relationType.CONTAINS;
-      } else if (geom11.covers(geom21) & boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.covers(geomTrans2) & boundary1.intersects(boundary2)) {
         return relationType.COVERS;
-      } else if (geom11.coveredBy(geom21) & boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.coveredBy(geomTrans2) & boundary1.intersects(boundary2)) {
         return relationType.COVEREDBY;
-      } else if (geom11.overlaps(geom21) || (geom11.intersects(geom21) && !geom11.within(geom21))) {
+      } else if (geomTrans1.overlaps(geomTrans2) || (geomTrans1.intersects(geomTrans2) && !geomTrans1.within(geomTrans2))) {
         return relationType.OVERLAPS;
-      } else if (geom11.within(geom21) & !boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.within(geomTrans2) & !boundary1.intersects(boundary2)) {
         return relationType.INSIDE;
       }
 
-    } else if (geom11.getDimension() < geom21.getDimension()) {
+    } else if (geomTrans1.getDimension() < geomTrans2.getDimension()) {
 
-      if (geom11.touches(geom21)) {
+      if (geomTrans1.touches(geomTrans2)) {
         return relationType.TOUCHES;
-      } else if (geom11.coveredBy(geom21) & boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.coveredBy(geomTrans2) & boundary1.intersects(boundary2)) {
         return relationType.COVEREDBY;
-      } else if (geom11.within(geom21) & !boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.within(geomTrans2) & !boundary1.intersects(boundary2)) {
         return relationType.INSIDE;
-      } else if (geom11.intersects(geom21)) {
+      } else if (geomTrans1.intersects(geomTrans2)) {
         return relationType.OVERLAPS;
       }
 
-    } else if (geom11.getDimension() > geom21.getDimension()) {
+    } else if (geomTrans1.getDimension() > geomTrans2.getDimension()) {
 
-      if (geom11.touches(geom21)) {
+      if (geomTrans1.touches(geomTrans2)) {
         return relationType.TOUCHES;
-      } else if (geom11.contains(geom21) & !boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.contains(geomTrans2) & !boundary1.intersects(boundary2)) {
         return relationType.CONTAINS;
-      } else if (geom11.covers(geom21) & boundary1.intersects(boundary2)) {
+      } else if (geomTrans1.covers(geomTrans2) & boundary1.intersects(boundary2)) {
         return relationType.COVERS;
-      } else if (geom11.contains(geom21) & !boundary1.intersects(geom21)) {
+      } else if (geomTrans1.contains(geomTrans2) & !boundary1.intersects(geomTrans2)) {
         return relationType.CONTAINS;
-      } else if (geom11.intersects(geom21)) {
+      } else if (geomTrans1.intersects(geomTrans2)) {
         return relationType.OVERLAPS;
       }
     }
-
     return relationType.UNKNOWN;
-
   }
 
 
   /**
-   * Filter objects based on type of spatial relation to snapshot
-   * @param <Y>
-   * @oaram snapshot OSMEntitySnapshot for which other objects should be checked for relation type
-   * @param relationType Type of egenhofer relation
+   * Finds matching objects based on the type of spatial relation
+   *
+   * @oaram oshdbMapReducible main feature for which matches should be found
+   * @param relationType Type of Egenhofer relation
+   * @param <Y> Type of objects to compare to. Either OSMContribution or OSMEntitySnapshot.
    * @return
    */
-  private <Y> Pair<OSMEntitySnapshot, List<Y>> filter(
-    OSMEntitySnapshot snapshot,
+  private <Y> Pair<X, List<Y>> findMatches(
+    X oshdbMapReducible,
     relationType relationType) {
 
-    // Get geometry of snapshot
-    Geometry geom = snapshot.getGeometryUnclipped();
+    Geometry geom;
+    Long id;
     List<Y> result = new ArrayList<>();
 
+    // Get geometry of snapshot or contribution
+    if (oshdbMapReducible.getClass() == OSMEntitySnapshot.class) {
+      geom = ((OSMEntitySnapshot) oshdbMapReducible).getGeometryUnclipped();
+      id = ((OSMEntitySnapshot) oshdbMapReducible).getEntity().getId();
+    } else {
+      try {
+        geom = ((OSMContribution) oshdbMapReducible).getGeometryUnclippedAfter();
+        id = ((OSMContribution) oshdbMapReducible).getEntityAfter().getId();
+      } catch (Exception e) {
+        geom = ((OSMContribution) oshdbMapReducible).getGeometryUnclippedBefore();
+        id = ((OSMContribution) oshdbMapReducible).getEntityBefore().getId();
+      }
+    }
+
     // Get candidate objects in the neighbourhood of snapshot
-    List<Y> candidates = this.candidateTree.query(snapshot.getGeometryUnclipped().getEnvelopeInternal());
-    // todo: filter out candidates that were not present at the same time as snapshot
+    List<Y> nearbyFeaturesToCompare = this.featuresToCompareTree.query(geom.getEnvelopeInternal());
+    // todo: findMatches out candidates that were not present at the same time as snapshot
 
-    // If no candidates are found, return empty list
-    if (candidates.size() == 0) return Pair.of(snapshot, result);
+    // If no nearby features are found, return empty list
+    if (nearbyFeaturesToCompare.isEmpty()) return Pair.of(oshdbMapReducible, result);
 
-    // Check the spatial relation of each candidate to the snapshot
-    if (candidates.get(0).getClass() == OSMEntitySnapshot.class) {
-      result = candidates
+    // Get nearby features that have the required Egenhofer relation with the main feature
+    if (nearbyFeaturesToCompare.get(0).getClass() == OSMEntitySnapshot.class) {
+      Long finalId = id;
+      Geometry finalGeom = geom;
+      result = nearbyFeaturesToCompare
           .stream()
           .filter(candidate -> {
             try {
               OSMEntitySnapshot candidateSnapshot = (OSMEntitySnapshot) candidate;
               // Skip if this candidate snapshot belongs to the same entity
-              if (snapshot.getEntity().getId() == candidateSnapshot.getEntity().getId()) return false;
+              if (finalId == candidateSnapshot.getEntity().getId()) return false;
               // Skip if it is a relation
+              // todo check functionality for relations
               if (candidateSnapshot.getEntity().getType().equals(OSMType.RELATION)) return false;
-              // Get geometry of candidate and filter based on relationType
+              // Get geometry of candidate and findMatches based on relationType
               Geometry candidateGeom = candidateSnapshot.getGeometryUnclipped();
-              return relate(geom, candidateGeom).equals(relationType);
+              return relate(finalGeom, candidateGeom).equals(relationType);
             } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
@@ -221,33 +262,34 @@ public class DE9IM {
       // If disjoint, add all objects that are outside the bounding box of snapshot
       if (relationType.equals(DE9IM.relationType.DISJOINT)) {
         STRtree disjointObjects = new STRtree();
-        candidates.stream().forEach(x -> disjointObjects.remove(
+        nearbyFeaturesToCompare.stream().forEach(x -> disjointObjects.remove(
                 ((OSMEntitySnapshot) x).getGeometryUnclipped().getEnvelopeInternal(), x));
-        List<Y> disjointObjectList = this.candidateTree.query(new Envelope(this.bbox.getMinLon(),
+        List<Y> disjointObjectList = this.featuresToCompareTree.query(new Envelope(this.bbox.getMinLon(),
             this.bbox.getMaxLon(), this.bbox.getMinLat(), this.bbox.getMaxLat()));
         result.addAll(disjointObjectList);
-        return Pair.of(snapshot, result);
+        return Pair.of(oshdbMapReducible, result);
       }
 
-    } else if (candidates.get(0).getClass() == OSMContribution.class) {
-      result = candidates
+    } else if (nearbyFeaturesToCompare.get(0).getClass() == OSMContribution.class) {
+      Long finalId1 = id;
+      Geometry finalGeom1 = geom;
+      result = nearbyFeaturesToCompare
           .stream()
           .filter(candidate -> {
             try {
               OSMContribution candidateContribution = (OSMContribution) candidate;
               // Skip if this candidate snapshot belongs to the same entity
-              if (snapshot.getEntity().getId() == candidateContribution.getEntityAfter().getId()) return false;
+              if (finalId1 == candidateContribution.getEntityAfter().getId()) return false;
               // Skip if it is a relation
               if (candidateContribution.getEntityAfter().getType().equals(OSMType.RELATION)) return false;
-              // Get geometry of candidate and filter based on relationType
-              // todo add option to choose whether geometry before or after should be used as reference
+              // Get geometry of candidate and findMatches based on relationType
               Geometry candidateGeom;
-              if (!candidateContribution.getContributionTypes().contains(ContributionType.DELETION)) {
+              try {
                 candidateGeom = candidateContribution.getGeometryUnclippedAfter();
-              } else {
+              } catch(Exception e) {
                 candidateGeom = candidateContribution.getGeometryUnclippedBefore();
               }
-              return relate(geom, candidateGeom).equals(relationType);
+              return relate(finalGeom1, candidateGeom).equals(relationType);
             } catch (TopologyException | IllegalArgumentException e) {
               System.out.println(e);
               return false;
@@ -257,24 +299,24 @@ public class DE9IM {
 
       // If disjoint, add all objects that are outside the bounding box of snapshot
       if (relationType.equals(DE9IM.relationType.DISJOINT)) {
-        STRtree disjointObjects = this.candidateTree;
-        candidates.stream().forEach(contribution -> {
+        STRtree disjointObjects = this.featuresToCompareTree;
+        nearbyFeaturesToCompare.forEach(contribution -> {
           if (!((OSMContribution) contribution).getContributionTypes().contains(ContributionType.DELETION)) {
             disjointObjects.remove(((OSMContribution) contribution).getGeometryUnclippedAfter().getEnvelopeInternal(), contribution);
           } else {
             disjointObjects.remove(((OSMContribution) contribution).getGeometryUnclippedBefore().getEnvelopeInternal(), contribution);
           }
         });
-        List<Y> disjointObjectList = this.candidateTree.query(new Envelope(this.bbox.getMinLon(),
+        List<Y> disjointObjectList = this.featuresToCompareTree.query(new Envelope(this.bbox.getMinLon(),
             this.bbox.getMaxLon(), this.bbox.getMinLat(), this.bbox.getMaxLat()));
         result.addAll(disjointObjectList);
-        return Pair.of(snapshot, result);
+        return Pair.of(oshdbMapReducible, result);
       }
 
     } else {
       throw new UnsupportedOperationException("Method is not implemented for this class.");
     }
-    return Pair.of(snapshot, result);
+    return Pair.of(oshdbMapReducible, result);
   }
 
   /**
@@ -282,8 +324,8 @@ public class DE9IM {
    * @param <Y>
    * @return
    */
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> overlaps(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.OVERLAPS);
+  public <Y> Pair<X, List<Y>> overlaps(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.OVERLAPS);
   }
 
   /**
@@ -291,8 +333,9 @@ public class DE9IM {
    * @param <Y>
    * @return
    */
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> equals(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.EQUALS);
+  // todo: solve issue with overriding Object.equals() --> renamed to equalTo for now
+  public <Y> Pair<X, List<Y>> equalTo(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.EQUALS);
   }
 
   /**
@@ -301,8 +344,8 @@ public class DE9IM {
    * @return
    */
   // todo does not work for disjoint
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> disjoint(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.DISJOINT);
+  public <Y> Pair<X, List<Y>> disjoint(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.DISJOINT);
   }
 
   /**
@@ -310,8 +353,8 @@ public class DE9IM {
    * @param <Y>
    * @return
    */
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> touches(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.TOUCHES);
+  public <Y> Pair<X, List<Y>> touches(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.TOUCHES);
   }
 
   /**
@@ -319,8 +362,8 @@ public class DE9IM {
    * @param <Y>
    * @return
    */
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> contains(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.CONTAINS);
+  public <Y> Pair<X, List<Y>> contains(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.CONTAINS);
   }
 
   /**
@@ -328,8 +371,8 @@ public class DE9IM {
    * @param <Y>
    * @return
    */
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> inside(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.INSIDE);
+  public <Y> Pair<X, List<Y>> inside(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.INSIDE);
   }
 
   /**
@@ -337,8 +380,8 @@ public class DE9IM {
    * @param <Y>
    * @return
    */
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> covers(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.COVERS);
+  public <Y> Pair<X, List<Y>> covers(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.COVERS);
   }
 
   /**
@@ -346,8 +389,8 @@ public class DE9IM {
    * @param <Y>
    * @return
    */
-  public <Y> Pair<OSMEntitySnapshot, List<Y>> coveredBy(OSMEntitySnapshot snapshot) {
-    return this.filter(snapshot, relationType.COVEREDBY);
+  public <Y> Pair<X, List<Y>> coveredBy(X oshdbMapReducible) {
+    return this.findMatches(oshdbMapReducible, relationType.COVEREDBY);
   }
 
 }
