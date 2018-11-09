@@ -1346,6 +1346,31 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }));
   }
 
+  /**
+   * Filter by snapshots or contributions that touch the entity
+   *
+   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> touchesWhich(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
+      boolean queryContributions) throws Exception {
+    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        queryContributions);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
+      Pair<X, List<Y>> result = egenhoferRelation.touches(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+
       // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.
