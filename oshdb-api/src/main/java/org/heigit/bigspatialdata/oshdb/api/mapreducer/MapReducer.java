@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
 import java.sql.Connection;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelations.GEOMETRY_OPTIONS;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.Neighbourhood.GEOMETRY_OPTIONS;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
@@ -687,7 +687,7 @@ public abstract class MapReducer<X> implements
     return this.map(data -> {
       try {
         if (this._forClass == OSMEntitySnapshot.class) {
-          return Pair.of(data, SpatialRelations.neighbourhood(
+          return Pair.of(data, Neighbourhood.neighbourhood(
               this._oshdbForTags,
               this._tstamps,
               distanceInMeter,
@@ -696,7 +696,7 @@ public abstract class MapReducer<X> implements
               queryContributions,
               contributionType));
         } else if (this._forClass == OSMContribution.class) {
-          return Pair.of(data, SpatialRelations.neighbourhood(
+          return Pair.of(data, Neighbourhood.neighbourhood(
               this._oshdbForTags,
               distanceInMeter,
               mapReduce,
@@ -992,829 +992,1826 @@ public abstract class MapReducer<X> implements
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> contains(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> contains(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.containsWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getContainedSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> contains(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.contains(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.contains(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> contains(
-      String key,
-      boolean queryContributions)
+      String key)
       throws Exception {
-    return this.contains(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.contains(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-
-  /** Map all objects within which an object of mapReducer is located
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> containsWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> contains()
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    return this.contains(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> containsContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getContainedContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> containsContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.containsContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> containsContributions(
+      String key)
+      throws Exception {
+    return this.containsContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> containsContributions()
+      throws Exception {
+    return this.containsContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getContainedSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::contains);
+        false);
+    return this.map(spatialRelations::contains);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> containsWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getContainedSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.containsWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.getContainedSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> containsWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getContainedSnapshots(
+      String key)
       throws Exception {
-    return this.containsWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.getContainedSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getContainedSnapshots()
+      throws Exception {
+    return this.getContainedSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getContainedContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::contains);
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getContainedContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.getContainedContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getContainedContributions(
+      String key)
+      throws Exception {
+    return this.getContainedContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getContainedContributions()
+      throws Exception {
+    return this.getContainedContributions(mapReduce -> mapReduce.collect());
   }
 
   // COVERS
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> covers(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> covers(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coversWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getCoveredSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> covers(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.covers(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.covers(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> covers(
-      String key,
-      boolean queryContributions)
+      String key)
       throws Exception {
-    return this.covers(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.covers(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-
-  /** Map all objects within which an object of mapReducer is located
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coversWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> covers()
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    return this.covers(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coversContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getCoveredContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coversContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.coversContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coversContributions(
+      String key)
+      throws Exception {
+    return this.coversContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are covered by the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coversContributions()
+      throws Exception {
+    return this.coversContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveredSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::covers);
+        false);
+    return this.map(spatialRelations::covers);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coversWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveredSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.coversWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.getCoveredSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coversWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveredSnapshots(
+      String key)
       throws Exception {
-    return this.coversWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.getCoveredSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
   }
+
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveredSnapshots()
+      throws Exception {
+    return this.getCoveredSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveredContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::covers);
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveredContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.getCoveredContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveredContributions(
+      String key)
+      throws Exception {
+    return this.getCoveredContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are covered by the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveredContributions()
+      throws Exception {
+    return this.getCoveredContributions(mapReduce -> mapReduce.collect());
+  }
+
 
   // COVERED BY
   // -----------------------------------------------------------------------------------------------
 
+
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covering to the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> coveredBy(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> coveredBy(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coveredByWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getCoveringSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covering the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> coveredBy(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.coveredBy(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.coveredBy(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are covering the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> coveredBy(
-      String key,
-      boolean queryContributions)
+      String key)
       throws Exception {
-    return this.coveredBy(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.coveredBy(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-
-  /** Map all objects within which an object of mapReducer is located
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
+  /**
+   * Filter by snapshots that are covering the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coveredByWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> coveredBy()
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    return this.coveredBy(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are covering the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coveredByContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getCoveringContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are covering the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coveredByContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.coveredByContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are covering the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coveredByContributions(
+      String key)
+      throws Exception {
+    return this.coveredByContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are covering the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coveredByContributions()
+      throws Exception {
+    return this.coveredByContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are covering the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveringSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::coveredBy);
+        false);
+    return this.map(spatialRelations::coveredBy);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are covering the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coveredByWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveringSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.coveredByWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.getCoveringSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are covering the mapReducer element
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coveredByWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveringSnapshots(
+      String key)
       throws Exception {
-    return this.coveredByWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.getCoveringSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
   }
+
+  /**
+   * Get all snapshots which are covering the mapReducer element
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveringSnapshots()
+      throws Exception {
+    return this.getCoveringSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are covering the mapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveringContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::coveredBy);
+  }
+
+  /**
+   * Get all contributions which are covering the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveringContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.getCoveringContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are covering the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveringContributions(
+      String key)
+      throws Exception {
+    return this.getCoveringContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are covering the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getCoveringContributions()
+      throws Exception {
+    return this.getCoveringContributions(mapReduce -> mapReduce.collect());
+  }
+
 
   // DISJOINT
   // -----------------------------------------------------------------------------------------------
 
+
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> disjoint(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> disjoint(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.disjointWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getDisjointSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> disjoint(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.disjoint(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.disjoint(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> disjoint(
-      String key,
-      boolean queryContributions)
+      String key)
       throws Exception {
-    return this.disjoint(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.disjoint(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-
-  /** Map all objects within which an object of mapReducer is located
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
+  /**
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> disjointWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> disjoint()
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    return this.disjoint(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> disjointContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getDisjointContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> disjointContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.disjointContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> disjointContributions(
+      String key)
+      throws Exception {
+    return this.disjointContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are disjoint from the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> disjointContributions()
+      throws Exception {
+    return this.disjointContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are disjoint from the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::disjoint);
+        false);
+    return this.map(spatialRelations::disjoint);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are disjoint from the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> disjointWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.disjointWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.getDisjointSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are disjoint from the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> disjointWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
+      String key)
       throws Exception {
-    return this.disjointWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.getDisjointSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
   }
+
+  /**
+   * Get all snapshots which are disjoint from the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots()
+      throws Exception {
+    return this.getDisjointSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are disjoint from the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getDisjointContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::disjoint);
+  }
+
+  /**
+   * Get all contributions which are disjoint from the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getDisjointContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.getDisjointContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are disjoint from the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getDisjointContributions(
+      String key)
+      throws Exception {
+    return this.getDisjointContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are disjoint from the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getDisjointContributions()
+      throws Exception {
+    return this.getDisjointContributions(mapReduce -> mapReduce.collect());
+  }
+
 
   // EQUALS
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> equals(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> equals(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.equalsWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getEqualSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> equals(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.equals(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.equals(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> equals(
-      String key,
-      boolean queryContributions)
+      String key)
       throws Exception {
-    return this.equals(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.equals(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-
-  /** Map all objects within which an object of mapReducer is located
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
+  /**
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> equalsWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> equals()
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    return this.equals(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> equalsContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getEqualContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> equalsContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.equalsContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> equalsContributions(
+      String key)
+      throws Exception {
+    return this.equalsContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are equal to the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> equalsContributions()
+      throws Exception {
+    return this.equalsContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are equal to the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::equalTo);
+        false);
+    return this.map(spatialRelations::equalTo);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are equal to the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> equalsWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.equalsWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.getEqualSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are equal to the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> equalsWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
+      String key)
       throws Exception {
-    return this.equalsWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.getEqualSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots which are equal to the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots()
+      throws Exception {
+    return this.getEqualSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are equal to the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEqualContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::equalTo);
+  }
+
+  /**
+   * Get all contributions which are equal to the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEqualContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.getEqualContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are equal to the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEqualContributions(
+      String key)
+      throws Exception {
+    return this.getEqualContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are equal to the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEqualContributions()
+      throws Exception {
+    return this.getEqualContributions(mapReduce -> mapReduce.collect());
   }
 
   // INSIDE
   // -----------------------------------------------------------------------------------------------
 
+
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> inside(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> inside(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.insideWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getEnclosingSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> inside(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.inside(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.inside(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> inside(
-      String key,
-      boolean queryContributions)
+      String key)
       throws Exception {
-    return this.inside(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.inside(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-
-  /** Map all objects within which an object of mapReducer is located
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
+  /**
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> insideWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> inside()
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    return this.inside(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> insideContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getEnclosingContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> insideContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.insideContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> insideContributions(
+      String key)
+      throws Exception {
+    return this.insideContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are enclosing the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> insideContributions()
+      throws Exception {
+    return this.insideContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are enclosing the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::inside);
+        false);
+    return this.map(spatialRelations::inside);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are enclosing the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> insideWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.insideWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.getEnclosingSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are enclosing the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> insideWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
+      String key)
       throws Exception {
-    return this.insideWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.getEnclosingSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
+  /**
+   * Get all snapshots which are enclosing the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> insideWhich(
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots()
       throws Exception {
-    return this.insideWhich(mapReduce -> mapReduce.collect(), queryContributions);
+    return this.getEnclosingSnapshots(mapReduce -> mapReduce.collect());
   }
+
+  /**
+   * Get all contributions which are enclosing the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEnclosingContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::inside);
+  }
+
+  /**
+   * Get all contributions which are enclosing the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEnclosingContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.getEnclosingContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are enclosing the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEnclosingContributions(
+      String key)
+      throws Exception {
+    return this.getEnclosingContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are enclosing the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getEnclosingContributions()
+      throws Exception {
+    return this.getEnclosingContributions(mapReduce -> mapReduce.collect());
+  }
+
 
   // OVERLAPS
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> overlaps(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> overlaps(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.overlapsWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getOverlappingSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> overlaps(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.overlaps(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.touches(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> overlaps(
-      String key,
-      boolean queryContributions)
+      String key)
       throws Exception {
-    return this.overlaps(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.touches(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
-
-  /** Map all objects within which an object of mapReducer is located
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
+  /**
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> overlapsWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> overlaps()
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    return this.touches(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> overlapsContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getOverlappingContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> overlapsContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.overlapsContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> overlapsContributions(
+      String key)
+      throws Exception {
+    return this.overlapsContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are overlapping the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> overlapsContributions()
+      throws Exception {
+    return this.overlapsContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are overlapping the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getOverlappingSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::overlaps);
+        false);
+    return this.map(spatialRelations::overlaps);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are overlapping the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> overlapsWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getOverlappingSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.overlapsWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.getOverlappingSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are overlapping the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> overlapsWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getOverlappingSnapshots(
+      String key)
       throws Exception {
-    return this.overlapsWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.getOverlappingSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
   }
+
+  /**
+   * Get all snapshots which are overlapping the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getOverlappingSnapshots()
+      throws Exception {
+    return this.getOverlappingSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are overlapping the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getOverlappingContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::overlaps);
+  }
+
+  /**
+   * Get all contributions which are overlapping the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getOverlappingContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.getOverlappingContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are overlapping the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getOverlappingContributions(
+      String key)
+      throws Exception {
+    return this.getOverlappingContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are overlapping the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getOverlappingContributions()
+      throws Exception {
+    return this.getOverlappingContributions(mapReduce -> mapReduce.collect());
+  }
+
 
   // TOUCHES
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are touching the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comparison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> touches(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<X> touches(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.touchesWhich(
-        mapReduce,
-        queryContributions);
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.touchingSnapshots(
+        mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
+   * Filter by snapshots that are touching the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
   public MapReducer<X> touches(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.touches(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.touches(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+   /**
+   * Filter by snapshots that are touching the mapReducer elements
+    *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> touches(
+      String key)
+      throws Exception {
+    return this.touches(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
-   * Filter objects by querying whether they are located inside other elements
-   * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
+   * Filter by snapshots that are touching the mapReducer elements
+   *
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapReducer<X> touches(
-      String key,
-      boolean queryContributions)
+  public MapReducer<X> touches()
       throws Exception {
-    return this.touches(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.touches(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> touchesContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.touchingContributions(mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> touchesContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.touchesContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> touchesContributions(
+      String key)
+      throws Exception {
+    return this.touchesContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> touchesContributions()
+      throws Exception {
+    return this.touchesContributions(mapReduce -> mapReduce.collect());
   }
 
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are touching the mapReducer elements
+   *
    * @param mapReduce MapReduce function that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> type of features used for comaprison (OSMContribution or OSMEntitySnapshot)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> touchesWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
-        queryContributions);
-    return this.map(egenhoferRelation::touches);
+        false);
+    return this.map(spatialRelations::touches);
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are touching the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
    * @param value OSMtag value that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> touchesWhich(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingSnapshots(
       String key,
-      String value,
-      boolean queryContributions)
+      String value)
       throws Exception {
-    return this.touchesWhich(mapReduce -> mapReduce.osmTag(key, value).collect(), queryContributions);
+    return this.touchingSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
-  /** Map all objects within which an object of mapReducer is located
+  /**
+   * Get all snapshots which are touching the mapReducer elements
+   *
    * @param key OSMtag key that specifies features that are used for comparison
-   * @param queryContributions type of features used for comparison (true: OSMContributions)
-   * @param <Y> return type either OSMContribution or OSMEntitySnapshot
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> touchesWhich(
-      String key,
-      boolean queryContributions)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingSnapshots(
+      String key)
       throws Exception {
-    return this.touchesWhich(mapReduce -> mapReduce.osmTag(key).collect(), queryContributions);
+    return this.touchingSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
   }
+
+  /**
+   * Get all snapshots which are touching the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingSnapshots()
+      throws Exception {
+    return this.touchingSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> touchingContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(spatialRelations::touches);
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> touchingContributions(
+      String key,
+      String value)
+      throws Exception {
+    return this.touchingContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> touchingContributions(
+      String key)
+      throws Exception {
+    return this.touchingContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> touchingContributions()
+      throws Exception {
+    return this.touchingContributions(mapReduce -> mapReduce.collect());
+  }
+
 
   // -----------------------------------------------------------------------------------------------
   // Grouping and Aggregation

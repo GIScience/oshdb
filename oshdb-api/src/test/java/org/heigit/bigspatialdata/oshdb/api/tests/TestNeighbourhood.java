@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import java.util.SortedMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -8,7 +9,9 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
@@ -70,16 +73,23 @@ public class TestNeighbourhood {
 
   @Test
   public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithCallBackFunction() throws Exception {
+    long startTime = System.nanoTime();
     List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID()
         .neighbourhood(
             25.,
             mapReduce -> mapReduce.osmTag("highway").collect())
         .collect();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 1, result.get(0).getValue().size());
   }
 
   @Test
   public void testNeighbourhoodForSnapshotAndNearbyContributionsWithKey() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID2()
         .neighbourhood(
@@ -88,11 +98,17 @@ public class TestNeighbourhood {
             true,
             null)
         .collect();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 5, result.get(0).getValue().size());
   }
 
   @Test
   public void testNeighbourhoodForSnapshotAndNearbyContributionsWithContributionType() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID2()
         .neighbourhood(
@@ -101,25 +117,42 @@ public class TestNeighbourhood {
             true,
             ContributionType.TAG_CHANGE)
         .collect();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 3, result.get(0).getValue().size());
   }
 
   @Test
   public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithoutCallBackFunction() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID()
         .neighbourhood(25.)
         .collect();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals(5, result.get(0).getRight().size());
   }
 
   @Test
   public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     List<Pair<OSMContribution, List<Object>>> result = createMapReducerOSMContribution()
         .neighbourhood(25.,
             mapReduce -> mapReduce.osmTag("highway").collect())
         .collect();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 1, result.get(0).getValue().size());
   }
 
@@ -129,28 +162,47 @@ public class TestNeighbourhood {
 
   @Test
   public void testNeighbouringKeyForSnapshotAndNearbySnapshots() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     Number result = createMapReducerOSMEntitySnapshotID()
         .neighbouring(25.,"highway")
         .count();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 1, result);
   }
 
+
   @Test
   public void testNeighbouringKeyAndValueForSnapshotAndNearbyContributions() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     Number result = createMapReducerOSMEntitySnapshotID2()
             .neighbouring(25., mapReduce -> mapReduce.count() > 0, true, null)
             .count();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 1, result);
   }
 
   @Test
   public void testNeighbouringKeyForOSMContributionAndNearbySnapshots() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     Number result = createMapReducerOSMContribution()
         .neighbouring(54., "highway")
         .count();
+    // Calculate execution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals(1, result);
   }
 
@@ -158,75 +210,123 @@ public class TestNeighbourhood {
   // INSIDE
   // -----------------------------------------------------------------------------------------------
 
-  /*
   @Test
   public void testInsideMapForSnapshots() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID()
-        .insideWhich(null, null, false)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
+        .getEnclosingSnapshots()
         .collect();
+    System.out.println(result);
+    // Calculate execution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 2, result.get(0).getValue().size());
   }
 
   @Test
   public void testInsideForSnapshotsWithKey() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
     Number result = createMapReducerOSMEntitySnapshotID()
-        .inside("building", "yes", false)
+        .inside("building", "yes")
         .count();
     //todo improve test
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 0, result);
   }
-  */
+
   // -----------------------------------------------------------------------------------------------
   // OVERLAPS
   // -----------------------------------------------------------------------------------------------
 
-  /*
+
   @Test
   public void testOverlappingLines() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps3)
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 26175276)
-        .overlapsWhich(null, null, false)
+        .getOverlappingSnapshots(mapReduce -> mapReduce.collect())
         .collect();
-
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 1, result.get(0).getValue().size());
   }
 
   @Test
   public void testOverlapsLines() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
-    List<Object> result = OSMEntitySnapshotView.on(oshdb)
+    List<OSMEntitySnapshot> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps3)
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 26175276)
-        .overlaps("amenity", null, false)
+        .overlaps("amenity")
         .collect();
-
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 0, result.size());
   }
 
   @Test
   public void testOverlappingPolygon() throws Exception {
+    long startTime = System.nanoTime();
     // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps3)
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 203266416)
-        .overlapsWhich(null, null, false)
+        .getOverlappingSnapshots(mapReduce -> mapReduce.collect())
         .collect();
-
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
     assertEquals( 1, result.get(0).getValue().size());
   }
-  */
+
+  @Test
+  public void testOverlappingPolygonAgg() throws Exception {
+    long startTime = System.nanoTime();
+    // Create MapReducer
+    SortedMap<OSHDBTimestamp, List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>>> result = OSMEntitySnapshotView.on(oshdb)
+        .keytables(oshdb)
+        .timestamps(timestamps3)
+        .areaOfInterest(bbox)
+        .osmType(OSMType.WAY)
+        .filter(x -> x.getEntity().getId() == 203266416)
+        .aggregateByTimestamp()
+        .getTouchingSnapshots(mapReduce -> mapReduce.collect())
+        .collect();
+    // Calculate xecution time
+    long endTime = System.nanoTime();
+    double duration = (endTime - startTime) / 1000000.;
+    System.out.format("Execution time: %.3f sec", duration / 1000.);
+    // Check result
+    //assertEquals( 1, result.get(0).getValue().size());
+  }
+
 
 }

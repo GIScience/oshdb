@@ -11,15 +11,15 @@ import java.io.IOException;
 import java.util.LinkedList;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.DE9IM;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.DE9IM.relationType;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelations;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelations.relationType;
 import org.junit.Test;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
-public class TestDE9IM {
+public class TestSpatialRelations {
 
-  public TestDE9IM() {
+  public TestSpatialRelations() {
   }
 
   public LinkedList<SimpleFeature> getFeatures(String filePath) throws IOException {
@@ -60,7 +60,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       //System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -77,7 +77,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -94,7 +94,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -115,7 +115,7 @@ public class TestDE9IM {
       System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
 
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString().toLowerCase());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -132,7 +132,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -151,7 +151,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -168,7 +168,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -185,7 +185,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -202,7 +202,7 @@ public class TestDE9IM {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relationType relation = DE9IM.relate(geomCentral, geom2);
+      relationType relation = SpatialRelations.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }

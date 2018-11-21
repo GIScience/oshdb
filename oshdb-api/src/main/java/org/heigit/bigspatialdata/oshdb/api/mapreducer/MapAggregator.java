@@ -10,7 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelations.GEOMETRY_OPTIONS;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.Neighbourhood.GEOMETRY_OPTIONS;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -652,7 +652,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
             try {
               Pair<U, Pair<X, Y>> outData = (Pair<U, Pair<X, Y>>)inData;
               if (this._mapReducer._forClass == OSMEntitySnapshot.class) {
-                outData.setValue(Pair.of(inData.getValue(), SpatialRelations.neighbourhood(
+                outData.setValue(Pair.of(inData.getValue(), Neighbourhood.neighbourhood(
                     this._mapReducer._oshdbForTags,
                     this._mapReducer._tstamps,
                     distanceInMeter,
@@ -662,7 +662,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
                     contributionType)));
                 return outData;
               } else if (this._mapReducer._forClass == OSMContribution.class) {
-                outData.setValue(Pair.of(inData.getValue(), SpatialRelations.neighbourhood(
+                outData.setValue(Pair.of(inData.getValue(), Neighbourhood.neighbourhood(
                     this._mapReducer._oshdbForTags,
                     distanceInMeter,
                     mapReduce,
@@ -960,172 +960,204 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
 
-  // -----------------------------------------------------------------------------------------------
-  // Egenhofer Relations
-  // Functions for querying and filtering objects based on the egenhofer relations
-  // -----------------------------------------------------------------------------------------------
-
   /**
-   * Filter by objects that are contained in the entity
+   * Filter by snapshots that touch the entity
    *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, X> contains(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.contains(mapReduce, queryContributions));
-  }
-
-  /**
-   * Filter by objects that are contained in the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> contains(
-      String key,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.contains(key, queryContributions));
-  }
-
-
-  /**
-   * Filter by objects that are contained in the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> contains(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.contains(key, value, queryContributions));
-  }
-
-
-  /**
-   * Filter by snapshots or contributions that are covered by the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> covers(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.covers(key, value, queryContributions));
-  }
-
-  /**
-   * Filter by snapshots or contributions that are covering the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> coveredBy(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.coveredBy(key, value, queryContributions));
-  }
-
-
-  /**
-   * Filter by snapshots or contributions that are disjoint from the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> disjoint(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.disjoint(key, value, queryContributions));
-  }
-
-  /**
-   * Filter by snapshots or contributions that are equal to the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> equals(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.equals(key, value, queryContributions));
-  }
-
-  /**
-   * Filter by snapshots or contributions that contain the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> inside(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.inside(key, value, queryContributions));
-  }
-
-  /**
-   * Filter by snapshots or contributions that touch the entity
-   *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> touches(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    return this.copyTransform(this._mapReducer.touches(key, value, queryContributions));
-  }
-
-  /**
-   * Filter by snapshots or contributions that touch the entity
-   *
-   * @param key OSMtag key
-   * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> containsWhich(
-      String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> neighbourhood_alt(
+      Double distance,
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.neighbourhood(inData.getValue(), distance);
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+
+// -----------------------------------------------------------------------------------------------
+// Spatial Relations
+// Functions for querying and filtering objects based on the egenhofer relations
+// -----------------------------------------------------------------------------------------------
+
+  // CONTAINS  -----------------------------------------------------------------------------------
+
+  /**
+   * Filter by objects that are contained in the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> contains(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.contains(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are contained in the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> contains(String key, String value) {
+    return this.contains(key, value);
+  }
+
+  /**
+   * Filter by objects that are contained in the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> contains(String key) {
+    return this.contains(key);
+  }
+
+  /**
+   * Filter by objects that are contained in the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> contains() {
+    return this.contains();
+  }
+
+  /**
+   * Filter by objects that are contained in the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> containsContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.containsContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are contained in the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> containsContributions(String key, String value) {
+    return this.containsContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that are contained in the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> containsContributions(String key) {
+    return this.containsContributions(key);
+  }
+
+  /**
+   * Filter by objects that are contained in the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> containsContributions() {
+    return this.containsContributions();
+  }
+
+
+  /**
+   * Filter by snapshots that are contained in the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.contains(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Filter by snapshots that are contained in the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.containedSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are contained in the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedSnapshots(
+      String key) throws Exception {
+    return this.containedSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are contained in the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedSnapshots() throws Exception {
+    return this.containedSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by contributions that are contained in the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> containedContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.contains(inData.getValue());
@@ -1135,24 +1167,210 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Filter by contributions that are contained in the entity
    *
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> coversWhich(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> containedContributions(
       String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+      String value) throws Exception {
+    return this.containedContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by contributions that are contained in the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> containedContributions(
+      String key) throws Exception {
+    return this.containedContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by contributions that are contained in the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> containedContributions() throws Exception {
+    return this.containedContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  // COVERS  -----------------------------------------------------------------------------------
+
+  /**
+   * Filter by objects that are covered by the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> covers(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.covers(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are covered by the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> covers(String key, String value) {
+    return this.covers(key, value);
+  }
+
+  /**
+   * Filter by objects that are covered by the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> covers(String key) {
+    return this.covers(key);
+  }
+
+  /**
+   * Filter by objects that are covered by the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> covers() {
+    return this.covers();
+  }
+
+  /**
+   * Filter by objects that are covered by the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coversContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.coversContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are covered by the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coversContributions(String key, String value) {
+    return this.coversContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that are covered by the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coversContributions(String key) {
+    return this.coversContributions(key);
+  }
+
+  /**
+   * Filter by objects that are covered by the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coversContributions() {
+    return this.coversContributions();
+  }
+
+  /**
+   * Get all contributions that are covered by the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.covers(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Get all contributions that are covered by the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.coveredSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions that are covered by the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredSnapshots(
+      String key) throws Exception {
+    return this.coveredSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions that are covered by the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredSnapshots() throws Exception {
+    return this.coveredSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions that are covered by the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveredContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.covers(inData.getValue());
@@ -1162,24 +1380,210 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions that are covered by the entity
    *
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveredByWhich(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveredContributions(
       String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+      String value) throws Exception {
+    return this.coveredContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions that are covered by the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveredContributions(
+      String key) throws Exception {
+    return this.coveredContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions that are covered by the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveredContributions() throws Exception {
+    return this.coveredContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  // COVERED BY  -----------------------------------------------------------------------------------
+
+  /**
+   * Filter by objects that cover the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredBy(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.coveredBy(mapReduce));
+  }
+
+  /**
+   * Filter by objects that cover the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredBy(String key, String value) {
+    return this.coveredBy(key, value);
+  }
+
+  /**
+   * Filter by objects that cover the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredBy(String key) {
+    return this.coveredBy(key);
+  }
+
+  /**
+   * Filter by objects that cover the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredBy() {
+    return this.coveredBy();
+  }
+
+  /**
+   * Filter by objects that cover the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredByContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.coveredByContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that cover the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredByContributions(String key, String value) {
+    return this.coveredByContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that cover the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredByContributions(String key) {
+    return this.coveredByContributions(key);
+  }
+
+  /**
+   * Filter by objects that cover the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> coveredByContributions() {
+    return this.coveredByContributions();
+  }
+
+  /**
+   * Get all snapshots that cover the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.coveredBy(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Get all snapshots that cover the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.coveringSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all snapshots that cover the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringSnapshots(
+      String key) throws Exception {
+    return this.coveringSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots that cover the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringSnapshots() throws Exception {
+    return this.coveringSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions that cover the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveringContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.coveredBy(inData.getValue());
@@ -1189,24 +1593,211 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions that cover the entity
    *
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> disjointWhich(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveringContributions(
       String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+      String value) throws Exception {
+    return this.coveringContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions that cover the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveringContributions(
+      String key) throws Exception {
+    return this.coveringContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions that cover the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> coveringContributions() throws Exception {
+    return this.coveringContributions(mapReduce -> mapReduce.collect());
+  }
+
+  // DISJOINT  ----------------------------------------------------------------------------------------
+
+
+  /**
+   * Filter by objects that are disjoint from the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjoint(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.disjoint(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are disjoint from the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjoint(String key, String value) {
+    return this.disjoint(key, value);
+  }
+
+  /**
+   * Filter by objects that are disjoint from the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjoint(String key) {
+    return this.disjoint(key);
+  }
+
+  /**
+   * Filter by objects that are disjoint from the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjoint() {
+    return this.disjoint();
+  }
+
+  /**
+   * Filter by objects that are disjoint from the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjointContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.disjointContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are disjoint from the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjointContributions(String key, String value) {
+    return this.disjointContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that are disjoint from the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjointContributions(String key) {
+    return this.disjointContributions(key);
+  }
+
+  /**
+   * Filter by objects that are disjoint from the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> disjointContributions() {
+    return this.disjointContributions();
+  }
+
+
+  /**
+   * Get all snapshots that are disjoint from the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.disjoint(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Get all snapshots that are disjoint from the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.getDisjointSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all snapshots that are disjoint from the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
+      String key) throws Exception {
+    return this.getDisjointSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots that are disjoint from the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots() throws Exception {
+    return this.getDisjointSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions that disjoint from the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getDisjointContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.disjoint(inData.getValue());
@@ -1216,24 +1807,209 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions that disjoint from the entity
    *
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> equalsWhich(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getDisjointContributions(
       String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+      String value) throws Exception {
+    return this.getDisjointContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions that disjoint from the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getDisjointContributions(
+      String key) throws Exception {
+    return this.getDisjointContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions that disjoint from the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getDisjointContributions() throws Exception {
+    return this.getDisjointContributions(mapReduce -> mapReduce.collect());
+  }
+
+  // EQUAL  ----------------------------------------------------------------------------------------
+
+  /**
+   * Filter by objects that are equal to the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equals(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.equals(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are equal to the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equals(String key, String value) {
+    return this.equals(key, value);
+  }
+
+  /**
+   * Filter by objects that are equal to the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equals(String key) {
+    return this.equals(key);
+  }
+
+  /**
+   * Filter by objects that are equal to the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equals() {
+    return this.equals();
+  }
+
+  /**
+   * Filter by objects that are equal to the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equalsContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.equalsContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are equal to the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equalsContributions(String key, String value) {
+    return this.equalsContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that are equal to the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equalsContributions(String key) {
+    return this.equalsContributions(key);
+  }
+
+  /**
+   * Filter by objects that are equal to the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> equalsContributions() {
+    return this.equalsContributions();
+  }
+
+  /**
+   * Get all snapshots whose geometry is equal to the one from the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.equalTo(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Get all snapshots whose geometry is equal to the one from the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.getEqualSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all snapshots whose geometry is equal to the one from the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
+      String key) throws Exception {
+    return this.getEqualSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots whose geometry is equal to the one from the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots() throws Exception {
+    return this.getEqualSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions whose geometry is equal to the one from the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEqualContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.equalTo(inData.getValue());
@@ -1243,24 +2019,211 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions whose geometry is equal to the one from the entity
    *
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> insideWhich(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEqualContributions(
       String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+      String value) throws Exception {
+    return this.getEqualContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions whose geometry is equal to the one from the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEqualContributions(
+      String key) throws Exception {
+    return this.getEqualContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions whose geometry is equal to the one from the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEqualContributions() throws Exception {
+    return this.getEqualContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  // INSIDE / ENCLOSING ----------------------------------------------------------------------------
+
+  /**
+   * Filter by objects that are enclosing the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> inside(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.inside(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are enclosing the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> inside(String key, String value) {
+    return this.inside(key, value);
+  }
+
+  /**
+   * Filter by objects that are enclosing the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> inside(String key) {
+    return this.inside(key);
+  }
+
+  /**
+   * Filter by objects that are enclosing the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> inside() {
+    return this.inside();
+  }
+
+  /**
+   * Filter by objects that are enclosing the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> insideContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.insideContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are enclosing the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> insideContributions(String key, String value) {
+    return this.insideContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that are enclosing the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> insideContributions(String key) {
+    return this.insideContributions(key);
+  }
+
+  /**
+   * Filter by objects that are enclosing the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> insideContributions() {
+    return this.insideContributions();
+  }
+
+
+  /**
+   * Get all snapshots that enclosing the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.inside(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Get all snapshots that enclosing the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.getEnclosingSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all snapshots that enclosing the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
+      String key) throws Exception {
+    return this.getEnclosingSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots that enclosing the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots() throws Exception {
+    return this.getEnclosingSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions that are enclosing the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEnclosingContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.inside(inData.getValue());
@@ -1270,24 +2233,210 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions that are enclosing the entity
    *
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> overlapsWhich(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEnclosingContributions(
       String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+      String value) throws Exception {
+    return this.getEnclosingContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions that are enclosing the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEnclosingContributions(
+      String key) throws Exception {
+    return this.getEnclosingContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions that are enclosing the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getEnclosingContributions() throws Exception {
+    return this.getEnclosingContributions(mapReduce -> mapReduce.collect());
+  }
+
+  // OVERLAP --------------------------------------------------------------------------------------
+
+  /**
+   * Filter by objects that are overlapping to the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlaps(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.overlaps(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are overlapping to the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlaps(String key, String value) {
+    return this.overlaps(key, value);
+  }
+
+  /**
+   * Filter by objects that are overlapping to the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlaps(String key) {
+    return this.overlaps(key);
+  }
+
+  /**
+   * Filter by objects that are overlapping to the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlaps() {
+    return this.overlaps();
+  }
+
+  /**
+   * Filter by objects that are overlapping to the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlapsContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.overlapsContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are overlapping to the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlapsContributions(String key, String value) {
+    return this.overlapsContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that are overlapping to the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlapsContributions(String key) {
+    return this.overlapsContributions(key);
+  }
+
+  /**
+   * Filter by objects that are overlapping to the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> overlapsContributions() {
+    return this.overlapsContributions();
+  }
+
+
+  /**
+   * Get all snapshots that are overlapping the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappingSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
+        mapReduce,
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.overlaps(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Get all snapshots that overlap the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappingSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.overlappingSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all snapshots that overlap the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappingSnapshots(
+      String key) throws Exception {
+    return this.overlappingSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots that overlap the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappingSnapshots() throws Exception {
+    return this.overlappingSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions that overlap the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> overlappingContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.overlaps(inData.getValue());
@@ -1297,77 +2446,252 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions that overlap the entity
    *
    * @param key OSMtag key
    * @param value OSMtag value
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> touchesWhich(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> overlappingContributions(
       String key,
-      String value,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
-        this._mapReducer._tstamps,
-        mapReduce -> mapReduce.osmTag(key, value).collect(),
-        queryContributions);
-    return this.copyTransform(this._mapReducer.map(inData -> {
-      Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
-      Pair<X, List<Y>> result = egenhoferRelation.touches(inData.getValue());
-      outData.setValue(result);
-      return outData;
-    }));
+      String value) throws Exception {
+    return this.overlappingContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions that overlap the entity
    *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
+   * @param key OSMtag key
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> touchesWhich(
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
-        this._mapReducer._tstamps,
-        mapReduce -> mapReduce.collect(),
-        queryContributions);
-    return this.copyTransform(this._mapReducer.map(inData -> {
-      Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
-      Pair<X, List<Y>> result = egenhoferRelation.touches(inData.getValue());
-      outData.setValue(result);
-      return outData;
-    }));
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> overlappingContributions(
+      String key) throws Exception {
+    return this.overlappingContributions(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
-   * Filter by snapshots or contributions that touch the entity
+   * Get all contributions that overlap the entity
    *
-   * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapAggregator<U, Pair<X, List<Y>>> touchesWhich(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce,
-      boolean queryContributions) throws Exception {
-    DE9IM<X, Y> egenhoferRelation = new DE9IM<>(
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> overlappingContributions() throws Exception {
+    return this.overlappingContributions(mapReduce -> mapReduce.collect());
+  }
+
+
+  // TOUCHING --------------------------------------------------------------------------------------
+
+  /**
+   * Filter by objects that are touching the MapReducer element
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touches(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.touches(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are touching the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touches(String key, String value) {
+    return this.touches(key, value);
+  }
+
+  /**
+   * Filter by objects that are touching the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touches(String key) {
+    return this.touches(key);
+  }
+
+  /**
+   * Filter by objects that are touching the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touches() {
+    return this.touches();
+  }
+
+  /**
+   * Filter by objects that are touching the entity
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touchesContributions(
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    return this.copyTransform(this._mapReducer.touchesContributions(mapReduce));
+  }
+
+  /**
+   * Filter by objects that are touching the MapReducer element
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touchesContributions(String key, String value) {
+    return this.touchesContributions(key, value);
+  }
+
+  /**
+   * Filter by objects that are touching the Map Reducer element
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touchesContributions(String key) {
+    return this.touchesContributions(key);
+  }
+
+  /**
+   * Filter by objects that are touching the Map Reducer element
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> touchesContributions() {
+    return this.touchesContributions();
+  }
+
+  /**
+   * Get all snapshots that touch the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getTouchingSnapshots(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
         mapReduce,
-        queryContributions);
+        false);
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.touches(inData.getValue());
+      outData.setValue(result);
+      return outData;
+    }));
+  }
+
+  /**
+   * Get all snapshots that touch the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getTouchingSnapshots(
+      String key,
+      String value) throws Exception {
+    return this.getTouchingSnapshots(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all snapshots that touch the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getTouchingSnapshots(
+      String key) throws Exception {
+    return this.getTouchingSnapshots(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots that touch the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public  MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getTouchingSnapshots() throws Exception {
+    return this.getTouchingSnapshots(mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions that touch the entity
+   *
+   * @param mapReduce Serializable Function that specifies the contributions
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getTouchingContributions(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        this._mapReducer._tstamps,
+        mapReduce,
+        true);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<Y>>> outData = (Pair<U, Pair<X, List<Y>>>) inData;
       Pair<X, List<Y>> result = egenhoferRelation.touches(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
+  }
+
+  /**
+   * Get all contributions that touch the entity
+   *
+   * @param key OSMtag key
+   * @param value OSMtag value
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getTouchingContributions(
+      String key,
+      String value) throws Exception {
+    return this.getTouchingContributions(mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions that touch the entity
+   *
+   * @param key OSMtag key
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getTouchingContributions(
+      String key) throws Exception {
+    return this.getTouchingContributions(mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions that touch the entity
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapAggregator<U, Pair<X, List<Y>>> getTouchingContributions() throws Exception {
+    return this.getTouchingContributions(mapReduce -> mapReduce.collect());
   }
 
 
