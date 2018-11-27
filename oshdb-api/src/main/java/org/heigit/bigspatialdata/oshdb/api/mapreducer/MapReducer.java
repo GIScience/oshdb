@@ -878,7 +878,7 @@ public abstract class MapReducer<X> implements
         if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMContribution(
@@ -888,7 +888,7 @@ public abstract class MapReducer<X> implements
                 combiner
             );
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMEntitySnapshot(
@@ -937,7 +937,7 @@ public abstract class MapReducer<X> implements
           flatMapper = this._getFlatMapper();
         }
         if (this._forClass.equals(OSMContribution.class)) {
-          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
               data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMContributionGroupedById(
@@ -947,7 +947,7 @@ public abstract class MapReducer<X> implements
               combiner
           );
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
               data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
@@ -1353,12 +1353,12 @@ public abstract class MapReducer<X> implements
         if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMContribution(contributionMapper);
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
@@ -1402,13 +1402,15 @@ public abstract class MapReducer<X> implements
           flatMapper = this._getFlatMapper();
         }
         if (this._forClass.equals(OSMContribution.class)) {
-          return this.flatMapStreamCellsOSMContributionGroupedById(
-              (SerializableFunction<List<OSMContribution>, Iterable<X>>) flatMapper::apply
-          );
+          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
+              data -> flatMapper.apply(data);
+          return this.flatMapStreamCellsOSMContributionGroupedById(contributionFlatMapper);
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-          return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
-              (SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>>) flatMapper::apply
-          );
+          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
+              data -> flatMapper.apply(data);
+          return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(snapshotFlatMapper);
         } else {
           throw new UnsupportedOperationException(
               "Unimplemented data view: " + this._forClass.toString());
