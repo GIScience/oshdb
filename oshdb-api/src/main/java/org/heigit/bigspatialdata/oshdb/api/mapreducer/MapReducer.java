@@ -937,16 +937,25 @@ public abstract class MapReducer<X> implements
           flatMapper = this._getFlatMapper();
         }
         if (this._forClass.equals(OSMContribution.class)) {
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMContributionGroupedById(
-              (SerializableFunction<List<OSMContribution>, Iterable<X>>) flatMapper::apply,
+              contributionFlatMapper,
               identitySupplier,
               accumulator,
               combiner
           );
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
-              (SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>>) flatMapper::apply,
-              identitySupplier, accumulator, combiner);
+              snapshotFlatMapper,
+              identitySupplier,
+              accumulator,
+              combiner
+          );
         } else {
           throw new UnsupportedOperationException(
               "Unimplemented data view: " + this._forClass.toString());
