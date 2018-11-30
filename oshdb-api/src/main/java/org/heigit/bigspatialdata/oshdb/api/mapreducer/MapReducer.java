@@ -666,6 +666,7 @@ public abstract class MapReducer<X> implements
   // Functions for querying and filtering objects based on other objects in the neighbourhood
   // --------------------------------------------------------------------------------------------
 
+
   /**
    * Get objects (snapshots or contributions) in the neighbourhood filterd using call back function
    *
@@ -987,8 +988,9 @@ public abstract class MapReducer<X> implements
         null);
   }
 
+
   // -----------------------------------------------------------------------------------------------
-  // Egenhofer Relations
+  // Egenhofer Relations: contains
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -1005,6 +1007,7 @@ public abstract class MapReducer<X> implements
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
+
 
   /**
    * Filter by snapshots that are covered by the mapReducer elements
@@ -1098,7 +1101,6 @@ public abstract class MapReducer<X> implements
     return this.containsContributions(mapReduce -> mapReduce.collect());
   }
 
-
   /**
    * Get all snapshots which are covered by the mapReducer elements
    *
@@ -1109,13 +1111,19 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getContainedSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::contains);
+    return this.map(x -> {
+      try {
+        return spatialRelation.contains(x);
+      } catch (Exception e) {
+        return Pair.of(x, null);
+      }
+    });
   }
 
   /**
@@ -1167,13 +1175,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> getContainedContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::contains);
+    return this.map(spatialRelation::contains);
   }
 
   /**
@@ -1215,7 +1223,7 @@ public abstract class MapReducer<X> implements
     return this.getContainedContributions(mapReduce -> mapReduce.collect());
   }
 
-  // COVERS
+  // Egenhofer Relations: COVERS
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -1336,13 +1344,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveredSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::covers);
+    return this.map(spatialRelation::covers);
   }
 
   /**
@@ -1394,13 +1402,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> getCoveredContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::covers);
+    return this.map(spatialRelation::covers);
   }
 
   /**
@@ -1443,7 +1451,7 @@ public abstract class MapReducer<X> implements
   }
 
 
-  // COVERED BY
+  // Egenhofer Relations: COVERED BY
   // -----------------------------------------------------------------------------------------------
 
 
@@ -1565,13 +1573,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getCoveringSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::coveredBy);
+    return this.map(spatialRelation::coveredBy);
   }
 
   /**
@@ -1623,13 +1631,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> getCoveringContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::coveredBy);
+    return this.map(spatialRelation::coveredBy);
   }
 
   /**
@@ -1672,7 +1680,7 @@ public abstract class MapReducer<X> implements
   }
 
 
-  // DISJOINT
+  // Egenhofer Relations: DISJOINT
   // -----------------------------------------------------------------------------------------------
 
 
@@ -1794,13 +1802,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::disjoint);
+    return this.map(spatialRelation::disjoint);
   }
 
   /**
@@ -1852,13 +1860,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> getDisjointContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::disjoint);
+    return this.map(spatialRelation::disjoint);
   }
 
   /**
@@ -1901,7 +1909,7 @@ public abstract class MapReducer<X> implements
   }
 
 
-  // EQUALS
+  // Egenhofer Relations: EQUALS
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -2022,13 +2030,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::equalTo);
+    return this.map(spatialRelation::equalTo);
   }
 
   /**
@@ -2080,13 +2088,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> getEqualContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::equalTo);
+    return this.map(spatialRelation::equalTo);
   }
 
   /**
@@ -2128,7 +2136,7 @@ public abstract class MapReducer<X> implements
     return this.getEqualContributions(mapReduce -> mapReduce.collect());
   }
 
-  // INSIDE
+  // Egenhofer Relations: INSIDE
   // -----------------------------------------------------------------------------------------------
 
 
@@ -2250,13 +2258,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::inside);
+    return this.map(spatialRelation::inside);
   }
 
   /**
@@ -2308,13 +2316,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> getEnclosingContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::inside);
+    return this.map(spatialRelation::inside);
   }
 
   /**
@@ -2357,7 +2365,7 @@ public abstract class MapReducer<X> implements
   }
 
 
-  // OVERLAPS
+  // Egenhofer Relations: OVERLAPS
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -2478,13 +2486,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getOverlappingSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::overlaps);
+    return this.map(spatialRelation::overlaps);
   }
 
   /**
@@ -2536,13 +2544,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> getOverlappingContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::overlaps);
+    return this.map(spatialRelation::overlaps);
   }
 
   /**
@@ -2585,7 +2593,7 @@ public abstract class MapReducer<X> implements
   }
 
 
-  // TOUCHES
+  // Egenhofer Relations: TOUCHES
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -2706,13 +2714,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::touches);
+    return this.map(spatialRelation::touches);
   }
 
   /**
@@ -2764,13 +2772,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<Pair<X, List<OSMContribution>>> touchingContributions(
       SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMContribution> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
         this._tstamps,
         mapReduce,
         false);
-    return this.map(spatialRelations::touches);
+    return this.map(spatialRelation::touches);
   }
 
   /**
@@ -2812,6 +2820,245 @@ public abstract class MapReducer<X> implements
     return this.touchingContributions(mapReduce -> mapReduce.collect());
   }
 
+  // Neighbourhood
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringSnapshots(
+      double distance,
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.getNeighbouringSnapshots(
+        distance,
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringSnapshots(
+      double distance,
+      String key,
+      String value)
+      throws Exception {
+    return this.neighbouringSnapshots(distance, mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringSnapshots(
+      double distance,
+      String key)
+      throws Exception {
+    return this.neighbouringSnapshots(distance, mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringSnapshots(double distance)
+      throws Exception {
+    return this.neighbouringSnapshots(distance, mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringContributions(
+      double distance,
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    MapReducer<Pair<X, List<OSMContribution>>> pairMapReducer = this.getNeighbouringContributions(distance, mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringContributions(
+      double distance,
+      String key,
+      String value)
+      throws Exception {
+    return this.neighbouringContributions(distance, mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringContributions(
+      double distance,
+      String key)
+      throws Exception {
+    return this.neighbouringContributions(distance, mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by snapshots that are touching the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> neighbouringContributions(double distance)
+      throws Exception {
+    return this.neighbouringContributions(distance, mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
+   * Get all snapshots which are covered by the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getNeighbouringSnapshots(
+      double distance,
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
+      throws Exception {
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(x -> spatialRelation.neighbouring(x, distance));
+  }
+
+  /**
+   * Get all snapshots which are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getNeighbouringSnapshots(
+      double distance,
+      String key,
+      String value)
+      throws Exception {
+    return this.getNeighbouringSnapshots(distance, mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all snapshots which are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getNeighbouringSnapshots(
+      double distance,
+      String key)
+      throws Exception {
+    return this.getNeighbouringSnapshots(distance, mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all snapshots which are touching the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> getNeighbouringSnapshots(Double distance)
+      throws Exception {
+    return this.getNeighbouringSnapshots(distance, mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getNeighbouringContributions(
+      double distance,
+      SerializableFunctionWithException<MapReducer<OSMContribution>, List<OSMContribution>> mapReduce)
+      throws Exception {
+    SpatialRelation<X, OSMContribution> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce,
+        false);
+    return this.map(x -> spatialRelation.neighbouring(x, distance));
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @param value OSMtag value that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getNeighbouringContributions(
+      double distance,
+      String key,
+      String value)
+      throws Exception {
+    return this.getNeighbouringContributions(distance, mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @param key OSMtag key that specifies features that are used for comparison
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getNeighbouringContributions(
+      double distance,
+      String key)
+      throws Exception {
+    return this.getNeighbouringContributions(distance, mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all contributions which are touching the mapReducer elements
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<Pair<X, List<OSMContribution>>> getNeighbouringContributions(double distance)
+      throws Exception {
+    return this.getNeighbouringContributions(distance, mapReduce -> mapReduce.collect());
+  }
 
   // -----------------------------------------------------------------------------------------------
   // Grouping and Aggregation

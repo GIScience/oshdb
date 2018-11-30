@@ -964,12 +964,12 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * Filter by snapshots that touch the entity
    *
    * @return a modified copy of this MapReducer
-   **/
+
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> neighbourhood_alt(
       Double distance,
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -977,12 +977,13 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.neighbourhood(inData.getValue(), distance);
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation
+          .neighbourhood(inData.getValue(), distance);
       outData.setValue(result);
       return outData;
     }));
   }
-
+**/
 
 // -----------------------------------------------------------------------------------------------
 // Spatial Relations
@@ -1093,7 +1094,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1101,7 +1102,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.contains(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.contains(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -1152,7 +1153,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> containedContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1306,7 +1307,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1314,7 +1315,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.covers(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.covers(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -1365,7 +1366,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> coveredContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1519,7 +1520,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1527,7 +1528,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.coveredBy(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.coveredBy(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -1578,7 +1579,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> coveringContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1733,7 +1734,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getDisjointSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1741,7 +1742,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.disjoint(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.disjoint(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -1792,7 +1793,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> getDisjointContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1945,7 +1946,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEqualSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -1953,7 +1954,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.equalTo(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.equalTo(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -2004,7 +2005,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> getEqualContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -2159,7 +2160,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getEnclosingSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -2167,7 +2168,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.inside(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.inside(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -2218,7 +2219,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> getEnclosingContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -2372,7 +2373,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappingSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -2380,7 +2381,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.overlaps(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.overlaps(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -2431,7 +2432,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> overlappingContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -2585,7 +2586,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> getTouchingSnapshots(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce)
       throws Exception {
-    SpatialRelations<X, OSMEntitySnapshot> spatialRelations = new SpatialRelations<>(
+    SpatialRelation<X, OSMEntitySnapshot> spatialRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
@@ -2593,7 +2594,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         false);
     return this.copyTransform(this._mapReducer.map(inData -> {
       Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>) inData;
-      Pair<X, List<OSMEntitySnapshot>> result = spatialRelations.touches(inData.getValue());
+      Pair<X, List<OSMEntitySnapshot>> result = spatialRelation.touches(inData.getValue());
       outData.setValue(result);
       return outData;
     }));
@@ -2644,7 +2645,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <Y> MapAggregator<U, Pair<X, List<Y>>> getTouchingContributions(
       SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelations<X, Y> egenhoferRelation = new SpatialRelations<>(
+    SpatialRelation<X, Y> egenhoferRelation = new SpatialRelation<>(
         this._mapReducer._oshdbForTags,
         this._mapReducer._bboxFilter,
         this._mapReducer._tstamps,
