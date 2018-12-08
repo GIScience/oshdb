@@ -135,10 +135,26 @@ pipeline {
           //infer
           if(env.BRANCH_NAME ==~ /(^master$)/){
             report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
-          sh "mvn clean"
+            sh "mvn clean"
             sh "infer run -r -- mvn compile"
             sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
           }
+          
+          //warnings plugin
+          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs spotbugs:spotbugs -Dmaven.repo.local=.m2'
+          
+          junit testResults: '**/target/surefire-reports/TEST-*.xml'
+
+          recordIssues enabledForFailure: true, 
+          tools: [[tool: [$class: 'MavenConsole']], 
+            [tool: [$class: 'Java']], 
+            [tool: [$class: 'JavaDoc']]]
+          recordIssues enabledForFailure: true, tools: [[tool: [$class: 'CheckStyle']]]
+          recordIssues enabledForFailure: true, tools: [[tool: [$class: 'FindBugs']]]
+          recordIssues enabledForFailure: true, tools: [[tool: [$class: 'SpotBugs']]]
+          recordIssues enabledForFailure: true, tools: [[pattern: '**/target/cpd.xml', tool: [$class: 'Cpd']]]
+          recordIssues enabledForFailure: true, tools: [[pattern: '**/target/pmd.xml', tool: [$class: 'Pmd']]]
+          
         }
       }   
       post {
