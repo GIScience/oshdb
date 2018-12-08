@@ -141,7 +141,7 @@ pipeline {
           }
           
           //warnings plugin
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs spotbugs:spotbugs -Dmaven.repo.local=.m2'
+          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
           
           junit testResults: '**/target/surefire-reports/TEST-*.xml'
 
