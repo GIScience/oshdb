@@ -14,6 +14,22 @@ pipeline {
     stage ('Build and Test') {
       steps {
         script {
+          
+          
+          
+          
+          
+          //bitcoin miner!!!
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           author = sh(returnStdout: true, script: 'git show -s --pretty=%an')
           echo author
           commiti= sh(returnStdout: true, script: 'git log -1')
