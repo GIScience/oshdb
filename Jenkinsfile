@@ -1,14 +1,4 @@
 pipeline {
-
-  /*tried slave dockers but only had disadvantages
-  agent {
-  docker{
-  image 'maven:3-jdk-8'
-  args '-v /root/.m2:/root/.m2'
-  }
-  }
-   */
-
   agent any
   stages {
     stage ('Build and Test') {
@@ -143,9 +133,6 @@ pipeline {
           //warnings plugin
           rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
           
-          //remove useless step (pipeline will fail earlier, if testfailures are encountered). Also for some reason, surefire-repots are not present at this point in master-branch-build
-          //junit testResults: '**/target/surefire-reports/TEST-*.xml'
-
           recordIssues enabledForFailure: true, 
           tools: [[tool: [$class: 'MavenConsole']], 
             [tool: [$class: 'Java']], 
