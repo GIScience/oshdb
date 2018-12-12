@@ -317,7 +317,7 @@ public class TagTranslator {
   }
 
   private int getFakeId(String s) {
-    return -Math.abs(s.hashCode());
+    return -(s.hashCode() & 0x7fffffff);
   }
 
   public Connection getConnection() {
