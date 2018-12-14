@@ -81,7 +81,7 @@ public class SpatialRelation<X, Y> {
   private Pair<X, List<Y>> match(
     X centralObject,
     relation targetRelation,
-      double distanceInMeter) throws Exception {
+      double distance) throws Exception {
 
     // Empty result object: Nearby OSM objects that fulfill the spatial relation type to the central OSM object
     List<Y> matchingNearbyObjects = new ArrayList<>();
@@ -108,12 +108,12 @@ public class SpatialRelation<X, Y> {
 
     // Create an envelope that represents the neighbourhood of the main OSM object
     Envelope geomEnvelope = geom.getEnvelopeInternal();
-    double distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geom.getCentroid().getY(), distanceInMeter);
+    double distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geom.getCentroid().getY(), distance);
     // Multiply distance by 1.2 to avoid falsely excluding nearby OSM objects
     double minLon = geomEnvelope.getMinX() - distanceInDegreeLongitude * 1.2;
     double maxLon = geomEnvelope.getMaxX() + distanceInDegreeLongitude * 1.2;
-    double minLat = geomEnvelope.getMinY() - (distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
-    double maxLat = geomEnvelope.getMaxY() + (distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
+    double minLat = geomEnvelope.getMinY() - (distance / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
+    double maxLat = geomEnvelope.getMaxY() + (distance / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
     Envelope neighbourhoodEnvelope = new Envelope(minLon, maxLon, minLat, maxLat);
 
     // Compare OSMEntitySnapshot to nearby OSMEntitySnapshots
@@ -129,7 +129,6 @@ public class SpatialRelation<X, Y> {
       matchingNearbyObjects = nearbyObjects
           .stream()
           .filter(nearbyObject -> {
-            System.out.println(this.tstamps);
             try {
               OSMEntitySnapshot nearbySnapshot = (OSMEntitySnapshot) nearbyObject;
               if (nearbySnapshot.getTimestamp().compareTo(centralTimestamp) != 0) return false;
@@ -139,10 +138,10 @@ public class SpatialRelation<X, Y> {
               if (nearbySnapshot.getEntity().getType().equals(OSMType.RELATION)) return false;
               Geometry nearbyGeom = nearbySnapshot.getGeometryUnclipped();
               if (targetRelation.equals(relation.NEIGHBOURING)) {
-                return isWithinDistance(centralGeom, nearbyGeom, distanceInMeter)
+                return isWithinDistance(centralGeom, nearbyGeom, distance)
                     && Arrays.asList(targetRelation.DISJOINT, targetRelation.TOUCHES).contains(relate(centralGeom, nearbyGeom));
               } else if (targetRelation.equals(relation.DISJOINT)) {
-                return isWithinDistance(centralGeom, nearbyGeom, distanceInMeter)
+                return isWithinDistance(centralGeom, nearbyGeom, distance)
                     && relate(centralGeom, nearbyGeom).equals(relation.DISJOINT);
               } else {
                 return relate(centralGeom, nearbyGeom).equals(targetRelation);
@@ -155,6 +154,39 @@ public class SpatialRelation<X, Y> {
           .collect(Collectors.toList());
       // Compare OSMContribution to nearby OSMEntitySnapshots
     } else if (centralObject.getClass() == OSMContribution.class) {
+
+      // Get all OSM objects in the neighbourhood of the central OSM object from STRtree
+      List<Y> nearbyObjects = this.objectsForComparison.query(neighbourhoodEnvelope);
+      if (nearbyObjects.isEmpty()) return Pair.of(centralObject, matchingNearbyObjects);
+
+      Long centralID = id;
+      Geometry centralGeom = geom;
+      matchingNearbyObjects = nearbyObjects
+          .stream()
+          .filter(nearbyObject -> {
+            try {
+              OSMEntitySnapshot nearbySnapshot = (OSMEntitySnapshot) nearbyObject;
+              // Skip if this candidate snapshot belongs to the same entity
+              if (centralID == nearbySnapshot.getEntity().getId()) return false;
+              // Skip if it is a relation - todo check functionality for relations
+              if (nearbySnapshot.getEntity().getType().equals(OSMType.RELATION)) return false;
+              Geometry nearbyGeom = nearbySnapshot.getGeometryUnclipped();
+              if (targetRelation.equals(relation.NEIGHBOURING)) {
+                return isWithinDistance(centralGeom, nearbyGeom, distance)
+                    && Arrays.asList(targetRelation.DISJOINT, targetRelation.TOUCHES).contains(relate(centralGeom, nearbyGeom));
+              } else if (targetRelation.equals(relation.DISJOINT)) {
+                return isWithinDistance(centralGeom, nearbyGeom, distance)
+                    && relate(centralGeom, nearbyGeom).equals(relation.DISJOINT);
+              } else {
+                return relate(centralGeom, nearbyGeom).equals(targetRelation);
+              }
+            } catch (TopologyException | IllegalArgumentException e) {
+              System.out.println(e);
+              return false;
+            }
+          })
+          .collect(Collectors.toList());
+      /*
       Geometry centralGeom = geom;
       // Find neighbours of geometry
       MapReducer<OSMEntitySnapshot> subMapReducer = OSMEntitySnapshotView.on(oshdb)
@@ -180,6 +212,7 @@ public class SpatialRelation<X, Y> {
       } else {
         matchingNearbyObjects = (List<Y>) subMapReducer.collect();
       }
+      */
     } else {
       throw new UnsupportedOperationException("match() is not implemented for this class.");
     }
@@ -281,38 +314,39 @@ public class SpatialRelation<X, Y> {
    * STRtree object "objectsForComparison"
    *
    */
-  public void getOSMEntitySnapshotsForComparison() throws Exception {
+  public void getOSMEntitySnapshotsForComparison(OSHDBTimestampList timestampList) throws Exception {
 
     MapReducer<OSMEntitySnapshot> mapReducer = OSMEntitySnapshotView
-        .on(oshdb)
-        .keytables(oshdb)
-        .areaOfInterest(bbox)
-        .timestamps(tstamps);
+        .on(this.oshdb)
+        .keytables(this.oshdb)
+        .areaOfInterest(this.bbox)
+        .timestamps(timestampList);
     // Apply mapReduce function given by user (needs to return a list)
     List<Y> result;
-    if (mapReduce != null) {
-      result = mapReduce.apply( (MapReducer<Y>) mapReducer);
+    if (this.mapReduce != null) {
+      result = this.mapReduce.apply( (MapReducer<Y>) mapReducer);
     } else {
       result = (List<Y>) mapReducer.collect();
     }
     // Store OSMEntitySnapshots in STRtree
     result.forEach(snapshot -> {
-        objectsForComparison
+        this.objectsForComparison
             .insert(((OSMEntitySnapshot) snapshot).getGeometryUnclipped().getEnvelopeInternal(),
                 snapshot);
     });
+
   }
 
-  /**
-   * Returns the type of spatial relation between two geometries
-   *
-   * Important note: COVERS and TOUCHES are only recognized, if the geometries share a common
-   * vertex/node, not if they touch in the middle of a segment.
-   *
-   * @param geom1 Geometry 1
-   * @param geom2 Geometry 2
-   * @return True, if the geometry is within the distance of the other geometry, otherwise false
-   */
+    /**
+     * Returns the type of spatial relation between two geometries
+     *
+     * Important note: COVERS and TOUCHES are only recognized, if the geometries share a common
+     * vertex/node, not if they touch in the middle of a segment.
+     *
+     * @param geom1 Geometry 1
+     * @param geom2 Geometry 2
+     * @return True, if the geometry is within the distance of the other geometry, otherwise false
+     */
   public static <S extends Geometry> relation relate(S geom1, S geom2) {
 
     // Variables that hold transformed geometry which is either LineString or Polygon

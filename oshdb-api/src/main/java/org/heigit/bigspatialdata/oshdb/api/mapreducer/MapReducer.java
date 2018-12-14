@@ -713,8 +713,8 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Get OSMEntitySnapshots filtered using a call back function in the neighbourhood of a central
-   * OSHDB object (OSMEntitySnapshot or OSMContribution)
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
    *
    * @param distance radius that defines neighbourhood in meters
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
@@ -730,7 +730,13 @@ public abstract class MapReducer<X> implements
         this._bboxFilter,
         this._tstamps,
         mapReduce);
-    if (this._forClass == OSMEntitySnapshot.class) spatialRelation.getOSMEntitySnapshotsForComparison();
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
     return this.map(data -> {
       try {
         return spatialRelation.neighbouring(data, distance);
@@ -741,8 +747,8 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Get OSMEntitySnapshots filtered by key and value in the neighbourhood of a central OSHDB object
-   * (OSMEntitySnapshot or OSMContribution)
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
    *
    * @param distance radius that defines neighbourhood in meters
    * @param key OSM tag key for filtering neighbouring OSHDB objects
@@ -761,8 +767,8 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Get OSMEntitySnapshots filtered by key in the neighbourhood of a central OSHDB object
-   * (OSMEntitySnapshot or OSMContribution)
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param distance radius that defines neighbourhood in meters
    * @param key OSM tag key for filtering neighbouring OSHDB objects
@@ -779,7 +785,8 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Get objects (snapshots or contributions) in the neighbourhood without filtering
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
    *
    * @param distance radius that defines neighbourhood in meters
    * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
@@ -793,12 +800,8 @@ public abstract class MapReducer<X> implements
         (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
   }
 
-  // -----------------------------------------------------------------------------------------------
-  // Neighbouring
-  // -----------------------------------------------------------------------------------------------
-
   /**
-   * Filter by neighbouring OSHDB objects using a call back function
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param distance radius that defines neighbourhood in meters
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
@@ -816,7 +819,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSHDB objects using key and value
+   * Filter by neighbouring OSMEntitySnapshots using key and value
    *
    * @param distance radius that defines neighbourhood in meters
    * @param key OSM tag key for filtering neighbouring OSHDB objects
@@ -834,7 +837,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSHDB objects uisng key
+   * Filter by neighbouring OSMEntitySnapshots uisng key
    *
    * @param distance radius that defines neighbourhood in meters
    * @param key OSM tag key for filtering neighbouring OSHDB objects
@@ -847,6 +850,870 @@ public abstract class MapReducer<X> implements
         mapReducer -> mapReducer.osmTag(key).collect());
   }
 
+  // -----------------------------------------------------------------------------------------------
+  // Contains / containment
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
+   *
+   * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<Pair<X, List<Y>>> containment(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce);
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
+    return this.map(data -> {
+      try {
+        return spatialRelation.contains(data);
+      } catch (Exception e) {
+        return Pair.of(data, null);
+      }
+    });
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> containment(
+      String key,
+      String value) throws Exception {
+    return this.containment(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> containment(
+      String key) throws Exception {
+    return this.containment(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
+   *
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> containment() throws Exception {
+    return this.containment(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<X> contains(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.containment(
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> contains(
+      String key,
+      String value) throws Exception {
+    return this.contains(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> contains(String key) throws Exception {
+    return this.contains(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // Inside / enclosingElements
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
+   *
+   * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<Pair<X, List<Y>>> enclosingElements(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce);
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
+    return this.map(data -> {
+      try {
+        return spatialRelation.inside(data);
+      } catch (Exception e) {
+        return Pair.of(data, null);
+      }
+    });
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> enclosingElements(
+      String key,
+      String value) throws Exception {
+    return this.enclosingElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> enclosingElements(
+      String key) throws Exception {
+    return this.enclosingElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
+   *
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> enclosingElements() throws Exception {
+    return this.enclosingElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<X> inside(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.enclosingElements(
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> inside(
+      String key,
+      String value) throws Exception {
+    return this.inside(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> inside(String key) throws Exception {
+    return this.inside(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // Equal / equal elements
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
+   *
+   * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<Pair<X, List<Y>>> equalElements(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce);
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
+    return this.map(data -> {
+      try {
+        return spatialRelation.equalTo(data);
+      } catch (Exception e) {
+        return Pair.of(data, null);
+      }
+    });
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> equalElements(
+      String key,
+      String value) throws Exception {
+    return this.equalElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> equalElements(
+      String key) throws Exception {
+    return this.equalElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
+   *
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> equalElements() throws Exception {
+    return this.equalElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<X> equals(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.equalElements(
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> equals(
+      String key,
+      String value) throws Exception {
+    return this.equals(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> equals(String key) throws Exception {
+    return this.equals(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+
+  // -----------------------------------------------------------------------------------------------
+  // Overlap / Overlaps
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
+   *
+   * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<Pair<X, List<Y>>> overlap(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce);
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
+    return this.map(data -> {
+      try {
+        return spatialRelation.overlaps(data);
+      } catch (Exception e) {
+        return Pair.of(data, null);
+      }
+    });
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> overlap(
+      String key,
+      String value) throws Exception {
+    return this.overlap(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> overlap(
+      String key) throws Exception {
+    return this.overlap(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
+   *
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> overlap() throws Exception {
+    return this.overlap(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<X> overlaps(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.overlap(
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> overlaps(
+      String key,
+      String value) throws Exception {
+    return this.overlaps(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> overlaps(String key) throws Exception {
+    return this.overlaps(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // Covered elements / covers
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
+   *
+   * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<Pair<X, List<Y>>> coveredElements(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce);
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
+    return this.map(data -> {
+      try {
+        return spatialRelation.covers(data);
+      } catch (Exception e) {
+        return Pair.of(data, null);
+      }
+    });
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> coveredElements(
+      String key,
+      String value) throws Exception {
+    return this.coveredElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> coveredElements(
+      String key) throws Exception {
+    return this.coveredElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
+   *
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> coveredElements() throws Exception {
+    return this.coveredElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<X> covers(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coveredElements(
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> covers(
+      String key,
+      String value) throws Exception {
+    return this.covers(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+
+  @Contract(pure = true)
+  public MapReducer<X> covers(String key) throws Exception {
+    return this.covers(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // Covering elements / coveredBy
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
+   *
+   * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<Pair<X, List<Y>>> coveringElements(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce);
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
+    return this.map(data -> {
+      try {
+        return spatialRelation.coveredBy(data);
+      } catch (Exception e) {
+        return Pair.of(data, null);
+      }
+    });
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> coveringElements(
+      String key,
+      String value) throws Exception {
+    return this.coveringElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> coveringElements(
+      String key) throws Exception {
+    return this.coveringElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
+   *
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> coveringElements() throws Exception {
+    return this.coveringElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<X> coveredBy(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coveringElements(
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> coveredBy(
+      String key,
+      String value) throws Exception {
+    return this.coveredBy(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+
+  @Contract(pure = true)
+  public MapReducer<X> coveredBy(String key) throws Exception {
+    return this.coveredBy(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // touching Elements / touches
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot or
+   * OSMContribution) using a call back function
+   *
+   * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<Pair<X, List<Y>>> touchingElements(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+        this._oshdbForTags,
+        this._bboxFilter,
+        this._tstamps,
+        mapReduce);
+    // Get nearby OSHDB objects
+    if (this._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._tstamps);
+    }
+    return this.map(data -> {
+      try {
+        return spatialRelation.touches(data);
+      } catch (Exception e) {
+        return Pair.of(data, null);
+      }
+    });
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> touchingElements(
+      String key,
+      String value) throws Exception {
+    return this.touchingElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots  in the neighbourhood of a central OSHDB object
+   * (OSMEntitySnapshot or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> touchingElements(
+      String key) throws Exception {
+    return this.touchingElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
+   * or OSMContribution)
+   *
+   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y>  MapReducer<Pair<X, List<Y>>> touchingElements() throws Exception {
+    return this.touchingElements(
+        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
+   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public <Y> MapReducer<X> touches(
+      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.touchingElements(
+        mapReduce);
+    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using key and value
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @param value OSM tag value for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> touches(
+      String key,
+      String value) throws Exception {
+    return this.touches(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @param key OSM tag key for filtering neighbouring OSHDB objects
+   * @return a modified copy of this MapReducer
+   **/
+
+  @Contract(pure = true)
+  public MapReducer<X> touches(String key) throws Exception {
+    return this.touches(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
 
   // -----------------------------------------------------------------------------------------------
   // Grouping and Aggregation

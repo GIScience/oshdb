@@ -78,258 +78,52 @@ public class TestMapReduceSpatialRelation {
   }
 
   // -----------------------------------------------------------------------------------------------
-  // Neighbourhood tests
+  // Test inside and contains
   // -----------------------------------------------------------------------------------------------
 
   @Test
-  public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithCallBackFunction() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
-        .getNeighbouringSnapshots(
-            25.,
-            mapReduce -> mapReduce.osmTag("highway").collect())
-        .collect();
-    assertEquals( 1, result.get(0).getValue().size());
-  }
+  public void test_contains_inside() throws Exception {
 
-  @Test
-  public void testNeighbourhoodForSnapshotAndNearbyContributionsWithKey() throws Exception {
-    long startTime = System.nanoTime();
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMContribution>>> result = createMapReducerOSMEntitySnapshotID2()
-        .getNeighbouringContributions(
-            40.,
-            MapReducer::collect)
-        .collect();
-    assertEquals( 5, result.get(0).getValue().size());
-  }
-
-
-  @Test
-  public void testNeighbourhoodForSnapshotAndNearbyContributionsWithContributionType() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMContribution>>> result = createMapReducerOSMEntitySnapshotID2()
-        .getNeighbouringContributions(
-            40.,
-            MapReducer::collect)
-        .collect();
-    assertEquals( 3, result.get(0).getValue().size());
-  }
-
-  @Test
-  public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithoutCallBackFunction() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
-        .getNeighbouringSnapshots(25.)
-        .collect();
-    assertEquals(5, result.get(0).getRight().size());
-  }
-
-  @Test
-  public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
-    SortedMap<OSHDBTimestamp, List<Pair<OSMContribution, List<OSMEntitySnapshot>>>> result = createMapReducerOSMContribution()
-        .getNeighbouringSnapshots(25.,
-            mapReduce -> mapReduce.osmTag("highway").collect())
-        .aggregateByTimestamp()
-        .collect();
-    System.out.println("done");
-    //assertEquals( 1, result.get(0).getValue().size());
-  }
-
-  // -----------------------------------------------------------------------------------------------
-  // Neighbouring tests
-  // -----------------------------------------------------------------------------------------------
-
-  @Test
-  public void testNeighbouringKeyForSnapshotAndNearbySnapshots() throws Exception {
-    Number result = createMapReducerOSMEntitySnapshotID()
-        .neighbouringSnapshots(25.,"highway")
-        .count();
-    assertEquals( 1, result);
-  }
-
-
-  @Test
-  public void testNeighbouringKeyAndValueForSnapshotAndNearbyContributions() throws Exception {
-    Number result = createMapReducerOSMEntitySnapshotID2()
-        .neighbouringContributions(25.)
-        .count();
-    assertEquals( 1, result);
-  }
-
-  @Test
-  public void testNeighbouringKeyForOSMContributionAndNearbySnapshots() throws Exception {
-    // Create MapReducer
-    Number result = createMapReducerOSMContribution()
-        .neighbouringSnapshots(54., "highway")
-        .count();
-    assertEquals(1, result);
-  }
-
-  // -----------------------------------------------------------------------------------------------
-  // getContainedSnapshots
-  // -----------------------------------------------------------------------------------------------
-
-  @Test
-  public void testContainedSnapshots() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshot2017()
-        .filter(x -> x.getEntity().getId() == 130522985)
-        .getContainedSnapshots(mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .collect();
-    assertEquals(1437748618, result.get(0).getValue().get(0).getEntity().getId());
-  }
-
-  // -----------------------------------------------------------------------------------------------
-  // getEnclosingSnapshots
-  // -----------------------------------------------------------------------------------------------
-
-  @Test
-  public void testEnclosingSnapshots() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshot2017()
-        .filter(x -> x.getEntity().getId() == 1437748618)
-        .getEnclosingSnapshots(mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .collect();
-    assertEquals( 130522985, result.get(0).getValue().get(0).getEntity().getId());
-  }
-
-  // -----------------------------------------------------------------------------------------------
-  // Covering snapshots
-  // -----------------------------------------------------------------------------------------------
-
-  @Test
-  public void testNeighbouringSnapshots() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
-        .getNeighbouringSnapshots(
-            25.,
-            mapReduce -> mapReduce.osmTag("highway").collect())
-        .collect();
-    assertEquals( 1, result.get(0).getValue().size());
-  }
-
-  // -----------------------------------------------------------------------------------------------
-  // Covering snapshots
-  // -----------------------------------------------------------------------------------------------
-
-  /*
-  @Test
-  public void testCoveringSnapshots() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshot2017()
-        .filter(x -> x.getEntity().getId() == 130522985)
-        .getCoveringSnapshots(mapReduce -> mapReduce.osmType(OSMType.NODE).filter(x -> x.getEntity().getId() == 1437748618).collect())
-        .collect();
-    assertEquals(1437748618, result.get(0).getValue().get(0).getEntity().getId());
-  }
-  */
-
-  // -----------------------------------------------------------------------------------------------
-  // covered snapshots
-  // -----------------------------------------------------------------------------------------------
-
-  /*
-  @Test
-  public void testCoveredSnapshots() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshot2017()
-        .filter(x -> x.getEntity().getId() == 1437748618)
-        .getCoveredSnapshots(mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .collect();
-    assertEquals( 130522985, result.get(0).getValue().get(0).getEntity().getId());
-  }
-  */
-
-  // -----------------------------------------------------------------------------------------------
-  // INSIDE
-  // -----------------------------------------------------------------------------------------------
-
-  @Test
-  public void testInsideMapForSnapshots() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
-        .getEnclosingSnapshots()
-        .collect();
-    System.out.println(result);
-    assertEquals( 2, result.get(0).getValue().size());
-  }
-
-  @Test
-  public void testInsideForSnapshotsWithKey() throws Exception {
-    // Create MapReducer
-    Number result = createMapReducerOSMEntitySnapshotID()
-        .inside("building", "yes")
-        .count();
-    //todo improve test
-    assertEquals( 0, result);
-  }
-
-  // -----------------------------------------------------------------------------------------------
-  // OVERLAPS
-  // -----------------------------------------------------------------------------------------------
-
-
-  @Test
-  public void testOverlappingLines() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
+    Integer result_contains = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
-        .timestamps(timestamps3)
+        .timestamps(timestamps2017)
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
-        .filter(x -> x.getEntity().getId() == 26175276)
-        .getOverlappingSnapshots(mapReduce -> mapReduce.collect())
-        .collect();
-    assertEquals( 1, result.get(0).getValue().size());
+        .osmTag("building")
+        .containment(
+            mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
+        .flatMap(x -> x.getRight())
+        .count();
+
+    Integer result_inside = OSMEntitySnapshotView.on(oshdb)
+        .keytables(oshdb)
+        .timestamps(timestamps2017)
+        .areaOfInterest(bbox)
+        .osmType(OSMType.NODE)
+        .inside(
+            mapReduce -> mapReduce.osmType(OSMType.WAY).osmTag("building").collect())
+        .count();
+
+    assertEquals( result_inside, result_contains);
+
+    System.out.println("Count: " + result_contains);
   }
 
   @Test
-  public void testOverlapsLines() throws Exception {
-    // Create MapReducer
-    List<OSMEntitySnapshot> result = OSMEntitySnapshotView.on(oshdb)
+  public void test_neighbouring() throws Exception {
+
+    Integer result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
-        .timestamps(timestamps3)
+        .timestamps(timestamps2017)
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
-        .filter(x -> x.getEntity().getId() == 26175276)
-        .overlaps("amenity")
-        .collect();
-    assertEquals( 0, result.size());
-  }
+        .filter(x -> x.getEntity().getId() == 130530843)
+        .neighbourhood(12.,
+            mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
+        .flatMap(x -> x.getRight())
+        .count();
 
-  @Test
-  public void testOverlappingPolygon() throws Exception {
-    // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
-        .keytables(oshdb)
-        .timestamps(timestamps3)
-        .areaOfInterest(bbox)
-        .osmType(OSMType.WAY)
-        .filter(x -> x.getEntity().getId() == 203266416)
-        .getOverlappingSnapshots(mapReduce -> mapReduce.collect())
-        .collect();
-    assertEquals( 1, result.get(0).getValue().size());
-  }
-
-  @Test
-  public void testOverlappingPolygonAgg() throws Exception {
-    // Create MapReducer
-    SortedMap<OSHDBTimestamp, List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>>> result = OSMEntitySnapshotView.on(oshdb)
-        .keytables(oshdb)
-        .timestamps(timestamps3)
-        .areaOfInterest(bbox)
-        .osmType(OSMType.WAY)
-        .filter(x -> x.getEntity().getId() == 203266416)
-        .aggregateByTimestamp()
-        .getTouchingSnapshots(mapReduce -> mapReduce.collect())
-        .collect();
-    //assertEquals( 1, result.get(0).getValue().size());
-  }
-
-  @Test
-  public void contains() {
-  }
-
-  @Test
-  public void containsContributions() {
+    assertEquals(4, result.intValue());
   }
 
 }
