@@ -342,15 +342,15 @@ public class SpatialRelation<X> {
       return relation.EQUALS;
     } else if (geom1.touches(geom2)) {
       return relation.TOUCHES;
-    } else if (geom1.contains(geom2) && !geom1.getBoundary().intersects(geom2.getBoundary())) {
-      return relation.CONTAINS;
-    } else if (geom1.covers(geom2) && geom1.getBoundary().intersects(geom2.getBoundary())) {
+    } else if (geom1.covers(geom2) && geom2.intersects(geom1.getBoundary())) {
       return relation.COVERS;
-    } else if (geom1.coveredBy(geom2) && geom1.getBoundary().intersects(geom2.getBoundary())) {
+    } else if (geom1.covers(geom2) && !geom2.intersects(geom1.getBoundary())) {
+      return relation.CONTAINS;
+    } else if (geom1.coveredBy(geom2) && geom1.intersects(geom2.getBoundary())) {
       return relation.COVEREDBY;
-    } else if (geom1.overlaps(geom2) || (geom1.intersects(geom2) && !geom1.within(geom2))) {
+    } else if (geom1.overlaps(geom2) || ((geom1.intersects(geom2) && !geom1.within(geom2)))) {
       return relation.OVERLAPS;
-    } else if (geom1.within(geom2) && !geom1.getBoundary().intersects(geom2.getBoundary())) {
+    } else if (geom1.within(geom2) && !geom1.intersects(geom2.getBoundary())) {
       return relation.INSIDE;
     } else {
       return relation.UNKNOWN;

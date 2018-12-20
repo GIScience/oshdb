@@ -1806,7 +1806,6 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         mapReducer -> mapReducer.collect());
   }
 
-
   // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.

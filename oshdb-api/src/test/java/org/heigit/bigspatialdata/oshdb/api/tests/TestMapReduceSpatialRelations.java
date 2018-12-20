@@ -24,96 +24,42 @@ import org.junit.Test;
 public class TestMapReduceSpatialRelations {
 
   private final OSHDBJdbc oshdb;
-  private final OSHDBJdbc oshdb2;
 
   // create bounding box from coordinates
   //private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(85.3406012, 27.6991942, 85.3585444, 27.7121143);
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
 
-  private final OSHDBTimestamps timestamps2017 = new OSHDBTimestamps("2017-01-01" );
+  private final OSHDBTimestamps timestamps2017 = new OSHDBTimestamps("2017-01-01");
   private final OSHDBTimestamps timestamps2016 = new OSHDBTimestamps("2016-01-01");
-  private final OSHDBTimestamps timestamps10 = new OSHDBTimestamps("2007-01-01", "2017-01-01", Interval.YEARLY);
-  private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2016-01-01", "2017-01-01", Interval.YEARLY);
+  private final OSHDBTimestamps timestamps10 = new OSHDBTimestamps("2007-01-01", "2017-01-01",
+      Interval.YEARLY);
+  private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2016-01-01", "2017-01-01",
+      Interval.YEARLY);
   private final OSHDBTimestamps timestamps13 = new OSHDBTimestamps("2012-01-01", "2012-12-31");
 
   public TestMapReduceSpatialRelations() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(true);
-    oshdb2 = new OSHDBH2(
-        "/Users/chludwig/Data/oshdb/rheinland-pfalz_20180302_z12_keytables.compressed.oshdb.mv.db")
-        .multithreading(true);
   }
-
 
   // Covers / CoveredBy ------------------------------------------------------------------------
 
-  // todo: create test data test_polygon_covers_polygon()
   @Test
-  public void test_polygon_covers_polygon() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
-        .keytables(oshdb)
-        .timestamps(timestamps2017)
-        .areaOfInterest(bbox)
-        .osmType(OSMType.WAY)
-        //.osmTag("building")
-        .filter(x -> x.getEntity().getId() == 36493984)
-        .coveredFeatures(
-            mapReduce -> mapReduce.collect())
-        .filter(x -> x.getRight().size() > 0)
-        .collect();
-    //assertEquals(2, result);
-  }
+  public void test_covers_coveredby() throws Exception {
 
-  // todo: create test data test_polygon_covers_line()
-  @Test
-  public void test_polygon_covers_line() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
-        .keytables(oshdb)
-        .timestamps(timestamps2017)
-        .areaOfInterest(bbox)
-        .osmType(OSMType.WAY)
-        .osmTag("building")
-        .coveringFeatures(
-            mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .filter(x -> x.getRight().size() > 0)
-        .collect();
-    //assertEquals(2, result);
-  }
+    // todo: create test data test_polygon_covers_polygon()
 
-  // todo: create test data for test_line_covers_line()
-  @Test
-  public void test_line_covers_line() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
-        .keytables(oshdb)
-        .timestamps(timestamps2017)
-        .areaOfInterest(bbox)
-        .osmType(OSMType.WAY)
-        .coveringFeatures(
-            mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .filter(x -> x.getRight().size() > 0)
-        .collect();
-    //assertEquals(2, result);
-  }
+    // todo: create test data test_polygon_covers_line()
 
-  // todo: create test data for test_line_covers_node()
-  @Test
-  public void test_line_covers_node() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
-        .keytables(oshdb)
-        .timestamps(timestamps2017)
-        .areaOfInterest(bbox)
-        .osmType(OSMType.WAY)
-        .coveringFeatures(
-            mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .filter(x -> x.getRight().size() > 0)
-        .collect();
-    //assertEquals(2, result);
+    // todo: create test data for test_line_covers_line()
+
+    // todo: create test data for test_line_covers_node()
   }
 
 
   // Inside / contains --------------------------------------------------------------------------
-
   @Test
-  public void test_nodes_inside_line() throws Exception {
+  public void test_inside_contains() throws Exception {
+
     Integer result_contains = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
@@ -136,12 +82,9 @@ public class TestMapReduceSpatialRelations {
                 .filter(x -> ((OSMEntitySnapshot) x).getEntity().getId() == 36493984).collect())
         .count();
     assertEquals(3, result_inside.intValue());
-  }
 
-  @Test
-  public void test_nodes_inside_polygon() throws Exception {
-
-    Integer result_contains = OSMEntitySnapshotView.on(oshdb)
+    // Test nodes inside poylgon
+    Integer result_contains2 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -152,7 +95,7 @@ public class TestMapReduceSpatialRelations {
         .flatMap(x -> x.getRight())
         .count();
 
-    Integer result_inside = OSMEntitySnapshotView.on(oshdb)
+    Integer result_inside2 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -160,13 +103,11 @@ public class TestMapReduceSpatialRelations {
         .inside(
             mapReduce -> mapReduce.osmType(OSMType.WAY).osmTag("building").collect())
         .count();
-    assertEquals(result_inside, result_contains);
-  }
+    assertEquals(result_inside2, result_contains2);
 
-  // todo: create test data test_line_inside_polygon()
-  @Test
-  public void test_line_inside_polygon() throws Exception {
-    Integer result_contains = OSMEntitySnapshotView.on(oshdb)
+    // Line inside polygon
+    // todo: create test data test_line_inside_polygon()
+    Integer result_contains3 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -176,7 +117,7 @@ public class TestMapReduceSpatialRelations {
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(x -> x.getRight())
         .count();
-    Integer result_inside = OSMEntitySnapshotView.on(oshdb)
+    Integer result_inside3 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -184,15 +125,17 @@ public class TestMapReduceSpatialRelations {
         .inside(
             mapReduce -> mapReduce.osmType(OSMType.WAY).osmTag("building").collect())
         .count();
-    //assertEquals(result_inside, result_contains);
-  }
+    //assertEquals(result_inside3, result_contains3);
 
+  }
 
   // Equals  -----------------------------------------------------------------------------------
 
-  // todo: create test data for test_polygon_equals_polygon()
   @Test
-  public void test_polygon_equals_polygon() throws Exception {
+  public void test_equals() throws Exception {
+
+    // Polygon equals polygon
+    // todo: create test data for test_polygon_equals_polygon()
     List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
@@ -204,12 +147,10 @@ public class TestMapReduceSpatialRelations {
         .filter(x -> x.getRight().size() > 0)
         .collect();
     //assertEquals(2, result);
-  }
 
-  // todo: create test data for test_line_equals_line()
-  @Test
-  public void test_line_equals_line() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
+    // Line equals line
+    // todo: create test data for test_line_equals_line()
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result2 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -218,31 +159,25 @@ public class TestMapReduceSpatialRelations {
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .filter(x -> x.getRight().size() > 0)
         .collect();
-    //assertEquals(2, result);
-  }
+    //assertEquals(2, result2);
 
-  @Test
-  public void test_node_equals_node() throws Exception {
-    Integer result = OSMEntitySnapshotView.on(oshdb)
+    // Node equals node
+    Integer result3 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2016)
         .areaOfInterest(bbox)
         .osmType(OSMType.NODE)
         .equals()
-        //.filter(x -> x.getRight().size() > 0)
         .count();
-    assertEquals(2, result.intValue());
+    assertEquals(2, result3.intValue());
   }
 
   // Overlaps --------------------------------------------------------------------------------------
 
-  // todo: create test data test_polygon_overlaps_polygon()
   @Test
-  public void test_polygon_overlaps_polygon() throws Exception {
-  }
+  public void test_overlaps() throws Exception {
 
-  @Test
-  public void test_line_overlaps_line() throws Exception {
+    // Line overlaps line
     Integer result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
@@ -254,11 +189,9 @@ public class TestMapReduceSpatialRelations {
         .flatMap(x -> x.getRight())
         .count();
     assertEquals(2, result.intValue());
-  }
 
-  @Test
-  public void test_line_overlaps_polygon() throws Exception {
-    Integer result = OSMEntitySnapshotView.on(oshdb)
+    // Line overlaps polygon
+    Integer result2 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -268,14 +201,18 @@ public class TestMapReduceSpatialRelations {
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(x -> x.getRight())
         .count();
-    assertEquals(2, result.intValue());
+    assertEquals(2, result2.intValue());
+
+    // todo: create test data polygon_overlaps_polygon
   }
 
 
   // Touches -----------------------------------------------------------------------------
 
   @Test
-  public void test_polygon_touches_polygon() throws Exception {
+  public void test_touches() throws Exception {
+
+    // Polygon touches polygon
     List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
@@ -311,11 +248,10 @@ public class TestMapReduceSpatialRelations {
             mapReduce -> mapReduce.osmTag("building").collect())
         .count();
     assertEquals(41, result3.intValue());
-  }
 
-  @Test
-  public void test_line_touches_polygon() throws Exception {
-    Integer result = OSMEntitySnapshotView.on(oshdb)
+
+    // Line touches polygon
+    Integer result4 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -325,12 +261,10 @@ public class TestMapReduceSpatialRelations {
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(x -> x.getRight())
         .count();
-    assertEquals(1, result.intValue());
-  }
+    assertEquals(1, result4.intValue());
 
-  @Test
-  public void test_line_touching_line() throws Exception {
-    Integer result3 = OSMEntitySnapshotView.on(oshdb)
+    // Line touching line
+    Integer result5 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -340,12 +274,10 @@ public class TestMapReduceSpatialRelations {
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(x -> x.getRight())
         .count();
-    assertEquals(3, result3.intValue());
-  }
+    assertEquals(3, result5.intValue());
 
-  @Test
-  public void test_line_touching_nodes() throws Exception {
-    Integer result2 = OSMEntitySnapshotView.on(oshdb)
+    // Line touches node
+    Integer result6 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -354,11 +286,10 @@ public class TestMapReduceSpatialRelations {
         .touchingFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .count();
-    assertEquals(1, result2.intValue());
-  }
+    assertEquals(1, result6.intValue());
 
-  @Test
-  public void test_nodes_touching_polygon() throws Exception {
+    // todo: create test data for node touching polygon
+    // todo: create tests for relations
   }
 
   // Neighbouring ------------------------------------------------------------------------------
