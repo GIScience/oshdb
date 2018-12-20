@@ -112,9 +112,8 @@ public class TestSpatialRelation {
     Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
 
     for (Feature feat : features) {
-      System.out.println(((SimpleFeature) feat).getAttribute("relation"));
+      //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-
       relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString().toLowerCase());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
@@ -169,7 +168,7 @@ public class TestSpatialRelation {
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
       relation relation = SpatialRelation.relate(geomCentral, geom2);
-      System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
+      //System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
   }

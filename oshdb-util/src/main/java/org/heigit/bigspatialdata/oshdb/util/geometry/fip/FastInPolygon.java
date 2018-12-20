@@ -26,7 +26,7 @@ abstract class FastInPolygon implements Serializable {
     }
   }
 
-  private final int AvgSegmentsPerBand = 10; // something in the order of 10-20 works fine according to the link above
+  private final int AVERAGE_SEGMENTS_PER_BAND = 10; // something in the order of 10-20 works fine according to the link above
 
   private int numBands;
 
@@ -62,7 +62,7 @@ abstract class FastInPolygon implements Serializable {
         }
       }
     }
-    this.numBands = Math.max(1, segments.size() / AvgSegmentsPerBand); // possible optimization: start with this value of numBands, and if the result has over-full bands, increase numBands (e.g. x2) and do it again
+    this.numBands = Math.max(1, segments.size() / AVERAGE_SEGMENTS_PER_BAND); // possible optimization: start with this value of numBands, and if the result has over-full bands, increase numBands (e.g. x2) and do it again
     this.horizBands = new ArrayList<>(numBands);
     for (int i = 0; i < numBands; i++) this.horizBands.add(new LinkedList<>());
     this.vertBands = new ArrayList<>(numBands);

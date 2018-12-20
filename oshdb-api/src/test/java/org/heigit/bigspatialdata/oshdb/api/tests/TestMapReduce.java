@@ -5,6 +5,8 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -70,6 +72,15 @@ abstract class TestMapReduce {
 
     /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
     assertEquals(5, result.size());
+
+    // "groupByEntity"
+    assertEquals(7, createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .sum()
+    );
   }
 
   @Test
@@ -92,5 +103,86 @@ abstract class TestMapReduce {
         .uniq();
 
     assertEquals(3, result.size());
+
+    // "groupByEntity"
+    assertEquals(5, createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .sum()
+    );
+  }
+
+  @Test
+  public void testOSMContributionViewStream() throws Exception {
+    // simple query
+    Set<Integer> result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .map(OSMContribution::getContributorUserId)
+        .stream()
+        .collect(Collectors.toSet());
+
+    /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
+    assertEquals(5, result.size());
+
+    // "flatMap"
+    result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .map(OSMContribution::getContributorUserId)
+        .filter(uid -> uid > 0)
+        .stream()
+        .collect(Collectors.toSet());
+
+    /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
+    assertEquals(5, result.size());
+
+    // "groupByEntity"
+    assertEquals(7, createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .stream()
+        .mapToInt(x -> x)
+        .reduce(0, (a,b) -> a+b)
+    );
+  }
+
+  @Test
+  public void testOSMEntitySnapshotViewStream() throws Exception {
+    // simple stream query
+    Set<Integer> result = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .map(snapshot -> snapshot.getEntity().getUserId())
+        .stream()
+        .collect(Collectors.toSet());
+
+    assertEquals(3, result.size());
+
+    // "flatMap"
+    result = createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .map(snapshot -> snapshot.getEntity().getUserId())
+        .filter(uid -> uid > 0)
+        .stream()
+        .collect(Collectors.toSet());
+
+    assertEquals(3, result.size());
+
+    // "groupByEntity"
+    assertEquals(5, createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .stream()
+        .mapToInt(x -> x)
+        .reduce(0, (a,b) -> a+b)
+    );
   }
 }

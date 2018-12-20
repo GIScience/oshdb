@@ -1,79 +1,91 @@
 # Querying by Spatial Relation
 
-OSM snapshots and contributions can be queried based on spatial relations to other surrounding features. The methods are implemented for both the `MapReducer` and `MapAggregator` classes.  
+Using the `MapReducer` and `MapAggregator` classes, `OSMEntitySnapshots` and `OSMContributions` can be queried based on spatial relations to other surrounding features. 
 
-## General structure   
+## Egenhofer Relations
 
-The following Egenhofer relations are supported: 
+The spatial relations were implemented as defined by [Egenhofer (1993)](https://pdfs.semanticscholar.org/4f86/eb645cd4e3d0588dbccb48f445127061cf08.pdf). Figure 1 gives a graphical representation of each type of relation. In addition, features can be queried based on neighbouring features which are disjoint from the central feature.  
 
-* `contains()` / `containedFeatures()`
-* `covers()` / `coveredFeatures()`
-* `coveredBy()` / `coveringFeatures()`
-* `equals()` / `equalFeatures()`
-* `overlaps()` / `overlappingFeatures()`
-* `touches()` / `touchingFeatures()`
-* `inside()` / `enclosingFeatures()`
+__Note:__ These definitions are different from the ones implemented by the `Geometry` class in Java. 
 
-In addition, features can be queried based on neighbouring features using the methods
+<div style="text-align:center"><img src ="../image/egenhofer_relations.png" /></div>
+<div style="text-align:center"><i>Figure 1: Spatial relations as defined by Egenhofer (1993).
+<a href="http://www.gitta.info/SpatialQueries/en/html/TopoBasedOps_learningObject1.html">(source)</a>
+</i></div>
 
-* `neighbouring()` / `neighbourhood()`
 
-The former method filters the features of the MapReducer by comparing their geometry to the other features. The latter method returns a Pair whose first element is the feature and the second element is a list of features in the surrounding area that match the respective spatial relation.
+## General query structure   
 
-The surrounding features can be specified using a callback function which returns a list of OSMEntitySnapshots:
+There are two ways for querying `OSMEntitySnapshots` and `OSMContributions` based on spatial relations. They can be filtered by comparing them to the geometries of surrounding features. Alternatively, a list of all surrounding features that fulfill a specific spatial relation is returned for each `OSMEntitySnapshots` or `OSMContributions`. The following methods are implemented for both `MapReducer` and `MapAggregator` classes.
+
+|Filter | Map|
+|------|---|
+|`contains()`|`containment()`| 
+|`covers()`|`coveredFeatures()`|
+|`coveredBy()`|`coveringFeatures()`|
+|`equals()`|`equalFeatures()`|
+|`overlaps()`|`overlappingFeatures()`|
+|`touches()`| `touchingFeatures()`|
+|`inside()`|`enclosingFeatures()`|
+|`neighbouring()`|`neighbourhood()`|
+
+The "filter" methods filter the features of the MapReducer by comparing their geometry to the ones of other surrounding features. The "map" methods return a Pair object whose first element is the current object of the MapReducer and the second element is a list of features in the surrounding area that match the respective spatial relation.
+
+The relation `disjoint()` is not implemented as such. Instead the methods `neighbouring()` and `neighbourhood()` can be used along with a distance parameter that specifies the search radius for finding disjoint features. 
+
+__Relations:__ The geometry of relations is stored as Multi-Polygons or Multi-Linestrings. There are merged using a union operation to determine the spatial relation to anothe feature. 
+ 
+### Specification of the surrounding features 
+
+There are three different methods of how to specify/filter the surrounding features to which the current object of the MapReducer is compared to. 
+
+####1. Callback function
+__Example:__ Get all parks along with a list of trees they contain
 
 ```
-...
+List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>> result = MapReducer
   .osmTag("leisure", "park")
   .containedFeatures(mapReduce -> mapReduce.osmTag("natural", "tree").collect())
-...
+  .collect();
 ```
-
-OSM key (and value) tags:
+__Example:__  Get all parks that contain at least one tree
 
 ```
-...
+List<OSMEntitySnapshot> result = MapReducer
   .osmTag("leisure", "park")
-  .containedFeatures("natural", "tree")
-...
+  .contains(mapReduce -> mapReduce.osmTag("natural", "tree").collect())
+  .collect();
 ```
+####2. OSM key (and value) tags
+__Example:__  Get all parks that contain at least one tree
 ```
-...
+List<OSMEntitySnapshot> result = MapReducer
   .osmTag("leisure", "park")
-  .containedFeatures("natural")
-...
+  .contains("natural", "tree")
+  .collect();
 ```
-
-or none at all: 
+####3. None at all
+__Example:__ Get all parks along with a list of features they contain
 
 ```
-...
+List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>> result = MapReducer
   .osmTag("leisure", "park")
-  .containedFeatures()
-...
+  .containsFeatures()
+  .collect();
 ```
 
+### Distance parameter for neighbourhood 
 In the case of querying by neighbouring features, a distance value needs to be provided which quantifies the neighbourhood range in meters e.g.
+__Example:__ Get all benches that are in a 5 meter radius around a treee
 
 ```
-...
+List<OSMEntitySnapshot> result = MapReducer
   .osmTag("amenity", "bench")
-  .neighbourhood(5, mapReduce -> mapReduce.osmTag("natural", "tree").collect())
-...
+  .neighbouring(5, mapReduce -> mapReduce.osmTag("natural", "tree").collect())
+  .collect();
 ```
-
-## Important notes
-
-### Covers
-Every point of the other geometry is a point of this geometry. `coveredBy()` is the converse to covers. 
-
-### Contains
-Every point of the other geometry is a point of this geometry, and the interiors of the two geometries have at least one point in common. `inside()` is the converse to contains.
-
-### Overlaps
-Geometry.overlaps is only true if the two geometries have the same dimension. For Egenhofer relations this is however not the case. Therefore, overlaps() is not used here
                 
-## Examples 
+## More examples 
 
 
 ### Finding duplicate nodes using `equals()`
@@ -93,7 +105,6 @@ Integer result = OSMEntitySnapshotView.on(oshdb)
 The following query will return a list of tuples whose first element is a bench and the second element is a list of trees that are located within a 5 meter distance of the respective bench and that have been edited between the timestamp of this snapshot and the following snapshot. 
 
 ```
-...
 List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = MapReducer
   .on(oshdb)
   .keytables(oshdb)

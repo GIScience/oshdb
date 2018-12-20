@@ -1,8 +1,14 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
+import com.tdunning.math.stats.MergingDigest;
+import com.tdunning.math.stats.TDigest;
 import java.sql.Connection;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.Neighbourhood.GEOMETRY_OPTIONS;
+import java.util.function.DoubleUnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
@@ -113,8 +119,8 @@ public abstract class MapReducer<X> implements
   protected EnumSet<OSMType> _typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> _preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> _filters = new ArrayList<>();
-  final List<SerializableFunction> _mappers = new LinkedList<>();
-  private final Set<SerializableFunction> _flatMappers = new HashSet<>();
+  final List<MapFunction> _mappers = new LinkedList<>();
+
 
   // basic constructor
   protected MapReducer(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
@@ -140,7 +146,6 @@ public abstract class MapReducer<X> implements
     this._preFilters.addAll(obj._preFilters);
     this._filters.addAll(obj._filters);
     this._mappers.addAll(obj._mappers);
-    this._flatMappers.addAll(obj._flatMappers);
   }
 
   @NotNull
@@ -155,12 +160,12 @@ public abstract class MapReducer<X> implements
    * into internally used identifiers. If this function is never called, the main database
    * (specified during the construction of this object) is used for this.
    *
-   * @param keytablesOshdb the database to use for resolving strings into internal identifiers
+   * @param keytables the database to use for resolving strings into internal identifiers
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> keytables(OSHDBJdbc keytablesOshdb) {
-    if (keytablesOshdb != this._oshdb && this._oshdb instanceof OSHDBJdbc) {
+  public MapReducer<X> keytables(OSHDBJdbc keytables) {
+    if (keytables != this._oshdb && this._oshdb instanceof OSHDBJdbc) {
       Connection c = ((OSHDBJdbc) this._oshdb).getConnection();
       try {
         new TagTranslator(c);
@@ -172,7 +177,7 @@ public abstract class MapReducer<X> implements
       }
     }
     MapReducer<X> ret = this.copy();
-    ret._oshdbForTags = keytablesOshdb;
+    ret._oshdbForTags = keytables;
     return ret;
   }
 
@@ -611,7 +616,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
     MapReducer<?> ret = this.copy();
-    ret._mappers.add(mapper);
+    ret._mappers.add(new MapFunction(mapper, false));
     //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
     return (MapReducer<R>) ret;
   }
@@ -642,8 +647,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
-    ret._mappers.add(flatMapper);
-    ret._flatMappers.add(flatMapper);
+    ret._mappers.add(new MapFunction(flatMapper, true));
     //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
     return (MapReducer<R>) ret;
   }
@@ -666,7 +670,6 @@ public abstract class MapReducer<X> implements
   // Functions for querying and filtering objects based on other objects in the neighbourhood
   // --------------------------------------------------------------------------------------------
 
-
   /**
    * Get objects (snapshots or contributions) in the neighbourhood filterd using call back function
    *
@@ -674,7 +677,6 @@ public abstract class MapReducer<X> implements
    * @param mapReduce MapReducer function with search parameters for neighbourhoood filter
    * @param queryContributions If true, nearby contributions are queried. If false, snapshots.
    * @param contributionType Filter neighbours by contribution type. If null, all contribution types are considered.
-   * @param <Y> Class of neighbouring OSHDB objects (OSMEntitySnapshot or OSMContribution)
    * @return a modified copy of the MapReducer
    * @throws UnsupportedOperationException
    **/
@@ -718,17 +720,15 @@ public abstract class MapReducer<X> implements
    *
    * @param distance radius that defines neighbourhood in meters
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> neighbourhood(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> neighbourhood(
       Double distance,
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -753,17 +753,16 @@ public abstract class MapReducer<X> implements
    * @param distance radius that defines neighbourhood in meters
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> neighbourhood(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> neighbourhood(
       Double distance,
       String key,
       String value) throws Exception {
     return this.neighbourhood(
         distance,
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -772,16 +771,15 @@ public abstract class MapReducer<X> implements
    *
    * @param distance radius that defines neighbourhood in meters
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> neighbourhood(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> neighbourhood(
       Double distance,
       String key) throws Exception {
     return this.neighbourhood(
         distance,
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -789,15 +787,14 @@ public abstract class MapReducer<X> implements
    * or OSMContribution)
    *
    * @param distance radius that defines neighbourhood in meters
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> neighbourhood(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> neighbourhood(
       Double distance) throws Exception {
     return this.neighbourhood(
         distance,
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
@@ -805,14 +802,13 @@ public abstract class MapReducer<X> implements
    *
    * @param distance radius that defines neighbourhood in meters
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> neighbouring(
+  public MapReducer<X> neighbouring(
       Double distance,
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.neighbourhood(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.neighbourhood(
         distance,
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
@@ -873,16 +869,14 @@ public abstract class MapReducer<X> implements
    * OSMContribution) using a call back function
    *
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> containment(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> containment(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -906,15 +900,14 @@ public abstract class MapReducer<X> implements
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> containment(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> containment(
       String key,
       String value) throws Exception {
     return this.containment(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -922,40 +915,37 @@ public abstract class MapReducer<X> implements
    * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> containment(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> containment(
       String key) throws Exception {
     return this.containment(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
    * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
    * or OSMContribution)
    *
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> containment() throws Exception {
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> containment() throws Exception {
     return this.containment(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> contains(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.containment(
+  public MapReducer<X> contains(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.containment(
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
@@ -1008,16 +998,14 @@ public abstract class MapReducer<X> implements
    * OSMContribution) using a call back function
    *
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> enclosingFeatures(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -1041,15 +1029,14 @@ public abstract class MapReducer<X> implements
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> enclosingFeatures(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
       String key,
       String value) throws Exception {
     return this.enclosingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1057,40 +1044,37 @@ public abstract class MapReducer<X> implements
    * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> enclosingFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
       String key) throws Exception {
     return this.enclosingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
    * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
    * or OSMContribution)
    *
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> enclosingFeatures() throws Exception {
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures() throws Exception {
     return this.enclosingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> inside(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.enclosingFeatures(
+  public MapReducer<X> inside(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.enclosingFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
@@ -1131,16 +1115,14 @@ public abstract class MapReducer<X> implements
    * OSMContribution) using a call back function
    *
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> equalFeatures(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> equalFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -1164,15 +1146,14 @@ public abstract class MapReducer<X> implements
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> equalFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> equalFeatures(
       String key,
       String value) throws Exception {
     return this.equalFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1180,40 +1161,37 @@ public abstract class MapReducer<X> implements
    * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> equalFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> equalFeatures(
       String key) throws Exception {
     return this.equalFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
    * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
    * or OSMContribution)
    *
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> equalFeatures() throws Exception {
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> equalFeatures() throws Exception {
     return this.equalFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> equals(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.equalFeatures(
+  public MapReducer<X> equals(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.equalFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
@@ -1265,16 +1243,14 @@ public abstract class MapReducer<X> implements
    * OSMContribution) using a call back function
    *
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> overlappingFeatures(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> overlappingFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -1298,15 +1274,14 @@ public abstract class MapReducer<X> implements
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> overlappingFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> overlappingFeatures(
       String key,
       String value) throws Exception {
     return this.overlappingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1314,40 +1289,37 @@ public abstract class MapReducer<X> implements
    * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> overlappingFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> overlappingFeatures(
       String key) throws Exception {
     return this.overlappingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
    * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
    * or OSMContribution)
    *
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> overlappingFeatures() throws Exception {
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> overlappingFeatures() throws Exception {
     return this.overlappingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> overlaps(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.overlappingFeatures(
+  public MapReducer<X> overlaps(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.overlappingFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
@@ -1388,16 +1360,14 @@ public abstract class MapReducer<X> implements
    * OSMContribution) using a call back function
    *
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coveredFeatures(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -1421,15 +1391,14 @@ public abstract class MapReducer<X> implements
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> coveredFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
       String key,
       String value) throws Exception {
     return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1437,40 +1406,37 @@ public abstract class MapReducer<X> implements
    * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> coveredFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
       String key) throws Exception {
     return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
    * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
    * or OSMContribution)
    *
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> coveredFeatures() throws Exception {
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveredFeatures() throws Exception {
     return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> covers(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coveredFeatures(
+  public MapReducer<X> covers(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveredFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
@@ -1512,16 +1478,14 @@ public abstract class MapReducer<X> implements
    * OSMContribution) using a call back function
    *
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> coveringFeatures(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -1545,15 +1509,14 @@ public abstract class MapReducer<X> implements
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> coveringFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
       String key,
       String value) throws Exception {
     return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1561,40 +1524,37 @@ public abstract class MapReducer<X> implements
    * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> coveringFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
       String key) throws Exception {
     return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
    * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
    * or OSMContribution)
    *
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> coveringFeatures() throws Exception {
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveringFeatures() throws Exception {
     return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> coveredBy(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.coveringFeatures(
+  public MapReducer<X> coveredBy(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveringFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
@@ -1636,16 +1596,14 @@ public abstract class MapReducer<X> implements
    * OSMContribution) using a call back function
    *
    * @param mapReduce MapReducer function that specifys/filters neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<Pair<X, List<Y>>> touchingFeatures(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    SpatialRelation<X, Y> spatialRelation = new SpatialRelation<>(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this._oshdbForTags,
         this._bboxFilter,
-        this._tstamps,
         mapReduce);
     // Get nearby OSHDB objects
     if (this._forClass == OSMContribution.class) {
@@ -1669,15 +1627,14 @@ public abstract class MapReducer<X> implements
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @param value OSM tag value for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> touchingFeatures(
+  public  MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingFeatures(
       String key,
       String value) throws Exception {
     return this.touchingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1685,40 +1642,37 @@ public abstract class MapReducer<X> implements
    * (OSMEntitySnapshot or OSMContribution) filtered by key
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> touchingFeatures(
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingFeatures(
       String key) throws Exception {
     return this.touchingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
    * Get OSMEntitySnapshots in the neighbourhood of the central OSHDN object (OSMEntitySnapshot
    * or OSMContribution)
    *
-   * @param <Y> Class of neighbouring objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public <Y>  MapReducer<Pair<X, List<Y>>> touchingFeatures() throws Exception {
+  public MapReducer<Pair<X, List<OSMEntitySnapshot>>> touchingFeatures() throws Exception {
     return this.touchingFeatures(
-        (SerializableFunctionWithException<MapReducer<Y>, List<Y>>) null);
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) null);
   }
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to specify/filter OSHDB objects in the neighbourhood
-   * @param <Y> Class of neighbouring OSHDB objects (only OSMEntitySnapshot supported for now)
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public <Y> MapReducer<X> touches(
-      SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) throws Exception {
-    MapReducer<Pair<X, List<Y>>> pairMapReducer = this.touchingFeatures(
+  public MapReducer<X> touches(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.touchingFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
   }
@@ -1867,14 +1821,12 @@ public abstract class MapReducer<X> implements
       // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
       // accordingly
       MapReducer<X> ret = this.copy();
-      List<SerializableFunction> mappers = new LinkedList<>(ret._mappers);
-      Set<SerializableFunction> flatMappers = new HashSet<>(ret._flatMappers);
+      List<MapFunction> mappers = new LinkedList<>(ret._mappers);
       ret._mappers.clear();
-      ret._flatMappers.clear();
       MapAggregator<OSHDBTimestamp, ?> mapAggregator =
           new MapAggregator<>(ret, indexer, this.getZerofillTimestamps());
-      for (SerializableFunction action : mappers) {
-        if (flatMappers.contains(action)) {
+      for (MapFunction action : mappers) {
+        if (action.isFlatMapper()) {
           //noinspection unchecked – applying untyped function (we don't know intermediate types)
           mapAggregator = mapAggregator.flatMap(action);
         } else {
@@ -1955,7 +1907,7 @@ public abstract class MapReducer<X> implements
     }
   }
 
-    // -----------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.
   // These offer full flexibility, but are potentially a bit tricky to work with (see javadoc).
@@ -2000,10 +1952,10 @@ public abstract class MapReducer<X> implements
       throws Exception {
     switch (this._grouping) {
       case NONE:
-        if (this._flatMappers.size() == 0) {
+        if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMContribution(
@@ -2013,7 +1965,7 @@ public abstract class MapReducer<X> implements
                 combiner
             );
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMEntitySnapshot(
@@ -2053,7 +2005,7 @@ public abstract class MapReducer<X> implements
         }
       case BY_ID:
         final SerializableFunction<Object, Iterable<X>> flatMapper;
-        if (this._flatMappers.size() == 0) {
+        if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           flatMapper = data -> Collections.singletonList(mapper.apply(data));
           // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in this
@@ -2062,16 +2014,25 @@ public abstract class MapReducer<X> implements
           flatMapper = this._getFlatMapper();
         }
         if (this._forClass.equals(OSMContribution.class)) {
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMContributionGroupedById(
-              (SerializableFunction<List<OSMContribution>, Iterable<X>>) flatMapper::apply,
+              contributionFlatMapper,
               identitySupplier,
               accumulator,
               combiner
           );
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
-              (SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>>) flatMapper::apply,
-              identitySupplier, accumulator, combiner);
+              snapshotFlatMapper,
+              identitySupplier,
+              accumulator,
+              combiner
+          );
         } else {
           throw new UnsupportedOperationException(
               "Unimplemented data view: " + this._forClass.toString());
@@ -2266,8 +2227,146 @@ public abstract class MapReducer<X> implements
     return runningSums.num / runningSums.weight;
   }
 
+  /**
+   * Returns an estimate of the median of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public Double estimatedMedian() throws Exception {
+    return this.estimatedQuantile(0.5);
+  }
+
+  /**
+   * Returns an estimate of the median of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the mean for
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper) throws Exception {
+    return this.estimatedQuantile(mapper, 0.5);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public Double estimatedQuantile(double q) throws Exception {
+    return this.makeNumeric().estimatedQuantile(n -> n, q);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results after applying the given map
+   * function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantile for
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q)
+      throws Exception {
+    return this.estimatedQuantiles(mapper).applyAsDouble(q);
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public List<Double> estimatedQuantiles(Iterable<Double> q) throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n, q);
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> List<Double> estimatedQuantiles(
+      SerializableFunction<X, R> mapper,
+      Iterable<Double> q
+  ) throws Exception {
+    return StreamSupport.stream(q.spliterator(), false)
+        .mapToDouble(Double::doubleValue)
+        .map(this.estimatedQuantiles(mapper))
+        .boxed()
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public DoubleUnaryOperator estimatedQuantiles() throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n);
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results after applying
+   * the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> DoubleUnaryOperator estimatedQuantiles(
+      SerializableFunction<X, R> mapper
+  ) throws Exception {
+    TDigest digest = this.digest(mapper);
+    return digest::quantile;
+  }
+
+  /**
+   * generates the t-digest of the complete result set. see:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   */
+  @Contract(pure = true)
+  private <R extends Number> TDigest digest(SerializableFunction<X, R> mapper) throws Exception {
+    return this.map(mapper).reduce(
+        TDigestReducer::identitySupplier,
+        TDigestReducer::accumulator,
+        TDigestReducer::combiner
+    );
+  }
+
   // -----------------------------------------------------------------------------------------------
-  // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
+  // "Iterator" like helpers (stream, collect)
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -2277,11 +2376,11 @@ public abstract class MapReducer<X> implements
    * This method can be handy for testing purposes. But note that since the `action` doesn't produce
    * a return value, it must facilitate its own way of producing output.
    *
-   * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()`
+   * If you'd like to use such a "forEach" in a non-test use case, use `.stream().forEach()`
    * instead.
    *
    * @param action function that gets called for each transformed data entry
-   * @deprecated only for testing purposes
+   * @deprecated only for testing purposes, use `.stream().forEach()` instead
    */
   @Deprecated
   public void forEach(SerializableConsumer<X> action) throws Exception {
@@ -2307,6 +2406,118 @@ public abstract class MapReducer<X> implements
       combinedLists.addAll(list2);
       return combinedLists;
     });
+  }
+
+  /**
+   * Returns all results as a Stream
+   *
+   * @return a stream with all results returned by the `mapper` function
+   */
+  @Contract(pure = true)
+  public Stream<X> stream() throws Exception {
+    try {
+      return this._stream();
+    } catch (UnsupportedOperationException e) {
+      LOG.info("stream not directly supported by chosen backend, falling back to .collect().stream()");
+      return this.collect().stream();
+    }
+  }
+
+  @Contract(pure = true)
+  private Stream<X> _stream() throws Exception {
+    switch (this._grouping) {
+      case NONE:
+        if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
+          final SerializableFunction<Object, X> mapper = this._getMapper();
+          if (this._forClass.equals(OSMContribution.class)) {
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+            final SerializableFunction<OSMContribution, X> contributionMapper =
+                data -> mapper.apply(data);
+            return this.mapStreamCellsOSMContribution(contributionMapper);
+          } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
+                data -> mapper.apply(data);
+            return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
+          } else {
+            throw new UnsupportedOperationException(
+                "Unimplemented data view: " + this._forClass.toString());
+          }
+        } else {
+          final SerializableFunction<Object, Iterable<X>> flatMapper = this._getFlatMapper();
+          if (this._forClass.equals(OSMContribution.class)) {
+            return this.flatMapStreamCellsOSMContributionGroupedById(
+                (List<OSMContribution> inputList) -> {
+                  List<X> outputList = new LinkedList<>();
+                  inputList.stream()
+                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
+                  return outputList;
+                });
+          } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+            return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
+                (List<OSMEntitySnapshot> inputList) -> {
+                  List<X> outputList = new LinkedList<>();
+                  inputList.stream()
+                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
+                  return outputList;
+                });
+          } else {
+            throw new UnsupportedOperationException("Unimplemented data view: "
+                + this._forClass.toString());
+          }
+        }
+      case BY_ID:
+        final SerializableFunction<Object, Iterable<X>> flatMapper;
+        if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
+          final SerializableFunction<Object, X> mapper = this._getMapper();
+          flatMapper = data -> Collections.singletonList(mapper.apply(data));
+          // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in this
+          // case? should we add this as optimization case to getFlatMapper()??
+        } else {
+          flatMapper = this._getFlatMapper();
+        }
+        if (this._forClass.equals(OSMContribution.class)) {
+          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
+              data -> flatMapper.apply(data);
+          return this.flatMapStreamCellsOSMContributionGroupedById(contributionFlatMapper);
+        } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
+              data -> flatMapper.apply(data);
+          return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(snapshotFlatMapper);
+        } else {
+          throw new UnsupportedOperationException(
+              "Unimplemented data view: " + this._forClass.toString());
+        }
+      default:
+        throw new UnsupportedOperationException(
+            "Unsupported grouping: " + this._grouping.toString());
+    }
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // Generic map-stream functions (internal).
+  // These need to be implemented by the actual db/processing backend!
+  // -----------------------------------------------------------------------------------------------
+
+  protected Stream<X> mapStreamCellsOSMContribution(
+      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -2507,6 +2718,9 @@ public abstract class MapReducer<X> implements
   protected TagTranslator _getTagTranslator() {
     if (this._tagTranslator == null) {
       try {
+        if (this._oshdbForTags == null) {
+          throw new OSHDBKeytablesNotFoundException();
+        }
         this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
       } catch (OSHDBKeytablesNotFoundException e) {
         LOG.error(e.getMessage());
@@ -2565,8 +2779,9 @@ public abstract class MapReducer<X> implements
     // this._mappers.size() == 1
     return (SerializableFunction<Object, X>) (data -> {
       Object result = data;
-      for (SerializableFunction mapper : this._mappers) {
-        if (this._flatMappers.contains(mapper)) {
+      for (MapFunction mapper : this._mappers) {
+        if (mapper.isFlatMapper()) {
+          assert false : "flatMap callback requested in getMapper";
           throw new UnsupportedOperationException("cannot flat map this");
         } else {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
@@ -2585,11 +2800,13 @@ public abstract class MapReducer<X> implements
     return (SerializableFunction<Object, Iterable<X>>) (data -> {
       List<Object> results = new LinkedList<>();
       results.add(data);
-      for (SerializableFunction mapper : this._mappers) {
+      for (MapFunction mapper : this._mappers) {
         List<Object> newResults = new LinkedList<>();
-        if (this._flatMappers.contains(mapper)) {
+        if (mapper.isFlatMapper()) {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
-          results.forEach(result -> Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result)));
+          results.forEach(result ->
+              Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result))
+          );
         } else {
           //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           results.forEach(result -> newResults.add(mapper.apply(result)));
@@ -2639,5 +2856,61 @@ class PayloadWithWeight<X> implements Serializable {
   PayloadWithWeight(X num, double weight) {
     this.num = num;
     this.weight = weight;
+  }
+}
+
+// function that has a flag: isFlatMapper
+class MapFunction implements SerializableFunction {
+  private SerializableFunction mapper;
+  private boolean isFlatMapper;
+
+  MapFunction(SerializableFunction mapper, boolean isFlatMapper) {
+    this.mapper = mapper;
+    this.isFlatMapper = isFlatMapper;
+  }
+
+  boolean isFlatMapper() {
+    return this.isFlatMapper;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  // mappers are using raw types because they work on arbitrary data types
+  // the necessary type checks are done at the respective setters
+  public Object apply(Object o) {
+    return this.mapper.apply(o);
+  }
+}
+
+class TDigestReducer {
+
+  /**
+   * a COMPRESSION parameter of 1000 should provide relatively precise results, while not being
+   * too demanding on memory usage. See page 20 in the paper [1]:
+   *
+   * > Compression parameter (1/δ) was […] 1000 in order to reliably achieve 0.1% accuracy
+   *
+   * [1] https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   */
+  private final static int COMPRESSION = 1000;
+
+  static TDigest identitySupplier() {
+    return new MergingDigest(COMPRESSION);
+  }
+
+  static <R extends Number> TDigest accumulator(TDigest acc, R cur) {
+    acc.add(cur.doubleValue(), 1);
+    return acc;
+  }
+
+  static TDigest combiner(TDigest a, TDigest b) {
+    if (a.size() == 0) {
+      return b;
+    } else if (b.size() == 0) {
+      return a;
+    }
+    MergingDigest r = new MergingDigest(COMPRESSION);
+    r.add(Arrays.asList(a, b));
+    return r;
   }
 }

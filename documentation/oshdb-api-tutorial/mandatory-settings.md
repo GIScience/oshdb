@@ -24,10 +24,8 @@ your area of interest. The API accepts bounding boxes, polygons and
 multi-polygons are also accepted.
 
 ```
-// create bounding box from country
-BoundingBox boundingBox = Country.getBoundingBox("Maldives");
-// OR create bounding box from coordinates
-BoundingBox boundingBox = new BoundingBox(72.684825,73.753184,-0.688572,7.107245);
+// create bounding box from coordinates
+OSHDBBoundingBox boundingBox = new OSHDBBoundingBox(72.684825,73.753184,-0.688572,7.107245);
 
 // add bounding box to MapReducer
 mapReducer = mapReducer.areaOfInterest(boundingBox);
@@ -46,8 +44,6 @@ mapReducer = mapReducer.timestamps("2014-01-01", "2015-01-01", OSHDBTimestamps.I
 ```
 
 ## Summary
-
-TODO: [link-to-full-code]
 
 The next step is to setup [entity filters](entity-filters.md) that select
 the OSM entities you wish to analyse.

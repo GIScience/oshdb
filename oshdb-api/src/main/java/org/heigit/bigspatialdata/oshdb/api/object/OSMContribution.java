@@ -186,7 +186,6 @@ public class OSMContribution implements OSHDBMapReducible {
     // todo: optimizable if done directly in CellIterator??
     OSMEntity entity = this.getEntityAfter();
     OSHDBTimestamp contributionTimestamp = this.getTimestamp();
-    EnumSet<ContributionType> contributionTypes = this.getContributionTypes();
     // if the entity itself was modified at this exact timestamp, or we know from the contribution type that the entity
     // must also have been modified, we can just return the uid directly
     if (contributionTimestamp.equals(entity.getTimestamp()) ||

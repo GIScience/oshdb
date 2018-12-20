@@ -17,7 +17,6 @@
   
   <modules>
     <module>oshpbf-parser</module>
-    <module>updater</module>
     <module>etl</module>
   </modules>
   

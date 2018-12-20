@@ -34,6 +34,7 @@ public class TestMapReduceSpatialRelations {
   private final OSHDBTimestamps timestamps2016 = new OSHDBTimestamps("2016-01-01");
   private final OSHDBTimestamps timestamps10 = new OSHDBTimestamps("2007-01-01", "2017-01-01", Interval.YEARLY);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2016-01-01", "2017-01-01", Interval.YEARLY);
+  private final OSHDBTimestamps timestamps13 = new OSHDBTimestamps("2012-01-01", "2012-12-31");
 
   public TestMapReduceSpatialRelations() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(true);
@@ -48,7 +49,7 @@ public class TestMapReduceSpatialRelations {
   // todo: create test data test_polygon_covers_polygon()
   @Test
   public void test_polygon_covers_polygon() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -65,7 +66,7 @@ public class TestMapReduceSpatialRelations {
   // todo: create test data test_polygon_covers_line()
   @Test
   public void test_polygon_covers_line() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -81,7 +82,7 @@ public class TestMapReduceSpatialRelations {
   // todo: create test data for test_line_covers_line()
   @Test
   public void test_line_covers_line() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -96,7 +97,7 @@ public class TestMapReduceSpatialRelations {
   // todo: create test data for test_line_covers_node()
   @Test
   public void test_line_covers_node() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -192,7 +193,7 @@ public class TestMapReduceSpatialRelations {
   // todo: create test data for test_polygon_equals_polygon()
   @Test
   public void test_polygon_equals_polygon() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -208,7 +209,7 @@ public class TestMapReduceSpatialRelations {
   // todo: create test data for test_line_equals_line()
   @Test
   public void test_line_equals_line() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -275,7 +276,7 @@ public class TestMapReduceSpatialRelations {
 
   @Test
   public void test_polygon_touches_polygon() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -287,7 +288,7 @@ public class TestMapReduceSpatialRelations {
         .collect();
     assertEquals(1, result.get(0).getRight().size());
 
-    List<Pair<OSMEntitySnapshot, List<Object>>> result2 = OSMEntitySnapshotView.on(oshdb)
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result2 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -361,7 +362,6 @@ public class TestMapReduceSpatialRelations {
   }
 
   // Neighbouring ------------------------------------------------------------------------------
-
   @Test
   public void test_neighbouring() throws Exception {
     Integer result = OSMEntitySnapshotView.on(oshdb)
@@ -382,7 +382,6 @@ public class TestMapReduceSpatialRelations {
   // ---------------------------------------------------------------------------------------------
 
   // CONTAINS --------------------------------------------------------------------------------------
-
   @Test
   public void test_contribution_contains() throws Exception {
     // Create MapReducer
@@ -396,36 +395,23 @@ public class TestMapReduceSpatialRelations {
   }
 
   // COVERED BY------------------------------------------------------------------------------------
-
   @Test
   public void test_contributions_covered_by_snapshots() throws Exception {
-    List<OSMContribution> result = OSMContributionView.on(oshdb)
-        .keytables(oshdb)
-        .timestamps(timestamps10)
-        .areaOfInterest(bbox)
-        .coveredBy(MapReduce -> MapReduce.collect())
-        //.filter(x -> x.getRight().size() > 0)
-        //.map(x -> Pair.of(x.getLeft().getContributionTypes(), x.getRight()))
-        .collect();
-    //assertEquals(4, result);
   }
 
   // COVERS ---------------------------------------------------------------------------------
-
   @Test
   public void test_contributions_covering_snapshots() throws Exception {
     Integer result = OSMContributionView.on(oshdb)
         .keytables(oshdb)
-        .timestamps(timestamps1)
+        .timestamps(timestamps13)
         .areaOfInterest(bbox)
-        .covers(MapReduce -> MapReduce.osmType(OSMType.NODE).collect())
+        .covers(MapReduce -> MapReduce.collect())
         .count();
-    //assertEquals(39, result.intValue());
+    assertEquals(1, result.intValue());
   }
 
-
   // EQUALS --------------------------------------------------------------------------------------
-
   @Test
   public void test_contributions_by_equals_snapshots() throws Exception {
     // Create MapReducer
@@ -440,7 +426,6 @@ public class TestMapReduceSpatialRelations {
   }
 
   // INSIDE --------------------------------------------------------------------------------------
-
   @Test
   public void test_node_contributions_inside_polygon() throws Exception {
     Integer result = OSMContributionView.on(oshdb)
@@ -456,7 +441,6 @@ public class TestMapReduceSpatialRelations {
   }
 
   // OVERLAPS --------------------------------------------------------------------------------------
-
   @Test
   public void test_line_contribution_overlapping_polygon() throws Exception {
     Integer result = OSMContributionView.on(oshdb)
@@ -472,7 +456,6 @@ public class TestMapReduceSpatialRelations {
   }
 
   // NEIGHBOURING --------------------------------------------------------------------------------------
-
   @Test
   public void test_contributions_by_neighbouring_snapshots() throws Exception {
     // Create MapReducer
@@ -488,7 +471,6 @@ public class TestMapReduceSpatialRelations {
   }
 
   // TOUCHES --------------------------------------------------------------------------------------
-
   @Test
   public void test_contributions_by_touching_snapshots() throws Exception {
     // Create MapReducer

@@ -83,7 +83,7 @@ public class TestNeighbourhood {
 
   @Test
   public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithCallBackFunction() throws Exception {
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID()
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
         .neighbourhood(
             25.,
             mapReduce -> mapReduce.osmTag("highway").collect())
@@ -123,7 +123,7 @@ public class TestNeighbourhood {
   @Test
   public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithoutCallBackFunction() throws Exception {
     // Create MapReducer
-    List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID()
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
         .neighbourhood(25.)
         .collect();
     assertEquals(5, result.get(0).getRight().size());
@@ -132,7 +132,7 @@ public class TestNeighbourhood {
   @Test
   public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
     // Create MapReducer
-    List<Pair<OSMContribution, List<Object>>> result = createMapReducerOSMContribution()
+    List<Pair<OSMContribution, List<OSMEntitySnapshot>>> result = createMapReducerOSMContribution()
         .neighbourhood(25.,
             mapReduce -> mapReduce.osmTag("highway").collect())
         .collect();

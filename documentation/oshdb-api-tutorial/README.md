@@ -1,6 +1,6 @@
-# Tutorial: oshdb-api
+# Tutorial: OSHDB-API
 
-The _oshdb-api_ is a Java-API that makes it easy to run analyses
+The _OSHDB-API_ is a Java-API that makes it easy to run analyses
 massively in parallel on a compute cluster. This is achieved by
 providing an interface to the
 [MapReduce](https://en.wikipedia.org/wiki/MapReduce)
@@ -27,5 +27,3 @@ analyses. It consists of the following steps:
 1. [Result Handling](result-handling.md)
 1. [Query by neighbouring objects](neighbourhood.md)
 
-You may also download the code examples from our
-[examples repository](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples).

@@ -13,7 +13,7 @@ First you need to create a new maven java project.
 Add the following dependency to the dependencies section of your
 [pom.xml](https://maven.apache.org/guides/introduction/introduction-to-the-pom.html),
 where `${oshdb-version}` has to be replaced by the desired
-version of the oshdb-API.
+version of the oshdb-API (latest version 0.5.0-SNAPSHOT).
 
 ```
 <dependencies>
@@ -127,7 +127,7 @@ MapReducer<OSMContribution> mapReducerContribution = OSMContributionView.on(oshd
 ## Summary
 
 After the preparation step, your project should be similar to
-[pom.xml](example-pom.xml) and [OshdbApiTutorial.java](OshdbApiTutorial.java).
+[pom.xml](example-pom.xml) and [OSHDBApiTutorial.java](OSHDBApiTutorial.java).
 TODO: update the links
 
 The next step is to setup the [mandatory settings](mandatory-settings.md).

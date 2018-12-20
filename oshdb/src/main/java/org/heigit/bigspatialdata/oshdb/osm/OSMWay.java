@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.osm;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Stream;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
@@ -28,7 +29,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
 
   public Stream<OSMNode> getRefEntities(OSHDBTimestamp timestamp) {
     return Arrays.stream(this.getRefs()).map(OSMMember::getEntity).filter(Objects::nonNull)
-        .map(entity -> ((OSHNode) entity).getByTimestamp(timestamp));
+        .map(entity -> OSHEntities.getByTimestamp((OSHNode) entity, timestamp));
   }
 
   @Override

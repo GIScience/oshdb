@@ -1,13 +1,16 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import com.google.common.collect.Streams;
 import com.vividsolutions.jts.geom.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -137,9 +140,7 @@ public class CellIterator implements Serializable {
    *         geometries later on in the code.
    */
   public Stream<IterateByTimestampEntry> iterateByTimestamps(GridOSHEntity cell) {
-    List<IterateByTimestampEntry> results = new LinkedList<>();
-
-    boolean allFullyInside = false;
+    final boolean allFullyInside;
     if (isBoundByPolygon) {
       // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
@@ -147,12 +148,15 @@ public class CellIterator implements Serializable {
           cell.getId()
       ));
       if (bboxOutsidePolygon.test(cellBoundingBox)) {
-        return results.stream();
+        return Stream.empty();
       }
       allFullyInside = bboxInPolygon.test(cellBoundingBox);
+    } else {
+      allFullyInside = false;
     }
 
-    for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
+    Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
+    return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
@@ -160,7 +164,11 @@ public class CellIterator implements Serializable {
       )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
-        continue;
+        return Stream.empty();
+      }
+      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+        // none of this osh entity's versions matches the filter -> skip it
+        return Stream.empty();
       }
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
@@ -171,7 +179,7 @@ public class CellIterator implements Serializable {
       // where not needed
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
-        List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter);
+        List<OSHDBTimestamp> modTs = OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
@@ -193,8 +201,9 @@ public class CellIterator implements Serializable {
       }
 
       SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
-          oshEntity.getByTimestamps(new ArrayList<>(queryTs.keySet()));
+          OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
 
+      List<IterateByTimestampEntry> results = new LinkedList<>();
       osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
@@ -212,11 +221,12 @@ public class CellIterator implements Serializable {
         boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
             && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          OSMRelation rel = (OSMRelation) osmEntity;
+          final OSMRelation rel = (OSMRelation) osmEntity;
           for (int i = 0; i < rel.getMembers().length; i++) {
-            if (rel.getMembers()[i].getType() == OSMType.WAY
-                && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
-              OSMEntity way = rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
+            final OSMMember relMember = rel.getMembers()[i];
+            if (relMember.getType() == OSMType.WAY
+                && tagInterpreter.isMultipolygonOuterMember(relMember)) {
+              OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
               if (!osmEntityFilter.test(way)) {
                 // skip this old-style-multipolygon because it doesn't match our filter
                 continue osmEntityLoop;
@@ -293,10 +303,9 @@ public class CellIterator implements Serializable {
               err.toString());
         }
       }
-    }
-
-    // return as an obj stream
-    return results.stream();
+      // stream this oshEntity's results
+      return results.stream();
+    });
   }
 
   private LazyEvaluatedObject<Geometry> constructClippedGeometry(OSMEntity osmEntity,
@@ -366,9 +375,8 @@ public class CellIterator implements Serializable {
    */
   public Stream<IterateAllEntry> iterateByContribution(GridOSHEntity cell) {
     OSHDBTimestampInterval timeInterval = new OSHDBTimestampInterval(timestamps);
-    List<IterateAllEntry> results = new LinkedList<>();
 
-    boolean allFullyInside = false;
+    final boolean allFullyInside;
     if (isBoundByPolygon) {
       // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
@@ -376,47 +384,68 @@ public class CellIterator implements Serializable {
           cell.getId()
       ));
       if (bboxOutsidePolygon.test(cellBoundingBox)) {
-        return results.stream();
+        return Stream.empty();
       }
       allFullyInside = bboxInPolygon.test(cellBoundingBox);
+    } else {
+      allFullyInside = false;
     }
 
-    if (includeOldStyleMultipolygons)
-      throw new Error("this is not yet properly implemented (probably)"); //todo: remove this by finishing the functionality below
+    if (includeOldStyleMultipolygons) {
+      //todo: remove this by finishing the functionality below
+      throw new Error("this is not yet properly implemented (probably)");
+    }
 
-    for (OSHEntity<OSMEntity> oshEntity : (Iterable<OSHEntity<OSMEntity>>) cell) {
+    //noinspection unchecked
+    Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
+
+    return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
-              (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
-      )) {
+                  (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+          )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
-        continue;
+        return Stream.empty();
+      }
+      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+        // none of this osh entity's versions matches the filter -> skip it
+        return Stream.empty();
       }
 
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
-          (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+              (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
       );
 
-      Map<OSHDBTimestamp, Long> changesetTs = oshEntity.getChangesetTimestamps();
-      List<OSHDBTimestamp> modTs = oshEntity.getModificationTimestamps(osmEntityFilter, changesetTs);
+      Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
+      List<OSHDBTimestamp> modTs =
+          OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
 
-      if (modTs.size() == 0 || !timeInterval
-          .intersects(new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1)))) {
-        continue; // ignore osh entity because it's edit history is fully outside of the given time
-      } // interval of interest
+      if (modTs.size() == 0 || !timeInterval.intersects(
+          new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1))
+      )) {
+        // ignore osh entity because it's edit history is fully outside of the given time interval
+        // of interest
+        return Stream.empty();
+      }
 
-      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps = oshEntity.getByTimestamps(modTs);
+      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
+          OSHEntities.getByTimestamps(oshEntity, modTs);
+
+      List<IterateAllEntry> results = new LinkedList<>();
 
       IterateAllEntry prev = null;
-      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+
+      osmEntityLoop:
+      for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
         // prev = results.size() > 0 ? results.get(results.size()-1) : null;
-        // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of the ` || prev.osmEntity.getId() != osmEntity.getId()`'s below)
+        // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of
+        // the `|| prev.osmEntity.getId() != osmEntity.getId()`'s below)
         boolean skipOutput = false;
 
         OSHDBTimestamp nextTs = null;
@@ -462,11 +491,12 @@ public class CellIterator implements Serializable {
         boolean isOldStyleMultipolygon = false;
         if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
             && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          OSMRelation rel = (OSMRelation) osmEntity;
+          final OSMRelation rel = (OSMRelation) osmEntity;
           for (int i = 0; i < rel.getMembers().length; i++) {
-            if (rel.getMembers()[i].getType() == OSMType.WAY
-                && tagInterpreter.isMultipolygonOuterMember(rel.getMembers()[i])) {
-              OSMEntity way = rel.getMembers()[i].getEntity().getByTimestamp(timestamp);
+            final OSMMember relMember = rel.getMembers()[i];
+            if (relMember.getType() == OSMType.WAY
+                && tagInterpreter.isMultipolygonOuterMember(relMember)) {
+              OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
               if (!osmEntityFilter.test(way)) {
                 // skip this old-style-multipolygon because it doesn't match our filter
                 continue osmEntityLoop;
@@ -617,10 +647,9 @@ public class CellIterator implements Serializable {
               err.toString());
         }
       }
-    }
-
-    // return as an obj stream
-    return results.stream();
+      // stream this oshEntity's results
+      return results.stream();
+    });
   }
 
 }

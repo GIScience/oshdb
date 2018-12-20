@@ -4,7 +4,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,9 +14,12 @@ import org.apache.ignite.IgniteException;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.compute.*;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
+import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
@@ -131,7 +133,8 @@ class IgniteLocalPeekHelper {
     private R resultAccumulator;
 
     public CancelableBroadcastTask(MapReduceCellsOnIgniteCacheComputeJob job,
-        SerializableSupplier<R> identitySupplier, SerializableBinaryOperator<R> combiner) {
+        SerializableSupplier<R> identitySupplier, SerializableBinaryOperator<R> combiner,
+        IgniteRunnable onClose) {
       this.job = job;
       this.combiner = combiner;
       this.resultAccumulator = identitySupplier.get();
@@ -176,10 +179,10 @@ class IgniteLocalPeekHelper {
    * Compute closure that iterates over every partition owned by a node located in a partition.
    */
   private static abstract class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal>
-      implements Serializable {
+      implements Serializable, CancelableProcessStatus {
     private static final Logger LOG =
         LoggerFactory.getLogger(MapReduceCellsOnIgniteCacheComputeJob.class);
-    boolean canceled = false;
+    private boolean notCanceled = true;
 
     /* computation settings */
     final List<String> cacheNames;
@@ -212,7 +215,12 @@ class IgniteLocalPeekHelper {
 
     void cancel() {
       LOG.info("compute job canceled");
-      this.canceled = true;
+      this.notCanceled = false;
+    }
+
+    @Override
+    public boolean isActive() {
+      return this.notCanceled;
     }
 
     public abstract S execute(Ignite node);
@@ -238,19 +246,16 @@ class IgniteLocalPeekHelper {
               .forEach(key -> localKeys.add(new ImmutablePair<>(cache, key)));
         });
       });
+      Collections.shuffle(localKeys);
       return localKeys;
     }
 
-    interface Callback<S> extends Serializable {
-      S apply (GridOSHEntity oshEntityCell);
-    }
-
-    S execute(Ignite node, Callback<S> callback) {
+    S execute(Ignite node, CellProcessor<S> cellProcessor) {
       return this.localKeys(node).parallelStream()
           .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
           .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
-          .filter(ignored -> !this.canceled)
-          .map(callback::apply)
+          .filter(ignored -> this.isActive())
+          .map(cell -> cellProcessor.apply(cell, this.cellIterator))
           .reduce(identitySupplier.get(), combiner);
     }
   }
@@ -269,20 +274,12 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return super.execute(node, oshEntityCell -> {
-        // iterate over the history of all OSM objects in the current cell
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByContribution(oshEntityCell)
-            .forEach(contribution -> {
-              if (this.canceled)
-                return;
-              OSMContribution osmContribution =
-                  new OSMContribution(contribution);
-              accInternal
-                  .set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
-            });
-        return accInternal.get();
-      });
+      return super.execute(node, Kernels.getOSMContributionCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator,
+          this
+      ));
     }
   }
 
@@ -301,34 +298,12 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return super.execute(node, oshEntityCell -> {
-        // iterate over the history of all OSM objects in the current cell
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        List<OSMContribution> contributions = new ArrayList<>();
-        cellIterator.iterateByContribution(oshEntityCell)
-            .forEach(contribution -> {
-              if (this.canceled)
-                return;
-              OSMContribution thisContribution = new OSMContribution(contribution);
-              if (contributions.size() > 0
-                  && thisContribution.getEntityAfter().getId() != contributions
-                      .get(contributions.size() - 1).getEntityAfter().getId()) {
-                // immediately fold the results
-                for (R r : mapper.apply(contributions)) {
-                  accInternal.set(accumulator.apply(accInternal.get(), r));
-                }
-                contributions.clear();
-              }
-              contributions.add(thisContribution);
-            });
-        // apply mapper and fold results one more time for last entity in current cell
-        if (contributions.size() > 0) {
-          for (R r : mapper.apply(contributions)) {
-            accInternal.set(accumulator.apply(accInternal.get(), r));
-          }
-        }
-        return accInternal.get();
-      });
+      return super.execute(node, Kernels.getOSMContributionGroupingCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator,
+          this
+      ));
     }
   }
 
@@ -346,17 +321,12 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return super.execute(node, oshEntityCell -> {
-        // iterate over the history of all OSM objects in the current cell
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
-          if (this.canceled) return;
-          OSMEntitySnapshot snapshot = new OSMEntitySnapshot(data);
-          // immediately fold the result
-          accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
-        });
-        return accInternal.get();
-      });
+      return super.execute(node, Kernels.getOSMEntitySnapshotCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator,
+          this
+      ));
     }
   }
 
@@ -375,33 +345,12 @@ class IgniteLocalPeekHelper {
 
     @Override
     public S execute(Ignite node) {
-      return super.execute(node, oshEntityCell -> {
-        // iterate over the history of all OSM objects in the current cell
-        AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-        List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-        cellIterator.iterateByTimestamps(oshEntityCell).forEach(data -> {
-          if (this.canceled)
-            return;
-          OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshot(data);
-          if (osmEntitySnapshots.size() > 0
-              && thisSnapshot.getEntity().getId() != osmEntitySnapshots
-              .get(osmEntitySnapshots.size() - 1).getEntity().getId()) {
-            // immediately fold the results
-            for (R r : mapper.apply(osmEntitySnapshots)) {
-              accInternal.set(accumulator.apply(accInternal.get(), r));
-            }
-            osmEntitySnapshots.clear();
-          }
-          osmEntitySnapshots.add(thisSnapshot);
-        });
-        // apply mapper and fold results one more time for last entity in current cell
-        if (osmEntitySnapshots.size() > 0) {
-          for (R r : mapper.apply(osmEntitySnapshots)) {
-            accInternal.set(accumulator.apply(accInternal.get(), r));
-          }
-        }
-        return accInternal.get();
-      });
+      return super.execute(node, Kernels.getOSMEntitySnapshotGroupingCellReducer(
+          this.mapper,
+          this.identitySupplier,
+          this.accumulator,
+          this
+      ));
     }
   }
 
@@ -414,18 +363,27 @@ class IgniteLocalPeekHelper {
     IgniteCompute compute = ignite.compute();
 
     ComputeTaskFuture<S> result = compute.executeAsync(
-        new CancelableBroadcastTask<Object, S>(computeJob, identitySupplier, combiner), null);
+        new CancelableBroadcastTask<Object, S>(
+            computeJob,
+            identitySupplier,
+            combiner,
+            oshdb.onClose().orElse(() -> {})
+        ),
+        null
+    );
 
+    S ret;
     if (!oshdb.timeoutInMilliseconds().isPresent()) {
-      return result.get();
+      ret = result.get();
     } else {
       try {
-        return result.get(oshdb.timeoutInMilliseconds().getAsLong());
+        ret = result.get(oshdb.timeoutInMilliseconds().getAsLong());
       } catch (IgniteFutureTimeoutException e) {
         result.cancel();
         throw new OSHDBTimeoutException();
       }
     }
+    return ret;
   }
 
   static <R, S, P extends Geometry & Polygonal> S _mapReduceCellsOSMContributionOnIgniteCache(

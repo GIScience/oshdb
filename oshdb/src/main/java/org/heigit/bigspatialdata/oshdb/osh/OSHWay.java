@@ -13,13 +13,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
@@ -47,12 +50,14 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   private final int nodeDataOffset;
   private final int nodeDataLength;
 
-  public static OSHWay instance(final byte[] data, final int offset, final int length) throws IOException {
+  public static OSHWay instance(final byte[] data, final int offset, final int length)
+      throws IOException {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
-  public static OSHWay instance(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+  public static OSHWay instance(final byte[] data, final int offset, final int length,
+      final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
 
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -98,16 +103,17 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     final int dataOffset = nodeDataOffset + nodeDataLength;
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHWay(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-        dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
+    return new OSHWay(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude,
+        header, id, bbox, keys, dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
   }
 
-  private OSHWay(final byte[] data, final int offset, final int length, final long baseId, final long baseTimestamp,
-          final long baseLongitude, final long baseLatitude, final byte header, final long id, final OSHDBBoundingBox bbox,
-          final int[] keys, final int dataOffset, final int dataLength, final int[] nodeIndex,
-          final int nodeDataOffset, final int nodeDataLength) {
-    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-            dataOffset, dataLength);
+  private OSHWay(final byte[] data, final int offset, final int length, final long baseId,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
+      final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
+      final int nodeDataLength) {
+    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+        bbox, keys, dataOffset, dataLength);
 
 
     this.nodeIndex = nodeIndex;
@@ -188,8 +194,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
               }
             }
 
-            return new OSMWay(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset, userId, keyValues,
-                    members);
+            return new OSMWay(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset,
+                userId, keyValues, members);
 
           } catch (IOException e) {
             e.printStackTrace();
@@ -207,8 +213,10 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
     long lastId = 0;
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
-      int length = ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
-      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, lastId, 0, baseLongitude, baseLatitude);
+      int length =
+          ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
+      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, lastId, 0, baseLongitude,
+          baseLatitude);
       lastId = n.getId();
       nodes.add(n);
     }
@@ -216,7 +224,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   @Override
-  public OSHWay rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude) throws IOException {
+  public OSHWay rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude)
+      throws IOException {
     List<OSMWay> versions = getVersions();
     List<OSHNode> nodes = getNodes();
     return build(versions, nodes, baseId, baseTimestamp, baseLongitude, baseLatitude);
@@ -227,7 +236,8 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
   }
 
   public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude)
+      throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
@@ -400,59 +410,5 @@ public class OSHWay extends OSHEntity<OSMWay> implements Serializable {
       }
       return null;
     }
-  }
-
-  @Override
-  public List<OSHDBTimestamp> getModificationTimestamps(boolean recurse) {
-    List<OSHDBTimestamp> wayTs = new ArrayList<>(this.iterator().next().getVersion());
-    for (OSMWay osmWay : this) {
-      wayTs.add(osmWay.getTimestamp());
-    }
-    if (!recurse) {
-      return Lists.reverse(wayTs);
-    }
-
-    SortedSet<OSHDBTimestamp> result = new TreeSet<>(wayTs);
-    int i = -1;
-    for (OSMWay osmWay : this) {
-      i++;
-      if (!osmWay.isVisible()) continue;
-      OSHDBTimestamp thisT = wayTs.get(i);
-      OSHDBTimestamp nextT = i>0 ? wayTs.get(i-1) : new OSHDBTimestamp(Long.MAX_VALUE);
-      OSMMember[] nds = osmWay.getRefs();
-      for (OSMMember nd : nds) {
-        OSHNode oshNode = (OSHNode)nd.getEntity();
-        if (oshNode == null) continue;
-        for (OSMNode osmNode : oshNode) {
-          OSHDBTimestamp nodeTs = osmNode.getTimestamp();
-          if (nodeTs.compareTo(nextT) >= 0) continue;
-          if (nodeTs.compareTo(thisT) <= 0) break;
-          result.add(nodeTs);
-        }
-      }
-    }
-    return new ArrayList<>(result);
-  }
-
-  @Override
-  public Map<OSHDBTimestamp, Long> getChangesetTimestamps() {
-    Map<OSHDBTimestamp, Long> result = new TreeMap<>();
-
-    List<OSMWay> ways = this.getVersions();
-    ways.forEach(osmWay -> {
-      result.put(osmWay.getTimestamp(), osmWay.getChangeset());
-    });
-
-    // recurse way nodes
-    try {
-      this.getNodes().forEach(oshNode -> {
-        if (oshNode != null)
-          oshNode.getVersions().forEach(osmNode ->
-              result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangeset())
-          );
-      });
-    } catch (IOException e) {}
-
-    return result;
   }
 }

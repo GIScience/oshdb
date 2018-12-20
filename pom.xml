@@ -29,7 +29,7 @@
     <googlejson.version>1.1.1</googlejson.version>
     <guava.version>23.6-jre</guava.version>
     <h2.version>1.4.193</h2.version>
-    <ignite.version>2.3.0</ignite.version>
+    <ignite.version>2.6.0</ignite.version>
     <jcommander.version>1.72</jcommander.version>
     <jetbrainsannotations.version>13.0</jetbrainsannotations.version>
     <kafka.version>0.11.0.0</kafka.version>
@@ -62,14 +62,14 @@
   
   <scm>
     <!-- https://maven.apache.org/pom.html#SCM -->
-    <connection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb.git</connection>
-    <developerConnection>scm:git:git@gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb.git</developerConnection>
-    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb.git</url>
+    <connection>scm:git:git@github.com/GIScience/oshdb.git</connection>
+    <developerConnection>scm:git:git@github.com/GIScience/oshdb.git</developerConnection>
+    <url>https://github.com/GIScience/oshdb.git</url>
   </scm>
   
   <issueManagement>
-    <system>GitLab</system>
-    <url>https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues</url>
+    <system>GitHub</system>
+    <url>https://github.com/GIScience/oshdb/issues</url>
   </issueManagement>
   
   <profiles>

@@ -31,7 +31,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
  *
  *
  */
-public class SpatialRelation<X, Y> {
+public class SpatialRelation<X> {
 
   public enum relation {
     EQUALS, OVERLAPS, DISJOINT, CONTAINS, COVEREDBY, COVERS, TOUCHES, INSIDE, UNKNOWN, NEIGHBOURING, INTERSECTS
@@ -39,8 +39,7 @@ public class SpatialRelation<X, Y> {
 
   private OSHDBBoundingBox bbox;
   private OSHDBJdbc oshdb;
-  private OSHDBTimestampList tstamps;
-  private SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce;
+  private SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce;
   private final STRtree objectsForComparison = new STRtree();
 
   /**
@@ -50,18 +49,15 @@ public class SpatialRelation<X, Y> {
    *
    * @param oshdb osdhb connection
    * @param bbox bounding box for querying nearby features to compare with
-   * @param tstamps timestamps for querying nearby features to compare with
    * @param mapReduce MapReduce function that specifies features that are used for comparison
    */
   public SpatialRelation(
     OSHDBJdbc oshdb,
     OSHDBBoundingBox bbox,
-    OSHDBTimestampList tstamps,
-    SerializableFunctionWithException<MapReducer<Y>, List<Y>> mapReduce) {
+    SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) {
 
     this.oshdb = oshdb;
     this.bbox = bbox;
-    this.tstamps = tstamps;
     this.mapReduce = mapReduce;
     }
 
@@ -76,13 +72,13 @@ public class SpatialRelation<X, Y> {
    * @return Pair of the central OSM object and a list of nearby OSM objects that fulfill the
    * specified spatial relation
    */
-  private Pair<X, List<Y>> match(
+  private Pair<X, List<OSMEntitySnapshot>> match(
     X centralObject,
     relation targetRelation,
       double distance) throws Exception {
 
     // Empty result object: Nearby OSM objects that fulfill the spatial relation type to the central OSM object
-    List<Y> matchingNearbyObjects = new ArrayList<>();
+    List<OSMEntitySnapshot> matchingNearbyObjects = new ArrayList<>();
 
     // Get the geometry and ID of the central OSM object
     Geometry geom;
@@ -118,7 +114,7 @@ public class SpatialRelation<X, Y> {
     Envelope neighbourhoodEnvelope = new Envelope(minLon, maxLon, minLat, maxLat);
 
     // Get all OSM objects in the neighbourhood of the central OSM object from STRtree
-    List<Y> nearbyObjects = this.objectsForComparison.query(neighbourhoodEnvelope);
+    List<OSMEntitySnapshot> nearbyObjects = this.objectsForComparison.query(neighbourhoodEnvelope);
     if (nearbyObjects.isEmpty()) return Pair.of(centralObject, matchingNearbyObjects);
 
     // Compare central OSM Object to nearby OSMEntitySnapshots
@@ -199,9 +195,9 @@ public class SpatialRelation<X, Y> {
           );
       // Apply mapReducer given by user
       if (mapReduce != null) {
-        matchingNearbyObjects =  mapReduce.apply((MapReducer<Y>) subMapReducer);
+        matchingNearbyObjects =  mapReduce.apply((MapReducer<OSMEntitySnapshot>) subMapReducer);
       } else {
-        matchingNearbyObjects = (List<Y>) subMapReducer.collect();
+        matchingNearbyObjects = (List<OSMEntitySnapshot>) subMapReducer.collect();
       }
       */
     } else {
@@ -220,7 +216,7 @@ public class SpatialRelation<X, Y> {
    * @return Pair of the central OSM object and a list of nearby OSM objects that fulfill the
    * specified spatial relation
    */
-  private Pair<X, List<Y>> match(
+  private Pair<X, List<OSMEntitySnapshot>> match(
       X centralObject,
       relation targetRelation) throws Exception {
     return this.match(centralObject, targetRelation, 100.);
@@ -230,7 +226,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> neighbouring(X centralObject, double distance) throws Exception {
+  public Pair<X, List<OSMEntitySnapshot>> neighbouring(X centralObject, double distance) throws Exception {
     return this.match(centralObject, relation.NEIGHBOURING, distance);
   }
 
@@ -238,7 +234,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> overlaps(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> overlaps(X centralObject) throws Exception  {
     return this.match(centralObject, relation.OVERLAPS);
   }
 
@@ -246,7 +242,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> intersects(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> intersects(X centralObject) throws Exception  {
     return this.match(centralObject, relation.INTERSECTS);
   }
 
@@ -255,7 +251,7 @@ public class SpatialRelation<X, Y> {
    * @return
    */
   // todo: solve issue with overriding Object.equals() --> renamed to equalTo for now
-  public Pair<X, List<Y>> equalTo(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> equalTo(X centralObject) throws Exception  {
     return this.match(centralObject, relation.EQUALS);
   }
 
@@ -263,7 +259,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> touches(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> touches(X centralObject) throws Exception  {
     return this.match(centralObject, relation.TOUCHES);
   }
 
@@ -271,7 +267,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> contains(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> contains(X centralObject) throws Exception  {
     return this.match(centralObject, relation.CONTAINS);
   }
 
@@ -279,7 +275,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> inside(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> inside(X centralObject) throws Exception  {
     return this.match(centralObject, relation.INSIDE);
   }
 
@@ -287,7 +283,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> covers(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> covers(X centralObject) throws Exception  {
     return this.match(centralObject, relation.COVERS);
   }
 
@@ -295,7 +291,7 @@ public class SpatialRelation<X, Y> {
    * Checks if elements are located inside another object
    * @return
    */
-  public Pair<X, List<Y>> coveredBy(X centralObject) throws Exception  {
+  public Pair<X, List<OSMEntitySnapshot>> coveredBy(X centralObject) throws Exception  {
     return this.match(centralObject, relation.COVEREDBY);
   }
 
@@ -312,11 +308,11 @@ public class SpatialRelation<X, Y> {
         .areaOfInterest(this.bbox)
         .timestamps(timestampList);
     // Apply mapReduce function given by user (needs to return a list)
-    List<Y> result;
+    List<OSMEntitySnapshot> result;
     if (this.mapReduce != null) {
-      result = this.mapReduce.apply( (MapReducer<Y>) mapReducer);
+      result = this.mapReduce.apply( (MapReducer<OSMEntitySnapshot>) mapReducer);
     } else {
-      result = (List<Y>) mapReducer.collect();
+      result = (List<OSMEntitySnapshot>) mapReducer.collect();
     }
     // Store OSMEntitySnapshots in STRtree
     result.forEach(snapshot -> {

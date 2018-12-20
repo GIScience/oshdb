@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.annotation.Nonnull;
-import org.geotools.geometry.jts.JTS;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
@@ -73,10 +72,16 @@ public class OSHDBGeometryBuilder {
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
       if (areaDecider.isArea(entity)) {
-        return geometryFactory.createPolygon(coords);
-      } else if (coords.length >= 2) {
+        if (coords.length >= 4 && coords[0].equals2D(coords[coords.length - 1])) {
+          return geometryFactory.createPolygon(coords);
+        } else {
+          LOG.warn("way/{} doesn't form a linear ring - falling back to linestring", way.getId());
+        }
+      }
+      if (coords.length >= 2) {
         return geometryFactory.createLineString(coords);
-      } else if (coords.length == 1) {
+      }
+      if (coords.length == 1) {
         LOG.info("way/{} is single-noded - falling back to point geometry", way.getId());
         return geometryFactory.createPoint(coords[0]);
       } else {
@@ -111,7 +116,7 @@ public class OSHDBGeometryBuilder {
       OSHEntity memberOSHEntity = relationMembers[i].getEntity();
       // memberOSHEntity might be null when working on an extract with incomplete relation members
       OSMEntity memberEntity = memberOSHEntity == null ? null :
-          memberOSHEntity.getByTimestamp(timestamp);
+          OSHEntities.getByTimestamp(memberOSHEntity, timestamp);
       /*
       memberEntity might be null when working with redacted data, for example:
        * user 1 creates node 1 (timestamp 1)
@@ -283,7 +288,12 @@ public class OSHDBGeometryBuilder {
   * @return com.vividsolutions.jts.geom.Geometry
   */
  public static Polygon getGeometry(OSHDBBoundingBox bbox) {
-   return JTS.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
+   GeometryFactory gf = new GeometryFactory();
+   Geometry g = gf.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
+   if (g instanceof Polygon)
+     return (Polygon) g;
+   else
+    return gf.createPolygon((LinearRing) null);
  }
  
  
