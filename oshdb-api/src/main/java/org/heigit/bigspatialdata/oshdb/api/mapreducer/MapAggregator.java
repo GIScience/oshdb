@@ -870,6 +870,22 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @param distance radius that defines neighbourhood in meters
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> neighbourhood(
+      Double distance) throws Exception {
+    return this.neighbourhood(
+        distance,
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param distance radius that defines neighbourhood in meters
@@ -1004,6 +1020,19 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containment() throws Exception {
+    return this.containment(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
@@ -1056,8 +1085,9 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         mapReducer -> mapReducer.collect());
   }
 
+
   // -----------------------------------------------------------------------------------------------
-  // Enclosing elements / inside
+  // Covering elements / coveredBy
   // -----------------------------------------------------------------------------------------------
 
   /**
@@ -1068,7 +1098,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
@@ -1085,7 +1115,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
         Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
-        outData.setValue(spatialRelation.inside(inData.getValue()));
+        outData.setValue(spatialRelation.coveredBy(inData.getValue()));
         return outData;
       } catch (Exception e) {
         Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
@@ -1105,10 +1135,10 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
       String key,
       String value) throws Exception {
-    return this.enclosingFeatures(
+    return this.coveringFeatures(
         (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
@@ -1120,11 +1150,24 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of the MapReducer
    **/
   @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
       String key) throws Exception {
-    return this.enclosingFeatures(
+    return this.coveringFeatures(
         (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures() throws Exception {
+    return this.coveringFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+  }
+
 
   /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
@@ -1133,9 +1176,9 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this MapAggregator
    **/
   @Contract(pure = true)
-  public MapAggregator<U, X> inside(
+  public MapAggregator<U, X> coveredBy(
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
-    MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.enclosingFeatures(
+    MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveringFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
   }
@@ -1148,10 +1191,10 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public MapAggregator<U,X> inside(
+  public MapAggregator<U,X> coveredBy(
       String key,
       String value) throws Exception {
-    return this.inside(
+    return this.coveredBy(
         mapReducer -> mapReducer.osmTag(key, value).collect());
   }
 
@@ -1162,9 +1205,9 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public MapAggregator<U, X> inside(
+  public MapAggregator<U, X> coveredBy(
       String key) throws Exception {
-    return this.inside(
+    return this.coveredBy(
         mapReducer -> mapReducer.osmTag(key).collect());
   }
 
@@ -1174,10 +1217,146 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a modified copy of this MapReducer
    **/
   @Contract(pure = true)
-  public MapAggregator<U, X> inside() throws Exception {
-    return this.inside(
+  public MapAggregator<U, X> coveredBy() throws Exception {
+    return this.coveredBy(
         mapReducer -> mapReducer.collect());
   }
+
+  // -----------------------------------------------------------------------------------------------
+  // Covered elements / covers
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by a call back function
+   *
+   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    // Create spatialRelation object
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        mapReduce
+    );
+    if (this._mapReducer._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+    }
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      try {
+        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        outData.setValue(spatialRelation.covers(inData.getValue()));
+        return outData;
+      } catch (Exception e) {
+        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        System.out.println(e.getMessage());
+        outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
+        return outData;
+      }
+    }));
+  }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param value OSM tag value for filtering neighbouring objects
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
+      String key,
+      String value) throws Exception {
+    return this.coveredFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring objects
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
+      String key) throws Exception {
+    return this.coveredFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures() throws Exception {
+    return this.coveredFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
+   * @return a modified copy of this MapAggregator
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> covers(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveredFeatures(
+        mapReduce);
+    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots filtered by key and value
+   *
+   * @param key OSM key for filtering neighbouring objects
+   * @param value OSM value for filtering neighbouring objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U,X> covers(
+      String key,
+      String value) throws Exception {
+    return this.covers(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> covers(
+      String key) throws Exception {
+    return this.covers(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> covers() throws Exception {
+    return this.covers(
+        mapReducer -> mapReducer.collect());
+  }
+
 
   // -----------------------------------------------------------------------------------------------
   // Equal elements / equals
@@ -1314,6 +1493,142 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         mapReducer -> mapReducer.collect());
   }
 
+
+  // -----------------------------------------------------------------------------------------------
+  // Enclosing elements / inside
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by a call back function
+   *
+   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    // Create spatialRelation object
+    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
+        this._mapReducer._oshdbForTags,
+        this._mapReducer._bboxFilter,
+        mapReduce
+    );
+    if (this._mapReducer._forClass == OSMContribution.class) {
+      OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
+      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+    } else {
+      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+    }
+    return this.copyTransform(this._mapReducer.map(inData -> {
+      try {
+        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        outData.setValue(spatialRelation.inside(inData.getValue()));
+        return outData;
+      } catch (Exception e) {
+        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        System.out.println(e.getMessage());
+        outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
+        return outData;
+      }
+    }));
+  }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key and value
+   *
+   * @param key OSM tag key for filtering neighbouring objects
+   * @param value OSM tag value for filtering neighbouring objects
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
+      String key,
+      String value) throws Exception {
+    return this.enclosingFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+  }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring objects
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
+      String key) throws Exception {
+    return this.enclosingFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures() throws Exception {
+    return this.enclosingFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots using a call back function
+   *
+   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
+   * @return a modified copy of this MapAggregator
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> inside(
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+    MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.enclosingFeatures(
+        mapReduce);
+    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots filtered by key and value
+   *
+   * @param key OSM key for filtering neighbouring objects
+   * @param value OSM value for filtering neighbouring objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U,X> inside(
+      String key,
+      String value) throws Exception {
+    return this.inside(
+        mapReducer -> mapReducer.osmTag(key, value).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots filtered by key
+   *
+   * @param key OSM tag key for filtering neighbouring objects
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> inside(
+      String key) throws Exception {
+    return this.inside(
+        mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, X> inside() throws Exception {
+    return this.inside(
+        mapReducer -> mapReducer.collect());
+  }
+
   // -----------------------------------------------------------------------------------------------
   // Overlapping elements / overlaps
   // -------------------------------------------------------------  ----------------------------------
@@ -1382,6 +1697,18 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       String key) throws Exception {
     return this.overlappingFeatures(
         (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+  }
+
+  /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappingFeatures() throws Exception {
+    return this.overlappingFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
   /**
@@ -1508,6 +1835,19 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   /**
+   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
+   * or OSMContribution) filtered by key
+   *
+   * @return a modified copy of the MapReducer
+   **/
+  @Contract(pure = true)
+  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> touchingFeatures() throws Exception {
+    return this.touchingFeatures(
+        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+  }
+
+
+  /**
    * Filter by neighbouring OSMEntitySnapshots using a call back function
    *
    * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
@@ -1560,251 +1900,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         mapReducer -> mapReducer.collect());
   }
 
-  // -----------------------------------------------------------------------------------------------
-  // Covering elements / coveredBy
-  // -----------------------------------------------------------------------------------------------
 
-  /**
-   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
-   * or OSMContribution) filtered by a call back function
-   *
-   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
-    // Create spatialRelation object
-    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
-        mapReduce
-    );
-    if (this._mapReducer._forClass == OSMContribution.class) {
-      OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
-    } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
-    }
-    return this.copyTransform(this._mapReducer.map(inData -> {
-      try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
-        outData.setValue(spatialRelation.coveredBy(inData.getValue()));
-        return outData;
-      } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
-        System.out.println(e.getMessage());
-        outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
-        return outData;
-      }
-    }));
-  }
-
-  /**
-   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
-   * or OSMContribution) filtered by key and value
-   *
-   * @param key OSM tag key for filtering neighbouring objects
-   * @param value OSM tag value for filtering neighbouring objects
-   * @return a modified copy of the MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
-      String key,
-      String value) throws Exception {
-    return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
-  }
-
-  /**
-   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
-   * or OSMContribution) filtered by key
-   *
-   * @param key OSM tag key for filtering neighbouring objects
-   * @return a modified copy of the MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
-      String key) throws Exception {
-    return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots using a call back function
-   *
-   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
-   * @return a modified copy of this MapAggregator
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> coveredBy(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
-    MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveringFeatures(
-        mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots filtered by key and value
-   *
-   * @param key OSM key for filtering neighbouring objects
-   * @param value OSM value for filtering neighbouring objects
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U,X> coveredBy(
-      String key,
-      String value) throws Exception {
-    return this.coveredBy(
-        mapReducer -> mapReducer.osmTag(key, value).collect());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots filtered by key
-   *
-   * @param key OSM tag key for filtering neighbouring objects
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> coveredBy(
-      String key) throws Exception {
-    return this.coveredBy(
-        mapReducer -> mapReducer.osmTag(key).collect());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots
-   *
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> coveredBy() throws Exception {
-    return this.coveredBy(
-        mapReducer -> mapReducer.collect());
-  }
-
-  // -----------------------------------------------------------------------------------------------
-  // Covered elements / covers
-  // -----------------------------------------------------------------------------------------------
-
-  /**
-   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
-   * or OSMContribution) filtered by a call back function
-   *
-   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
-    // Create spatialRelation object
-    SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
-        mapReduce
-    );
-    if (this._mapReducer._forClass == OSMContribution.class) {
-      OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
-    } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
-    }
-    return this.copyTransform(this._mapReducer.map(inData -> {
-      try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
-        outData.setValue(spatialRelation.covers(inData.getValue()));
-        return outData;
-      } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
-        System.out.println(e.getMessage());
-        outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
-        return outData;
-      }
-    }));
-  }
-
-  /**
-   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
-   * or OSMContribution) filtered by key and value
-   *
-   * @param key OSM tag key for filtering neighbouring objects
-   * @param value OSM tag value for filtering neighbouring objects
-   * @return a modified copy of the MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
-      String key,
-      String value) throws Exception {
-    return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
-  }
-
-  /**
-   * Get all OSMEntitySnapshots in the neighbourhood of a central OSHDB object (OSMEntitySnapshot
-   * or OSMContribution) filtered by key
-   *
-   * @param key OSM tag key for filtering neighbouring objects
-   * @return a modified copy of the MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
-      String key) throws Exception {
-    return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots using a call back function
-   *
-   * @param mapReduce MapReducer function to identify the objects of interest in the neighbourhood
-   * @return a modified copy of this MapAggregator
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> covers(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
-    MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveredFeatures(
-        mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots filtered by key and value
-   *
-   * @param key OSM key for filtering neighbouring objects
-   * @param value OSM value for filtering neighbouring objects
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U,X> covers(
-      String key,
-      String value) throws Exception {
-    return this.covers(
-        mapReducer -> mapReducer.osmTag(key, value).collect());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots filtered by key
-   *
-   * @param key OSM tag key for filtering neighbouring objects
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> covers(
-      String key) throws Exception {
-    return this.covers(
-        mapReducer -> mapReducer.osmTag(key).collect());
-  }
-
-  /**
-   * Filter by neighbouring OSMEntitySnapshots
-   *
-   * @return a modified copy of this MapReducer
-   **/
-  @Contract(pure = true)
-  public MapAggregator<U, X> covers() throws Exception {
-    return this.covers(
-        mapReducer -> mapReducer.collect());
-  }
 
   // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.

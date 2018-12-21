@@ -46,13 +46,13 @@ public class TestMapReduceSpatialRelations {
   @Test
   public void test_covers_coveredby() throws Exception {
 
-    // todo: create test data test_polygon_covers_polygon()
+    // todo: create test data for testing polygon_covers_polygon
 
-    // todo: create test data test_polygon_covers_line()
+    // todo: create test data for testing polygon_covers_line
 
-    // todo: create test data for test_line_covers_line()
+    // todo: create test data for testing line_covers_line
 
-    // todo: create test data for test_line_covers_node()
+    // todo: create test data for testing line_covers_node
   }
 
 

@@ -44,7 +44,6 @@ public class TestMapAggregatorSpatialRelation {
     // todo: create test data for test_line_covers_node()
   }
 
-
   // Inside / contains --------------------------------------------------------------------------
   @Test
   public void test_inside_contains() throws Exception {

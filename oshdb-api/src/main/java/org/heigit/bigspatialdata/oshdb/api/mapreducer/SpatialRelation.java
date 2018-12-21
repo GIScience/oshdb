@@ -24,10 +24,10 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 
 /**
- * Class that selects OSM objects (objectsForSelection) based on their spatial relation to
+ * Class that fitlers OSM objects based on their spatial relation to
  * other nearby OSM objects (objectsForComparison)
  *
- * Spatial relations comprise the Egenhofer relations and a neighbourhood query
+ * Spatial relations contains the Egenhofer relations and a neighbourhood query
  *
  *
  */
@@ -63,9 +63,9 @@ public class SpatialRelation<X> {
 
   /**
    * This method compares one main (central) OSM object to all nearby OSM objects and
-   * determines their respective spatial relation to the central OSM object.
+   * returns all nearby objects that match the specified spatial relation
    *
-   * Note on disjoint: Only disjoint objects within the specified distance are returned
+   * Note on disjoint: Disjoint is implemented as neighbouring()
    *
    * @param centralObject central OSM object which is compared to all nearby objects
    * @param targetRelation Type of spatial relation
@@ -127,11 +127,10 @@ public class SpatialRelation<X> {
           .stream()
           .filter(nearbyObject -> {
             try {
-              OSMEntitySnapshot nearbySnapshot = (OSMEntitySnapshot) nearbyObject;
-              if (nearbySnapshot.getTimestamp().compareTo(centralTimestamp) != 0) return false;
+              if (nearbyObject.getTimestamp().compareTo(centralTimestamp) != 0) return false;
               // Skip if the nearby snapshot belongs to the same entity as the central object
-              if (centralID == nearbySnapshot.getEntity().getId()) return false;
-              Geometry nearbyGeom = nearbySnapshot.getGeometryUnclipped();
+              if (centralID == nearbyObject.getEntity().getId()) return false;
+              Geometry nearbyGeom = nearbyObject.getGeometryUnclipped();
               // For OSM relations, merge geometries using union()
               if (nearbyGeom.getClass() == GeometryCollection.class) nearbyGeom = nearbyGeom.union();
               if (targetRelation.equals(relation.NEIGHBOURING)) {
@@ -154,10 +153,9 @@ public class SpatialRelation<X> {
           .stream()
           .filter(nearbyObject -> {
             try {
-              OSMEntitySnapshot nearbySnapshot = (OSMEntitySnapshot) nearbyObject;
               // Skip if this candidate snapshot belongs to the same entity
-              if (centralID == nearbySnapshot.getEntity().getId()) return false;
-              Geometry nearbyGeom = nearbySnapshot.getGeometryUnclipped();
+              if (centralID == nearbyObject.getEntity().getId()) return false;
+              Geometry nearbyGeom = nearbyObject.getGeometryUnclipped();
               // For OSM relations, merge geometries using union()
               if (nearbyGeom.getClass() == GeometryCollection.class) nearbyGeom = nearbyGeom.union();
               if (targetRelation.equals(relation.NEIGHBOURING)) {
@@ -223,7 +221,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
+   * Get objects which are in the neighbourhood of the central object
    * @return
    */
   public Pair<X, List<OSMEntitySnapshot>> neighbouring(X centralObject, double distance) throws Exception {
@@ -231,7 +229,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
+   * Get objects which are overlapping of the central object
    * @return
    */
   public Pair<X, List<OSMEntitySnapshot>> overlaps(X centralObject) throws Exception  {
@@ -239,15 +237,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
-   * @return
-   */
-  public Pair<X, List<OSMEntitySnapshot>> intersects(X centralObject) throws Exception  {
-    return this.match(centralObject, relation.INTERSECTS);
-  }
-
-  /**
-   * Checks if elements are located inside another object
+   * Get objects whose geometries are equal to the central object
    * @return
    */
   // todo: solve issue with overriding Object.equals() --> renamed to equalTo for now
@@ -256,7 +246,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
+   * Get objects which are touching to the central object
    * @return
    */
   public Pair<X, List<OSMEntitySnapshot>> touches(X centralObject) throws Exception  {
@@ -264,7 +254,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
+   * Get objects which are contained in the central object
    * @return
    */
   public Pair<X, List<OSMEntitySnapshot>> contains(X centralObject) throws Exception  {
@@ -272,7 +262,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
+   * Get objects which are located inside in the central object
    * @return
    */
   public Pair<X, List<OSMEntitySnapshot>> inside(X centralObject) throws Exception  {
@@ -280,7 +270,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
+   * Get objects which are covered by the central object
    * @return
    */
   public Pair<X, List<OSMEntitySnapshot>> covers(X centralObject) throws Exception  {
@@ -288,7 +278,7 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Checks if elements are located inside another object
+   * Get objects which are covering the central object
    * @return
    */
   public Pair<X, List<OSMEntitySnapshot>> coveredBy(X centralObject) throws Exception  {
@@ -307,20 +297,19 @@ public class SpatialRelation<X> {
         .keytables(this.oshdb)
         .areaOfInterest(this.bbox)
         .timestamps(timestampList);
-    // Apply mapReduce function given by user (needs to return a list)
+    // Apply mapReduce function given by user
     List<OSMEntitySnapshot> result;
     if (this.mapReduce != null) {
-      result = this.mapReduce.apply( (MapReducer<OSMEntitySnapshot>) mapReducer);
+      result = this.mapReduce.apply(mapReducer);
     } else {
-      result = (List<OSMEntitySnapshot>) mapReducer.collect();
+      result = mapReducer.collect();
     }
     // Store OSMEntitySnapshots in STRtree
     result.forEach(snapshot -> {
         this.objectsForComparison
-            .insert(((OSMEntitySnapshot) snapshot).getGeometryUnclipped().getEnvelopeInternal(),
+            .insert(snapshot.getGeometryUnclipped().getEnvelopeInternal(),
                 snapshot);
     });
-
   }
 
     /**

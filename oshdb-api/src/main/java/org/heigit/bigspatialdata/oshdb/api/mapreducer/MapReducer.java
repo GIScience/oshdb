@@ -1106,6 +1106,17 @@ public abstract class MapReducer<X> implements
         mapReducer -> mapReducer.osmTag(key).collect());
   }
 
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> inside() throws Exception {
+    return this.inside(
+        mapReducer -> mapReducer.collect());
+  }
+
   // -----------------------------------------------------------------------------------------------
   // Equal / equal elements
   // -----------------------------------------------------------------------------------------------
@@ -1351,6 +1362,17 @@ public abstract class MapReducer<X> implements
         mapReducer -> mapReducer.osmTag(key).collect());
   }
 
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @return a modified copy of this MapReducer
+   **/
+  @Contract(pure = true)
+  public MapReducer<X> overlaps() throws Exception {
+    return this.overlaps(
+        mapReducer -> mapReducer.collect());
+  }
+
   // -----------------------------------------------------------------------------------------------
   // Covered elements / covers
   // -----------------------------------------------------------------------------------------------
@@ -1467,6 +1489,18 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> covers(String key) throws Exception {
     return this.covers(
         mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @return a modified copy of this MapReducer
+   **/
+
+  @Contract(pure = true)
+  public MapReducer<X> covers() throws Exception {
+    return this.covers(
+        mapReducer -> mapReducer.collect());
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -1587,6 +1621,19 @@ public abstract class MapReducer<X> implements
         mapReducer -> mapReducer.osmTag(key).collect());
   }
 
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @return a modified copy of this MapReducer
+   **/
+
+  @Contract(pure = true)
+  public MapReducer<X> coveredBy() throws Exception {
+    return this.coveredBy(
+        mapReducer -> mapReducer.collect());
+  }
+
+
   // -----------------------------------------------------------------------------------------------
   // touching Elements / touches
   // -----------------------------------------------------------------------------------------------
@@ -1703,6 +1750,18 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> touches(String key) throws Exception {
     return this.touches(
         mapReducer -> mapReducer.osmTag(key).collect());
+  }
+
+  /**
+   * Filter by neighbouring OSMEntitySnapshots uisng key
+   *
+   * @return a modified copy of this MapReducer
+   **/
+
+  @Contract(pure = true)
+  public MapReducer<X> touches() throws Exception {
+    return this.touches(
+        mapReducer -> mapReducer.collect());
   }
 
   // -----------------------------------------------------------------------------------------------
