@@ -8,7 +8,7 @@ The spatial relations were implemented as defined by [Egenhofer (1993)](https://
 
 __Note:__ These definitions are different from the ones implemented by the `Geometry` class in Java. 
 
-<div style="text-align:center"><img src ="../image/egenhofer_relations.png" /></div>
+<div style="text-align:center"><img src ="./figures/egenhofer_relations.png" /></div>
 <div style="text-align:center"><i>Figure 1: Spatial relations as defined by Egenhofer (1993).
 <a href="http://www.gitta.info/SpatialQueries/en/html/TopoBasedOps_learningObject1.html">(source)</a>
 </i></div>
