@@ -4,7 +4,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +22,9 @@ import org.apache.ignite.cache.affinity.Affinity;
 import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
-import org.apache.ignite.lang.IgniteCallable;
+import org.apache.ignite.compute.ComputeTaskFuture;
+import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.lang.IgniteRunnable;
-import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
@@ -35,6 +34,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.OSHDBIgniteMapReduceComputeTask.CancelableIgniteMapReduceJob;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -44,8 +44,11 @@ import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@inheritDoc}
@@ -162,11 +165,24 @@ class IgniteScanQueryHelper {
    */
   private abstract static class MapReduceCellsOnIgniteCacheComputeJob
       <V, R, M, S, P extends Geometry & Polygonal>
-      implements IgniteCallable<S> {
-    Map<UUID, List<Integer>> nodesToPart;
+      implements CancelableIgniteMapReduceJob<S> {
+    private static final Logger LOG =
+        LoggerFactory.getLogger(MapReduceCellsOnIgniteCacheComputeJob.class);
 
-    @IgniteInstanceResource
-    Ignite node;
+    private boolean notCanceled = true;
+
+    @Override
+    public void cancel() {
+      LOG.info("compute job canceled");
+      this.notCanceled = false;
+    }
+
+    @Override
+    public boolean isActive() {
+      return this.notCanceled;
+    }
+
+    Map<UUID, List<Integer>> nodesToPart;
 
     IgniteCache<Long, GridOSHEntity> cache;
 
@@ -215,33 +231,41 @@ class IgniteScanQueryHelper {
       return cellIdRange.getLeft().getId() <= id && cellIdRange.getRight().getId() >= id;
     }
 
-    S call(CellProcessor<S> cellProcessor) {
+    S execute(Ignite node, CellProcessor<S> cellProcessor) {
       cache = node.cache(cacheName);
       // Getting a list of the partitions owned by this node.
       List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
       Collections.shuffle(myPartitions);
       // run processing in parallel
-      return myPartitions.parallelStream().map(part -> {
-        // noinspection unchecked
-        try (
-            QueryCursor<S> cursor = cache.query(
-                new ScanQuery((key, cell) -> this.cellIdInRange((GridOSHEntity)cell))
-                .setPartition(part), cacheEntry -> {
-                  // iterate over the history of all OSM objects in the current cell
-                  GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry)
-                      .getValue();
-                  return cellProcessor.apply(oshEntityCell, this.cellIterator);
-                }
-            )
-        ) {
-          S accExternal = identitySupplier.get();
-          // reduce the results
-          for (S entry : cursor) {
-            accExternal = combiner.apply(accExternal, entry);
-          }
-          return accExternal;
-        }
-      }).reduce(identitySupplier.get(), combiner);
+      return myPartitions.parallelStream()
+          .filter(ignored -> this.isActive())
+          .map(part -> {
+            // noinspection unchecked
+            try (
+                QueryCursor<S> cursor = cache.query(
+                    new ScanQuery((key, cell) ->
+                        this.isActive() && this.cellIdInRange((GridOSHEntity)cell)
+                    ).setPartition(part),
+                    cacheEntry -> {
+                      if (!this.isActive()) {
+                        return identitySupplier.get();
+                      }
+                      // iterate over the history of all OSM objects in the current cell
+                      GridOSHEntity oshEntityCell =
+                          ((Cache.Entry<Long, GridOSHEntity>) cacheEntry).getValue();
+                      return cellProcessor.apply(oshEntityCell, this.cellIterator);
+                    }
+                )
+            ) {
+              S accExternal = identitySupplier.get();
+              // reduce the results
+              for (S entry : cursor) {
+                accExternal = combiner.apply(accExternal, entry);
+              }
+              return accExternal;
+            }
+          })
+          .reduce(identitySupplier.get(), combiner);
     }
   }
 
@@ -260,8 +284,8 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() {
-      return super.call(Kernels.getOSMContributionCellReducer(
+    public S execute(Ignite node) {
+      return super.execute(node, Kernels.getOSMContributionCellReducer(
           this.mapper,
           this.identitySupplier,
           this.accumulator
@@ -284,8 +308,8 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() {
-      return super.call(Kernels.getOSMContributionGroupingCellReducer(
+    public S execute(Ignite node) {
+      return super.execute(node, Kernels.getOSMContributionGroupingCellReducer(
           this.mapper,
           this.identitySupplier,
           this.accumulator
@@ -308,8 +332,8 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() {
-      return super.call(Kernels.getOSMEntitySnapshotCellReducer(
+    public S execute(Ignite node) {
+      return super.execute(node, Kernels.getOSMEntitySnapshotCellReducer(
           this.mapper,
           this.identitySupplier,
           this.accumulator
@@ -332,8 +356,8 @@ class IgniteScanQueryHelper {
     }
 
     @Override
-    public S call() {
-      return super.call(Kernels.getOSMEntitySnapshotGroupingCellReducer(
+    public S execute(Ignite node) {
+      return super.execute(node, Kernels.getOSMEntitySnapshotGroupingCellReducer(
           this.mapper,
           this.identitySupplier,
           this.accumulator
@@ -341,6 +365,11 @@ class IgniteScanQueryHelper {
     }
   }
 
+  /**
+   * Executes a compute job on all ignite nodes and further reduces and returns result(s).
+   *
+   * @throws IgniteFutureTimeoutException if a timeout was set and the computations took too long.
+   */
   private static <V, R, M, S, P extends Geometry & Polygonal> S mapReduceOnIgniteCache(
       OSHDBIgnite oshdb, String cacheName, SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner,
@@ -360,16 +389,32 @@ class IgniteScanQueryHelper {
           nodesToPart.computeIfAbsent(entry.getValue().id(), k -> new ArrayList<>());
       nodeParts.add(entry.getKey());
     }
-    // execute compute job on all ignite nodes and further reduce+return result(s)
+
+    // async execute compute job on all ignite nodes and further reduce+return result(s)
     IgniteCompute compute = ignite.compute(ignite.cluster().forNodeIds(nodesToPart.keySet()));
     computeJob.setNodesToPart(nodesToPart);
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
-    Collection<S> nodeResults = compute.broadcast(() -> {
-      S ret = computeJob.call();
-      onClose.run();
-      return ret;
-    });
-    return nodeResults.stream().reduce(identitySupplier.get(), combiner);
+    ComputeTaskFuture<S> result = compute.executeAsync(
+        new OSHDBIgniteMapReduceComputeTask<Object, S>(
+            computeJob,
+            identitySupplier,
+            combiner,
+            onClose
+        ),
+        null
+    );
+    S ret;
+    if (!oshdb.timeoutInMilliseconds().isPresent()) {
+      ret = result.get();
+    } else {
+      try {
+        ret = result.get(oshdb.timeoutInMilliseconds().getAsLong());
+      } catch (IgniteFutureTimeoutException e) {
+        result.cancel();
+        throw new OSHDBTimeoutException();
+      }
+    }
+    return ret;
   }
 
   static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMContributionOnIgniteCache(

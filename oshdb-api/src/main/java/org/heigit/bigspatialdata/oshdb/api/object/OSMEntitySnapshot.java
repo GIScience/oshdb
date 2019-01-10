@@ -2,15 +2,15 @@ package org.heigit.bigspatialdata.oshdb.api.object;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
 
 /**
  * Stores information about a single data entity at a specific time "snapshot".
  *
- * Alongside the entity and the timestamp, also the entity's geometry is provided.
+ * <p>Alongside the entity and the timestamp, also the entity's geometry is provided.</p>
  */
 public class OSMEntitySnapshot implements OSHDBMapReducible {
   private final IterateByTimestampEntry data;
@@ -20,7 +20,7 @@ public class OSMEntitySnapshot implements OSHDBMapReducible {
   }
 
   /**
-   * creates a copy of the current entity snapshot with an updated geometry
+   * Creates a copy of the current entity snapshot with an updated geometry.
    */
   public OSMEntitySnapshot(OSMEntitySnapshot other, Geometry reclippedGeometry) {
     this.data = new IterateByTimestampEntry(
@@ -64,7 +64,8 @@ public class OSMEntitySnapshot implements OSHDBMapReducible {
   /**
    * The entity for which the snapshot has been obtained.
    *
-   * This is the (not deleted) version of a OSHEntity that was valid at the provided snapshot timestamp.
+   * <p>This is the (not deleted) version of a OSHEntity that was valid at the provided snapshot
+   * timestamp.</p>
    *
    * @return the OSMEntity object of this snapshot
    */
