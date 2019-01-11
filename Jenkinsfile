@@ -1,5 +1,5 @@
 pipeline {
-  agent any
+  agent {label 'master'}
   stages {
     stage ('Build and Test') {
       steps {
@@ -132,17 +132,14 @@ pipeline {
           
           //warnings plugin
           rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
-          
-          recordIssues enabledForFailure: true, 
-          tools: [[tool: [$class: 'MavenConsole']], 
-            [tool: [$class: 'Java']], 
-            [tool: [$class: 'JavaDoc']]]
-          recordIssues enabledForFailure: true, tools: [[tool: [$class: 'CheckStyle']]]
-          recordIssues enabledForFailure: true, tools: [[tool: [$class: 'FindBugs']]]
-          recordIssues enabledForFailure: true, tools: [[tool: [$class: 'SpotBugs']]]
-          recordIssues enabledForFailure: true, tools: [[pattern: '**/target/cpd.xml', tool: [$class: 'Cpd']]]
-          recordIssues enabledForFailure: true, tools: [[pattern: '**/target/pmd.xml', tool: [$class: 'Pmd']]]
-          
+
+          recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
+          recordIssues enabledForFailure: true, tool: checkStyle()
+          recordIssues enabledForFailure: true, tool: findBugs()
+          recordIssues enabledForFailure: true, tool: spotBugs()
+          recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
+          recordIssues enabledForFailure: true, tool: pmd(pattern: '**/target/pmd.xml')
+
         }
       }   
       post {
