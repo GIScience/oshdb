@@ -59,6 +59,14 @@ public class Geo {
 			return lengthOf((LineString)geom);
 		if (geom instanceof MultiLineString)
 			return lengthOf((MultiLineString)geom);
+		if (geom instanceof GeometryCollection) {
+			GeometryCollection gc = (GeometryCollection) geom;
+			double length = 0.0;
+			for (int i=0; i<gc.getNumGeometries(); i++) {
+				length += lengthOf(gc.getGeometryN(i));
+			}
+			return length;
+		}
 		return 0.0;
 	}
 
@@ -88,6 +96,14 @@ public class Geo {
 			return areaOf((Polygon)geom);
 		if (geom instanceof MultiPolygon)
 			return areaOf((MultiPolygon)geom);
+		if (geom instanceof GeometryCollection) {
+			GeometryCollection gc = (GeometryCollection) geom;
+			double area = 0.0;
+			for (int i=0; i<gc.getNumGeometries(); i++) {
+				area += areaOf(gc.getGeometryN(i));
+			}
+			return area;
+		}
 		return 0.0;
 	}
 
