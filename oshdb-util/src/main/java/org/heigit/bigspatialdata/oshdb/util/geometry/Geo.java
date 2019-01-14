@@ -54,19 +54,20 @@ public class Geo {
 		return dist;
 	}
 
+	public static double lengthOf(GeometryCollection geometryCollection) {
+		double dist = 0.0;
+		for (int i=0; i<geometryCollection.getNumGeometries(); i++)
+			dist += lengthOf((Geometry) geometryCollection.getGeometryN(i));
+		return dist;
+	}
+
 	public static double lengthOf(Geometry geom) {
 		if (geom instanceof LineString)
 			return lengthOf((LineString)geom);
 		if (geom instanceof MultiLineString)
 			return lengthOf((MultiLineString)geom);
-		if (geom instanceof GeometryCollection) {
-			GeometryCollection gc = (GeometryCollection) geom;
-			double length = 0.0;
-			for (int i=0; i<gc.getNumGeometries(); i++) {
-				length += lengthOf(gc.getGeometryN(i));
-			}
-			return length;
-		}
+		if (geom instanceof GeometryCollection)
+			return lengthOf((GeometryCollection)geom);
 		return 0.0;
 	}
 
@@ -91,19 +92,20 @@ public class Geo {
 		return area;
 	}
 
+	public static double areaOf(GeometryCollection geometryCollection) {
+		double area = 0.0;
+		for (int i=0; i<geometryCollection.getNumGeometries(); i++)
+			area += areaOf((Geometry) geometryCollection.getGeometryN(i));
+		return area;
+	}
+
 	public static double areaOf(Geometry geom) {
 		if (geom instanceof Polygon)
 			return areaOf((Polygon)geom);
 		if (geom instanceof MultiPolygon)
 			return areaOf((MultiPolygon)geom);
-		if (geom instanceof GeometryCollection) {
-			GeometryCollection gc = (GeometryCollection) geom;
-			double area = 0.0;
-			for (int i=0; i<gc.getNumGeometries(); i++) {
-				area += areaOf(gc.getGeometryN(i));
-			}
-			return area;
-		}
+		if (geom instanceof GeometryCollection)
+			return areaOf((GeometryCollection)geom);
 		return 0.0;
 	}
 
