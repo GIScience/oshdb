@@ -46,66 +46,93 @@ public class ChangesetEnricher {
   }
 
   /**
-   * Get a Changeset with comments. May be null if changesetId not in Database.
+   * Get a Changeset with comments. May be null if changesetId not in Database. Any field may also
+   * be null.
    *
    * @param changesetId
    * @return
    */
-  public OSMChangeset getChangeset(long changesetId) {
+  public OSMChangeset getChangeset(long changesetId) throws SQLException {
     if (this.changests.containsKey(changesetId)) {
       return this.changests.get(changesetId);
     }
     OSMChangeset changeset;
     try (PreparedStatement prepareStatement = this.conn.prepareStatement(
-        "SELECT user_id,created_at,min_lat,max_lat,min_lon,max_lon,closed_at,open,num_changes,user_name,tags,comment_changeset_id,comment_user_id,comment_user_name,comment_date,comment_text "
+        "SELECT user_id,created_at,min_lat,max_lat,min_lon,max_lon,closed_at,open,num_changes,user_name,tags "
         + "FROM osm_changeset "
-        + "LEFT JOIN osm_changeset_comment "
-        + "ON osm_changeset.id=osm_changeset_comment.comment_changeset_id "
         + "WHERE id = ? ;")) {
       prepareStatement.setLong(1, changesetId);
       ResultSet resultSet = prepareStatement.executeQuery();
-      resultSet.next();
 
-      Long user_id = resultSet.getLong("user_id");
+      if (resultSet.next()) {
+        Long user_id = resultSet.getLong("user_id");
 
-      OSHDBTimestamp created_at;
-      try {
-        created_at = new OSHDBTimestamp(resultSet.getTimestamp("created_at"));
-      } catch (NullPointerException ex) {
-        created_at = null;
-      }
+        OSHDBTimestamp created_at;
+        try {
+          created_at = new OSHDBTimestamp(resultSet.getTimestamp("created_at"));
+        } catch (NullPointerException ex) {
+          created_at = null;
+        }
 
-      OSHDBBoundingBox bbx;
-      try {
-        bbx = new OSHDBBoundingBox(resultSet.getDouble("min_lon"), resultSet.getDouble("min_lat"), resultSet.getDouble("max_lon"), resultSet.getDouble("max_lat"));
-      } catch (NullPointerException ex) {
-        bbx = null;
-      }
+        OSHDBBoundingBox bbx;
+        try {
+          bbx = new OSHDBBoundingBox(resultSet.getDouble("min_lon"), resultSet.getDouble("min_lat"), resultSet.getDouble("max_lon"), resultSet.getDouble("max_lat"));
+        } catch (NullPointerException ex) {
+          bbx = null;
+        }
 
-      OSHDBTimestamp closed_at;
-      try {
-        closed_at = new OSHDBTimestamp(resultSet.getTimestamp("closed_at"));
-      } catch (NullPointerException ex) {
-        closed_at = null;
-      }
+        OSHDBTimestamp closed_at;
+        try {
+          closed_at = new OSHDBTimestamp(resultSet.getTimestamp("closed_at"));
+        } catch (NullPointerException ex) {
+          closed_at = null;
+        }
 
-      Boolean open = resultSet.getBoolean("open");
+        Boolean open = resultSet.getBoolean("open");
 
-      Integer num_changes = resultSet.getInt("num_changes");
+        Integer num_changes = resultSet.getInt("num_changes");
 
-      String user_name = resultSet.getString("user_name");
+        String user_name = resultSet.getString("user_name");
 
-      @SuppressWarnings("unchecked")
-      Map<String, String> tags = (Map<String, String>) resultSet.getObject("tags");
+        @SuppressWarnings("unchecked")
+        Map<String, String> tags = (Map<String, String>) resultSet.getObject("tags");
 
-      resultSet.getLong("comment_changeset_id");
-      if (resultSet.wasNull()) {
-        changeset = new OSMChangeset(changesetId, user_id, created_at, bbx, closed_at, open, num_changes, user_name, tags, null);
+        List<OSMChangesetComment> commentList = this.getChangesetComments(changesetId);
+
+        changeset = new OSMChangeset(changesetId, user_id, created_at, bbx, closed_at, open, num_changes, user_name, tags, commentList);
+
       } else {
-        List<OSMChangesetComment> commentList = new ArrayList<>(1);
-        while (!resultSet.isAfterLast()) {
-          Long comment_changeset_id = resultSet.getLong("comment_changeset_id");
+        LOG.info("Unable to find changeset-id {} in database.", changesetId);
+        return null;
+      }
 
+    }
+    this.changests.put(changesetId, changeset);
+    return changeset;
+
+  }
+
+  /**
+   * Get comments of a specified changeset. May be null if no comments exist. Any field may also be
+   * null.
+   *
+   * @param changesetId
+   * @return
+   * @throws SQLException
+   */
+  public List<OSMChangesetComment> getChangesetComments(long changesetId) throws SQLException {
+    List<OSMChangesetComment> commentList = new ArrayList<>(1);
+    try (PreparedStatement prepareStatement = this.conn.prepareStatement(
+        "SELECT comment_user_id,comment_user_name,comment_date,comment_text "
+        + "FROM osm_changeset_comment "
+        + "WHERE comment_changeset_id = ? ;")) {
+      prepareStatement.setLong(1, changesetId);
+      ResultSet resultSet = prepareStatement.executeQuery();
+
+      if (!resultSet.isBeforeFirst()) {
+        return null;
+      } else {
+        while (resultSet.next()) {
           Long comment_user_id = resultSet.getLong("comment_user_id");
 
           String comment_user_name = resultSet.getString("comment_user_name");
@@ -119,20 +146,11 @@ public class ChangesetEnricher {
 
           String comment_text = resultSet.getString("comment_text");
 
-          OSMChangesetComment comment = new OSMChangesetComment(comment_changeset_id, comment_user_id, comment_user_name, comment_date, comment_text);
+          OSMChangesetComment comment = new OSMChangesetComment(changesetId, comment_user_id, comment_user_name, comment_date, comment_text);
           commentList.add(comment);
-          resultSet.next();
         }
-        changeset = new OSMChangeset(changesetId, user_id, created_at, bbx, closed_at, open, num_changes, user_name, tags, commentList);
       }
-
-    } catch (SQLException ex) {
-      LOG.info("Unable to find changeset-id {} in database.", changesetId);
-      changeset = null;
     }
-    this.changests.put(changesetId, changeset);
-    return changeset;
-
+    return commentList;
   }
-
 }
