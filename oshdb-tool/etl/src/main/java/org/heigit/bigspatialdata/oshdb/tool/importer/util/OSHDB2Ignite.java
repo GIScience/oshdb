@@ -65,23 +65,25 @@ public class OSHDB2Ignite {
       
       //deactive  cluster after import, so that all caches get persist
       ignite.cluster().active(false);
-
+      ignite.cluster().active(true);
     }
-
   }
 
   private static <T> void doGridImport(Ignite ignite, Statement stmt, TableNames cacheName, String prefix) {
     final String cacheWithPrefix = cacheName.toString(prefix);
+    
+    ignite.destroyCache(cacheWithPrefix);
+    
     CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheWithPrefix);
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
     
+    IgniteCache<Long, T> cache = ignite.getOrCreateCache(cacheCfg);    
     ignite.cluster().disableWal(cacheWithPrefix);
 
-    IgniteCache<Long, T> cache = ignite.getOrCreateCache(cacheCfg);
     try (IgniteDataStreamer<Long, T> streamer = ignite.dataStreamer(cache.getName())) {
       streamer.allowOverwrite(true);
-      String tableName = null;
+      final String tableName;
       switch (cacheName) {
         case T_NODES:
           tableName = TableNames.T_NODES.toString();
@@ -91,6 +93,8 @@ public class OSHDB2Ignite {
           break;
         case T_RELATIONS:
           tableName = TableNames.T_RELATIONS.toString();
+        default:
+        	throw new IllegalArgumentException("unknown cacheName "+cacheName);
       }
       try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
         int cnt = 0;
@@ -111,9 +115,9 @@ public class OSHDB2Ignite {
       } catch (IOException | ClassNotFoundException | SQLException e) {
         LOG.error("Could not import Grid!", e);
       }
+    }finally {
+    	ignite.cluster().enableWal(cacheWithPrefix);
     }
-    
-    ignite.cluster().enableWal(cacheWithPrefix);
 
   }
   
@@ -153,7 +157,5 @@ public class OSHDB2Ignite {
     try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdb, "sa", "")) {
       OSHDB2Ignite.load(largs.ignitexml, con, largs.prefix);
     }
-
   }
-
 }
