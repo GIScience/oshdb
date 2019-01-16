@@ -1,5 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.util;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCheckedException;
@@ -26,10 +28,6 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 
 /**
  * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
@@ -62,7 +60,7 @@ public class OSHDB2Ignite {
       } catch (SQLException ex) {
         LOG.error("", ex);
       }
-      
+
       //deactive  cluster after import, so that all caches get persist
       ignite.cluster().active(false);
       ignite.cluster().active(true);
@@ -71,15 +69,19 @@ public class OSHDB2Ignite {
 
   private static <T> void doGridImport(Ignite ignite, Statement stmt, TableNames cacheName, String prefix) {
     final String cacheWithPrefix = cacheName.toString(prefix);
-    
+
     ignite.destroyCache(cacheWithPrefix);
-    
+
     CacheConfiguration<Long, T> cacheCfg = new CacheConfiguration<>(cacheWithPrefix);
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
-    
-    IgniteCache<Long, T> cache = ignite.getOrCreateCache(cacheCfg);    
-    ignite.cluster().disableWal(cacheWithPrefix);
+
+    IgniteCache<Long, T> cache = ignite.getOrCreateCache(cacheCfg);
+    boolean pers = false;
+    if (ignite.cluster().isWalEnabled(cacheWithPrefix)) {
+      ignite.cluster().disableWal(cacheWithPrefix);
+      pers = true;
+    }
 
     try (IgniteDataStreamer<Long, T> streamer = ignite.dataStreamer(cache.getName())) {
       streamer.allowOverwrite(true);
@@ -93,8 +95,9 @@ public class OSHDB2Ignite {
           break;
         case T_RELATIONS:
           tableName = TableNames.T_RELATIONS.toString();
+          break;
         default:
-        	throw new IllegalArgumentException("unknown cacheName "+cacheName);
+          throw new IllegalArgumentException("unknown cacheName " + cacheName);
       }
       try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
         int cnt = 0;
@@ -109,28 +112,31 @@ public class OSHDB2Ignite {
           @SuppressWarnings("unchecked")
           final T grid = (T) ois.readObject();
           streamer.addData(levelId, grid);
-          if (++cnt % 10 == 0) streamer.flush();
+          if (++cnt % 10 == 0) {
+            streamer.flush();
+          }
         }
         System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into " + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException | SQLException e) {
         LOG.error("Could not import Grid!", e);
       }
-    }finally {
-    	ignite.cluster().enableWal(cacheWithPrefix);
+    } finally {
+      if (pers) {
+        ignite.cluster().enableWal(cacheWithPrefix);
+      }
     }
-
   }
-  
+
   private static class Config {
     @Parameter(names = {"-ignite", "-igniteConfig", "-icfg"}, description = "Path ot ignite-config.xml", required = true, order = 1)
     public File ignitexml;
 
     @Parameter(names = {"--prefix"}, description = "cache table prefix", required = false)
     public String prefix;
-    
+
     @Parameter(names = {"-db", "-oshdb", "-outputDb"}, description = "Path to output H2", required = true, order = 2)
     public File oshdb;
-    
+
     @Parameter(names = {"-help", "--help", "-h", "--h"}, help = true, order = 0)
     public boolean help = false;
 
