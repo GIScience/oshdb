@@ -1,15 +1,5 @@
 pipeline {
-
-  /*tried slave dockers but only had disadvantages
-  agent {
-  docker{
-  image 'maven:3-jdk-8'
-  args '-v /root/.m2:/root/.m2'
-  }
-  }
-   */
-
-  agent any
+  agent {label 'master'}
   stages {
     stage ('Build and Test') {
       steps {
@@ -89,7 +79,7 @@ pipeline {
         script{
           //load dependencies to artifactory
           rtMaven.run pom: 'pom.xml', goals: 'org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2'
-          projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+:)"').trim()
+          projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
 
           javadc_dir="/srv/javadoc/java/" + reponame + "/" + projver + "/"
           echo javadc_dir
@@ -118,7 +108,7 @@ pipeline {
     stage ('Reports and Statistics'){
       steps {
         script{
-          projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+:)"').trim()
+          projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
           
           //maven site
           report_dir="/srv/reports/" + reponame + "/" +  projver+ "_"  + env.BRANCH_NAME +"/" +  env.BUILD_NUMBER + "_" +gittiid+ "/site/"
@@ -135,10 +125,21 @@ pipeline {
           //infer
           if(env.BRANCH_NAME ==~ /(^master$)/){
             report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
-          sh "mvn clean"
+            sh "mvn clean"
             sh "infer run -r -- mvn compile"
             sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
           }
+          
+          //warnings plugin
+          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
+
+          recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
+          recordIssues enabledForFailure: true, tool: checkStyle()
+          recordIssues enabledForFailure: true, tool: findBugs()
+          recordIssues enabledForFailure: true, tool: spotBugs()
+          recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
+          recordIssues enabledForFailure: true, tool: pmd(pattern: '**/target/pmd.xml')
+
         }
       }   
       post {
