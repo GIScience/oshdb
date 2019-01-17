@@ -20,14 +20,14 @@ There are two ways for querying `OSMEntitySnapshots` and `OSMContributions` base
 
 |Filter | Map|
 |------|---|
-|`contains()`|`containment()`| 
+|`contains()`|`containedFeatures()`| 
 |`covers()`|`coveredFeatures()`|
 |`coveredBy()`|`coveringFeatures()`|
 |`equals()`|`equalFeatures()`|
-|`overlaps()`|`overlappingFeatures()`|
+|`overlaps()`|`overlappedFeatures()`|
 |`touches()`| `touchingFeatures()`|
 |`inside()`|`enclosingFeatures()`|
-|`neighbouring()`|`neighbourhood()`|
+|`neighbouring()`|`neighbouringFeatures()`|
 
 The "filter" methods filter the features of the MapReducer by comparing their geometry to the ones of other surrounding features. The "map" methods return a Pair object whose first element is the current object of the MapReducer and the second element is a list of features in the surrounding area that match the respective spatial relation.
 
