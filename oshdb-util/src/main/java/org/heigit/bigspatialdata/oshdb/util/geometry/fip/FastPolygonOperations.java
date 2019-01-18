@@ -104,7 +104,7 @@ public class FastPolygonOperations implements Serializable {
   }
 
   public Geometry intersection(Geometry other) {
-    if (other == null) return null;
+    if (other == null || other.isEmpty()) return other;
     Envelope otherEnv = other.getEnvelopeInternal();
 
     int minBandX = Math.max(0, Math.min(numBands - 1, (int)Math.floor((otherEnv.getMinX() - env.getMinX())/envWidth * numBands)));
