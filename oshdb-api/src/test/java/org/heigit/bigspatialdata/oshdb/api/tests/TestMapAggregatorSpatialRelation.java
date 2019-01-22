@@ -55,7 +55,7 @@ public class TestMapAggregatorSpatialRelation {
         .osmType(OSMType.WAY)
         .aggregateByTimestamp()
         .filter(x -> x.getEntity().getId() == 36493984)
-        .containment(
+        .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .flatMap(x -> x.getRight())
         .count();
@@ -82,7 +82,7 @@ public class TestMapAggregatorSpatialRelation {
         .osmType(OSMType.WAY)
         .osmTag("building")
         .aggregateByTimestamp()
-        .containment(
+        .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .flatMap(x -> x.getRight())
         .count();
@@ -139,7 +139,7 @@ public class TestMapAggregatorSpatialRelation {
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 36493984)
         .aggregateByTimestamp()
-        .overlappingFeatures(
+        .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(Pair::getRight)
         .count();
@@ -153,7 +153,7 @@ public class TestMapAggregatorSpatialRelation {
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 172510842)
         .aggregateByTimestamp()
-        .overlappingFeatures(
+        .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(Pair::getRight)
         .count();
@@ -252,7 +252,7 @@ public class TestMapAggregatorSpatialRelation {
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 130530843)
         .aggregateByTimestamp()
-        .neighbourhood(12.,
+        .neighbouringFeatures(12.,
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .flatMap(x -> x.getRight())
         .collect();

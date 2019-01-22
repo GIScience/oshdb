@@ -5,11 +5,10 @@ import static org.heigit.bigspatialdata.oshdb.util.geometry.Geo.isWithinDistance
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.IntersectionMatrix;
+import com.vividsolutions.jts.geom.Polygonal;
 import com.vividsolutions.jts.geom.TopologyException;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
@@ -17,17 +16,14 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 
 /**
- * Class that fitlers OSM objects based on their spatial relation to
- * other nearby OSM objects (objectsForComparison)
- *
- * Spatial relations contains the Egenhofer relations and a neighbourhood query
+ * Class that selects OSM objects based on their spatial relation (as defined by Egenhofer, 1991)
+ * and neighbourhood to other nearby OSM objects.
  *
  *
  */
@@ -37,7 +33,8 @@ public class SpatialRelation<X> {
     EQUALS, OVERLAPS, DISJOINT, CONTAINS, COVEREDBY, COVERS, TOUCHES, INSIDE, UNKNOWN, NEIGHBOURING, INTERSECTS
   }
 
-  private OSHDBBoundingBox bbox;
+  private OSHDBBoundingBox bboxFilter;
+  private Geometry polyFilter = null;
   private OSHDBJdbc oshdb;
   private SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce;
   private final STRtree objectsForComparison = new STRtree();
@@ -48,18 +45,37 @@ public class SpatialRelation<X> {
    * The oshdb conntection, bbox and tstamps are taken from the main MapReducer.
    *
    * @param oshdb osdhb connection
-   * @param bbox bounding box for querying nearby features to compare with
+   * @param bboxFilter bounding box for querying nearby features to compare with
    * @param mapReduce MapReduce function that specifies features that are used for comparison
    */
   public SpatialRelation(
     OSHDBJdbc oshdb,
-    OSHDBBoundingBox bbox,
+    OSHDBBoundingBox bboxFilter,
     SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) {
 
     this.oshdb = oshdb;
-    this.bbox = bbox;
+    this.bboxFilter = bboxFilter;
     this.mapReduce = mapReduce;
     }
+
+  /**
+   * Basic constructor
+   *
+   * The oshdb conntection, bbox and tstamps are taken from the main MapReducer.
+   *
+   * @param oshdb osdhb connection
+   * @param polyFilter bounding box for querying nearby features to compare with
+   * @param mapReduce MapReduce function that specifies features that are used for comparison
+   */
+  public <P extends Geometry & Polygonal> SpatialRelation(
+      OSHDBJdbc oshdb,
+      P polyFilter,
+      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) {
+
+    this.oshdb = oshdb;
+    this.polyFilter = polyFilter;
+    this.mapReduce = mapReduce;
+  }
 
   /**
    * This method compares one main (central) OSM object to all nearby OSM objects and
@@ -295,7 +311,7 @@ public class SpatialRelation<X> {
     MapReducer<OSMEntitySnapshot> mapReducer = OSMEntitySnapshotView
         .on(this.oshdb)
         .keytables(this.oshdb)
-        .areaOfInterest(this.bbox)
+        .areaOfInterest(this.bboxFilter)
         .timestamps(timestampList);
     // Apply mapReduce function given by user
     List<OSMEntitySnapshot> result;

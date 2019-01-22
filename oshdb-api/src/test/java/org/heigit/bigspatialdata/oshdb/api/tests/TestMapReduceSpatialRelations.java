@@ -2,24 +2,37 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import static org.junit.Assert.*;
 
-import java.util.EnumSet;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygonal;
+import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
+import javafx.scene.shape.Polygon;
 import org.apache.commons.lang3.tuple.Pair;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.FeatureSource;
+import org.geotools.feature.FeatureIterator;
+import org.geotools.geojson.feature.FeatureJSON;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
+import org.opengis.feature.simple.SimpleFeature;
 
 public class TestMapReduceSpatialRelations {
 
@@ -55,7 +68,6 @@ public class TestMapReduceSpatialRelations {
     // todo: create test data for testing line_covers_node
   }
 
-
   // Inside / contains --------------------------------------------------------------------------
   @Test
   public void test_inside_contains() throws Exception {
@@ -66,7 +78,7 @@ public class TestMapReduceSpatialRelations {
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 36493984)
-        .containment(
+        .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .flatMap(x -> x.getRight())
         .count();
@@ -90,7 +102,7 @@ public class TestMapReduceSpatialRelations {
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .osmTag("building")
-        .containment(
+        .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .flatMap(x -> x.getRight())
         .count();
@@ -113,7 +125,7 @@ public class TestMapReduceSpatialRelations {
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .osmTag("building")
-        .containment(
+        .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(x -> x.getRight())
         .count();
@@ -184,7 +196,7 @@ public class TestMapReduceSpatialRelations {
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 36493984)
-        .overlappingFeatures(
+        .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(x -> x.getRight())
         .count();
@@ -197,7 +209,7 @@ public class TestMapReduceSpatialRelations {
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 172510842)
-        .overlappingFeatures(
+        .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
         .flatMap(x -> x.getRight())
         .count();
@@ -301,7 +313,7 @@ public class TestMapReduceSpatialRelations {
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .filter(x -> x.getEntity().getId() == 130530843)
-        .neighbourhood(12.,
+        .neighbouringFeatures(12.,
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .flatMap(x -> x.getRight())
         .count();
