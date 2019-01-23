@@ -31,9 +31,9 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
     AffinityCall
   }
 
-  private final Ignite _ignite;
-  private ComputeMode _computeMode = ComputeMode.LocalPeek;
-  private Long _timeout = null;
+  private final transient Ignite ignite;
+  private ComputeMode computeMode = ComputeMode.LocalPeek;
+  private Long timeout = null;
 
   private IgniteRunnable onOpenCallback = null;
   private IgniteRunnable onCloseCallback = null;
@@ -43,8 +43,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   }
 
   public OSHDBIgnite(Ignite ignite) {
-    this._ignite = ignite;
-    this._ignite.cluster().active(true);
+    this.ignite = ignite;
+    this.ignite.cluster().active(true);
   }
 
   public OSHDBIgnite(String igniteConfigFilePath) {
@@ -54,8 +54,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   public OSHDBIgnite(File igniteConfig) {
     Ignition.setClientMode(true);
 
-    this._ignite = Ignition.start(igniteConfig.toString());
-    this._ignite.cluster().active(true);
+    this.ignite = Ignition.start(igniteConfig.toString());
+    this.ignite.cluster().active(true);
   }
 
   @Override
@@ -97,20 +97,20 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   }
 
   public Ignite getIgnite() {
-    return this._ignite;
+    return this.ignite;
   }
 
   public void close() {
-    this._ignite.close();
+    this.ignite.close();
   }
 
   public OSHDBIgnite computeMode(ComputeMode computeMode) {
-    this._computeMode = computeMode;
+    this.computeMode = computeMode;
     return this;
   }
 
   public ComputeMode computeMode() {
-    return this._computeMode;
+    return this.computeMode;
   }
 
   /**
@@ -125,7 +125,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
     if (this.computeMode() == ComputeMode.ScanQuery) {
       throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
     }
-    this._timeout = (long)Math.ceil(seconds*1000);
+    this.timeout = (long)Math.ceil(seconds*1000);
     return this;
   }
 
@@ -141,7 +141,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
     if (this.computeMode() == ComputeMode.ScanQuery) {
       throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
     }
-    this._timeout = milliSeconds;
+    this.timeout = milliSeconds;
     return this;
   }
 
@@ -149,10 +149,10 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
    * @return the currently set query timeout in milliseconds
    */
   public OptionalLong timeoutInMilliseconds() {
-    if (this._timeout == null) {
+    if (this.timeout == null) {
       return OptionalLong.empty();
     } else {
-      return OptionalLong.of(this._timeout);
+      return OptionalLong.of(this.timeout);
     }
   }
 
