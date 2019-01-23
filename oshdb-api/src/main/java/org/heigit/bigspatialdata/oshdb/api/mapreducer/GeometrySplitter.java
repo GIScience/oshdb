@@ -31,7 +31,7 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 
 /**
- * helper class to split "MapReducible" objects into sub-regions of an area of interest.
+ * Helper class to split "MapReducible" objects into sub-regions of an area of interest.
  *
  * @param <U> an arbitrary index type to identify supplied sub-regions
  */
@@ -55,10 +55,8 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = subregions;
   }
 
-
-
   /**
-   * splits osm entity snapshot objects into sub-regions
+   * Splits osm entity snapshot objects into sub-regions.
    *
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
@@ -93,13 +91,15 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
   }
 
   /**
-   * splits osm contributions into sub-regions
+   * Splits osm contributions into sub-regions.
    *
+   * <p>
    * The original contribution type is preserved during this operation.
    * For example, when a building was moved inside the area of interest from sub-region A into sub-
    * region B, there will be two contribution objects in the result, both of type "geometry change"
-   * (note that in this case the contribution object of sub-region A will
+   * (note that in this case the contribution object of sub-region A will …
    * todo: ^ is this the right behaviour of contribution types when splitting into sub-regions?
+   * </p>
    *
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
@@ -113,14 +113,15 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     return candidates.stream()
         .filter(index -> !bops.get(index).test(oshBoundingBox)) // fully outside -> skip
         .flatMap(index -> {
-          if (bips.get(index).test(oshBoundingBox))
+          if (bips.get(index).test(oshBoundingBox)) {
             return Stream.of(new ImmutablePair<>(index, data)); // fully inside -> directly return
+          }
           FastPolygonOperations poop = poops.get(index);
           try {
             Geometry intersectionBefore = poop.intersection(data.getGeometryBefore());
             Geometry intersectionAfter = poop.intersection(data.getGeometryAfter());
-            if ((intersectionBefore == null || intersectionBefore.isEmpty()) &&
-                (intersectionAfter == null || intersectionAfter.isEmpty())) {
+            if ((intersectionBefore == null || intersectionBefore.isEmpty())
+                && (intersectionAfter == null || intersectionAfter.isEmpty())) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
               return Stream.of(new ImmutablePair<>(
@@ -134,11 +135,14 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
         }).collect(Collectors.toCollection(LinkedList::new));
   }
 
-  /* custom object serialization/deserialization
+  /**
+   * Custom object serialization/deserialization.
    *
+   * <p>
    * Sometimes, a GeometrySplitter can end up containing quite many deeply nested child-objects.
    * Which can lead to relatively slow object serialization. It is then faster to just transfer
    * the geometries and re-create the indices at the destination after de-serializing.
+   * </p>
    */
   private void writeObject(ObjectOutputStream out) throws IOException {
     WKBWriter writer = new WKBWriter();
@@ -150,16 +154,21 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
       out.write(data);
     }
   }
-  private <P extends Geometry & Polygonal> void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+
+  private <P extends Geometry & Polygonal> void readObject(ObjectInputStream in)
+      throws IOException, ClassNotFoundException {
     WKBReader reader = new WKBReader();
     int numEntries = in.readInt();
     TreeMap<U, P> result = new TreeMap<>();
     for (int i = 0; i < numEntries; i++) {
+      //noinspection unchecked - we only write `U` data in these places in `writeObject`
       U key = (U) in.readObject();
       int dataLength = in.readInt();
       byte[] data = new byte[dataLength];
-      in.read(data);
+      int bytesRead = in.read(data);
+      assert bytesRead == dataLength : "fewer bytes read than expected";
       try {
+        //noinspection unchecked - we only write `P` data in these places in `writeObject`
         result.put(key, (P) reader.read(data));
       } catch (ParseException e) {
         throw new RuntimeException(e);
@@ -167,7 +176,9 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     }
     this.subregions = result;
   }
+
   private <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
+    //noinspection unchecked - constructor checks that `subregions` only contain `P` entry values
     return new GeometrySplitter<>((Map<U, P>) this.subregions);
   }
 }
