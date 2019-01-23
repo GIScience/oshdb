@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Streams;
 import java.io.IOException;
-import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
@@ -75,20 +74,20 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
 
-    OSHDBIgnite oshdb = ((OSHDBIgnite) this._oshdb);
+    OSHDBIgnite oshdb = ((OSHDBIgnite) this.oshdb);
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    return this._typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
+    return this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
@@ -113,20 +112,20 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       CellProcessor<Collection<X>> processor
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
 
-    OSHDBIgnite oshdb = ((OSHDBIgnite) this._oshdb);
+    OSHDBIgnite oshdb = ((OSHDBIgnite) this.oshdb);
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    return _typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
+    return typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)

@@ -65,7 +65,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   }
 
   private List<String> cacheNames(String prefix) {
-    return this._typeFilter.stream().map(TableNames::forOSMType).filter(Optional::isPresent)
+    return this.typeFilter.stream().map(TableNames::forOSMType).filter(Optional::isPresent)
         .map(Optional::get).map(tn -> tn.toString(prefix)).collect(Collectors.toList());
   }
 
@@ -74,9 +74,9 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._mapReduceCellsOSMContributionOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
-        this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
-        this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner);
   }
 
@@ -86,9 +86,9 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
-        this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
-        this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner);
   }
 
@@ -99,9 +99,9 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
     return IgniteLocalPeekHelper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
-        this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
-        this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner);
   }
 
@@ -111,9 +111,9 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     return IgniteLocalPeekHelper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-        (OSHDBIgnite) this._oshdb, this.cacheNames(this._oshdb.prefix()), this._getCellIdRanges(),
-        this._getTagInterpreter(), this._tstamps.get(), this._bboxFilter,
-        this._getPolyFilter(), this._getPreFilter(), this._getFilter(), mapper, identitySupplier,
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner);
   }
 }

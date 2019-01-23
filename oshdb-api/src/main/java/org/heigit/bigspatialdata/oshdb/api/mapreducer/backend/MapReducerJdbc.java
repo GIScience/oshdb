@@ -32,21 +32,19 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> {
     super(obj);
   }
 
-
-  protected ResultSet getOshCellsRawDataFromDb(Pair<CellId, CellId> cellIdRange) throws SQLException {
-    String sqlQuery = this._typeFilter.stream()
-        .map(osmType -> TableNames.forOSMType(osmType)
-            .map(tn -> tn.toString(this._oshdb.prefix())))
+  protected ResultSet getOshCellsRawDataFromDb(Pair<CellId, CellId> cellIdRange)
+      throws SQLException {
+    String sqlQuery = this.typeFilter.stream()
+        .map(osmType ->
+            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
+        )
         .filter(Optional::isPresent).map(Optional::get)
         .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
         .collect(Collectors.joining(" union all "));
-    // fetch data from H2 DB
-    PreparedStatement pstmt = ((OSHDBJdbc)this._oshdb).getConnection().prepareStatement(sqlQuery);
+    PreparedStatement pstmt = ((OSHDBJdbc)this.oshdb).getConnection().prepareStatement(sqlQuery);
     pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
     pstmt.setLong(2, cellIdRange.getLeft().getId());
     pstmt.setLong(3, cellIdRange.getRight().getId());
-
-    // execute statement
     return pstmt.executeQuery();
   }
 

@@ -5,7 +5,6 @@ import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 import javax.cache.Cache;
 import org.apache.commons.lang3.tuple.Pair;
@@ -66,14 +65,14 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     // load tag interpreter helper which is later used for geometry building
-    TagInterpreter tagInterpreter = this._getTagInterpreter();
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
 
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+    return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       return IgniteScanQueryHelper._mapReduceCellsOSMContributionOnIgniteCache(
-          (OSHDBIgnite) this._oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
-          this._tstamps.get(), this._bboxFilter, this._getPolyFilter(),
-          this._getPreFilter(), this._getFilter(), mapper, identitySupplier, accumulator, combiner);
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
     }).reduce(identitySupplier.get(), combiner);
   }
 
@@ -83,14 +82,14 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     // load tag interpreter helper which is later used for geometry building
-    TagInterpreter tagInterpreter = this._getTagInterpreter();
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
 
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+    return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       return IgniteScanQueryHelper._flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-          (OSHDBIgnite) this._oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
-          this._tstamps.get(), this._bboxFilter, this._getPolyFilter(),
-          this._getPreFilter(), this._getFilter(), mapper, identitySupplier, accumulator, combiner);
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
     }).reduce(identitySupplier.get(), combiner);
   }
 
@@ -101,14 +100,14 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
     // load tag interpreter helper which is later used for geometry building
-    TagInterpreter tagInterpreter = this._getTagInterpreter();
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
 
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+    return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       return IgniteScanQueryHelper._mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-          (OSHDBIgnite) this._oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
-          this._tstamps.get(), this._bboxFilter, this._getPolyFilter(),
-          this._getPreFilter(), this._getFilter(), mapper, identitySupplier, accumulator, combiner);
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
     }).reduce(identitySupplier.get(), combiner);
   }
 
@@ -118,20 +117,20 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     // load tag interpreter helper which is later used for geometry building
-    TagInterpreter tagInterpreter = this._getTagInterpreter();
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
 
-    return this._typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+    return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       return IgniteScanQueryHelper._flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-          (OSHDBIgnite) this._oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
-          this._tstamps.get(), this._bboxFilter, this._getPolyFilter(),
-          this._getPreFilter(), this._getFilter(), mapper, identitySupplier, accumulator, combiner);
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
     }).reduce(identitySupplier.get(), combiner);
   }
 
   private Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> getCellIdRangesByLevel() {
     Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel = new HashMap<>();
-    for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
+    for (Pair<CellId, CellId> cellIdRange : this.getCellIdRanges()) {
       int level = cellIdRange.getLeft().getZoomLevel();
       if (!cellIdRangesByLevel.containsKey(level)) {
         cellIdRangesByLevel.put(level, new TreeMap<>());

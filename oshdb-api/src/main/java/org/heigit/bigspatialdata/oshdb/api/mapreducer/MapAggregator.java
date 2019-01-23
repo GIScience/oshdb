@@ -148,7 +148,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public MapAggregator<OSHDBCombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp(
       SerializableFunction<X, OSHDBTimestamp> indexer
   ) {
-    final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._mapReducer._tstamps.get());
+    final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this._mapReducer.tstamps.get());
     return this.aggregateBy(data -> {
       // match timestamps to the given timestamp list
       return timestamps.floor(indexer.apply(data));
@@ -171,29 +171,29 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(Map<V, P> geometries) throws
       UnsupportedOperationException
   {
-    if (this._mapReducer._grouping != Grouping.NONE) {
+    if (this._mapReducer.grouping != Grouping.NONE) {
       throw new UnsupportedOperationException(
           "aggregateByGeometry() cannot be used together with the groupByEntity() functionality"
       );
     }
 
     GeometrySplitter<V> gs = new GeometrySplitter<>(geometries);
-    if (this._mapReducer._mappers.size() > 1) {
+    if (this._mapReducer.mappers.size() > 1) {
       // todo: fix
       throw new UnsupportedOperationException(
           "please call aggregateByGeometry before setting any map or flatMap functions"
       );
     } else {
       MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
-      if (this._mapReducer._forClass.equals(OSMContribution.class)) {
+      if (this._mapReducer.forClass.equals(OSMContribution.class)) {
         ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
             .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
-      } else if (this._mapReducer._forClass.equals(OSMEntitySnapshot.class)) {
+      } else if (this._mapReducer.forClass.equals(OSMEntitySnapshot.class)) {
         ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
             .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
       } else {
         throw new UnsupportedOperationException(
-            "aggregateByGeometry not implemented for objects of type: " + this._mapReducer._forClass.toString()
+            "aggregateByGeometry not implemented for objects of type: " + this._mapReducer.forClass.toString()
         );
       }
       //noinspection unchecked – no mapper functions have been applied, so the type is still X
