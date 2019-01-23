@@ -5,6 +5,7 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -71,6 +72,15 @@ abstract class TestMapReduce {
 
     /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
     assertEquals(5, result.size());
+
+    // "groupByEntity"
+    assertEquals(7, createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .sum()
+    );
   }
 
   @Test
@@ -93,6 +103,15 @@ abstract class TestMapReduce {
         .uniq();
 
     assertEquals(3, result.size());
+
+    // "groupByEntity"
+    assertEquals(5, createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .sum()
+    );
   }
 
   @Test
@@ -119,6 +138,17 @@ abstract class TestMapReduce {
 
     /* should be 5: first version doesn't have the highway tag, remaining 7 versions have 5 different contributor user ids*/
     assertEquals(5, result.size());
+
+    // "groupByEntity"
+    assertEquals(7, createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .stream()
+        .mapToInt(x -> x)
+        .reduce(0, (a,b) -> a+b)
+    );
   }
 
   @Test
@@ -143,5 +173,16 @@ abstract class TestMapReduce {
         .collect(Collectors.toSet());
 
     assertEquals(3, result.size());
+
+    // "groupByEntity"
+    assertEquals(5, createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .groupByEntity()
+        .map(List::size)
+        .stream()
+        .mapToInt(x -> x)
+        .reduce(0, (a,b) -> a+b)
+    );
   }
 }

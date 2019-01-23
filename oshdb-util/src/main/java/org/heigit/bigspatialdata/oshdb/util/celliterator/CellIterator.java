@@ -172,7 +172,7 @@ public class CellIterator implements Serializable {
       }
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
-          (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+          (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
@@ -278,7 +278,7 @@ public class CellIterator implements Serializable {
             });
           }
 
-          if (fullyInside || (geom.get() != null && !geom.get().isEmpty())) {
+          if (fullyInside || !geom.get().isEmpty()) {
             LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
                 () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
             results.add(
@@ -291,13 +291,12 @@ public class CellIterator implements Serializable {
               );
             }
           }
-        } catch (UnsupportedOperationException err) {
-          // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
+          // maybe some corner case where JTS doesn't support operations on a broken geometry
           LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
-          // todo: can this even happen?
+          // happens e.g. in JTS intersection method when geometries are self-overlapping
           LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
               err.toString());
@@ -416,7 +415,7 @@ public class CellIterator implements Serializable {
 
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
-              (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+              (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
@@ -480,6 +479,10 @@ public class CellIterator implements Serializable {
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
                 osmEntity.getChangeset()
             );
+            // cannot normally happen, because prev is never null while skipOutput is true (since no
+            // previous result has yet been generated before the first modification in the query
+            // timestamp inteval). But if the oshdb-api would at some point have to support non-
+            // contiguous timestamp intervals, this case could be needed.
             if (!skipOutput) {
               results.add(prev);
             }
@@ -557,7 +560,7 @@ public class CellIterator implements Serializable {
           }
 
           LazyEvaluatedContributionTypes activity;
-          if (!fullyInside && (geom.get() == null || geom.get().isEmpty())) {
+          if (!fullyInside && geom.get().isEmpty()) {
             // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
@@ -636,12 +639,12 @@ public class CellIterator implements Serializable {
             results.add(result);
           }
           prev = result;
-        } catch (UnsupportedOperationException err) {
-          // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
+          // maybe some corner case where JTS doesn't support operations on a broken geometry
           LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
+          // happens e.g. in JTS intersection method when geometries are self-overlapping
           LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
               err.toString());

@@ -1,8 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
+import com.tdunning.math.stats.MergingDigest;
+import com.tdunning.math.stats.TDigest;
 import java.sql.Connection;
+import java.util.function.DoubleUnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -873,7 +878,7 @@ public abstract class MapReducer<X> implements
         if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMContribution(
@@ -883,7 +888,7 @@ public abstract class MapReducer<X> implements
                 combiner
             );
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMEntitySnapshot(
@@ -932,16 +937,25 @@ public abstract class MapReducer<X> implements
           flatMapper = this._getFlatMapper();
         }
         if (this._forClass.equals(OSMContribution.class)) {
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMContributionGroupedById(
-              (SerializableFunction<List<OSMContribution>, Iterable<X>>) flatMapper::apply,
+              contributionFlatMapper,
               identitySupplier,
               accumulator,
               combiner
           );
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
+          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
-              (SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>>) flatMapper::apply,
-              identitySupplier, accumulator, combiner);
+              snapshotFlatMapper,
+              identitySupplier,
+              accumulator,
+              combiner
+          );
         } else {
           throw new UnsupportedOperationException(
               "Unimplemented data view: " + this._forClass.toString());
@@ -1136,6 +1150,144 @@ public abstract class MapReducer<X> implements
     return runningSums.num / runningSums.weight;
   }
 
+  /**
+   * Returns an estimate of the median of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public Double estimatedMedian() throws Exception {
+    return this.estimatedQuantile(0.5);
+  }
+
+  /**
+   * Returns an estimate of the median of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the mean for
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper) throws Exception {
+    return this.estimatedQuantile(mapper, 0.5);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public Double estimatedQuantile(double q) throws Exception {
+    return this.makeNumeric().estimatedQuantile(n -> n, q);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results after applying the given map
+   * function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantile for
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q)
+      throws Exception {
+    return this.estimatedQuantiles(mapper).applyAsDouble(q);
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public List<Double> estimatedQuantiles(Iterable<Double> q) throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n, q);
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> List<Double> estimatedQuantiles(
+      SerializableFunction<X, R> mapper,
+      Iterable<Double> q
+  ) throws Exception {
+    return StreamSupport.stream(q.spliterator(), false)
+        .mapToDouble(Double::doubleValue)
+        .map(this.estimatedQuantiles(mapper))
+        .boxed()
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public DoubleUnaryOperator estimatedQuantiles() throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n);
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results after applying
+   * the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> DoubleUnaryOperator estimatedQuantiles(
+      SerializableFunction<X, R> mapper
+  ) throws Exception {
+    TDigest digest = this.digest(mapper);
+    return digest::quantile;
+  }
+
+  /**
+   * generates the t-digest of the complete result set. see:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   */
+  @Contract(pure = true)
+  private <R extends Number> TDigest digest(SerializableFunction<X, R> mapper) throws Exception {
+    return this.map(mapper).reduce(
+        TDigestReducer::identitySupplier,
+        TDigestReducer::accumulator,
+        TDigestReducer::combiner
+    );
+  }
+
   // -----------------------------------------------------------------------------------------------
   // "Iterator" like helpers (stream, collect)
   // -----------------------------------------------------------------------------------------------
@@ -1201,12 +1353,12 @@ public abstract class MapReducer<X> implements
         if (this._mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this._getMapper();
           if (this._forClass.equals(OSMContribution.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMContribution(contributionMapper);
           } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/adeb425d969fe58116989d9b2e678c623a26de11#note_2094
+            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
@@ -1250,13 +1402,15 @@ public abstract class MapReducer<X> implements
           flatMapper = this._getFlatMapper();
         }
         if (this._forClass.equals(OSMContribution.class)) {
-          return this.flatMapStreamCellsOSMContributionGroupedById(
-              (SerializableFunction<List<OSMContribution>, Iterable<X>>) flatMapper::apply
-          );
+          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
+              data -> flatMapper.apply(data);
+          return this.flatMapStreamCellsOSMContributionGroupedById(contributionFlatMapper);
         } else if (this._forClass.equals(OSMEntitySnapshot.class)) {
-          return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
-              (SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>>) flatMapper::apply
-          );
+          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
+              data -> flatMapper.apply(data);
+          return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(snapshotFlatMapper);
         } else {
           throw new UnsupportedOperationException(
               "Unimplemented data view: " + this._forClass.toString());
@@ -1487,6 +1641,9 @@ public abstract class MapReducer<X> implements
   protected TagTranslator _getTagTranslator() {
     if (this._tagTranslator == null) {
       try {
+        if (this._oshdbForTags == null) {
+          throw new OSHDBKeytablesNotFoundException();
+        }
         this._tagTranslator = new TagTranslator(this._oshdbForTags.getConnection());
       } catch (OSHDBKeytablesNotFoundException e) {
         LOG.error(e.getMessage());
@@ -1645,5 +1802,38 @@ class MapFunction implements SerializableFunction {
   // the necessary type checks are done at the respective setters
   public Object apply(Object o) {
     return this.mapper.apply(o);
+  }
+}
+
+class TDigestReducer {
+
+  /**
+   * a COMPRESSION parameter of 1000 should provide relatively precise results, while not being
+   * too demanding on memory usage. See page 20 in the paper [1]:
+   *
+   * > Compression parameter (1/δ) was […] 1000 in order to reliably achieve 0.1% accuracy
+   *
+   * [1] https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   */
+  private final static int COMPRESSION = 1000;
+
+  static TDigest identitySupplier() {
+    return new MergingDigest(COMPRESSION);
+  }
+
+  static <R extends Number> TDigest accumulator(TDigest acc, R cur) {
+    acc.add(cur.doubleValue(), 1);
+    return acc;
+  }
+
+  static TDigest combiner(TDigest a, TDigest b) {
+    if (a.size() == 0) {
+      return b;
+    } else if (b.size() == 0) {
+      return a;
+    }
+    MergingDigest r = new MergingDigest(COMPRESSION);
+    r.add(Arrays.asList(a, b));
+    return r;
   }
 }

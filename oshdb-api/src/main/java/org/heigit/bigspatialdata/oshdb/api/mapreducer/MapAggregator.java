@@ -1,10 +1,14 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Lists;
+import com.tdunning.math.stats.TDigest;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import java.util.Map.Entry;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.*;
@@ -19,7 +23,6 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -416,14 +419,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    */
   @Contract(pure = true)
   public SortedMap<U, Integer> countUniq() throws Exception {
-    return this
-        .uniq().entrySet().stream()
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            e -> e.getValue().size(),
-            (v1, v2) -> v1, // can't happen, actually since input is already a map
-            TreeMap::new
-        ));
+    return transformSortedMap(this.uniq(), Set::size);
   }
 
   /**
@@ -463,9 +459,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    */
   @Contract(pure = true)
   public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
-    return this
-        .map(mapper)
-        .reduce(
+    return transformSortedMap(
+        this.map(mapper).reduce(
             () -> new PayloadWithWeight<>(0.0,0.0),
             (acc, cur) -> {
               acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue()*cur.getWeight());
@@ -473,12 +468,151 @@ public class MapAggregator<U extends Comparable<U>, X> implements
               return acc;
             },
             (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
-        ).entrySet().stream().collect(Collectors.toMap(
-            Map.Entry::getKey,
-            e -> e.getValue().num / e.getValue().weight,
-            (v1, v2) -> v1,
-            TreeMap::new
-        ));
+        ),
+        x -> x.num / x.weight
+    );
+  }
+
+  /**
+   * Returns an estimate of the median of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public SortedMap<U, Double> estimatedMedian() throws Exception {
+    return this.estimatedQuantile(0.5);
+  }
+
+  /**
+   * Returns an estimate of the median of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the mean for
+   * @return estimated median
+   */
+  @Contract(pure = true)
+  public <R extends Number> SortedMap<U, Double> estimatedMedian(SerializableFunction<X, R> mapper) throws Exception {
+    return this.estimatedQuantile(mapper, 0.5);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public SortedMap<U, Double> estimatedQuantile(double q) throws Exception {
+    return this.makeNumeric().estimatedQuantile(n -> n, q);
+  }
+
+  /**
+   * Returns an estimate of a requested quantile of the results after applying the given map
+   * function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantile for
+   * @param q the desired quantile to calculate (as a number between 0 and 1)
+   * @return estimated quantile boundary
+   */
+  @Contract(pure = true)
+  public <R extends Number> SortedMap<U, Double> estimatedQuantile(
+      SerializableFunction<X, R> mapper,
+      double q
+  ) throws Exception {
+    return transformSortedMap(this.estimatedQuantiles(mapper), qFunction -> qFunction.applyAsDouble(q));
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q) throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n, q);
+  }
+
+  /**
+   * Returns an estimate of the quantiles of the results after applying the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
+   * @return estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> SortedMap<U, List<Double>> estimatedQuantiles(
+      SerializableFunction<X, R> mapper,
+      Iterable<Double> q
+  ) throws Exception {
+    return transformSortedMap(
+        this.estimatedQuantiles(mapper),
+        quantileFunction -> StreamSupport.stream(q.spliterator(), false)
+            .mapToDouble(Double::doubleValue)
+            .map(quantileFunction)
+            .boxed()
+            .collect(Collectors.toList())
+    );
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public SortedMap<U, DoubleUnaryOperator> estimatedQuantiles() throws Exception {
+    return this.makeNumeric().estimatedQuantiles(n -> n);
+  }
+
+  /**
+   * Returns a function that computes estimates of arbitrary quantiles of the results after applying
+   * the given map function.
+   *
+   * uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   *
+   * @param mapper function that returns the numbers to generate the quantiles for
+   * @return a function that computes estimated quantile boundaries
+   */
+  @Contract(pure = true)
+  public <R extends Number> SortedMap<U, DoubleUnaryOperator> estimatedQuantiles(
+      SerializableFunction<X, R> mapper
+  ) throws Exception {
+    return transformSortedMap(this.digest(mapper), d -> d::quantile);
+  }
+
+  /**
+   * generates the t-digest of the complete result set. see:
+   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
+   */
+  @Contract(pure = true)
+  private <R extends Number> SortedMap<U, TDigest> digest(SerializableFunction<X, R> mapper) throws Exception {
+    return this.map(mapper).reduce(
+        TDigestReducer::identitySupplier,
+        TDigestReducer::accumulator,
+        TDigestReducer::combiner
+    );
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -731,5 +865,15 @@ public class MapAggregator<U extends Comparable<U>, X> implements
           seen.stream().map(v -> new OSHDBCombinedIndex<>(u, v))
       ).collect(Collectors.toList());
     }
+  }
+
+  // transforms the values of a sorted map by a given function (similar to Stream::map)
+  private <A, B> SortedMap<U, B> transformSortedMap(SortedMap<U, A> in, Function<A, B> transform) {
+    return in.entrySet().stream().collect(Collectors.toMap(
+        Entry::getKey,
+        e -> transform.apply(e.getValue()),
+        (v1, v2) -> { assert false; return v1; },
+        TreeMap::new
+    ));
   }
 }

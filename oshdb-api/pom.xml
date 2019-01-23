@@ -90,6 +90,12 @@
       <artifactId>annotations</artifactId>
       <version>${jetbrainsannotations.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.tdunning</groupId>
+      <artifactId>t-digest</artifactId>
+      <version>3.2</version>
+    </dependency>
   </dependencies>
 
   <build>
