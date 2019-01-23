@@ -35,7 +35,6 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   private ComputeMode computeMode = ComputeMode.LocalPeek;
   private Long timeout = null;
 
-  private IgniteRunnable onOpenCallback = null;
   private IgniteRunnable onCloseCallback = null;
 
   public OSHDBIgnite() throws SQLException, ClassNotFoundException {
