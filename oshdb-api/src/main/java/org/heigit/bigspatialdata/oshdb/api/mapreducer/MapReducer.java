@@ -1184,13 +1184,7 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public <R extends Number> Double average(SerializableFunction<X, R> mapper) throws Exception {
-    PayloadWithWeight<Double> runningSums =
-        this.map(mapper).reduce(() -> new PayloadWithWeight<Double>(0.0, 0.0), (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur.doubleValue());
-          acc.weight += 1;
-          return acc;
-        }, (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight + b.weight));
-    return runningSums.num / runningSums.weight;
+    return this.weightedAverage(data -> new WeightedValue<>(mapper.apply(data), 1.0));
   }
 
   /**
@@ -1206,11 +1200,11 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     PayloadWithWeight<Double> runningSums =
-        this.map(mapper).reduce(() -> new PayloadWithWeight<>(0.0, 0.0), (acc, cur) -> {
-          acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue() * cur.getWeight());
-          acc.weight += cur.getWeight();
-          return acc;
-        }, (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight + b.weight));
+        this.map(mapper).reduce(
+            PayloadWithWeight::identity,
+            PayloadWithWeight::accumulator,
+            PayloadWithWeight::combiner
+        );
     return runningSums.num / runningSums.weight;
   }
 

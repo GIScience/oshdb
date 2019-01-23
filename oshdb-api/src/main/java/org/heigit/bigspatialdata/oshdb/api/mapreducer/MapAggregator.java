@@ -461,13 +461,9 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     return transformSortedMap(
         this.map(mapper).reduce(
-            () -> new PayloadWithWeight<>(0.0,0.0),
-            (acc, cur) -> {
-              acc.num = NumberUtils.add(acc.num, cur.getValue().doubleValue()*cur.getWeight());
-              acc.weight += cur.getWeight();
-              return acc;
-            },
-            (a, b) -> new PayloadWithWeight<>(NumberUtils.add(a.num, b.num), a.weight+b.weight)
+            PayloadWithWeight::identity,
+            PayloadWithWeight::accumulator,
+            PayloadWithWeight::combiner
         ),
         x -> x.num / x.weight
     );
