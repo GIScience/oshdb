@@ -1,11 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import java.util.Collection;
-import java.util.Collections;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 
 /**
- * Interface for MapReducers or MapAggregators that can be aggregated by an arbitrary index
+ * Interface for MapReducers or MapAggregators that can be aggregated by an arbitrary index.
  *
  * @param <M> the resulting class of the aggregateBy operation
  * @param <X> the data type the index function is supplied with
