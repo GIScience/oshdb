@@ -926,8 +926,10 @@ public abstract class MapReducer<X> implements
    *         implementations for details).
    */
   @Contract(pure = true)
-  public <S> S reduce(SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner)
+  public <S> S reduce(
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, X, S> accumulator,
+      SerializableBinaryOperator<S> combiner)
       throws Exception {
     switch (this.grouping) {
       case NONE:
@@ -1201,7 +1203,7 @@ public abstract class MapReducer<X> implements
   public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     PayloadWithWeight<Double> runningSums =
         this.map(mapper).reduce(
-            PayloadWithWeight::identity,
+            PayloadWithWeight::identitySupplier,
             PayloadWithWeight::accumulator,
             PayloadWithWeight::combiner
         );
@@ -1397,15 +1399,9 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public List<X> collect() throws Exception {
     return this.reduce(
-        LinkedList::new,
-        (acc, cur) -> {
-          acc.add(cur);
-          return acc;
-        }, (list1, list2) -> {
-          LinkedList<X> combinedLists = new LinkedList<>(list1);
-          combinedLists.addAll(list2);
-          return combinedLists;
-        }
+        MapReducer::collectIdentitySupplier,
+        MapReducer::collectAccumulator,
+        MapReducer::collectCombiner
     );
   }
 
@@ -1869,5 +1865,21 @@ public abstract class MapReducer<X> implements
       result.remove(result.last());
       return result;
     }
+  }
+
+  static <T> List<T> collectIdentitySupplier() {
+    return new LinkedList<>();
+  }
+
+  static <T> List<T> collectAccumulator(List<T> acc, T cur) {
+    acc.add(cur);
+    return acc;
+  }
+
+  static <T> List<T> collectCombiner(List<T> list1, List<T> list2) {
+    ArrayList<T> combinedLists = new ArrayList<T>(list1.size() + list2.size());
+    combinedLists.addAll(list1);
+    combinedLists.addAll(list2);
+    return combinedLists;
   }
 }

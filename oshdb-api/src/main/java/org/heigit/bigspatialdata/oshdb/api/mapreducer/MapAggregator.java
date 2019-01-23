@@ -461,7 +461,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     return transformSortedMap(
         this.map(mapper).reduce(
-            PayloadWithWeight::identity,
+            PayloadWithWeight::identitySupplier,
             PayloadWithWeight::accumulator,
             PayloadWithWeight::combiner
         ),
@@ -640,9 +640,9 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public SortedMap<U, List<X>> collect() throws Exception {
     return this.reduce(
-        LinkedList::new,
-        (acc, cur) -> { acc.add(cur); return acc; },
-        (list1, list2) -> { LinkedList<X> combinedLists = new LinkedList<>(list1); combinedLists.addAll(list2); return combinedLists; }
+        MapReducer::collectIdentitySupplier,
+        MapReducer::collectAccumulator,
+        MapReducer::collectCombiner
     );
   }
 
@@ -754,7 +754,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return the result of the map-reduce operation, the final result of the last call to the `combiner` function, after all `mapper` results have been aggregated (in the `accumulator` and `combiner` steps)
    */
   @Contract(pure = true)
-  public <S> SortedMap<U, S> reduce(SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) throws Exception {
+  public <S> SortedMap<U, S> reduce(
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, X, S> accumulator,
+      SerializableBinaryOperator<S> combiner)
+      throws Exception {
     SortedMap<U, S> result = this._mapReducer.reduce(
         TreeMap::new,
         (TreeMap<U, S> m, Pair<U, X> r) -> {

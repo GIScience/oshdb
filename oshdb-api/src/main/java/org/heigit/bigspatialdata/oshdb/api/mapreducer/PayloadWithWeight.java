@@ -4,7 +4,9 @@ import java.io.Serializable;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
 
 /**
- * Mutable version of WeightedValue type (for internal use to do faster aggregation).
+ * Mutable version of WeightedValue type.
+ *
+ * <p>For internal use to do faster aggregation during reduce operations.</p>
  *
  * @param <X> an arbitrary (often numeric) payload data type
  */
@@ -12,12 +14,12 @@ class PayloadWithWeight<X> implements Serializable {
   X num;
   double weight;
 
-  PayloadWithWeight(X num, double weight) {
+  private PayloadWithWeight(X num, double weight) {
     this.num = num;
     this.weight = weight;
   }
 
-  static PayloadWithWeight<Double> identity() {
+  static PayloadWithWeight<Double> identitySupplier() {
     return new PayloadWithWeight<>(0.0, 0.0);
   }
 
