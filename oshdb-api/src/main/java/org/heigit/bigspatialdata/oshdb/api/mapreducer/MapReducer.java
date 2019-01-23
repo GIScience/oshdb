@@ -1758,33 +1758,38 @@ public abstract class MapReducer<X> implements
 
   // Helper that chains multiple oshEntity filters together
   protected CellIterator.OSHEntityFilter getPreFilter() {
-    return (this.preFilters.isEmpty()) ? (oshEntity -> true) : (oshEntity -> {
-      for (SerializablePredicate<OSHEntity> filter : this.preFilters) {
-        if (!filter.test(oshEntity)) {
-          return false;
-        }
-      }
-      return true;
-    });
+    return this.preFilters.isEmpty()
+        ? oshEntity -> true
+        : oshEntity -> {
+          for (SerializablePredicate<OSHEntity> filter : this.preFilters) {
+            if (!filter.test(oshEntity)) {
+              return false;
+            }
+          }
+          return true;
+        };
   }
 
   // Helper that chains multiple osmEntity filters together
   protected CellIterator.OSMEntityFilter getFilter() {
-    return (this.filters.isEmpty()) ? (osmEntity -> true) : (osmEntity -> {
-      for (SerializablePredicate<OSMEntity> filter : this.filters) {
-        if (!filter.test(osmEntity)) {
-          return false;
-        }
-      }
-      return true;
-    });
+    return this.filters.isEmpty()
+        ? osmEntity -> true
+        : osmEntity -> {
+          for (SerializablePredicate<OSMEntity> filter : this.filters) {
+            if (!filter.test(osmEntity)) {
+              return false;
+            }
+          }
+          return true;
+        };
   }
 
   // get all cell ids covered by the current area of interest's bounding box
   protected Iterable<Pair<CellId, CellId>> getCellIdRanges() {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
-    if (this.bboxFilter == null || (this.bboxFilter.getMinLon() >= this.bboxFilter.getMaxLon()
-        || this.bboxFilter.getMinLat() >= this.bboxFilter.getMaxLat())) {
+    if (this.bboxFilter == null
+        || this.bboxFilter.getMinLon() >= this.bboxFilter.getMaxLon()
+        || this.bboxFilter.getMinLat() >= this.bboxFilter.getMaxLat()) {
       // return an empty iterable if bbox is not set or empty
       LOG.warn("area of interest not set or empty");
       return Collections.emptyList();
