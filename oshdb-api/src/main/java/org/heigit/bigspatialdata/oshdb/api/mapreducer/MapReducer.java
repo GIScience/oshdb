@@ -1125,14 +1125,9 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public Set<X> uniq() throws Exception {
     return this.reduce(
-        HashSet::new, (acc, cur) -> {
-          acc.add(cur);
-          return acc;
-        }, (a, b) -> {
-          HashSet<X> result = new HashSet<>(a);
-          result.addAll(b);
-          return result;
-        }
+        MapReducer::uniqIdentitySupplier,
+        MapReducer::uniqAccumulator,
+        MapReducer::uniqCombiner
     );
   }
 
@@ -1881,10 +1876,26 @@ public abstract class MapReducer<X> implements
     return acc;
   }
 
-  static <T> List<T> collectCombiner(List<T> list1, List<T> list2) {
-    ArrayList<T> combinedLists = new ArrayList<T>(list1.size() + list2.size());
-    combinedLists.addAll(list1);
-    combinedLists.addAll(list2);
+  static <T> List<T> collectCombiner(List<T> a, List<T> b) {
+    ArrayList<T> combinedLists = new ArrayList<T>(a.size() + b.size());
+    combinedLists.addAll(a);
+    combinedLists.addAll(b);
     return combinedLists;
+  }
+
+  static <T> Set<T> uniqIdentitySupplier() {
+    return new TreeSet<>();
+  }
+
+  static <T> Set<T> uniqAccumulator(Set<T> acc, T cur) {
+    acc.add(cur);
+    return acc;
+  }
+
+  static <T> Set<T> uniqCombiner(Set<T> a, Set<T> b) {
+    HashSet<T> result = new HashSet<>(a.size() + b.size());
+    result.addAll(a);
+    result.addAll(b);
+    return result;
   }
 }
