@@ -3,7 +3,9 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -15,7 +17,10 @@ import org.apache.ignite.IgniteCompute;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
@@ -31,15 +36,18 @@ import org.json.simple.parser.ParseException;
 /**
  * {@inheritDoc}
  *
- *
+ * <p>
  * The "AffinityCall" implementation is a very simple, but less efficient implementation of the
  * oshdb mapreducer: It's just sending separate affinityCalls() to the cluster for each data cell
  * and reduces all results locally on the client.
+ * </p>
  *
+ * <p>
  * It's good for testing purposes and maybe a viable option for special circumstances where one
  * knows beforehand that only few cells have to be iterated over (e.g. queries in a small area of
  * interest), where the (~constant) overhead associated with the other methods might be larger than
  * the (~linear) inefficiency with this implementation.
+ * </p>
  */
 public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
   public MapReducerIgniteAffinityCall(OSHDBDatabase oshdb,
