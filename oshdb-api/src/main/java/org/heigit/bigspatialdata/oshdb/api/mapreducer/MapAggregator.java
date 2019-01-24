@@ -942,15 +942,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   // casts current results to a numeric type, for summing and averaging
   @Contract(pure = true)
   private MapAggregator<U, Number> makeNumeric() {
-    return this.map(x -> {
-      // todo: slow??
-      if (!Number.class.isInstance(x)) {
-        throw new UnsupportedOperationException(
-            "Cannot convert to non-numeric values of type: " + x.getClass().toString()
-        );
-      }
-      return (Number)x;
-    });
+    return this.map(MapReducer::checkAndMapToNumeric);
   }
 
   // maps from one index type to a different one

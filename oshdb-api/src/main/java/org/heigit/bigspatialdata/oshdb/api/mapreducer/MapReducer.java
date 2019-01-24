@@ -1844,18 +1844,6 @@ public abstract class MapReducer<X> implements
     });
   }
 
-  // casts current results to a numeric type, for summing and averaging
-  private MapReducer<Number> makeNumeric() {
-    return this.map(x -> {
-      // todo: slow??
-      if (!Number.class.isInstance(x)) {
-        throw new UnsupportedOperationException(
-            "Cannot convert to non-numeric values of type: " + x.getClass().toString());
-      }
-      return (Number) x;
-    });
-  }
-
   // gets list of timestamps to use for zerofilling
   Collection<OSHDBTimestamp> getZerofillTimestamps() {
     if (this.forClass.equals(OSMEntitySnapshot.class)) {
@@ -1867,15 +1855,41 @@ public abstract class MapReducer<X> implements
     }
   }
 
+  // casts current results to a numeric type, for summing and averaging
+  @Contract(pure = true)
+  private MapReducer<Number> makeNumeric() {
+    return this.map(MapReducer::checkAndMapToNumeric);
+  }
+
+  /**
+   * Checks if an input object can be cast to numeric, and if possible returns it.
+   *
+   * @param x Arbitrary object
+   * @return x casted to Numeric type
+   * @throws UnsupportedOperationException if the supplied value is not numeric
+   */
+  @Contract(pure = true)
+  static Number checkAndMapToNumeric(Object x) {
+    // todo: slow??
+    if (!Number.class.isInstance(x)) {
+      throw new UnsupportedOperationException(
+          "Cannot convert to non-numeric values of type: " + x.getClass().toString());
+    }
+    return (Number) x;
+  }
+
+  @Contract(pure = true)
   static <T> List<T> collectIdentitySupplier() {
     return new LinkedList<>();
   }
 
+  @Contract(pure = false)
   static <T> List<T> collectAccumulator(List<T> acc, T cur) {
     acc.add(cur);
     return acc;
   }
 
+  @Contract(pure = true)
   static <T> List<T> collectCombiner(List<T> a, List<T> b) {
     ArrayList<T> combinedLists = new ArrayList<T>(a.size() + b.size());
     combinedLists.addAll(a);
@@ -1883,15 +1897,18 @@ public abstract class MapReducer<X> implements
     return combinedLists;
   }
 
+  @Contract(pure = true)
   static <T> Set<T> uniqIdentitySupplier() {
     return new TreeSet<>();
   }
 
+  @Contract(pure = false)
   static <T> Set<T> uniqAccumulator(Set<T> acc, T cur) {
     acc.add(cur);
     return acc;
   }
 
+  @Contract(pure = true)
   static <T> Set<T> uniqCombiner(Set<T> a, Set<T> b) {
     HashSet<T> result = new HashSet<>(a.size() + b.size());
     result.addAll(a);
