@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.db;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -13,15 +12,18 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.bigspatialdata.oshdb.TableNames;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
+import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
-import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 
+/**
+ * OSHDB database backend connector to a Ignite system.
+ */
 public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   public enum ComputeMode {
     LocalPeek,
@@ -48,6 +50,11 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     this(new File(igniteConfigFilePath));
   }
 
+  /**
+   * Opens a connection to oshdb data stored on an Ignite cluster.
+   *
+   * @param igniteConfig ignite configuration file
+   */
   public OSHDBIgnite(File igniteConfig) {
     Ignition.setClientMode(true);
 
@@ -134,7 +141,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     if (this.computeMode() == ComputeMode.ScanQuery) {
       throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
     }
-    this.timeout = (long)Math.ceil(seconds*1000);
+    this.timeout = (long) Math.ceil(seconds * 1000);
     return this;
   }
 
