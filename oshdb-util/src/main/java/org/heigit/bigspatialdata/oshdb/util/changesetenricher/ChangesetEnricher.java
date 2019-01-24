@@ -15,7 +15,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.slf4j.LoggerFactory;
 
 public class ChangesetEnricher {
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TagTranslator.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ChangesetEnricher.class);
 
   private final Connection conn;
   private final Map<Long, OSMChangeset> changests;
