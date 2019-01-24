@@ -225,7 +225,7 @@ class IgniteScanQueryHelper {
         // noinspection unchecked
         try (
             QueryCursor<S> cursor = cache.query(
-                (new ScanQuery((key, cell) -> this.cellIdInRange((GridOSHEntity)cell)))
+                new ScanQuery((key, cell) -> this.cellIdInRange((GridOSHEntity)cell))
                 .setPartition(part), cacheEntry -> {
                   // iterate over the history of all OSM objects in the current cell
                   GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry)
