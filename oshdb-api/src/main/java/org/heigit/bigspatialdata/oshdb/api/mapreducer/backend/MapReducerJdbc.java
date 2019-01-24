@@ -49,7 +49,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> {
   }
 
   /**
-   * returns data of one cell from the raw data stream
+   * Returns data of one cell from the raw data stream.
    */
   protected GridOSHEntity readOshCellRawData(ResultSet oshCellsRawData)
       throws IOException, ClassNotFoundException, SQLException {

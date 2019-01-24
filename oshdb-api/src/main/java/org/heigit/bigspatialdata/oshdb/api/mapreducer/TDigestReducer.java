@@ -18,7 +18,7 @@ class TDigestReducer {
    *   [1] https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
    * </li></ul>
    */
-  private final static int COMPRESSION = 1000;
+  private static final int COMPRESSION = 1000;
 
   static TDigest identitySupplier() {
     return new MergingDigest(COMPRESSION);
