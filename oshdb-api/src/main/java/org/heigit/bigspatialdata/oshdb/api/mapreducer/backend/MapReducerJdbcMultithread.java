@@ -25,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
-
   public MapReducerJdbcMultithread(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
