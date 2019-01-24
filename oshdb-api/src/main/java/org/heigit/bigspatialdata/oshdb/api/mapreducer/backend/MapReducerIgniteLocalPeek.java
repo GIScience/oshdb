@@ -40,10 +40,11 @@ import org.slf4j.LoggerFactory;
 /**
  * {@inheritDoc}
  *
- *
+ * <p>
  * The "LocalPeek" implementation is the a very versatile implementation of the oshdb mapreducer on
  * Ignite: It offers high performance, scalability and cancelable queries. It should be used in most
  * situations when running oshdb- analyses on ignite.
+ * </p>
  */
 public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   private static final Logger LOG = LoggerFactory.getLogger(MapReducerIgniteLocalPeek.class);
@@ -121,23 +122,30 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
 class IgniteLocalPeekHelper {
   /**
+   * A cancelable ignite broadcast task.
+   *
    * @param <T> Type of the task argument.
    * @param <R> Type of the task result returning from {@link ComputeTask#reduce(List)} method.
    */
-  @org.apache.ignite.compute.ComputeTaskNoResultCache
+  @ComputeTaskNoResultCache
   static class CancelableBroadcastTask<T, R> extends ComputeTaskAdapter<T, R>
       implements Serializable {
     private final MapReduceCellsOnIgniteCacheComputeJob job;
     private final SerializableBinaryOperator<R> combiner;
+    private final IgniteRunnable onClose;
 
     private R resultAccumulator;
 
-    public CancelableBroadcastTask(MapReduceCellsOnIgniteCacheComputeJob job,
-        SerializableSupplier<R> identitySupplier, SerializableBinaryOperator<R> combiner,
-        IgniteRunnable onClose) {
+    public CancelableBroadcastTask(
+        MapReduceCellsOnIgniteCacheComputeJob job,
+        SerializableSupplier<R> identitySupplier,
+        SerializableBinaryOperator<R> combiner,
+        IgniteRunnable onClose
+    ) {
       this.job = job;
       this.combiner = combiner;
       this.resultAccumulator = identitySupplier.get();
+      this.onClose = onClose;
     }
 
     @Override
@@ -155,7 +163,9 @@ class IgniteLocalPeekHelper {
 
         @Override
         public Object execute() throws IgniteException {
-          return job.execute(ignite);
+          Object result = job.execute(ignite);
+          onClose.run();
+          return result;
         }
       }, node));
       return map;
@@ -178,7 +188,7 @@ class IgniteLocalPeekHelper {
   /**
    * Compute closure that iterates over every partition owned by a node located in a partition.
    */
-  private static abstract class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal>
+  private abstract static class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal>
       implements Serializable, CancelableProcessStatus {
     private static final Logger LOG =
         LoggerFactory.getLogger(MapReduceCellsOnIgniteCacheComputeJob.class);

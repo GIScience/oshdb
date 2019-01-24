@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
+import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
@@ -89,9 +90,10 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
 
     final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
 
-    OSHDBIgnite oshdb = ((OSHDBIgnite) this.oshdb);
+    OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
     return this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
@@ -110,7 +112,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             } else {
               ret = cellProcessor.apply(oshEntityCell, cellIterator);
             }
-            oshdb.onClose().ifPresent(Runnable::run);
+            onClose.run();
             return ret;
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
@@ -127,9 +129,10 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
 
     final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
 
-    OSHDBIgnite oshdb = ((OSHDBIgnite) this.oshdb);
+    OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
     return typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
@@ -148,7 +151,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             } else {
               ret = processor.apply(oshEntityCell, cellIterator);
             }
-            oshdb.onClose().ifPresent(Runnable::run);
+            onClose.run();
             return ret;
           }))
           .flatMap(Collection::stream);

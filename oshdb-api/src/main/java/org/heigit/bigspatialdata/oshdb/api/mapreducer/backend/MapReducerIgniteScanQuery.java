@@ -16,6 +16,7 @@ import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.cluster.ClusterNode;
 import org.apache.ignite.lang.IgniteCallable;
+import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
@@ -38,10 +39,11 @@ import org.jetbrains.annotations.NotNull;
 /**
  * {@inheritDoc}
  *
- *
+ * <p>
  * The "ScanQuery" implementation is the an implementation of the oshdb mapreducer on Ignite, which
  * always scans over the whole data set when running queries. It might offer better performance for
  * global (or almost global) queries. In other situations it should not be used.
+ * </p>
  */
 public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
   public MapReducerIgniteScanQuery(OSHDBDatabase oshdb,
@@ -147,7 +149,7 @@ class IgniteScanQueryHelper {
   /**
    * Compute closure that iterates over every partition owned by a node located in a partition.
    */
-  private static abstract class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal>
+  private abstract static class MapReduceCellsOnIgniteCacheComputeJob<V, R, MR, S, P extends Geometry & Polygonal>
       implements IgniteCallable<S> {
     /** */
     Map<UUID, List<Integer>> nodesToPart;
@@ -339,9 +341,10 @@ class IgniteScanQueryHelper {
     // execute compute job on all ignite nodes and further reduce+return result(s)
     IgniteCompute compute = ignite.compute(ignite.cluster().forNodeIds(nodesToPart.keySet()));
     computeJob.setNodesToPart(nodesToPart);
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
     Collection<S> nodeResults = compute.broadcast(() -> {
       S ret = computeJob.call();
-      oshdb.onClose().ifPresent(Runnable::run);
+      onClose.run();
       return ret;
     });
     return nodeResults.stream().reduce(identitySupplier.get(), combiner);
