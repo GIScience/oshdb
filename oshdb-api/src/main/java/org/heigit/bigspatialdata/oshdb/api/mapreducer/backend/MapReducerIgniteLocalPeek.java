@@ -63,8 +63,6 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducerIgniteLocalPeek.class);
-
   public MapReducerIgniteLocalPeek(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
