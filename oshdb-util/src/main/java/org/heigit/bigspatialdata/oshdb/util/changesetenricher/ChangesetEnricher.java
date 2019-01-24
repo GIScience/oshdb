@@ -19,6 +19,15 @@ public class ChangesetEnricher {
   private final Connection conn;
   private final Map<Long, OSMChangeset> changests;
 
+  /**
+   * This class works as a cache (like
+   * {@link org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator}). Attention: The
+   * ChangesetDatabase is minutely updated but the cache isn't. So subsequent calls to this Class
+   * for the same ID will always return the same result. If you want to update the cache you will
+   * have to create a new instance.
+   *
+   * @param conn The connection to the ohsome-changeset postgres-database.
+   */
   public ChangesetEnricher(Connection conn) {
     this.changests = new ConcurrentHashMap<>(0);
     this.conn = conn;
