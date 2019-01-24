@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.db;
 
 import java.io.File;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -23,8 +22,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteSc
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 
-public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Serializable {
-
+public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   public enum ComputeMode {
     LocalPeek,
     ScanQuery,
@@ -37,7 +35,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
 
   private IgniteRunnable onCloseCallback = null;
 
-  public OSHDBIgnite() throws SQLException, ClassNotFoundException {
+  public OSHDBIgnite() {
     this(new File("ignite-config.xml"));
   }
 
@@ -84,7 +82,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
         mapReducer = new MapReducerIgniteAffinityCall<X>(this, forClass);
         break;
       default:
-        throw new UnsupportedOperationException("Backend not implemented for this database option.");
+        throw new UnsupportedOperationException("Backend not implemented for this compute mode.");
     }
     return mapReducer;
   }
@@ -103,11 +101,22 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
     this.ignite.close();
   }
 
+  /**
+   * Sets the compute mode.
+   *
+   * @param computeMode the compute mode to be used in calculations on this oshdb backend
+   * @return this backend
+   */
   public OSHDBIgnite computeMode(ComputeMode computeMode) {
     this.computeMode = computeMode;
     return this;
   }
 
+  /**
+   * Gets the set compute mode.
+   *
+   * @return the currently set compute mode
+   */
   public ComputeMode computeMode() {
     return this.computeMode;
   }
@@ -115,7 +124,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   /**
    * Set a timeout for queries on this ignite oshdb backend.
    *
-   * If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be thrown.
+   * <p>If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be
+   * thrown.</p>
    *
    * @param seconds time (in seconds) a query is allowed to run for.
    * @return the current oshdb object
@@ -131,7 +141,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   /**
    * Set a timeout for queries on this ignite oshdb backend.
    *
-   * If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be thrown.
+   * <p>If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be
+   * thrown.</p>
    *
    * @param milliSeconds time (in milliseconds) a query is allowed to run for.
    * @return the current oshdb object
@@ -145,6 +156,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   }
 
   /**
+   * Gets the timeout for queries on this ignite oshdb backend, if present.
+   *
    * @return the currently set query timeout in milliseconds
    */
   public OptionalLong timeoutInMilliseconds() {
@@ -158,8 +171,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   /**
    * Sets a callback to be executed on all ignite workers after the query has been finished.
    *
-   * This can be used to close connections to (temporary) databases that were used to store or
-   * retrieve intermediate data.
+   * <p>This can be used to close connections to (temporary) databases that were used to store or
+   * retrieve intermediate data.</p>
    *
    * @param action the callback to execute after a query is done
    * @return the current oshdb database object
@@ -171,6 +184,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
 
 
   /**
+   * Gets the onClose callback.
+   *
    * @return the currently set onClose callback
    */
   public Optional<IgniteRunnable> onClose() {
