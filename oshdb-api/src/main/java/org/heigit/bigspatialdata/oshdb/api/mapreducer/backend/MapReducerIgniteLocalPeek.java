@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +11,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
@@ -251,7 +253,7 @@ class IgniteLocalPeekHelper {
     public abstract S execute(Ignite node);
 
     S execute(Ignite node, CellProcessor<S> cellProcessor) {
-      return this.localKeys(node).parallelStream()
+      return this.localKeys(node).parallel()
           .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
           .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
           .filter(ignored -> this.isActive())
@@ -259,29 +261,26 @@ class IgniteLocalPeekHelper {
           .reduce(identitySupplier.get(), combiner);
     }
 
-    List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys(Ignite node) {
-      // calculate all cache keys we have to investigate
-      List<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys = new ArrayList<>();
-      this.cacheNames.forEach(cacheName -> {
+    Stream<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys(Ignite node) {
+      return this.cacheNames.stream().flatMap(cacheName -> {
         IgniteCache<Long, GridOSHEntity> cache = node.cache(cacheName);
-        List<Long> cellIdRangeIds = new ArrayList<>();
-        this.cellIdRanges.forEach(cellIdRange -> {
-          cellIdRangeIds.clear();
-          int level = cellIdRange.getLeft().getZoomLevel();
-          long from = CellId.getLevelId(level, cellIdRange.getLeft().getId());
-          long to = CellId.getLevelId(level, cellIdRange.getRight().getId());
-          for (long key = from; key <= to; key++) {
-            cellIdRangeIds.add(key);
-          }
-          // Map keys to ignite nodes and remember the local ones
-          node.<Long>affinity(cache.getName())
-              .mapKeysToNodes(cellIdRangeIds)
-              .getOrDefault(node.cluster().localNode(), Collections.emptyList())
-              .forEach(key -> localKeys.add(new ImmutablePair<>(cache, key)));
-        });
+        return StreamSupport.stream(this.cellIdRanges.spliterator(), false)
+            .flatMap(cellIdRange -> {
+              int level = cellIdRange.getLeft().getZoomLevel();
+              long fromId = cellIdRange.getLeft().getId();
+              long toId = cellIdRange.getRight().getId();
+              List<Long> cellIdRangeKeys = LongStream.rangeClosed(
+                  CellId.getLevelId(level, fromId),
+                  CellId.getLevelId(level, toId)
+              ).boxed().collect(Collectors.toList());
+              // Map keys to ignite nodes and remember the local ones
+              return node.<Long>affinity(cache.getName())
+                  .mapKeysToNodes(cellIdRangeKeys)
+                  .getOrDefault(node.cluster().localNode(), Collections.emptyList())
+                  .stream()
+                  .map(key -> new ImmutablePair<>(cache, key));
+            });
       });
-      Collections.shuffle(localKeys);
-      return localKeys;
     }
   }
 
