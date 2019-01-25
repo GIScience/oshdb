@@ -241,14 +241,14 @@ class IgniteLocalPeekHelper {
       return this.notCanceled;
     }
 
-    private class CellIdIterator implements Iterator<CellId> {
+    private class CellKeysIterator implements Iterator<Long> {
       Iterator<Pair<CellId, CellId>> cellIdRanges;
-      ArrayList<CellId> buffer;
+      ArrayList<Long> buffer;
 
       // a buffer of about 1M interleaved cellIds
       static final int BUFFER_SIZE = 1_000_000;
 
-      CellIdIterator(Iterable<Pair<CellId, CellId>> cellIdRanges) {
+      CellKeysIterator(Iterable<Pair<CellId, CellId>> cellIdRanges) {
         this.cellIdRanges = cellIdRanges.iterator();
         buffer = new ArrayList<>(BUFFER_SIZE);
       }
@@ -264,7 +264,7 @@ class IgniteLocalPeekHelper {
           long fromId = cellIdRange.getLeft().getId();
           long toId = cellIdRange.getRight().getId();
           for (long id = fromId; id < toId; id++) {
-            buffer.add(new CellId(level, id));
+            buffer.add(new CellId(level, id).getLevelId());
           }
         }
         Collections.shuffle(buffer);
@@ -282,7 +282,7 @@ class IgniteLocalPeekHelper {
       }
 
       @Override
-      public CellId next() {
+      public Long next() {
         return buffer.remove(buffer.size() - 1);
       }
     }
@@ -290,20 +290,20 @@ class IgniteLocalPeekHelper {
     public abstract S execute(Ignite node);
 
     S execute(Ignite node, CellProcessor<S> cellProcessor) {
-      Iterator<CellId> cellIdIterator = new CellIdIterator(cellIdRanges);
+      Iterator<Long> cellKeysIterator = new CellKeysIterator(cellIdRanges);
 
       Set<IgniteCache<Long, GridOSHEntity>> caches = this.cacheNames.stream()
           .map(node::<Long, GridOSHEntity>cache)
           .collect(Collectors.toSet());
 
       return StreamSupport.stream(
-              Spliterators.spliteratorUnknownSize(cellIdIterator, 0),
+              Spliterators.spliteratorUnknownSize(cellKeysIterator, 0),
               true
           )
-          .flatMap(cellId ->
+          .flatMap(cellKey ->
               // get local data from all requested caches
               caches.stream().map(cache ->
-                  cache.localPeek(cellId.getLevelId())
+                  cache.localPeek(cellKey)
               )
           )
           // filter out cache misses === empty oshdb cells or not "local" data
