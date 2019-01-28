@@ -14,7 +14,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Spliterators;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
@@ -242,30 +245,34 @@ class IgniteLocalPeekHelper {
     }
 
     private class CellKeysIterator implements Iterator<Long> {
-      Iterator<Pair<CellId, CellId>> cellIdRanges;
+      private final Iterator<Long> cellIds;
       ArrayList<Long> buffer;
 
-      // a buffer of about 1M interleaved cellIds
-      static final int BUFFER_SIZE = 1_000_000;
+      // a buffer of about ~1M interleaved cellIds
+      final int bufferSize = 102400 * ForkJoinPool.commonPool().getParallelism();
 
       CellKeysIterator(Iterable<Pair<CellId, CellId>> cellIdRanges) {
-        this.cellIdRanges = cellIdRanges.iterator();
-        buffer = new ArrayList<>(BUFFER_SIZE);
+        this.cellIds = StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(cellIdRanges.iterator(), 0),
+            true
+        ).flatMap(cellIdRange -> {
+          int level = cellIdRange.getLeft().getZoomLevel();
+          long fromId = cellIdRange.getLeft().getId();
+          long toId = cellIdRange.getRight().getId();
+          return LongStream.rangeClosed(fromId, toId)
+              .map(id -> CellId.getLevelId(level, id))
+              .boxed();
+        }).iterator();
+        buffer = new ArrayList<>(bufferSize);
       }
 
       private void fillBuffer() {
         buffer.clear();
-        while (buffer.size() < BUFFER_SIZE) {
-          if (!cellIdRanges.hasNext()) {
+        while (buffer.size() < bufferSize) {
+          if (!cellIds.hasNext()) {
             break;
           }
-          Pair<CellId, CellId> cellIdRange = cellIdRanges.next();
-          int level = cellIdRange.getLeft().getZoomLevel();
-          long fromId = cellIdRange.getLeft().getId();
-          long toId = cellIdRange.getRight().getId();
-          for (long id = fromId; id < toId; id++) {
-            buffer.add(new CellId(level, id).getLevelId());
-          }
+          buffer.add(cellIds.next());
         }
         Collections.shuffle(buffer);
       }
@@ -273,7 +280,7 @@ class IgniteLocalPeekHelper {
       @Override
       public boolean hasNext() {
         if (buffer.size() == 0) {
-          if (!cellIdRanges.hasNext()) {
+          if (!cellIds.hasNext()) {
             return false;
           }
           fillBuffer();
