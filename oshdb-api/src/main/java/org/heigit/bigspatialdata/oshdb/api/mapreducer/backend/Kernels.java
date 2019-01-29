@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;

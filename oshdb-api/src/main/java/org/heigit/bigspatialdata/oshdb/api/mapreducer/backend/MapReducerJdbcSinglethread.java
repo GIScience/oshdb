@@ -48,13 +48,13 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
     S result = identitySupplier.get();
-    for (Pair<CellId, CellId> cellIdRange : this._getCellIdRanges()) {
+    for (Pair<CellId, CellId> cellIdRange : this.getCellIdRanges()) {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       while (oshCellsRawData.next()) {
@@ -72,12 +72,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       CellProcessor<Collection<X>> cellProcessor
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    return Streams.stream(this._getCellIdRanges())
+    return Streams.stream(this.getCellIdRanges())
         .flatMap(this::getOshCellsStream)
         .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator))
         .flatMap(Collection::stream);

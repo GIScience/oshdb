@@ -25,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
-
   public MapReducerJdbcMultithread(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
@@ -49,13 +47,13 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
     final List<Pair<CellId, CellId>> cellIdRanges = new ArrayList<>();
-    this._getCellIdRanges().forEach(cellIdRanges::add);
+    this.getCellIdRanges().forEach(cellIdRanges::add);
 
     return cellIdRanges.parallelStream()
         .flatMap(this::getOshCellsStream)
@@ -67,13 +65,13 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
       CellProcessor<Collection<X>> processor
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
     final List<Pair<CellId, CellId>> cellIdRanges = new ArrayList<>();
-    this._getCellIdRanges().forEach(cellIdRanges::add);
+    this.getCellIdRanges().forEach(cellIdRanges::add);
 
     return cellIdRanges.parallelStream()
         .flatMap(this::getOshCellsStream)

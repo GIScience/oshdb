@@ -5,22 +5,23 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.jetbrains.annotations.NotNull;
 
-public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V> implements Comparable<OSHDBCombinedIndex<U, V>> {
+public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V>
+    implements Comparable<OSHDBCombinedIndex<U, V>> {
   public OSHDBCombinedIndex(U index1, V index2) {
     super(index1, index2);
   }
 
   public U getFirstIndex() {
-    return this._payload.getLeft();
+    return this.payload.getLeft();
   }
 
   public V getSecondIndex() {
-    return this._payload.getRight();
+    return this.payload.getRight();
   }
 
   @Override
-  public int compareTo(@NotNull OSHDBCombinedIndex o) {
-    return this._payload.compareTo(o._payload);
+  public int compareTo(@NotNull OSHDBCombinedIndex<U,V> o) {
+    return this.payload.compareTo(o.payload);
   }
 
   @Override
@@ -32,8 +33,8 @@ public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V> implements Comp
    * Helper function that converts the dual-index data structure returned by aggregation operations
    * on this object to a nested Map structure, which can be easier to process further on.
    *
-   * This version creates a map for each &lt;U&gt; index value, containing maps containing results
-   * by timestamps.
+   * <p>This version creates a map for each &lt;U&gt; index value, containing maps containing
+   * results by timestamps.</p>
    *
    * @param result the "flat" result data structure that should be converted to a nested structure
    * @param <A> an arbitrary data type, used for the data value items
@@ -46,8 +47,9 @@ public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V> implements Comp
   ) {
     TreeMap<U, SortedMap<V, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
-      if (!ret.containsKey(index.getFirstIndex()))
+      if (!ret.containsKey(index.getFirstIndex())) {
         ret.put(index.getFirstIndex(), new TreeMap<V, A>());
+      }
       ret.get(index.getFirstIndex()).put(index.getSecondIndex(), data);
     });
     return ret;
