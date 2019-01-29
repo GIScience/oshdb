@@ -41,6 +41,14 @@
     <roaringbitmap.version>0.6.59</roaringbitmap.version>
     <rxjava2.version>2.1.9</rxjava2.version>
     <wololo.version>0.10.0</wololo.version>
+    <mavencheckstyle.version>3.0.0</mavencheckstyle.version>
+    <checkstyle.version>8.17</checkstyle.version>
+    <jacoco.version>0.8.3</jacoco.version>
+    <gitcommitplugin.version>2.2.6</gitcommitplugin.version>
+    <mavenprojectinfo.version>3.0.0</mavenprojectinfo.version>
+    <mavenpmd.version>2.9</mavenpmd.version>
+    <pmd.version>6.11.0</pmd.version>
+    <mavenpmd.version>3.11.0</mavenpmd.version>
   </properties>
   
   <repositories>
@@ -71,6 +79,54 @@
     <url>https://github.com/GIScience/oshdb/issues</url>
   </issueManagement>
   
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${mavencheckstyle.version}</version>
+        <configuration>
+          <configLocation>config/ide/checkstyle-google-oshdb.xml</configLocation>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>${checkstyle.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>${mavenpmd.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-core</artifactId>
+            <version>${pmd.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-java</artifactId>
+            <version>${pmd.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-javascript</artifactId>
+            <version>${pmd.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-jsp</artifactId>
+            <version>${pmd.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+    
   <profiles>
     <profile>
       <id>jacoco</id>
@@ -79,7 +135,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.1</version>
+            <version>${jacoco.version}</version>
             <executions>
               <execution>
                 <id>default-prepare-agent</id>
@@ -106,7 +162,7 @@
           <plugin>
             <groupId>pl.project13.maven</groupId>
             <artifactId>git-commit-id-plugin</artifactId>
-            <version>2.2.4</version>
+            <version>${gitcommitplugin.version}</version>
             <executions>
               <execution>
                 <id>get-the-git-infos</id>
@@ -133,40 +189,4 @@
       </build>
     </profile>
   </profiles>
-  
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.9</version>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <!--<report>dependencies</report>
-              <report>project-team</report>
-              <report>mailing-list</report>
-              <report>cim</report>
-              <report>issue-tracking</report>
-              <report>license</report>
-              <report>scm</report> -->
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.0.0</version>
-        <configuration>
-          <configLocation>google_checks.xml</configLocation>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>3.9.0</version>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>
