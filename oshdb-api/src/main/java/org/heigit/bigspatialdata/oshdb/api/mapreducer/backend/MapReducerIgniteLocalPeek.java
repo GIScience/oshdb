@@ -3,39 +3,56 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.Spliterators;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
 import org.apache.ignite.IgniteException;
 import org.apache.ignite.cluster.ClusterNode;
-import org.apache.ignite.compute.*;
+import org.apache.ignite.compute.ComputeJob;
+import org.apache.ignite.compute.ComputeJobResult;
+import org.apache.ignite.compute.ComputeJobResultPolicy;
+import org.apache.ignite.compute.ComputeTask;
+import org.apache.ignite.compute.ComputeTaskAdapter;
+import org.apache.ignite.compute.ComputeTaskFuture;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
+import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
+import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -226,34 +243,77 @@ class IgniteLocalPeekHelper {
       return this.notCanceled;
     }
 
-    public abstract S execute(Ignite node);
+    private class CellKeysIterator implements Iterator<Long> {
+      private final Iterator<Long> cellIds;
+      ArrayList<Long> buffer;
 
-    Stream<Pair<IgniteCache<Long, GridOSHEntity>, Long>> localKeys(Ignite node) {
-      return this.cacheNames.stream().flatMap(cacheName -> {
-        IgniteCache<Long, GridOSHEntity> cache = node.cache(cacheName);
-        return StreamSupport.stream(this.cellIdRanges.spliterator(), false)
-            .flatMap(cellIdRange -> {
-              int level = cellIdRange.getLeft().getZoomLevel();
-              long fromId = cellIdRange.getLeft().getId();
-              long toId = cellIdRange.getRight().getId();
-              List<Long> cellIdRangeKeys = LongStream.rangeClosed(
-                  CellId.getLevelId(level, fromId),
-                  CellId.getLevelId(level, toId)
-              ).boxed().collect(Collectors.toList());
-              // Map keys to ignite nodes and remember the local ones
-              return node.<Long>affinity(cache.getName())
-                  .mapKeysToNodes(cellIdRangeKeys)
-                  .getOrDefault(node.cluster().localNode(), Collections.emptyList())
-                  .stream()
-                  .map(key -> new ImmutablePair<>(cache, key));
-            });
-      });
+      // a buffer of about ~1M interleaved cellIds
+      final int bufferSize = 102400 * ForkJoinPool.commonPool().getParallelism();
+
+      CellKeysIterator(Iterable<Pair<CellId, CellId>> cellIdRanges) {
+        this.cellIds = StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(cellIdRanges.iterator(), 0),
+            true
+        ).flatMap(cellIdRange -> {
+          int level = cellIdRange.getLeft().getZoomLevel();
+          long fromId = cellIdRange.getLeft().getId();
+          long toId = cellIdRange.getRight().getId();
+          return LongStream.rangeClosed(fromId, toId)
+              .map(id -> CellId.getLevelId(level, id))
+              .boxed();
+        }).iterator();
+        buffer = new ArrayList<>(bufferSize);
+      }
+
+      private void fillBuffer() {
+        buffer.clear();
+        while (buffer.size() < bufferSize) {
+          if (!cellIds.hasNext()) {
+            break;
+          }
+          buffer.add(cellIds.next());
+        }
+        Collections.shuffle(buffer);
+      }
+
+      @Override
+      public boolean hasNext() {
+        if (buffer.size() == 0) {
+          if (!cellIds.hasNext()) {
+            return false;
+          }
+          fillBuffer();
+        }
+        return true;
+      }
+
+      @Override
+      public Long next() {
+        return buffer.remove(buffer.size() - 1);
+      }
     }
 
+    public abstract S execute(Ignite node);
+
     S execute(Ignite node, CellProcessor<S> cellProcessor) {
-      return this.localKeys(node).parallel()
-          .map(cacheKey -> cacheKey.getLeft().localPeek(cacheKey.getRight()))
-          .filter(Objects::nonNull) // filter out cache misses === empty oshdb cells
+      Iterator<Long> cellKeysIterator = new CellKeysIterator(cellIdRanges);
+
+      Set<IgniteCache<Long, GridOSHEntity>> caches = this.cacheNames.stream()
+          .map(node::<Long, GridOSHEntity>cache)
+          .collect(Collectors.toSet());
+
+      return StreamSupport.stream(
+              Spliterators.spliteratorUnknownSize(cellKeysIterator, 0),
+              true
+          )
+          .flatMap(cellKey ->
+              // get local data from all requested caches
+              caches.stream().map(cache ->
+                  cache.localPeek(cellKey)
+              )
+          )
+          // filter out cache misses === empty oshdb cells or not "local" data
+          .filter(Objects::nonNull)
           .filter(ignored -> this.isActive())
           .map(cell -> cellProcessor.apply(cell, this.cellIterator))
           .reduce(identitySupplier.get(), combiner);
