@@ -77,7 +77,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
             return Stream.of(new ImmutablePair<>(index, data));
           }
 
-          // now we need to check against the actual snapshot geometry
+          // now we can check against the actual contribution geometry
           Geometry snapshotGeometry = data.getGeometry();
           OSHDBBoundingBox snapshotBbox = OSHDBGeometryBuilder.boundingBoxOf(
               snapshotGeometry.getEnvelopeInternal()
@@ -138,7 +138,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
             return Stream.of(new ImmutablePair<>(index, data));
           }
 
-          // now we need to check against the actual snapshot geometry
+          // now we can check against the actual contribution geometry
           Geometry contributionGeometryBefore = data.getGeometryBefore();
           Geometry contributionGeometryAfter = data.getGeometryAfter();
           OSHDBBoundingBox contributionGeometryBbox;
