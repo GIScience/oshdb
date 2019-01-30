@@ -1,9 +1,27 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
 import com.google.common.collect.Streams;
-import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Lineal;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Polygonal;
+import com.vividsolutions.jts.geom.Puntal;
+import com.vividsolutions.jts.geom.TopologyException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -12,15 +30,19 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.*;
+import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.slf4j.Logger;
@@ -259,22 +281,22 @@ public class CellIterator implements Serializable {
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = new LazyEvaluatedObject<>(() -> {
-              Geometry _geom = OSHDBGeometryBuilder
+              Geometry geometry = OSHDBGeometryBuilder
                   .getGeometry(osmEntity, timestamp, tagInterpreter);
 
-              Polygon poly = (Polygon) _geom;
+              Polygon poly = (Polygon) geometry;
               Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
               for (int i = 0; i < poly.getNumInteriorRing(); i++) {
                 interiorRings[i] =
                     new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
               }
-              _geom = new MultiPolygon(interiorRings, gf);
+              geometry = new MultiPolygon(interiorRings, gf);
               if (!fullyInside) {
-                _geom = isBoundByPolygon
-                    ? fastPolygonClipper.intersection(_geom)
-                    : Geo.clip(_geom, boundingBox);
+                geometry = isBoundByPolygon
+                    ? fastPolygonClipper.intersection(geometry)
+                    : Geo.clip(geometry, boundingBox);
               }
-              return _geom;
+              return geometry;
             });
           }
 
@@ -307,25 +329,48 @@ public class CellIterator implements Serializable {
     });
   }
 
-  private LazyEvaluatedObject<Geometry> constructClippedGeometry(OSMEntity osmEntity,
-      OSHDBTimestamp timestamp, boolean fullyInside) {
-    LazyEvaluatedObject<Geometry> geom;
+  private LazyEvaluatedObject<Geometry> constructClippedGeometry(
+      OSMEntity osmEntity,
+      OSHDBTimestamp timestamp,
+      boolean fullyInside
+  ) {
     if (fullyInside) {
-      geom = new LazyEvaluatedObject<>(() ->
+      return new LazyEvaluatedObject<>(() ->
           OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-      );
-    } else if (isBoundByPolygon) {
-      geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
-          OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-      ));
-    } else {
-      geom = new LazyEvaluatedObject<>(
-          OSHDBGeometryBuilder.getGeometryClipped(
-              osmEntity, timestamp, tagInterpreter, boundingBox
-          )
       );
     }
-    return geom;
+    Geometry geometry = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+    OSHDBBoundingBox bbox = OSHDBGeometryBuilder.boundingBoxOf(geometry.getEnvelopeInternal());
+    if (isBoundByPolygon) {
+      if (bboxInPolygon.test(bbox)) {
+        return new LazyEvaluatedObject<>(geometry);
+      } else if (bboxOutsidePolygon.test(bbox)) {
+        return new LazyEvaluatedObject<>(createEmptyGeometryLike(geometry));
+      } else {
+        return new LazyEvaluatedObject<>(fastPolygonClipper.intersection(geometry));
+      }
+    } else {
+      if (bbox.isInside(this.boundingBox)) {
+        return new LazyEvaluatedObject<>(geometry);
+      } else if (!bbox.intersects(this.boundingBox)) {
+        return new LazyEvaluatedObject<>(createEmptyGeometryLike(geometry));
+      } else {
+        return new LazyEvaluatedObject<>(Geo.clip(geometry, this.boundingBox));
+      }
+    }
+  }
+
+  private Geometry createEmptyGeometryLike(Geometry geometry) {
+    GeometryFactory gf = new GeometryFactory();
+    if (geometry instanceof Polygonal) {
+      return gf.createPolygon((LinearRing) null);
+    } else if (geometry instanceof Lineal) {
+      return gf.createLineString((CoordinateSequence) null);
+    } else if (geometry instanceof Puntal) {
+      return gf.createPoint((Coordinate) null);
+    } else {
+      return gf.createGeometryCollection(null);
+    }
   }
 
   public static class IterateAllEntry {
@@ -544,18 +589,18 @@ public class CellIterator implements Serializable {
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = new LazyEvaluatedObject<>(() -> {
-              Geometry _geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-              Polygon poly = (Polygon) _geom;
+              Geometry geometry = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+              Polygon poly = (Polygon) geometry;
               Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
               for (int i = 0; i < poly.getNumInteriorRing(); i++) {
                 interiorRings[i] =
                     new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
               }
-              _geom = new MultiPolygon(interiorRings, gf);
+              geometry = new MultiPolygon(interiorRings, gf);
               if (!fullyInside) {
-                _geom = Geo.clip(_geom, boundingBox);
+                geometry = Geo.clip(geometry, boundingBox);
               }
-              return _geom;
+              return geometry;
             });
           }
 
