@@ -2,27 +2,14 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import static org.junit.Assert.*;
 
-import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygonal;
-import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import javafx.scene.shape.Polygon;
 import org.apache.commons.lang3.tuple.Pair;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.geojson.feature.FeatureJSON;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -32,7 +19,6 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
-import org.opengis.feature.simple.SimpleFeature;
 
 public class TestMapReduceSpatialRelations {
 
@@ -66,6 +52,31 @@ public class TestMapReduceSpatialRelations {
     // todo: create test data for testing line_covers_line
 
     // todo: create test data for testing line_covers_node
+  }
+
+
+  @Test
+  public void test_neighbouring_with_polygonfilter() throws Exception {
+    // Create polygon for AOI
+    Coordinate coord1 = new Coordinate(8.6429679,49.3953484);
+    Coordinate coord2 = new Coordinate(8.6428928,49.3935817);
+    Coordinate coord3 = new Coordinate(8.6454678,49.3939099);
+    Coordinate coord4 = new Coordinate(8.6456716,49.3952716);
+    Coordinate[] coordinates = {coord1, coord2, coord3, coord4, coord1};
+    GeometryFactory geometryFactory = new GeometryFactory();
+    Polygonal aoi = geometryFactory.createPolygon(coordinates);
+
+    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
+        .keytables(oshdb)
+        .timestamps(timestamps2017)
+        .areaOfInterest((Geometry & Polygonal) aoi)
+        .osmType(OSMType.NODE)
+        .neighbouringFeatures(30., mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
+        .collect();
+
+    assertEquals(1, result.get(0).getValue().size());
+    assertEquals(0, result.get(1).getValue().size());
+    assertEquals(2, result.get(4).getValue().size());
   }
 
   // Inside / contains --------------------------------------------------------------------------

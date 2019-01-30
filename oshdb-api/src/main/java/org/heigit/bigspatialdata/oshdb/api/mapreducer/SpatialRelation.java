@@ -12,11 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
@@ -25,6 +23,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
  * Class that selects OSM objects based on their spatial relation (as defined by Egenhofer, 1991)
  * and neighbourhood to other nearby OSM objects.
  *
+ * @param X type of OSHDB object (OSMEntitySnapshot or OSMContribution) which is selected based on comparison
  *
  */
 public class SpatialRelation<X> {
@@ -33,9 +32,7 @@ public class SpatialRelation<X> {
     EQUALS, OVERLAPS, DISJOINT, CONTAINS, COVEREDBY, COVERS, TOUCHES, INSIDE, UNKNOWN, NEIGHBOURING, INTERSECTS
   }
 
-  private OSHDBBoundingBox bboxFilter;
-  private Geometry polyFilter = null;
-  private OSHDBJdbc oshdb;
+  private MapReducer mapReducer;
   private SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce;
   private final STRtree objectsForComparison = new STRtree();
 
@@ -44,36 +41,13 @@ public class SpatialRelation<X> {
    *
    * The oshdb conntection, bbox and tstamps are taken from the main MapReducer.
    *
-   * @param oshdb osdhb connection
-   * @param bboxFilter bounding box for querying nearby features to compare with
+   * @param mapReducer MapReducer instance of the objects to select based on spatial relations
    * @param mapReduce MapReduce function that specifies features that are used for comparison
    */
   public SpatialRelation(
-    OSHDBJdbc oshdb,
-    OSHDBBoundingBox bboxFilter,
-    SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) {
-
-    this.oshdb = oshdb;
-    this.bboxFilter = bboxFilter;
-    this.mapReduce = mapReduce;
-    }
-
-  /**
-   * Basic constructor
-   *
-   * The oshdb conntection, bbox and tstamps are taken from the main MapReducer.
-   *
-   * @param oshdb osdhb connection
-   * @param polyFilter bounding box for querying nearby features to compare with
-   * @param mapReduce MapReduce function that specifies features that are used for comparison
-   */
-  public <P extends Geometry & Polygonal> SpatialRelation(
-      OSHDBJdbc oshdb,
-      P polyFilter,
+      MapReducer mapReducer,
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) {
-
-    this.oshdb = oshdb;
-    this.polyFilter = polyFilter;
+    this.mapReducer = mapReducer;
     this.mapReduce = mapReduce;
   }
 
@@ -302,17 +276,25 @@ public class SpatialRelation<X> {
   }
 
   /**
-   * Retrieves and stores all OSM objects to which the central object should be compared to in the
-   * STRtree object "objectsForComparison"
+   * Retrieves and stores all surrounding OSM features to which the central object should be
+   * compared to in an STRtree
+   *
+   * @param timestampList Timestamp of the surrounding objects which are used for comparison
    *
    */
-  public void getOSMEntitySnapshotsForComparison(OSHDBTimestampList timestampList) throws Exception {
+  public void get_snapshots_for_comparison(OSHDBTimestampList timestampList) throws Exception {
 
     MapReducer<OSMEntitySnapshot> mapReducer = OSMEntitySnapshotView
-        .on(this.oshdb)
-        .keytables(this.oshdb)
-        .areaOfInterest(this.bboxFilter)
+        .on(this.mapReducer._oshdbForTags)
+        .keytables(this.mapReducer._oshdbForTags)
         .timestamps(timestampList);
+
+    if (this.mapReducer._getPolyFilter() != null) {
+      Geometry polyfilter = this.mapReducer._getPolyFilter();
+      mapReducer = mapReducer.areaOfInterest((Geometry & Polygonal) polyfilter);
+    } else {
+      mapReducer = mapReducer.areaOfInterest(this.mapReducer._bboxFilter);
+    }
     // Apply mapReduce function given by user
     List<OSMEntitySnapshot> result;
     if (this.mapReduce != null) {

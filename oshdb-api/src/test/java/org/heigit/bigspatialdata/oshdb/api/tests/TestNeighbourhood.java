@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import java.util.SortedMap;
-import java.util.function.Function;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -10,10 +8,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
@@ -84,7 +79,7 @@ public class TestNeighbourhood {
   @Test
   public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithCallBackFunction() throws Exception {
     List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
-        .neighbourhood(
+        .neighbouringFeatures(
             25.,
             mapReduce -> mapReduce.osmTag("highway").collect())
         .collect();
@@ -97,7 +92,7 @@ public class TestNeighbourhood {
     long startTime = System.nanoTime();
     // Create MapReducer
     List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID2()
-        .neighbourhood(
+        .neighbouringFeatures(
             40.,
             MapReducer::collect,
             true,
@@ -111,7 +106,7 @@ public class TestNeighbourhood {
   public void testNeighbourhoodForSnapshotAndNearbyContributionsWithContributionType() throws Exception {
     // Create MapReducer
     List<Pair<OSMEntitySnapshot, List<Object>>> result = createMapReducerOSMEntitySnapshotID2()
-        .neighbourhood(
+        .neighbouringFeatures(
             40.,
             MapReducer::collect,
             true,
@@ -124,7 +119,7 @@ public class TestNeighbourhood {
   public void testNeighbourhoodForSnapshotAndNearbySnapshotsWithoutCallBackFunction() throws Exception {
     // Create MapReducer
     List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = createMapReducerOSMEntitySnapshotID()
-        .neighbourhood(25.)
+        .neighbouringFeatures(25.)
         .collect();
     assertEquals(5, result.get(0).getRight().size());
   }
@@ -133,7 +128,7 @@ public class TestNeighbourhood {
   public void testNeighbourhoodForContributionAndNearbySnapshots() throws Exception {
     // Create MapReducer
     List<Pair<OSMContribution, List<OSMEntitySnapshot>>> result = createMapReducerOSMContribution()
-        .neighbourhood(25.,
+        .neighbouringFeatures(25.,
             mapReduce -> mapReduce.osmTag("highway").collect())
         .collect();
     assertEquals( 1, result.get(0).getValue().size());

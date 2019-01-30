@@ -809,15 +809,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
@@ -965,15 +964,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
@@ -1102,15 +1100,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
@@ -1238,15 +1235,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
@@ -1374,15 +1370,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
@@ -1510,15 +1505,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
@@ -1645,15 +1639,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
@@ -1780,15 +1773,14 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
-        this._mapReducer._oshdbForTags,
-        this._mapReducer._bboxFilter,
+        this._mapReducer,
         mapReduce
     );
     if (this._mapReducer._forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this._mapReducer._tstamps.get().last().toString());
-      spatialRelation.getOSMEntitySnapshotsForComparison(tslist);
+      spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
-      spatialRelation.getOSMEntitySnapshotsForComparison(this._mapReducer._tstamps);
+      spatialRelation.get_snapshots_for_comparison(this._mapReducer._tstamps);
     }
     return this.copyTransform(this._mapReducer.map(inData -> {
       try {
