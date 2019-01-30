@@ -16,7 +16,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
 
-public class TestMapAggregatorSpatialRelation {
+public class TestMapAggregateSpatialRelation {
 
   private final OSHDBJdbc oshdb;
 
@@ -26,7 +26,7 @@ public class TestMapAggregatorSpatialRelation {
   private final OSHDBTimestamps timestamps2017 = new OSHDBTimestamps("2017-01-01", "2017-01-02", Interval.DAILY);
   private final OSHDBTimestamps timestamps2016 = new OSHDBTimestamps("2016-01-01", "2016-01-02", Interval.DAILY);
 
-  public TestMapAggregatorSpatialRelation() throws Exception {
+  public TestMapAggregateSpatialRelation() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(true);
   }
 

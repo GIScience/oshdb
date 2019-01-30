@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -23,7 +24,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
  * Class that selects OSM objects based on their spatial relation (as defined by Egenhofer, 1991)
  * and neighbourhood to other nearby OSM objects.
  *
- * @param X type of OSHDB object (OSMEntitySnapshot or OSMContribution) which is selected based on comparison
+ * @param <X> type of OSHDB object (OSMEntitySnapshot or OSMContribution) which is selected based on comparison
  *
  */
 public class SpatialRelation<X> {
@@ -285,15 +286,15 @@ public class SpatialRelation<X> {
   public void get_snapshots_for_comparison(OSHDBTimestampList timestampList) throws Exception {
 
     MapReducer<OSMEntitySnapshot> mapReducer = OSMEntitySnapshotView
-        .on(this.mapReducer._oshdbForTags)
-        .keytables(this.mapReducer._oshdbForTags)
+        .on(this.mapReducer.oshdb)
+        .keytables((OSHDBJdbc) this.mapReducer.oshdb)
         .timestamps(timestampList);
 
-    if (this.mapReducer._getPolyFilter() != null) {
-      Geometry polyfilter = this.mapReducer._getPolyFilter();
+    if (this.mapReducer.getPolyFilter() != null) {
+      Geometry polyfilter = this.mapReducer.getPolyFilter();
       mapReducer = mapReducer.areaOfInterest((Geometry & Polygonal) polyfilter);
     } else {
-      mapReducer = mapReducer.areaOfInterest(this.mapReducer._bboxFilter);
+      mapReducer = mapReducer.areaOfInterest(this.mapReducer.bboxFilter);
     }
     // Apply mapReduce function given by user
     List<OSMEntitySnapshot> result;

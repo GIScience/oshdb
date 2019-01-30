@@ -1830,7 +1830,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         this.mapReducer,
         mapReduce
     );
-    if (this.mapReducer._forClass == OSMContribution.class) {
+    if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
       spatialRelation.get_snapshots_for_comparison(tslist);
     } else {
