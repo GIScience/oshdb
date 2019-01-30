@@ -68,14 +68,32 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
     return candidates.stream()
-        .filter(index -> !bops.get(index).test(oshBoundingBox)) // fully outside -> skip
+        // OSH entity fully outside -> skip
+        .filter(index -> !bops.get(index).test(oshBoundingBox))
         .flatMap(index -> {
           if (bips.get(index).test(oshBoundingBox)) {
-            return Stream.of(new ImmutablePair<>(index, data)); // fully inside -> directly return
+            // OSH entity fully inside -> directly return
+            return Stream.of(new ImmutablePair<>(index, data));
           }
+
+          // now we need to check against the actual snapshot geometry
+          Geometry snapshotGeometry = data.getGeometry();
+          OSHDBBoundingBox osmEntityBbox = OSHDBGeometryBuilder.boundingBoxOf(
+              snapshotGeometry.getEnvelopeInternal()
+          );
+
+          // OSM entity fully outside -> skip
+          if (bops.get(index).test(osmEntityBbox)) {
+            return Stream.empty();
+          }
+          // OSM entity fully inside -> directly return
+          if (bips.get(index).test(osmEntityBbox)) {
+            return Stream.of(new ImmutablePair<>(index, data));
+          }
+
           FastPolygonOperations poop = poops.get(index);
           try {
-            Geometry intersection = poop.intersection(data.getGeometry());
+            Geometry intersection = poop.intersection(snapshotGeometry);
             if (intersection == null || intersection.isEmpty()) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
