@@ -5,7 +5,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 
 public class EtlFileHandler {
 
-  public static OSHEntity getEntity(File etlFile, long id) {
+  public static OSHEntity getEntity(File etlFile, long id) throws EntityNotFoudException {
     return null;
   }
 

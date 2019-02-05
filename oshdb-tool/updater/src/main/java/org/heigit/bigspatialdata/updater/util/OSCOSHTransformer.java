@@ -15,6 +15,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
@@ -22,8 +23,14 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
+import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
+import org.openstreetmap.osmosis.core.container.v0_6.NodeContainerFactory;
+import org.openstreetmap.osmosis.core.container.v0_6.RelationContainerFactory;
+import org.openstreetmap.osmosis.core.container.v0_6.WayContainerFactory;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 import org.openstreetmap.osmosis.core.domain.v0_6.Node;
+import org.openstreetmap.osmosis.core.domain.v0_6.Relation;
+import org.openstreetmap.osmosis.core.domain.v0_6.RelationMember;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
 import org.openstreetmap.osmosis.core.domain.v0_6.Way;
 import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
@@ -44,7 +51,8 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
   }
   private final Map<OSMType, File> etlFiles;
 
-  private OSHEntity onCreate(ChangeContainer change) throws IOException, OSHDBKeytablesNotFoundException {
+  private OSHEntity onCreate(ChangeContainer change) throws IOException, OSHDBKeytablesNotFoundException, EntityNotFoudException {
+    TagTranslator tt = new TagTranslator(this.keytables);
     Entity entity = change.getEntityContainer().getEntity();
     long id = entity.getId();
     int version = entity.getVersion();
@@ -84,10 +92,41 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         ArrayList<OSMWay> ways = new ArrayList<>(1);
         ways.add(new OSMWay(id, version, timestamp, changeset, userId, tagsArray, refs));
         return OSHWay.build(ways, allNodes);
-
       case Relation:
-        //TODO replace nulls
-        return OSHRelation.build(null, null, null);
+        Relation relation = (Relation) entity;
+        Iterator<RelationMember> it = relation.getMembers().iterator();
+        ArrayList<OSHNode> rNodes = new ArrayList<>(0);
+        ArrayList<OSHWay> rWays = new ArrayList<>(0);
+        OSMMember[] refs2 = new OSMMember[relation.getMembers().size()];
+        int j = 0;
+        while (it.hasNext()) {
+          RelationMember rm = it.next();
+          switch (rm.getMemberType()) {
+            case Node:
+              OSHNode rNode = (OSHNode) EtlFileHandler.getEntity(etlFiles.get(OSMType.NODE), rm.getMemberId());
+              rNodes.add(rNode);
+              OSMMember memberN = new OSMMember(rm.getMemberId(), OSMType.NODE, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rNode);
+              refs2[j] = memberN;
+              break;
+            case Way:
+              OSHWay rWay = (OSHWay) EtlFileHandler.getEntity(etlFiles.get(OSMType.WAY), rm.getMemberId());
+              rWays.add(rWay);
+              OSMMember memberW = new OSMMember(rm.getMemberId(), OSMType.WAY, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rWay);
+              refs2[j] = memberW;
+              break;
+            case Relation:
+              OSHRelation rRelation = (OSHRelation) EtlFileHandler.getEntity(etlFiles.get(OSMType.RELATION), rm.getMemberId());
+              OSMMember memberR = new OSMMember(rm.getMemberId(), OSMType.RELATION, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rRelation);
+              refs2[j] = memberR;
+              break;
+            default:
+              throw new AssertionError(rm.getMemberType().name());
+          }
+          j++;
+        }
+        ArrayList<OSMRelation> relations = new ArrayList<>(1);
+        relations.add(new OSMRelation(id, version, timestamp, changeset, userId, tagsArray, refs2));
+        return OSHRelation.build(relations, rNodes, rWays);
       default:
         throw new AssertionError(change.getEntityContainer().getEntity().getType().name());
     }
@@ -107,14 +146,51 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
     return tagsArray;
   }
 
-  private OSHEntity onModify(ChangeContainer change) {
-    return null;
-//throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  private OSHEntity onModify(ChangeContainer change) throws IOException, OSHDBKeytablesNotFoundException, EntityNotFoudException {
+    Entity ent = change.getEntityContainer().getEntity();
+    OSHEntity ent2;
+    try {
+      switch (ent.getType()) {
+        case Node:
+          ent2 = EtlFileHandler.getEntity(this.etlFiles.get(OSMType.NODE), ent.getId());
+          return this.conbine(ent, ent2);
+        case Way:
+          ent2 = EtlFileHandler.getEntity(this.etlFiles.get(OSMType.WAY), ent.getId());
+          return this.conbine(ent, ent2);
+        case Relation:
+          ent2 = EtlFileHandler.getEntity(this.etlFiles.get(OSMType.RELATION), ent.getId());
+          return this.conbine(ent, ent2);
+        default:
+          throw new AssertionError(ent.getType().name());
+      }
+    } catch (EntityNotFoudException e) {
+      LOG.warn("Could not find enty, creating", e);
+      return this.onCreate(change);
+    }
   }
 
-  private OSHEntity onDelete(ChangeContainer change) {
-    return null;
-//throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  private OSHEntity onDelete(ChangeContainer change) throws IOException, OSHDBKeytablesNotFoundException, EntityNotFoudException {
+    Entity newEnt = change.getEntityContainer().getEntity();
+    newEnt.setId(-1 * newEnt.getId());
+    EntityContainer newCont;
+    switch (newEnt.getType()) {
+      case Node:
+        NodeContainerFactory ncf = new NodeContainerFactory();
+        newCont = ncf.createContainer((Node) newEnt);
+        break;
+      case Way:
+        WayContainerFactory wcf = new WayContainerFactory();
+        newCont = wcf.createContainer((Way) newEnt);
+        break;
+      case Relation:
+        RelationContainerFactory rcf = new RelationContainerFactory();
+        newCont = rcf.createContainer((Relation) newEnt);
+        break;
+      default:
+        throw new AssertionError(newEnt.getType().name());
+    }
+    ChangeContainer cc = new ChangeContainer(newCont, change.getAction());
+    return this.onModify(change);
   }
   private final Iterator<ChangeContainer> containers;
   private final Connection keytables;
@@ -150,8 +226,14 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
       LOG.error("error", ex);
     } catch (OSHDBKeytablesNotFoundException ex) {
       LOG.error("error", ex);
+    } catch (EntityNotFoudException ex) {
+      LOG.error("error", ex);
     }
     return null;
+  }
+
+  private OSHEntity conbine(Entity ent, OSHEntity ent2) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
 }
