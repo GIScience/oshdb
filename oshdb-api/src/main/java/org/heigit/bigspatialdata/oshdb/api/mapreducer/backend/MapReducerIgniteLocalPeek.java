@@ -31,6 +31,7 @@ import org.apache.ignite.compute.ComputeTask;
 import org.apache.ignite.compute.ComputeTaskAdapter;
 import org.apache.ignite.compute.ComputeTaskFuture;
 import org.apache.ignite.compute.ComputeTaskNoResultCache;
+import org.apache.ignite.compute.ComputeTaskTimeoutException;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
@@ -264,7 +265,9 @@ class IgniteLocalPeekHelper {
         this.cellIds = StreamSupport.stream(
             Spliterators.spliteratorUnknownSize(cellIdRanges.iterator(), 0),
             true
-        ).flatMap(cellIdRange -> {
+        )
+        .filter(ignored -> isActive())
+        .flatMap(cellIdRange -> {
           int level = cellIdRange.getLeft().getZoomLevel();
           long fromId = cellIdRange.getLeft().getId();
           long toId = cellIdRange.getRight().getId();
@@ -288,13 +291,14 @@ class IgniteLocalPeekHelper {
 
       @Override
       public boolean hasNext() {
-        if (buffer.size() == 0) {
-          if (!cellIds.hasNext()) {
-            return false;
-          }
-          fillBuffer();
+        if (buffer.size() > 0) {
+          return true;
         }
-        return true;
+        if (isActive() && cellIds.hasNext()) {
+          fillBuffer();
+          return true;
+        }
+        return false;
       }
 
       @Override
@@ -316,11 +320,12 @@ class IgniteLocalPeekHelper {
               Spliterators.spliteratorUnknownSize(cellKeysIterator, 0),
               true
           )
+          .filter(ignored -> this.isActive())
           .flatMap(cellKey ->
               // get local data from all requested caches
-              caches.stream().map(cache ->
-                  cache.localPeek(cellKey)
-              )
+              caches.stream()
+                  .filter(ignored -> this.isActive())
+                  .map(cache -> cache.localPeek(cellKey))
           )
           // filter out cache misses === empty oshdb cells or not "local" data
           .filter(Objects::nonNull)
@@ -436,7 +441,7 @@ class IgniteLocalPeekHelper {
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
-    ComputeTaskFuture<S> result = compute.executeAsync(
+    ComputeTaskFuture<S> asyncResult = compute.executeAsync(
         new CancelableBroadcastTask<Object, S>(
             computeJob,
             identitySupplier,
@@ -446,18 +451,16 @@ class IgniteLocalPeekHelper {
         null
     );
 
-    S ret;
     if (!oshdb.timeoutInMilliseconds().isPresent()) {
-      ret = result.get();
+      return asyncResult.get();
     } else {
       try {
-        ret = result.get(oshdb.timeoutInMilliseconds().getAsLong());
-      } catch (IgniteFutureTimeoutException e) {
-        result.cancel();
+        return asyncResult.get(oshdb.timeoutInMilliseconds().getAsLong());
+      } catch (ComputeTaskTimeoutException | IgniteFutureTimeoutException e) {
+        asyncResult.cancel();
         throw new OSHDBTimeoutException();
       }
     }
-    return ret;
   }
 
   static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMContributionOnIgniteCache(
