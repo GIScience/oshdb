@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.updater;
+package org.heigit.bigspatialdata.updater.util;
 
 import java.io.File;
 

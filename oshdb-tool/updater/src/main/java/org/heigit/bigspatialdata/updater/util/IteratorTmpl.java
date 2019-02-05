@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.updater.util;
+package org.heigit.bigspatialdata.updater.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
