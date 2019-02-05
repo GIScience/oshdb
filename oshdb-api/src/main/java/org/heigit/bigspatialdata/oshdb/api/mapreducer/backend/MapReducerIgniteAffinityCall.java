@@ -2,9 +2,10 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Streams;
 import java.io.IOException;
-import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -13,10 +14,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
+import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.*;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
@@ -32,15 +37,18 @@ import org.json.simple.parser.ParseException;
 /**
  * {@inheritDoc}
  *
- *
+ * <p>
  * The "AffinityCall" implementation is a very simple, but less efficient implementation of the
  * oshdb mapreducer: It's just sending separate affinityCalls() to the cluster for each data cell
  * and reduces all results locally on the client.
+ * </p>
  *
+ * <p>
  * It's good for testing purposes and maybe a viable option for special circumstances where one
  * knows beforehand that only few cells have to be iterated over (e.g. queries in a small area of
  * interest), where the (~constant) overhead associated with the other methods might be larger than
  * the (~linear) inefficiency with this implementation.
+ * </p>
  */
 public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
   public MapReducerIgniteAffinityCall(OSHDBDatabase oshdb,
@@ -75,20 +83,21 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
 
-    OSHDBIgnite oshdb = ((OSHDBIgnite) this._oshdb);
+    OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
-    return this._typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
+    return this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
@@ -103,7 +112,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             } else {
               ret = cellProcessor.apply(oshEntityCell, cellIterator);
             }
-            oshdb.onClose().ifPresent(Runnable::run);
+            onClose.run();
             return ret;
           })).reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
@@ -113,20 +122,21 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       CellProcessor<Collection<X>> processor
   ) throws ParseException, SQLException, IOException {
     CellIterator cellIterator = new CellIterator(
-        this._tstamps.get(),
-        this._bboxFilter, this._getPolyFilter(),
-        this._getTagInterpreter(), this._getPreFilter(), this._getFilter(), false
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this._getCellIdRanges();
+    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
 
-    OSHDBIgnite oshdb = ((OSHDBIgnite) this._oshdb);
+    OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
-    return _typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
+    return typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this._oshdb.prefix());
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
@@ -141,7 +151,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
             } else {
               ret = processor.apply(oshEntityCell, cellIterator);
             }
-            oshdb.onClose().ifPresent(Runnable::run);
+            onClose.run();
             return ret;
           }))
           .flatMap(Collection::stream);

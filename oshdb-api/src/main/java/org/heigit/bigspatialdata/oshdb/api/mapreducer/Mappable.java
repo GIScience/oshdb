@@ -9,11 +9,11 @@ public interface Mappable<X> {
    * Set an arbitrary `map` transformation function.
    *
    * @param mapper function that will be applied to each data entry (osm entity
-   * snapshot or contribution)
+   *        snapshot or contribution)
    * @param <R> an arbitrary data type which is the return type of the
-   * transformation `map` function
+   *        transformation `map` function
    * @return a modified copy of the current "Mappable" object operating on the
-   * transformed type (&lt;R&gt;)
+   *         transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
   <R> Mappable<R> map(SerializableFunction<X, R> mapper);
@@ -25,11 +25,11 @@ public interface Mappable<X> {
    * transformed again by setting additional `map` functions.
    *
    * @param flatMapper function that will be applied to each data entry (osm
-   * entity snapshot or contribution) and returns a list of results
+   *        entity snapshot or contribution) and returns a list of results
    * @param <R> an arbitrary data type which is the return type of the
-   * transformation `map` function
+   *        transformation `map` function
    * @return a modified copy of the current "Mappable" object operating on the
-   * transformed type (&lt;R&gt;)
+   *         transformed type (&lt;R&gt;)
    */
   @Contract(pure = true)
   <R> Mappable<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper);
@@ -39,9 +39,9 @@ public interface Mappable<X> {
    * transformation chain.
    *
    * @param f the filter function that determines if the respective data should
-   * be passed on (when f returns true) or discarded (when f returns false)
+   *        be passed on (when f returns true) or discarded (when f returns false)
    * @return a modified copy of this "Mappable" (can be used to chain multiple
-   * commands together)
+   *         commands together)
    */
   @Contract(pure = true)
   Mappable<X> filter(SerializablePredicate<X> f);
