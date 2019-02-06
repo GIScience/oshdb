@@ -98,7 +98,7 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         throw new AssertionError(newEnt.getType().name());
     }
     ChangeContainer cc = new ChangeContainer(newCont, change.getAction());
-    return this.onChange(change);
+    return this.onChange(cc);
   }
 
   private final Iterator<ChangeContainer> containers;
