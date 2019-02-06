@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.updater;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,19 +11,12 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Stream;
-import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCheckedException;
-import org.apache.ignite.Ignition;
-import org.apache.ignite.configuration.IgniteConfiguration;
-import org.apache.ignite.internal.IgnitionEx;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCDownloader;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCParser;
 import org.heigit.bigspatialdata.updater.OSHUpdating.OSHLoader;
@@ -58,32 +50,23 @@ public class Updater {
       return;
     }
 
-    Connection conn = DriverManager.getConnection(config.jdbc);
+    Connection updateDb = DriverManager.getConnection(config.jdbc);
     Connection keytables = DriverManager.getConnection(config.keytables, "sa", "");
     config.workDir.toFile().mkdirs();
-    Map<OSMType, File> etlFiles = new HashMap<>();
-    etlFiles.put(OSMType.NODE, config.nodeEtl);
-    etlFiles.put(OSMType.WAY, config.wayEtl);
-    etlFiles.put(OSMType.RELATION, config.relationEtl);
 
     if (config.flush) {
-      Ignition.setClientMode(true);
-      IgniteConfiguration cfg = IgnitionEx.loadConfiguration(config.dbconfig.toString()).get1();
-      cfg.setIgniteInstanceName("IgniteUpdateClientInstance");
-      try (Ignite ignite = Ignition.start(cfg)) {
-        Updater.flush(ignite, conn);
-      }
-
+      Connection oshdb = DriverManager.getConnection(config.dbconfig);
+      Updater.flush(oshdb, updateDb);
     } else {
       if (config.kafka != null) {
         Properties props = new Properties();
         FileInputStream input = new FileInputStream(config.kafka);
         props.load(input);
         Producer<String, Stream<Byte[]>> producer = new KafkaProducer<>(props);
-        Updater.update(etlFiles, keytables, config.workDir, conn, config.baseURL, producer);
+        Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, producer);
         producer.close();
       } else {
-        Updater.update(etlFiles, keytables, config.workDir, conn, config.baseURL);
+        Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL);
       }
 
     }
@@ -93,35 +76,35 @@ public class Updater {
    * Downloads replication files, transforms them to OSHDB-Objects and stores them in a
    * JDBC-Database.At the same time it provides an index of updated entites.
    *
-   * @param conn Connection to JDBC-Database where Updates should be stored.
+   * @param updateDb Connection to JDBC-Database where Updates should be stored.
    * @param workingDirectory The working-directory to download replication files to and save Update
    * states.
    * @param replicationUrl The URL to get replication files from. Determines if monthly, dayly etc.
    * updates are preferred.
    * @param producer a producer to promote updated entites to a kafka-cluster
    */
-  public static void update(Map<OSMType, File> etlFiles, Connection keytables, Path workingDirectory, Connection conn, URL replicationUrl, Producer<String, Stream<Byte[]>> producer) {
+  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection updateDb, URL replicationUrl, Producer<String, Stream<Byte[]>> producer) {
     try (FileBasedLock fileLock = new FileBasedLock(workingDirectory.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
       Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, workingDirectory);
       Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
       Iterable<OSHEntity> oshEntities = OSCOSHTransformer.transform(etlFiles, keytables, changes);
-      OSHLoader.load(conn, oshEntities, producer);
+      OSHLoader.load(updateDb, oshEntities, producer);
       fileLock.unlock();
     }
   }
 
-  public static void update(Map<OSMType, File> etlFiles, Connection keytables, Path workingDirectory, Connection conn, URL replicationUrl) {
+  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection conn, URL replicationUrl) {
     Updater.update(etlFiles, keytables, workingDirectory, conn, replicationUrl, null);
   }
 
   /**
    * Flush updates form JDBC to real Ignite (best done once in a while, when database-usage is low).
    *
-   * @param ignite Ignite-instace of actual OSHDB.
-   * @param conn JDBC of intermediate Update storage.
+   * @param oshdb
+   * @param updatedb
    */
-  public static void flush(Ignite ignite, Connection conn) {
+  public static void flush(Connection oshdb, Connection updatedb) {
     //do i need to block the cluster somehow, to prevent false operations?
     //ignite.cluster().active(false);
     //do flush here: can I use something from the etl?

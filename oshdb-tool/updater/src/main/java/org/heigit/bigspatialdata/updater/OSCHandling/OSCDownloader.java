@@ -50,7 +50,7 @@ public class OSCDownloader {
     })
         // we could limit how many file we would like to process in this run!
         // just comment out this limit if you don't want it.
-        //.limit(4)
+        .limit(1)
         .blockingIterable();
   }
 

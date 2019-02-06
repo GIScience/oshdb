@@ -22,11 +22,11 @@ public class OSHLoader {
   /**
    * represents the Load-Step in an ETL-Pipeline of updates.
    *
-   * @param conn
+   * @param updateDb
    * @param oshEntities
    * @param producer
    */
-  public static void load(Connection conn, Iterable<OSHEntity> oshEntities, Producer<String, Stream<Byte[]>> producer) {
+  public static void load(Connection updateDb, Iterable<OSHEntity> oshEntities, Producer<String, Stream<Byte[]>> producer) {
     LOG.info("loading");
     oshEntities.forEach((OSHEntity oshEntity) -> {
       //TODO: remove this:!
@@ -34,7 +34,8 @@ public class OSHLoader {
         return;
       }
       try {
-        try (PreparedStatement st = conn.prepareStatement("INSERT INTO update (id) VALUES (?)")) {
+        try (PreparedStatement st = updateDb.prepareStatement("INSERT INTO update (id) VALUES (?)")) {
+          System.out.println(oshEntity.getId());
           st.setLong(1, oshEntity.getId());
           st.executeUpdate();
         }

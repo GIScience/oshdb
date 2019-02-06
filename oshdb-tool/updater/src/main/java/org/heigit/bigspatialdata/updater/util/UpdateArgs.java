@@ -17,13 +17,10 @@ public class UpdateArgs {
   @Parameter(names = {"-url"}, description = "URL to take replication-files from e.g. https://planet.openstreetmap.org/replication/minute/", validateWith = URLValidator.class, order = 3)
   public URL baseURL;
 
-  @Parameter(names = {"-i", "-ignite"}, description = "set ignite backend (default is H2)", required = false, order = 4)
-  public boolean ignite = false;
-
-  @Parameter(names = {"-flush"}, description = "flush updates from jdbc to ignite", required = false, order = 5)
+  @Parameter(names = {"-flush"}, description = "flush updates to production database", required = false, order = 5)
   public boolean flush = false;
 
-  @Parameter(names = {"-dbConfig", "-dbcfg"}, description = "Configuration of Database-Backend (either Path to ignite.xml or jdbc for h2 (parallel to jdbc))", required = false, order = 6)
+  @Parameter(names = {"-dbConfig", "-dbcfg"}, description = "jdbc-connection of production database", required = false, order = 6)
   public String dbconfig;
 
   @Parameter(names = {"-kafka"}, description = "Path to kafka Config", required = false, order = 7)
@@ -32,14 +29,8 @@ public class UpdateArgs {
   @Parameter(names = {"-keytables", "-k"}, description = "Configuration of Keytables JDBC (parallel to jdbc)", required = true, order = 8)
   public String keytables;
 
-  @Parameter(names = {"-etlN"}, description = "Configuration of Keytables JDBC (parallel to jdbc)", required = false, order = 8)
-  public File nodeEtl;
-
-  @Parameter(names = {"-etlW"}, description = "Configuration of Keytables JDBC (parallel to jdbc)", required = false, order = 8)
-  public File wayEtl;
-
-  @Parameter(names = {"-etlR"}, description = "Configuration of Keytables JDBC (parallel to jdbc)", required = false, order = 8)
-  public File relationEtl;
+  @Parameter(names = {"-etlN"}, description = "Path to etlFiles", validateWith = DirExistValidator.class, required = false, order = 8)
+  public Path etl;
 
   @Parameter(names = {"-help", "--help", "-h", "--h"}, description = "prints this help", help = true, order = 99)
   public boolean help = false;
