@@ -2,7 +2,10 @@ package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
 import com.google.common.collect.Streams;
 import com.vividsolutions.jts.geom.*;
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -14,15 +17,17 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.*;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
+import org.heigit.bigspatialdata.oshdb.util.update.UpdateDatabaseHandler;
+import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +45,8 @@ public class CellIterator implements Serializable {
   private FastPolygonOperations fastPolygonClipper;
   private TagInterpreter tagInterpreter;
   private OSHEntityFilter oshEntityPreFilter;
+  private OSHEntityFilter oshEntityUpdatePreFilter = (OSHEntity arg0) -> true;
+
   private OSMEntityFilter osmEntityFilter;
   private boolean includeOldStyleMultipolygons;
 
@@ -157,7 +164,7 @@ public class CellIterator implements Serializable {
 
     Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
-      if (!oshEntityPreFilter.test(oshEntity) ||
+      if (!oshEntityUpdatePreFilter.test(oshEntity) || !oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
               (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
@@ -205,103 +212,103 @@ public class CellIterator implements Serializable {
 
       List<IterateByTimestampEntry> results = new LinkedList<>();
       osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
-        OSHDBTimestamp timestamp = entity.getKey();
-        OSMEntity osmEntity = entity.getValue();
+          OSHDBTimestamp timestamp = entity.getKey();
+          OSMEntity osmEntity = entity.getValue();
 
-        if (!osmEntity.isVisible()) {
-          // skip because this entity is deleted at this timestamp
-          continue;
-        }
+          if (!osmEntity.isVisible()) {
+            // skip because this entity is deleted at this timestamp
+            continue;
+          }
         if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0 ||
             osmEntity instanceof OSMRelation && ((OSMRelation)osmEntity).getMembers().length == 0) {
-          // skip way/relation with zero nodes/members
-          continue;
-        }
+            // skip way/relation with zero nodes/members
+            continue;
+          }
 
-        boolean isOldStyleMultipolygon = false;
-        if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
-            && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          final OSMRelation rel = (OSMRelation) osmEntity;
-          for (int i = 0; i < rel.getMembers().length; i++) {
-            final OSMMember relMember = rel.getMembers()[i];
-            if (relMember.getType() == OSMType.WAY
-                && tagInterpreter.isMultipolygonOuterMember(relMember)) {
-              OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
-              if (!osmEntityFilter.test(way)) {
-                // skip this old-style-multipolygon because it doesn't match our filter
-                continue osmEntityLoop;
-              } else {
-                // we know this multipolygon only has exactly one outer way, so we can abort the
-                // loop and actually
-                // "continue" with the calculations ^-^
-                isOldStyleMultipolygon = true;
-                break;
+          boolean isOldStyleMultipolygon = false;
+          if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
+              && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
+            final OSMRelation rel = (OSMRelation) osmEntity;
+            for (int i = 0; i < rel.getMembers().length; i++) {
+              final OSMMember relMember = rel.getMembers()[i];
+              if (relMember.getType() == OSMType.WAY
+                  && tagInterpreter.isMultipolygonOuterMember(relMember)) {
+                OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
+                if (!osmEntityFilter.test(way)) {
+                  // skip this old-style-multipolygon because it doesn't match our filter
+                  continue osmEntityLoop;
+                } else {
+                  // we know this multipolygon only has exactly one outer way, so we can abort the
+                  // loop and actually
+                  // "continue" with the calculations ^-^
+                  isOldStyleMultipolygon = true;
+                  break;
+                }
               }
             }
-          }
-        } else {
-          if (!osmEntityFilter.test(osmEntity)) {
-            // skip because this entity doesn't match our filter
-            continue osmEntityLoop;
-          }
-        }
-
-        try {
-          LazyEvaluatedObject<Geometry> geom;
-          if (!isOldStyleMultipolygon) {
-            geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
           } else {
-            // old style multipolygons: return only the inner holes of the geometry -> this is then
-            // used to "fix" the
-            // results obtained from calculating the geometry on the object's outer way which
-            // doesn't know about the
-            // inner members of the multipolygon relation
-            // todo: check if this is all valid?
-            GeometryFactory gf = new GeometryFactory();
-            geom = new LazyEvaluatedObject<>(() -> {
-              Geometry _geom = OSHDBGeometryBuilder
-                  .getGeometry(osmEntity, timestamp, tagInterpreter);
+            if (!osmEntityFilter.test(osmEntity)) {
+              // skip because this entity doesn't match our filter
+              continue osmEntityLoop;
+            }
+          }
 
-              Polygon poly = (Polygon) _geom;
-              Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
-              for (int i = 0; i < poly.getNumInteriorRing(); i++) {
+          try {
+            LazyEvaluatedObject<Geometry> geom;
+            if (!isOldStyleMultipolygon) {
+              geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
+            } else {
+              // old style multipolygons: return only the inner holes of the geometry -> this is then
+              // used to "fix" the
+              // results obtained from calculating the geometry on the object's outer way which
+              // doesn't know about the
+              // inner members of the multipolygon relation
+              // todo: check if this is all valid?
+              GeometryFactory gf = new GeometryFactory();
+              geom = new LazyEvaluatedObject<>(() -> {
+                Geometry _geom = OSHDBGeometryBuilder
+                    .getGeometry(osmEntity, timestamp, tagInterpreter);
+
+                Polygon poly = (Polygon) _geom;
+                Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
+                for (int i = 0; i < poly.getNumInteriorRing(); i++) {
                 interiorRings[i] =
                     new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
-              }
-              _geom = new MultiPolygon(interiorRings, gf);
-              if (!fullyInside) {
-                _geom = isBoundByPolygon
-                    ? fastPolygonClipper.intersection(_geom)
-                    : Geo.clip(_geom, boundingBox);
-              }
-              return _geom;
-            });
-          }
-
-          if (fullyInside || !geom.get().isEmpty()) {
-            LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
-                () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
-            results.add(
-                new IterateByTimestampEntry(timestamp, osmEntity, oshEntity, geom, fullGeom)
-            );
-            // add skipped timestamps (where nothing has changed from the last timestamp) to result
-            for (OSHDBTimestamp additionalT : queryTs.get(timestamp)) {
-              results.add(
-                  new IterateByTimestampEntry(additionalT, osmEntity, oshEntity, geom, fullGeom)
-              );
+                }
+                _geom = new MultiPolygon(interiorRings, gf);
+                if (!fullyInside) {
+                  _geom = isBoundByPolygon
+                      ? fastPolygonClipper.intersection(_geom)
+                      : Geo.clip(_geom, boundingBox);
+                }
+                return _geom;
+              });
             }
+
+            if (fullyInside || !geom.get().isEmpty()) {
+              LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
+                  () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
+              results.add(
+                  new IterateByTimestampEntry(timestamp, osmEntity, oshEntity, geom, fullGeom)
+              );
+              // add skipped timestamps (where nothing has changed from the last timestamp) to result
+              for (OSHDBTimestamp additionalT : queryTs.get(timestamp)) {
+                results.add(
+                    new IterateByTimestampEntry(additionalT, osmEntity, oshEntity, geom, fullGeom)
+                );
+              }
+            }
+          } catch (IllegalArgumentException err) {
+            // maybe some corner case where JTS doesn't support operations on a broken geometry
+            LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
+                osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
+          } catch (TopologyException err) {
+            // happens e.g. in JTS intersection method when geometries are self-overlapping
+            LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
+                osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
+                err.toString());
           }
-        } catch (IllegalArgumentException err) {
-          // maybe some corner case where JTS doesn't support operations on a broken geometry
-          LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
-              osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
-        } catch (TopologyException err) {
-          // happens e.g. in JTS intersection method when geometries are self-overlapping
-          LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
-              osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
-              err.toString());
         }
-      }
       // stream this oshEntity's results
       return results.stream();
     });
@@ -399,7 +406,7 @@ public class CellIterator implements Serializable {
     Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
 
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
-      if (!oshEntityPreFilter.test(oshEntity) ||
+      if (!oshEntityUpdatePreFilter.test(oshEntity) || !oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
                   (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
@@ -438,221 +445,242 @@ public class CellIterator implements Serializable {
       IterateAllEntry prev = null;
 
       osmEntityLoop:
-      for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
-        OSHDBTimestamp timestamp = entity.getKey();
-        OSMEntity osmEntity = entity.getValue();
+        for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+          OSHDBTimestamp timestamp = entity.getKey();
+          OSMEntity osmEntity = entity.getValue();
 
-        // prev = results.size() > 0 ? results.get(results.size()-1) : null;
-        // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of
-        // the `|| prev.osmEntity.getId() != osmEntity.getId()`'s below)
-        boolean skipOutput = false;
+          // prev = results.size() > 0 ? results.get(results.size()-1) : null;
+          // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of
+          // the `|| prev.osmEntity.getId() != osmEntity.getId()`'s below)
+          boolean skipOutput = false;
 
-        OSHDBTimestamp nextTs = null;
-        // todo: better way to figure out if timestamp is not last element??
-        if (modTs.size() > modTs.indexOf(timestamp) + 1) {
-          nextTs = modTs.get(modTs.indexOf(timestamp) + 1);
-        }
-
-        if (!timeInterval.includes(timestamp)) {
-          // ignore osm entity because it's outside of the given time interval of interest
-          if (timeInterval.compareTo(timestamp) > 0) { // timestamp in the future of the interval
-            break; // abort current osmEntityByTimestamps loop, continue with next osh entity
-          } else if (!timeInterval.includes(nextTs)) { // next modification state is also in not in
-            // our time frame of interest
-            continue; // continue with next mod. state of current osh entity
-          } else {
-            // next mod. state of current entity will be in the time range of interest. -> skip it
-            // but we still have to process this entity fully, because we need stuff in `prev` for
-            // previousGeometry, etc. during the next iteration
-            skipOutput = true;
+          OSHDBTimestamp nextTs = null;
+          // todo: better way to figure out if timestamp is not last element??
+          if (modTs.size() > modTs.indexOf(timestamp) + 1) {
+            nextTs = modTs.get(modTs.indexOf(timestamp) + 1);
           }
-        }
 
-        if (!osmEntity.isVisible()) {
-          // this entity is deleted at this timestamp
-          // todo: some of this may be refactorable between the two for loops
-          if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-            prev = new IterateAllEntry(timestamp,
-                osmEntity, prev.osmEntity, oshEntity,
+          if (!timeInterval.includes(timestamp)) {
+            // ignore osm entity because it's outside of the given time interval of interest
+            if (timeInterval.compareTo(timestamp) > 0) { // timestamp in the future of the interval
+              break; // abort current osmEntityByTimestamps loop, continue with next osh entity
+            } else if (!timeInterval.includes(nextTs)) { // next modification state is also in not in
+              // our time frame of interest
+              continue; // continue with next mod. state of current osh entity
+            } else {
+              // next mod. state of current entity will be in the time range of interest. -> skip it
+              // but we still have to process this entity fully, because we need stuff in `prev` for
+              // previousGeometry, etc. during the next iteration
+              skipOutput = true;
+            }
+          }
+
+          if (!osmEntity.isVisible()) {
+            // this entity is deleted at this timestamp
+            // todo: some of this may be refactorable between the two for loops
+            if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
+              prev = new IterateAllEntry(timestamp,
+                  osmEntity, prev.osmEntity, oshEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
-                new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
-                osmEntity.getChangeset()
-            );
-            // cannot normally happen, because prev is never null while skipOutput is true (since no
-            // previous result has yet been generated before the first modification in the query
-            // timestamp inteval). But if the oshdb-api would at some point have to support non-
-            // contiguous timestamp intervals, this case could be needed.
-            if (!skipOutput) {
-              results.add(prev);
-            }
-          }
-          continue osmEntityLoop;
-        }
-
-        // todo check old style mp code!!1!!!11!
-        boolean isOldStyleMultipolygon = false;
-        if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
-            && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          final OSMRelation rel = (OSMRelation) osmEntity;
-          for (int i = 0; i < rel.getMembers().length; i++) {
-            final OSMMember relMember = rel.getMembers()[i];
-            if (relMember.getType() == OSMType.WAY
-                && tagInterpreter.isMultipolygonOuterMember(relMember)) {
-              OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
-              if (!osmEntityFilter.test(way)) {
-                // skip this old-style-multipolygon because it doesn't match our filter
-                continue osmEntityLoop;
-              } else {
-                // we know this multipolygon only has exactly one outer way, so we can abort the
-                // loop and actually
-                // "continue" with the calculations ^-^
-                isOldStyleMultipolygon = true;
-                break;
-              }
-            }
-          }
-        } else {
-          if (!osmEntityFilter.test(osmEntity)) {
-            // this entity doesn't match our filter (anymore)
-            // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct
-            // geometries for these?
-            if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-              prev = new IterateAllEntry(timestamp,
-                  osmEntity, prev.osmEntity, oshEntity,
-                  new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
-                  new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
-                  changesetTs.get(timestamp)
+                  osmEntity.getChangeset()
               );
+              // cannot normally happen, because prev is never null while skipOutput is true (since no
+              // previous result has yet been generated before the first modification in the query
+              // timestamp inteval). But if the oshdb-api would at some point have to support non-
+              // contiguous timestamp intervals, this case could be needed.
               if (!skipOutput) {
                 results.add(prev);
               }
             }
             continue osmEntityLoop;
           }
-        }
 
-        try {
-          LazyEvaluatedObject<Geometry> geom;
-          if (!isOldStyleMultipolygon) {
-            geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
+          // todo check old style mp code!!1!!!11!
+          boolean isOldStyleMultipolygon = false;
+          if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
+              && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
+            final OSMRelation rel = (OSMRelation) osmEntity;
+            for (int i = 0; i < rel.getMembers().length; i++) {
+              final OSMMember relMember = rel.getMembers()[i];
+              if (relMember.getType() == OSMType.WAY
+                  && tagInterpreter.isMultipolygonOuterMember(relMember)) {
+                OSMEntity way = OSHEntities.getByTimestamp(relMember.getEntity(), timestamp);
+                if (!osmEntityFilter.test(way)) {
+                  // skip this old-style-multipolygon because it doesn't match our filter
+                  continue osmEntityLoop;
+                } else {
+                  // we know this multipolygon only has exactly one outer way, so we can abort the
+                  // loop and actually
+                  // "continue" with the calculations ^-^
+                  isOldStyleMultipolygon = true;
+                  break;
+                }
+              }
+            }
           } else {
-            // old style multipolygons: return only the inner holes of the geometry -> this is then
-            // used to "fix" the results obtained from calculating the geometry on the object's outer
-            // way which doesn't know about the inner members of the multipolygon relation
-            // todo: check if this is all valid?
-            GeometryFactory gf = new GeometryFactory();
-            geom = new LazyEvaluatedObject<>(() -> {
-              Geometry _geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-              Polygon poly = (Polygon) _geom;
-              Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
-              for (int i = 0; i < poly.getNumInteriorRing(); i++) {
+            if (!osmEntityFilter.test(osmEntity)) {
+              // this entity doesn't match our filter (anymore)
+              // TODO?: separate/additional activity type (e.g. "RECYCLED" ??) and still construct
+              // geometries for these?
+              if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
+                prev = new IterateAllEntry(timestamp,
+                    osmEntity, prev.osmEntity, oshEntity,
+                  new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
+                  new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
+                    new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
+                    changesetTs.get(timestamp)
+                );
+                if (!skipOutput) {
+                  results.add(prev);
+                }
+              }
+              continue osmEntityLoop;
+            }
+          }
+
+          try {
+            LazyEvaluatedObject<Geometry> geom;
+            if (!isOldStyleMultipolygon) {
+              geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
+            } else {
+              // old style multipolygons: return only the inner holes of the geometry -> this is then
+              // used to "fix" the results obtained from calculating the geometry on the object's outer
+              // way which doesn't know about the inner members of the multipolygon relation
+              // todo: check if this is all valid?
+              GeometryFactory gf = new GeometryFactory();
+              geom = new LazyEvaluatedObject<>(() -> {
+                Geometry _geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+                Polygon poly = (Polygon) _geom;
+                Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
+                for (int i = 0; i < poly.getNumInteriorRing(); i++) {
                 interiorRings[i] =
                     new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
-              }
-              _geom = new MultiPolygon(interiorRings, gf);
-              if (!fullyInside) {
-                _geom = Geo.clip(_geom, boundingBox);
-              }
-              return _geom;
-            });
-          }
+                }
+                _geom = new MultiPolygon(interiorRings, gf);
+                if (!fullyInside) {
+                  _geom = Geo.clip(_geom, boundingBox);
+                }
+                return _geom;
+              });
+            }
 
-          LazyEvaluatedContributionTypes activity;
-          if (!fullyInside && geom.get().isEmpty()) {
-            // either object is outside of current area or has invalid geometry
-            if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
-              prev = new IterateAllEntry(timestamp,
-                  osmEntity, prev.osmEntity, oshEntity,
+            LazyEvaluatedContributionTypes activity;
+            if (!fullyInside && geom.get().isEmpty()) {
+              // either object is outside of current area or has invalid geometry
+              if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
+                prev = new IterateAllEntry(timestamp,
+                    osmEntity, prev.osmEntity, oshEntity,
                   new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                   new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
-                  new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
-                  changesetTs.get(timestamp)
-              );
-              if (!skipOutput) {
-                results.add(prev);
+                    new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
+                    changesetTs.get(timestamp)
+                );
+                if (!skipOutput) {
+                  results.add(prev);
+                }
               }
-            }
-            continue osmEntityLoop;
-          } else if (prev == null || prev.activities.contains(ContributionType.DELETION)) {
-            activity = new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION));
-            // todo: special case when an object gets specific tag/condition again after having them
-            // removed?
-          } else {
-            OSMEntity prevEntity = prev.osmEntity;
-            LazyEvaluatedObject<Geometry> prevGeometry = prev.geometry;
-            activity = new LazyEvaluatedContributionTypes(contributionType -> {
-              switch (contributionType) {
-                case TAG_CHANGE:
-                  // look if tags have been changed between versions
-                  boolean tagsChange = false;
-                  if (prevEntity.getRawTags().length != osmEntity.getRawTags().length) {
-                    tagsChange = true;
-                  } else {
-                    for (int i = 0; i < prevEntity.getRawTags().length; i++) {
-                      if (prevEntity.getRawTags()[i] != osmEntity.getRawTags()[i]) {
-                        tagsChange = true;
-                        break;
+              continue osmEntityLoop;
+            } else if (prev == null || prev.activities.contains(ContributionType.DELETION)) {
+              activity = new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION));
+              // todo: special case when an object gets specific tag/condition again after having them
+              // removed?
+            } else {
+              OSMEntity prevEntity = prev.osmEntity;
+              LazyEvaluatedObject<Geometry> prevGeometry = prev.geometry;
+              activity = new LazyEvaluatedContributionTypes(contributionType -> {
+                switch (contributionType) {
+                  case TAG_CHANGE:
+                    // look if tags have been changed between versions
+                    boolean tagsChange = false;
+                    if (prevEntity.getRawTags().length != osmEntity.getRawTags().length) {
+                      tagsChange = true;
+                    } else {
+                      for (int i = 0; i < prevEntity.getRawTags().length; i++) {
+                        if (prevEntity.getRawTags()[i] != osmEntity.getRawTags()[i]) {
+                          tagsChange = true;
+                          break;
+                        }
                       }
                     }
-                  }
-                  return tagsChange;
-                case GEOMETRY_CHANGE:
-                  // look if geometry has been changed between versions
-                  boolean geometryChange = false;
-                  if (geom.get() != null && prevGeometry.get() != null) {
-                    // todo: what if both are null? -> maybe fall back to MEMBER_CHANGE?
-                    // todo: check: does this work as expected?
-                    geometryChange = !prevGeometry.equals(geom);
-                  }
-                  return geometryChange;
-                default:
-                  return false;
-              }
-            });
-          }
+                    return tagsChange;
+                  case GEOMETRY_CHANGE:
+                    // look if geometry has been changed between versions
+                    boolean geometryChange = false;
+                    if (geom.get() != null && prevGeometry.get() != null) {
+                      // todo: what if both are null? -> maybe fall back to MEMBER_CHANGE?
+                      // todo: check: does this work as expected?
+                      geometryChange = !prevGeometry.equals(geom);
+                    }
+                    return geometryChange;
+                  default:
+                    return false;
+                }
+              });
+            }
 
-          IterateAllEntry result;
+            IterateAllEntry result;
           LazyEvaluatedObject<Geometry> unclippedGeom = new LazyEvaluatedObject<>(() ->
               OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-          );
-          if (prev != null) {
-            result = new IterateAllEntry(timestamp,
-                osmEntity, prev.osmEntity, oshEntity,
-                geom, prev.geometry,
-                unclippedGeom, prev.unclippedGeometry,
-                activity,
-                changesetTs.get(timestamp)
             );
-          } else {
-            result = new IterateAllEntry(timestamp,
-                osmEntity, null, oshEntity,
+            if (prev != null) {
+              result = new IterateAllEntry(timestamp,
+                  osmEntity, prev.osmEntity, oshEntity,
+                  geom, prev.geometry,
+                  unclippedGeom, prev.unclippedGeometry,
+                  activity,
+                  changesetTs.get(timestamp)
+              );
+            } else {
+              result = new IterateAllEntry(timestamp,
+                  osmEntity, null, oshEntity,
                 geom, new LazyEvaluatedObject<>((Geometry)null),
                 unclippedGeom, new LazyEvaluatedObject<>((Geometry)null),
-                activity,
-                changesetTs.get(timestamp)
-            );
-          }
+                  activity,
+                  changesetTs.get(timestamp)
+              );
+            }
 
-          if (!skipOutput) {
-            results.add(result);
+            if (!skipOutput) {
+              results.add(result);
+            }
+            prev = result;
+          } catch (IllegalArgumentException err) {
+            // maybe some corner case where JTS doesn't support operations on a broken geometry
+            LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
+                osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
+          } catch (TopologyException err) {
+            // happens e.g. in JTS intersection method when geometries are self-overlapping
+            LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
+                osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
+                err.toString());
           }
-          prev = result;
-        } catch (IllegalArgumentException err) {
-          // maybe some corner case where JTS doesn't support operations on a broken geometry
-          LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
-              osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
-        } catch (TopologyException err) {
-          // happens e.g. in JTS intersection method when geometries are self-overlapping
-          LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
-              osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
-              err.toString());
         }
-      }
       // stream this oshEntity's results
       return results.stream();
     });
+  }
+  
+  /**
+   * Add another Filter for updated entities.
+   * They then need then to be included from the update database.
+   *
+   * @param bitMapDb the connection to the bitmap-database that stores IDs of Entities that have 
+   *        been updated.
+   * @throws SQLException
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  public void setOshEntityUpdatePreFilter(Connection bitMapDb) throws SQLException, IOException, ClassNotFoundException {
+    this.oshEntityUpdatePreFilter = new OSHEntityFilter() {
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex = UpdateDatabaseHandler.getBitMap(bitMapDb);
+
+      @Override
+      public boolean test(OSHEntity arg0) {
+        return !bitMapIndex.get(arg0.getType()).contains(arg0.getId());
+      }
+    };
   }
 
 }
