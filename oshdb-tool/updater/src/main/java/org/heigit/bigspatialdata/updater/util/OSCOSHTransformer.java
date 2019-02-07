@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OSCOSHTransformer implements Iterator<OSHEntity> {
+  //Attention: does not propperly handled missing data at time of Update. If data is provided with a later update, previous referencing Entities are not updated and remain in an incomplete state -> see comment about handling missing data
   private static final Logger LOG = LoggerFactory.getLogger(OSCOSHTransformer.class);
 
   public static Iterable<OSHEntity> transform(Path etlFiles, Connection keytables, Iterable<ChangeContainer> changes) {
@@ -189,7 +190,12 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         //all members in current version
         for (WayNode wn : wayNodes) {
           OSHNode node = (OSHNode) EtlFileHandler.getEntity(this.etlFiles, EntityType.Node, wn.getNodeId());
-          allNodes.add(node);
+          //Handling missing data: account for updates coming unordered (e.g. way creation before referencing node creation. Maybe dummy node with ID would be better?
+          if (node != null) {
+            allNodes.add(node);
+          } else {
+            LOG.warn("Missing Data for Node with ID: " + wn.getNodeId() + ". Data output might be corrupt?");
+          }
           OSMMember member = new OSMMember(wn.getNodeId(), OSMType.NODE, 0, node);
           refs[i] = member;
           i++;
@@ -215,6 +221,7 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         EtlFileHandler.appendEntity(this.etlFiles, theWay);
 
         return theWay;
+
       case Relation:
         Relation relation = (Relation) entity;
         Iterator<RelationMember> it = relation.getMembers().iterator();
@@ -227,18 +234,29 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
           switch (rm.getMemberType()) {
             case Node:
               OSHNode rNode = (OSHNode) EtlFileHandler.getEntity(etlFiles, EntityType.Node, rm.getMemberId());
-              rNodes.add(rNode);
+              if (rNode != null) {;
+                rNodes.add(rNode);
+              } else {
+                LOG.warn("Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
+              }
               OSMMember memberN = new OSMMember(rm.getMemberId(), OSMType.NODE, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rNode);
               refs2[j] = memberN;
               break;
             case Way:
               OSHWay rWay = (OSHWay) EtlFileHandler.getEntity(etlFiles, EntityType.Way, rm.getMemberId());
-              rWays.add(rWay);
+              if (rWay != null) {
+                rWays.add(rWay);
+              } else {
+                LOG.warn("Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
+              }
               OSMMember memberW = new OSMMember(rm.getMemberId(), OSMType.WAY, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rWay);
               refs2[j] = memberW;
               break;
             case Relation:
               OSHRelation rRelation = (OSHRelation) EtlFileHandler.getEntity(etlFiles, EntityType.Relation, rm.getMemberId());
+              if (rRelation == null) {
+                LOG.warn("Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
+              }
               OSMMember memberR = new OSMMember(rm.getMemberId(), OSMType.RELATION, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rRelation);
               refs2[j] = memberR;
               break;
