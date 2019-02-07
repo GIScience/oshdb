@@ -1,5 +1,16 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
+import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Polygonal;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,16 +30,6 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.Polygonal;
 
 /**
  *
@@ -290,10 +291,17 @@ public class OSHDBGeometryBuilder {
  public static Polygon getGeometry(OSHDBBoundingBox bbox) {
    GeometryFactory gf = new GeometryFactory();
    Geometry g = gf.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
-   if (g instanceof Polygon)
-     return (Polygon) g;
-   else
-    return gf.createPolygon((LinearRing) null);
+
+    if (g instanceof Polygon) {
+      return (Polygon) g;
+    } else if (g instanceof LineString) {
+      return gf.createPolygon((LinearRing) g);
+    } else if (g instanceof Point) {
+      Coordinate[] cordAr = {g.getCoordinate(), g.getCoordinate(), g.getCoordinate(), g.getCoordinate()};
+      return gf.createPolygon(cordAr);
+    } else {
+      return gf.createPolygon((LinearRing) null);
+    }
  }
  
  
