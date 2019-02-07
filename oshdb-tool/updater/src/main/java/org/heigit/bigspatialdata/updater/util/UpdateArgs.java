@@ -23,6 +23,9 @@ public class UpdateArgs {
   @Parameter(names = {"-dbConfig", "-dbcfg"}, description = "jdbc-connection of production database", required = false, order = 6)
   public String dbconfig;
 
+  @Parameter(names = {"-changeIndex", "-dbBit"}, description = "jdbc-connection of change-bitmap", required = false, order = 6)
+  public String dbbit;
+
   @Parameter(names = {"-kafka"}, description = "Path to kafka Config", required = false, order = 7)
   public File kafka;
 

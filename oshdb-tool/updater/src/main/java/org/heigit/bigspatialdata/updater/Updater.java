@@ -52,7 +52,8 @@ public class Updater {
     config.workDir.toFile().mkdirs();
 
     try (Connection updateDb = DriverManager.getConnection(config.jdbc);
-        Connection keytables = DriverManager.getConnection(config.keytables, "sa", "");) {
+        Connection keytables = DriverManager.getConnection(config.keytables, "sa", "");
+        Connection dbBit = DriverManager.getConnection(config.dbbit)) {
       if (config.flush) {
         Connection oshdb = DriverManager.getConnection(config.dbconfig);
         Updater.flush(oshdb, updateDb);
@@ -62,10 +63,10 @@ public class Updater {
           FileInputStream input = new FileInputStream(config.kafka);
           props.load(input);
           Producer<String, Stream<Byte[]>> producer = new KafkaProducer<>(props);
-          Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, producer);
+          Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, dbBit, producer);
           producer.close();
         } else {
-          Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL);
+          Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, dbBit);
         }
 
       }
@@ -76,26 +77,30 @@ public class Updater {
    * Downloads replication files, transforms them to OSHDB-Objects and stores them in a
    * JDBC-Database.At the same time it provides an index of updated entites.
    *
+   * @param etlFiles The directory for the Files containing all currently known Entites
+   * @param keytables Database for keytables
    * @param updateDb Connection to JDBC-Database where Updates should be stored.
    * @param workingDirectory The working-directory to download replication files to and save Update
    * states.
    * @param replicationUrl The URL to get replication files from. Determines if monthly, dayly etc.
    * updates are preferred.
+   * @param dbBit Database for a BitMap flagging changed Entites
    * @param producer a producer to promote updated entites to a kafka-cluster
+   * @throws java.sql.SQLException
    */
-  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection updateDb, URL replicationUrl, Producer<String, Stream<Byte[]>> producer) throws SQLException {
+  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection updateDb, URL replicationUrl, Connection dbBit, Producer<String, Stream<Byte[]>> producer) throws SQLException, IOException, ClassNotFoundException {
     try (FileBasedLock fileLock = new FileBasedLock(workingDirectory.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
       Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, workingDirectory);
       Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
       Iterable<OSHEntity> oshEntities = OSCOSHTransformer.transform(etlFiles, keytables, changes);
-      OSHLoader.load(updateDb, oshEntities, producer);
+      OSHLoader.load(updateDb, oshEntities,dbBit, producer);
       fileLock.unlock();
     }
   }
 
-  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection conn, URL replicationUrl) throws SQLException {
-    Updater.update(etlFiles, keytables, workingDirectory, conn, replicationUrl, null);
+  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection conn, URL replicationUrl, Connection dbBit) throws SQLException, IOException, ClassNotFoundException {
+    Updater.update(etlFiles, keytables, workingDirectory, conn, replicationUrl, dbBit, null);
   }
 
   /**

@@ -177,6 +177,7 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         //create object
         OSHNode theNode = OSHNode.build(nodes);
         //append object
+        //TODO?:could (or should) also be done when loading...!!!!!
         EtlFileHandler.appendEntity(this.etlFiles, theNode);
         //return object
         return theNode;
