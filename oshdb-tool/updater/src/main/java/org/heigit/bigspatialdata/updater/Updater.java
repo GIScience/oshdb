@@ -35,7 +35,7 @@ public class Updater {
   private static final String LOCK_FILE = "update.lock";
   private static final Logger LOG = LoggerFactory.getLogger(Updater.class);
 
-  public static void main(String[] args) throws MalformedURLException, SQLException, ClassNotFoundException, IgniteCheckedException, FileNotFoundException, IOException {
+  public static void main(String[] args) throws MalformedURLException, ClassNotFoundException, IgniteCheckedException, FileNotFoundException, IOException, SQLException {
     UpdateArgs config = new UpdateArgs();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();
     try {
@@ -49,26 +49,26 @@ public class Updater {
       jcom.usage();
       return;
     }
-
-    Connection updateDb = DriverManager.getConnection(config.jdbc);
-    Connection keytables = DriverManager.getConnection(config.keytables, "sa", "");
     config.workDir.toFile().mkdirs();
 
-    if (config.flush) {
-      Connection oshdb = DriverManager.getConnection(config.dbconfig);
-      Updater.flush(oshdb, updateDb);
-    } else {
-      if (config.kafka != null) {
-        Properties props = new Properties();
-        FileInputStream input = new FileInputStream(config.kafka);
-        props.load(input);
-        Producer<String, Stream<Byte[]>> producer = new KafkaProducer<>(props);
-        Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, producer);
-        producer.close();
+    try (Connection updateDb = DriverManager.getConnection(config.jdbc);
+        Connection keytables = DriverManager.getConnection(config.keytables, "sa", "");) {
+      if (config.flush) {
+        Connection oshdb = DriverManager.getConnection(config.dbconfig);
+        Updater.flush(oshdb, updateDb);
       } else {
-        Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL);
-      }
+        if (config.kafka != null) {
+          Properties props = new Properties();
+          FileInputStream input = new FileInputStream(config.kafka);
+          props.load(input);
+          Producer<String, Stream<Byte[]>> producer = new KafkaProducer<>(props);
+          Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, producer);
+          producer.close();
+        } else {
+          Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL);
+        }
 
+      }
     }
   }
 
@@ -83,7 +83,7 @@ public class Updater {
    * updates are preferred.
    * @param producer a producer to promote updated entites to a kafka-cluster
    */
-  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection updateDb, URL replicationUrl, Producer<String, Stream<Byte[]>> producer) {
+  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection updateDb, URL replicationUrl, Producer<String, Stream<Byte[]>> producer) throws SQLException {
     try (FileBasedLock fileLock = new FileBasedLock(workingDirectory.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
       Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, workingDirectory);
@@ -94,7 +94,7 @@ public class Updater {
     }
   }
 
-  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection conn, URL replicationUrl) {
+  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection conn, URL replicationUrl) throws SQLException {
     Updater.update(etlFiles, keytables, workingDirectory, conn, replicationUrl, null);
   }
 
