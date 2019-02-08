@@ -60,6 +60,8 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
+  public static final boolean IS_CANCELABLE = true;
+
   public MapReducerIgniteScanQuery(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
@@ -68,6 +70,11 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
   // copy constructor
   private MapReducerIgniteScanQuery(MapReducerIgniteScanQuery obj) {
     super(obj);
+  }
+
+  @Override
+  public boolean isCancelable() {
+    return true;
   }
 
   @NotNull

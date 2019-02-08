@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -122,6 +123,13 @@ public abstract class MapReducer<X> implements
   }
 
   Grouping grouping = Grouping.NONE;
+
+  /**
+   * Returns if the current backend can be canceled (e.g. in a query timeout).
+   */
+  public boolean isCancelable() {
+    return false;
+  }
 
   // utility objects
   private transient TagTranslator tagTranslator = null;
@@ -931,6 +939,7 @@ public abstract class MapReducer<X> implements
       SerializableBiFunction<S, X, S> accumulator,
       SerializableBinaryOperator<S> combiner)
       throws Exception {
+    checkCancelable();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -1423,6 +1432,7 @@ public abstract class MapReducer<X> implements
 
   @Contract(pure = true)
   private Stream<X> streamInternal() throws Exception {
+    checkCancelable();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -1876,6 +1886,20 @@ public abstract class MapReducer<X> implements
           "Cannot convert to non-numeric values of type: " + x.getClass().toString());
     }
     return (Number) x;
+  }
+
+  /**
+   * Checks if the current request should be run on a cancelable backend.
+   * Produces a log message if not.
+    */
+  private void checkCancelable() {
+    if (this.oshdb instanceof OSHDBIgnite) {
+      if (((OSHDBIgnite) this.oshdb).timeoutInMilliseconds().isPresent()) {
+        if (!this.isCancelable()) {
+          LOG.error("A query timeout was set but the database backend isn't cancelable");
+        }
+      }
+    }
   }
 
   @Contract(pure = true)

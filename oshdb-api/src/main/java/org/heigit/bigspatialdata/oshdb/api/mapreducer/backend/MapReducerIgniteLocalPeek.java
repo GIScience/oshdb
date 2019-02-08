@@ -66,6 +66,11 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     super(obj);
   }
 
+  @Override
+  public boolean isCancelable() {
+    return true;
+  }
+
   @NotNull
   @Override
   protected MapReducer<X> copy() {
