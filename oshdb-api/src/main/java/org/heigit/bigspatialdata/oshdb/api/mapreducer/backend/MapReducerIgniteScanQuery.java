@@ -288,7 +288,8 @@ class IgniteScanQueryHelper {
       return super.execute(node, Kernels.getOSMContributionCellReducer(
           this.mapper,
           this.identitySupplier,
-          this.accumulator
+          this.accumulator,
+          this
       ));
     }
   }
@@ -312,7 +313,8 @@ class IgniteScanQueryHelper {
       return super.execute(node, Kernels.getOSMContributionGroupingCellReducer(
           this.mapper,
           this.identitySupplier,
-          this.accumulator
+          this.accumulator,
+          this
       ));
     }
   }
@@ -336,7 +338,8 @@ class IgniteScanQueryHelper {
       return super.execute(node, Kernels.getOSMEntitySnapshotCellReducer(
           this.mapper,
           this.identitySupplier,
-          this.accumulator
+          this.accumulator,
+          this
       ));
     }
   }
@@ -360,7 +363,8 @@ class IgniteScanQueryHelper {
       return super.execute(node, Kernels.getOSMEntitySnapshotGroupingCellReducer(
           this.mapper,
           this.identitySupplier,
-          this.accumulator
+          this.accumulator,
+          this
       ));
     }
   }

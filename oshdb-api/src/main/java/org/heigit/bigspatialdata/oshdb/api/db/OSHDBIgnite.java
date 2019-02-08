@@ -155,9 +155,6 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * @return the current oshdb object
    */
   public OSHDBIgnite timeoutInMilliseconds(long milliSeconds) {
-    if (this.computeMode() == ComputeMode.ScanQuery) {
-      throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
-    }
     this.timeout = milliSeconds;
     return this;
   }
