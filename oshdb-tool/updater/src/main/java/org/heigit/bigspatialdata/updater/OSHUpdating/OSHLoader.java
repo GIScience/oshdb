@@ -8,8 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -36,7 +36,7 @@ public class OSHLoader {
    * @param oshEntities
    * @param producer
    */
-  public static void load(Connection updateDb, Iterable<OSHEntity> oshEntities, Connection dbBit, Producer<String, Stream<Byte[]>> producer) throws SQLException, IOException, ClassNotFoundException {
+  public static void load(Connection updateDb, Iterable<OSHEntity> oshEntities, Connection dbBit, Producer<Long, Byte[]> producer) throws SQLException, IOException, ClassNotFoundException {
     LOG.info("loading");
     Map<OSMType, LongBitmapDataProvider> bitmapMap = UpdateDatabaseHandler.prepareDB(updateDb, dbBit);
     oshEntities.forEach((OSHEntity oshEntity) -> {
@@ -68,7 +68,11 @@ public class OSHLoader {
 
   }
 
-  public static void promote(Producer<String, Stream<Byte[]>> producer, Iterable<OSHEntity> oshEntities) {
-
+  public static void promote(Producer<Long, Byte[]> producer, Iterable<OSHEntity> oshEntities) {
+    oshEntities.forEach(oshentity -> {
+      ProducerRecord<Long, Byte[]> pr = new ProducerRecord(oshentity.getType().toString(), 0, oshentity.getLatest().getTimestamp().toDate().getTime(), oshentity.getId(), oshentity.getData());
+      producer.send(pr);
+    });
+    producer.close();
   }
 }

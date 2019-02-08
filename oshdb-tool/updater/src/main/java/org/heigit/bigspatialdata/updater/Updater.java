@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.stream.Stream;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -62,7 +61,7 @@ public class Updater {
           Properties props = new Properties();
           FileInputStream input = new FileInputStream(config.kafka);
           props.load(input);
-          Producer<String, Stream<Byte[]>> producer = new KafkaProducer<>(props);
+          Producer<Long, Byte[]> producer = new KafkaProducer<>(props);
           Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, dbBit, producer);
           producer.close();
         } else {
@@ -88,7 +87,7 @@ public class Updater {
    * @param producer a producer to promote updated entites to a kafka-cluster
    * @throws java.sql.SQLException
    */
-  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection updateDb, URL replicationUrl, Connection dbBit, Producer<String, Stream<Byte[]>> producer) throws SQLException, IOException, ClassNotFoundException {
+  public static void update(Path etlFiles, Connection keytables, Path workingDirectory, Connection updateDb, URL replicationUrl, Connection dbBit, Producer<Long, Byte[]> producer) throws SQLException, IOException, ClassNotFoundException {
     try (FileBasedLock fileLock = new FileBasedLock(workingDirectory.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
       Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, workingDirectory);
