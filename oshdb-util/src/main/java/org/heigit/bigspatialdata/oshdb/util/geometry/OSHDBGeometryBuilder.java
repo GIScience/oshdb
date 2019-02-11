@@ -279,24 +279,31 @@ public class OSHDBGeometryBuilder {
       T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, P clipPoly) {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipPoly);
+  } 
+  
+  /**
+   * Create the Geometry of an OSHDBBoundingBox. Will always contain 5 Coordinates, even for
+   * point-like bbx -> point-like polygons for bbx of a Point.
+   *
+   * @param bbox The BoundingBox the polygon should be created for.
+   * @return com.vividsolutions.jts.geom.Geometry Returns JTS geometry object for convenience.
+   * Result is an empty polygon for a null BBX.
+   */
+  public static Polygon getGeometry(OSHDBBoundingBox bbox) {
+    GeometryFactory gf = new GeometryFactory();
+    if (bbox == null) {
+      return gf.createPolygon((LinearRing) null);
+    }
+    Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
+    Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
+    Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());
+    Coordinate ne = new Coordinate(bbox.getMinLon(), bbox.getMaxLat());
+
+    Coordinate[] cordAr = {sw, se, nw, ne, sw};
+
+    return gf.createPolygon(cordAr);
   }
   
- 
- /**
-  * returns JTS geometry object for convenience
-  *
-  * @return com.vividsolutions.jts.geom.Geometry
-  */
- public static Polygon getGeometry(OSHDBBoundingBox bbox) {
-   GeometryFactory gf = new GeometryFactory();
-   Geometry g = gf.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
-   if (g instanceof Polygon)
-     return (Polygon) g;
-   else
-    return gf.createPolygon((LinearRing) null);
- }
- 
- 
  public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
    return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
  }
