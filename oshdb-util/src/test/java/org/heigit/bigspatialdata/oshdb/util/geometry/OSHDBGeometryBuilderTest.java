@@ -19,6 +19,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
 import org.junit.Test;
+import org.junit.Assert;
 
 public class OSHDBGeometryBuilderTest {
   private OSMXmlReader testData = new OSMXmlReader();
