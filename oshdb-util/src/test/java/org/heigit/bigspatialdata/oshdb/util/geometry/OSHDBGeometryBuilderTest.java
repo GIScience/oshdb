@@ -160,6 +160,28 @@ public class OSHDBGeometryBuilderTest {
     assertEquals("GeometryCollection", result.getGeometryType());
     assertEquals(1, result.getNumGeometries());
   }
+  
+  @Test
+  public void testBoundingBoxGetGeometry() {
+    OSHDBBoundingBox bbx = new OSHDBBoundingBox(0, 0, 0, 0);
+    Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbx);
+    Coordinate[] test = {new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0)};
+    Assert.assertArrayEquals(test, geometry.getCoordinates());
+
+    bbx = new OSHDBBoundingBox(0, 0, 1, 1);
+    geometry = OSHDBGeometryBuilder.getGeometry(bbx);
+    test = new Coordinate[]{new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1), new Coordinate(0, 1), new Coordinate(0, 0)};
+    Assert.assertArrayEquals(test, geometry.getCoordinates());
+
+    bbx = new OSHDBBoundingBox(0, 0, 0, 1);
+    geometry = OSHDBGeometryBuilder.getGeometry(bbx);
+    test = new Coordinate[]{new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 1), new Coordinate(0, 1), new Coordinate(0, 0)};
+    Assert.assertArrayEquals(test, geometry.getCoordinates());
+
+    bbx = null;
+    geometry = OSHDBGeometryBuilder.getGeometry(bbx);
+    assertEquals(true, geometry.isEmpty());
+  }  
 }
 
 
