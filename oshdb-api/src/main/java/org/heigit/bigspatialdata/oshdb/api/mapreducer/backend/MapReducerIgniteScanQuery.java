@@ -19,6 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
+import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.affinity.Affinity;
 import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
@@ -168,8 +169,6 @@ class IgniteScanQueryHelper {
     @IgniteInstanceResource
     Ignite node;
 
-    IgniteCache<Long, GridOSHEntity> cache;
-
     /* computation settings */
     final String cacheName;
     final Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel;
@@ -200,9 +199,10 @@ class IgniteScanQueryHelper {
       this.nodesToPart = nodesToPart;
     }
 
-    boolean cellIdInRange(GridOSHEntity cell) {
-      int level = cell.getLevel();
-      long id = cell.getId();
+    boolean cellKeyInRange(Long cellKey) {
+      CellId cellId = CellId.fromLevelId(cellKey);
+      int level = cellId.getZoomLevel();
+      long id = cellId.getId();
       if (!cellIdRangesByLevel.containsKey(level)) {
         return false;
       }
@@ -216,7 +216,7 @@ class IgniteScanQueryHelper {
     }
 
     S call(CellProcessor<S> cellProcessor) {
-      cache = node.cache(cacheName);
+      IgniteCache<Long, BinaryObject> cache = node.cache(cacheName).withKeepBinary();
       // Getting a list of the partitions owned by this node.
       List<Integer> myPartitions = nodesToPart.get(node.cluster().localNode().id());
       Collections.shuffle(myPartitions);
@@ -225,11 +225,16 @@ class IgniteScanQueryHelper {
         // noinspection unchecked
         try (
             QueryCursor<S> cursor = cache.query(
-                new ScanQuery((key, cell) -> this.cellIdInRange((GridOSHEntity)cell))
+                new ScanQuery((key, cell) -> this.cellKeyInRange((Long)key))
                 .setPartition(part), cacheEntry -> {
                   // iterate over the history of all OSM objects in the current cell
-                  GridOSHEntity oshEntityCell = ((Cache.Entry<Long, GridOSHEntity>) cacheEntry)
-                      .getValue();
+                  Object data = ((Cache.Entry<Long, Object>) cacheEntry).getValue();
+                  GridOSHEntity oshEntityCell;
+                  if (data instanceof BinaryObject) {
+                    oshEntityCell = ((BinaryObject) data).deserialize();
+                  } else {
+                    oshEntityCell = (GridOSHEntity) data;
+                  }
                   return cellProcessor.apply(oshEntityCell, this.cellIterator);
                 }
             )
