@@ -229,29 +229,29 @@ public class OSHDBGeometryBuilder {
         boolean joinable = false;
         for (int i = 0; i < ways.size(); i++) {
           List<OSMNode> what = ways.get(i);
-          if (lastId == what.get(0).getId()) { // end of partial ring matches to start of current
-                                               // line
+          if (lastId == what.get(0).getId()) {
+            // end of partial ring matches to start of current line
             what.remove(0);
             current.addAll(what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(what.size() - 1).getId()) { // start of partial ring
-                                                                     // matches end of current line
+          } else if (firstId == what.get(what.size() - 1).getId()) {
+            // start of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(0, what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (lastId == what.get(what.size() - 1).getId()) { // end of partial ring matches
-                                                                    // end of current line
+          } else if (lastId == what.get(what.size() - 1).getId()) {
+            // end of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(Lists.reverse(what));
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(0).getId()) { // start of partial ring matches start of
-                                                       // current line
+          } else if (firstId == what.get(0).getId()) {
+            // start of partial ring matches start of current line
             what.remove(0);
             current.addAll(0, Lists.reverse(what));
             ways.remove(i);
@@ -282,12 +282,16 @@ public class OSHDBGeometryBuilder {
   }
   
   /**
-   * Create the Geometry of an OSHDBBoundingBox. Will return a polygon with exactly 4 vertices even
-   * for point or line-like BoundingBox. Nevertheless the result might not pass the 
-   * {@link com.vividsolutions.jts.geom.Geometry#isRectangle() Geometry.isRectangle} test.
+   * Converts a OSHDBBoundingBox to a rectangular polygon.
+   *
+   * <p>
+   * Will return a polygon with exactly 4 vertices even for point or line-like BoundingBox.
+   * Nevertheless, for degenerate bounding boxes (width and/or height of 0) the result might
+   * not pass the {@link Geometry#isRectangle() Geometry.isRectangle} test.
+   * </p>
    *
    * @param bbox The BoundingBox the polygon should be created for.
-   * @return com.vividsolutions.jts.geom.Geometry Returns a Polygon for convenience.
+   * @return a rectangular Polygon
    */
   public static Polygon getGeometry(OSHDBBoundingBox bbox) {
     assert bbox != null : "a bounding box is not allowed to be null";
@@ -304,8 +308,8 @@ public class OSHDBGeometryBuilder {
     return gf.createPolygon(cordAr);
   }
   
- public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
-   return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
- }
+  public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
+    return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
+  }
 
 }
