@@ -279,21 +279,21 @@ public class OSHDBGeometryBuilder {
       T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, P clipPoly) {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipPoly);
-  } 
+  }
   
   /**
-   * Create the Geometry of an OSHDBBoundingBox. Will always contain 5 Coordinates, even for
-   * point-like bbx -> point-like polygons for bbx of a Point.
+   * Create the Geometry of an OSHDBBoundingBox. Will return a polygon with exactly 4 vertices even
+   * for point or line-like BoundingBox. Nevertheless the result might not pass the 
+   * {@link com.vividsolutions.jts.geom.Geometry#isRectangle() Geometry.isRectangle} test.
    *
    * @param bbox The BoundingBox the polygon should be created for.
-   * @return com.vividsolutions.jts.geom.Geometry Returns JTS geometry object for convenience.
-   * Result is an empty polygon for a null BBX.
+   * @return com.vividsolutions.jts.geom.Geometry Returns a Polygon for convenience.
    */
   public static Polygon getGeometry(OSHDBBoundingBox bbox) {
+    assert bbox != null : "a bounding box is not allowed to be null";
+    
     GeometryFactory gf = new GeometryFactory();
-    if (bbox == null) {
-      return gf.createPolygon((LinearRing) null);
-    }
+        
     Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
     Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
     Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());

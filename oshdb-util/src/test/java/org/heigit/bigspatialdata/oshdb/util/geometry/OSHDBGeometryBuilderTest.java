@@ -20,6 +20,8 @@ import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
 import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 
 public class OSHDBGeometryBuilderTest {
   private OSMXmlReader testData = new OSMXmlReader();
@@ -38,6 +40,9 @@ public class OSHDBGeometryBuilderTest {
       return null;
     }
   }
+  
+  @Rule
+  public final ExpectedException exception = ExpectedException.none();
 
   @Test
   public void testPointGetGeometry() {
@@ -165,24 +170,24 @@ public class OSHDBGeometryBuilderTest {
   
   @Test
   public void testBoundingBoxGetGeometry() {
-    OSHDBBoundingBox bbx = new OSHDBBoundingBox(0, 0, 0, 0);
-    Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbx);
-    Coordinate[] test = {new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0)};
+    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0, 0, 1, 1);
+    Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbox);
+    Coordinate[] test = {new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1), new Coordinate(0, 1), new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
 
-    bbx = new OSHDBBoundingBox(0, 0, 1, 1);
-    geometry = OSHDBGeometryBuilder.getGeometry(bbx);
-    test = new Coordinate[]{new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1), new Coordinate(0, 1), new Coordinate(0, 0)};
+    bbox = new OSHDBBoundingBox(0, 0, 0, 0);
+    geometry = OSHDBGeometryBuilder.getGeometry(bbox);
+    test = new Coordinate[]{new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
 
-    bbx = new OSHDBBoundingBox(0, 0, 0, 1);
-    geometry = OSHDBGeometryBuilder.getGeometry(bbx);
+    bbox = new OSHDBBoundingBox(0, 0, 0, 1);
+    geometry = OSHDBGeometryBuilder.getGeometry(bbox);
     test = new Coordinate[]{new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 1), new Coordinate(0, 1), new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
 
-    bbx = null;
-    geometry = OSHDBGeometryBuilder.getGeometry(bbx);
-    assertEquals(true, geometry.isEmpty());
+    bbox = null;
+    exception.expect(AssertionError.class);
+    OSHDBGeometryBuilder.getGeometry(bbox);
   }  
 }
 
