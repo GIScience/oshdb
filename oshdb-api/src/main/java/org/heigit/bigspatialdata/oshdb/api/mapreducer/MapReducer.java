@@ -496,10 +496,9 @@ public abstract class MapReducer<X> implements
       ret.filters.add(ignored -> false);
       return ret;
     }
-    int keyId = keyValueId.getKey();
-    int valueId = keyValueId.getValue();
+    OSHDBTagKey keyId = new OSHDBTagKey(keyValueId.getKey());
     ret.preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    ret.filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
+    ret.filters.add(osmEntity -> osmEntity.hasTagValue(keyValueId.getKey(), keyValueId.getValue()));
     return ret;
   }
 
