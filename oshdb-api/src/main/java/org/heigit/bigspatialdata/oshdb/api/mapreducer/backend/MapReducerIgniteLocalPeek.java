@@ -365,7 +365,7 @@ class IgniteLocalPeekHelper {
   /**
    * Executes a compute job on all ignite nodes and further reduces and returns result(s).
    *
-   * @throws IgniteFutureTimeoutException if a timeout was set and the computations took too long.
+   * @throws OSHDBTimeoutException if a timeout was set and the computations took too long.
    */
   private static <V, R, M, S, P extends Geometry & Polygonal> S mapReduceOnIgniteCache(
       OSHDBIgnite oshdb, SerializableSupplier<S> identitySupplier,
