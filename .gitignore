@@ -53,7 +53,8 @@ transform_way_00_00
 
 ## But track these files:
 !oshdb/src/test/resources/keytables.mv.db
-!oshdb-api/src/test/resources/tes-data.mv.db
+!oshdb-api/src/test/resources/test-data.mv.db
+!oshdb-api/src/test/resources/update-test-data.mv.db
 !oshdb-tool/etl/src/test/resources/test.mv.db
 !oshdb-util/src/test/resources/test-data.mv.db
 
