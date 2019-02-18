@@ -28,7 +28,6 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -1892,11 +1891,9 @@ public abstract class MapReducer<X> implements
    * Produces a log message if not.
     */
   private void checkCancelable() {
-    if (this.oshdb instanceof OSHDBIgnite) {
-      if (((OSHDBIgnite) this.oshdb).timeoutInMilliseconds().isPresent()) {
-        if (!this.isCancelable()) {
-          LOG.error("A query timeout was set but the database backend isn't cancelable");
-        }
+    if (this.oshdb.timeoutInMilliseconds().isPresent()) {
+      if (!this.isCancelable()) {
+        LOG.error("A query timeout was set but the database backend isn't cancelable");
       }
     }
   }
