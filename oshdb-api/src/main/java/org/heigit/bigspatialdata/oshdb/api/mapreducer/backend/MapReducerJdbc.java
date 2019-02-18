@@ -45,8 +45,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
 
   @Override
   public boolean isActive() {
-    OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
-    OptionalLong timeout = oshdb.timeoutInMilliseconds();
+    OptionalLong timeout = this.oshdb.timeoutInMilliseconds();
 
     if (timeout.isPresent()) {
       if (System.currentTimeMillis() - executionStartTimeMillis > timeout.getAsLong()) {
