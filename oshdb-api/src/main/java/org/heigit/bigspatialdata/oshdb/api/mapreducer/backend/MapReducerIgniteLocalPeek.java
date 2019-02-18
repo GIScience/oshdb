@@ -66,11 +66,6 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     super(obj);
   }
 
-  @Override
-  public boolean isCancelable() {
-    return true;
-  }
-
   @NotNull
   @Override
   protected MapReducer<X> copy() {
@@ -80,6 +75,11 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   private List<String> cacheNames(String prefix) {
     return this.typeFilter.stream().map(TableNames::forOSMType).filter(Optional::isPresent)
         .map(Optional::get).map(tn -> tn.toString(prefix)).collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean isCancelable() {
+    return true;
   }
 
   @Override

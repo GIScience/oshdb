@@ -73,15 +73,15 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     super(obj);
   }
 
-  @Override
-  public boolean isCancelable() {
-    return true;
-  }
-
   @NotNull
   @Override
   protected MapReducer<X> copy() {
     return new MapReducerIgniteScanQuery<X>(this);
+  }
+
+  @Override
+  public boolean isCancelable() {
+    return true;
   }
 
   @Override

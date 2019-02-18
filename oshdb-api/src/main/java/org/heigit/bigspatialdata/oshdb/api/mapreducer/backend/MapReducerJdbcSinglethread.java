@@ -41,12 +41,18 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     return new MapReducerJdbcSinglethread<X>(this);
   }
 
+  @Override
+  public boolean isCancelable() {
+    return true;
+  }
 
   private <S> S reduce(
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),
@@ -93,7 +99,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMContributionCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMContributionCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -107,7 +118,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMContributionGroupingCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMContributionGroupingCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -121,7 +137,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMEntitySnapshotCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMEntitySnapshotCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -135,7 +156,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMEntitySnapshotGroupingCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMEntitySnapshotGroupingCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );

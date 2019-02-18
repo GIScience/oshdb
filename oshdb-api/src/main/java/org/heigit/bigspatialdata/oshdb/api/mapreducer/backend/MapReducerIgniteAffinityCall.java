@@ -55,8 +55,8 @@ import org.json.simple.parser.ParseException;
  * the (~linear) inefficiency with this implementation.
  * </p>
  */
-public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> implements
-    CancelableProcessStatus {
+public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
+    implements CancelableProcessStatus {
 
   /**
    * Stores the start time of reduce/stream operation as returned by
@@ -74,6 +74,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> implements
     super(obj);
   }
 
+  @NotNull
+  @Override
+  protected MapReducer<X> copy() {
+    return new MapReducerIgniteAffinityCall<X>(this);
+  }
+
   @Override
   public boolean isCancelable() {
     return true;
@@ -81,8 +87,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> implements
 
   @Override
   public boolean isActive() {
-    OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
-    OptionalLong timeout = oshdb.timeoutInMilliseconds();
+    OptionalLong timeout = this.oshdb.timeoutInMilliseconds();
 
     if (timeout.isPresent()) {
       if (System.currentTimeMillis() - executionStartTimeMillis > timeout.getAsLong()) {
@@ -90,12 +95,6 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> implements
       }
     }
     return true;
-  }
-
-  @NotNull
-  @Override
-  protected MapReducer<X> copy() {
-    return new MapReducerIgniteAffinityCall<X>(this);
   }
 
   @Nonnull
