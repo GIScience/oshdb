@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.updater.util;
 
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlStore;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -19,6 +20,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlFileStore;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
@@ -40,28 +42,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OSCOSHTransformer implements Iterator<OSHEntity> {
+
   //Attention: does not propperly handled missing data at time of Update. If data is provided with a later update, previous referencing Entities are not updated and remain in an incomplete state -> see comment about handling missing data
   private static final Logger LOG = LoggerFactory.getLogger(OSCOSHTransformer.class);
 
-  public static Iterable<OSHEntity> transform(Path etlFiles, Connection keytables, Iterable<ChangeContainer> changes) {
+  public static Iterable<OSHEntity> transform(Path etlFiles, Connection keytables,
+      Iterable<ChangeContainer> changes) {
     LOG.info("processing");
     return new Iterable<OSHEntity>() {
       @Override
       public Iterator<OSHEntity> iterator() {
         return new OSCOSHTransformer(etlFiles, keytables, changes);
       }
+
     };
   }
-  private final Path etlFiles;
 
-  private OSHEntity onChange(ChangeContainer change) throws IOException, OSHDBKeytablesNotFoundException, EntityNotFoudException {
+  private final EtlStore etlStore;
+
+  private OSHEntity onChange(ChangeContainer change) throws IOException,
+      OSHDBKeytablesNotFoundException {
     Entity entity = change.getEntityContainer().getEntity();
     //get previous version of entity, if any. This ensures that updates may come in any order and may handle reactivations
-    OSHEntity currEnt = (OSHEntity) EtlFileHandler.getEntity(this.etlFiles, entity.getType(), entity.getId());
-    if (currEnt != null) {
-      return this.combine(entity, currEnt);
-    }
-    return this.combine(entity, null);
+    OSHEntity currEnt = (OSHEntity) this.etlStore.getEntity(OSCOSHTransformer.convertType(entity
+        .getType()), entity.getId());
+    return this.combine(entity, currEnt);
   }
 
   private int[] getTags(Collection<Tag> tags) throws OSHDBKeytablesNotFoundException {
@@ -78,9 +83,10 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
     return tagsArray;
   }
 
-  private OSHEntity onDelete(ChangeContainer change) throws IOException, OSHDBKeytablesNotFoundException, EntityNotFoudException {
+  private OSHEntity onDelete(ChangeContainer change) throws IOException,
+      OSHDBKeytablesNotFoundException {
     Entity newEnt = change.getEntityContainer().getEntity();
-    newEnt.setId(-1 * newEnt.getId());
+    newEnt.setVersion(-1 * newEnt.getVersion());
     EntityContainer newCont;
     switch (newEnt.getType()) {
       case Node:
@@ -108,7 +114,7 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
   private OSCOSHTransformer(Path etlFiles, Connection keytables, Iterable<ChangeContainer> changes) {
     this.containers = changes.iterator();
     this.keytables = keytables;
-    this.etlFiles = etlFiles;
+    this.etlStore = new EtlFileStore(etlFiles);
   }
 
   @Override
@@ -136,13 +142,12 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
       LOG.error("error", ex);
     } catch (OSHDBKeytablesNotFoundException ex) {
       LOG.error("error", ex);
-    } catch (EntityNotFoudException ex) {
-      LOG.error("error", ex);
     }
     return null;
   }
 
-  private OSHEntity combine(Entity entity, OSHEntity ent2) throws OSHDBKeytablesNotFoundException, EntityNotFoudException, IOException {
+  private OSHEntity combine(Entity entity, OSHEntity ent2) throws OSHDBKeytablesNotFoundException,
+      IOException {
     //get basic information on object
     TagTranslator tt = new TagTranslator(this.keytables);
     long id = entity.getId();
@@ -166,7 +171,8 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         long latitude = (long) (OSHDB.GEOM_PRECISION_TO_LONG * ((Node) entity).getLatitude());
         long longitude = (long) (OSHDB.GEOM_PRECISION_TO_LONG * ((Node) entity).getLongitude());
         ArrayList<OSMNode> nodes = new ArrayList<>(1);
-        nodes.add(new OSMNode(id, version, timestamp, changeset, userId, tagsArray, latitude, longitude));
+        nodes.add(new OSMNode(id, version, timestamp, changeset, userId, tagsArray, latitude,
+            longitude));
         //get other versions (if any)
         if (ent2 != null) {
           ent2.forEach(node -> nodes.add((OSMNode) node));
@@ -178,7 +184,8 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         OSHNode theNode = OSHNode.build(nodes);
         //append object
         //TODO?:could (or should) also be done when loading...!!!!!
-        EtlFileHandler.appendEntity(this.etlFiles, theNode);
+        this.etlStore.appendEntity(theNode, new HashSet<Long>(), new HashSet<Long>(),
+            new HashSet<Long>());
         //return object
         return theNode;
 
@@ -190,12 +197,13 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         int i = 0;
         //all members in current version
         for (WayNode wn : wayNodes) {
-          OSHNode node = (OSHNode) EtlFileHandler.getEntity(this.etlFiles, EntityType.Node, wn.getNodeId());
+          OSHNode node = (OSHNode) this.etlStore.getEntity(OSMType.NODE, wn.getNodeId());
           //Handling missing data: account for updates coming unordered (e.g. way creation before referencing node creation. Maybe dummy node with ID would be better?
           if (node != null) {
             allNodes.add(node);
           } else {
-            LOG.warn("Missing Data for Node with ID: " + wn.getNodeId() + ". Data output might be corrupt?");
+            LOG.warn(
+                "Missing Data for Node with ID: " + wn.getNodeId() + ". Data output might be corrupt?");
           }
           OSMMember member = new OSMMember(wn.getNodeId(), OSMType.NODE, 0, node);
           refs[i] = member;
@@ -219,7 +227,8 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
 
         OSHWay theWay = OSHWay.build(ways, allNodes);
 
-        EtlFileHandler.appendEntity(this.etlFiles, theWay);
+        this.etlStore.appendEntity(theWay, new HashSet<Long>(), new HashSet<Long>(),
+            new HashSet<Long>());
 
         return theWay;
 
@@ -234,31 +243,38 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
           RelationMember rm = it.next();
           switch (rm.getMemberType()) {
             case Node:
-              OSHNode rNode = (OSHNode) EtlFileHandler.getEntity(etlFiles, EntityType.Node, rm.getMemberId());
+              OSHNode rNode = (OSHNode) this.etlStore.getEntity(OSMType.NODE, rm.getMemberId());
               if (rNode != null) {;
                 rNodes.add(rNode);
               } else {
-                LOG.warn("Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
+                LOG.warn(
+                    "Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
               }
-              OSMMember memberN = new OSMMember(rm.getMemberId(), OSMType.NODE, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rNode);
+              OSMMember memberN = new OSMMember(rm.getMemberId(), OSMType.NODE, tt.getOSHDBRoleOf(rm
+                  .getMemberRole()).toInt(), rNode);
               refs2[j] = memberN;
               break;
             case Way:
-              OSHWay rWay = (OSHWay) EtlFileHandler.getEntity(etlFiles, EntityType.Way, rm.getMemberId());
+              OSHWay rWay = (OSHWay) this.etlStore.getEntity(OSMType.WAY, rm.getMemberId());
               if (rWay != null) {
                 rWays.add(rWay);
               } else {
-                LOG.warn("Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
+                LOG.warn(
+                    "Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
               }
-              OSMMember memberW = new OSMMember(rm.getMemberId(), OSMType.WAY, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rWay);
+              OSMMember memberW = new OSMMember(rm.getMemberId(), OSMType.WAY, tt.getOSHDBRoleOf(rm
+                  .getMemberRole()).toInt(), rWay);
               refs2[j] = memberW;
               break;
             case Relation:
-              OSHRelation rRelation = (OSHRelation) EtlFileHandler.getEntity(etlFiles, EntityType.Relation, rm.getMemberId());
+              OSHRelation rRelation = (OSHRelation) this.etlStore.getEntity(OSMType.RELATION, rm
+                  .getMemberId());
               if (rRelation == null) {
-                LOG.warn("Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
+                LOG.warn(
+                    "Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
               }
-              OSMMember memberR = new OSMMember(rm.getMemberId(), OSMType.RELATION, tt.getOSHDBRoleOf(rm.getMemberRole()).toInt(), rRelation);
+              OSMMember memberR = new OSMMember(rm.getMemberId(), OSMType.RELATION, tt
+                  .getOSHDBRoleOf(rm.getMemberRole()).toInt(), rRelation);
               refs2[j] = memberR;
               break;
             default:
@@ -295,11 +311,27 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
 
         OSHRelation theRelation = OSHRelation.build(relations, rNodes, rWays);
 
-        EtlFileHandler.appendEntity(this.etlFiles, theRelation);
+        this.etlStore.appendEntity(theRelation, new HashSet<Long>(), new HashSet<Long>(),
+            new HashSet<Long>());
 
         return theRelation;
       default:
         throw new AssertionError(entity.getType().name());
+    }
+  }
+
+  public static OSMType convertType(EntityType type) {
+    switch (type) {
+      case Bound:
+        return null;
+      case Node:
+        return OSMType.NODE;
+      case Way:
+        return OSMType.WAY;
+      case Relation:
+        return OSMType.RELATION;
+      default:
+        throw new AssertionError(type.name());
     }
   }
 

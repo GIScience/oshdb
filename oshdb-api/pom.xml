@@ -35,12 +35,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>${h2.version}</version>
-    </dependency>
     
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -95,6 +89,26 @@
       <groupId>com.tdunning</groupId>
       <artifactId>t-digest</artifactId>
       <version>3.2</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.orbisgis</groupId>
+      <artifactId>h2gis</artifactId>
+      <version>${h2gis.version}</version>
+      <type>bundle</type>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-indexing</artifactId>
+      <version>${ignite.version}</version>
+    </dependency>
+    
+            
+    <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-geospatial</artifactId>
+      <version>${ignite.version}</version>
     </dependency>
   </dependencies>
 

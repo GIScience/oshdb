@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.UnknownServiceException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,12 +20,15 @@ import org.roaringbitmap.longlong.Roaring64NavigableMap;
 import org.slf4j.LoggerFactory;
 
 public class UpdateDatabaseHandler {
+
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UpdateDatabaseHandler.class);
 
-  public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit) throws SQLException {
+  public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit)
+      throws SQLException {
     bitmapMap.forEach((type, bitmap) -> {
       try {
-        PreparedStatement write = dbBit.prepareStatement("UPDATE " + TableNames.forOSMType(type).get() + "_bitmap SET bitmap=? WHERE id=1;");
+        PreparedStatement write = dbBit.prepareStatement("UPDATE " + TableNames.forOSMType(type)
+            .get() + "_bitmap SET bitmap=? WHERE id=1;");
         ByteArrayOutputStream s = new ByteArrayOutputStream();
         ObjectOutputStream d = new ObjectOutputStream(s);
         d.writeObject(bitmap);
@@ -39,7 +43,8 @@ public class UpdateDatabaseHandler {
     });
   }
 
-  public static Map<OSMType, LongBitmapDataProvider> getBitMap(Connection dbBit) throws SQLException, IOException, ClassNotFoundException {
+  public static Map<OSMType, LongBitmapDataProvider> getBitMap(Connection dbBit) throws SQLException,
+      IOException, ClassNotFoundException {
     Map<OSMType, LongBitmapDataProvider> map = new HashMap<>();
     for (OSMType type : OSMType.values()) {
       if (type != OSMType.UNKNOWN) {
@@ -50,38 +55,148 @@ public class UpdateDatabaseHandler {
         byte[] bytes = executeQuery.getBytes("bitmap");
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         ObjectInputStream input = new ObjectInputStream(bais);
-        LongBitmapDataProvider r = new Roaring64NavigableMap();
-        r = (LongBitmapDataProvider) input.readObject();
+        LongBitmapDataProvider r = (LongBitmapDataProvider) input.readObject();
         map.put(type, r);
       }
     }
     return map;
   }
 
-  public static Map<OSMType, LongBitmapDataProvider> prepareDB(Connection updateDb, Connection dbBit) throws SQLException, IOException, ClassNotFoundException {
-    Statement stmt = updateDb.createStatement();
-    Statement stmt2 = dbBit.createStatement();
+  public static Map<OSMType, LongBitmapDataProvider> prepareDB(Connection updateDb, Connection dbBit)
+      throws SQLException, IOException, ClassNotFoundException {
     for (OSMType type : OSMType.values()) {
       if (type != OSMType.UNKNOWN) {
-        String sqlCreate = "CREATE TABLE IF NOT EXISTS " + TableNames.forOSMType(type).get() + " (id bigint PRIMARY KEY," + " bbx GEOMETRY(POLYGON,4326)," + " data bytea);";
-        stmt.execute(sqlCreate);
-        String sqlIndex = "CREATE INDEX IF NOT EXISTS " + TableNames.forOSMType(type).get() + "_gix ON " + TableNames.forOSMType(type).get() + " USING GIST (bbx);";
-        stmt.execute(sqlIndex);
-        //one might prefer three entries in the same table instead of three tables with one entry?
-        LongBitmapDataProvider r = new Roaring64NavigableMap();
-        String sqlBit = "CREATE TABLE IF NOT EXISTS " + TableNames.forOSMType(type).get() + "_bitmap (id int PRIMARY KEY, bitmap bytea);";
-        stmt2.execute(sqlBit);
-        PreparedStatement st = dbBit.prepareStatement("INSERT INTO " + TableNames.forOSMType(type).get() + "_bitmap (id,bitmap) " + "VALUES (?,?) " + "ON CONFLICT (id) DO NOTHING;");
-        st.setInt(1, 1);
+
         ByteArrayOutputStream s = new ByteArrayOutputStream();
         ObjectOutputStream d = new ObjectOutputStream(s);
+        LongBitmapDataProvider r = new Roaring64NavigableMap();
         d.writeObject(r);
         byte[] toByteArray = s.toByteArray();
-        st.setBytes(2, toByteArray);
-        st.executeUpdate();
+
+        switch (updateDb.getClass().getName()) {
+          case "org.postgresql.jdbc.PgConnection":
+            UpdateDatabaseHandler.preparePostgresUpdateDb(type, updateDb);
+            UpdateDatabaseHandler.preparePostgresBitmapDb(type, dbBit, toByteArray);
+            break;
+          case "org.h2.jdbc.JdbcConnection":
+            UpdateDatabaseHandler.prepareH2UpdateDb(type, updateDb);
+            UpdateDatabaseHandler.prepareH2BitmapDb(type, dbBit, toByteArray);
+            break;
+          case "org.apache.ignite.internal.jdbc.thin.JdbcThinConnection":
+            UpdateDatabaseHandler.prepareIgniteUpdateDb(type, updateDb);
+            UpdateDatabaseHandler.prepareIgniteBitmapDb(type, dbBit, toByteArray);
+            break;
+          default:
+            throw new UnknownServiceException(
+                "The used driver --"
+                + updateDb.getClass().getName()
+                + "-- is not supportd yet. Please report to the developers");
+        }
       }
     }
     return UpdateDatabaseHandler.getBitMap(dbBit);
+  }
+
+  private static void prepareH2BitmapDb(OSMType type, Connection dbBit, byte[] bytea) throws
+      SQLException {
+    //one might prefer three entries in the same table instead of three tables with one entry?
+    String sqlBit = "CREATE TABLE IF NOT EXISTS " + TableNames.forOSMType(type).get()
+        + "_bitmap (id int PRIMARY KEY, bitmap bytea);";
+    Statement bitmapTableCreateStatement = dbBit.createStatement();
+    bitmapTableCreateStatement.execute(sqlBit);
+
+    PreparedStatement bitmapTableInsertStatement = dbBit.prepareStatement(
+        "INSERT IGNORE INTO "
+        + TableNames.forOSMType(type).get()
+        + "_bitmap (id,bitmap) VALUES (?,?);");
+    bitmapTableInsertStatement.setInt(1, 1);
+    bitmapTableInsertStatement.setBytes(2, bytea);
+    bitmapTableInsertStatement.executeUpdate();
+  }
+
+  private static void prepareH2UpdateDb(OSMType type, Connection updateDb) throws SQLException {
+    Statement dbStatement = updateDb.createStatement();
+    String setMode = "SET MODE MySQL; "
+        + "CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR \"org.h2gis.functions.factory.H2GISFunctions.load\"; "
+        + "CALL H2GIS_SPATIAL();";
+    dbStatement.execute(setMode);
+
+    String sqlCreate = "CREATE TABLE IF NOT EXISTS "
+        + TableNames.forOSMType(type).get()
+        + " (id BIGINT PRIMARY KEY, bbx GEOMETRY, data BYTEA);";
+    dbStatement.execute(sqlCreate);
+
+    String sqlIndex = "CREATE SPATIAL INDEX IF NOT EXISTS "
+        + TableNames.forOSMType(type).get() + "_oshdbspatialindex ON "
+        + TableNames.forOSMType(type).get() + "(bbx);";
+    dbStatement.execute(sqlIndex);
+
+  }
+
+  private static void prepareIgniteBitmapDb(OSMType type, Connection dbBit, byte[] bytea)
+      throws SQLException {
+    //one might prefer three entries in the same table instead of three tables with one entry?
+    String sqlBit = "CREATE TABLE IF NOT EXISTS " + TableNames.forOSMType(type).get()
+        + "_bitmap (id int PRIMARY KEY, bitmap bytea);";
+    Statement bitmapTableCreateStatement = dbBit.createStatement();
+    bitmapTableCreateStatement.execute(sqlBit);
+
+    PreparedStatement bitmapTableInsertStatement = dbBit.prepareStatement(
+        "INSERT INTO "
+        + TableNames.forOSMType(type).get()
+        + "_bitmap (id,bitmap) VALUES (?,?);");
+    bitmapTableInsertStatement.setInt(1, 1);
+    bitmapTableInsertStatement.setBytes(2, bytea);
+    try {
+      //ignite seems to automatically ignore if the row is present (put if abset): https://apacheignite-sql.readme.io/docs/insert#section-description
+      bitmapTableInsertStatement.executeUpdate();
+    } catch (SQLException e) {
+      LOG.warn("Is bitmap cache already present in ignite?", e);
+    }
+  }
+
+  private static void prepareIgniteUpdateDb(OSMType type, Connection updateDb) throws SQLException {
+    Statement dbStatement = updateDb.createStatement();
+    String sqlCreate = "CREATE TABLE IF NOT EXISTS "
+        + TableNames.forOSMType(type).get()
+        + " (id BIGINT PRIMARY KEY, bbx GEOMETRY, data BYTEA);";
+    dbStatement.execute(sqlCreate);
+
+    String sqlIndex = "CREATE SPATIAL INDEX IF NOT EXISTS "
+        + TableNames.forOSMType(type).get() + "_oshdbspatialindex ON "
+        + TableNames.forOSMType(type).get() + "(bbx);";
+    dbStatement.execute(sqlIndex);
+  }
+
+  private static void preparePostgresBitmapDb(OSMType type, Connection dbBit, byte[] bytea) throws
+      SQLException {
+    //one might prefer three entries in the same table instead of three tables with one entry?
+    String sqlBit = "CREATE TABLE IF NOT EXISTS " + TableNames.forOSMType(type).get()
+        + "_bitmap (id int PRIMARY KEY, bitmap bytea);";
+    Statement bitmapTableCreateStatement = dbBit.createStatement();
+    bitmapTableCreateStatement.execute(sqlBit);
+
+    PreparedStatement bitmapTableInsertStatement = dbBit.prepareStatement("INSERT INTO "
+        + TableNames.forOSMType(type).get()
+        + "_bitmap (id,bitmap) VALUES (?,?) ON CONFLICT (id) DO NOTHING;");
+    bitmapTableInsertStatement.setInt(1, 1);
+    bitmapTableInsertStatement.setBytes(2, bytea);
+    bitmapTableInsertStatement.executeUpdate();
+  }
+
+  private static void preparePostgresUpdateDb(OSMType type, Connection updateDb) throws
+      SQLException {
+    Statement dbStatement = updateDb.createStatement();
+
+    String sqlCreate = "CREATE TABLE IF NOT EXISTS "
+        + TableNames.forOSMType(type).get()
+        + " (id BIGINT PRIMARY KEY, bbx GEOMETRY(POlYGON,4326), data BYTEA);";
+    dbStatement.execute(sqlCreate);
+
+    String sqlIndex = "CREATE INDEX IF NOT EXISTS "
+        + TableNames.forOSMType(type).get() + "_gix ON "
+        + TableNames.forOSMType(type).get() + " USING GIST (bbx);";
+    dbStatement.execute(sqlIndex);
   }
 
 }

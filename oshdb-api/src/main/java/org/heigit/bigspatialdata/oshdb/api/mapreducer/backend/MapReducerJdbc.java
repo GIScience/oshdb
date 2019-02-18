@@ -1,5 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKBWriter;
+import com.vividsolutions.jts.io.WKTWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
@@ -21,8 +24,10 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 
 abstract class MapReducerJdbc<X> extends MapReducer<X> {
+
   MapReducerJdbc(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
@@ -96,4 +101,43 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> {
       throw new RuntimeException(e);
     }
   }
+
+  protected ResultSet getUpdates()
+      throws SQLException {
+    WKTWriter wktWriter = new WKTWriter();
+    String sqlQuery;
+    if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(this.update
+        .getConnection().getClass().getName())) {
+      sqlQuery = this.getPostGISQuery();
+    } else {
+      sqlQuery = this.getIgniteQuery();
+    }
+    PreparedStatement pstmt = this.update.getConnection().prepareStatement(sqlQuery);
+    Polygon geometry = OSHDBGeometryBuilder.getGeometry(this.bboxFilter);
+    pstmt.setObject(1, wktWriter.write(geometry));
+    return pstmt.executeQuery();
+  }
+
+  private String getIgniteQuery() {
+    return this.typeFilter.stream()
+        .map(osmType ->
+            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
+        )
+        .filter(Optional::isPresent).map(Optional::get)
+        .map(tn ->
+            "(SELECT data FROM " + tn + " WHERE bbx && ?)")
+        .collect(Collectors.joining(" union all "));
+  }
+
+  private String getPostGISQuery() {
+    return this.typeFilter.stream()
+        .map(osmType ->
+            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
+        )
+        .filter(Optional::isPresent).map(Optional::get)
+        .map(tn ->
+            "(SELECT data FROM " + tn + " WHERE ST_Intersects(bbx,ST_GeomFromText(?,4326)))")
+        .collect(Collectors.joining(" union all "));
+  }
+
 }

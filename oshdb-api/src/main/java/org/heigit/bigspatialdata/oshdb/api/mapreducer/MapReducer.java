@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBUpdate;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
@@ -113,6 +114,7 @@ public abstract class MapReducer<X> implements
 
   protected OSHDBDatabase oshdb;
   protected transient OSHDBJdbc keytables;
+  protected OSHDBUpdate update;
 
   // internal state
   Class<? extends OSHDBMapReducible> forClass;
@@ -165,6 +167,7 @@ public abstract class MapReducer<X> implements
     this.preFilters.addAll(obj.preFilters);
     this.filters.addAll(obj.filters);
     this.mappers.addAll(obj.mappers);
+    this.update=obj.update;
   }
 
   @NotNull
@@ -197,6 +200,20 @@ public abstract class MapReducer<X> implements
     }
     MapReducer<X> ret = this.copy();
     ret.keytables = keytables;
+    return ret;
+  }
+
+  /**
+   * Sets the update database and includes its content in results.
+   *
+   * @param updateDb
+   * @return
+   */
+  public MapReducer<X> updates(OSHDBUpdate updateDb) throws SQLException, IOException,
+      ClassNotFoundException {
+
+    MapReducer<X> ret = this.copy();
+    ret.update = updateDb;
     return ret;
   }
 

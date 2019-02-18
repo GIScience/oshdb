@@ -23,6 +23,7 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
+import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,7 @@ public class CellIterator implements Serializable {
   private FastPolygonOperations fastPolygonClipper;
   private TagInterpreter tagInterpreter;
   private OSHEntityFilter oshEntityPreFilter;
+  private OSHEntityFilter oshEntityUpdatePreFilter = (OSHEntity arg0) -> true;
   private OSMEntityFilter osmEntityFilter;
   private boolean includeOldStyleMultipolygons;
 
@@ -157,7 +159,8 @@ public class CellIterator implements Serializable {
 
     Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
-      if (!oshEntityPreFilter.test(oshEntity) ||
+      if (!oshEntityUpdatePreFilter.test(oshEntity) ||
+          !oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
               (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
@@ -399,7 +402,8 @@ public class CellIterator implements Serializable {
     Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
 
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
-      if (!oshEntityPreFilter.test(oshEntity) ||
+      if (!oshEntityUpdatePreFilter.test(oshEntity) ||
+          !oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
                   (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
@@ -653,6 +657,33 @@ public class CellIterator implements Serializable {
       // stream this oshEntity's results
       return results.stream();
     });
+  }
+
+  /**
+   * This method will set a filter to exclude entities from the resultset whos IDs are present in
+   * the given bitmaps. This method is primarily meant to exclude updated entities when querying the
+   * database. They then need to be included from the update database to have a complete resultset.
+   *
+   * @param bitMapIndex One bitmap per type storing ids of entites to ignore.
+   */
+  public void excludeIDs(Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
+    this.oshEntityUpdatePreFilter = (
+        OSHEntity arg0) -> !bitMapIndex.get(arg0.getType()).contains(arg0.getId()
+    );
+  }
+
+  /**
+   * This method will set a filter to exclude entities from the resultset whos IDs are NOT present
+   * in the given bitmaps. This method is an inversion of {@link #excludeIDs(java.util.Map)} and has
+   * the same primary use-case. Be sure to call it with the same argument-objects to get complete
+   * and no duplicate results.
+   *
+   * @param bitMapIndex One bitmap per type storing ids only of all entites to include.
+   */
+  public void includeIDsOnly(Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
+    this.oshEntityUpdatePreFilter = (
+        OSHEntity arg0) -> bitMapIndex.get(arg0.getType()).contains(arg0.getId()
+    );
   }
 
 }
