@@ -77,6 +77,8 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   private Stream<X> stream(
       CellProcessor<Collection<X>> cellProcessor
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),

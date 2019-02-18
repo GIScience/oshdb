@@ -51,6 +51,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),
@@ -71,6 +73,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
   private Stream<X> stream(
       CellProcessor<Collection<X>> processor
   ) throws ParseException, SQLException, IOException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),
