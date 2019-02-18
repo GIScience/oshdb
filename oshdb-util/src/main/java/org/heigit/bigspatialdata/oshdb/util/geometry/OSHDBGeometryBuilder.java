@@ -230,29 +230,29 @@ public class OSHDBGeometryBuilder {
         boolean joinable = false;
         for (int i = 0; i < ways.size(); i++) {
           List<OSMNode> what = ways.get(i);
-          if (lastId == what.get(0).getId()) { // end of partial ring matches to start of current
-                                               // line
+          if (lastId == what.get(0).getId()) {
+            // end of partial ring matches to start of current line
             what.remove(0);
             current.addAll(what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(what.size() - 1).getId()) { // start of partial ring
-                                                                     // matches end of current line
+          } else if (firstId == what.get(what.size() - 1).getId()) {
+            // start of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(0, what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (lastId == what.get(what.size() - 1).getId()) { // end of partial ring matches
-                                                                    // end of current line
+          } else if (lastId == what.get(what.size() - 1).getId()) {
+            // end of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(Lists.reverse(what));
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(0).getId()) { // start of partial ring matches start of
-                                                       // current line
+          } else if (firstId == what.get(0).getId()) {
+            // start of partial ring matches start of current line
             what.remove(0);
             current.addAll(0, Lists.reverse(what));
             ways.remove(i);
@@ -281,32 +281,36 @@ public class OSHDBGeometryBuilder {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipPoly);
   }
-  
- 
- /**
-  * returns JTS geometry object for convenience
-  *
-  * @return com.vividsolutions.jts.geom.Geometry
-  */
- public static Polygon getGeometry(OSHDBBoundingBox bbox) {
-   GeometryFactory gf = new GeometryFactory();
-   Geometry g = gf.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
 
-    if (g instanceof Polygon) {
-      return (Polygon) g;
-    } else if (g instanceof LineString) {
-      return gf.createPolygon((LinearRing) g);
-    } else if (g instanceof Point) {
-      Coordinate[] cordAr = {g.getCoordinate(), g.getCoordinate(), g.getCoordinate(), g.getCoordinate()};
-      return gf.createPolygon(cordAr);
-    } else {
-      return gf.createPolygon((LinearRing) null);
-    }
- }
- 
- 
- public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
-   return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
- }
+  /**
+   * Converts a OSHDBBoundingBox to a rectangular polygon.
+   *
+   * <p>
+   * Will return a polygon with exactly 4 vertices even for point or line-like BoundingBox.
+   * Nevertheless, for degenerate bounding boxes (width and/or height of 0) the result might
+   * not pass the {@link Geometry#isRectangle() Geometry.isRectangle} test.
+   * </p>
+   *
+   * @param bbox The BoundingBox the polygon should be created for.
+   * @return a rectangular Polygon
+   */
+  public static Polygon getGeometry(OSHDBBoundingBox bbox) {
+    assert bbox != null : "a bounding box is not allowed to be null";
+    
+    GeometryFactory gf = new GeometryFactory();
+        
+    Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
+    Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
+    Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());
+    Coordinate ne = new Coordinate(bbox.getMinLon(), bbox.getMaxLat());
+
+    Coordinate[] cordAr = {sw, se, nw, ne, sw};
+
+    return gf.createPolygon(cordAr);
+  }
+  
+  public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
+    return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
+  }
 
 }
