@@ -59,6 +59,16 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
   }
 
   /**
+   * Clears a previously set timeout for queries on this ignite oshdb backend.
+   *
+   * @return the current oshdb object
+   */
+  public OSHDBDatabase clearTimeout() {
+    this.timeout = null;
+    return this;
+  }
+
+  /**
    * Set a timeout for queries on this ignite oshdb backend.
    *
    * <p>If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be

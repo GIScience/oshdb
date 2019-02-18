@@ -114,6 +114,8 @@ public abstract class MapReducer<X> implements
   protected OSHDBDatabase oshdb;
   protected transient OSHDBJdbc keytables;
 
+  protected Long timeout = null;
+
   // internal state
   Class<? extends OSHDBMapReducible> forClass;
 
@@ -937,7 +939,7 @@ public abstract class MapReducer<X> implements
       SerializableBiFunction<S, X, S> accumulator,
       SerializableBinaryOperator<S> combiner)
       throws Exception {
-    checkCancelable();
+    checkTimeout();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -1430,7 +1432,7 @@ public abstract class MapReducer<X> implements
 
   @Contract(pure = true)
   private Stream<X> streamInternal() throws Exception {
-    checkCancelable();
+    checkTimeout();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -1890,10 +1892,12 @@ public abstract class MapReducer<X> implements
    * Checks if the current request should be run on a cancelable backend.
    * Produces a log message if not.
     */
-  private void checkCancelable() {
+  private void checkTimeout() {
     if (this.oshdb.timeoutInMilliseconds().isPresent()) {
       if (!this.isCancelable()) {
         LOG.error("A query timeout was set but the database backend isn't cancelable");
+      } else {
+        this.timeout = this.oshdb.timeoutInMilliseconds().getAsLong();
       }
     }
   }
