@@ -174,26 +174,26 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
       SerializableFunction<OSMContribution, X> mapper) throws Exception {
-    return this.stream(Kernels.getOSMContributionCellStreamer(mapper));
+    return this.stream(Kernels.getOSMContributionCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
   ) throws Exception {
-    return this.stream(Kernels.getOSMContributionGroupingCellStreamer(mapper));
+    return this.stream(Kernels.getOSMContributionGroupingCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
-    return this.stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper));
+    return this.stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
-    return this.stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper));
+    return this.stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper, this));
   }
 
 }
