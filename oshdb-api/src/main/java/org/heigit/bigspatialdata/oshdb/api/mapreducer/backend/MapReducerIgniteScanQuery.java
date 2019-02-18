@@ -61,8 +61,6 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
-  public static final boolean IS_CANCELABLE = true;
-
   public MapReducerIgniteScanQuery(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
