@@ -60,7 +60,7 @@ public class Updater {
     //for some reason postgres stops to work and is overwritten by h2 if this is not called:
     Class.forName("org.postgresql.Driver");
     Class.forName("org.h2.Driver");
-    Class.forName("org.apache.ignite.IgniteJdbcDriver");
+    Class.forName("org.apache.ignite.IgniteJdbcThinDriver");
     try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
         Connection keytables = DriverManager.getConnection(config.keytables, "sa", "");
         Connection dbBit = DriverManager.getConnection(config.baseArgs.dbbit)) {
