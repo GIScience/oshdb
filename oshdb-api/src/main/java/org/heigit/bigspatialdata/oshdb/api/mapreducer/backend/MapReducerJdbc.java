@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -16,13 +17,23 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 
-abstract class MapReducerJdbc<X> extends MapReducer<X> {
+abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProcessStatus {
+
+  /**
+   * Stores the start time of reduce/stream operation as returned by
+   * {@link System#currentTimeMillis()}. Used to determine query timeouts.
+   */
+  protected long executionStartTimeMillis;
+
   MapReducerJdbc(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
@@ -30,6 +41,14 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> {
   // copy constructor
   MapReducerJdbc(MapReducerJdbc obj) {
     super(obj);
+  }
+
+  @Override
+  public boolean isActive() {
+    if (timeout != null && System.currentTimeMillis() - executionStartTimeMillis > timeout) {
+      throw new OSHDBTimeoutException();
+    }
+    return true;
   }
 
   protected ResultSet getOshCellsRawDataFromDb(Pair<CellId, CellId> cellIdRange)
