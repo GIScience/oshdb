@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +46,8 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

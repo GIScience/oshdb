@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygonal;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.regex.Pattern;
@@ -12,6 +10,8 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
 
 /**
  * Interface defining the common setting methods found on MapReducer or MapAggregator objects.
