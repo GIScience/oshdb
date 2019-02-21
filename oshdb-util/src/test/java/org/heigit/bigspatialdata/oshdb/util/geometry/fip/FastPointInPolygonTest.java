@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
 import static org.junit.Assert.assertEquals;
 
-import com.vividsolutions.jts.geom.*;
+import org.locationtech.jts.geom.*;
 import org.junit.Test;
 
 
