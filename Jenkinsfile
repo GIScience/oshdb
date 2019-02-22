@@ -160,10 +160,10 @@ pipeline {
         scipt{
           dependenciesU=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates').trim()
         }
-        post {
-          failure {
-            rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
-          }
+      }
+      post {
+        failure {
+          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
     }
