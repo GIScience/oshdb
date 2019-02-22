@@ -157,7 +157,7 @@ pipeline {
         }
       }
       steps {
-        scipt{
+        script{
           updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates').trim()
         }
       }
