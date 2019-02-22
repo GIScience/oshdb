@@ -142,6 +142,32 @@ pipeline {
         }
       }
     }
+    
+    stage ('CheckDependencies') {
+      when {
+        expression {
+          if(currentBuild.number > 1){
+            monthpre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            echo monthpre
+            monthnow=new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            echo monthnow
+            return monthpre!=monthnow
+          }
+          return false
+        }
+      }
+      steps {
+        scipt{
+          dependenciesU=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies.*\n.* \n"').trim()
+        }
+        rocketSend channel: 'jenkinsohsome', message: "!!!!! This is your monthly notice that the following dependencies need update: ${dependenciesU}" , rawMessage: true
+      }
+      post {
+        failure {
+          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+        }
+      }
+    }
 
 
 
@@ -187,4 +213,3 @@ pipeline {
 
   }
 }
-
