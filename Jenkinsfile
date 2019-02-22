@@ -143,7 +143,7 @@ pipeline {
       }
     }
     
-    stage ('CheckDependencies') {
+    stage ('Check Dependencies') {
       when {
         expression {
           if(currentBuild.number > 1){
@@ -158,6 +158,7 @@ pipeline {
       }
       steps {
         scipt{
+          updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates').trim()
         }
       }
       post {
