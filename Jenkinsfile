@@ -158,7 +158,7 @@ pipeline {
       }
       steps {
         scipt{
-          dependenciesU=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "(\\?s)The following dependencies.*\'\n\'.* \'\n\'"').trim()
+          dependenciesU=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "\\(\\?s\\)The following dependencies.*\'\n\'.* \'\n\'"').trim()
         }
         rocketSend channel: 'jenkinsohsome', message: "!!!!! This is your monthly notice that the following dependencies need update: ${dependenciesU}" , rawMessage: true
       }
