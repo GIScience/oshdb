@@ -160,56 +160,55 @@ pipeline {
         scipt{
           dependenciesU=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates').trim()
         }
-        rocketSend channel: 'jenkinsohsome', message: "!!!!! This is your monthly notice that the following dependencies need update: ${dependenciesU}" , rawMessage: true
-      }
-      post {
-        failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
-        }
-      }
-    }
-
-
-
-    stage ('Encourage') {
-      when {
-        expression {
-          if(currentBuild.number > 1){
-            datepre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis()).clearTime()
-            echo datepre.format( 'yyyyMMdd' )
-            datenow=new Date(currentBuild.rawBuild.getStartTimeInMillis()).clearTime()
-            echo datenow.format( 'yyyyMMdd' )
-            return datepre.numberAwareCompareTo(datenow)<0
+        post {
+          failure {
+            rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
           }
-          return false
         }
       }
-      steps {
-        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you on OSHDB-Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
-      }
-      post {
-        failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Reporting of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+
+
+
+      stage ('Encourage') {
+        when {
+          expression {
+            if(currentBuild.number > 1){
+              datepre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis()).clearTime()
+              echo datepre.format( 'yyyyMMdd' )
+              datenow=new Date(currentBuild.rawBuild.getStartTimeInMillis()).clearTime()
+              echo datenow.format( 'yyyyMMdd' )
+              return datepre.numberAwareCompareTo(datenow)<0
+            }
+            return false
+          }
+        }
+        steps {
+          rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you on OSHDB-Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
+        }
+        post {
+          failure {
+            rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Reporting of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          }
         }
       }
+
+      stage ('Report Status Change'){
+        when {
+          expression {
+            return ((currentBuild.number > 1) && (currentBuild.getPreviousBuild().result == 'FAILURE'))
+          }
+        }
+        steps {
+          rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: oshdb-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+        }
+        post {
+          failure {
+            rocketSend channel: 'jenkinsohsome', message: "Reporting of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          }
+        }
+
+      }
+
     }
-
-    stage ('Report Status Change'){
-      when {
-        expression {
-          return ((currentBuild.number > 1) && (currentBuild.getPreviousBuild().result == 'FAILURE'))
-        }
-      }
-      steps {
-        rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: oshdb-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
-      }
-      post {
-        failure {
-          rocketSend channel: 'jenkinsohsome', message: "Reporting of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
-        }
-      }
-
-    }
-
   }
 }
