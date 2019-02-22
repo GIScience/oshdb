@@ -144,18 +144,24 @@ pipeline {
     }
     
     stage ('Check Dependencies') {
+      when {
+        expression {
+          if(currentBuild.number > 1){
+            monthpre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            echo monthpre.toString()
+            monthnow=new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            echo monthnow.toString()
+            return monthpre!=monthnow
+          }
+          return false
+        }
+      }
       steps {
         script{
-          
-          monthpre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-          echo monthpre+1.toString()
-          monthnow=new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-          echo monthnow+1.toString()
-          
           updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies.*\\n.* \\n"').trim()
           echo updatenotify
         }
-        rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "!!! This is your monthly notice! You might have updates in your dependecies. @rtroilo check this: ${updatenotify}" , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "!!! This is your monthly notice! You might have updates in your dependecies. @admin check this: ${updatenotify}" , rawMessage: true
       }
       post {
         failure {
