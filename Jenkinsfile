@@ -148,9 +148,9 @@ pipeline {
         expression {
           if(currentBuild.number > 1){
             monthpre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            echo monthpre
+            echo monthpre.toString()
             monthnow=new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            echo monthnow
+            echo monthnow.toString()
             return monthpre!=monthnow
           }
           return false
@@ -159,6 +159,7 @@ pipeline {
       steps {
         script{
           updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates').trim()
+          echo updatenotify
         }
       }
       post {
