@@ -158,7 +158,6 @@ pipeline {
       }
       steps {
         scipt{
-          dependenciesU=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates').trim()
         }
       }
       post {
@@ -191,7 +190,6 @@ pipeline {
         }
       }
     }
-      
 
     stage ('Report Status Change'){
       when {
