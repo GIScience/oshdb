@@ -144,27 +144,22 @@ pipeline {
     }
     
     stage ('Check Dependencies') {
-      when {
-        expression {
-          if(currentBuild.number > 1){
-            monthpre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            echo monthpre.toString()
-            monthnow=new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            echo monthnow.toString()
-            return monthpre!=monthnow
-          }
-          return false
-        }
-      }
       steps {
         script{
-          updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates').trim()
+          
+          monthpre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+          echo monthpre+1.toString()
+          monthnow=new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+          echo monthnow+1.toString()
+          
+          updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies.*\\n.* \\n"').trim()
           echo updatenotify
         }
+        rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "!!! This is your monthly notice! You might have updates in your dependecies. @rtroilo check this: ${updatenotify}" , rawMessage: true
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
     }
