@@ -1,8 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.WKBWriter;
-import com.vividsolutions.jts.io.WKTWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
@@ -11,7 +8,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,7 +16,6 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
@@ -29,6 +24,8 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.WKTWriter;
 
 abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProcessStatus {
 

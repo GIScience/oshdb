@@ -241,6 +241,7 @@ abstract class TestMapReduce {
     // reset timeout
     oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
   }
+  
   @Test
   public void testUpdate() throws SQLException, Exception {
     if (this instanceof TestMapReduceOSHDB_H2_singlethread) {

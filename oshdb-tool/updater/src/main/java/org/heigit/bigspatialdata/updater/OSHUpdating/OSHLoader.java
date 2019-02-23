@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.updater.OSHUpdating;
 
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.WKBWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -19,6 +17,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.update.UpdateDatabaseHandler;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.WKBWriter;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.LoggerFactory;
 
