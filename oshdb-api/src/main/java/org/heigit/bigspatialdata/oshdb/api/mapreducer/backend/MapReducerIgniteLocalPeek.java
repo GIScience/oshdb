@@ -1,14 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygonal;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -22,19 +17,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
-import org.apache.ignite.IgniteException;
-import org.apache.ignite.cluster.ClusterNode;
-import org.apache.ignite.compute.ComputeJob;
-import org.apache.ignite.compute.ComputeJobResult;
-import org.apache.ignite.compute.ComputeJobResultPolicy;
-import org.apache.ignite.compute.ComputeTask;
-import org.apache.ignite.compute.ComputeTaskAdapter;
 import org.apache.ignite.compute.ComputeTaskFuture;
-import org.apache.ignite.compute.ComputeTaskNoResultCache;
 import org.apache.ignite.compute.ComputeTaskTimeoutException;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
-import org.apache.ignite.lang.IgniteRunnable;
-import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
@@ -43,8 +28,8 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOp
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.OSHDBIgniteMapReduceComputeTask.CancelableIgniteMapReduceJob;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -56,6 +41,8 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +75,11 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   private List<String> cacheNames(String prefix) {
     return this.typeFilter.stream().map(TableNames::forOSMType).filter(Optional::isPresent)
         .map(Optional::get).map(tn -> tn.toString(prefix)).collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean isCancelable() {
+    return true;
   }
 
   @Override
@@ -142,75 +134,11 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
 class IgniteLocalPeekHelper {
   /**
-   * A cancelable ignite broadcast task.
-   *
-   * @param <T> Type of the task argument.
-   * @param <R> Type of the task result returning from {@link ComputeTask#reduce(List)} method.
-   */
-  @ComputeTaskNoResultCache
-  static class CancelableBroadcastTask<T, R> extends ComputeTaskAdapter<T, R>
-      implements Serializable {
-    private final MapReduceCellsOnIgniteCacheComputeJob job;
-    private final SerializableBinaryOperator<R> combiner;
-    private final IgniteRunnable onClose;
-
-    private R resultAccumulator;
-
-    public CancelableBroadcastTask(
-        MapReduceCellsOnIgniteCacheComputeJob job,
-        SerializableSupplier<R> identitySupplier,
-        SerializableBinaryOperator<R> combiner,
-        IgniteRunnable onClose
-    ) {
-      this.job = job;
-      this.combiner = combiner;
-      this.resultAccumulator = identitySupplier.get();
-      this.onClose = onClose;
-    }
-
-    @Override
-    public Map<? extends ComputeJob, ClusterNode> map(List<ClusterNode> subgrid, T arg)
-        throws IgniteException {
-      Map<ComputeJob, ClusterNode> map = new HashMap<>(subgrid.size());
-      subgrid.forEach(node -> map.put(new ComputeJob() {
-        @IgniteInstanceResource
-        private Ignite ignite;
-
-        @Override
-        public void cancel() {
-          job.cancel();
-        }
-
-        @Override
-        public Object execute() throws IgniteException {
-          Object result = job.execute(ignite);
-          onClose.run();
-          return result;
-        }
-      }, node));
-      return map;
-    }
-
-    @Override
-    public ComputeJobResultPolicy result(ComputeJobResult res, List<ComputeJobResult> rcvd)
-        throws IgniteException {
-      R data = res.getData();
-      resultAccumulator = combiner.apply(resultAccumulator, data);
-      return ComputeJobResultPolicy.WAIT;
-    }
-
-    @Override
-    public R reduce(List<ComputeJobResult> results) throws IgniteException {
-      return resultAccumulator;
-    }
-  }
-
-  /**
    * Compute closure that iterates over every partition owned by a node located in a partition.
    */
   private abstract static class MapReduceCellsOnIgniteCacheComputeJob
       <V, R, M, S, P extends Geometry & Polygonal>
-      implements Serializable, CancelableProcessStatus {
+      implements CancelableIgniteMapReduceJob<S> {
     private static final Logger LOG =
         LoggerFactory.getLogger(MapReduceCellsOnIgniteCacheComputeJob.class);
     private boolean notCanceled = true;
@@ -244,7 +172,8 @@ class IgniteLocalPeekHelper {
       this.combiner = combiner;
     }
 
-    void cancel() {
+    @Override
+    public void cancel() {
       LOG.info("compute job canceled");
       this.notCanceled = false;
     }
@@ -433,16 +362,20 @@ class IgniteLocalPeekHelper {
     }
   }
 
+  /**
+   * Executes a compute job on all ignite nodes and further reduces and returns result(s).
+   *
+   * @throws OSHDBTimeoutException if a timeout was set and the computations took too long.
+   */
   private static <V, R, M, S, P extends Geometry & Polygonal> S mapReduceOnIgniteCache(
       OSHDBIgnite oshdb, SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner,
       MapReduceCellsOnIgniteCacheComputeJob<V, R, M, S, P> computeJob) {
-    // execute compute job on all ignite nodes and further reduce+return result(s)
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
 
     ComputeTaskFuture<S> asyncResult = compute.executeAsync(
-        new CancelableBroadcastTask<Object, S>(
+        new OSHDBIgniteMapReduceComputeTask<Object, S>(
             computeJob,
             identitySupplier,
             combiner,

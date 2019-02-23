@@ -2,8 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
 import com.tdunning.math.stats.TDigest;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygonal;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -67,6 +65,8 @@ import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +116,8 @@ public abstract class MapReducer<X> implements
   protected transient OSHDBJdbc keytables;
   protected OSHDBUpdate update;
 
+  protected Long timeout = null;
+
   // internal state
   Class<? extends OSHDBMapReducible> forClass;
 
@@ -124,6 +126,13 @@ public abstract class MapReducer<X> implements
   }
 
   Grouping grouping = Grouping.NONE;
+
+  /**
+   * Returns if the current backend can be canceled (e.g. in a query timeout).
+   */
+  public boolean isCancelable() {
+    return false;
+  }
 
   // utility objects
   private transient TagTranslator tagTranslator = null;
@@ -947,6 +956,7 @@ public abstract class MapReducer<X> implements
       SerializableBiFunction<S, X, S> accumulator,
       SerializableBinaryOperator<S> combiner)
       throws Exception {
+    checkTimeout();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -1439,6 +1449,7 @@ public abstract class MapReducer<X> implements
 
   @Contract(pure = true)
   private Stream<X> streamInternal() throws Exception {
+    checkTimeout();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -1892,6 +1903,20 @@ public abstract class MapReducer<X> implements
           "Cannot convert to non-numeric values of type: " + x.getClass().toString());
     }
     return (Number) x;
+  }
+
+  /**
+   * Checks if the current request should be run on a cancelable backend.
+   * Produces a log message if not.
+    */
+  private void checkTimeout() {
+    if (this.oshdb.timeoutInMilliseconds().isPresent()) {
+      if (!this.isCancelable()) {
+        LOG.error("A query timeout was set but the database backend isn't cancelable");
+      } else {
+        this.timeout = this.oshdb.timeoutInMilliseconds().getAsLong();
+      }
+    }
   }
 
   @Contract(pure = true)

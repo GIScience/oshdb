@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
 import com.google.common.collect.Streams;
-import com.vividsolutions.jts.geom.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
@@ -24,6 +23,7 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
+import org.locationtech.jts.geom.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
