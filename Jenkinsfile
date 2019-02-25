@@ -158,7 +158,7 @@ pipeline {
           updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies.*\\n.* \\n"').trim()
           echo updatenotify
         }
-        rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "!!! This is your monthly notice! You might have updates in your dependecies. @admin check this: ${updatenotify}" , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "You might have updates in your dependecies: ${updatenotify}" , rawMessage: true
       }
       post {
         failure {
