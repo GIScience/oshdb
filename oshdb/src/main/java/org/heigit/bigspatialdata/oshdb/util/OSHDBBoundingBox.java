@@ -68,10 +68,10 @@ public class OSHDBBoundingBox implements Serializable {
   }
   
   public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
-    this.minLon = (long) (minLon * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.maxLon = (long) (maxLon * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.minLat = (long) (minLat * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.maxLat = (long) (maxLat * OSHDB.GEOM_PRECISION_TO_LONG);
+    this.minLon = Math.round(minLon * OSHDB.GEOM_PRECISION_TO_LONG);
+    this.maxLon = Math.round(maxLon * OSHDB.GEOM_PRECISION_TO_LONG);
+    this.minLat = Math.round(minLat * OSHDB.GEOM_PRECISION_TO_LONG);
+    this.maxLat = Math.round(maxLat * OSHDB.GEOM_PRECISION_TO_LONG);
   }
 
   public OSHDBBoundingBox(int minLon, int minLat, int maxLon, int maxLat) {
