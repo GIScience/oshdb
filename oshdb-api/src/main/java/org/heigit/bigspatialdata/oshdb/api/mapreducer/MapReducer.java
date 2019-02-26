@@ -732,7 +732,7 @@ public abstract class MapReducer<X> implements
    *         etc.) of the current MapReducer object
    */
   @Contract(pure = true)
-  public <U extends Comparable<U>> MapAggregator<U, X> aggregateBy(
+  public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
@@ -750,7 +750,7 @@ public abstract class MapReducer<X> implements
    *         etc.) of the current MapReducer object
    */
   @Contract(pure = true)
-  public <U extends Comparable<U>> MapAggregator<U, X> aggregateBy(
+  public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer
   ) {
     return this.aggregateBy(indexer, Collections.emptyList());
@@ -855,7 +855,7 @@ public abstract class MapReducer<X> implements
    * @throws UnsupportedOperationException when called after any map or flatMap functions are set
    */
   @Contract(pure = true)
-  public <U extends Comparable<U>, P extends Geometry & Polygonal>
+  public <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal>
       MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries) throws
       UnsupportedOperationException {
     if (this.grouping != Grouping.NONE) {

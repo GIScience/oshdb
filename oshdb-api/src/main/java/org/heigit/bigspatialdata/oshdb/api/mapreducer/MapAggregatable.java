@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
+import java.io.Serializable;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 
 /**
@@ -18,5 +19,5 @@ interface MapAggregatable<M, X> {
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    */
-  <U extends Comparable<U>> M aggregateBy(SerializableFunction<X, U> indexer);
+  <U extends Comparable<U> & Serializable> M aggregateBy(SerializableFunction<X, U> indexer);
 }

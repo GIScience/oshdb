@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Lists;
 import com.tdunning.math.stats.TDigest;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,8 +10,9 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -65,10 +67,10 @@ import org.locationtech.jts.geom.Polygonal;
  *            mapper function will be called with a parameter of this type as input
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
-public class MapAggregator<U extends Comparable<U>, X> implements
+public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
   private MapReducer<Pair<U, X>> mapReducer;
-  private final List<Collection<?>> zerofill;
+  private final List<Collection<? extends Comparable>> zerofill;
 
   /**
    * Basic constructor.
@@ -115,8 +117,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   @Contract(pure = true)
-  private <V extends Comparable<V>> MapAggregator<V, X> copyTransformKey(
-      MapReducer<Pair<V, X>> mapReducer) {
+  private <V extends Comparable<V> & Serializable> MapAggregator<V, X>
+      copyTransformKey(MapReducer<Pair<V, X>> mapReducer) {
     //noinspection unchecked – we do want to convert the mapAggregator to a different key type "V"
     return new MapAggregator<V, X>((MapAggregator<V, ?>) this, mapReducer);
   }
@@ -133,10 +135,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
   @Contract(pure = true)
-  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer,
-      Collection<V> zerofill
-  ) {
+  public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
+      aggregateBy(SerializableFunction<X, V> indexer, Collection<V> zerofill) {
     MapAggregator<OSHDBCombinedIndex<U, V>, X> res = this
         .mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
             existingIndex,
@@ -153,9 +153,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
   @Contract(pure = true)
-  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer
-  ) {
+  public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
+      aggregateBy(SerializableFunction<X, V> indexer) {
     return this.aggregateBy(indexer, Collections.emptyList());
   }
 
@@ -194,7 +193,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @throws UnsupportedOperationException when called after any map or flatMap functions are set
    */
   @Contract(pure = true)
-  public <V extends Comparable<V>, P extends Geometry & Polygonal>
+  public <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal>
       MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(Map<V, P> geometries)
       throws UnsupportedOperationException {
     if (this.mapReducer.grouping != Grouping.NONE) {
@@ -947,7 +946,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
 
   // maps from one index type to a different one
   @Contract(pure = true)
-  private <V extends Comparable<V>> MapAggregator<V, X> mapIndex(
+  private <V extends Comparable<V> & Serializable> MapAggregator<V, X> mapIndex(
       SerializableBiFunction<U, X, V> keyMapper) {
     return this.copyTransformKey(this.mapReducer.map(inData -> new Pair<>(
         keyMapper.apply(inData.getKey(), inData.getValue()),
@@ -956,14 +955,17 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   // calculate complete set of indices to use for zerofilling
-  private Collection<?> completeZerofill(Set<?> keys, List<Collection<?>> zerofills) {
+  private Collection<? extends Comparable> completeZerofill(
+      Set<? extends Comparable> keys,
+      List<Collection<? extends Comparable>> zerofills
+  ) {
     if (zerofills.isEmpty()) {
       return Collections.emptyList();
     }
-    SortedSet<Object> seen = new TreeSet<>(zerofills.get(0));
-    SortedSet<Object> nextLevelKeys = new TreeSet<>();
-    for (Object index : keys) {
-      Object v;
+    SortedSet<Comparable> seen = new TreeSet<>(zerofills.get(0));
+    SortedSet<Comparable> nextLevelKeys = new TreeSet<>();
+    for (Comparable index : keys) {
+      Comparable v;
       if (index instanceof OSHDBCombinedIndex) {
         v = ((OSHDBCombinedIndex) index).getSecondIndex();
         nextLevelKeys.add(((OSHDBCombinedIndex) index).getFirstIndex());
@@ -975,13 +977,15 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     if (zerofills.size() == 1) {
       return seen;
     } else {
-      Collection<?> nextLevel = this.completeZerofill(
+      Collection<? extends Comparable> nextLevel = this.completeZerofill(
           nextLevelKeys,
           zerofills.subList(1, zerofills.size())
       );
-      return nextLevel.stream().flatMap(u ->
-          seen.stream().map(v -> new OSHDBCombinedIndex<>(u, v))
-      ).collect(Collectors.toList());
+      //noinspection unchecked – we don't know the exact types of u and v at this point
+      Stream<OSHDBCombinedIndex> combinedZerofillIndices = nextLevel.stream().flatMap(u ->
+          seen.stream().map(v -> new OSHDBCombinedIndex(u, v))
+      );
+      return combinedZerofillIndices.collect(Collectors.toList());
     }
   }
 
