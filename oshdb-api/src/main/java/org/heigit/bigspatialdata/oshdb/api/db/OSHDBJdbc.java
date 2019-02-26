@@ -1,11 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.api.db;
 
+import com.google.common.base.Joiner;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,8 +19,6 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerJdbcSing
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
-
-import com.google.common.base.Joiner;
 
 /**
  * OSHDB database backend connector to a JDBC database file.

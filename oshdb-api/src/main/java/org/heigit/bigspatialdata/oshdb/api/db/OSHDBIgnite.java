@@ -1,9 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.api.db;
 
+import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.ignite.Ignite;
@@ -17,8 +17,6 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteSc
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
-
-import com.google.common.base.Joiner;
 
 /**
  * OSHDB database backend connector to a Ignite system.
