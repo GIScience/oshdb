@@ -55,23 +55,23 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
   }
 
   public static class IndexData<I,D> {
-	  public final I index;
-	  public final D data;
-	  
-	  public IndexData(I index, D data) {
-		this.index = index;
-		this.data = data;
-	  }
+    public final I index;
+    public final D data;
 
-	public I getIndex() {
-		return index;
-	}
+    public IndexData(I index, D data) {
+      this.index = index;
+      this.data = data;
+    }
 
-	public D getData() {
-		return data;
-	}
-	  
-	  
+    public I getIndex() {
+      return index;
+    }
+
+    public D getData() {
+      return data;
+    }
+
+
   }
   
   /**

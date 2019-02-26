@@ -161,48 +161,49 @@ public class XYGridTree implements Serializable {
 
   public static class CellIdRange implements Serializable{
 
-	private static final long serialVersionUID = -8704075537597232890L;
-	
-	private final CellId start;
-	private final CellId end;
-	
-	public static CellIdRange of(CellId start, CellId end) {
-		return new CellIdRange(start, end);
-	}
+    private static final long serialVersionUID = -8704075537597232890L;
 
-	private CellIdRange(CellId start, CellId end) {
-		this.start = start;
-		this.end = end;
-	}
-	public CellId getStart() {
-		return start;
-	}
-	public CellId getEnd() {
-		return end;
-	}
-	
-	
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(start, end);
-	}
+    private final CellId start;
+    private final CellId end;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof CellIdRange)) {
-			return false;
-		}
-		CellIdRange other = (CellIdRange) obj;
-		return Objects.equals(end, other.end) && Objects.equals(start, other.start);
-	}
-	  
+    public static CellIdRange of(CellId start, CellId end) {
+      return new CellIdRange(start, end);
+    }
+
+    private CellIdRange(CellId start, CellId end) {
+      this.start = start;
+      this.end = end;
+    }
+    
+    public CellId getStart() {
+      return start;
+    }
+
+    public CellId getEnd() {
+      return end;
+    }
+
+
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(start, end);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (!(obj instanceof CellIdRange)) {
+        return false;
+      }
+      CellIdRange other = (CellIdRange) obj;
+      return Objects.equals(end, other.end) && Objects.equals(start, other.start);
+    }
   }
   
   /**

@@ -21,15 +21,15 @@ public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V>
 
   @Override
   public int compareTo(@NotNull OSHDBCombinedIndex<U,V> o) {
-	final Comparable<Object> ci1 = (Comparable<Object>) index1;
+    final Comparable<Object> ci1 = (Comparable<Object>) index1;
     int c = ci1.compareTo(o.index1);
     if(c == 0) {
-    	final Comparable<Object> ci2 = (Comparable<Object>) index2;
-    	c = ci2.compareTo(o.index2);
+      final Comparable<Object> ci2 = (Comparable<Object>) index2;
+      c = ci2.compareTo(o.index2);
     }
     return c;
   }
-
+ 
   @Override
   public String toString() {
     return this.getFirstIndex().toString() + "&" + this.getSecondIndex().toString();

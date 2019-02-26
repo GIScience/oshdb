@@ -199,58 +199,57 @@ public class XYGrid implements Serializable {
   
   public static class IdRange implements Comparable<IdRange>, Serializable{
 
-	private static final long serialVersionUID = 371851731642753753L;
+    private static final long serialVersionUID = 371851731642753753L;
 
-	public static final IdRange INVALID = new IdRange(-1L,-1L);
-	  
-	private final long start;
-	private final long end;
-	  
-	public static IdRange of(long start, long end) {
-		return new IdRange(start,end);
-	}
-	
-	private IdRange(long start, long end) {
-		this.start = start;
-		this.end = end;
-	}
-	
-	public long getStart() {
-		return start;
-	}
-	
-	public long getEnd() {
-		return end;
-	}
+    public static final IdRange INVALID = new IdRange(-1L,-1L);
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(end, start);
-	}
+    private final long start;
+    private final long end;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof IdRange)) {
-			return false;
-		}
-		IdRange other = (IdRange) obj;
-		return end == other.end && start == other.start;
-	}
-	
-	@Override
-	public int compareTo(IdRange o) {
-		int c = Long.compare(start, o.start);
-		if(c == 0)
-			c = Long.compare(end, o.end);
-		return c;
-	}
-	  
+    public static IdRange of(long start, long end) {
+      return new IdRange(start,end);
+    }
+
+    private IdRange(long start, long end) {
+      this.start = start;
+      this.end = end;
+    }
+
+    public long getStart() {
+      return start;
+    }
+
+    public long getEnd() {
+      return end;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(end, start);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (!(obj instanceof IdRange)) {
+        return false;
+      }
+      IdRange other = (IdRange) obj;
+      return end == other.end && start == other.start;
+      }
+
+    @Override
+    public int compareTo(IdRange o) {
+      int c = Long.compare(start, o.start);
+      if(c == 0)
+        c = Long.compare(end, o.end);
+        return c;
+      }
   }
 
   /**

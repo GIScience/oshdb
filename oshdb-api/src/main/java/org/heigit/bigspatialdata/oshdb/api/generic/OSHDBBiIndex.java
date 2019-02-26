@@ -14,23 +14,23 @@ class OSHDBBiIndex<U, V> implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-	if (this == obj) {
-		return true;
-	}
-	if (obj == null) {
-		return false;
-	}
-	if (!(obj instanceof OSHDBBiIndex)) {
-		return false;
-	}
-	OSHDBBiIndex other = (OSHDBBiIndex) obj;
-	return Objects.equals(index1, other.index1) && Objects.equals(index2, other.index2);
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof OSHDBBiIndex)) {
+      return false;
+    }
+    OSHDBBiIndex other = (OSHDBBiIndex) obj;
+    return Objects.equals(index1, other.index1) && Objects.equals(index2, other.index2);
   }
 
   
   
   @Override
   public int hashCode() {
-	return Objects.hash(index1, index2);
+    return Objects.hash(index1, index2);
   }
 }

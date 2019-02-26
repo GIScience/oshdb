@@ -1002,63 +1002,53 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * A generic Pair class for holding key/value pairs
    */
   public static class Pair<U,V> {
-  	private U key;
-  	private V value;
-  	
-  	public Pair(U key, V value) {
-  		this.key = key;
-  		this.value = value;
-  	}
-  	
+    private U key;
+    private V value;
 
+    public Pair(U key, V value) {
+      this.key = key;
+      this.value = value;
+    }
 
-  	public U getKey() {
-  		return key;
-  	}
+    public U getKey() {
+      return key;
+    }
 
+    public void setKey(U key) {
+      this.key = key;
+    }
 
+    public V getValue() {
+      return value;
+    }
 
-  	public void setKey(U key) {
-  		this.key = key;
-  	}
+    public void setValue(V value) {
+      this.value = value;
+    }
 
+    @Override
+    public int hashCode() {
+      return Objects.hash(key, value);
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (!(obj instanceof Pair)) {
+        return false;
+      }
+      Pair other = (Pair) obj;
+      return Objects.equals(key, other.key) && Objects.equals(value, other.value);
+    }
 
-  	public V getValue() {
-  		return value;
-  	}
-
-
-
-  	public void setValue(V value) {
-  		this.value = value;
-  	}
-
-
-
-  	@Override
-  	public int hashCode() {
-  		return Objects.hash(key, value);
-  	}
-
-  	@Override
-  	public boolean equals(Object obj) {
-  		if (this == obj) {
-  			return true;
-  		}
-  		if (obj == null) {
-  			return false;
-  		}
-  		if (!(obj instanceof Pair)) {
-  			return false;
-  		}
-  		Pair other = (Pair) obj;
-  		return Objects.equals(key, other.key) && Objects.equals(value, other.value);
-  	}
-
-  	@Override
-  	public String toString() {
-  		return "Pair [key=" + key + ", value=" + value + "]";
-  	}
+    @Override
+    public String toString() {
+      return "Pair [key=" + key + ", value=" + value + "]";
+    }
   }
 }
