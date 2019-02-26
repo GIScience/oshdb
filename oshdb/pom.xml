@@ -31,7 +31,7 @@
       <version>${guava.version}</version>
     </dependency>
     
-	<!-- TEST dependencies -->
+    <!-- TEST dependencies -->
   	<dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
