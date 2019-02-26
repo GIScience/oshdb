@@ -6,12 +6,10 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.OptionalLong;
 import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -32,6 +30,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
@@ -94,11 +93,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
   }
 
   @Nonnull
-  private static Function<Pair<CellId, CellId>, LongStream> cellIdRangeToCellIds() {
+  private static Function<CellIdRange, LongStream> cellIdRangeToCellIds() {
     return cellIdRange -> {
-      int level = cellIdRange.getLeft().getZoomLevel();
-      long from = CellId.getLevelId(level, cellIdRange.getLeft().getId());
-      long to = CellId.getLevelId(level, cellIdRange.getRight().getId());
+      int level = cellIdRange.getStart().getZoomLevel();
+      long from = CellId.getLevelId(level, cellIdRange.getStart().getId());
+      long to = CellId.getLevelId(level, cellIdRange.getEnd().getId());
       return LongStream.rangeClosed(from, to);
     };
   }
@@ -133,7 +132,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
+    final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
@@ -184,7 +183,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
+    final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();

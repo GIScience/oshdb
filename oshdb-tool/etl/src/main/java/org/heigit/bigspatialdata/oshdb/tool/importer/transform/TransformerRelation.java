@@ -16,7 +16,7 @@ import org.heigit.bigspatialdata.oshdb.tool.importer.util.RoleToIdMapper;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.TagToIdMapper;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.SortedLong2LongMap;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.Relation;
 import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.RelationMember;

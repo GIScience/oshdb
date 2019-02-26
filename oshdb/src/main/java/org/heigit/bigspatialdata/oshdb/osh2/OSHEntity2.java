@@ -10,8 +10,8 @@ import java.util.TreeSet;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayWrapper;
 
 public abstract class OSHEntity2 {
   protected final byte[] data;
