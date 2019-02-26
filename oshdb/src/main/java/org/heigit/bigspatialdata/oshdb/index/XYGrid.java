@@ -196,7 +196,7 @@ public class XYGrid implements Serializable {
     return zoom;
   }
   
-  public static class IdRange implements Comparable<IdRange>, Serializable{
+  public static class IdRange implements Comparable<IdRange>, Serializable {
 
     private static final long serialVersionUID = 371851731642753753L;
 
@@ -240,29 +240,27 @@ public class XYGrid implements Serializable {
       }
       IdRange other = (IdRange) obj;
       return end == other.end && start == other.start;
-      }
+    }
 
     @Override
     public int compareTo(IdRange o) {
       int c = Long.compare(start, o.start);
-      if(c == 0)
+      if (c == 0) {
         c = Long.compare(end, o.end);
-        return c;
       }
+      return c;
+    }
   }
 
   /**
-   * Calculates all tiles, that lie within a bounding-box. TODO but priority
-   * 999: Add possibility to snap the BBX to the tile-grid. TODO: is an
-   * exception needed?
+   * Calculates all tiles, that lie within a bounding-box.
    *
-   * @param bbox The bounding box. First dimension is longitude, second is
-   * latitude.
-   * @param enlarge if true, the BBOX is enlarged by one tile to the south-west
-   * to include tiles that possibly hold way or relation information, if false
-   * only holds tiles that intersect with the given BBOX. For queries: false is
-   * for nodes while true is for ways and relations.
+   * TODO but priority 999: Add possibility to snap the BBX to the tile-grid.
+   * TODO: is an exception needed?
    *
+   * @param bbox The bounding box. First dimension is longitude, second is latitude.
+   * @param enlarge if true, the BBOX is enlarged by one tile to the south-west (bottom-left)
+   *        direction, if false only holds tiles that intersect with the given BBOX.
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
   public Set<IdRange> bbox2CellIdRanges(OSHDBBoundingBox bbox, boolean enlarge) {
