@@ -5,11 +5,11 @@ import com.google.protobuf.CodedOutputStream;
 
 public class ByteArrayOutputWrapper {
 
-  final FastByteArrayOutputStream bos;
+  final OSHDBByteArrayOutputStream bos;
   final CodedOutputStream cos;
 
   public ByteArrayOutputWrapper(int bufferSize) {
-    bos = new FastByteArrayOutputStream(bufferSize);
+    bos = new OSHDBByteArrayOutputStream(bufferSize);
     cos = CodedOutputStream.newInstance(bos, bufferSize);
   }
 
@@ -69,15 +69,15 @@ public class ByteArrayOutputWrapper {
 
   public int length() throws IOException {
     cos.flush();
-    return bos.length;
+    return bos.length();
   }
 
   public byte[] array() throws IOException {
     cos.flush();
-    return bos.array;
+    return bos.array();
   }
 
-  public FastByteArrayOutputStream getByteArrayStream() throws IOException {
+  public OSHDBByteArrayOutputStream getByteArrayStream() throws IOException {
     cos.flush();
     return bos;
   }
