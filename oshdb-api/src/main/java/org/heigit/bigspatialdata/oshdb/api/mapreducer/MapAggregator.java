@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -67,8 +66,8 @@ import org.locationtech.jts.geom.Polygonal;
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
 public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
-    Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
-  private MapReducer<Pair<U, X>> mapReducer;
+    Mappable<X>, MapReducerSettings<MapAggregator<U, X>>, MapReducerAggregations<X> {
+  private MapReducer<IndexValuePair<U, X>> mapReducer;
   private final List<Collection<? extends Comparable>> zerofill;
 
   /**
@@ -85,7 +84,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
-    this.mapReducer = mapReducer.map(data -> new Pair<U, X>(
+    this.mapReducer = mapReducer.map(data -> new IndexValuePair<U, X>(
         indexer.apply(data),
         data
     ));
@@ -94,7 +93,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   }
 
   // "copy/transform" constructor
-  private MapAggregator(MapAggregator<U, ?> obj, MapReducer<Pair<U, X>> mapReducer) {
+  private MapAggregator(MapAggregator<U, ?> obj, MapReducer<IndexValuePair<U, X>> mapReducer) {
     this.mapReducer = mapReducer;
     this.zerofill = new ArrayList<>(obj.zerofill);
   }
@@ -111,13 +110,13 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return the mapAggregator object using the given mapReducer
    */
   @Contract(pure = true)
-  private <R> MapAggregator<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer) {
+  private <R> MapAggregator<U, R> copyTransform(MapReducer<IndexValuePair<U, R>> mapReducer) {
     return new MapAggregator<>(this, mapReducer);
   }
 
   @Contract(pure = true)
   private <V extends Comparable<V> & Serializable> MapAggregator<V, X>
-      copyTransformKey(MapReducer<Pair<V, X>> mapReducer) {
+      copyTransformKey(MapReducer<IndexValuePair<V, X>> mapReducer) {
     //noinspection unchecked – we do want to convert the mapAggregator to a different key type "V"
     return new MapAggregator<V, X>((MapAggregator<V, ?>) this, mapReducer);
   }
@@ -752,7 +751,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper) {
     return this.copyTransform(this.mapReducer.map(inData -> {
       //noinspection unchecked – trick/hack to replace mapped values without copying pair objects
-      Pair<U,R> outData = (Pair<U,R>)inData;
+      IndexValuePair<U,R> outData = (IndexValuePair<U,R>)inData;
       outData.setValue(mapper.apply(inData.getValue()));
       return outData;
     }));
@@ -773,9 +772,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     return this.copyTransform(this.mapReducer.flatMap(inData -> {
-      List<Pair<U, R>> outData = new LinkedList<>();
+      List<IndexValuePair<U, R>> outData = new LinkedList<>();
       flatMapper.apply(inData.getValue()).forEach(flatMappedData ->
-          outData.add(new Pair<U, R>(
+          outData.add(new IndexValuePair<U, R>(
               inData.getKey(),
               flatMappedData
           ))
@@ -853,7 +852,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       throws Exception {
     SortedMap<U, S> result = this.mapReducer.reduce(
         TreeMap::new,
-        (TreeMap<U, S> m, Pair<U, X> r) -> {
+        (TreeMap<U, S> m, IndexValuePair<U, X> r) -> {
           m.put(r.getKey(), accumulator.apply(
               m.getOrDefault(r.getKey(), identitySupplier.get()),
               r.getValue()
@@ -947,7 +946,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   private <V extends Comparable<V> & Serializable> MapAggregator<V, X> mapIndex(
       SerializableBiFunction<U, X, V> keyMapper) {
-    return this.copyTransformKey(this.mapReducer.map(inData -> new Pair<>(
+    return this.copyTransformKey(this.mapReducer.map(inData -> new IndexValuePair<>(
         keyMapper.apply(inData.getKey(), inData.getValue()),
         inData.getValue()
     )));
@@ -1001,14 +1000,14 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     ));
   }
   
-  /*
-   * A generic Pair class for holding key/value pairs
+  /**
+   * A generic Pair class for holding index/value pairs.
    */
-  public static class Pair<U,V> {
+  private static class IndexValuePair<U, X> {
     private U key;
-    private V value;
+    protected X value;
 
-    public Pair(U key, V value) {
+    private IndexValuePair(U key, X value) {
       this.key = key;
       this.value = value;
     }
@@ -1017,15 +1016,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       return key;
     }
 
-    public void setKey(U key) {
-      this.key = key;
-    }
-
-    public V getValue() {
+    public X getValue() {
       return value;
     }
 
-    public void setValue(V value) {
+    public void setValue(X value) {
       this.value = value;
     }
 
@@ -1035,23 +1030,15 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     }
 
     @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (!(obj instanceof Pair)) {
-        return false;
-      }
-      Pair other = (Pair) obj;
-      return Objects.equals(key, other.key) && Objects.equals(value, other.value);
+    public boolean equals(Object other) {
+      return this == other || other instanceof MapAggregator.IndexValuePair
+          && Objects.equals(key, ((IndexValuePair) other).key)
+          && Objects.equals(value, ((IndexValuePair) other).value);
     }
 
     @Override
     public String toString() {
-      return "Pair [key=" + key + ", value=" + value + "]";
+      return "[index=" + key + ", value=" + value + "]";
     }
   }
 }
