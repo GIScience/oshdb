@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
@@ -17,12 +16,11 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProces
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
   public MapReducerJdbcMultithread(OSHDBDatabase oshdb,
@@ -59,7 +57,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final List<Pair<CellId, CellId>> cellIdRanges = new ArrayList<>();
+    final List<CellIdRange> cellIdRanges = new ArrayList<>();
     this.getCellIdRanges().forEach(cellIdRanges::add);
 
     return cellIdRanges.parallelStream()
@@ -81,7 +79,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final List<Pair<CellId, CellId>> cellIdRanges = new ArrayList<>();
+    final List<CellIdRange> cellIdRanges = new ArrayList<>();
     this.getCellIdRanges().forEach(cellIdRanges::add);
 
     return cellIdRanges.parallelStream()

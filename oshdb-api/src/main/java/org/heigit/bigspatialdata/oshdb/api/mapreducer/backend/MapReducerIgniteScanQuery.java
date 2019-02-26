@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Function;
 import javax.cache.Cache;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -38,6 +37,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -150,14 +150,14 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     }).reduce(identitySupplier.get(), combiner);
   }
 
-  private Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> getCellIdRangesByLevel() {
-    Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel = new HashMap<>();
-    for (Pair<CellId, CellId> cellIdRange : this.getCellIdRanges()) {
-      int level = cellIdRange.getLeft().getZoomLevel();
+  private Map<Integer, TreeMap<Long, CellIdRange>> getCellIdRangesByLevel() {
+    Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel = new HashMap<>();
+    for (CellIdRange cellIdRange : this.getCellIdRanges()) {
+      int level = cellIdRange.getStart().getZoomLevel();
       if (!cellIdRangesByLevel.containsKey(level)) {
         cellIdRangesByLevel.put(level, new TreeMap<>());
       }
-      cellIdRangesByLevel.get(level).put(cellIdRange.getLeft().getId(), cellIdRange);
+      cellIdRangesByLevel.get(level).put(cellIdRange.getStart().getId(), cellIdRange);
     }
     return cellIdRangesByLevel;
   }
@@ -192,7 +192,7 @@ class IgniteScanQueryHelper {
 
     /* computation settings */
     final String cacheName;
-    final Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel;
+    final Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel;
     final CellIterator cellIterator;
     final SerializableFunction<V, M> mapper;
     final SerializableSupplier<S> identitySupplier;
@@ -200,7 +200,7 @@ class IgniteScanQueryHelper {
     final SerializableBinaryOperator<S> combiner;
 
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, String cacheName,
-        Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+        Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<V, M> mapper, SerializableSupplier<S> identitySupplier,
@@ -227,13 +227,13 @@ class IgniteScanQueryHelper {
       if (!cellIdRangesByLevel.containsKey(level)) {
         return false;
       }
-      Entry<Long, Pair<CellId, CellId>> cellIdRangeEntry =
+      Entry<Long, CellIdRange> cellIdRangeEntry =
           cellIdRangesByLevel.get(level).floorEntry(id);
       if (cellIdRangeEntry == null) {
         return false;
       }
-      Pair<CellId, CellId> cellIdRange = cellIdRangeEntry.getValue();
-      return cellIdRange.getLeft().getId() <= id && cellIdRange.getRight().getId() >= id;
+      CellIdRange cellIdRange = cellIdRangeEntry.getValue();
+      return cellIdRange.getStart().getId() <= id && cellIdRange.getEnd().getId() >= id;
     }
 
     S execute(Ignite node, CellProcessor<S> cellProcessor) {
@@ -282,7 +282,7 @@ class IgniteScanQueryHelper {
       <R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<OSMContribution, R, R, S, P> {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+        String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMContribution, R> mapper,
@@ -307,7 +307,7 @@ class IgniteScanQueryHelper {
       <R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMContribution>, R, Iterable<R>, S, P> {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+        String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
@@ -332,7 +332,7 @@ class IgniteScanQueryHelper {
       <R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<OSMEntitySnapshot, R, R, S, P> {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+        String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper,
@@ -357,7 +357,7 @@ class IgniteScanQueryHelper {
       <R, S, P extends Geometry & Polygonal>
       extends MapReduceCellsOnIgniteCacheComputeJob<List<OSMEntitySnapshot>, R, Iterable<R>, S, P> {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
-        String cacheName, Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+        String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
@@ -432,7 +432,7 @@ class IgniteScanQueryHelper {
 
   static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMContributionOnIgniteCache(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
-      Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMContribution, R> mapper,
@@ -447,7 +447,7 @@ class IgniteScanQueryHelper {
   static <R, S, P extends Geometry & Polygonal>
       S flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
-      Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
@@ -461,7 +461,7 @@ class IgniteScanQueryHelper {
 
   static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMEntitySnapshotOnIgniteCache(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
-      Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
@@ -476,7 +476,7 @@ class IgniteScanQueryHelper {
   static <R, S, P extends Geometry & Polygonal>
       S flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
-      Map<Integer, TreeMap<Long, Pair<CellId, CellId>>> cellIdRangesByLevel,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,

@@ -1,12 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map.Entry;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -50,19 +45,19 @@ public class TestFlatMapAggregateGroupedByEntity {
         .flatMap(contributions -> {
             if (contributions.get(0).getEntityAfter().getId() != 617308093)
               return new ArrayList<>();
-            List<Pair<Long, Integer>> ret = new ArrayList<>();
-            ret.add(new ImmutablePair<>(
+            List<Entry<Long, Integer>> ret = new ArrayList<>();
+            ret.add(new SimpleImmutableEntry<>(
                 contributions.get(0).getEntityAfter().getId(),
                 (int)contributions.stream().filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE)).count()
             ));
-            ret.add(new ImmutablePair<>(
+            ret.add(new SimpleImmutableEntry<>(
                 contributions.get(0).getEntityAfter().getId(),
                 2
             ));
             return ret;
         })
-        .aggregateBy(Pair::getKey)
-        .map(Pair::getValue)
+        .aggregateBy(Entry::getKey)
+        .map(Entry::getValue)
         .reduce(
             () -> 0,
             (x,y) -> x + y,

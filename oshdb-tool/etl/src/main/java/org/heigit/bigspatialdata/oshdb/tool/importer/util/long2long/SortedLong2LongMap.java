@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.page.Page;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.page.PageLoader;
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.roaringbitmap.RoaringBitmap;
 
 import com.google.common.cache.CacheBuilder;

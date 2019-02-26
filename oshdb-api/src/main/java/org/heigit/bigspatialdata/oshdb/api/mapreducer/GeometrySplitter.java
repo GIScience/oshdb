@@ -6,15 +6,12 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -56,13 +53,31 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = subregions;
   }
 
+  private static class IndexData<I,D> {
+    private final I index;
+    private final D data;
+
+    IndexData(I index, D data) {
+      this.index = index;
+      this.data = data;
+    }
+
+    I getIndex() {
+      return index;
+    }
+
+    D getData() {
+      return data;
+    }
+  }
+
   /**
    * Splits osm entity snapshot objects into sub-regions.
    *
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
    */
-  public List<Pair<U, OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
+  public Map<U,OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
@@ -74,7 +89,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
         .flatMap(index -> {
           if (bips.get(index).test(oshBoundingBox)) {
             // OSH entity fully inside -> directly return
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           // now we can check against the actual contribution geometry
@@ -89,7 +104,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           }
           // OSM entity fully inside -> directly return
           if (bips.get(index).test(snapshotBbox)) {
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           FastPolygonOperations poop = poops.get(index);
@@ -98,7 +113,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
             if (intersection == null || intersection.isEmpty()) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new ImmutablePair<>(
+              return Stream.of(new IndexData<>(
                   index,
                   new OSMEntitySnapshot(data, intersection)
               ));
@@ -106,7 +121,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           } catch (TopologyException ignored) {
             return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
           }
-        }).collect(Collectors.toCollection(LinkedList::new));
+        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
   }
 
   /**
@@ -123,7 +138,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
    */
-  public List<Pair<U, OSMContribution>> splitOSMContribution(OSMContribution data) {
+  public Map<U,OSMContribution> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
@@ -135,7 +150,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
         .flatMap(index -> {
           // OSH entity fully inside -> directly return
           if (bips.get(index).test(oshBoundingBox)) {
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           // now we can check against the actual contribution geometry
@@ -165,7 +180,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           }
           // contribution fully inside -> directly return
           if (bips.get(index).test(contributionGeometryBbox)) {
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           FastPolygonOperations poop = poops.get(index);
@@ -176,7 +191,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
                 && (intersectionAfter == null || intersectionAfter.isEmpty())) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new ImmutablePair<>(
+              return Stream.of(new IndexData<>(
                   index,
                   new OSMContribution(data, intersectionBefore, intersectionAfter)
               ));
@@ -184,7 +199,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           } catch (TopologyException ignored) {
             return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
           }
-        }).collect(Collectors.toCollection(LinkedList::new));
+        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
   }
 
   /**
@@ -229,7 +244,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = result;
   }
 
-  private <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
+  protected <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
     //noinspection unchecked - constructor checks that `subregions` only contain `P` entry values
     return new GeometrySplitter<>((Map<U, P>) this.subregions);
   }

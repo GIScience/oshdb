@@ -1,12 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.api.db;
 
+import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
@@ -73,7 +72,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
         .map(t -> t.toString(this.prefix()))
         .collect(Collectors.toList());
     if (!allCaches.containsAll(expectedCaches)) {
-      throw new OSHDBTableNotFoundException(StringUtils.join(expectedCaches, ", "));
+      throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedCaches));
     }
     switch (this.computeMode()) {
       case LocalPeek:

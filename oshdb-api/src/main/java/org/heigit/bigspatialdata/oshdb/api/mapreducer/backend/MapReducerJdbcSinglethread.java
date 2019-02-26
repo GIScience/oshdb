@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
@@ -23,6 +22,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
@@ -82,7 +82,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       cellIterator.excludeIDs(bitMapIndex);
     }
     S result = identitySupplier.get();
-    for (Pair<CellId, CellId> cellIdRange : this.getCellIdRanges()) {
+    for (CellIdRange cellIdRange : this.getCellIdRanges()) {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       while (oshCellsRawData.next()) {

@@ -7,8 +7,8 @@ import java.util.List;
 import org.heigit.bigspatialdata.oshdb.osh2.OSHNode2;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayWrapper;
 
 
 public class TransformOSHNode extends OSHNode2 {
