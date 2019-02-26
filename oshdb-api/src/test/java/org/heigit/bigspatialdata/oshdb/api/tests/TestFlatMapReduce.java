@@ -5,10 +5,9 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapAggregator.Pair;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -48,7 +47,7 @@ public class TestFlatMapReduce {
           List<Pair<Integer, Integer>> ret = new ArrayList<>();
           int[] tags = contribution.getEntityAfter().getRawTags();
           for (int i=0; i<tags.length; i+=2)
-            ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
+            ret.add(new Pair<>(tags[i], tags[i+1]));
           return ret;
         })
         .reduce(

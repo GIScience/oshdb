@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -35,14 +34,15 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableConsumer
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.GeometrySplitter.IndexData;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
@@ -873,10 +873,10 @@ public abstract class MapReducer<X> implements
       MapAggregator<U, ? extends OSHDBMapReducible> ret;
       if (this.forClass.equals(OSMContribution.class)) {
         ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
       } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
         ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
       } else {
         throw new UnsupportedOperationException(
             "aggregateByGeometry not implemented for objects of type: " + this.forClass.toString()
@@ -1790,7 +1790,7 @@ public abstract class MapReducer<X> implements
   }
 
   // get all cell ids covered by the current area of interest's bounding box
-  protected Iterable<Pair<CellId, CellId>> getCellIdRanges() {
+  protected Iterable<CellIdRange> getCellIdRanges() {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
     if (this.bboxFilter == null
         || this.bboxFilter.getMinLon() >= this.bboxFilter.getMaxLon()

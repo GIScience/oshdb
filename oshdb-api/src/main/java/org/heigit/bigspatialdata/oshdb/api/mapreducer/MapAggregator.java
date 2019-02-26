@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -21,8 +22,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -32,6 +31,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOp
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.GeometrySplitter.IndexData;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -84,7 +84,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
-    this.mapReducer = mapReducer.map(data -> new MutablePair<U, X>(
+    this.mapReducer = mapReducer.map(data -> new Pair<U, X>(
         indexer.apply(data),
         data
     ));
@@ -213,10 +213,10 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
       if (this.mapReducer.forClass.equals(OSMContribution.class)) {
         ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
       } else if (this.mapReducer.forClass.equals(OSMEntitySnapshot.class)) {
         ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
       } else {
         throw new UnsupportedOperationException(
             "aggregateByGeometry not implemented for objects of type: "
@@ -777,7 +777,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     return this.copyTransform(this.mapReducer.flatMap(inData -> {
       List<Pair<U, R>> outData = new LinkedList<>();
       flatMapper.apply(inData.getValue()).forEach(flatMappedData ->
-          outData.add(new MutablePair<U, R>(
+          outData.add(new Pair<U, R>(
               inData.getKey(),
               flatMappedData
           ))
@@ -949,7 +949,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   private <V extends Comparable<V>> MapAggregator<V, X> mapIndex(
       SerializableBiFunction<U, X, V> keyMapper) {
-    return this.copyTransformKey(this.mapReducer.map(inData -> new MutablePair<>(
+    return this.copyTransformKey(this.mapReducer.map(inData -> new Pair<>(
         keyMapper.apply(inData.getKey(), inData.getValue()),
         inData.getValue()
     )));
@@ -979,9 +979,15 @@ public class MapAggregator<U extends Comparable<U>, X> implements
           nextLevelKeys,
           zerofills.subList(1, zerofills.size())
       );
-      return nextLevel.stream().flatMap(u ->
-          seen.stream().map(v -> new OSHDBCombinedIndex<>(u, v))
-      ).collect(Collectors.toList());
+      List<Object> ret = new ArrayList<>();
+      for(Object u : nextLevel) {
+    	  for(Object v: seen) {
+    		  Comparable<Object> cu = null;
+    		  Comparable<Object> cv = null;
+    		  ret.add(new OSHDBCombinedIndex<>(cu, cv));
+    	  }
+      }
+      return ret;
     }
   }
 
@@ -996,5 +1002,69 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         },
         TreeMap::new
     ));
+  }
+  
+  /*
+   * A generic Pair class for holding key/value pairs
+   */
+  public static class Pair<U,V> {
+  	private U key;
+  	private V value;
+  	
+  	public Pair(U key, V value) {
+  		this.key = key;
+  		this.value = value;
+  	}
+  	
+
+
+  	public U getKey() {
+  		return key;
+  	}
+
+
+
+  	public void setKey(U key) {
+  		this.key = key;
+  	}
+
+
+
+  	public V getValue() {
+  		return value;
+  	}
+
+
+
+  	public void setValue(V value) {
+  		this.value = value;
+  	}
+
+
+
+  	@Override
+  	public int hashCode() {
+  		return Objects.hash(key, value);
+  	}
+
+  	@Override
+  	public boolean equals(Object obj) {
+  		if (this == obj) {
+  			return true;
+  		}
+  		if (obj == null) {
+  			return false;
+  		}
+  		if (!(obj instanceof Pair)) {
+  			return false;
+  		}
+  		Pair other = (Pair) obj;
+  		return Objects.equals(key, other.key) && Objects.equals(value, other.value);
+  	}
+
+  	@Override
+  	public String toString() {
+  		return "Pair [key=" + key + ", value=" + value + "]";
+  	}
   }
 }

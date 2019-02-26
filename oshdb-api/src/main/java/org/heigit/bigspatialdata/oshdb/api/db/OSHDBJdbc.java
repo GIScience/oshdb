@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerJdbcMultithread;
@@ -20,6 +19,8 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerJdbcSing
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
+
+import com.google.common.base.Joiner;
 
 /**
  * OSHDB database backend connector to a JDBC database file.
@@ -64,7 +65,7 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
         allTables.add(rs.getString("TABLE_NAME").toLowerCase());
       }
       if (!allTables.containsAll(expectedTables)) {
-        throw new OSHDBTableNotFoundException(StringUtils.join(expectedTables, ", "));
+        throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedTables));
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);

@@ -47,6 +47,12 @@
 			<artifactId>RoaringBitmap</artifactId>
 			<version>0.6.59</version>
 		</dependency>
+		
+		<dependency>
+          <groupId>org.wololo</groupId>
+          <artifactId>jts2geojson</artifactId>
+          <version>${wololo.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>com.beust</groupId>
@@ -60,11 +66,7 @@
 			<version>${fastutil.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.lz4</groupId>
-			<artifactId>lz4-java</artifactId>
-			<version>${lz4.version}</version>
-		</dependency>
+
 
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -94,6 +96,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

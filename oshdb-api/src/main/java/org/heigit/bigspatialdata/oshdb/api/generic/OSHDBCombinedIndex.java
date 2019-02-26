@@ -5,23 +5,26 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.jetbrains.annotations.NotNull;
 
-public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V>
+public class OSHDBCombinedIndex<U extends Comparable, V extends Comparable> extends OSHDBBiIndex<U, V>
     implements Comparable<OSHDBCombinedIndex<U, V>> {
   public OSHDBCombinedIndex(U index1, V index2) {
     super(index1, index2);
   }
 
   public U getFirstIndex() {
-    return this.payload.getLeft();
+    return this.index1;
   }
 
   public V getSecondIndex() {
-    return this.payload.getRight();
+    return this.index2;
   }
 
   @Override
   public int compareTo(@NotNull OSHDBCombinedIndex<U,V> o) {
-    return this.payload.compareTo(o.payload);
+    int c = index1.compareTo(o.index1);
+    if(c == 0)
+    	c = index2.compareTo(o.index2);
+    return c;
   }
 
   @Override
@@ -42,7 +45,7 @@ public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V>
    * @param <V> an arbitrary data type, used for the index'es key items
    * @return a nested data structure: for each index part there is a separate level of nested maps
    */
-  public static <A, U, V> SortedMap<U, SortedMap<V, A>> nest(
+  public static <A, U extends Comparable<U>, V extends Comparable<V>> SortedMap<U, SortedMap<V, A>> nest(
       Map<OSHDBCombinedIndex<U, V>, A> result
   ) {
     TreeMap<U, SortedMap<V, A>> ret = new TreeMap<>();

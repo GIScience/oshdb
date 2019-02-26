@@ -5,10 +5,9 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapAggregator.Pair;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -51,11 +50,11 @@ public class TestFlatMapAggregateGroupedByEntity {
             if (contributions.get(0).getEntityAfter().getId() != 617308093)
               return new ArrayList<>();
             List<Pair<Long, Integer>> ret = new ArrayList<>();
-            ret.add(new ImmutablePair<>(
+            ret.add(new Pair<>(
                 contributions.get(0).getEntityAfter().getId(),
                 (int)contributions.stream().filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE)).count()
             ));
-            ret.add(new ImmutablePair<>(
+            ret.add(new Pair<>(
                 contributions.get(0).getEntityAfter().getId(),
                 2
             ));

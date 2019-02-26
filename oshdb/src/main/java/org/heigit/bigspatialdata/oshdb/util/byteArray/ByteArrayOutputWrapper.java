@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import com.google.protobuf.CodedOutputStream;
 
-import it.unimi.dsi.fastutil.io.FastByteArrayOutputStream;
-
 public class ByteArrayOutputWrapper {
 
 	final FastByteArrayOutputStream bos;

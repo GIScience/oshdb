@@ -13,8 +13,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -56,13 +54,33 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = subregions;
   }
 
+  public static class IndexData<I,D> {
+	  public final I index;
+	  public final D data;
+	  
+	  public IndexData(I index, D data) {
+		this.index = index;
+		this.data = data;
+	  }
+
+	public I getIndex() {
+		return index;
+	}
+
+	public D getData() {
+		return data;
+	}
+	  
+	  
+  }
+  
   /**
    * Splits osm entity snapshot objects into sub-regions.
    *
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
    */
-  public List<Pair<U, OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
+  public List<IndexData<U,OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
@@ -74,7 +92,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
         .flatMap(index -> {
           if (bips.get(index).test(oshBoundingBox)) {
             // OSH entity fully inside -> directly return
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           // now we can check against the actual contribution geometry
@@ -89,7 +107,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           }
           // OSM entity fully inside -> directly return
           if (bips.get(index).test(snapshotBbox)) {
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           FastPolygonOperations poop = poops.get(index);
@@ -98,7 +116,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
             if (intersection == null || intersection.isEmpty()) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new ImmutablePair<>(
+              return Stream.of(new IndexData<>(
                   index,
                   new OSMEntitySnapshot(data, intersection)
               ));
@@ -108,7 +126,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           }
         }).collect(Collectors.toCollection(LinkedList::new));
   }
-
+  
   /**
    * Splits osm contributions into sub-regions.
    *
@@ -123,7 +141,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
    */
-  public List<Pair<U, OSMContribution>> splitOSMContribution(OSMContribution data) {
+  public List<IndexData<U,OSMContribution>> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
@@ -135,7 +153,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
         .flatMap(index -> {
           // OSH entity fully inside -> directly return
           if (bips.get(index).test(oshBoundingBox)) {
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           // now we can check against the actual contribution geometry
@@ -165,7 +183,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           }
           // contribution fully inside -> directly return
           if (bips.get(index).test(contributionGeometryBbox)) {
-            return Stream.of(new ImmutablePair<>(index, data));
+            return Stream.of(new IndexData<>(index, data));
           }
 
           FastPolygonOperations poop = poops.get(index);
@@ -176,7 +194,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
                 && (intersectionAfter == null || intersectionAfter.isEmpty())) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new ImmutablePair<>(
+              return Stream.of(new IndexData<>(
                   index,
                   new OSMContribution(data, intersectionBefore, intersectionAfter)
               ));
