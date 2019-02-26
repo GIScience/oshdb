@@ -1,7 +1,7 @@
-package org.heigit.bigspatialdata.oshdb.util.byteArray;
+package org.heigit.bigspatialdata.oshdb.util.bytearray;
 
-import java.io.IOException;
 import com.google.protobuf.CodedOutputStream;
+import java.io.IOException;
 
 public class ByteArrayOutputWrapper {
 
@@ -36,8 +36,9 @@ public class ByteArrayOutputWrapper {
 
   public long writeUInt64Delta(long value, long last) throws IOException {
     final long delta = value - last;
-    if (delta < 0)
+    if (delta < 0) {
       throw new IllegalArgumentException("writeUInt64Delta with negative delta(" + delta + ")");
+    }
     writeUInt64(delta);
     return value;
   }

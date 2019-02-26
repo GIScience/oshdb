@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util.byteArray;
+package org.heigit.bigspatialdata.oshdb.util.bytearray;
 
 import java.io.ByteArrayOutputStream;
 

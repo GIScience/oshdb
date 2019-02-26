@@ -3,7 +3,7 @@ package org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.page;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayWrapper;
 import org.roaringbitmap.IntConsumer;
 import org.roaringbitmap.RoaringBitmap;
 
