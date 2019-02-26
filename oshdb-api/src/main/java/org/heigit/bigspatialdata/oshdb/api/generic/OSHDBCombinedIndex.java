@@ -5,7 +5,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.jetbrains.annotations.NotNull;
 
-public class OSHDBCombinedIndex<U extends Comparable, V extends Comparable> extends OSHDBBiIndex<U, V>
+public class OSHDBCombinedIndex<U, V> extends OSHDBBiIndex<U, V>
     implements Comparable<OSHDBCombinedIndex<U, V>> {
   public OSHDBCombinedIndex(U index1, V index2) {
     super(index1, index2);
@@ -21,9 +21,12 @@ public class OSHDBCombinedIndex<U extends Comparable, V extends Comparable> exte
 
   @Override
   public int compareTo(@NotNull OSHDBCombinedIndex<U,V> o) {
-    int c = index1.compareTo(o.index1);
-    if(c == 0)
-    	c = index2.compareTo(o.index2);
+	final Comparable<Object> ci1 = (Comparable<Object>) index1;
+    int c = ci1.compareTo(o.index1);
+    if(c == 0) {
+    	final Comparable<Object> ci2 = (Comparable<Object>) index2;
+    	c = ci2.compareTo(o.index2);
+    }
     return c;
   }
 

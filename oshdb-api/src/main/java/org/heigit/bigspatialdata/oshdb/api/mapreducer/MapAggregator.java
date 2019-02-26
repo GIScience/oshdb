@@ -979,15 +979,9 @@ public class MapAggregator<U extends Comparable<U>, X> implements
           nextLevelKeys,
           zerofills.subList(1, zerofills.size())
       );
-      List<Object> ret = new ArrayList<>();
-      for(Object u : nextLevel) {
-    	  for(Object v: seen) {
-    		  Comparable<Object> cu = null;
-    		  Comparable<Object> cv = null;
-    		  ret.add(new OSHDBCombinedIndex<>(cu, cv));
-    	  }
-      }
-      return ret;
+      return nextLevel.stream().flatMap(u ->
+          seen.stream().map(v -> new OSHDBCombinedIndex<>(u, v))
+      ).collect(Collectors.toList());
     }
   }
 
