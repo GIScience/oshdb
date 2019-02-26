@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -34,7 +35,6 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableConsumer
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.GeometrySplitter.IndexData;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -872,11 +872,11 @@ public abstract class MapReducer<X> implements
     } else {
       MapAggregator<U, ? extends OSHDBMapReducible> ret;
       if (this.forClass.equals(OSMContribution.class)) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
-            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
-            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
         throw new UnsupportedOperationException(
             "aggregateByGeometry not implemented for objects of type: " + this.forClass.toString()

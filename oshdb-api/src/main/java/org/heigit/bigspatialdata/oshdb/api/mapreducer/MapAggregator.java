@@ -33,7 +33,6 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOp
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.GeometrySplitter.IndexData;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -211,11 +210,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     } else {
       MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
       if (this.mapReducer.forClass.equals(OSMContribution.class)) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
-            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else if (this.mapReducer.forClass.equals(OSMEntitySnapshot.class)) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
-            .aggregateBy(IndexData::getIndex, geometries.keySet()).map(IndexData::getData);
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
         throw new UnsupportedOperationException(
             "aggregateByGeometry not implemented for objects of type: "

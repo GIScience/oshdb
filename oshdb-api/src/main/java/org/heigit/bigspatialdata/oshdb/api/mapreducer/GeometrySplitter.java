@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,33 +53,31 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = subregions;
   }
 
-  public static class IndexData<I,D> {
-    public final I index;
-    public final D data;
+  private static class IndexData<I,D> {
+    private final I index;
+    private final D data;
 
-    public IndexData(I index, D data) {
+    IndexData(I index, D data) {
       this.index = index;
       this.data = data;
     }
 
-    public I getIndex() {
+    I getIndex() {
       return index;
     }
 
-    public D getData() {
+    D getData() {
       return data;
     }
-
-
   }
-  
+
   /**
    * Splits osm entity snapshot objects into sub-regions.
    *
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
    */
-  public List<IndexData<U,OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
+  public Map<U,OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
@@ -124,9 +121,9 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           } catch (TopologyException ignored) {
             return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
           }
-        }).collect(Collectors.toCollection(LinkedList::new));
+        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
   }
-  
+
   /**
    * Splits osm contributions into sub-regions.
    *
@@ -141,7 +138,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
    */
-  public List<IndexData<U,OSMContribution>> splitOSMContribution(OSMContribution data) {
+  public Map<U,OSMContribution> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
@@ -202,7 +199,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           } catch (TopologyException ignored) {
             return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
           }
-        }).collect(Collectors.toCollection(LinkedList::new));
+        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
   }
 
   /**
@@ -247,7 +244,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = result;
   }
 
-  private <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
+  protected <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
     //noinspection unchecked - constructor checks that `subregions` only contain `P` entry values
     return new GeometrySplitter<>((Map<U, P>) this.subregions);
   }
