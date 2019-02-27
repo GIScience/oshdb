@@ -33,7 +33,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.update.UpdateDatabaseHandler;
+import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;

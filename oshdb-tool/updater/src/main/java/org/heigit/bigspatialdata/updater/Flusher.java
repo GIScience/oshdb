@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
@@ -28,7 +29,9 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.heigit.bigspatialdata.updater.util.cmd.FlushArgs;
+import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +51,7 @@ public class Flusher {
    */
   public static void flush(Connection oshdb, Connection updatedb, Connection dbBit) throws
       SQLException, IOException, ClassNotFoundException {
+    XYGridTree xyt = new XYGridTree(OSHDB.MAXZOOM);
     //do i need to block the cluster somehow, to prevent false operations?
     //ignite.cluster().active(false);
     //do flush here: can I use something from the etl?
@@ -67,7 +71,6 @@ public class Flusher {
         ObjectInputStream ois = new ObjectInputStream(bais);
         OSHEntity updateEntity = (OSHEntity) ois.readObject();
 
-        XYGridTree xyt = new XYGridTree(OSHDB.MAXZOOM);
         CellId insertId = xyt.getInsertId(updateEntity.getBoundingBox());
         System.out.println(insertId);
 
@@ -78,11 +81,10 @@ public class Flusher {
         ResultSet resultSetOSHDB = oshdbStatement.getResultSet();
         final boolean[] contains = {false};
         GridOSHEntity gridCell = null;
+        List<OSHDBBoundingBox> bboxs = new ArrayList<>(1);
         if (resultSetOSHDB.next()) {
           GridOSHEntity insertGrid = (GridOSHEntity) (new ObjectInputStream(resultSetOSHDB
               .getBinaryStream(1))).readObject();
-
-          List<OSHDBBoundingBox> bboxs = new ArrayList<>(1);
 
           switch (t) {
             case NODE:
@@ -102,6 +104,7 @@ public class Flusher {
                 }
               });
               nodes.add((OSHNode) updateEntity);
+              nodes.sort((node1, node2) -> node1.compareTo(node2));
               OSHDBBoundingBox bbox1 = bboxs.get(bboxs.size() - 1);
               bbox1.add(updateEntity.getBoundingBox());
               bboxs.add(bbox1);
@@ -145,27 +148,68 @@ public class Flusher {
         PreparedStatement oshdbPreparedStatement = oshdb.prepareStatement(
             "MERGE INTO " + TableNames.forOSMType(t).get() + " "
             + "KEY(level,id) "
-            + "VALUES ("
-            + insertId.getZoomLevel() + ","
-            + insertId.getId() + ","
-            + "?);"
+            + "VALUES (?,?,?);"
         );
         //TODO: a lot of resource handling should be done here and above
         try (
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);) {
           oos.writeObject(gridCell);
-          oshdbPreparedStatement.setBytes(1, baos.toByteArray());
+          oshdbPreparedStatement.setInt(1, insertId.getZoomLevel());
+          oshdbPreparedStatement.setLong(2, insertId.getId());
+          oshdbPreparedStatement.setBytes(3, baos.toByteArray());
           oshdbPreparedStatement.execute();
         }
         if (!contains[0]) {
           if (updateEntity.getVersions().size() > 1) {
             //update old cell
             //get insertID of earlier stages
+            boolean[] found = {false};
+            GridOSHEntity newGridOSHEntity = null;
+            for (OSHDBBoundingBox insertBbox : bboxs) {
+              CellId insertId1 = xyt.getInsertId(insertBbox);
+              oshdbStatement.execute(
+                  "SELECT data FROM " + TableNames.forOSMType(t).get() + " WHERE id=" + insertId1
+                  .getId() + " and level=" + insertId1
+                      .getZoomLevel() + ";"
+              );
+              ResultSet resultSetOSHDB2 = oshdbStatement.getResultSet();
+              if (resultSetOSHDB2.next()) {
+                GridOSHEntity removeGrid = (GridOSHEntity) (new ObjectInputStream(resultSetOSHDB
+                    .getBinaryStream(1))).readObject();
+                removeGrid.forEach((Object oshEntity) -> {
+                  OSHEntity entity = (OSHEntity) oshEntity;
+                  //collect data for new entity here
+                  //create new GridCell without entity (see above)
+                  if (entity.getId() == updateEntity.getId()) {
+                    found[0] = true;
+                  }
+                });
+                if (found[0]) {
+                  break;
+                }
+              }
+            }
+            try (
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos);) {
+              oos.writeObject(newGridOSHEntity);
+              oshdbPreparedStatement.setInt(1, newGridOSHEntity.getLevel());
+              oshdbPreparedStatement.setLong(2, newGridOSHEntity.getId());
+              oshdbPreparedStatement.setBytes(3, baos.toByteArray());
+              oshdbPreparedStatement.execute();
+            }
           }
+          //update bitmap
+          Map<OSMType, LongBitmapDataProvider> bitMap = UpdateDatabaseHandler.getBitMap(dbBit);
+          LongBitmapDataProvider get = bitMap.get(t);
+          get.removeLong(updateEntity.getId());
+          bitMap.put(t, get);
+          UpdateDatabaseHandler.writeBitMap(bitMap, dbBit);
+          //remove from updatedb
+          updatedb.createStatement().execute(
+              "DELETE FROM " + TableNames.forOSMType(t) + " WHERE id=" + updateEntity.getId() + ";");
         }
-        //update bitmap
-        //remove from updatedb
       }
     }
   }

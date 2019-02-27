@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util.update;
+package org.heigit.bigspatialdata.oshdb.util.dbhandler.update;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
