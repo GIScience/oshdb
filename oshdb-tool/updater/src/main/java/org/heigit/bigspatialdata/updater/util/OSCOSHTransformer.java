@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
@@ -52,7 +53,12 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
     return new Iterable<OSHEntity>() {
       @Override
       public Iterator<OSHEntity> iterator() {
-        return new OSCOSHTransformer(etlFiles, keytables, changes);
+        try {
+          return new OSCOSHTransformer(etlFiles, keytables, changes);
+        } catch (OSHDBKeytablesNotFoundException ex) {
+          LOG.error("", ex);
+        }
+        return null;
       }
 
     };
@@ -60,8 +66,7 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
 
   private final EtlStore etlStore;
 
-  private OSHEntity onChange(ChangeContainer change) throws IOException,
-      OSHDBKeytablesNotFoundException {
+  private OSHEntity onChange(ChangeContainer change) throws IOException {
     Entity entity = change.getEntityContainer().getEntity();
     //get previous version of entity, if any. This ensures that updates may come in any order and may handle reactivations
     OSHEntity currEnt = (OSHEntity) this.etlStore.getEntity(OSCOSHTransformer.convertType(entity
@@ -69,12 +74,15 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
     return this.combine(entity, currEnt);
   }
 
-  private int[] getTags(Collection<Tag> tags) throws OSHDBKeytablesNotFoundException {
-    TagTranslator tt = new TagTranslator(this.keytables);
+  private int[] getTags(Collection<Tag> tags) {
     int[] tagsArray = new int[tags.size() * 2];
     int i = 0;
     for (Tag tag : tags) {
-      OSHDBTag oshdbTag = tt.getOSHDBTagOf(tag.getKey(), tag.getValue());
+      OSHDBTag oshdbTag = this.tt.getOSHDBTagOf(tag.getKey(), tag.getValue());
+      //insert yet unknown tags (do same with roles and at other occurances
+      if (oshdbTag.getKey() < 0 || oshdbTag.getValue() < 0) {
+        //update
+      }
       tagsArray[i] = oshdbTag.getKey();
       i++;
       tagsArray[i] = oshdbTag.getValue();
@@ -83,8 +91,7 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
     return tagsArray;
   }
 
-  private OSHEntity onDelete(ChangeContainer change) throws IOException,
-      OSHDBKeytablesNotFoundException {
+  private OSHEntity onDelete(ChangeContainer change) throws IOException {
     Entity newEnt = change.getEntityContainer().getEntity();
     newEnt.setVersion(-1 * newEnt.getVersion());
     EntityContainer newCont;
@@ -109,11 +116,12 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
   }
 
   private final Iterator<ChangeContainer> containers;
-  private final Connection keytables;
+  private final TagTranslator tt;
 
-  private OSCOSHTransformer(Path etlFiles, Connection keytables, Iterable<ChangeContainer> changes) {
+  private OSCOSHTransformer(Path etlFiles, Connection keytables, Iterable<ChangeContainer> changes)
+      throws OSHDBKeytablesNotFoundException {
     this.containers = changes.iterator();
-    this.keytables = keytables;
+    this.tt = new TagTranslator(keytables);
     this.etlStore = new EtlFileStore(etlFiles);
   }
 
@@ -140,16 +148,12 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
       }
     } catch (IOException ex) {
       LOG.error("error", ex);
-    } catch (OSHDBKeytablesNotFoundException ex) {
-      LOG.error("error", ex);
     }
     return null;
   }
 
-  private OSHEntity combine(Entity entity, OSHEntity ent2) throws OSHDBKeytablesNotFoundException,
-      IOException {
+  private OSHEntity combine(Entity entity, OSHEntity ent2) throws IOException {
     //get basic information on object
-    TagTranslator tt = new TagTranslator(this.keytables);
     long id = entity.getId();
     int version = entity.getVersion();
     OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
@@ -183,7 +187,8 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
         //create object
         OSHNode theNode = OSHNode.build(nodes);
         //append object
-        //TODO?:could (or should) also be done when loading...!!!!!
+        //TODO?:could (or should) also be done when loading (in the load step OSHLoader())...!!!!!
+        //hashSets define backreferences. also update other entity types
         this.etlStore.appendEntity(theNode, new HashSet<Long>(), new HashSet<Long>(),
             new HashSet<Long>());
         //return object
@@ -250,8 +255,9 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
                 LOG.warn(
                     "Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
               }
-              OSMMember memberN = new OSMMember(rm.getMemberId(), OSMType.NODE, tt.getOSHDBRoleOf(rm
-                  .getMemberRole()).toInt(), rNode);
+              OSMMember memberN = new OSMMember(rm.getMemberId(), OSMType.NODE, this.tt
+                  .getOSHDBRoleOf(rm
+                      .getMemberRole()).toInt(), rNode);
               refs2[j] = memberN;
               break;
             case Way:
@@ -262,8 +268,9 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
                 LOG.warn(
                     "Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
               }
-              OSMMember memberW = new OSMMember(rm.getMemberId(), OSMType.WAY, tt.getOSHDBRoleOf(rm
-                  .getMemberRole()).toInt(), rWay);
+              OSMMember memberW = new OSMMember(rm.getMemberId(), OSMType.WAY, this.tt
+                  .getOSHDBRoleOf(rm
+                      .getMemberRole()).toInt(), rWay);
               refs2[j] = memberW;
               break;
             case Relation:
@@ -273,7 +280,7 @@ public class OSCOSHTransformer implements Iterator<OSHEntity> {
                 LOG.warn(
                     "Missing Data for " + rm.getMemberType() + " with ID " + rm.getMemberId() + ". Data output might be corrupt?");
               }
-              OSMMember memberR = new OSMMember(rm.getMemberId(), OSMType.RELATION, tt
+              OSMMember memberR = new OSMMember(rm.getMemberId(), OSMType.RELATION, this.tt
                   .getOSHDBRoleOf(rm.getMemberRole()).toInt(), rRelation);
               refs2[j] = memberR;
               break;

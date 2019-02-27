@@ -129,6 +129,12 @@
       <version>${project.version}</version>
     </dependency>
     
+    <dependency>
+      <groupId>org.roaringbitmap</groupId>
+      <artifactId>RoaringBitmap</artifactId>
+      <version>${roaringbitmap.version}</version>
+    </dependency>
+    
   </dependencies>
 
   <build>
