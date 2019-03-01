@@ -42,6 +42,7 @@ public class XYGridTree implements Serializable {
    * @param latitude
    * @return An iterator over the cellIds in all zoomlevel
    */
+  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
     return new Iterable<CellId>() {
 
@@ -96,7 +97,7 @@ public class XYGridTree implements Serializable {
   }
 
   /**
-   * Query cells for given BBOX. The boundingbox is automatically enlarged, so
+   * Query cells for given bbox. The boundingbox is automatically enlarged, so
    * lines and relations are included.
    *
    * @param BBOX
@@ -107,12 +108,13 @@ public class XYGridTree implements Serializable {
   }
 
   /**
-   * Get CellIds in all zoomlevel for a given BBOX.
+   * Get CellIds in all zoomlevel for a given bbox.
    *
    * @param BBOX
    * @param enlarge
    * @return
    */
+  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX, final boolean enlarge) {
     return new Iterable<CellId>() {
       @Override
@@ -205,35 +207,42 @@ public class XYGridTree implements Serializable {
       return Objects.equals(end, other.end) && Objects.equals(start, other.start);
     }
   }
-  
+
   /**
-   * Get CellIds in all zoomlevel for a given BBOX.
+   * Get CellIds in all zoomlevel for a given bbox.
    *
-   * @param BBOX
+   * @param bbox
    * @param enlarge
    * @return
    */
-  public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox BBOX, final boolean enlarge) {
-    return (Iterable<CellIdRange>) () -> new Iterator<CellIdRange>() {
-      private int level = 0;
-      private Iterator<IdRange> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-
+  @SuppressWarnings("Convert2Lambda")
+  public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox, final boolean enlarge) {
+    return new Iterable<CellIdRange>() {
       @Override
-      public boolean hasNext() {
-        return level < maxLevel || rows.hasNext();
-      }
+      public Iterator<CellIdRange> iterator() {
+        return new Iterator<CellIdRange>() {
+          private int level = 0;
+          private Iterator<IdRange> rows =
+              gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
 
-      @Override
-      public CellIdRange next() {
-        if (!rows.hasNext()) {
-          level++;
-          rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-        }
-        IdRange row = rows.next();
-        return CellIdRange.of(
-            new CellId(level, row.getStart()),
-            new CellId(level, row.getEnd())
-        );
+          @Override
+          public boolean hasNext() {
+            return level < maxLevel || rows.hasNext();
+          }
+
+          @Override
+          public CellIdRange next() {
+            if (!rows.hasNext()) {
+              level++;
+              rows = gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
+            }
+            IdRange row = rows.next();
+            return CellIdRange.of(
+                new CellId(level, row.getStart()),
+                new CellId(level, row.getEnd())
+            );
+          }
+        };
       }
     };
   }
