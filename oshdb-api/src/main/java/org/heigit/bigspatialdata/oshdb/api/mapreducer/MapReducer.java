@@ -809,7 +809,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @param distance radius that defines neighbourhood in meters
    * @param key OSM tag key for filtering neighbouring OSHDB objects
@@ -824,7 +824,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @param distance radius that defines neighbourhood in meters
    * @return a modified copy of this MapReducer
@@ -943,7 +943,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @return a modified copy of this MapReducer
@@ -954,7 +954,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @return a modified copy of this MapReducer
    **/
@@ -1070,7 +1070,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @return a modified copy of this MapReducer
@@ -1081,7 +1081,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @return a modified copy of this MapReducer
    **/
@@ -1194,7 +1194,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @return a modified copy of this MapReducer
@@ -1205,7 +1205,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key
+   * Filter by neighbouring OSMEntitySnapshots using key
    *
    * @return a modified copy of this MapReducer
    **/
@@ -1227,7 +1227,8 @@ public abstract class MapReducer<X> implements
    **/
   @Contract(pure = true)
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> overlappedFeatures(
-      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce
+  ) throws Exception {
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this,
         mapReduce);
@@ -1316,7 +1317,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @return a modified copy of this MapReducer
@@ -1328,7 +1329,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @return a modified copy of this MapReducer
    **/
@@ -1350,7 +1351,8 @@ public abstract class MapReducer<X> implements
    **/
   @Contract(pure = true)
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
-      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce
+  ) throws Exception {
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this,
         mapReduce);
@@ -1394,8 +1396,7 @@ public abstract class MapReducer<X> implements
    **/
   @Contract(pure = true)
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(String key) throws Exception {
-    return this.coveredFeatures(
-        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+    return this.coveredFeatures(mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1439,7 +1440,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @param key OSM tag key for filtering neighbouring OSHDB objects
    * @return a modified copy of this MapReducer
@@ -1451,7 +1452,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Filter by neighbouring OSMEntitySnapshots uisng key.
+   * Filter by neighbouring OSMEntitySnapshots using key.
    *
    * @return a modified copy of this MapReducer
    **/
@@ -1474,7 +1475,8 @@ public abstract class MapReducer<X> implements
    **/
   @Contract(pure = true)
   public MapReducer<Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
-      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce
+  ) throws Exception {
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this,
         mapReduce);
