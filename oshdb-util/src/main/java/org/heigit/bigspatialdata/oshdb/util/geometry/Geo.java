@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.locationtech.jts.operation.distance.DistanceOp;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -11,15 +10,17 @@ import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.operation.distance.DistanceOp;
 
 /**
  * Geometry utility functions.
  */
 public class Geo {
-
-	// todo what radius is this? At equator it should be 6378 km
-	public static double earthRadius = 6371000.; //meters
-	public static double ONE_DEGREE_IN_METERS_AT_EQUATOR = earthRadius * Math.PI/180.;
+  /**
+   * Average radius of the Earth.
+   */
+  public static double earthRadius = 6371000.; //meters
+  public static final double ONE_DEGREE_IN_METERS = earthRadius * Math.PI / 180.;
 
   // =====================
   // = line calculations =
@@ -48,12 +49,12 @@ public class Geo {
   }
 
   public static double convertMetricDistanceToDegreeLongitude(double latitude, double distanceInMeters) {
-    return distanceInMeters / (Math.cos(Math.toRadians(latitude)) * ONE_DEGREE_IN_METERS_AT_EQUATOR);
+    return distanceInMeters / (Math.cos(Math.toRadians(latitude)) * ONE_DEGREE_IN_METERS);
   }
 
   public static double lengthOf(LineString line) {
-		double dist = 0.0;
-		Coordinate[] coords = line.getCoordinates();
+    double dist = 0.0;
+    Coordinate[] coords = line.getCoordinates();
 
     for (int i = 1; i < coords.length; i++) {
       dist += distanceBetweenCoordinates(
@@ -141,15 +142,16 @@ public class Geo {
    *     the earth.  Note that this area will be positive if ring is oriented
    *     clockwise, otherwise it will be negative.
    *
-   * Ported to Java from https://github.com/mapbox/geojson-area/
+   * <p>Ported to Java from https://github.com/mapbox/geojson-area/</p>
    *
+   * <p>
    * Reference:
    * Robert. G. Chamberlain and William H. Duquette, "Some Algorithms for
    *     Polygons on a Sphere", JPL Publication 07-03, Jet Propulsion
    *     Laboratory, Pasadena, CA, June 2007 http://trs-new.jpl.nasa.gov/dspace/handle/2014/40409
+   * </p>
    *
-   * Returns:
-   * {float} The approximate signed geodesic area of the polygon in square meters.
+   * @return The approximate signed geodesic area of the polygon in square meters.
    */
   public static double ringArea(LinearRing ring) {
     double area = 0.0;
@@ -197,27 +199,33 @@ public class Geo {
     return obj.intersection(poly);
   }
 
-	// ======================
-	// = geometry relations =
-	// ======================
+  // ======================
+  // = geometry relations =
+  // ======================
 
-	/**
-	 * Checks whether a geometry lies within a distance from another geometry
-	 * The algorithm searches for the two closest points and calcualtes the distance between them.
-	 * @param geom1 Geometry 1
-	 * @param geom2 Geometry 2
-	 * @param distanceInMeter distance in meters within which that two geometries should lie
-	 * @return True, if the geometry is within the distance of the other geometry, otherwise false
-	 */
-	//todo: check what is returned, if one polygon contains the other. It should be 0 but it will
-	// probabily return something else
-	public static boolean isWithinDistance(Geometry geom1, Geometry geom2, double distanceInMeter) {
-		// Find nearest points of the geometries
-		Coordinate[] nearestPoints = DistanceOp.nearestPoints(geom1, geom2);
-		// Calculate distance between nearest points in meters
-		double dist = Geo.distanceBetweenCoordinatesHaversine(nearestPoints[0].y, nearestPoints[0].x, nearestPoints[1].y, nearestPoints[1].x);
-		return dist <= distanceInMeter;
-	}
+  /**
+   * Checks whether a geometry lies within a distance from another geometry
+   * The algorithm searches for the two closest points and calcualtes the distance between them.
+   *
+   * @param geom1 Geometry 1
+   * @param geom2 Geometry 2
+   * @param distanceInMeter distance in meters within which that two geometries should lie
+   * @return True, if the geometry is within the distance of the other geometry, otherwise false
+   */
+  //todo: check what is returned, if one polygon contains the other. It should be 0 but it will
+  // probabily return something else
+  public static boolean isWithinDistance(Geometry geom1, Geometry geom2, double distanceInMeter) {
+    // Find nearest points of the geometries
+    Coordinate[] nearestPoints = DistanceOp.nearestPoints(geom1, geom2);
+    // Calculate distance between nearest points in meters
+    double dist = Geo.distanceBetweenCoordinatesHaversine(
+        nearestPoints[0].y,
+        nearestPoints[0].x,
+        nearestPoints[1].y,
+        nearestPoints[1].x
+    );
+    return dist <= distanceInMeter;
+  }
 
 
 }

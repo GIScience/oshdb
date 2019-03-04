@@ -51,9 +51,9 @@ public class Neighbourhood {
     double minLon = envelope.getMinX() - distanceInDegreeLongitude * 1.2;
     double maxLon = envelope.getMaxX() + distanceInDegreeLongitude * 1.2;
     double minLat = envelope.getMinY()
-        - (distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
+        - (distanceInMeter / Geo.ONE_DEGREE_IN_METERS) * 1.2;
     double maxLat = envelope.getMaxY()
-        + (distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
+        + (distanceInMeter / Geo.ONE_DEGREE_IN_METERS) * 1.2;
 
     // Get start and end timestamp of current snapshot
     ArrayList<OSHDBTimestamp> timestampArrayList = new ArrayList<>(
@@ -142,9 +142,14 @@ public class Neighbourhood {
       case BEFORE:
         if (contribution.getContributionTypes().contains(ContributionType.CREATION)) {
           geomBefore = contribution.getGeometryUnclippedAfter();
-          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getY(),distanceInMeter);
+          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(
+              geomBefore.getCentroid().getY(),
+              distanceInMeter
+          );
         } else {
-          throw new Exception("Contribution of type CREATION. No geometry before contribution available.");
+          throw new Exception(
+              "Contribution of type CREATION. No geometry before contribution available."
+          );
         }
         geomAfter = geomBefore;
         break;
@@ -155,18 +160,26 @@ public class Neighbourhood {
               .convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getY(),
                   distanceInMeter);
         } else {
-          throw new Exception("Contribution of type DELETION. No geometry after contribution available.");
+          throw new Exception(
+              "Contribution of type DELETION. No geometry after contribution available."
+          );
         }
         geomBefore = geomAfter;
         break;
       case BOTH:
         if (!contribution.getContributionTypes().contains(ContributionType.DELETION)) {
           geomAfter = contribution.getGeometryUnclippedAfter();
-          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomAfter.getCentroid().getY(),distanceInMeter);
+          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(
+              geomAfter.getCentroid().getY(),
+              distanceInMeter
+          );
         }
         if (!contribution.getContributionTypes().contains(ContributionType.CREATION)) {
           geomBefore = contribution.getGeometryUnclippedBefore();
-          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(geomBefore.getCentroid().getY(),distanceInMeter);
+          distanceInDegreeLongitude = Geo.convertMetricDistanceToDegreeLongitude(
+              geomBefore.getCentroid().getY(),
+              distanceInMeter
+          );
         }
         if (geomAfter == null) {
           geomAfter = geomBefore;
@@ -187,17 +200,17 @@ public class Neighbourhood {
     double minLonB = envelopeBefore.getMinX() - distanceInDegreeLongitude;
     double maxLonB = envelopeBefore.getMaxX() + distanceInDegreeLongitude;
     double minLatB = envelopeBefore.getMinY()
-        - distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+        - distanceInMeter / Geo.ONE_DEGREE_IN_METERS;
     double maxLatB = envelopeBefore.getMaxY()
-        + distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+        + distanceInMeter / Geo.ONE_DEGREE_IN_METERS;
     // Get coordinates of bounding box
     Envelope envelopeAfter = geomAfter.getEnvelopeInternal();
     double minLonA = envelopeAfter.getMinX() - distanceInDegreeLongitude;
     double maxLonA = envelopeAfter.getMaxX() + distanceInDegreeLongitude;
     double minLatA = envelopeAfter.getMinY()
-        - distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+        - distanceInMeter / Geo.ONE_DEGREE_IN_METERS;
     double maxLatA = envelopeAfter.getMaxY()
-        + distanceInMeter / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR;
+        + distanceInMeter / Geo.ONE_DEGREE_IN_METERS;
     // Get min/max coordinates of bounding box
     double minLat = Math.min(minLatA, minLatB);
     double maxLat = Math.max(maxLatA, maxLatB);
@@ -214,18 +227,18 @@ public class Neighbourhood {
         .areaOfInterest(new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat))
         .timestamps(contribution.getTimestamp().toString())
         .filter(snapshot -> {
-            Geometry geomNeighbour = snapshot.getGeometryUnclipped();
-            switch (geometryVersion) {
-              case BEFORE:
-                return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter);
-              case AFTER:
-                return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
-              case BOTH:
-                return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter)
-                    || Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
-              default:
-                return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
-            }
+          Geometry geomNeighbour = snapshot.getGeometryUnclipped();
+          switch (geometryVersion) {
+            case BEFORE:
+              return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter);
+            case AFTER:
+              return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
+            case BOTH:
+              return Geo.isWithinDistance(finalGeomBefore, geomNeighbour, distanceInMeter)
+                  || Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
+            default:
+              return Geo.isWithinDistance(finalGeomAfter, geomNeighbour, distanceInMeter);
+          }
         });
     // Apply mapReducer given by user
     return mapReduce.apply((MapReducer<X>) subMapReducer);

@@ -100,8 +100,8 @@ public class SpatialRelation<X> {
     // Multiply distance by 1.2 to avoid falsely excluding nearby OSM objects
     double minLon = geomEnvelope.getMinX() - distanceInDegreeLongitude * 1.2;
     double maxLon = geomEnvelope.getMaxX() + distanceInDegreeLongitude * 1.2;
-    double minLat = geomEnvelope.getMinY() - (distance / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
-    double maxLat = geomEnvelope.getMaxY() + (distance / Geo.ONE_DEGREE_IN_METERS_AT_EQUATOR) * 1.2;
+    double minLat = geomEnvelope.getMinY() - (distance / Geo.ONE_DEGREE_IN_METERS) * 1.2;
+    double maxLat = geomEnvelope.getMaxY() + (distance / Geo.ONE_DEGREE_IN_METERS) * 1.2;
     Envelope neighbourhoodEnvelope = new Envelope(minLon, maxLon, minLat, maxLat);
 
     // Get all OSM objects in the neighbourhood of the central OSM object from STRtree
