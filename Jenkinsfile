@@ -134,7 +134,7 @@ pipeline {
           recordIssues enabledForFailure: true, tool: findBugs()
           recordIssues enabledForFailure: true, tool: spotBugs()
           recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
-          recordIssues enabledForFailure: true, tool: pmd(pattern: '**/target/pmd.xml')
+          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
         }
       }
       post {
