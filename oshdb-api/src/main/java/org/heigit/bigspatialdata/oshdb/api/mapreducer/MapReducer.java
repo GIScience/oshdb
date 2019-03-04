@@ -33,9 +33,9 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFuncti
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableConsumer;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableThrowingFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableThrowingFunction;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
