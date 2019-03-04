@@ -2,8 +2,8 @@ package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
 import static org.junit.Assert.assertEquals;
 
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.junit.Test;
 

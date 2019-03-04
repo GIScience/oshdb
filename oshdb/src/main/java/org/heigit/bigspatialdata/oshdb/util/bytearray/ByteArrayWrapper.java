@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util.byteArray;
+package org.heigit.bigspatialdata.oshdb.util.bytearray;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -6,9 +6,9 @@ import java.util.Arrays;
 public class ByteArrayWrapper {
 
   public static class InvalidProtocolBufferException extends IOException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public InvalidProtocolBufferException(final String description) {
+    public InvalidProtocolBufferException(final String description) {
       super(description);
     }
   }

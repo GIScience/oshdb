@@ -2,8 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Lists;
 import com.tdunning.math.stats.TDigest;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygonal;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +13,7 @@ import java.util.Map;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -25,8 +25,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -38,6 +36,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Pair;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -52,6 +51,8 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.jetbrains.annotations.Contract;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -76,10 +77,10 @@ import org.json.simple.parser.ParseException;
  *            mapper function will be called with a parameter of this type as input
  * @param <U> the type of the index values returned by the `mapper function`, used to group results
  */
-public class MapAggregator<U extends Comparable<U>, X> implements
-    Mappable<X>, MapReducerSettings<MapAggregator<U,X>>, MapReducerAggregations<X> {
-  private MapReducer<Pair<U, X>> mapReducer;
-  private final List<Collection<?>> zerofill;
+public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
+    Mappable<X>, MapReducerSettings<MapAggregator<U, X>>, MapReducerAggregations<X> {
+  private MapReducer<IndexValuePair<U, X>> mapReducer;
+  private final List<Collection<? extends Comparable>> zerofill;
 
   /**
    * Basic constructor.
@@ -95,7 +96,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
-    this.mapReducer = mapReducer.map(data -> new MutablePair<U, X>(
+    this.mapReducer = mapReducer.map(data -> new IndexValuePair<U, X>(
         indexer.apply(data),
         data
     ));
@@ -104,7 +105,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   }
 
   // "copy/transform" constructor
-  private MapAggregator(MapAggregator<U, ?> obj, MapReducer<Pair<U, X>> mapReducer) {
+  private MapAggregator(MapAggregator<U, ?> obj, MapReducer<IndexValuePair<U, X>> mapReducer) {
     this.mapReducer = mapReducer;
     this.zerofill = new ArrayList<>(obj.zerofill);
   }
@@ -121,13 +122,13 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return the mapAggregator object using the given mapReducer
    */
   @Contract(pure = true)
-  private <R> MapAggregator<U, R> copyTransform(MapReducer<Pair<U, R>> mapReducer) {
+  private <R> MapAggregator<U, R> copyTransform(MapReducer<IndexValuePair<U, R>> mapReducer) {
     return new MapAggregator<>(this, mapReducer);
   }
 
   @Contract(pure = true)
-  private <V extends Comparable<V>> MapAggregator<V, X> copyTransformKey(
-      MapReducer<Pair<V, X>> mapReducer) {
+  private <V extends Comparable<V> & Serializable> MapAggregator<V, X>
+      copyTransformKey(MapReducer<IndexValuePair<V, X>> mapReducer) {
     //noinspection unchecked – we do want to convert the mapAggregator to a different key type "V"
     return new MapAggregator<V, X>((MapAggregator<V, ?>) this, mapReducer);
   }
@@ -166,10 +167,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
   @Contract(pure = true)
-  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer,
-      Collection<V> zerofill
-  ) {
+  public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
+      aggregateBy(SerializableFunction<X, V> indexer, Collection<V> zerofill) {
     MapAggregator<OSHDBCombinedIndex<U, V>, X> res = this
         .mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
             existingIndex,
@@ -186,9 +185,8 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
   @Contract(pure = true)
-  public <V extends Comparable<V>> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer
-  ) {
+  public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
+      aggregateBy(SerializableFunction<X, V> indexer) {
     return this.aggregateBy(indexer, Collections.emptyList());
   }
 
@@ -227,7 +225,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
    * @throws UnsupportedOperationException when called after any map or flatMap functions are set
    */
   @Contract(pure = true)
-  public <V extends Comparable<V>, P extends Geometry & Polygonal>
+  public <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal>
       MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(Map<V, P> geometries)
       throws UnsupportedOperationException {
     if (this.mapReducer.grouping != Grouping.NONE) {
@@ -245,11 +243,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     } else {
       MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
       if (this.mapReducer.forClass.equals(OSMContribution.class)) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else if (this.mapReducer.forClass.equals(OSMEntitySnapshot.class)) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
         throw new UnsupportedOperationException(
             "aggregateByGeometry not implemented for objects of type: "
@@ -787,7 +785,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   public <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper) {
     return this.copyTransform(this.mapReducer.map(inData -> {
       //noinspection unchecked – trick/hack to replace mapped values without copying pair objects
-      Pair<U,R> outData = (Pair<U,R>)inData;
+      IndexValuePair<U,R> outData = (IndexValuePair<U,R>)inData;
       outData.setValue(mapper.apply(inData.getValue()));
       return outData;
     }));
@@ -808,9 +806,9 @@ public class MapAggregator<U extends Comparable<U>, X> implements
   @Contract(pure = true)
   public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     return this.copyTransform(this.mapReducer.flatMap(inData -> {
-      List<Pair<U, R>> outData = new LinkedList<>();
+      List<IndexValuePair<U, R>> outData = new LinkedList<>();
       flatMapper.apply(inData.getValue()).forEach(flatMappedData ->
-          outData.add(new MutablePair<U, R>(
+          outData.add(new IndexValuePair<U, R>(
               inData.getKey(),
               flatMappedData
           ))
@@ -874,11 +872,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.neighbouring(inData.getValue(), distance));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -951,7 +949,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.neighbouringFeatures(
           distance,
           mapReduce);
-      return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+      return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -1029,11 +1027,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.contains(inData.getValue()));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -1095,7 +1093,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.containedFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+    return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -1165,11 +1163,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.coveredBy(inData.getValue()));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -1231,7 +1229,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveringFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+    return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -1300,11 +1298,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.covers(inData.getValue()));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -1365,7 +1363,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveredFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+    return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -1435,11 +1433,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.equalTo(inData.getValue()));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -1500,7 +1498,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.equalFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+    return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -1570,11 +1568,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.inside(inData.getValue()));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -1635,7 +1633,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.enclosingFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+    return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -1704,11 +1702,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.overlaps(inData.getValue()));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -1769,7 +1767,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.overlappedFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+    return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -1838,11 +1836,11 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         outData.setValue(spatialRelation.touches(inData.getValue()));
         return outData;
       } catch (Exception e) {
-        Pair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (Pair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
+        IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>> outData = (IndexValuePair<U, Pair<X, List<OSMEntitySnapshot>>>)inData;
         System.out.println(e.getMessage());
         outData.setValue(Pair.of(inData.getValue(),  new ArrayList<>()));
         return outData;
@@ -1904,7 +1902,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.touchingFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> p.getRight().size() > 0).map(p -> p.getKey());
+    return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
   }
 
   /**
@@ -2003,7 +2001,7 @@ public class MapAggregator<U extends Comparable<U>, X> implements
       throws Exception {
     SortedMap<U, S> result = this.mapReducer.reduce(
         TreeMap::new,
-        (TreeMap<U, S> m, Pair<U, X> r) -> {
+        (TreeMap<U, S> m, IndexValuePair<U, X> r) -> {
           m.put(r.getKey(), accumulator.apply(
               m.getOrDefault(r.getKey(), identitySupplier.get()),
               r.getValue()
@@ -2095,23 +2093,26 @@ public class MapAggregator<U extends Comparable<U>, X> implements
 
   // maps from one index type to a different one
   @Contract(pure = true)
-  private <V extends Comparable<V>> MapAggregator<V, X> mapIndex(
+  private <V extends Comparable<V> & Serializable> MapAggregator<V, X> mapIndex(
       SerializableBiFunction<U, X, V> keyMapper) {
-    return this.copyTransformKey(this.mapReducer.map(inData -> new MutablePair<>(
+    return this.copyTransformKey(this.mapReducer.map(inData -> new IndexValuePair<>(
         keyMapper.apply(inData.getKey(), inData.getValue()),
         inData.getValue()
     )));
   }
 
   // calculate complete set of indices to use for zerofilling
-  private Collection<?> completeZerofill(Set<?> keys, List<Collection<?>> zerofills) {
+  private Collection<? extends Comparable> completeZerofill(
+      Set<? extends Comparable> keys,
+      List<Collection<? extends Comparable>> zerofills
+  ) {
     if (zerofills.isEmpty()) {
       return Collections.emptyList();
     }
-    SortedSet<Object> seen = new TreeSet<>(zerofills.get(0));
-    SortedSet<Object> nextLevelKeys = new TreeSet<>();
-    for (Object index : keys) {
-      Object v;
+    SortedSet<Comparable> seen = new TreeSet<>(zerofills.get(0));
+    SortedSet<Comparable> nextLevelKeys = new TreeSet<>();
+    for (Comparable index : keys) {
+      Comparable v;
       if (index instanceof OSHDBCombinedIndex) {
         v = ((OSHDBCombinedIndex) index).getSecondIndex();
         nextLevelKeys.add(((OSHDBCombinedIndex) index).getFirstIndex());
@@ -2123,13 +2124,15 @@ public class MapAggregator<U extends Comparable<U>, X> implements
     if (zerofills.size() == 1) {
       return seen;
     } else {
-      Collection<?> nextLevel = this.completeZerofill(
+      Collection<? extends Comparable> nextLevel = this.completeZerofill(
           nextLevelKeys,
           zerofills.subList(1, zerofills.size())
       );
-      return nextLevel.stream().flatMap(u ->
-          seen.stream().map(v -> new OSHDBCombinedIndex<>(u, v))
-      ).collect(Collectors.toList());
+      //noinspection unchecked – we don't know the exact types of u and v at this point
+      Stream<OSHDBCombinedIndex> combinedZerofillIndices = nextLevel.stream().flatMap(u ->
+          seen.stream().map(v -> new OSHDBCombinedIndex(u, v))
+      );
+      return combinedZerofillIndices.collect(Collectors.toList());
     }
   }
 
@@ -2144,5 +2147,47 @@ public class MapAggregator<U extends Comparable<U>, X> implements
         },
         TreeMap::new
     ));
+  }
+  
+  /**
+   * A generic Pair class for holding index/value pairs.
+   */
+  private static class IndexValuePair<U, X> {
+    private U key;
+    protected X value;
+
+    private IndexValuePair(U key, X value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    public U getKey() {
+      return key;
+    }
+
+    public X getValue() {
+      return value;
+    }
+
+    public void setValue(X value) {
+      this.value = value;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(key, value);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      return this == other || other instanceof MapAggregator.IndexValuePair
+          && Objects.equals(key, ((IndexValuePair) other).key)
+          && Objects.equals(value, ((IndexValuePair) other).value);
+    }
+
+    @Override
+    public String toString() {
+      return "[index=" + key + ", value=" + value + "]";
+    }
   }
 }

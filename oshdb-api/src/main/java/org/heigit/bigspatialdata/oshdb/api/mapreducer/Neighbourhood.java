@@ -2,8 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import static org.heigit.bigspatialdata.oshdb.util.geometry.Geo.isWithinDistance;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -16,6 +14,8 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 
 import java.util.*;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Finds objects within in the neigbourhood of an object

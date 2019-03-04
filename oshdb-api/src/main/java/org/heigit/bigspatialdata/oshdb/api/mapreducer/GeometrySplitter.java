@@ -1,34 +1,32 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygonal;
-import com.vividsolutions.jts.geom.TopologyException;
-import com.vividsolutions.jts.index.strtree.STRtree;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKBWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.geom.TopologyException;
+import org.locationtech.jts.index.strtree.STRtree;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKBWriter;
 
 /**
  * Helper class to split "MapReducible" objects into sub-regions of an area of interest.
@@ -55,31 +53,67 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = subregions;
   }
 
+  private static class IndexData<I,D> {
+    private final I index;
+    private final D data;
+
+    IndexData(I index, D data) {
+      this.index = index;
+      this.data = data;
+    }
+
+    I getIndex() {
+      return index;
+    }
+
+    D getData() {
+      return data;
+    }
+  }
+
   /**
    * Splits osm entity snapshot objects into sub-regions.
    *
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
    */
-  public List<Pair<U, OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
+  public Map<U,OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
     return candidates.stream()
-        .filter(index -> !bops.get(index).test(oshBoundingBox)) // fully outside -> skip
+        // OSH entity fully outside -> skip
+        .filter(index -> !bops.get(index).test(oshBoundingBox))
         .flatMap(index -> {
           if (bips.get(index).test(oshBoundingBox)) {
-            return Stream.of(new ImmutablePair<>(index, data)); // fully inside -> directly return
+            // OSH entity fully inside -> directly return
+            return Stream.of(new IndexData<>(index, data));
           }
+
+          // now we can check against the actual contribution geometry
+          Geometry snapshotGeometry = data.getGeometry();
+          OSHDBBoundingBox snapshotBbox = OSHDBGeometryBuilder.boundingBoxOf(
+              snapshotGeometry.getEnvelopeInternal()
+          );
+
+          // OSM entity fully outside -> skip
+          if (bops.get(index).test(snapshotBbox)) {
+            return Stream.empty();
+          }
+          // OSM entity fully inside -> directly return
+          if (bips.get(index).test(snapshotBbox)) {
+            return Stream.of(new IndexData<>(index, data));
+          }
+
           FastPolygonOperations poop = poops.get(index);
           try {
-            Geometry intersection = poop.intersection(data.getGeometry());
+            Geometry intersection = poop.intersection(snapshotGeometry);
             if (intersection == null || intersection.isEmpty()) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new ImmutablePair<>(
+              return Stream.of(new IndexData<>(
                   index,
                   new OSMEntitySnapshot(data, intersection)
               ));
@@ -87,7 +121,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           } catch (TopologyException ignored) {
             return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
           }
-        }).collect(Collectors.toCollection(LinkedList::new));
+        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
   }
 
   /**
@@ -104,27 +138,60 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
    */
-  public List<Pair<U, OSMContribution>> splitOSMContribution(OSMContribution data) {
+  public Map<U,OSMContribution> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     //noinspection unchecked – STRtree works with raw types unfortunately :-/
     List<U> candidates = (List<U>) spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
     return candidates.stream()
-        .filter(index -> !bops.get(index).test(oshBoundingBox)) // fully outside -> skip
+        // OSH entity fully outside -> skip
+        .filter(index -> !bops.get(index).test(oshBoundingBox))
         .flatMap(index -> {
+          // OSH entity fully inside -> directly return
           if (bips.get(index).test(oshBoundingBox)) {
-            return Stream.of(new ImmutablePair<>(index, data)); // fully inside -> directly return
+            return Stream.of(new IndexData<>(index, data));
           }
+
+          // now we can check against the actual contribution geometry
+          Geometry contributionGeometryBefore = data.getGeometryBefore();
+          Geometry contributionGeometryAfter = data.getGeometryAfter();
+          OSHDBBoundingBox contributionGeometryBbox;
+          if (data.is(ContributionType.CREATION)) {
+            contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(
+                contributionGeometryAfter.getEnvelopeInternal()
+            );
+          } else if (data.is(ContributionType.DELETION)) {
+            contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(
+                contributionGeometryBefore.getEnvelopeInternal()
+            );
+          } else {
+            contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(
+                contributionGeometryBefore.getEnvelopeInternal()
+            );
+            contributionGeometryBbox.add(OSHDBGeometryBuilder.boundingBoxOf(
+                contributionGeometryAfter.getEnvelopeInternal()
+            ));
+          }
+
+          // contribution fully outside -> skip
+          if (bops.get(index).test(contributionGeometryBbox)) {
+            return Stream.empty();
+          }
+          // contribution fully inside -> directly return
+          if (bips.get(index).test(contributionGeometryBbox)) {
+            return Stream.of(new IndexData<>(index, data));
+          }
+
           FastPolygonOperations poop = poops.get(index);
           try {
-            Geometry intersectionBefore = poop.intersection(data.getGeometryBefore());
-            Geometry intersectionAfter = poop.intersection(data.getGeometryAfter());
+            Geometry intersectionBefore = poop.intersection(contributionGeometryBefore);
+            Geometry intersectionAfter = poop.intersection(contributionGeometryAfter);
             if ((intersectionBefore == null || intersectionBefore.isEmpty())
                 && (intersectionAfter == null || intersectionAfter.isEmpty())) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new ImmutablePair<>(
+              return Stream.of(new IndexData<>(
                   index,
                   new OSMContribution(data, intersectionBefore, intersectionAfter)
               ));
@@ -132,7 +199,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           } catch (TopologyException ignored) {
             return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
           }
-        }).collect(Collectors.toCollection(LinkedList::new));
+        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
   }
 
   /**
@@ -177,7 +244,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = result;
   }
 
-  private <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
+  protected <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
     //noinspection unchecked - constructor checks that `subregions` only contain `P` entry values
     return new GeometrySplitter<>((Map<U, P>) this.subregions);
   }

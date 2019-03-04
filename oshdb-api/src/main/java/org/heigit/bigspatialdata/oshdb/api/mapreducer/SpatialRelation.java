@@ -2,23 +2,23 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import static org.heigit.bigspatialdata.oshdb.util.geometry.Geo.isWithinDistance;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.Polygonal;
-import com.vividsolutions.jts.geom.TopologyException;
-import com.vividsolutions.jts.index.strtree.STRtree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Pair;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.geom.TopologyException;
+import org.locationtech.jts.index.strtree.STRtree;
 
 /**
  * Class that selects OSM objects based on their spatial relation (as defined by Egenhofer, 1991)

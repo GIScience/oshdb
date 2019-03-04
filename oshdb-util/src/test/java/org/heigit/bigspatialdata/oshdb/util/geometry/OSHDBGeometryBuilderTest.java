@@ -1,23 +1,24 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser;
+
+import org.junit.Assert;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class OSHDBGeometryBuilderTest {
   private OSMXmlReader testData = new OSMXmlReader();
@@ -36,7 +37,6 @@ public class OSHDBGeometryBuilderTest {
       return null;
     }
   }
-
   @Test
   public void testPointGetGeometry() {
     OSMEntity entity = testData.nodes().get(1L).get(1);
@@ -159,6 +159,30 @@ public class OSHDBGeometryBuilderTest {
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("GeometryCollection", result.getGeometryType());
     assertEquals(1, result.getNumGeometries());
+  }
+  
+  @Test
+  public void testBoundingBoxGetGeometry() {
+    // regular bbox
+    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0, 0, 1, 1);
+    Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbox);
+    Coordinate[] test = { new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1),
+        new Coordinate(0, 1), new Coordinate(0, 0) };
+    Assert.assertArrayEquals(test, geometry.getCoordinates());
+
+    // degenerate bbox: point
+    bbox = new OSHDBBoundingBox(0, 0, 0, 0);
+    geometry = OSHDBGeometryBuilder.getGeometry(bbox);
+    test = new Coordinate[] { new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0),
+        new Coordinate(0, 0), new Coordinate(0, 0) };
+    Assert.assertArrayEquals(test, geometry.getCoordinates());
+
+    // degenerate bbox: line
+    bbox = new OSHDBBoundingBox(0, 0, 0, 1);
+    geometry = OSHDBGeometryBuilder.getGeometry(bbox);
+    test = new Coordinate[]{new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 1),
+        new Coordinate(0, 1), new Coordinate(0, 0) };
+    Assert.assertArrayEquals(test, geometry.getCoordinates());
   }
 }
 

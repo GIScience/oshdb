@@ -1,9 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.object;
 
-import com.vividsolutions.jts.geom.Geometry;
 import java.util.EnumSet;
 import java.util.Objects;
-
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
@@ -12,6 +10,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Holds information about a single modification ("contribution") of a single entity in database.

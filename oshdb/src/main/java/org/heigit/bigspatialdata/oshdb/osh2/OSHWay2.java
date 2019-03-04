@@ -10,7 +10,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
 public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
 

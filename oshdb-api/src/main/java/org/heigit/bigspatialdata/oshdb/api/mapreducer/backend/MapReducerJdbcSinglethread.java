@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
@@ -19,7 +18,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
@@ -41,12 +40,18 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     return new MapReducerJdbcSinglethread<X>(this);
   }
 
+  @Override
+  public boolean isCancelable() {
+    return true;
+  }
 
   private <S> S reduce(
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),
@@ -54,7 +59,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     );
 
     S result = identitySupplier.get();
-    for (Pair<CellId, CellId> cellIdRange : this.getCellIdRanges()) {
+    for (CellIdRange cellIdRange : this.getCellIdRanges()) {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       while (oshCellsRawData.next()) {
@@ -71,6 +76,8 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   private Stream<X> stream(
       CellProcessor<Collection<X>> cellProcessor
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),
@@ -93,7 +100,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMContributionCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMContributionCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -107,7 +119,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMContributionGroupingCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMContributionGroupingCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -121,7 +138,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMEntitySnapshotCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMEntitySnapshotCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -135,7 +157,12 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return this.reduce(
-        Kernels.getOSMEntitySnapshotGroupingCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMEntitySnapshotGroupingCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -146,26 +173,26 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
       SerializableFunction<OSMContribution, X> mapper) throws Exception {
-    return this.stream(Kernels.getOSMContributionCellStreamer(mapper));
+    return this.stream(Kernels.getOSMContributionCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
   ) throws Exception {
-    return this.stream(Kernels.getOSMContributionGroupingCellStreamer(mapper));
+    return this.stream(Kernels.getOSMContributionGroupingCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
-    return this.stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper));
+    return this.stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
-    return this.stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper));
+    return this.stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper, this));
   }
 
 }

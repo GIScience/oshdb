@@ -1,13 +1,11 @@
 package org.heigit.bigspatialdata.oshdb.api.db;
 
+import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.OptionalLong;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
@@ -19,7 +17,6 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteSc
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
-import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 
 /**
  * OSHDB database backend connector to a Ignite system.
@@ -33,7 +30,6 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
 
   private final transient Ignite ignite;
   private ComputeMode computeMode = ComputeMode.LocalPeek;
-  private Long timeout = null;
 
   private IgniteRunnable onCloseCallback = null;
 
@@ -76,7 +72,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
         .map(t -> t.toString(this.prefix()))
         .collect(Collectors.toList());
     if (!allCaches.containsAll(expectedCaches)) {
-      throw new OSHDBTableNotFoundException(StringUtils.join(expectedCaches, ", "));
+      throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedCaches));
     }
     switch (this.computeMode()) {
       case LocalPeek:
@@ -126,53 +122,6 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    */
   public ComputeMode computeMode() {
     return this.computeMode;
-  }
-
-  /**
-   * Set a timeout for queries on this ignite oshdb backend.
-   *
-   * <p>If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be
-   * thrown.</p>
-   *
-   * @param seconds time (in seconds) a query is allowed to run for.
-   * @return the current oshdb object
-   */
-  public OSHDBIgnite timeout(double seconds) {
-    if (this.computeMode() == ComputeMode.ScanQuery) {
-      throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
-    }
-    this.timeout = (long) Math.ceil(seconds * 1000);
-    return this;
-  }
-
-  /**
-   * Set a timeout for queries on this ignite oshdb backend.
-   *
-   * <p>If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be
-   * thrown.</p>
-   *
-   * @param milliSeconds time (in milliseconds) a query is allowed to run for.
-   * @return the current oshdb object
-   */
-  public OSHDBIgnite timeoutInMilliseconds(long milliSeconds) {
-    if (this.computeMode() == ComputeMode.ScanQuery) {
-      throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
-    }
-    this.timeout = milliSeconds;
-    return this;
-  }
-
-  /**
-   * Gets the timeout for queries on this ignite oshdb backend, if present.
-   *
-   * @return the currently set query timeout in milliseconds
-   */
-  public OptionalLong timeoutInMilliseconds() {
-    if (this.timeout == null) {
-      return OptionalLong.empty();
-    } else {
-      return OptionalLong.of(this.timeout);
-    }
   }
 
   /**

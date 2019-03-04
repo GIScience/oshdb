@@ -2,8 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
 import com.tdunning.math.stats.TDigest;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygonal;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -17,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -36,13 +35,6 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
-import com.vividsolutions.jts.geom.*;
-import java.io.IOException;
-import java.io.Serializable;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Pattern;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -58,10 +50,10 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
@@ -83,6 +75,8 @@ import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,6 +125,8 @@ public abstract class MapReducer<X> implements
   protected OSHDBDatabase oshdb;
   protected transient OSHDBJdbc keytables;
 
+  protected Long timeout = null;
+
   // internal state
   Class<? extends OSHDBMapReducible> forClass;
 
@@ -139,6 +135,13 @@ public abstract class MapReducer<X> implements
   }
 
   Grouping grouping = Grouping.NONE;
+
+  /**
+   * Returns if the current backend can be canceled (e.g. in a query timeout).
+   */
+  public boolean isCancelable() {
+    return false;
+  }
 
   // utility objects
   private transient TagTranslator tagTranslator = null;
@@ -505,10 +508,9 @@ public abstract class MapReducer<X> implements
       ret.filters.add(ignored -> false);
       return ret;
     }
-    int keyId = keyValueId.getKey();
-    int valueId = keyValueId.getValue();
+    OSHDBTagKey keyId = new OSHDBTagKey(keyValueId.getKey());
     ret.preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    ret.filters.add(osmEntity -> osmEntity.hasTagValue(keyId, valueId));
+    ret.filters.add(osmEntity -> osmEntity.hasTagValue(keyValueId.getKey(), keyValueId.getValue()));
     return ret;
   }
 
@@ -792,7 +794,7 @@ public abstract class MapReducer<X> implements
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.neighbouringFeatures(
         distance,
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -928,7 +930,7 @@ public abstract class MapReducer<X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.containedFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -1056,7 +1058,7 @@ public abstract class MapReducer<X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.enclosingFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -1183,7 +1185,7 @@ public abstract class MapReducer<X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.equalFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -1310,7 +1312,7 @@ public abstract class MapReducer<X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.overlappedFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -1437,7 +1439,7 @@ public abstract class MapReducer<X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveredFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -1566,7 +1568,7 @@ public abstract class MapReducer<X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveringFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -1696,7 +1698,7 @@ public abstract class MapReducer<X> implements
       SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapReducer<Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.touchingFeatures(
         mapReduce);
-    return pairMapReducer.filter(p -> !p.getRight().isEmpty()).map(Pair::getKey);
+    return pairMapReducer.filter(p -> !p.getValue().isEmpty()).map(Pair::getKey);
   }
 
   /**
@@ -1789,7 +1791,7 @@ public abstract class MapReducer<X> implements
    *         etc.) of the current MapReducer object
    */
   @Contract(pure = true)
-  public <U extends Comparable<U>> MapAggregator<U, X> aggregateBy(
+  public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
@@ -1807,7 +1809,7 @@ public abstract class MapReducer<X> implements
    *         etc.) of the current MapReducer object
    */
   @Contract(pure = true)
-  public <U extends Comparable<U>> MapAggregator<U, X> aggregateBy(
+  public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer
   ) {
     return this.aggregateBy(indexer, Collections.emptyList());
@@ -1912,7 +1914,7 @@ public abstract class MapReducer<X> implements
    * @throws UnsupportedOperationException when called after any map or flatMap functions are set
    */
   @Contract(pure = true)
-  public <U extends Comparable<U>, P extends Geometry & Polygonal>
+  public <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal>
       MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries) throws
       UnsupportedOperationException {
     if (this.grouping != Grouping.NONE) {
@@ -1929,11 +1931,11 @@ public abstract class MapReducer<X> implements
     } else {
       MapAggregator<U, ? extends OSHDBMapReducible> ret;
       if (this.forClass.equals(OSMContribution.class)) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x))
-            .aggregateBy(Pair::getKey, geometries.keySet()).map(Pair::getValue);
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
+            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
         throw new UnsupportedOperationException(
             "aggregateByGeometry not implemented for objects of type: " + this.forClass.toString()
@@ -1996,6 +1998,7 @@ public abstract class MapReducer<X> implements
       SerializableBiFunction<S, X, S> accumulator,
       SerializableBinaryOperator<S> combiner)
       throws Exception {
+    checkTimeout();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -2488,6 +2491,7 @@ public abstract class MapReducer<X> implements
 
   @Contract(pure = true)
   private Stream<X> streamInternal() throws Exception {
+    checkTimeout();
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -2845,7 +2849,7 @@ public abstract class MapReducer<X> implements
   }
 
   // get all cell ids covered by the current area of interest's bounding box
-  protected Iterable<Pair<CellId, CellId>> getCellIdRanges() {
+  protected Iterable<CellIdRange> getCellIdRanges() {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
     if (this.bboxFilter == null
         || this.bboxFilter.getMinLon() >= this.bboxFilter.getMaxLon()
@@ -2943,6 +2947,20 @@ public abstract class MapReducer<X> implements
     return (Number) x;
   }
 
+  /**
+   * Checks if the current request should be run on a cancelable backend.
+   * Produces a log message if not.
+    */
+  private void checkTimeout() {
+    if (this.oshdb.timeoutInMilliseconds().isPresent()) {
+      if (!this.isCancelable()) {
+        LOG.error("A query timeout was set but the database backend isn't cancelable");
+      } else {
+        this.timeout = this.oshdb.timeoutInMilliseconds().getAsLong();
+      }
+    }
+  }
+
   @Contract(pure = true)
   static <T> List<T> collectIdentitySupplier() {
     return new LinkedList<>();
@@ -2979,5 +2997,27 @@ public abstract class MapReducer<X> implements
     result.addAll(a);
     result.addAll(b);
     return result;
+  }
+
+  public static class Pair<A, B> {
+    private final A key;
+    private final B value;
+
+    public Pair(A key, B value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    public static <A, B> Pair<A,B> of(A a, B b) {
+      return new Pair<>(a,b);
+    }
+
+    public A getKey() {
+      return this.key;
+    }
+
+    public B getValue() {
+      return this.value;
+    }
   }
 }

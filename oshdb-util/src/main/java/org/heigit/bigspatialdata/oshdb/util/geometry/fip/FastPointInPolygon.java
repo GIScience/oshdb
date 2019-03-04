@@ -1,8 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
-import com.vividsolutions.jts.geom.*;
-
 import java.util.function.Predicate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygonal;
 
 /**
  * Fast point in (multi)polygon test inspired by

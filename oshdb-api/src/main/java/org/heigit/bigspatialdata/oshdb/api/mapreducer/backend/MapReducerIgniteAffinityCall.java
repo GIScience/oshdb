@@ -10,10 +10,11 @@ import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
+import org.apache.ignite.IgniteException;
+import org.apache.ignite.lang.IgniteFuture;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
@@ -23,14 +24,17 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOp
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 
@@ -50,7 +54,15 @@ import org.json.simple.parser.ParseException;
  * the (~linear) inefficiency with this implementation.
  * </p>
  */
-public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
+public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
+    implements CancelableProcessStatus {
+
+  /**
+   * Stores the start time of reduce/stream operation as returned by
+   * {@link System#currentTimeMillis()}. Used to determine query timeouts.
+   */
+  private long executionStartTimeMillis;
+
   public MapReducerIgniteAffinityCall(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
@@ -67,28 +79,60 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
     return new MapReducerIgniteAffinityCall<X>(this);
   }
 
+  @Override
+  public boolean isCancelable() {
+    return true;
+  }
+
+  @Override
+  public boolean isActive() {
+    if (timeout != null && System.currentTimeMillis() - executionStartTimeMillis > timeout) {
+      throw new OSHDBTimeoutException();
+    }
+    return true;
+  }
+
   @Nonnull
-  private static Function<Pair<CellId, CellId>, LongStream> cellIdRangeToCellIds() {
+  private static Function<CellIdRange, LongStream> cellIdRangeToCellIds() {
     return cellIdRange -> {
-      int level = cellIdRange.getLeft().getZoomLevel();
-      long from = CellId.getLevelId(level, cellIdRange.getLeft().getId());
-      long to = CellId.getLevelId(level, cellIdRange.getRight().getId());
+      int level = cellIdRange.getStart().getZoomLevel();
+      long from = CellId.getLevelId(level, cellIdRange.getStart().getId());
+      long to = CellId.getLevelId(level, cellIdRange.getEnd().getId());
       return LongStream.rangeClosed(from, to);
     };
   }
 
+  private static <T> T asyncGetHandleTimeouts(IgniteFuture<T> async) {
+    try {
+      return async.get();
+    } catch (IgniteException e) {
+      if (e.getCause().getCause() instanceof OSHDBTimeoutException) {
+        throw (OSHDBTimeoutException) e.getCause().getCause();
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Implements a generic reduce operation.
+   *
+   * @throws OSHDBTimeoutException if a timeout was set and the computations took too long.
+   */
   private <S> S reduce(
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
   ) throws ParseException, SQLException, IOException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
+    final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
@@ -103,31 +147,43 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
           .parallel()
-          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
-            @SuppressWarnings("SerializableStoresNonSerializable")
-            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
-            S ret;
-            if (oshEntityCell == null) {
-              ret = identitySupplier.get();
-            } else {
-              ret = cellProcessor.apply(oshEntityCell, cellIterator);
-            }
-            onClose.run();
-            return ret;
-          })).reduce(identitySupplier.get(), combiner);
+          .filter(ignored -> this.isActive())
+          .mapToObj(cellLongId -> asyncGetHandleTimeouts(
+              compute.affinityCallAsync(cacheName, cellLongId, () -> {
+                @SuppressWarnings("SerializableStoresNonSerializable")
+                GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                S ret;
+                if (oshEntityCell == null) {
+                  ret = identitySupplier.get();
+
+                } else {
+                  ret = cellProcessor.apply(oshEntityCell, cellIterator);
+                }
+                onClose.run();
+                return ret;
+              })
+          ))
+          .reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
   }
 
+  /**
+   * Implements a generic stream operation.
+   *
+   * @throws OSHDBTimeoutException if a timeout was set and the computations took too long.
+   */
   private Stream<X> stream(
       CellProcessor<Collection<X>> processor
   ) throws ParseException, SQLException, IOException {
+    this.executionStartTimeMillis = System.currentTimeMillis();
+
     CellIterator cellIterator = new CellIterator(
         this.tstamps.get(),
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
 
-    final Iterable<Pair<CellId, CellId>> cellIdRanges = this.getCellIdRanges();
+    final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
@@ -142,18 +198,21 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
           .parallel()
-          .mapToObj(cellLongId -> compute.affinityCall(cacheName, cellLongId, () -> {
-            @SuppressWarnings("SerializableStoresNonSerializable")
-            GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
-            Collection<X> ret;
-            if (oshEntityCell == null) {
-              ret = Collections.<X>emptyList();
-            } else {
-              ret = processor.apply(oshEntityCell, cellIterator);
-            }
-            onClose.run();
-            return ret;
-          }))
+          .filter(ignored -> this.isActive())
+          .mapToObj(cellLongId -> asyncGetHandleTimeouts(
+                compute.affinityCallAsync(cacheName, cellLongId, () -> {
+                  @SuppressWarnings("SerializableStoresNonSerializable")
+                  GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                  Collection<X> ret;
+                  if (oshEntityCell == null) {
+                    ret = Collections.<X>emptyList();
+                  } else {
+                    ret = processor.apply(oshEntityCell, cellIterator);
+                  }
+                  onClose.run();
+                  return ret;
+                })
+          ))
           .flatMap(Collection::stream);
     }).flatMap(x -> x);
   }
@@ -167,8 +226,13 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
-    return this.reduce(
-        Kernels.getOSMContributionCellReducer(mapper, identitySupplier, accumulator),
+    return reduce(
+        Kernels.getOSMContributionCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -182,7 +246,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return reduce(
-        Kernels.getOSMContributionGroupingCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMContributionGroupingCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -197,7 +266,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return reduce(
-        Kernels.getOSMEntitySnapshotCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMEntitySnapshotCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -211,7 +285,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
       SerializableBinaryOperator<S> combiner
   ) throws Exception {
     return reduce(
-        Kernels.getOSMEntitySnapshotGroupingCellReducer(mapper, identitySupplier, accumulator),
+        Kernels.getOSMEntitySnapshotGroupingCellReducer(
+            mapper,
+            identitySupplier,
+            accumulator,
+            this
+        ),
         identitySupplier,
         combiner
     );
@@ -222,24 +301,24 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X> {
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
       SerializableFunction<OSMContribution, X> mapper) throws Exception {
-    return stream(Kernels.getOSMContributionCellStreamer(mapper));
+    return stream(Kernels.getOSMContributionCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
-    return stream(Kernels.getOSMContributionGroupingCellStreamer(mapper));
+    return stream(Kernels.getOSMContributionGroupingCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
-    return stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper));
+    return stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
-    return stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper));
+    return stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper, this));
   }
 }

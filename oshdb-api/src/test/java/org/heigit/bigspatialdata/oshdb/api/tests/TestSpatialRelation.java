@@ -2,9 +2,6 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import static org.junit.Assert.*;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,6 +11,9 @@ import org.geotools.geojson.feature.FeatureJSON;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelation;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelation.relation;
 import org.junit.Test;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
