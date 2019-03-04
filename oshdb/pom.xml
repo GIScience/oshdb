@@ -54,7 +54,6 @@
   </dependencies>
   
   <profiles>
-    
     <profile>
       <id>withDep</id>
       <properties>
@@ -84,7 +83,6 @@
         </plugins>
       </build>
     </profile>
-    
   </profiles>
   
 </project>
