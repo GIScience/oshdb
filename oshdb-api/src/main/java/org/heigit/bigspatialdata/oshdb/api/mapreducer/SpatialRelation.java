@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableThrowingFunction;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Pair;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -34,7 +34,7 @@ public class SpatialRelation<X> {
   }
 
   private MapReducer mapReducer;
-  private SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce;
+  private SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce;
   private final STRtree objectsForComparison = new STRtree();
 
   /**
@@ -47,7 +47,7 @@ public class SpatialRelation<X> {
    */
   public SpatialRelation(
       MapReducer mapReducer,
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) {
     this.mapReducer = mapReducer;
     this.mapReduce = mapReduce;
   }

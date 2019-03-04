@@ -3,7 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 import static org.heigit.bigspatialdata.oshdb.util.geometry.Geo.isWithinDistance;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableThrowingFunction;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -28,7 +28,7 @@ public class Neighbourhood {
       OSHDBJdbc oshdb,
       OSHDBTimestampList timestampList,
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<X>, Y> mapReduce,
+      SerializableThrowingFunction<MapReducer<X>, Y> mapReduce,
       OSMEntitySnapshot snapshot,
       boolean queryContributions,
       ContributionType contributionType
@@ -116,7 +116,7 @@ public class Neighbourhood {
   public static <X, Y> Y neighbourhood(
       OSHDBJdbc oshdb,
       Double distanceInMeter,
-      SerializableFunctionWithException<MapReducer<X>, Y> mapReduce,
+      SerializableThrowingFunction<MapReducer<X>, Y> mapReduce,
       OSMContribution contribution,
       GEOMETRY_OPTIONS geometryVersion
   ) throws Exception {

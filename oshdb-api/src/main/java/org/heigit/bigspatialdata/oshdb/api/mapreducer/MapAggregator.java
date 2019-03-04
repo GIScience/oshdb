@@ -32,7 +32,7 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiConsum
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
-import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunctionWithException;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableThrowingFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Grouping;
@@ -54,9 +54,6 @@ import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.json.simple.parser.ParseException;
 
 /**
@@ -858,7 +855,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> neighbouringFeatures(
       Double distance,
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -900,7 +897,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String value) throws Exception {
     return this.neighbouringFeatures(
         distance,
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -917,7 +914,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key) throws Exception {
     return this.neighbouringFeatures(
         distance,
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -932,7 +929,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       Double distance) throws Exception {
     return this.neighbouringFeatures(
         distance,
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
 
@@ -945,7 +942,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> neighbouring(Double distance,
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
       MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.neighbouringFeatures(
           distance,
           mapReduce);
@@ -1013,7 +1010,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -1052,7 +1049,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key,
       String value) throws Exception {
     return this.containedFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1066,7 +1063,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedFeatures(
       String key) throws Exception {
     return this.containedFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1078,7 +1075,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> containedFeatures() throws Exception {
     return this.containedFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
 
@@ -1090,7 +1087,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> contains(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.containedFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
@@ -1149,7 +1146,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -1188,7 +1185,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key,
       String value) throws Exception {
     return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1202,7 +1199,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures(
       String key) throws Exception {
     return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1214,7 +1211,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveringFeatures() throws Exception {
     return this.coveringFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
 
@@ -1226,7 +1223,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> coveredBy(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveringFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
@@ -1284,7 +1281,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -1323,7 +1320,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key,
       String value) throws Exception {
     return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1337,7 +1334,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures(
       String key) throws Exception {
     return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1349,7 +1346,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> coveredFeatures() throws Exception {
     return this.coveredFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
   /**
@@ -1360,7 +1357,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> covers(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.coveredFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
@@ -1419,7 +1416,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> equalFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -1458,7 +1455,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key,
       String value) throws Exception {
     return this.equalFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1472,7 +1469,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> equalFeatures(
       String key) throws Exception {
     return this.equalFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1484,7 +1481,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> equalFeatures() throws Exception {
     return this.equalFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
   /**
@@ -1495,7 +1492,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> equals(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.equalFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
@@ -1554,7 +1551,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -1593,7 +1590,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key,
       String value) throws Exception {
     return this.enclosingFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1607,7 +1604,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures(
       String key) throws Exception {
     return this.enclosingFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1619,7 +1616,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> enclosingFeatures() throws Exception {
     return this.enclosingFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
   /**
@@ -1630,7 +1627,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> inside(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.enclosingFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
@@ -1688,7 +1685,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappedFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -1727,7 +1724,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key,
       String value) throws Exception {
     return this.overlappedFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1741,7 +1738,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappedFeatures(
       String key) throws Exception {
     return this.overlappedFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1753,7 +1750,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> overlappedFeatures() throws Exception {
     return this.overlappedFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
   /**
@@ -1764,7 +1761,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> overlaps(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.overlappedFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
@@ -1822,7 +1819,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> touchingFeatures(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     // Create spatialRelation object
     SpatialRelation<X> spatialRelation = new SpatialRelation<>(
         this.mapReducer,
@@ -1861,7 +1858,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       String key,
       String value) throws Exception {
     return this.touchingFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key, value).collect());
   }
 
   /**
@@ -1875,7 +1872,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> touchingFeatures(
       String key) throws Exception {
     return this.touchingFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.osmTag(key).collect());
   }
 
   /**
@@ -1887,7 +1884,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> touchingFeatures() throws Exception {
     return this.touchingFeatures(
-        (SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
+        (SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>>) mapReduce -> mapReduce.collect());
   }
 
 
@@ -1899,7 +1896,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    **/
   @Contract(pure = true)
   public MapAggregator<U, X> touches(
-      SerializableFunctionWithException<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
+      SerializableThrowingFunction<MapReducer<OSMEntitySnapshot>, List<OSMEntitySnapshot>> mapReduce) throws Exception {
     MapAggregator<U, Pair<X, List<OSMEntitySnapshot>>> pairMapReducer = this.touchingFeatures(
         mapReduce);
     return pairMapReducer.filter(p -> p.getValue().size() > 0).map(p -> p.getKey());
