@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableThrowingFunction;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Pair;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Environment;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
@@ -79,7 +79,7 @@ public class SpatialRelation<X> {
    * @return Pair of the central OSM object and a list of nearby OSM objects that fulfill the
    *         specified spatial relation
    */
-  private Pair<X, List<OSMEntitySnapshot>> match(
+  private Environment<X, OSMEntitySnapshot> match(
       X centralObject,
       Relation targetRelation,
       double distance
@@ -127,7 +127,7 @@ public class SpatialRelation<X> {
     // Get all OSM objects in the neighbourhood of the central OSM object from STRtree
     List<OSMEntitySnapshot> nearbyObjects = this.objectsForComparison.query(neighbourhoodEnvelope);
     if (nearbyObjects.isEmpty()) {
-      return Pair.of(centralObject, matchingNearbyObjects);
+      return Environment.of(centralObject, matchingNearbyObjects);
     }
 
     // Compare central OSM Object to nearby OSMEntitySnapshots
@@ -222,7 +222,7 @@ public class SpatialRelation<X> {
     } else {
       throw new UnsupportedOperationException("match() is not implemented for this class.");
     }
-    return Pair.of(centralObject, matchingNearbyObjects);
+    return Environment.of(centralObject, matchingNearbyObjects);
   }
 
   /**
@@ -235,7 +235,7 @@ public class SpatialRelation<X> {
    * @return Pair of the central OSM object and a list of nearby OSM objects that fulfill the
    *         specified spatial relation
    */
-  private Pair<X, List<OSMEntitySnapshot>> match(
+  private Environment<X, OSMEntitySnapshot> match(
       X centralObject,
       Relation targetRelation) throws Exception {
     return this.match(centralObject, targetRelation, 100.);
@@ -246,7 +246,7 @@ public class SpatialRelation<X> {
    *
    * @return
    */
-  public Pair<X, List<OSMEntitySnapshot>> neighbouring(
+  public Environment<X, OSMEntitySnapshot> neighbouring(
       X centralObject, double distance
   ) throws Exception {
     return this.match(centralObject, Relation.NEIGHBOURING, distance);
@@ -257,7 +257,7 @@ public class SpatialRelation<X> {
    *
    * @return
    */
-  public Pair<X, List<OSMEntitySnapshot>> overlaps(X centralObject) throws Exception {
+  public Environment<X, OSMEntitySnapshot> overlaps(X centralObject) throws Exception {
     return this.match(centralObject, Relation.OVERLAPS);
   }
 
@@ -267,7 +267,7 @@ public class SpatialRelation<X> {
    * @return
    */
   // todo: solve issue with overriding Object.equals() --> renamed to equalTo for now
-  public Pair<X, List<OSMEntitySnapshot>> equalTo(X centralObject) throws Exception {
+  public Environment<X, OSMEntitySnapshot> equalTo(X centralObject) throws Exception {
     return this.match(centralObject, Relation.EQUALS);
   }
 
@@ -276,7 +276,7 @@ public class SpatialRelation<X> {
    *
    * @return
    */
-  public Pair<X, List<OSMEntitySnapshot>> touches(X centralObject) throws Exception {
+  public Environment<X, OSMEntitySnapshot> touches(X centralObject) throws Exception {
     return this.match(centralObject, Relation.TOUCHES);
   }
 
@@ -285,7 +285,7 @@ public class SpatialRelation<X> {
    *
    * @return
    */
-  public Pair<X, List<OSMEntitySnapshot>> contains(X centralObject) throws Exception {
+  public Environment<X, OSMEntitySnapshot> contains(X centralObject) throws Exception {
     return this.match(centralObject, Relation.CONTAINS);
   }
 
@@ -294,7 +294,7 @@ public class SpatialRelation<X> {
    *
    * @return
    */
-  public Pair<X, List<OSMEntitySnapshot>> inside(X centralObject) throws Exception {
+  public Environment<X, OSMEntitySnapshot> inside(X centralObject) throws Exception {
     return this.match(centralObject, Relation.INSIDE);
   }
 
@@ -303,7 +303,7 @@ public class SpatialRelation<X> {
    *
    * @return
    */
-  public Pair<X, List<OSMEntitySnapshot>> covers(X centralObject) throws Exception {
+  public Environment<X, OSMEntitySnapshot> covers(X centralObject) throws Exception {
     return this.match(centralObject, Relation.COVERS);
   }
 
@@ -312,7 +312,7 @@ public class SpatialRelation<X> {
    *
    * @return
    */
-  public Pair<X, List<OSMEntitySnapshot>> coveredBy(X centralObject) throws Exception {
+  public Environment<X, OSMEntitySnapshot> coveredBy(X centralObject) throws Exception {
     return this.match(centralObject, Relation.COVEREDBY);
   }
 

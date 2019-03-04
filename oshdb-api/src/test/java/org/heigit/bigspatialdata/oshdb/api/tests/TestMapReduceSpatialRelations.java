@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Pair;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Environment;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -66,7 +66,7 @@ public class TestMapReduceSpatialRelations {
     GeometryFactory geometryFactory = new GeometryFactory();
     Polygonal aoi = geometryFactory.createPolygon(coordinates);
 
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Environment<OSMEntitySnapshot, OSMEntitySnapshot>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest((Geometry & Polygonal) aoi)
@@ -74,9 +74,9 @@ public class TestMapReduceSpatialRelations {
         .neighbouringFeatures(30., mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
         .collect();
 
-    assertEquals(1, result.get(0).getValue().size());
-    assertEquals(0, result.get(1).getValue().size());
-    assertEquals(2, result.get(4).getValue().size());
+    assertEquals(1, result.get(0).getValues().size());
+    assertEquals(0, result.get(1).getValues().size());
+    assertEquals(2, result.get(4).getValues().size());
   }
 
   // Inside / contains --------------------------------------------------------------------------
@@ -91,7 +91,7 @@ public class TestMapReduceSpatialRelations {
         .filter(x -> x.getEntity().getId() == 36493984)
         .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
     assertEquals(3, result_contains.intValue());
 
@@ -115,7 +115,7 @@ public class TestMapReduceSpatialRelations {
         .osmTag("building")
         .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
 
     Integer result_inside2 = OSMEntitySnapshotView.on(oshdb)
@@ -138,7 +138,7 @@ public class TestMapReduceSpatialRelations {
         .osmTag("building")
         .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
     Integer result_inside3 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
@@ -159,7 +159,7 @@ public class TestMapReduceSpatialRelations {
 
     // Polygon equals polygon
     // todo: create test data for test_polygon_equals_polygon()
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Environment<OSMEntitySnapshot, OSMEntitySnapshot>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -167,20 +167,20 @@ public class TestMapReduceSpatialRelations {
         .osmTag("building")
         .equalFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).osmTag("building").collect())
-        .filter(x -> x.getValue().size() > 0)
+        .filter(x -> x.getValues().size() > 0)
         .collect();
     //assertEquals(2, result);
 
     // Line equals line
     // todo: create test data for test_line_equals_line()
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result2 = OSMEntitySnapshotView.on(oshdb)
+    List<Environment<OSMEntitySnapshot, OSMEntitySnapshot>> result2 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
         .osmType(OSMType.WAY)
         .equalFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .filter(x -> x.getValue().size() > 0)
+        .filter(x -> x.getValues().size() > 0)
         .collect();
     //assertEquals(2, result2);
 
@@ -209,7 +209,7 @@ public class TestMapReduceSpatialRelations {
         .filter(x -> x.getEntity().getId() == 36493984)
         .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
     assertEquals(2, result.intValue());
 
@@ -222,7 +222,7 @@ public class TestMapReduceSpatialRelations {
         .filter(x -> x.getEntity().getId() == 172510842)
         .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
     assertEquals(2, result2.intValue());
 
@@ -236,7 +236,7 @@ public class TestMapReduceSpatialRelations {
   public void test_touches() throws Exception {
 
     // Polygon touches polygon
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result = OSMEntitySnapshotView.on(oshdb)
+    List<Environment<OSMEntitySnapshot, OSMEntitySnapshot>> result = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -246,9 +246,9 @@ public class TestMapReduceSpatialRelations {
         .touchingFeatures(
             mapReduce -> mapReduce.osmTag("building").collect())
         .collect();
-    assertEquals(1, result.get(0).getValue().size());
+    assertEquals(1, result.get(0).getValues().size());
 
-    List<Pair<OSMEntitySnapshot, List<OSMEntitySnapshot>>> result2 = OSMEntitySnapshotView.on(oshdb)
+    List<Environment<OSMEntitySnapshot, OSMEntitySnapshot>> result2 = OSMEntitySnapshotView.on(oshdb)
         .keytables(oshdb)
         .timestamps(timestamps2017)
         .areaOfInterest(bbox)
@@ -258,7 +258,7 @@ public class TestMapReduceSpatialRelations {
         .touchingFeatures(
             mapReduce -> mapReduce.osmTag("building").collect())
         .collect();
-    assertEquals(2, result2.get(0).getValue().size());
+    assertEquals(2, result2.get(0).getValues().size());
 
     // Polygon touching polygon
     Integer result3 = OSMEntitySnapshotView.on(oshdb)
@@ -282,7 +282,7 @@ public class TestMapReduceSpatialRelations {
         .filter(x -> x.getEntity().getId() == 172510842)
         .touchingFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
     assertEquals(1, result4.intValue());
 
@@ -295,7 +295,7 @@ public class TestMapReduceSpatialRelations {
         .filter(x -> x.getEntity().getId() == 36493984)
         .touchingFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
     assertEquals(3, result5.intValue());
 
@@ -326,7 +326,7 @@ public class TestMapReduceSpatialRelations {
         .filter(x -> x.getEntity().getId() == 130530843)
         .neighbouringFeatures(12.,
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
     assertEquals(4, result.intValue());
   }
@@ -374,7 +374,7 @@ public class TestMapReduceSpatialRelations {
         .timestamps(timestamps1)
         .areaOfInterest(bbox)
         .equalFeatures(mapReduce -> mapReduce.collect())
-        .filter(x -> x.getValue().size() > 0)
+        .filter(x -> x.getValues().size() > 0)
         .count();
     assertEquals(1, result.intValue());
   }

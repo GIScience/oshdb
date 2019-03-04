@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.TreeMap;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Pair;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer.Environment;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -57,7 +57,7 @@ public class TestMapAggregateSpatialRelation {
         .filter(x -> x.getEntity().getId() == 36493984)
         .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
 
     assertEquals(3, result_contains.firstEntry().getValue().intValue());
@@ -84,7 +84,7 @@ public class TestMapAggregateSpatialRelation {
         .aggregateByTimestamp()
         .containedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .count();
 
     TreeMap<OSHDBTimestamp, Integer> result_inside2 = (TreeMap<OSHDBTimestamp, Integer>) OSMEntitySnapshotView.on(oshdb)
@@ -141,7 +141,7 @@ public class TestMapAggregateSpatialRelation {
         .aggregateByTimestamp()
         .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(Pair::getValue)
+        .flatMap(Environment::getValues)
         .count();
     assertEquals(2, result.firstEntry().getValue().intValue());
 
@@ -155,7 +155,7 @@ public class TestMapAggregateSpatialRelation {
         .aggregateByTimestamp()
         .overlappedFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(Pair::getValue)
+        .flatMap(Environment::getValues)
         .count();
     assertEquals(2, result2.firstEntry().getValue().intValue());
 
@@ -192,7 +192,7 @@ public class TestMapAggregateSpatialRelation {
         .filter(x -> x.getEntity().getId() == 172510837)
         .touchingFeatures(
             mapReduce -> mapReduce.osmTag("building").collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .collect();
     assertEquals(2, result2.firstEntry().getValue().size());
 
@@ -206,7 +206,7 @@ public class TestMapAggregateSpatialRelation {
         .aggregateByTimestamp()
         .touchingFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .collect();
     assertEquals(1, result4.firstEntry().getValue().size());
 
@@ -220,7 +220,7 @@ public class TestMapAggregateSpatialRelation {
         .aggregateByTimestamp()
         .touchingFeatures(
             mapReduce -> mapReduce.osmType(OSMType.WAY).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .collect();
     assertEquals(3, result5.firstEntry().getValue().size());
 
@@ -234,7 +234,7 @@ public class TestMapAggregateSpatialRelation {
         .aggregateByTimestamp()
         .touchingFeatures(
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .collect();
     assertEquals(1, result6.firstEntry().getValue().size());
 
@@ -254,7 +254,7 @@ public class TestMapAggregateSpatialRelation {
         .aggregateByTimestamp()
         .neighbouringFeatures(12.,
             mapReduce -> mapReduce.osmType(OSMType.NODE).collect())
-        .flatMap(x -> x.getValue())
+        .flatMap(x -> x.getValues())
         .collect();
     assertEquals(4, result.firstEntry().getValue().size());
   }
