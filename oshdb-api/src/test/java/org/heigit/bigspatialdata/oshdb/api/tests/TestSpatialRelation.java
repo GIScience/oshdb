@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelation;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelation.relation;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelation.Relation;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -60,7 +60,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       //System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -77,7 +77,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -94,7 +94,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -114,7 +114,7 @@ public class TestSpatialRelation {
     for (Feature feat : features) {
       //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString().toLowerCase());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -131,7 +131,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -150,7 +150,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -167,7 +167,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       //System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -184,7 +184,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }
@@ -201,7 +201,7 @@ public class TestSpatialRelation {
 
     for (Feature feat : features) {
       Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      relation relation = SpatialRelation.relate(geomCentral, geom2);
+      Relation relation = SpatialRelation.relate(geomCentral, geom2);
       // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
       assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
     }

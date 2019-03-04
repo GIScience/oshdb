@@ -867,9 +867,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
@@ -1010,9 +1010,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
@@ -1145,9 +1145,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
@@ -1277,9 +1277,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
@@ -1408,9 +1408,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
@@ -1540,9 +1540,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
@@ -1671,9 +1671,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {
@@ -1802,9 +1802,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     if (this.mapReducer.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist =
           new OSHDBTimestamps(this.mapReducer.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.mapReducer.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.mapReducer.tstamps);
     }
     return this.copyTransform(this.mapReducer.map(inData -> {
       try {

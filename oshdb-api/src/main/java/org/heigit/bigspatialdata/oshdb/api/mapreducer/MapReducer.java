@@ -707,9 +707,9 @@ public abstract class MapReducer<X> implements
     // Get nearby OSHDB objects
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
@@ -860,9 +860,9 @@ public abstract class MapReducer<X> implements
     // for OSMcontributions, get the latest snapshot for comparison
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
@@ -985,9 +985,9 @@ public abstract class MapReducer<X> implements
     // Get nearby OSHDB objects
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
@@ -1111,9 +1111,9 @@ public abstract class MapReducer<X> implements
     // Get nearby OSHDB objects
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
@@ -1234,9 +1234,9 @@ public abstract class MapReducer<X> implements
     // Get nearby OSHDB objects
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
@@ -1357,9 +1357,9 @@ public abstract class MapReducer<X> implements
     // Get nearby OSHDB objects
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
@@ -1481,9 +1481,9 @@ public abstract class MapReducer<X> implements
     // Get nearby OSHDB objects
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
@@ -1608,9 +1608,9 @@ public abstract class MapReducer<X> implements
     // Get nearby OSHDB objects
     if (this.forClass == OSMContribution.class) {
       OSHDBTimestampList tslist = new OSHDBTimestamps(this.tstamps.get().last().toString());
-      spatialRelation.get_snapshots_for_comparison(tslist);
+      spatialRelation.getSnapshotsForComparison(tslist);
     } else {
-      spatialRelation.get_snapshots_for_comparison(this.tstamps);
+      spatialRelation.getSnapshotsForComparison(this.tstamps);
     }
     return this.map(data -> {
       try {
