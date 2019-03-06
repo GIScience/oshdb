@@ -71,13 +71,18 @@ public class XYGrid implements Serializable {
     }
     final double EPS = 1E-9;
     XYGrid grid = new XYGrid(cellID.getZoomLevel());
-    OSHDBBoundingBox result = grid.getCellDimensions(cellID.getId());
-    CellId toprightCellId = new CellId(cellID.getZoomLevel(), grid.getId(
-        Math.min(result.getMaxLon() + EPS, 180.0),
-        Math.min(result.getMaxLat() + EPS, 90.0)
-    ));
-    assert toprightCellId.getId() != cellID.getId() || result.getMaxLon() == 180.0 && result.getMaxLat() == 90.0;
-    result.add(grid.getCellDimensions(toprightCellId.getId()));
+    long id = cellID.getId();
+    int x = (int) (id % grid.zoompow);
+    int y = (int) ((id - x) / grid.zoompow);
+    long topRightId = id;
+    if (x < grid.zoompow - 1) {
+      topRightId += 1;
+    }
+    if (y < grid.zoompow / 2 - 1) {
+      topRightId += grid.zoompow;
+    }
+    OSHDBBoundingBox result = grid.getCellDimensions(id);
+    result.add(grid.getCellDimensions(topRightId));
     return result;
   }
 
