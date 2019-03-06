@@ -1,50 +1,50 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.LinkedList;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.geojson.feature.FeatureJSON;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelation;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.SpatialRelation.Relation;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
+import org.wololo.geojson.FeatureCollection;
+import org.wololo.geojson.GeoJSONFactory;
+import org.wololo.jts2geojson.GeoJSONReader;
 
 public class TestSpatialRelation {
-
-  public TestSpatialRelation() {
+  private static Geometry setProperties(Geometry obj, Map<String,Object> properties) {
+    obj.setUserData(properties);
+    return obj;
   }
 
-  public LinkedList<SimpleFeature> getFeatures(String filePath) throws IOException {
-    LinkedList<SimpleFeature> features = new LinkedList<>();
-
-    File file = new File(filePath);
-    FileInputStream in = new FileInputStream(file);
-
-    FeatureIterator<SimpleFeature> fc = new FeatureJSON().streamFeatureCollection(in);
+  private static Map<String,Object> getProperties(Geometry obj) {
+    return (Map<String,Object>) obj.getUserData();
+  }
+  
+  private List<Geometry> getFeatures(String filePath) throws IOException {
+    GeoJSONReader reader = new GeoJSONReader();
+    FeatureCollection FeatureCollection = (FeatureCollection)
+        GeoJSONFactory.create(new String(Files.readAllBytes(Paths.get(filePath))));
 
     // Adjust precision of coordinates
     PrecisionModel precisionModel = new PrecisionModel(1000000000000.);
     GeometryPrecisionReducer geometryPrecisionReducer = new GeometryPrecisionReducer(precisionModel);
 
-    while(fc.hasNext()) {
-      SimpleFeature feature = fc.next();
-      Geometry geom = (Geometry) feature.getDefaultGeometryProperty().getValue();
-      geom = geometryPrecisionReducer.reduce(geom);
-      feature.setDefaultGeometry(geom);
-      features.add(feature);
-    }
-    return features;
+    return Arrays.stream(FeatureCollection.getFeatures()).map(Geometry -> {
+      Geometry geom = (Geometry) reader.read(Geometry.getGeometry());
+      geom = (Geometry) geometryPrecisionReducer.reduce(geom);
+      return setProperties(geom, Geometry.getProperties());
+    }).collect(Collectors.toList());
   }
-
-
+  
   // -----------------------------------------------------------------------------------------------
   // TESTS
   // -----------------------------------------------------------------------------------------------
@@ -54,15 +54,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/polygon_polygon.geojson";
     String filePathCentral = "./src/test/resources/geojson/polygon_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -71,15 +68,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/polygon_line.geojson";
     String filePathCentral = "./src/test/resources/geojson/polygon_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -88,15 +82,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/polygon_point.geojson";
     String filePathCentral = "./src/test/resources/geojson/polygon_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -106,17 +97,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/line_polygon.geojson";
     String filePathCentral = "./src/test/resources/geojson/line_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
-
-    for (Feature feat : features) {
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation"));
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString().toLowerCase());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -125,15 +111,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/line_line.geojson";
     String filePathCentral = "./src/test/resources/geojson/line_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -144,15 +127,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/line_point.geojson";
     String filePathCentral = "./src/test/resources/geojson/line_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -161,15 +141,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/point_polygon.geojson";
     String filePathCentral = "./src/test/resources/geojson/point_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      //System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -178,15 +155,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/point_line.geojson";
     String filePathCentral = "./src/test/resources/geojson/point_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
 
@@ -195,16 +169,12 @@ public class TestSpatialRelation {
     String filePathOthers = "./src/test/resources/geojson/point_point.geojson";
     String filePathCentral = "./src/test/resources/geojson/point_central.geojson";
 
-    LinkedList<SimpleFeature> features = getFeatures(filePathOthers);
-    LinkedList<SimpleFeature> centralFeature = getFeatures(filePathCentral);
-    Geometry geomCentral = (Geometry) centralFeature.get(0).getDefaultGeometryProperty().getValue();
+    List<Geometry> Geometrys = getFeatures(filePathOthers);
+    Geometry geomCentral = getFeatures(filePathCentral).get(0);
 
-    for (Feature feat : features) {
-      Geometry geom2 = (Geometry) feat.getDefaultGeometryProperty().getValue();
-      Relation relation = SpatialRelation.relate(geomCentral, geom2);
-      // System.out.println(((SimpleFeature) feat).getAttribute("relation") + " : " + relation.toString());
-      assertEquals(((SimpleFeature) feat).getAttribute("relation"), relation.toString().toLowerCase());
+    for (Geometry feat : Geometrys) {
+      Relation relation = SpatialRelation.relate(geomCentral, feat);
+      assertEquals(getProperties(feat).get("relation"), relation.toString().toLowerCase());
     }
   }
-
 }
