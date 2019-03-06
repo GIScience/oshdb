@@ -54,8 +54,31 @@ public class XYGrid implements Serializable {
    * @return
    */
   public static OSHDBBoundingBox getBoundingBox(final CellId cellID) {
-    XYGrid temp = new XYGrid(cellID.getZoomLevel());
-    return temp.getCellDimensions(cellID.getId());
+    XYGrid grid = new XYGrid(cellID.getZoomLevel());
+    return grid.getCellDimensions(cellID.getId());
+  }
+
+  /**
+   * Calculate the OSHDBBoundingBox of a specific GridCell.
+   *
+   * @param cellID
+   * @param enlarge
+   * @return
+   */
+  public static OSHDBBoundingBox getBoundingBox(final CellId cellID, boolean enlarge) {
+    if (!enlarge) {
+      return getBoundingBox(cellID);
+    }
+    final double EPS = 1E-9;
+    XYGrid grid = new XYGrid(cellID.getZoomLevel());
+    OSHDBBoundingBox result = grid.getCellDimensions(cellID.getId());
+    CellId toprightCellId = new CellId(cellID.getZoomLevel(), grid.getId(
+        Math.min(result.getMaxLon() + EPS, 180.0),
+        Math.min(result.getMaxLat() + EPS, 90.0)
+    ));
+    assert toprightCellId.getId() != cellID.getId() || result.getMaxLon() == 180.0 && result.getMaxLat() == 90.0;
+    result.add(grid.getCellDimensions(toprightCellId.getId()));
+    return result;
   }
 
   private final int zoom;
