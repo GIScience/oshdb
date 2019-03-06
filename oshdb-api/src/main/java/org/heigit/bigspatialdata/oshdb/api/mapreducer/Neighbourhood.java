@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
-import static org.heigit.bigspatialdata.oshdb.util.geometry.Geo.isWithinDistance;
-
 import java.util.ArrayList;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableThrowingFunction;
@@ -85,12 +83,12 @@ public class Neighbourhood {
             // Check if geometry before editing is within distance of entity snapshot geometry
             if (!contribution.getContributionTypes().contains(ContributionType.CREATION)) {
               Geometry geometryBefore = contribution.getGeometryUnclippedBefore();
-              geomBeforeWithinDistance = isWithinDistance(geom, geometryBefore, distanceInMeter);
+              geomBeforeWithinDistance = Geo.isWithinDistance(geom, geometryBefore, distanceInMeter);
             }
             // Check if geometry after editing is within distance of entity snapshot geometry
             if (!contribution.getContributionTypes().contains(ContributionType.DELETION)) {
               Geometry geometryAfter = contribution.getGeometryUnclippedAfter();
-              geomAfterWithinDistance = isWithinDistance(geom, geometryAfter, distanceInMeter);
+              geomAfterWithinDistance = Geo.isWithinDistance(geom, geometryAfter, distanceInMeter);
             }
             // Check if either one of the geometries are within the buffer distance
             return geomBeforeWithinDistance || geomAfterWithinDistance;
@@ -113,7 +111,7 @@ public class Neighbourhood {
                 return false;
               }
               Geometry geomNgb = snapshotNgb.getGeometryUnclipped();
-              return isWithinDistance(geom, geomNgb, distanceInMeter);
+              return Geo.isWithinDistance(geom, geomNgb, distanceInMeter);
             } catch (Exception e) {
               return false;
             }
@@ -191,7 +189,7 @@ public class Neighbourhood {
     }
 
     // If both geometries are invalid, throw exception
-    if (((geomAfter == null) && (geomBefore == null)) || (distanceInDegreeLongitude == null)) {
+    if ((geomAfter == null && geomBefore == null) || distanceInDegreeLongitude == null) {
       throw new Exception("Invalid geometry");
     }
 

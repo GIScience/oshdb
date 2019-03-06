@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
  *
  * @param <X> type of OSHDB object (OSMEntitySnapshot or OSMContribution) which is selected based
  *            on comparison
- *
  */
 public class SpatialRelation<X> {
   private static final Logger LOG = LoggerFactory.getLogger(SpatialRelation.class);
