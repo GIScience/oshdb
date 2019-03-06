@@ -4,27 +4,31 @@ pipeline {
     stage ('Build and Test') {
       steps {
         script {
+          env.MAVEN_HOME = '/usr/share/maven'
+          
           author = sh(returnStdout: true, script: 'git show -s --pretty=%an')
           echo author
+          
           commiti= sh(returnStdout: true, script: 'git log -1')
           echo commiti
+          
           reponame=sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
           echo reponame
+          
           gittiid=sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
           echo gittiid
+          
           echo env.BRANCH_NAME
           echo env.BUILD_NUMBER
-        }
-        script {
+          
           server = Artifactory.server 'HeiGIT Repo'
           rtMaven = Artifactory.newMavenBuild()
+          
           rtMaven.resolver server: server, releaseRepo: 'main', snapshotRepo: 'main'
           rtMaven.deployer server: server, releaseRepo: 'libs-release-local', snapshotRepo: 'libs-snapshot-local'
           rtMaven.deployer.deployArtifacts = false
-          env.MAVEN_HOME = '/usr/share/maven'
-        }
-        script {
-          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P git -Dmaven.repo.local=.m2'
+          
+          buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P git,withDep -Dmaven.repo.local=.m2'
         }
       }
       post {
@@ -130,7 +134,7 @@ pipeline {
           recordIssues enabledForFailure: true, tool: findBugs()
           recordIssues enabledForFailure: true, tool: spotBugs()
           recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
-          recordIssues enabledForFailure: true, tool: pmd(pattern: '**/target/pmd.xml')
+          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
         }
       }
       post {
