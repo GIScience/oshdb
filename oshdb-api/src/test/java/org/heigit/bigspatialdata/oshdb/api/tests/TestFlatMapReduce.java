@@ -35,7 +35,7 @@ public class TestFlatMapReduce {
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test
@@ -58,5 +58,33 @@ public class TestFlatMapReduce {
         );
 
     assertEquals(2, result.size());
+  }
+
+  @Test
+  public void testSet() throws Exception {
+    Set<Integer> input = new TreeSet<>();
+    input.add(1);
+    input.add(2);
+    input.add(3);
+    Set<Integer> result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .flatMap(contribution -> input)
+        .uniq();
+
+    assertEquals(input, result);
+  }
+
+  @Test
+  public void testIterable() throws Exception {
+    Set<Integer> input = new TreeSet<>();
+    input.add(1);
+    input.add(2);
+    input.add(3);
+    Set<Integer> result = createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .flatMap(contribution -> input.stream()::iterator)
+        .uniq();
+
+    assertEquals(input, result);
   }
 }

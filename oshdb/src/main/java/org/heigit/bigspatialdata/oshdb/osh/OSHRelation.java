@@ -16,20 +16,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
@@ -632,16 +627,19 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
     List<OSMRelation> rels = this.getVersions();
     rels.forEach(osmRel -> {
-      result.putIfAbsent(osmRel.getTimestamp(), osmRel.getChangeset());
-      // recurse rel members
-      if (!osmRel.isVisible()) {
-        return;
-      }
-      Arrays.stream(osmRel.getMembers())
-          .map(member -> ((OSHEntity) member.getEntity()))
-          .filter(Objects::nonNull)
-          .forEach(oshEntity -> result.putAll(oshEntity.getChangesetTimestamps()));
+      result.put(osmRel.getTimestamp(), osmRel.getChangeset());
     });
+
+    // recurse rel members
+    try {
+      Stream.concat(
+          this.getNodes().stream(),
+          this.getWays().stream()
+      ).forEach(oshEntity -> {
+        if (oshEntity != null)
+          oshEntity.getChangesetTimestamps().forEach(result::putIfAbsent);
+      });
+    } catch (IOException e) {}
 
     return result;
   }

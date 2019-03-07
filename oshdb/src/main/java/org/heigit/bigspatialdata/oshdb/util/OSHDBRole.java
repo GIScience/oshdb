@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.util;
 import java.io.Serializable;
 
 public class OSHDBRole implements Serializable {
+  private static final long serialVersionUID = 1L;
   private int role;
 
   public OSHDBRole(int role) {

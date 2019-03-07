@@ -106,12 +106,13 @@ public class OSHDB2H2Handler extends OSHDbHandler {
         oos.flush();
       }
       FastByteArrayInputStream in = new FastByteArrayInputStream(out.array, 0, out.length);
-
+      System.out.print("insert "+grid.getLevel()+":"+grid.getId());
       insertNode.setInt(1, grid.getLevel());
       insertNode.setLong(2, grid.getId());
       insertNode.setBinaryStream(3, in);
       insertNode.executeUpdate();
-
+      System.out.println(" done!");
+      
     } catch (IOException | SQLException e) {
       throw new RuntimeException(e);
     }
@@ -172,7 +173,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
 
     boolean onlyNodesWithTags = config.onlyNodesWithTags;
 
-    boolean withKeyTables = config.withKeyTables;
+    boolean withOutKeyTables = config.withOutKeyTables;
 
     
     Class.forName("org.h2.Driver");
@@ -182,9 +183,9 @@ public class OSHDB2H2Handler extends OSHDbHandler {
         
         try(BufferedReader br = new BufferedReader(new FileReader(workDirectory.resolve("extract_meta").toFile()))){
           stmt.executeUpdate("drop table if exists " + TableNames.T_METADATA.toString() + "; create table if not exists "
-              + TableNames.T_METADATA.toString() + "(id varchar primary key, value varchar)");
+              + TableNames.T_METADATA.toString() + "(key varchar primary key, value varchar)");
           PreparedStatement insert = conn
-              .prepareStatement("insert into " + TableNames.T_METADATA.toString() + " (id,value) values (?,?)");
+              .prepareStatement("insert into " + TableNames.T_METADATA.toString() + " (key,value) values (?,?)");
           String line = null;
           while((line = br.readLine()) != null){
             if(line.trim().isEmpty())
@@ -213,7 +214,13 @@ public class OSHDB2H2Handler extends OSHDbHandler {
           insert.executeBatch();
         }
 
-        if (withKeyTables) {
+        
+        PreparedStatement insertKey = null;
+        PreparedStatement insertValue = null; 
+        PreparedStatement insertRole = null;
+        
+
+        if (!withOutKeyTables) {
           stmt.executeUpdate("drop table if exists " + TableNames.E_KEY.toString() + "; create table if not exists "
               + TableNames.E_KEY.toString() + "(id int primary key, txt varchar)");
           stmt.executeUpdate("drop table if exists " + TableNames.E_KEYVALUE.toString()
@@ -221,15 +228,16 @@ public class OSHDB2H2Handler extends OSHDbHandler {
               + "(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
           stmt.executeUpdate("drop table if exists " + TableNames.E_ROLE.toString() + "; create table if not exists "
               + TableNames.E_ROLE.toString() + "(id int primary key, txt varchar)");
-        }
+        
 
-        PreparedStatement insertKey = conn
+        insertKey = conn
             .prepareStatement("insert into " + TableNames.E_KEY.toString() + " (id,txt) values (?,?)");
-        PreparedStatement insertValue = conn.prepareStatement(
+        insertValue = conn.prepareStatement(
             "insert into " + TableNames.E_KEYVALUE.toString() + " ( keyId, valueId, txt ) values(?,?,?)");
-        PreparedStatement insertRole = conn
+        insertRole = conn
             .prepareStatement("insert into " + TableNames.E_ROLE.toString() + " (id,txt) values(?,?)");
-
+        }
+        
         stmt.executeUpdate("drop table if exists " + TableNames.T_NODES.toString() + "; create table if not exists "
             + TableNames.T_NODES.toString() + "(level int, id bigint, data blob,  primary key(level,id))");
         PreparedStatement insertNode = conn
@@ -255,7 +263,7 @@ public class OSHDB2H2Handler extends OSHDbHandler {
             insertValue, insertRole, insertNode, insertWay, insertRelation);
            
         Stopwatch loadingWatch = Stopwatch.createUnstarted();
-        if (withKeyTables) {
+        if (!withOutKeyTables) {
           LoaderKeyTables keyTables = new LoaderKeyTables(workDirectory, handler);
           System.out.print("loading tags ... ");
           loadingWatch.reset().start();

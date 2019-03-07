@@ -12,7 +12,7 @@ requires a link to the keytables file.
 ```
 // -- MANDATORY SETTINGS --
 // declare and open link to keytables
-OSHDB_JDBC tagsDB = new OSHDB_H2("path/to/keytables");
+OSHDBDatabase tagsDB = new OSHDBH2("path/to/keytables");
 // set keytables to MapReducer
 mapReducer = mapReducer.keytables(tagsDB);
 ```

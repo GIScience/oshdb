@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version="0.6" generator="testdata" upload="false">
+  <!--lon lat ändert sich-->
+	<node id="1" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.42" lat="1.22">
+		<tag k="created_by" v="test"/>
+	</node>
+	<node id="1" visible="true" version="2" timestamp="2009-02-01T00:00:00Z" uid="2" user="B" changeset="2" lon="1.42" lat="1.225">
+		<tag k="created_by" v="test"/>
+	</node>
+	<node id="1" visible="true" version="3" timestamp="2010-02-03T00:00:00Z" uid="1" user="A" changeset="3" lon="1.425" lat="1.23">
+		<tag k="created_by" v="test"/>
+	</node>
+	
+	<!--tag ändert sich-->
+	<node id="2" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="3" lon="1.43" lat="1.24">
+		<tag k="created_by" v="test"/>
+	</node>
+	<node id="2" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="4" lon="1.43" lat="1.24">
+		<tag k="created_by" v="test"/>
+		<tag k="highway" v="traffic_signals"/>
+	</node>
+	<node id="2" visible="true" version="3" timestamp="2014-01-01T00:00:00Z" uid="13" user="test3" changeset="5" lon="1.43" lat="1.24">
+		<tag k="highway" v="street_lamp"/>
+	</node>
+	
+	<!--visible ändert sich-->
+	<node id="3" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="6" lon="1.44" lat="1.24">
+		<tag k="created_by" v="test"/>
+		<tag k="highway" v="traffic_signals"/>
+	</node>
+	<node id="3" visible="false" version="2" timestamp="2008-01-01T00:00:00Z" uid="11" user="test" changeset="7" >
+	</node>
+	<node id="3" visible="true" version="3" timestamp="2014-01-01T00:00:00Z" uid="11" user="test" changeset="8" lon="1.44" lat="1.24">
+		<tag k="created_by" v="test"/>
+		<tag k="highway" v="traffic_signals"/>
+	</node>
+	<node id="3" visible="false" version="5" timestamp="2015-01-01T00:00:00Z" uid="11" user="test" changeset="9" >
+	</node>
+	<node id="3" visible="true" version="6" timestamp="2016-01-01T00:00:00Z" uid="11" user="test" changeset="10" lon="1.44" lat="1.24">
+		<tag k="created_by" v="test"/>
+		<tag k="highway" v="traffic_signals"/>
+	</node>
+	
+	<!--vieles ändert sich-->
+	<node id="4" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="11" lon="1.42" lat="1.21">
+		<tag k="created_by" v="test"/>
+	</node>
+	<node id="4" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="12" lon="1.425" lat="1.20">
+		<tag k="created_by" v="test"/>
+		<tag k="highway" v="traffic_signals"/>
+	</node>
+	<node id="4" visible="false" version="3" timestamp="2010-01-01T00:00:00Z" uid="11" user="test" changeset="13" >
+	</node>
+	<node id="4" visible="true" version="4" timestamp="2011-01-01T00:00:00Z" uid="11" user="test" changeset="14" lon="1.42" lat="1.21">
+		<tag k="highway" v="traffic_signals"/>
+	</node>
+	<node id="4" visible="true" version="5" timestamp="2014-01-01T00:00:00Z" uid="1" user="A" changeset="15" lon="1.42" lat="1.215">
+		<tag k="highway" v="traffic_signals"/>
+	</node>
+	<node id="4" visible="true" version="7" timestamp="2017-01-01T00:00:00Z" uid="11" user="test" changeset="16" lon="1.42" lat="1.215">
+		<tag k="leaf_cycle" v="deciduous"/>
+		<tag k="leaf_type" v="broadleaved"/>
+		<tag k="natural" v="tree"/>
+	</node>
+
+	<!--tag change, variante 2, focus: shop-->
+	<node id="5" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="17" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="5" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="18" lon="3.43" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+	<node id="5" visible="true" version="3" timestamp="2010-01-01T00:00:00Z" uid="13" user="test3" changeset="19" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="5" visible="true" version="4" timestamp="2016-01-01T00:00:00Z" uid="12" user="test2" changeset="20" lon="3.43" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+
+	<!--lon lat changes, so that node in v2 is outside bbox-->
+	<node id="6" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="21" lon="10.9" lat="12.1">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="6" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="22" lon="8.1" lat="8.4">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+
+	<!--tag ändert sich variante 3, focus: disused:shop-->
+	<node id="7" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="23" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="7" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="24" lon="3.4" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+	<node id="7" visible="true" version="3" timestamp="2014-01-01T00:00:00Z" uid="13" user="test3" changeset="25" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="7" visible="true" version="4" timestamp="2015-01-01T00:00:00Z" uid="12" user="test2" changeset="26" lon="3.43" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+
+	<!--tag ändert sich variante 3, focus: shop, celliterator line 507-->
+	<node id="8" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="27" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="8" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="28" lon="-10" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="8" visible="true" version="3" timestamp="2008-01-02T00:00:00Z" uid="12" user="test2" changeset="29" lon="3.4" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+	<node id="8" visible="true" version="4" timestamp="2014-01-01T00:00:00Z" uid="13" user="test3" changeset="30" lon="3.43" lat="1.24">
+		<tag k="shop" v="supermarket"/>
+	</node>
+	<node id="8" visible="true" version="5" timestamp="2015-01-01T00:00:00Z" uid="12" user="test2" changeset="31" lon="3.43" lat="1.24">
+		<tag k="disused:shop" v="supermarket"/>
+	</node>
+
+	<!--different cases of relative position between node coordinate(s) and cell bbox / query polygon-->
+	<!--outside cell bbox-->
+	<node id="10" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="32" lon="-1.0" lat="-1.0">
+	</node>
+	<!--outside query bbox-->
+	<node id="11" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="33" lon="2.0" lat="2.0">
+	</node>
+	<!--outside query polygon-->
+	<node id="12" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="34" lon="1.0" lat="1.0">
+	</node>
+	<!--inside query polygon-->
+	<node id="13" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="35" lon="0.5" lat="0.5">
+	</node>
+	<!--overlapping query polygon-->
+	<node id="14" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="36" lon="1.0" lat="1.0">
+	</node>
+	<node id="14" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="11" user="test" changeset="37" lon="0.5" lat="0.5">
+	</node>
+</osm>

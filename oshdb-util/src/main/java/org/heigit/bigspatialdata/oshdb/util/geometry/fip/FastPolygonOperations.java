@@ -2,10 +2,13 @@ package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import org.geotools.geometry.jts.JTS;
+import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 
 public class FastPolygonOperations implements Serializable {
   private final int AvgVerticesPerBlock = 40; // todo: finetune this value
@@ -63,7 +66,7 @@ public class FastPolygonOperations implements Serializable {
       }
     }
 
-    return intersector.intersection(other);
+    return other.intersection(intersector);
   }
 
 

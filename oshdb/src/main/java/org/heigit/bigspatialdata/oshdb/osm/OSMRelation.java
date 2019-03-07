@@ -5,12 +5,8 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, Serializable {
-
-  private static final Logger LOG = LoggerFactory.getLogger(OSMRelation.class);
 
   private static final long serialVersionUID = 1L;
   private final OSMMember[] members;

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,9 +27,8 @@ import org.heigit.bigspatialdata.oshdb.util.byteArray.ByteArrayOutputWrapper;
 
 import com.google.common.collect.Lists;
 
-@SuppressWarnings("rawtypes")
 public abstract class OSHEntity<OSM extends OSMEntity>
-    implements Comparable<OSHEntity>, Iterable<OSM> {
+    implements Comparable<OSHEntity<OSM>>, Iterable<OSM> {
   
   public static class Builder {
     
@@ -277,7 +275,7 @@ public abstract class OSHEntity<OSM extends OSMEntity>
       long baseLatitude) throws IOException;
 
   @Override
-  public int compareTo(OSHEntity o) {
+  public int compareTo(OSHEntity<OSM> o) {
     int c = Long.compare(id, o.id);
     return c;
   }

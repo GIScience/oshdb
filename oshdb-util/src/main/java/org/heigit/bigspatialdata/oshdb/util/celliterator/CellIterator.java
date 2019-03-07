@@ -29,6 +29,7 @@ public class CellIterator implements Serializable {
   public interface OSHEntityFilter extends Predicate<OSHEntity>, Serializable {};
   public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {};
 
+  private TreeSet<OSHDBTimestamp> timestamps;
   private OSHDBBoundingBox boundingBox;
   private boolean isBoundByPolygon;
   private FastBboxInPolygon bboxInPolygon;
@@ -42,6 +43,7 @@ public class CellIterator implements Serializable {
   /**
    * todo…
    *
+   * @param timestamps a list of timestamps to return data for
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are
    *        clipped to this extent
    * @param boundingPolygon only entities inside or intersecting this polygon are returned,
@@ -60,11 +62,16 @@ public class CellIterator implements Serializable {
    *        the data analysis! The includeOldStyleMultipolygons is also quite a bit less efficient
    *        (both CPU and memory) as the default path.
    */
-  public <P extends Geometry & Polygonal> CellIterator(OSHDBBoundingBox boundingBox,
-      P boundingPolygon, TagInterpreter tagInterpreter,
+  public <P extends Geometry & Polygonal> CellIterator(
+      SortedSet<OSHDBTimestamp> timestamps,
+      OSHDBBoundingBox boundingBox,
+      P boundingPolygon,
+      TagInterpreter tagInterpreter,
       OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
-      boolean includeOldStyleMultipolygons) {
+      boolean includeOldStyleMultipolygons
+  ) {
     this(
+        timestamps,
         boundingBox,
         tagInterpreter,
         oshEntityPreFilter,
@@ -78,9 +85,32 @@ public class CellIterator implements Serializable {
       this.fastPolygonClipper = new FastPolygonOperations(boundingPolygon);
     }
   }
-  public CellIterator(OSHDBBoundingBox boundingBox, TagInterpreter tagInterpreter,
+  public <P extends Geometry & Polygonal> CellIterator(
+      SortedSet<OSHDBTimestamp> timestamps,
+      @Nonnull P boundingPolygon,
+      TagInterpreter tagInterpreter,
       OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
-      boolean includeOldStyleMultipolygons) {
+      boolean includeOldStyleMultipolygons
+  ) {
+    this(
+        timestamps,
+        OSHDBGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal()),
+        boundingPolygon,
+        tagInterpreter,
+        oshEntityPreFilter,
+        osmEntityFilter,
+        includeOldStyleMultipolygons
+    );
+  }
+  public CellIterator(
+      SortedSet<OSHDBTimestamp> timestamps,
+      OSHDBBoundingBox boundingBox,
+      TagInterpreter tagInterpreter,
+      OSHEntityFilter oshEntityPreFilter,
+      OSMEntityFilter osmEntityFilter,
+      boolean includeOldStyleMultipolygons
+  ) {
+    this.timestamps = new TreeSet<>(timestamps);
     this.boundingBox = boundingBox;
     this.isBoundByPolygon = false; // todo: is this flag even needed? -> replace by "dummy" polygonClipper?
     this.bboxInPolygon = null;
@@ -116,7 +146,6 @@ public class CellIterator implements Serializable {
    * as they existed at the given timestamps.
    *
    * @param cell the data cell
-   * @param timestamps a list of timestamps to return data for
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries at each
    *         timestamp. If an object has not been modified between timestamps, the output may
@@ -124,9 +153,7 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<IterateByTimestampEntry> iterateByTimestamps(
-      GridOSHEntity cell, SortedSet<OSHDBTimestamp> timestamps
-  ) {
+  public Stream<IterateByTimestampEntry> iterateByTimestamps(GridOSHEntity cell) {
     List<IterateByTimestampEntry> results = new LinkedList<>();
 
     boolean allFullyInside = false;
@@ -154,7 +181,7 @@ public class CellIterator implements Serializable {
       }
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
-          (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+          (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
@@ -165,7 +192,7 @@ public class CellIterator implements Serializable {
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
-          while (j < modTs.size() && modTs.get(j).getRawUnixTimestamp() < requestedT.getRawUnixTimestamp()) {
+          while (j < modTs.size() && modTs.get(j).getRawUnixTimestamp() <= requestedT.getRawUnixTimestamp()) {
             needToRequest = true;
             j++;
           }
@@ -258,7 +285,7 @@ public class CellIterator implements Serializable {
             });
           }
 
-          if (fullyInside || (geom.get() != null && !geom.get().isEmpty())) {
+          if (fullyInside || !geom.get().isEmpty()) {
             LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
                 () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
             results.add(
@@ -271,13 +298,12 @@ public class CellIterator implements Serializable {
               );
             }
           }
-        } catch (UnsupportedOperationException err) {
-          // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
+          // maybe some corner case where JTS doesn't support operations on a broken geometry
           LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
-          // todo: can this even happen?
+          // happens e.g. in JTS intersection method when geometries are self-overlapping
           LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
               err.toString());
@@ -350,15 +376,12 @@ public class CellIterator implements Serializable {
    * condition/filter.
    *
    * @param cell the data cell
-   * @param timeInterval time range of interest – only modifications inside this interval are
-   *        included in the result
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateByContribution(
-      GridOSHEntity cell, OSHDBTimestampInterval timeInterval
-  ) {
+  public Stream<IterateAllEntry> iterateByContribution(GridOSHEntity cell) {
+    OSHDBTimestampInterval timeInterval = new OSHDBTimestampInterval(timestamps);
     List<IterateAllEntry> results = new LinkedList<>();
 
     boolean allFullyInside = false;
@@ -390,7 +413,7 @@ public class CellIterator implements Serializable {
 
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
-          (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+          (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = oshEntity.getChangesetTimestamps();
@@ -436,7 +459,7 @@ public class CellIterator implements Serializable {
         if (!osmEntity.isVisible()) {
           // this entity is deleted at this timestamp
           // todo: some of this may be refactorable between the two for loops
-          if (prev != null && prev.activities.contains(ContributionType.DELETION)) {
+          if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp,
                 osmEntity, prev.osmEntity, oshEntity,
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
@@ -444,6 +467,10 @@ public class CellIterator implements Serializable {
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
                 osmEntity.getChangeset()
             );
+            // cannot normally happen, because prev is never null while skipOutput is true (since no
+            // previous result has yet been generated before the first modification in the query
+            // timestamp inteval). But if the oshdb-api would at some point have to support non-
+            // contiguous timestamp intervals, this case could be needed.
             if (!skipOutput) {
               results.add(prev);
             }
@@ -520,7 +547,7 @@ public class CellIterator implements Serializable {
           }
 
           LazyEvaluatedContributionTypes activity;
-          if (!fullyInside && (geom.get() == null || geom.get().isEmpty())) {
+          if (!fullyInside && geom.get().isEmpty()) {
             // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
@@ -560,13 +587,7 @@ public class CellIterator implements Serializable {
                   return tagsChange;
                 case GEOMETRY_CHANGE:
                   // look if geometry has been changed between versions
-                  boolean geometryChange = false;
-                  if (geom.get() != null && prevGeometry.get() != null) {
-                    // todo: what if both are null? -> maybe fall back to MEMBER_CHANGE?
-                    // todo: check: does this work as expected?
-                    geometryChange = !prevGeometry.equals(geom);
-                  }
-                  return geometryChange;
+                  return !prevGeometry.equals(geom);
                 default:
                   return false;
               }
@@ -599,12 +620,12 @@ public class CellIterator implements Serializable {
             results.add(result);
           }
           prev = result;
-        } catch (UnsupportedOperationException err) {
-          // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
+          // maybe some corner case where JTS doesn't support operations on a broken geometry
           LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
+          // happens e.g. in JTS intersection method when geometries are self-overlapping
           LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
               err.toString());

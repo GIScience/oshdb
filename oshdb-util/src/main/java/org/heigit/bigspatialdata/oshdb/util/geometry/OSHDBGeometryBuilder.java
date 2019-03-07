@@ -38,8 +38,6 @@ public class OSHDBGeometryBuilder {
 
   private static final Logger LOG = LoggerFactory.getLogger(OSHDBGeometryBuilder.class);
 
-  private OSHDBGeometryBuilder() {}
-
   /**
    * Gets the geometry of an OSM entity at a specific timestamp.
    *

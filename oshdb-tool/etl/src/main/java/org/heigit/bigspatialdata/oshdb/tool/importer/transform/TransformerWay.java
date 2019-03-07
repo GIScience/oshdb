@@ -39,10 +39,7 @@ public class TransformerWay extends Transformer {
   
   private final long[] lastDataSize = new long[2];
   
-  public void transform(long id, List<Entity> versions) {
-    if(id == 26565791L)
-      System.out.println("hier");
-    
+  public void transform(long id, List<Entity> versions) {    
     List<OSMWay> ways = new ArrayList<>(versions.size());
     LongSortedSet nodeIds = new LongAVLTreeSet();
     for (Entity version : versions) {

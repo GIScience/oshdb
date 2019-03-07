@@ -1,0 +1,364 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version="0.6" generator="testdata" upload="false">
+  <node id="1" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="1" lon="1.42" lat="1.22">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="2" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="2" lon="1.42" lat="1.23">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="3" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="3" lon="1.42" lat="1.24">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="4" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="2" user="B" changeset="4" lon="1.42" lat="1.25">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="5" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="2" user="B" changeset="5" lon="1.42" lat="1.26">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="6" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="6" lon="1.42" lat="1.27">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="7" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="2" user="B" changeset="7" lon="1.42" lat="1.28">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="8" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="8" lon="1.43" lat="1.29">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="9" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="9" lon="1.43" lat="1.30">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="10" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="3" user="C" changeset="10" lon="1.43" lat="1.31">
+    <tag k="created_by" v="test"/>
+  </node>
+  <!--lon lat ändert sich-->
+  <node id="11" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="11" lon="1.42" lat="1.22">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="11" visible="true" version="2" timestamp="2009-02-01T00:00:00Z" uid="2" user="B" changeset="12" lon="1.42" lat="1.225">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="11" visible="true" version="3" timestamp="2010-02-03T00:00:00Z" uid="1" user="A" changeset="13" lon="1.425" lat="1.23">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <!--tag ändert sich-->
+  <node id="12" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="14" lon="1.43" lat="1.24">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="12" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="12" user="test2" changeset="15" lon="1.43" lat="1.24">
+    <tag k="created_by" v="test"/>
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="12" visible="true" version="3" timestamp="2014-01-01T00:00:00Z" uid="13" user="test3" changeset="16" lon="1.43" lat="1.24">
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+
+  <!--visible ändert sich-->
+  <node id="13" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="11" user="test" changeset="17" lon="1.44" lat="1.24">
+    <tag k="created_by" v="test"/>
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="13" visible="false" version="2" timestamp="2008-01-01T00:00:00Z" uid="11" user="test" changeset="18" >
+  </node>
+  <node id="13" visible="true" version="3" timestamp="2014-01-01T00:00:00Z" uid="11" user="test" changeset="19" lon="1.44" lat="1.24">
+    <tag k="created_by" v="test"/>
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="13" visible="false" version="5" timestamp="2015-01-01T00:00:00Z" uid="11" user="test" changeset="20" >
+  </node>
+  <node id="13" visible="true" version="6" timestamp="2016-01-01T00:00:00Z" uid="11" user="test" changeset="21" lon="1.44" lat="1.24">
+    <tag k="created_by" v="test"/>
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+
+  <!--vieles ändert sich-->
+  <node id="14" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="22" lon="1.42" lat="1.21">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="14" visible="true" version="2" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="23" lon="1.425" lat="1.20">
+    <tag k="created_by" v="test"/>
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="14" visible="false" version="3" timestamp="2010-01-01T00:00:00Z" uid="11" user="test" changeset="24" >
+  </node>
+  <node id="14" visible="true" version="4" timestamp="2011-01-01T00:00:00Z" uid="11" user="test" changeset="25" lon="1.42" lat="1.21">
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="14" visible="true" version="5" timestamp="2014-01-01T00:00:00Z" uid="1" user="A" changeset="26" lon="1.42" lat="1.215">
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="14" visible="true" version="7" timestamp="2017-01-01T00:00:00Z" uid="11" user="test" changeset="27" lon="1.42" lat="1.215">
+    <tag k="leaf_cycle" v="deciduous"/>
+    <tag k="leaf_type" v="broadleaved"/>
+    <tag k="natural" v="tree"/>
+  </node>
+
+  <!--lon lat ändert sich-->
+  <node id="15" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="28" lon="1.44" lat="1.22">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="15" visible="true" version="2" timestamp="2009-02-01T00:00:00Z" uid="2" user="B" changeset="29" lon="1.445" lat="1.225">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="15" visible="true" version="3" timestamp="2010-02-03T00:00:00Z" uid="1" user="A" changeset="30" lon="1.44" lat="1.23">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="16" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.45" lat="1.45">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="17" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.46" lat="1.45">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="18" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.46" lat="1.144">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="19" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="1" user="A" changeset="30" lon="1.45" lat="1.44">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="20" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="331" lon="1.94" lat="1.4">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="20" visible="true" version="2" timestamp="2009-07-01T01:01:01Z" uid="3" user="C" changeset="332" lon="1.941" lat="1.45">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="21" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="333" lon="1.92" lat="1.22">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="21" visible="true" version="2" timestamp="2009-07-01T01:01:01Z" uid="2" user="B" changeset="334" lon="1.921" lat="1.2251">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="22" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="1.94" lat="1.4">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="23" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="4.92" lat="4.22">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="23" visible="true" version="2" timestamp="2009-07-01T01:01:01Z" uid="2" user="B" changeset="336" lon="4.94" lat="4.24">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="24" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="2.5" lat="2.5">
+    <tag k="created_by" v="test"/>
+  </node>
+
+  <node id="25" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="335" lon="3.5" lat="3.5">
+    <tag k="created_by" v="test"/>
+  </node>
+  <node id="25" visible="true" version="2" timestamp="2011-07-01T01:01:01Z" uid="2" user="B" changeset="337" lon="3.65" lat="3.5">
+    <tag k="created_by" v="test"/>
+  </node>
+
+
+
+  <!--way getting more nodes, one disappears-->
+  <way id="100"  visible="true" version="1" timestamp="2009-01-01T00:00:00Z" uid="1" user="test" changeset="31">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+  </way>
+  <way id="100"  visible="true" version="2" timestamp="2010-01-01T00:00:00Z" uid="2" user="B" changeset="32">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+    <nd ref="5"/>
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+  </way>
+  <way id="100"  visible="true" version="3" timestamp="2011-01-01T00:00:00Z" uid="1" user="test" changeset="33">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+    <nd ref="5"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <nd ref="10"/>
+  </way>
+
+  <!--way with two nodes, nodes changed lat lon, way creation at same time as node creation-->
+  <way id="101" visible="true" version="1" timestamp="2008-02-01T00:00:00Z" uid="1" user="test" changeset="34">
+    <nd ref="11"/>
+    <nd ref="15"/>
+  </way>
+  <way id="101" visible="true" version="2" timestamp="2016-01-01T00:00:00Z" uid="1" user="test" changeset="35">
+    <nd ref="11"/>
+    <nd ref="15"/>
+    <nd ref="9"/>
+  </way>
+  <!--way  visible tag changed -->
+  <way id="102" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="2" user="B" changeset="36">
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+  </way>
+  <way id="102" visible="false" version="2" timestamp="2017-01-01T00:00:00Z" uid="2" user="B" changeset="37">
+  </way>
+  <way id="102" visible="true" version="3" timestamp="2018-01-01T00:00:00Z" uid="3" user="C" changeset="38">
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+  </way>
+
+  <!--way tags changed -->
+  <way id="103" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="2" user="B" changeset="39">
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+  </way>
+  <way id="103" visible="true" version="2" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="40">
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <nd ref="10"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+  <way id="103" visible="true" version="3" timestamp="2018-01-01T00:00:00Z" uid="3" user="C" changeset="41">
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <nd ref="10"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="secondary"/>
+    <tag k="maxspeed" v="30"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+  <!--way nodes have different changes -->
+  <way id="104" visible="true" version="1" timestamp="2011-01-01T00:00:00Z" uid="1" user="A" changeset="42">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+  </way>
+
+  <!--way and nodes have different changes -->
+  <way id="105" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="A" changeset="44">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+  </way>
+  <way id="105" visible="true" version="2" timestamp="2010-01-01T00:00:00Z" uid="2" user="B" changeset="45">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+    <nd ref="15"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="secondary"/>
+    <tag k="maxspeed" v="30"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+  <way id="105" visible="false" version="3" timestamp="2014-01-01T00:00:00Z" uid="2" user="B" changeset="46">
+  </way>
+  <way id="105" visible="true" version="4" timestamp="2018-01-01T00:00:00Z" uid="2" user="B" changeset="47">
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+    <nd ref="15"/>
+    <tag k="cycleway" v="track"/>
+    <tag k="highway" v="secondary"/>
+    <tag k="maxspeed" v="30"/>
+    <tag k="name" v="Leibnizstraße"/>
+    <tag k="postal_code" v="10625"/>
+    <tag k="surface" v="asphalt"/>
+  </way>
+
+  <!--way seems to be polygon with area=yes, later linestring because area=yes deleted-->
+  <way id="106" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="48">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+    <nd ref="16"/>
+    <tag k="area" v="yes"/>
+  </way>
+  <way id="106" visible="true" version="2" timestamp="2016-01-01T00:00:00Z" uid="1" user="test" changeset="49">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+    <nd ref="16"/>
+  </way>
+  <!--way seems to be polygon with area=yes, later linestring because one node deleted-->
+  <way id="107" visible="true" version="1" timestamp="2008-01-01T00:00:00Z" uid="1" user="test" changeset="50">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+    <nd ref="16"/>
+    <tag k="area" v="yes"/>
+  </way>
+  <way id="107" visible="true" version="2" timestamp="2016-01-01T00:00:00Z" uid="1" user="test" changeset="60">
+    <nd ref="16"/>
+    <nd ref="17"/>
+    <nd ref="18"/>
+    <nd ref="19"/>
+    <tag k="area" v="yes"/>
+  </way>
+  <!--rule for contributions that fall exactly at time interval limits:
+  start timestamp: included, end timestamp: excluded-->
+  <way id="108" visible="true" version="1" timestamp="2009-02-01T00:00:00Z" uid="1" user="test" changeset="61">
+    <nd ref="11"/>
+    <nd ref="15"/>
+  </way>
+  <way id="108" visible="true" version="2" timestamp="2018-01-01T00:00:00Z" uid="1" user="test" changeset="62">
+    <nd ref="11"/>
+    <nd ref="15"/>
+    <nd ref="9"/>
+  </way>
+  <!--way with two nodes, nodes changed lat lon, both at same time, different changesets-->
+  <way id="109" visible="true" version="1" timestamp="2009-03-01T01:01:01Z" uid="1" user="test" changeset="63">
+    <nd ref="20"/>
+    <nd ref="21"/>
+  </way>
+  <!--way with 4 nodes, to check what happens if geometry change is on nodes outside Bbox-->
+  <way id="110" visible="true" version="1" timestamp="2008-03-01T01:01:01Z" uid="1" user="test" changeset="64">
+    <nd ref="22"/>
+    <nd ref="24"/>
+    <nd ref="25"/>
+    <nd ref="23"/>
+  </way>
+  <!--way with three nodes, node 12 changed tag-->
+  <way id="111" visible="true" version="1" timestamp="2007-12-01T00:00:00Z" uid="1" user="test" changeset="65">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="12"/>
+  </way>
+  <!--way with three nodes,  node refs deleted in version 2-->
+  <way id="112" visible="true" version="1" timestamp="2008-03-01T01:01:01Z" uid="1" user="test" changeset="66">
+    <nd ref="22"/>
+    <nd ref="24"/>
+    <nd ref="23"/>
+  </way>
+  <way id="112" visible="true" version="2" timestamp="2012-03-01T01:01:01Z" uid="1" user="test" changeset="67">
+  </way>
+
+  <!--way with nodes not existent-->
+  <way id="113" visible="true" version="1" timestamp="2007-12-01T00:00:00Z" uid="1" user="test" changeset="68">
+  </way>
+</osm>

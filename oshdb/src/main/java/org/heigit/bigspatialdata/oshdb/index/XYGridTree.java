@@ -10,15 +10,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.
  */
 public class XYGridTree implements Serializable {
-  private static final Logger LOG = LoggerFactory.getLogger(XYGridTree.class);
-
+  private static final long serialVersionUID = 1L;
   private final int maxLevel;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
 

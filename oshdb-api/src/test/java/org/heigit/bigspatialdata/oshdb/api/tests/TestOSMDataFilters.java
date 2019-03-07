@@ -7,7 +7,6 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -57,7 +56,7 @@ public class TestOSMDataFilters {
   @Test
   public void bbox() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .osmTypes(OSMType.NODE)
+        .osmType(OSMType.NODE)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -67,7 +66,7 @@ public class TestOSMDataFilters {
   @Test
   public void polygon() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .osmTypes(OSMType.NODE)
+        .osmType(OSMType.NODE)
         .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
         .count();
@@ -78,7 +77,7 @@ public class TestOSMDataFilters {
   public void multiPolygon() throws Exception {
     GeometryFactory gf = new GeometryFactory();
     Integer result = createMapReducerOSMEntitySnapshot()
-        .osmTypes(OSMType.NODE)
+        .osmType(OSMType.NODE)
         .areaOfInterest(gf.createMultiPolygon(new Polygon[] {
             OSHDBGeometryBuilder.getGeometry(bbox)
         }))
@@ -92,7 +91,7 @@ public class TestOSMDataFilters {
   @Test
   public void tagKey() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
-        .where("building")
+        .osmTag("building")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .aggregateBy(snapshot -> snapshot.getEntity().getType())
@@ -104,8 +103,8 @@ public class TestOSMDataFilters {
   @Test
   public void tagKeyValue() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .where("highway", "residential")
-        .osmTypes(OSMType.WAY)
+        .osmTag("highway", "residential")
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -115,8 +114,8 @@ public class TestOSMDataFilters {
   @Test
   public void tagKeyValues() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .where("highway", Arrays.asList("residential", "unclassified"))
-        .osmTypes(OSMType.WAY)
+        .osmTag("highway", Arrays.asList("residential", "unclassified"))
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -126,8 +125,8 @@ public class TestOSMDataFilters {
   @Test
   public void tagKeyValueRegexp() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .where("highway", Pattern.compile("residential|unclassified"))
-        .osmTypes(OSMType.WAY)
+        .osmTag("highway", Pattern.compile("residential|unclassified"))
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -137,11 +136,11 @@ public class TestOSMDataFilters {
   @Test
   public void tagList() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .where(Arrays.asList(
+        .osmTag(Arrays.asList(
             new OSMTag("highway", "residential"),
             new OSMTag("highway", "unclassified"))
         )
-        .osmTypes(OSMType.WAY)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -151,9 +150,9 @@ public class TestOSMDataFilters {
   @Test
   public void tagMultiple() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
-        .where("name")
-        .where("highway")
-        .osmTypes(OSMType.WAY)
+        .osmTag("name")
+        .osmTag("highway")
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> {
@@ -169,21 +168,21 @@ public class TestOSMDataFilters {
   @Test
   public void tagNotExists() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
-        .where("buildingsss")
+        .osmTag("buildingsss")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(0, result.intValue());
 
     result = createMapReducerOSMEntitySnapshot()
-        .where("building", "residentialll")
+        .osmTag("building", "residentialll")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
     assertEquals(0, result.intValue());
 
     result = createMapReducerOSMEntitySnapshot()
-        .where("buildingsss", "residentialll")
+        .osmTag("buildingsss", "residentialll")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
@@ -195,8 +194,8 @@ public class TestOSMDataFilters {
   @Test
   public void custom() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
-        .where(entity -> entity.getVersion() > 2)
-        .osmTypes(OSMType.WAY)
+        .osmEntityFilter(entity -> entity.getVersion() > 2)
+        .osmType(OSMType.WAY)
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> snapshot.getEntity().getVersion());

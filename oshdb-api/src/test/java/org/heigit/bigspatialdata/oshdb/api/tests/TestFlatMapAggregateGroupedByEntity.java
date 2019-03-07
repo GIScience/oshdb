@@ -39,7 +39,7 @@ public class TestFlatMapAggregateGroupedByEntity {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test
