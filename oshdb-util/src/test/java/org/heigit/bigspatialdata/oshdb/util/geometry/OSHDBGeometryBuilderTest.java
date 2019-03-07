@@ -1,8 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.FakeTagInterpreterAreaAlways;
+import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.FakeTagInterpreterAreaMultipolygonAllOuters;
+import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.FakeTagInterpreterAreaNever;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
@@ -38,6 +42,7 @@ public class OSHDBGeometryBuilderTest {
       return null;
     }
   }
+
   @Test
   public void testPointGetGeometry() {
     OSMEntity entity = testData.nodes().get(1L).get(1);
@@ -176,6 +181,7 @@ public class OSHDBGeometryBuilderTest {
     OSHDBBoundingBox clipPoly = OSHDBGeometryBuilder.boundingBoxOf(new Envelope(-180, 180, -90, 90));
     Envelope expectedPolygon = new Envelope(-180, 180, -90, 90);
     assertEquals(new String("(-180.000000,-90.000000) (180.000000,90.000000)"),clipPoly.toString());
+  }
   
   @Test
   public void testBoundingBoxGetGeometry() {
@@ -200,7 +206,6 @@ public class OSHDBGeometryBuilderTest {
         new Coordinate(0, 1), new Coordinate(0, 0) };
     Assert.assertArrayEquals(test, geometry.getCoordinates());
   }
-}
 
 
 abstract class FakeTagInterpreter implements TagInterpreter {
@@ -210,35 +215,5 @@ abstract class FakeTagInterpreter implements TagInterpreter {
   public boolean isLine(OSMEntity entity) { return false; }
   @Override
   public boolean hasInterestingTagKey(OSMEntity osm) { return false; }
-  @Override
-  public boolean isMultipolygonOuterMember(OSMMember osmMember) { return false; }
-  @Override
-  public boolean isMultipolygonInnerMember(OSMMember osmMember) { return false; }
-  @Override
-  public boolean isOldStyleMultipolygon(OSMRelation osmRelation) { return false; }
 }
-
-class FakeTagInterpreterAreaAlways extends FakeTagInterpreter {
-  @Override
-  public boolean isArea(OSMEntity e) {
-    if (e instanceof OSMWay) {
-      OSMMember[] nds = ((OSMWay) e).getRefs();
-      return (nds.length >= 4 && nds[0].getId() == nds[nds.length - 1].getId());
-    }
-    return true;
-  }
-}
-
-class FakeTagInterpreterAreaMultipolygonAllOuters extends FakeTagInterpreterAreaAlways {
-  @Override
-  public boolean isMultipolygonOuterMember(OSMMember osmMember) {
-    return true;
-  }
-}
-
-class FakeTagInterpreterAreaNever extends FakeTagInterpreter {
-  @Override
-  public boolean isArea(OSMEntity e) {
-    return false;
-  }
 }

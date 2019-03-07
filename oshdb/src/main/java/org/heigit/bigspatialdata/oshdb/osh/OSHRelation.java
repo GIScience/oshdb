@@ -12,9 +12,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -653,11 +653,6 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     } catch (IOException e) {}
 
     return result;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("OSHRelation %s", super.toString());
   }
 
 }
