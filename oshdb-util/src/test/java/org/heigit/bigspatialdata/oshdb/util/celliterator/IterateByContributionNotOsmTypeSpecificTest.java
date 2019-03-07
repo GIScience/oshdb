@@ -30,14 +30,14 @@ import org.locationtech.jts.geom.Polygon;
 
 import static org.junit.Assert.assertTrue;
 
-public class IterateByContributionNotOsmTypeSpecific {
+public class IterateByContributionNotOsmTypeSpecificTest {
 
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations = new ArrayList<>();
   private final double DELTA = 1E-6;
 
-  public IterateByContributionNotOsmTypeSpecific() throws IOException {
+  public IterateByContributionNotOsmTypeSpecificTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     Map<Long, OSHNode> oshNodes = new TreeMap<>();

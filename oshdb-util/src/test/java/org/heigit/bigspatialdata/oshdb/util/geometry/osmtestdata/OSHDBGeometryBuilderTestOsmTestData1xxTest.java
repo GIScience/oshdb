@@ -21,14 +21,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-public class OSHDBGeometryBuilderTestOsmTestData1xx {
+public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmTestData1xx() {
+  public OSHDBGeometryBuilderTestOsmTestData1xxTest() {
     testData.add("./src/test/resources/osm-testdata/all.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }

@@ -17,14 +17,14 @@ import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class OSHDBGeometryBuilderTestPolygonIncompleteData {
+public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestPolygonIncompleteData() {
+  public OSHDBGeometryBuilderTestPolygonIncompleteDataTest() {
     testData.add("./src/test/resources/incomplete-osm/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }

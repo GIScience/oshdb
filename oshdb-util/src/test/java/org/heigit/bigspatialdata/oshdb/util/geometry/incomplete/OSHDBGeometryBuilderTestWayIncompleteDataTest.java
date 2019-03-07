@@ -14,14 +14,14 @@ import org.locationtech.jts.geom.LineString;
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertTrue;
 
-public class OSHDBGeometryBuilderTestWayIncompleteData {
+public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestWayIncompleteData() {
+  public OSHDBGeometryBuilderTestWayIncompleteDataTest() {
     testData.add("./src/test/resources/incomplete-osm/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }

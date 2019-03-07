@@ -29,12 +29,12 @@ import org.locationtech.jts.geom.Polygon;
 
 import static org.junit.Assert.assertTrue;
 
-public class IterateByTimestampNotOsmTypeSpecific {
+public class IterateByTimestampNotOsmTypeSpecificTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations = new ArrayList<>();
 
-  public IterateByTimestampNotOsmTypeSpecific() throws IOException {
+  public IterateByTimestampNotOsmTypeSpecificTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/not-osm-type-specific.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     Map<Long, OSHNode> oshNodes = new TreeMap<>();

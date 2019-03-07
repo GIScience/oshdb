@@ -16,7 +16,7 @@ import org.locationtech.jts.io.WKTReader;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class OSHDBGeometryBuilderTestRelationOuterDirections {
+public class OSHDBGeometryBuilderTestRelationOuterDirectionsTest {
 
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
@@ -24,7 +24,7 @@ public class OSHDBGeometryBuilderTestRelationOuterDirections {
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestRelationOuterDirections() {
+  public OSHDBGeometryBuilderTestRelationOuterDirectionsTest() {
     testData.add("./src/test/resources/relations/outer-directions.osm");
     tagInterpreter = new OSMXmlReaderTagInterpreter(testData);
   }

@@ -14,12 +14,12 @@ import org.locationtech.jts.geom.Point;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodes {
+public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmHistoryTestDataNodes() {
+  public OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest() {
     testData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }

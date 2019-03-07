@@ -22,12 +22,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelation {
+public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmHistoryTestDataRelation() {
+  public OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest() {
     testData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }
