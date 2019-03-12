@@ -494,12 +494,12 @@
     </relation>
 
     <!--relation  way members do not exist-->
-    <!--relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
+    <relation id="502" visible="true" version="1" timestamp="2010-01-01T00:00:00Z" uid="3" user="C" changeset="306">
         <member type="way" ref="206" role="outer"/>
         <member type="way" ref="207" role="outer"/>
         <member type="way" ref="208" role="outer"/>
         <tag k="type" v="building"/>
-    </relation-->
+    </relation>
 
     <!--relation tags changing-->
     <relation id="503" visible="true" version="1" timestamp="2007-01-01T00:00:00Z" uid="3" user="C" changeset="307">

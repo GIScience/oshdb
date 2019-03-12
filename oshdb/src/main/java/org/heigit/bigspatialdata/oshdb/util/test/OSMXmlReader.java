@@ -12,7 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -229,7 +231,10 @@ public class OSMXmlReader {
                 }
               }
               if (this.ways().containsKey(memId)) {
-                data = OSHWay.build(this.ways().get(memId), wayNodes.values());
+                data = OSHWay.build(
+                    this.ways().get(memId),
+                    wayNodes.values().stream().filter(Objects::nonNull).collect(Collectors.toList())
+                );
               }
               break;
           }
