@@ -19,6 +19,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -62,14 +63,21 @@ public class OSHDBGeometryBuilder {
   ) {
     assert timestamp.compareTo(entity.getTimestamp()) >= 0 :
         "cannot produce geometry of entity for timestamp before this entity's version's timestamp";
+    GeometryFactory geometryFactory = new GeometryFactory();
     if (entity instanceof OSMNode) {
       OSMNode node = (OSMNode) entity;
-      GeometryFactory geometryFactory = new GeometryFactory();
-      return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
+      if (node.isVisible()) {
+        return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
+      } else {
+        return geometryFactory.createPoint((Coordinate) null);
+      }
     } else if (entity instanceof OSMWay) {
       OSMWay way = (OSMWay) entity;
+      if (!way.isVisible()) {
+        LOG.info("way/{} is deleted - falling back to empty (line) geometry", way.getId());
+        return geometryFactory.createLineString((CoordinateSequence) null);
+      }
       // todo: handle old-style multipolygons here???
-      GeometryFactory geometryFactory = new GeometryFactory();
       Coordinate[] coords =
           way.getRefEntities(timestamp)
               .filter(OSMEntity::isVisible)
@@ -90,14 +98,22 @@ public class OSHDBGeometryBuilder {
         return geometryFactory.createPoint(coords[0]);
       } else {
         LOG.warn("way/{} with no nodes - falling back to empty (point) geometry", way.getId());
-        return geometryFactory.createPoint((Coordinate)null);
+        return geometryFactory.createPoint((Coordinate) null);
       }
     } else {
       OSMRelation relation = (OSMRelation) entity;
+      if (!relation.isVisible()) {
+        LOG.info(
+            "relation/{} is deleted - falling back to empty geometry (collection)",
+            relation.getId()
+        );
+        return geometryFactory.createGeometryCollection(null);
+      }
       if (areaDecider.isArea(entity)) {
         try {
-          Geometry multipolygon =
-              OSHDBGeometryBuilder.getMultiPolygonGeometry(relation, timestamp, areaDecider);
+          Geometry multipolygon = OSHDBGeometryBuilder.getMultiPolygonGeometry(
+              relation, timestamp, areaDecider, geometryFactory
+          );
           if (!multipolygon.isEmpty()) {
             return multipolygon;
           }
@@ -109,16 +125,16 @@ public class OSHDBGeometryBuilder {
       /* todo:implement multilinestring mode for stuff like route relations
        * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
        */
-      return getGeometryCollectionGeometry(relation, timestamp, areaDecider);
+      return getGeometryCollectionGeometry(relation, timestamp, areaDecider, geometryFactory);
     }
   }
 
   private static Geometry getGeometryCollectionGeometry(
       OSMRelation relation,
       OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider
+      TagInterpreter areaDecider,
+      GeometryFactory geometryFactory
   ) {
-    GeometryFactory geometryFactory = new GeometryFactory();
     OSMMember[] relationMembers = relation.getMembers();
     Geometry[] geoms = new Geometry[relationMembers.length];
     boolean completeGeometry = true;
@@ -164,10 +180,9 @@ public class OSHDBGeometryBuilder {
   private static Geometry getMultiPolygonGeometry(
       OSMRelation relation,
       OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider
+      TagInterpreter areaDecider,
+      GeometryFactory geometryFactory
   ) {
-    GeometryFactory geometryFactory = new GeometryFactory();
-
     Stream<OSMWay> outerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember)
             .map(osm -> (OSMWay) osm)

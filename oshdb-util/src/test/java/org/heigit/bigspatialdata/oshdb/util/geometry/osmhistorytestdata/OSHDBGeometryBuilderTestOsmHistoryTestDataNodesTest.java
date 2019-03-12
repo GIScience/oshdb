@@ -30,7 +30,6 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
     // A single node, lat lon changed over time
     OSMEntity entity = testData.nodes().get(1L).get(0);
     // timestamp before oldest timestamp
-    // todo https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/141
     OSHDBTimestamp timestamp_before =  TimestampParser.toOSHDBTimestamp("2007-01-01T00:00:00Z");
     Geometry result_before = OSHDBGeometryBuilder.getGeometry(entity, timestamp_before, areaDecider);
     assertTrue(result_before instanceof Point);
@@ -90,7 +89,6 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
   @Test
   public void testVisibleChange() {
     // A single node, visible changes
-    // todo https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/141
     OSMEntity entity = testData.nodes().get(3L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -124,7 +122,6 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
   @Test
   public void testMultipleChanges() {
     // A single node, various changes over time
-    // todo https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/141
     OSMEntity entity = testData.nodes().get(4L).get(0);
     OSHDBTimestamp timestamp = entity.getTimestamp();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);

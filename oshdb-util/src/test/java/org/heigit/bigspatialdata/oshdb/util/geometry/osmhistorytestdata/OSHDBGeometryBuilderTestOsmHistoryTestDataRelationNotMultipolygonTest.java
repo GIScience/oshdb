@@ -301,7 +301,6 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   @Test
   public void testGeometryCollection() {
     // relation, not valid, should be a not empty geometryCollection
-    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/143
     OSMEntity entity = testData.relations().get(507L).get(0);
     try {
       OSHDBTimestamp timestamp = entity.getTimestamp();
