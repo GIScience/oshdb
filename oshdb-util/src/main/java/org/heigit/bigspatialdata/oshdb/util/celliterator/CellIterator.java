@@ -169,7 +169,7 @@ public class CellIterator implements Serializable {
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
           cell.getLevel(),
           cell.getId()
-      ));
+      ), true);
       if (bboxOutsidePolygon.test(cellBoundingBox)) {
         return Stream.empty();
       }
@@ -427,7 +427,7 @@ public class CellIterator implements Serializable {
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
           cell.getLevel(),
           cell.getId()
-      ));
+      ), true);
       if (bboxOutsidePolygon.test(cellBoundingBox)) {
         return Stream.empty();
       }

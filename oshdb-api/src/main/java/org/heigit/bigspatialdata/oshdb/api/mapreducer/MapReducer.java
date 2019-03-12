@@ -1799,7 +1799,7 @@ public abstract class MapReducer<X> implements
       LOG.warn("area of interest not set or empty");
       return Collections.emptyList();
     }
-    return grid.bbox2CellIdRanges(this.bboxFilter, false);
+    return grid.bbox2CellIdRanges(this.bboxFilter, true);
   }
 
   // hack, so that we can use a variable that is of both Geometry and implements Polygonal (i.e.
