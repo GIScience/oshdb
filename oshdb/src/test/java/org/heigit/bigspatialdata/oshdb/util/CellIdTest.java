@@ -9,41 +9,29 @@ import static org.junit.Assert.assertEquals;
 
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
  */
 public class CellIdTest {
-  private static final Logger LOG = LoggerFactory.getLogger(CellIdTest.class);
-  
   public CellIdTest() {
   }
 
   @Test
   public void testGetid() {
-    try {
-      CellId instance = new CellId(1,1L);
-      long expResult = 1L;
-      long result = instance.getId();
-      assertEquals(expResult, result);
-    } catch (CellId.cellIdExeption ex) {
-      LOG.error("", ex);
-    }
+    CellId instance = new CellId(1,1L);
+    long expResult = 1L;
+    long result = instance.getId();
+    assertEquals(expResult, result);
   }
 
   @Test
   public void testGetzoomlevel() {
-    try {
-      CellId instance = new CellId(1,1L);
-      int expResult = 1;
-      int result = instance.getZoomLevel();
-      assertEquals(expResult, result);
-    } catch (CellId.cellIdExeption ex) {
-      LOG.error("", ex);
-    }
+    CellId instance = new CellId(1,1L);
+    int expResult = 1;
+    int result = instance.getZoomLevel();
+    assertEquals(expResult, result);
   }
   
 }

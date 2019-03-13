@@ -1,20 +1,20 @@
-HeiGit OpenStreetMap History DB
+HeiGIT OpenStreetMap History DB
 ===============================
 
 High-performance data analysis platform for OpenStreetMap full-history data.
 
-[![Build Status](http://129.206.7.188:8081/buildStatus/icon?job=oshdb-deploy)](http://129.206.7.188:8081/job/oshdb-deploy/)
+[![Build Status](https://jenkins.ohsome.org/buildStatus/icon?job=oshdb/master)](https://jenkins.ohsome.org/blue/organizations/jenkins/oshdb/activity/?branch=master)
 
-Oshdb offers a distributed data base that splits storage and computation load. It is then possible to use the [map-reduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel. A central idea behind oshdb is to bring the code to the data.
+The OSHDB offers a distributed data base that splits storage and computation load. It is then possible to use the [map-reduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel. A central idea behind the OSHDB is to bring the code to the data.
 
 ```java
-    OSHDB_Implememtation oshdb = /*…*/;
+    OSHDBDatabase oshdb = /*…*/;
 
     Integer numberOfUsersEditingHighways = OSMContributionView.on(oshdb)
         .timestamps("2007-10-07", "2009-04-09")
         .where("highway")
         .map(contribution -> contribution.getContributorUserId())
-        .countUnique();
+        .countUniq();
         
     System.out.println(numberOfUsersEditingHighways);
 ```
@@ -22,7 +22,7 @@ Oshdb offers a distributed data base that splits storage and computation load. I
 OpenStreetMap History Data
 --------------------------
 
-OpenStreetMap contains a large variety of geographic data, for example differing in scale (ranging from single points of interests to whole country borders) or feature type (from concrete things like buildings up to more abstract concepts such as turn restrictions) and offers a lot of meta data (about individual contributors, modifications, etc.) that can be analyzed in a multitude of ways. At the same time, possibilities of working with this data is limited because of the large amount of resources needed and the lack of easy to use analysis software. The huge information treasure in OSM for researchers, journalists, community members and other interested people is thereby kept hidden. A central goal of the OSHDb is to make this treasure available for a larger public.
+OpenStreetMap contains a large variety of geographic data, for example differing in scale (ranging from single points of interests to whole country borders), or feature type (from concrete things like buildings up to more abstract concepts such as turn restrictions) and offers a lot of metadata (about individual contributors, modifications, etc.) that can be analyzed in a multitude of ways. At the same time, possibilities of working with this data are limited because of the large amount of needed resources and the lack of an easy-to-use analysis software. The huge information treasure in OSM for researchers, journalists, community members and other interested people is thereby kept hidden. A central goal of the OSHDB is to make this treasure available for a larger public.
 
 Central Concepts
 ----------------
@@ -36,7 +36,7 @@ Central Concepts
 
 ### Data Processing/Access
 
-* *([rest api](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/oshdb/rest-api) for common queries)*
+* *(rest-based api for common queries)*
 * *(oshdb-api: flexible, simple, map-reudce pattern, works on actual geometries)*
 * *(raw-data api: direct access to underlying raw osm data)*
 
@@ -48,7 +48,7 @@ Installation
 API
 ---
 
-*(links to API docs)*
+* [oshdb-api tutorial](documentation/oshdb-api-tutorial/README.md)
 
 Examples
 --------

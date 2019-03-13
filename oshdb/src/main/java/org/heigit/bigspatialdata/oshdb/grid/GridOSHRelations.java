@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 
 @SuppressWarnings("rawtypes")
@@ -48,8 +49,7 @@ public class GridOSHRelations extends GridOSHEntities {
         int length = ((pos < index.length - 1) ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
-          return OSHRelation.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-                  baseLatitude);
+          return OSHRelation.instance(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();
         }

@@ -5,17 +5,18 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
+import java.util.List;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.junit.Test;
 
 import java.util.EnumSet;
@@ -29,20 +30,20 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestHelpersOSMContributionView {
-  private final OSHDB_Database oshdb;
+  private final OSHDBDatabase oshdb;
 
-  private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2015-01-01");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
   private final double DELTA = 1e-8;
 
   public TestHelpersOSMContributionView() throws Exception {
-    oshdb = new OSHDB_H2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducer() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).where("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmType(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
@@ -75,8 +76,8 @@ public class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<String, Number> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .osmTypes(OSMType.WAY)
-        .where("building", "yes")
+        .osmType(OSMType.WAY)
+        .osmTag("building", "yes")
         .aggregateBy(contribution -> contribution.getContributionTypes().toString())
         .sum(contribution -> 1);
 
@@ -220,6 +221,18 @@ public class TestHelpersOSMContributionView {
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());
+  }
+
+  @Test
+  public void testIssue107() throws Exception {
+    // single timestamp
+    List<OSMContribution> result = this.createMapReducer()
+        .timestamps(timestamps72)
+        .collect();
+
+    assertEquals(true, result.get(0).getContributionTypes().contains(ContributionType.CREATION));
+    assertEquals(null, result.get(0).getEntityBefore());
+    assertEquals(null, result.get(0).getGeometryBefore());
   }
 
 }

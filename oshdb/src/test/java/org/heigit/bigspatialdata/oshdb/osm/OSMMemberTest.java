@@ -1,14 +1,9 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * To change this license header, choose License Headers in Project Properties. To change this
+ * template file, choose Tools | Templates and open the template in the editor.
  */
 package org.heigit.bigspatialdata.oshdb.osm;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-import org.heigit.bigspatialdata.oshdb.util.TagTranslator;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -18,8 +13,7 @@ import org.junit.Test;
  */
 public class OSMMemberTest {
 
-  public OSMMemberTest() {
-  }
+  public OSMMemberTest() {}
 
   @Test
   public void testGetId() {
@@ -41,7 +35,7 @@ public class OSMMemberTest {
   public void testGetRoleId() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     int expResult = 1;
-    int result = instance.getRoleId();
+    int result = instance.getRawRoleId();
     assertEquals(expResult, result);
   }
 
@@ -71,12 +65,5 @@ public class OSMMemberTest {
     assertEquals(expResult, result);
   }
 
-  @Test
-  public void testToString_TragTranslator() throws SQLException, ClassNotFoundException {
-    OSMMember instance = new OSMMember(2L, OSMType.WAY, 0);
-    String expResult = "T:Way ID:2 R:outer";
-    String result = instance.toString(new TagTranslator(DriverManager.getConnection("jdbc:h2:./src/test/resources/keytables", "sa", "")));
-    assertEquals(expResult, result);
-  }
 
 }

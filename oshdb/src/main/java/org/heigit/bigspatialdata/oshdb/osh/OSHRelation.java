@@ -5,16 +5,23 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import org.heigit.bigspatialdata.oshdb.OSHDB;
-import org.heigit.bigspatialdata.oshdb.osh.builder.Builder;
-import org.heigit.bigspatialdata.oshdb.osm.*;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayOutputWrapper;
-import org.heigit.bigspatialdata.oshdb.util.ByteArrayWrapper;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;
+import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayWrapper;
 
 public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable {
 
@@ -38,12 +45,14 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
   private final int wayDataOffset;
   private final int wayDataLength;
 
-  public static OSHRelation instance(final byte[] data, final int offset, final int length) throws IOException {
+  public static OSHRelation instance(final byte[] data, final int offset, final int length)
+      throws IOException {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
-  public static OSHRelation instance(final byte[] data, final int offset, final int length, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+  public static OSHRelation instance(final byte[] data, final int offset, final int length,
+      final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -53,8 +62,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final long minLat = baseLatitude + wrapper.readSInt64();
     final long maxLat = minLat + wrapper.readUInt64();
 
-    final BoundingBox bbox = new BoundingBox(minLon * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
-            minLat * OSHDB.GEOM_PRECISION, maxLat * OSHDB.GEOM_PRECISION);
+    final OSHDBBoundingBox bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
+
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -113,20 +122,21 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     final int dataLength = length - (dataOffset - offset);
 
     return new OSHRelation(data, offset, length, //
-            baseId, baseTimestamp, baseLongitude, baseLatitude, //
-            header, id, bbox, keys, //
-            dataOffset, dataLength, //
-            nodeIndex, nodeDataOffset, nodeDataLength, //
-            wayIndex, wayDataOffset, wayDataLength);
+        baseId, baseTimestamp, baseLongitude, baseLatitude, //
+        header, id, bbox, keys, //
+        dataOffset, dataLength, //
+        nodeIndex, nodeDataOffset, nodeDataLength, //
+        wayIndex, wayDataOffset, wayDataLength);
   }
 
   private OSHRelation(final byte[] data, final int offset, final int length, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude, final byte header,
-          final long id, final BoundingBox bbox, final int[] keys, final int dataOffset, final int dataLength,
-          final int[] nodeIndex, final int nodeDataOffset, final int nodeDataLength, final int[] wayIndex,
-          final int wayDataOffset, final int wayDataLength) {
-    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id, bbox, keys,
-            dataOffset, dataLength);
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
+      final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
+      final int nodeDataLength, final int[] wayIndex, final int wayDataOffset,
+      final int wayDataLength) {
+    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+        bbox, keys, dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
     this.nodeDataOffset = nodeDataOffset;
@@ -243,8 +253,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
                 members[i] = new OSMMember(memberId, memberType, memberRole, member);
               }
             }
-            return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
-                    members);
+            return new OSMRelation(id, version, new OSHDBTimestamp(baseTimestamp + timestamp),
+                changeset, userId, keyValues, members);
           } catch (IOException e) {
             e.printStackTrace();
             // TODO: handle exception(s)
@@ -261,8 +271,10 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     List<OSHNode> nodes = new ArrayList<>(nodeIndex.length);
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
-      int length = ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
-      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, 0, 0, baseLongitude, baseLatitude);
+      int length =
+          ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
+      OSHNode n = OSHNode.instance(data, nodeDataOffset + offset, length, 0, 0, baseLongitude,
+          baseLatitude);
       nodes.add(n);
     }
     return nodes;
@@ -273,20 +285,21 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     for (int index = 0; index < wayIndex.length; index++) {
       int offset = wayIndex[index];
       int length = ((index < wayIndex.length - 1) ? wayIndex[index + 1] : wayDataLength) - offset;
-      OSHWay w = OSHWay.instance(data, wayDataOffset + offset, length, 0, 0, baseLongitude, baseLatitude);
+      OSHWay w =
+          OSHWay.instance(data, wayDataOffset + offset, length, 0, 0, baseLongitude, baseLatitude);
       ways.add(w);
     }
     return ways;
   }
 
   public static OSHRelation build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
-          final Collection<OSHWay> ways) throws IOException {
+      final Collection<OSHWay> ways) throws IOException {
     return build(versions, nodes, ways, 0, 0, 0, 0);
   }
 
   public static OSHRelation build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
-          final Collection<OSHWay> ways, final long baseId, final long baseTimestamp, final long baseLongitude,
-          final long baseLatitude) throws IOException {
+      final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
+      final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
@@ -305,12 +318,12 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     int idx = 0;
     int offset = 0;
     for (OSHNode node : nodes) {
-      BoundingBox bbox = node.getBoundingBox();
+      OSHDBBoundingBox bbox = node.getBoundingBox();
       if (bbox != null) {
-        minLon = Math.min(minLon, bbox.minLon);
-        maxLon = Math.max(maxLon, bbox.maxLon);
-        minLat = Math.min(minLat, bbox.minLat);
-        maxLat = Math.max(maxLat, bbox.maxLat);
+        minLon = Math.min(minLon, bbox.getMinLonLong());
+        maxLon = Math.max(maxLon, bbox.getMaxLonLong());
+        minLat = Math.min(minLat, bbox.getMinLatLong());
+        maxLat = Math.max(maxLat, bbox.getMaxLatLong());
       } else {
         Iterator<OSMNode> osmItr = node.iterator();
         while (osmItr.hasNext()) {
@@ -339,11 +352,11 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
     idx = 0;
     offset = 0;
     for (OSHWay way : ways) {
-      BoundingBox bbox = way.getBoundingBox();
-      minLon = Math.min(minLon, bbox.minLon);
-      maxLon = Math.max(maxLon, bbox.maxLon);
-      minLat = Math.min(minLat, bbox.minLat);
-      maxLat = Math.max(maxLat, bbox.maxLat);
+      OSHDBBoundingBox bbox = way.getBoundingBox();
+      minLon = Math.min(minLon, bbox.getMinLonLong());
+      maxLon = Math.max(maxLon, bbox.getMaxLonLong());
+      minLat = Math.min(minLat, bbox.getMinLatLong());
+      maxLat = Math.max(maxLat, bbox.getMaxLatLong());
 
       way = way.rebase(0, 0, baseLongitude, baseLatitude);
       wayOffsets.put(way.getId(), idx);
@@ -400,7 +413,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
             }
           }
 
-          output.writeUInt32(member.getRoleId());
+          output.writeUInt32(member.getRawRoleId());
           lastMemberId = member.getId();
         }
       }
@@ -448,9 +461,8 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       for (int i = 0; i < nodeByteArrayIndex.length; i++) {
         record.writeUInt32(nodeByteArrayIndex[i]);
       }
-      byte[] nodesOutput = nodeData.toByteArray();
-      record.writeUInt32(nodesOutput.length);
-      record.writeByteArray(nodesOutput);
+      record.writeUInt32(nodeData.length());
+      record.writeByteArray(nodeData.array(), 0, nodeData.length());
     }
 
     if (!ways.isEmpty()) {
@@ -459,16 +471,13 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       for (int i = 0; i < wayByteArrayIndex.length; i++) {
         record.writeUInt32(wayByteArrayIndex[i]);
       }
-      byte[] waysOutput = wayData.toByteArray();
-      record.writeUInt32(waysOutput.length);
-      record.writeByteArray(waysOutput);
+      record.writeUInt32(wayData.length());
+      record.writeByteArray(wayData.array(), 0, wayData.length());
     }
 
-    byte[] buffer = output.toByteArray();
-    record.writeByteArray(buffer);
-
-    byte[] data = record.toByteArray();
-    return OSHRelation.instance(data, 0, data.length, baseId, baseTimestamp, baseLongitude, baseLatitude);
+    record.writeByteArray(output.array(), 0, output.length());
+    return OSHRelation.instance(record.array(), 0, record.length(), baseId, baseTimestamp,
+        baseLongitude, baseLatitude);
   }
 
   public void writeTo(ByteArrayOutputWrapper out) throws IOException {
@@ -477,7 +486,7 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
   @Override
   public OSHRelation rebase(long baseId, long baseTimestamp, long baseLongitude, long baseLatitude)
-          throws IOException {
+      throws IOException {
 
     List<OSMRelation> versions = getVersions();
     List<OSHNode> nodes = getNodes();
@@ -487,6 +496,11 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
 
   private Object writeReplace() {
     return new SerializationProxy(this);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("OSHRelation %s", super.toString());
   }
 
   private static class SerializationProxy implements Externalizable {
@@ -523,78 +537,6 @@ public class OSHRelation extends OSHEntity<OSMRelation> implements Serializable 
       }
       return null;
     }
-  }
-
-  @Override
-  public List<Long> getModificationTimestamps(boolean recurse) {
-    List<Long> result;
-
-    List<OSMRelation> rels = this.getVersions();
-    Set<Long> relTimestamps = rels.stream()
-            .map(OSMEntity::getTimestamp)
-            .collect(Collectors.toSet());
-
-    result = new ArrayList<>(relTimestamps);
-    if (!recurse) {
-      Collections.sort(result);
-      return result;
-    }
-
-    Set<Long> memberTimestamps = IntStream.range(0, rels.size())
-            .mapToObj(Integer::new)
-            .flatMap(osmRelIndex -> {
-              OSMRelation osmRel = rels.get(osmRelIndex);
-              if (!osmRel.isVisible()) {
-                return Stream.empty();
-              }
-              OSMRelation nextOsmRel = osmRelIndex > 0 ? rels.get(osmRelIndex - 1) : null;
-              return Arrays.stream(osmRel.getMembers())
-                      .filter(member -> member.getType() == OSMType.NODE || member.getType() == OSMType.WAY)
-                      .map(OSMMember::getEntity)
-                      .filter(Objects::nonNull)
-                      .flatMap(oshEntity
-                              -> (oshEntity instanceof OSHNode ? (OSHNode) oshEntity : (OSHWay) oshEntity)
-                              // gosh, ^--> this is needed because java apparently can't infer the proper stream type from the abstract OSHEntity class
-                              .getModificationTimestamps(true).stream()
-                              .filter(ts
-                                      -> ts > osmRel.getTimestamp() && (nextOsmRel == null
-                              || ts < nextOsmRel.getTimestamp())
-                              )
-                      );
-            })
-            .collect(Collectors.toSet());
-
-    result.addAll(memberTimestamps);
-
-    Collections.sort(result);
-    return result;
-  }
-
-  @Override
-  protected Map<Long, Long> getChangesetTimestamps() {
-    Map<Long, Long> result = new TreeMap<>();
-
-    List<OSMRelation> rels = this.getVersions();
-    rels.forEach(osmRel -> {
-      result.putIfAbsent(osmRel.getTimestamp(), osmRel.getChangeset());
-      // recurse rel members
-      if (!osmRel.isVisible()) {
-        return;
-      }
-      Arrays.stream(osmRel.getMembers())
-              .map(member -> ((OSHEntity) member.getEntity()))
-              .filter(Objects::nonNull)
-              .forEach(oshEntity
-                      -> result.putAll(oshEntity.getChangesetTimestamps())
-              );
-    });
-
-    return result;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("OSHRelation %s", super.toString());
   }
 
 }

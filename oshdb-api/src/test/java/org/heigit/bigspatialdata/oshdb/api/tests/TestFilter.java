@@ -5,15 +5,15 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
 import org.junit.Test;
 
 import java.util.Set;
@@ -25,26 +25,26 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestFilter {
-  private final OSHDB_Database oshdb;
+  private final OSHDBDatabase oshdb;
 
-  private final BoundingBox bbox = new BoundingBox(8, 9, 49, 50);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
   private final double DELTA = 1e-8;
 
   public TestFilter() throws Exception {
-    oshdb = new OSHDB_H2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.NODE).where("highway").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   @Test
   public void testFilter() throws Exception {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .filter(contribution -> contribution.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)
         .uniq();
@@ -57,7 +57,7 @@ public class TestFilter {
   public void testAggregateFilter() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .where(entity -> entity.getId() == 617308093)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .filter(contribution -> contribution.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)

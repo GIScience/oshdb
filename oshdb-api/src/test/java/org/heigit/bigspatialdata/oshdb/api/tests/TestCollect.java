@@ -5,15 +5,16 @@
  */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_H2;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDB_Database;
+import com.google.common.collect.Iterables;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.api.utils.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.BoundingBox;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -27,17 +28,17 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestCollect {
-  private final OSHDB_Database oshdb;
+  private final OSHDBDatabase oshdb;
 
-  private final BoundingBox bbox = new BoundingBox(8.651133,8.6561,49.387611,49.390513);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
 
   public TestCollect() throws Exception {
-    oshdb = new OSHDB_H2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmTypes(OSMType.WAY).where("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView.on(oshdb).osmType(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
   }
 
   @Test
@@ -70,7 +71,7 @@ public class TestCollect {
   public void testFlatMapCollectGroupedById() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .groupById()
+        .groupByEntity()
         .flatMap(contributions -> Collections.singletonList(contributions.get(0).getEntityAfter().getId()))
         .collect();
     assertEquals(42, result.stream().collect(Collectors.toSet()).size());
@@ -83,7 +84,7 @@ public class TestCollect {
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
         .collect();
-    assertEquals(14, result.get(timestamps72.getOSHDBTimestamps().get(60)).size());
+    assertEquals(14, result.get(Iterables.get(timestamps72.get(), 60)).size());
   }
 
 }
