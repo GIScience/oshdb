@@ -26,6 +26,8 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedPolygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,12 +193,12 @@ public class OSHDBGeometryBuilder {
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the
     // effort? see below for a possibly much easier implementation.
     List<Polygon> polys = outerRings.stream().map(outer -> {
-      Polygon outerPolygon = new Polygon(outer, null, geometryFactory);
-      List<LinearRing> matchingInners = innerRings.stream()
-          .filter(ring -> ring.within(outerPolygon)).collect(Collectors.toList());
+      PreparedGeometry outerPolygon = new PreparedPolygon(geometryFactory.createPolygon(outer));
       // todo: check for inners containing other inners -> inner-in-outer-in-inner-in-outer case
-      return new Polygon(outer, matchingInners.toArray(new LinearRing[matchingInners.size()]),
-          geometryFactory);
+      return geometryFactory.createPolygon(
+          outer,
+          innerRings.stream().filter(outerPolygon::contains).toArray(LinearRing[]::new)
+      );
     }).collect(Collectors.toList());
 
     // todo: what to do with unmatched inner rings??
