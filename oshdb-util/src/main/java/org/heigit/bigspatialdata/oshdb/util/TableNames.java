@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb;
+package org.heigit.bigspatialdata.oshdb.util;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
