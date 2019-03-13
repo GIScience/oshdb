@@ -36,7 +36,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.OSHDBIgniteMapRedu
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -256,11 +256,11 @@ class IgniteScanQueryHelper {
                       }
                       // iterate over the history of all OSM objects in the current cell
                       Object data = ((Cache.Entry<Long, Object>) cacheEntry).getValue();
-                      GridOSHEntity oshEntityCell;
+                      GridOSHEntities oshEntityCell;
                       if (data instanceof BinaryObject) {
                         oshEntityCell = ((BinaryObject) data).deserialize();
                       } else {
-                        oshEntityCell = (GridOSHEntity) data;
+                        oshEntityCell = (GridOSHEntities) data;
                       }
                       return cellProcessor.apply(oshEntityCell, this.cellIterator);
                     }

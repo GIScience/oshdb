@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.TableNames;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -55,7 +55,7 @@ public class IterateAllTest {
     int countOther = 0;
     while (oshCellsRawData.next()) {
       // get one cell from the raw data stream
-      GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(
+      GridOSHEntities oshCellRawData = (GridOSHEntities) (new ObjectInputStream(
           oshCellsRawData.getBinaryStream(1))
       ).readObject();
 

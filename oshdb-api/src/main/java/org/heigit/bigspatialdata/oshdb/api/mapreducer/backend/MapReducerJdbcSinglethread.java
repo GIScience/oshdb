@@ -17,7 +17,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProces
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +63,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
       while (oshCellsRawData.next()) {
-        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
+        GridOSHEntities oshCellRawData = readOshCellRawData(oshCellsRawData);
         result = combiner.apply(
             result,
             cellProcessor.apply(oshCellRawData, cellIterator)

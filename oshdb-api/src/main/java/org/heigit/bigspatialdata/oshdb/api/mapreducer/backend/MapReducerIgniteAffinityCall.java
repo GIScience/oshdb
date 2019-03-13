@@ -29,7 +29,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProces
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -142,7 +142,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     return this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
-      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
+      IgniteCache<Long, GridOSHEntities> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
@@ -151,7 +151,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .mapToObj(cellLongId -> asyncGetHandleTimeouts(
               compute.affinityCallAsync(cacheName, cellLongId, () -> {
                 @SuppressWarnings("SerializableStoresNonSerializable")
-                GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                GridOSHEntities oshEntityCell = cache.localPeek(cellLongId);
                 S ret;
                 if (oshEntityCell == null) {
                   ret = identitySupplier.get();
@@ -193,7 +193,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     return typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
-      IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
+      IgniteCache<Long, GridOSHEntities> cache = ignite.cache(cacheName);
 
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds())
@@ -202,7 +202,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .mapToObj(cellLongId -> asyncGetHandleTimeouts(
                 compute.affinityCallAsync(cacheName, cellLongId, () -> {
                   @SuppressWarnings("SerializableStoresNonSerializable")
-                  GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                  GridOSHEntities oshEntityCell = cache.localPeek(cellLongId);
                   Collection<X> ret;
                   if (oshEntityCell == null) {
                     ret = Collections.<X>emptyList();

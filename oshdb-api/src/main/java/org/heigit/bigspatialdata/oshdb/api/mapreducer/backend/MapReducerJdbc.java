@@ -19,7 +19,7 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntities;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 
@@ -67,21 +67,21 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   /**
    * Returns data of one cell from the raw data stream.
    */
-  protected GridOSHEntity readOshCellRawData(ResultSet oshCellsRawData)
+  protected GridOSHEntities readOshCellRawData(ResultSet oshCellsRawData)
       throws IOException, ClassNotFoundException, SQLException {
-    return (GridOSHEntity)
+    return (GridOSHEntities)
         (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
   }
 
   @Nonnull
-  protected Stream<? extends GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange) {
+  protected Stream<? extends GridOSHEntities> getOshCellsStream(CellIdRange cellIdRange) {
     try {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
       if (!oshCellsRawData.next()) {
         return Stream.empty();
       }
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-          new Iterator<GridOSHEntity>() {
+          new Iterator<GridOSHEntities>() {
             @Override
             public boolean hasNext() {
               try {
@@ -92,12 +92,12 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
             }
 
             @Override
-            public GridOSHEntity next() {
+            public GridOSHEntities next() {
               try {
                 if (!hasNext()) {
                   throw new NoSuchElementException();
                 }
-                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
+                GridOSHEntities data = readOshCellRawData(oshCellsRawData);
                 if (!oshCellsRawData.next()) {
                   oshCellsRawData.close();
                 }
