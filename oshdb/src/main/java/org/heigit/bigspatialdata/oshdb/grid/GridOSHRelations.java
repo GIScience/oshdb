@@ -10,7 +10,6 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 
-@SuppressWarnings("rawtypes")
 public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelation> {
 
   private static final long serialVersionUID = 1L;

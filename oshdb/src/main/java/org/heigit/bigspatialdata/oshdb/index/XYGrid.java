@@ -69,7 +69,6 @@ public class XYGrid implements Serializable {
     if (!enlarge) {
       return getBoundingBox(cellID);
     }
-    final double EPS = 1E-9;
     XYGrid grid = new XYGrid(cellID.getZoomLevel());
     long id = cellID.getId();
     int x = (int) (id % grid.zoompow);
