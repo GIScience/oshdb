@@ -16,7 +16,7 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
-import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import static org.junit.Assert.fail;
 
@@ -61,7 +61,7 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
           final long id = rst.getLong(2);
           final ObjectInputStream ois = new ObjectInputStream(rst.getBinaryStream(3));
           final GridOSHNodes grid = (GridOSHNodes) ois.readObject();
-          streamer.addData(ZGrid.addZoomToId(id, level), grid);
+          streamer.addData(CellId.getLevelId(level, id), grid);
         }
       } catch (IOException | ClassNotFoundException e) {
         e.printStackTrace();

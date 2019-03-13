@@ -20,6 +20,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
@@ -164,7 +166,7 @@ public class OSMXmlReader {
           // members[idx++] = new OSMMemberWayIdOnly(memId);
           OSHEntity data = null;
           if (this.nodes.containsKey(memId)) {
-            data = OSHNode.build(this.nodes.get(memId));
+            data = OSHNodeImpl.build(this.nodes.get(memId));
           }
           members[idx++] = new OSMMember(memId, OSMType.NODE, 0, data);
         }
@@ -218,7 +220,7 @@ public class OSMXmlReader {
           switch (t) {
             case NODE:
               if (this.nodes.containsKey(memId)) {
-                data = OSHNode.build(this.nodes().get(memId));
+                data = OSHNodeImpl.build(this.nodes().get(memId));
               }
               break;
             case WAY:
@@ -229,7 +231,7 @@ public class OSMXmlReader {
                 }
               }
               if (this.ways().containsKey(memId)) {
-                data = OSHWay.build(this.ways().get(memId), wayNodes.values());
+                data = OSHWayImpl.build(this.ways().get(memId), wayNodes.values());
               }
               break;
           }
