@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.osh2;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 import java.util.Iterator;
 import java.util.stream.Stream;

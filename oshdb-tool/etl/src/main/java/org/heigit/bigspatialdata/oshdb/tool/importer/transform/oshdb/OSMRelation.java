@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.osm2;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 import java.util.Arrays;
 

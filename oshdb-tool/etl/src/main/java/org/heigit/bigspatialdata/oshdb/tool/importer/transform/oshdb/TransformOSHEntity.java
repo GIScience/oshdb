@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.tool.importer.osh;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 import org.heigit.bigspatialdata.oshdb.impl.osh.OSHEntityImpl;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;

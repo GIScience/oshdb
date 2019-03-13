@@ -1,10 +1,8 @@
-package org.heigit.bigspatialdata.oshdb.tool.importer.osh;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-
-import org.heigit.bigspatialdata.oshdb.osh2.OSHNode2;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;

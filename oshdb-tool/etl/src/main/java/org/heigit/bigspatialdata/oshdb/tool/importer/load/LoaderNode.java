@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHNode;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.reader.TransfromNodeReaders;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;

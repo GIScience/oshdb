@@ -1,6 +1,5 @@
-package org.heigit.bigspatialdata.oshdb.osm2.impl;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
-import org.heigit.bigspatialdata.oshdb.osm2.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
 public class MutableOSMEntity implements OSMEntity {

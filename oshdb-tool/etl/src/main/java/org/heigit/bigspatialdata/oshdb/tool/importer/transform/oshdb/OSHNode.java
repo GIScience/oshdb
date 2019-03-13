@@ -1,11 +1,10 @@
-package org.heigit.bigspatialdata.oshdb.osh2;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.osm2.OSMNode;
 
 public interface OSHNode extends OSHEntity {
   

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransfomRelation;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransfomRelation;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 
 public class TransformRelationReaders {

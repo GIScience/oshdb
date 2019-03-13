@@ -1,6 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.osm2.impl;
-
-import org.heigit.bigspatialdata.oshdb.osm2.OSMNode;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 public class MutableOSMNode extends MutableOSMEntity implements OSMNode {
   private long longitude;

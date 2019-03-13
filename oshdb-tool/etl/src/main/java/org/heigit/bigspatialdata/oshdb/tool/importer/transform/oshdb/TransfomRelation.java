@@ -1,12 +1,10 @@
-package org.heigit.bigspatialdata.oshdb.tool.importer.osh;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.heigit.bigspatialdata.oshdb.osh2.OSHRelation2;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;

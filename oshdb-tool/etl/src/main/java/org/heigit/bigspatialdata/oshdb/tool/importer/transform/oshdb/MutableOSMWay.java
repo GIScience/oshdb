@@ -1,7 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.osm2.impl;
-
-import org.heigit.bigspatialdata.oshdb.osm2.OSMMember;
-import org.heigit.bigspatialdata.oshdb.osm2.OSMWay;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
 public class MutableOSMWay extends MutableOSMEntity implements OSMWay{
 

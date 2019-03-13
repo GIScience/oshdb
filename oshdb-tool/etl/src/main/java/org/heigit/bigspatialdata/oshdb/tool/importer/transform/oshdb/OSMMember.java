@@ -1,6 +1,5 @@
-package org.heigit.bigspatialdata.oshdb.osm2;
+package org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb;
 
-import org.heigit.bigspatialdata.oshdb.osh2.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
 public interface OSMMember {
