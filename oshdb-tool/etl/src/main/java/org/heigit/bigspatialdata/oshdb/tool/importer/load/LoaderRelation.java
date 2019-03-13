@@ -14,12 +14,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransfomRelation;
 import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHNode;
 import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.reader.TransformRelationReaders;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 
 
 public class LoaderRelation extends Loader{

@@ -1,14 +1,13 @@
-package org.heigit.bigspatialdata.oshdb.index.zfc;
+package org.heigit.bigspatialdata.oshdb.tool.importer.util;
 
 import java.util.Comparator;
-import java.util.Iterator;
-
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox.OVERLAP;
 
 public class ZGrid {
-
+  
+  public static OSHDBBoundingBox WORLD = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 180.0);
+  
   private static final int DIMENSION = 2;
   private static long ZOOM_FACTOR = 1L << 56;
   private static long ID_MASK = 0x00FFFFFFFFFFFFFFL;
@@ -108,22 +107,6 @@ public class ZGrid {
       return addZoomToId(parentId, zoom - 1);
     }
     return 0;
-  }
-
-  public Iterable<Long> iterableDF(OSHDBBoundingBox search) {
-    final ZGrid zGrid = this;
-    return new Iterable<Long>() {
-      final ZGrid grid = zGrid;
-
-      @Override
-      public Iterator<Long> iterator() {
-        return grid.iteratorDF(search);
-      }
-    };
-  }
-
-  public Iterator<Long> iteratorDF(OSHDBBoundingBox search) {
-    return new DFIterator(search, maxZoom, space);
   }
 
   public static OSHDBBoundingBox getBoundingBox(long zId) {
@@ -265,113 +248,4 @@ public class ZGrid {
     return (r == 0) ? prio : r;
   };
 
-  public static OSHDBBoundingBox WORLD = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 180.0);
-
-  private static class DFIterator implements Iterator<Long> {
-
-    private final OSHDBBoundingBox search;
-    private final int maxZoom;
-    private final State[] states;
-
-    private boolean hasNext = true;
-    private long next = 0;
-
-    private int z = 1;
-
-    public DFIterator(OSHDBBoundingBox search, int maxZoom, long space) {
-      this.search = search;
-      this.maxZoom = maxZoom;
-
-      this.states = new State[maxZoom + 1];
-      for (int z = 0; z < states.length; z++) {
-        State s = new State();
-        final long width = space / (long) Math.pow(2, z);
-        s.width = width;
-        s.bbox = new OSHDBBoundingBox(0L, 0L, width, width);
-        states[z] = s;
-      }
-
-    }
-
-    @Override
-    public boolean hasNext() {
-      return hasNext;
-    }
-
-    @Override
-    public Long next() {
-      long ret = next;
-      getNext();
-      return ret;
-    }
-
-    private void getNext() {
-      while (z > 0) {
-        final State state = states[z];
-        final int zoom = z;
-        final long id = state.id;
-
-        if (state.i > 3) {
-          state.i = 0;
-          state.complete = false;
-          z--;
-          continue;
-        }
-
-        final OSHDBBoundingBox.OVERLAP overlap;
-        if (states[z - 1].complete) {
-          overlap = OVERLAP.A_COMPLETE_IN_B;
-        } else {
-          OSHDBBoundingBox parentBBox = states[z - 1].bbox;
-          switch (state.i) {
-            case 0:
-              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong(), parentBBox.getMinLatLong(),
-                  parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong() + state.width);
-              break;
-            case 1:
-              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong(),
-                  parentBBox.getMinLonLong() + 2 * state.width, parentBBox.getMinLatLong() + state.width);
-              break;
-            case 2:
-              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong(), parentBBox.getMinLatLong() + state.width,
-                  parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong() + 2 * state.width);
-              break;
-            case 3:
-              state.bbox = new OSHDBBoundingBox(parentBBox.getMinLonLong() + state.width, parentBBox.getMinLatLong() + state.width,
-                  parentBBox.getMinLonLong() + 2 * state.width, parentBBox.getMinLatLong() + 2 * state.width);
-          }
-          overlap = OSHDBBoundingBox.overlap(state.bbox, search);
-        }
-
-        if (overlap == OVERLAP.A_COMPLETE_IN_B) {
-          state.complete = true;
-        }
-
-        if (z < maxZoom && overlap != OVERLAP.NONE) {
-          z++;
-          states[z].id = state.id << 2;
-        }
-
-        state.i += 1;
-        state.id += 1;
-
-        if (overlap != OVERLAP.NONE) {
-          hasNext = true;
-          next = addZoomToId(id, zoom);
-          return;
-        }
-      }
-      hasNext = false;
-      next = -1;
-    }
-
-    private static class State {
-
-      private int i = 0;
-      private long id;
-      private OSHDBBoundingBox bbox;
-      private long width;
-      private boolean complete = false;
-    }
-  }
 }

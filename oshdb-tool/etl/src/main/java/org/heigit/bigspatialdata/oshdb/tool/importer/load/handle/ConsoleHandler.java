@@ -3,11 +3,10 @@ package org.heigit.bigspatialdata.oshdb.tool.importer.load.handle;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransfomRelation;
 import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHNode;
 import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 
 public class ConsoleHandler extends LoaderHandler{
 
