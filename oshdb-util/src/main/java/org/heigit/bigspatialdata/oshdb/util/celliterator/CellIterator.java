@@ -713,9 +713,9 @@ public class CellIterator implements Serializable {
    * @param bitMapIndex One bitmap per type storing ids of entites to ignore.
    */
   public void excludeIDs(Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
-    this.oshEntityUpdatePreFilter = (
-        OSHEntity arg0) -> !bitMapIndex.get(arg0.getType()).contains(arg0.getId()
-    );
+    this.oshEntityUpdatePreFilter
+        = (OSHEntity arg0) ->
+        !bitMapIndex.get(arg0.getType()).contains(arg0.getId());
   }
 
   /**
@@ -727,9 +727,9 @@ public class CellIterator implements Serializable {
    * @param bitMapIndex One bitmap per type storing ids only of all entites to include.
    */
   public void includeIDsOnly(Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
-    this.oshEntityUpdatePreFilter = (
-        OSHEntity arg0) -> bitMapIndex.get(arg0.getType()).contains(arg0.getId()
-    );
+    this.oshEntityUpdatePreFilter
+        = (OSHEntity arg0) ->
+        bitMapIndex.get(arg0.getType()).contains(arg0.getId());
   }
 
 }

@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -98,34 +99,10 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     if (this.update != null) {
       cellIterator.includeIDsOnly(bitMapIndex);
 
-      ResultSet updateEntites = this.getUpdates();
-      while (updateEntites.next()) {
-        byte[] data = updateEntites.getBytes("data");
-        ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        ObjectInputStream ois = new ObjectInputStream(bais);
-        OSHEntity entity = (OSHEntity) ois.readObject();
-
-        GridOSHEntity updateCell = null;
-        switch (entity.getType()) {
-          case NODE:
-            ArrayList<OSHNode> nodes = new ArrayList<>(1);
-            nodes.add((OSHNode) entity);
-            updateCell = GridOSHNodes.rebase(0, 0, 0, 0, 0, 0, nodes);
-            break;
-          case WAY:
-            ArrayList<OSHWay> ways = new ArrayList<>(1);
-            ways.add((OSHWay) entity);
-            updateCell = GridOSHWays.compact(0, 0, 0, 0, 0, 0, ways);
-            break;
-          case RELATION:
-            ArrayList<OSHRelation> relations = new ArrayList<>(1);
-            relations.add((OSHRelation) entity);
-            updateCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, relations);
-            break;
-          default:
-            throw new AssertionError(entity.getType().name());
-        }
-
+      ArrayList<GridOSHEntity> updateEntites = this.getUpdates();
+      Iterator<GridOSHEntity> iterator = updateEntites.iterator();
+      while (iterator.hasNext()) {
+        GridOSHEntity updateCell = iterator.next();
         result = combiner.apply(
             result,
             cellProcessor.apply(updateCell, cellIterator)
@@ -145,11 +122,35 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
-
-    return Streams.stream(this.getCellIdRanges())
+    //because streams are lazy we have to have two celliterators and cannot change the first one
+    CellIterator updateIterator = new CellIterator(
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+    );
+    
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+      cellIterator.excludeIDs(bitMapIndex);
+    }
+    
+    Stream<X> streamA = Streams.stream(this.getCellIdRanges())
         .flatMap(this::getOshCellsStream)
         .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator))
         .flatMap(Collection::stream);
+    
+    Stream<X> streamB = Stream.empty();
+    if (this.update != null) {
+      updateIterator.includeIDsOnly(bitMapIndex);
+      streamB = this.getUpdates().stream()
+          .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, updateIterator))
+          .flatMap(Collection::stream);
+    }
+    
+    return Streams.concat(streamA,streamB);
   }
 
   // === map-reduce operations ===

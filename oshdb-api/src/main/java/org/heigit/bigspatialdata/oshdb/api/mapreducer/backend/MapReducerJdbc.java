@@ -1,10 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -20,7 +22,14 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.locationtech.jts.geom.Polygon;
@@ -116,8 +125,8 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
     }
   }
 
-  protected ResultSet getUpdates()
-      throws SQLException {
+  protected ArrayList<GridOSHEntity> getUpdates()
+      throws SQLException, IOException, ClassNotFoundException {
     WKTWriter wktWriter = new WKTWriter();
     String sqlQuery;
     if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(this.update
@@ -129,7 +138,38 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
     PreparedStatement pstmt = this.update.getConnection().prepareStatement(sqlQuery);
     Polygon geometry = OSHDBGeometryBuilder.getGeometry(this.bboxFilter);
     pstmt.setObject(1, wktWriter.write(geometry));
-    return pstmt.executeQuery();
+    ResultSet updateEntities = pstmt.executeQuery();
+    
+    ArrayList<GridOSHEntity> result=new ArrayList<>(10);
+    while (updateEntities.next()) {
+      byte[] data = updateEntities.getBytes("data");
+      ByteArrayInputStream bais = new ByteArrayInputStream(data);
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      OSHEntity entity = (OSHEntity) ois.readObject();
+
+      GridOSHEntity updateCell = null;
+      switch (entity.getType()) {
+        case NODE:
+          ArrayList<OSHNode> nodes = new ArrayList<>(1);
+          nodes.add((OSHNode) entity);
+          updateCell = GridOSHNodes.rebase(0, 0, 0, 0, 0, 0, nodes);
+          break;
+        case WAY:
+          ArrayList<OSHWay> ways = new ArrayList<>(1);
+          ways.add((OSHWay) entity);
+          updateCell = GridOSHWays.compact(0, 0, 0, 0, 0, 0, ways);
+          break;
+        case RELATION:
+          ArrayList<OSHRelation> relations = new ArrayList<>(1);
+          relations.add((OSHRelation) entity);
+          updateCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, relations);
+          break;
+        default:
+          throw new AssertionError(entity.getType().name());
+      }
+      result.add(updateCell);
+    }
+    return result;
   }
 
   private String getIgniteQuery() {

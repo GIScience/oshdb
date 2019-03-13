@@ -244,7 +244,7 @@ abstract class TestMapReduce {
   
   @Test
   public void testUpdate() throws SQLException, Exception {
-    if (this instanceof TestMapReduceOSHDB_H2_singlethread) {
+    if (this instanceof TestMapReduceOSHDB_H2_singlethread || this instanceof TestMapReduceOSHDB_H2_multithread) {
       try (Connection conn = DriverManager.getConnection(
           "jdbc:h2:./src/test/resources/update-test-data");) {
         this.update = new OSHDBUpdate(conn);

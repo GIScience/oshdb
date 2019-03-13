@@ -1,10 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
+import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
@@ -16,10 +18,14 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CellProces
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
+import org.roaringbitmap.longlong.LongBitmapDataProvider;
 
 
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
@@ -48,7 +54,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
       CellProcessor<S> processor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -56,21 +62,45 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
+    //because streams are lazy we have to have two celliterators and cannot change the first one
+    CellIterator updateIterator = new CellIterator(
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+    );
+    
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+      cellIterator.excludeIDs(bitMapIndex);
+    }
 
     final List<CellIdRange> cellIdRanges = new ArrayList<>();
     this.getCellIdRanges().forEach(cellIdRanges::add);
 
-    return cellIdRanges.parallelStream()
+    Stream<S> streamA = cellIdRanges.parallelStream()
         .filter(ignored -> this.isActive())
         .flatMap(this::getOshCellsStream)
         .filter(ignored -> this.isActive())
-        .map(oshCell -> processor.apply(oshCell, cellIterator))
+        .map(oshCell -> processor.apply(oshCell, cellIterator));
+
+    Stream<S> streamB = Stream.empty();
+    if (this.update != null) {
+      updateIterator.includeIDsOnly(bitMapIndex);
+      streamB = this.getUpdates().parallelStream()
+          .filter(ignored -> this.isActive())
+          .map(oshCell -> processor.apply(oshCell, updateIterator));;
+    }
+    
+    return Streams.concat(streamA, streamB)
         .reduce(identitySupplier.get(), combiner);
   }
 
   private Stream<X> stream(
       CellProcessor<Collection<X>> processor
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -78,16 +108,41 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
+    //because streams are lazy we have to have two celliterators and cannot change the first one
+    CellIterator updateIterator = new CellIterator(
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+    );
+
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+      cellIterator.excludeIDs(bitMapIndex);
+    }
 
     final List<CellIdRange> cellIdRanges = new ArrayList<>();
     this.getCellIdRanges().forEach(cellIdRanges::add);
 
-    return cellIdRanges.parallelStream()
+    Stream<X> streamA = cellIdRanges.parallelStream()
         .filter(ignored -> this.isActive())
         .flatMap(this::getOshCellsStream)
         .filter(ignored -> this.isActive())
         .map(oshCell -> processor.apply(oshCell, cellIterator))
         .flatMap(Collection::stream);
+
+    Stream<X> streamB = Stream.empty();
+    if (this.update != null) {
+      updateIterator.includeIDsOnly(bitMapIndex);
+      streamB = this.getUpdates().parallelStream()
+          .filter(ignored -> this.isActive())
+          .map(oshCell -> processor.apply(oshCell, updateIterator))
+          .flatMap(Collection::stream);
+    }
+    
+    return Streams.concat(streamA, streamB);
   }
 
   // === map-reduce operations ===
