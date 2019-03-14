@@ -1,7 +1,33 @@
 ## 0.5.0 SNAPSHOT (current master)
 
-* oshdb-api: implemented aggregation by polygonal geometries
-* …
+done up to 099dce8ee6e173eba12553724dec861efa5747ac
+
+### breaking changes
+* general
+  - dropped methods marked as deprecated in 0.4
+* oshdb-api
+  - rename `where` filters to `osmTag` and `osmEntityFilter`
+  - rename osm type filter
+  - 
+
+### bugfixes
+* oshdb-api
+  - deletions where not propperly detected
+  - return correct changeset and timestamp for concurrent updates of entities
+
+### new features
+* oshdb-api:
+  - implemented aggregation by polygonal geometries
+  - combination of gemetric and time aggregation
+  - working with Iterables more frequently
+
+### performance
+* oshdb-api
+  - use spatial index
+
+### other changes
+* general:
+  - update and prune dependencies
 
 ## 0.4.0
 
