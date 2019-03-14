@@ -50,9 +50,9 @@ import org.slf4j.LoggerFactory;
  * {@inheritDoc}
  *
  * <p>
- * The "LocalPeek" implementation is the a very versatile implementation of the oshdb mapreducer on
+ * The "LocalPeek" implementation is a very versatile implementation of the oshdb mapreducer on
  * Ignite: It offers high performance, scalability and cancelable queries. It should be used in most
- * situations when running oshdb- analyses on ignite.
+ * situations when running oshdb-analyses on ignite.
  * </p>
  */
 public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {

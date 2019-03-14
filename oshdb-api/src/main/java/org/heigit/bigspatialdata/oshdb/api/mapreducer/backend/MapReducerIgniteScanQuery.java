@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * {@inheritDoc}
  *
  * <p>
- * The "ScanQuery" implementation is the an implementation of the oshdb mapreducer on Ignite, which
+ * The "ScanQuery" implementation is an implementation of the oshdb mapreducer on Ignite, which
  * always scans over the whole data set when running queries. It might offer better performance for
  * global (or almost global) queries. In other situations it should not be used.
  * </p>
