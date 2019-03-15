@@ -10,8 +10,8 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAll
 import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

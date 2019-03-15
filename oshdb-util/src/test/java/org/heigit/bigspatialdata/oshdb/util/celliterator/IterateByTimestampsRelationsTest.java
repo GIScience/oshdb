@@ -9,8 +9,8 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByT
 import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -56,7 +56,7 @@ public class IterateByTimestampsRelationsTest {
 
     assertEquals(12, result.size());
 
-    assertEquals(300, result.get(0).osmEntity.getChangeset());
+    assertEquals(300, result.get(0).osmEntity.getChangesetId());
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof MultiPolygon);
     Geometry geom3 = result.get(1).geometry.get();
@@ -85,7 +85,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(9, result.size());
-    assertEquals(303, result.get(0).osmEntity.getChangeset());
+    assertEquals(303, result.get(0).osmEntity.getChangesetId());
   }
 
   @Test
@@ -132,7 +132,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(14, result.size());
-    assertEquals(307, result.get(0).osmEntity.getChangeset());
+    assertEquals(307, result.get(0).osmEntity.getChangesetId());
   }
 
   @Test
@@ -155,7 +155,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(10, result.size());
-    assertEquals(310, result.get(0).osmEntity.getChangeset());
+    assertEquals(310, result.get(0).osmEntity.getChangesetId());
 
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof Polygon);
@@ -187,7 +187,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(10, result.size());
-    assertEquals(312, result.get(0).osmEntity.getChangeset());
+    assertEquals(312, result.get(0).osmEntity.getChangesetId());
 
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof Polygon);
@@ -218,7 +218,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(10, result.size());
-    assertEquals(313, result.get(0).osmEntity.getChangeset());
+    assertEquals(313, result.get(0).osmEntity.getChangesetId());
 
     assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertEquals(result.get(6).geometry.get(), result.get(5).geometry.get());
@@ -244,7 +244,7 @@ public class IterateByTimestampsRelationsTest {
 
     assertEquals(10, result.size());
 
-    assertEquals(314, result.get(0).osmEntity.getChangeset());
+    assertEquals(314, result.get(0).osmEntity.getChangesetId());
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof GeometryCollection);
     Geometry geom2 = result.get(9).geometry.get();
@@ -295,7 +295,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(10, result.size());
-    assertEquals(316, result.get(0).osmEntity.getChangeset());
+    assertEquals(316, result.get(0).osmEntity.getChangesetId());
 
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof Polygon);
@@ -331,7 +331,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(13, result.size());
-    assertEquals(317, result.get(0).osmEntity.getChangeset());
+    assertEquals(317, result.get(0).osmEntity.getChangesetId());
   }
 
   @Test
@@ -353,7 +353,7 @@ public class IterateByTimestampsRelationsTest {
     ).collect(Collectors.toList());
 
     assertEquals(10, result.size());
-    assertEquals(318, result.get(0).osmEntity.getChangeset());
+    assertEquals(318, result.get(0).osmEntity.getChangesetId());
 
     assertTrue(result.get(6).geometry.get().isEmpty());
   }
@@ -382,7 +382,7 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom instanceof Polygon);
     Geometry geom2 = result.get(7).geometry.get();
     assertTrue(geom2 instanceof GeometryCollection);
-    assertEquals(319, result.get(0).osmEntity.getChangeset());
+    assertEquals(319, result.get(0).osmEntity.getChangesetId());
   }
 
   @Test
@@ -408,7 +408,7 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom instanceof Polygon);
     Geometry geom2 = result.get(2).geometry.get();
     assertTrue(geom2 instanceof Polygon);
-    assertEquals(320, result.get(0).osmEntity.getChangeset());
+    assertEquals(320, result.get(0).osmEntity.getChangesetId());
   }
 
   @Test
@@ -434,7 +434,7 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom instanceof MultiPolygon);
     Geometry geom2 = result.get(9).geometry.get();
     assertTrue(geom2 instanceof Polygon);
-    assertEquals(321, result.get(0).osmEntity.getChangeset());
+    assertEquals(321, result.get(0).osmEntity.getChangesetId());
     assertNotEquals(result.get(9).geometry.get(), result.get(0).geometry.get());
   }
 
@@ -463,7 +463,7 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom1 instanceof GeometryCollection);
     Geometry geom2 = result.get(9).geometry.get();
     assertTrue(geom2 instanceof Polygon);
-    assertEquals(323, result.get(0).osmEntity.getChangeset());
+    assertEquals(323, result.get(0).osmEntity.getChangesetId());
     assertNotEquals(result.get(9).geometry.get(), result.get(0).geometry.get());
   }
 

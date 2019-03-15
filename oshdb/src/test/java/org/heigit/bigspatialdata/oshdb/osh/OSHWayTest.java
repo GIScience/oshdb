@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -34,7 +36,7 @@ public class OSHWayTest {
     versions.add(
             new OSMWay(123, 3, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)}));
 
-    OSHWay hway = OSHWay.build(versions, Arrays.asList(node100, node102, node104));
+    OSHWay hway = OSHWayImpl.build(versions, Arrays.asList(node100, node102, node104));
     assertNotNull(hway);
 
     List<OSHNode> nodes = hway.getNodes();
@@ -50,10 +52,10 @@ public class OSHWayTest {
     versions.add(
             new OSMWay(123, 3, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)}));
 
-    OSHWay hway = OSHWay.build(versions, Arrays.asList(node100, node102, node104));
+    OSHWay hway = OSHWayImpl.build(versions, Arrays.asList(node100, node102, node104));
     assertNotNull(hway);
 
-    Iterator<OSMWay> ways = hway.iterator();
+    Iterator<OSMWay> ways = hway.getVersions().iterator();
 
     OSMWay w = ways.next();
 
@@ -72,7 +74,7 @@ public class OSHWayTest {
     versions.add(
             new OSMWay(123, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 1, 2, 1}, new OSMMember[]{new OSMMember(102, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)}));
 
-    OSHWay hway = OSHWay.build(versions, Arrays.asList(node100, node104));
+    OSHWay hway = OSHWayImpl.build(versions, Arrays.asList(node100, node104));
     assertNotNull(hway);
 
     List<OSHNode> nodes = hway.getNodes();
@@ -80,7 +82,7 @@ public class OSHWayTest {
 
     OSMWay way;
     OSMMember[] members;
-    Iterator<OSMWay> itr = hway.iterator();
+    Iterator<OSMWay> itr = hway.getVersions().iterator();
     assertTrue(itr.hasNext());
     way = itr.next();
     members = way.getRefs();
@@ -103,25 +105,25 @@ public class OSHWayTest {
     n1versions.add(new OSMNode(123l, -3, new OSHDBTimestamp(14l), 13l, 0, new int[]{}, 0, 0));
     n1versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 12l, 0, new int[]{}, 0, 0));
     n1versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 11l, 0, new int[]{}, 0, 0));
-    OSHNode hnode1 = OSHNode.build(n1versions);
+    OSHNode hnode1 = OSHNodeImpl.build(n1versions);
     List<OSMNode> n2versions = new ArrayList<>();
     n2versions.add(new OSMNode(124l, 5, new OSHDBTimestamp(14l), 25l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 4, new OSHDBTimestamp(12l), 24l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 3, new OSHDBTimestamp(8l), 23l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 2, new OSHDBTimestamp(4l), 22l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 1, new OSHDBTimestamp(3l), 21l, 0, new int[]{}, 0, 0));
-    OSHNode hnode2 = OSHNode.build(n2versions);
+    OSHNode hnode2 = OSHNodeImpl.build(n2versions);
     List<OSMNode> n3versions = new ArrayList<>();
     n3versions.add(new OSMNode(125l, 3, new OSHDBTimestamp(9l), 33l, 0, new int[]{}, 0, 0));
     n3versions.add(new OSMNode(125l, 2, new OSHDBTimestamp(6l), 32l, 0, new int[]{}, 0, 0));
     n3versions.add(new OSMNode(125l, 1, new OSHDBTimestamp(1l), 31l, 0, new int[]{}, 0, 0));
-    OSHNode hnode3 = OSHNode.build(n3versions);
+    OSHNode hnode3 = OSHNodeImpl.build(n3versions);
 
     List<OSMWay> versions = new ArrayList<>();
     versions.add(new OSMWay(123, -3, new OSHDBTimestamp(13l), 4446l, 23, new int[]{}, new OSMMember[]{}));
     versions.add(new OSMWay(123, 2, new OSHDBTimestamp(7l), 4445l, 23, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0)}));
     versions.add(new OSMWay(123, 1, new OSHDBTimestamp(5l), 4444l, 23, new int[]{1, 1, 2, 1}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0), new OSMMember(125, OSMType.NODE, 0)}));
-    OSHWay hway = OSHWay.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
+    OSHWay hway = OSHWayImpl.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
 
     List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hway, false);
     assertNotNull(tss);
@@ -146,27 +148,27 @@ public class OSHWayTest {
     List<OSMNode> n1versions = new ArrayList<>();
     n1versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 12l, 0, new int[]{}, 0, 0));
     n1versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 11l, 0, new int[]{}, 0, 0));
-    OSHNode hnode1 = OSHNode.build(n1versions);
+    OSHNode hnode1 = OSHNodeImpl.build(n1versions);
     List<OSMNode> n2versions = new ArrayList<>();
     n2versions.add(new OSMNode(124l, 5, new OSHDBTimestamp(16l), 25l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 4, new OSHDBTimestamp(12l), 24l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 3, new OSHDBTimestamp(8l), 23l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 2, new OSHDBTimestamp(4l), 22l, 0, new int[]{}, 0, 0));
     n2versions.add(new OSMNode(124l, 1, new OSHDBTimestamp(3l), 21l, 0, new int[]{}, 0, 0));
-    OSHNode hnode2 = OSHNode.build(n2versions);
+    OSHNode hnode2 = OSHNodeImpl.build(n2versions);
     List<OSMNode> n3versions = new ArrayList<>();
     n3versions.add(new OSMNode(125l, 4, new OSHDBTimestamp(15l), 34l, 0, new int[]{}, 0, 0));
     n3versions.add(new OSMNode(125l, 3, new OSHDBTimestamp(9l), 33l, 0, new int[]{}, 0, 0));
     n3versions.add(new OSMNode(125l, 2, new OSHDBTimestamp(6l), 32l, 0, new int[]{}, 0, 0));
     n3versions.add(new OSMNode(125l, 1, new OSHDBTimestamp(1l), 31l, 0, new int[]{}, 0, 0));
-    OSHNode hnode3 = OSHNode.build(n3versions);
+    OSHNode hnode3 = OSHNodeImpl.build(n3versions);
 
     List<OSMWay> versions = new ArrayList<>();
     versions.add(new OSMWay(123, 4, new OSHDBTimestamp(14l), 4447l, 23, new int[]{1, 1, 2, 1}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0)}));
     versions.add(new OSMWay(123, 3, new OSHDBTimestamp(13l), 4446l, 23, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0)}));
     versions.add(new OSMWay(123, 2, new OSHDBTimestamp(7l), 4445l, 23, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0)}));
     versions.add(new OSMWay(123, 1, new OSHDBTimestamp(5l), 4444l, 23, new int[]{1, 1, 2, 1}, new OSMMember[]{new OSMMember(123, OSMType.NODE, 0), new OSMMember(124, OSMType.NODE, 0), new OSMMember(125, OSMType.NODE, 0)}));
-    OSHWay hway = OSHWay.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
+    OSHWay hway = OSHWayImpl.build(versions, Arrays.asList(hnode1, hnode2, hnode3));
 
     List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hway,true);
     assertNotNull(tss);
@@ -195,7 +197,7 @@ public class OSHWayTest {
 
   static OSHNode buildHOSMNode(List<OSMNode> versions) {
     try {
-      return OSHNode.build(versions);
+      return OSHNodeImpl.build(versions);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -210,7 +212,7 @@ public class OSHWayTest {
     versions.add(
             new OSMWay(123, 3, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)}));
 
-    OSHWay instance = OSHWay.build(versions, Arrays.asList(node100, node102, node104));
+    OSHWay instance = OSHWayImpl.build(versions, Arrays.asList(node100, node102, node104));
     String expResult = "OSHWay ID:123 Vmax:+3+ Creation:3333 BBox:(8.680973,49.409498),(8.680973,49.409498)";
     String result = instance.toString();
     assertEquals(expResult, result);

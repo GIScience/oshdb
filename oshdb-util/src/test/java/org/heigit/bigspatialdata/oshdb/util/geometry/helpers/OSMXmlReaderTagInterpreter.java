@@ -4,7 +4,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
+import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 
 public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
 

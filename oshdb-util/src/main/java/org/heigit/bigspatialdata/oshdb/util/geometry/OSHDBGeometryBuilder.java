@@ -142,8 +142,7 @@ public class OSHDBGeometryBuilder {
     Geometry[] geoms = new Geometry[relationMembers.length];
     boolean completeGeometry = true;
     for (int i = 0; i < relationMembers.length; i++) {
-      @SuppressWarnings("unchecked") // "OSHEntity<OSMEntity>" is the most basic kind of OSH entity
-      OSHEntity<OSMEntity> memberOSHEntity = relationMembers[i].getEntity();
+      OSHEntity memberOSHEntity = relationMembers[i].getEntity();
       // memberOSHEntity might be null when working on an extract with incomplete relation members
       OSMEntity memberEntity = memberOSHEntity == null ? null :
           OSHEntities.getByTimestamp(memberOSHEntity, timestamp);

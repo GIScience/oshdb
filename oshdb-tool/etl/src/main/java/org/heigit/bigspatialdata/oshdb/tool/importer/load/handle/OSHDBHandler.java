@@ -7,24 +7,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransfomRelation;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHNode;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransfomRelation;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 
 public abstract class OSHDBHandler extends LoaderHandler {
@@ -58,7 +59,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
 		List<OSHNode> gridNodes = nodes.stream().map(osh2 -> {
 			List<OSMNode> versions = osh2.stream().collect(Collectors.toList());
 			try {
-				OSHNode osh = OSHNode.build(versions);
+				OSHNode osh = OSHNodeImpl.build(versions);
 				return osh;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -100,7 +101,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
 			List<OSMNode> versions = osh2.stream().collect(Collectors.toList());
 			OSHNode osh;
 			try {
-				osh = OSHNode.build(versions);
+				osh = OSHNodeImpl.build(versions);
 				idOshMap.put(id, osh);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -119,7 +120,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
 			}
 
 			try {
-				OSHWay osh = OSHWay.build(versions, nodesForThisWay);
+				OSHWay osh = OSHWayImpl.build(versions, nodesForThisWay);
 				if (bitmapWayRelation.contains(osh.getId()))
 					waysForRelation.put(osh.getId(), osh);
 				return osh;
@@ -160,7 +161,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
 			List<OSMNode> versions = osh2.stream().collect(Collectors.toList());
 			OSHNode osh;
 			try {
-				osh = OSHNode.build(versions);
+				osh = OSHNodeImpl.build(versions);
 				idOshMap.put(id, osh);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -189,7 +190,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
 
 			try {
 
-				OSHRelation ret = OSHRelation.build(versions, nodesForThisRelation, waysForThisRelation);
+				OSHRelation ret = OSHRelationImpl.build(versions, nodesForThisRelation, waysForThisRelation);
 
 				return ret;
 			} catch (IOException e) {

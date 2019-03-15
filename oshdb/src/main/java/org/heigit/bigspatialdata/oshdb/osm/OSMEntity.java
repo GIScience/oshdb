@@ -56,14 +56,6 @@ public abstract class OSMEntity {
     return changesetId;
   }
 
-  /**
-   * @deprecated use {@link #getChangesetId()} instead.
-   */
-  @Deprecated
-  public long getChangeset() {
-    return changesetId;
-  }
-
   public int getUserId() {
     return userId;
   }
@@ -169,7 +161,7 @@ public abstract class OSMEntity {
   @Override
   public String toString() {
     return String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s UID:%d TAGS:%S", getId(), getVersion(),
-        getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(),
+        getTimestamp().getRawUnixTimestamp(), getChangesetId(), isVisible(), getUserId(),
         Arrays.toString(getRawTags()));
   }
 }

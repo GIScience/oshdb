@@ -3,6 +3,9 @@ package org.heigit.bigspatialdata.oshdb.grid;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
@@ -31,12 +34,12 @@ public class GridOSHRelationsTest {
     OSHWay way200 = buildHOSMWay(Arrays.asList(new OSMWay(200, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)})), Arrays.asList(node100, node104));
     OSHWay way202 = buildHOSMWay(Arrays.asList(new OSMWay(202, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(102, OSMType.NODE, 0)})), Arrays.asList(node100, node102));
 
-    OSHRelation relation300 = OSHRelation.build(Arrays.asList(//
+    OSHRelation relation300 = OSHRelationImpl.build(Arrays.asList(//
             new OSMRelation(300, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0, null), new OSMMember(102, OSMType.NODE, 0, null)}), //
             new OSMRelation(300, 2, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0, null), new OSMMember(102, OSMType.NODE, 0, null)})), //
             Arrays.asList(node100, node102), Arrays.asList());
 
-    OSHRelation relation301 = OSHRelation.build(Arrays.asList(//
+    OSHRelation relation301 = OSHRelationImpl.build(Arrays.asList(//
             new OSMRelation(301, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{}, new OSMMember[]{new OSMMember(200, OSMType.WAY, 1, null), new OSMMember(202, OSMType.WAY, 1, null)}), //
             new OSMRelation(301, 2, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(200, OSMType.WAY, 1, null), new OSMMember(202, OSMType.WAY, 1, null)})), //
             Arrays.asList(), Arrays.asList(way200, way202));
@@ -74,7 +77,7 @@ public class GridOSHRelationsTest {
 
   static OSHNode buildHOSMNode(List<OSMNode> versions) {
     try {
-      return OSHNode.build(versions);
+      return OSHNodeImpl.build(versions);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -83,7 +86,7 @@ public class GridOSHRelationsTest {
 
   static OSHWay buildHOSMWay(List<OSMWay> versions, List<OSHNode> nodes) {
     try {
-      return OSHWay.build(versions, nodes);
+      return OSHWayImpl.build(versions, nodes);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -102,12 +105,12 @@ public class GridOSHRelationsTest {
     OSHWay way200 = buildHOSMWay(Arrays.asList(new OSMWay(200, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)})), Arrays.asList(node100, node104));
     OSHWay way202 = buildHOSMWay(Arrays.asList(new OSMWay(202, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(102, OSMType.NODE, 0)})), Arrays.asList(node100, node102));
 
-    OSHRelation relation300 = OSHRelation.build(Arrays.asList(//
+    OSHRelation relation300 = OSHRelationImpl.build(Arrays.asList(//
             new OSMRelation(300, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0, null), new OSMMember(102, OSMType.NODE, 0, null)}), //
             new OSMRelation(300, 2, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0, null), new OSMMember(102, OSMType.NODE, 0, null)})), //
             Arrays.asList(node100, node102), Arrays.asList());
 
-    OSHRelation relation301 = OSHRelation.build(Arrays.asList(//
+    OSHRelation relation301 = OSHRelationImpl.build(Arrays.asList(//
             new OSMRelation(301, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{}, new OSMMember[]{new OSMMember(200, OSMType.WAY, 1, null), new OSMMember(202, OSMType.WAY, 1, null)}), //
             new OSMRelation(301, 2, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 2}, new OSMMember[]{new OSMMember(200, OSMType.WAY, 1, null), new OSMMember(202, OSMType.WAY, 1, null)})), //
             Arrays.asList(), Arrays.asList(way200, way202));

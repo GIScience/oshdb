@@ -10,8 +10,8 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByT
 import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
@@ -65,7 +65,7 @@ public class IterateByTimestampsWaysTest {
     assertTrue(geom2 instanceof LineString);
     Geometry geom3 = result.get(2).geometry.get();
     assertTrue(geom3 instanceof LineString);
-    assertEquals(31, result.get(0).osmEntity.getChangeset());
+    assertEquals(31, result.get(0).osmEntity.getChangesetId());
     assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
   }
@@ -91,8 +91,8 @@ public class IterateByTimestampsWaysTest {
 
     assertEquals(10, result.size());
 
-    assertEquals(34, result.get(0).osmEntity.getChangeset());
-    assertEquals(35, result.get(8).osmEntity.getChangeset());
+    assertEquals(34, result.get(0).osmEntity.getChangesetId());
+    assertEquals(35, result.get(8).osmEntity.getChangesetId());
 
     assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
@@ -121,8 +121,8 @@ public class IterateByTimestampsWaysTest {
     ).collect(Collectors.toList());
     assertEquals(10, result.size());
 
-    assertEquals(36, result.get(0).osmEntity.getChangeset());
-    assertEquals(38, result.get(9).osmEntity.getChangeset());
+    assertEquals(36, result.get(0).osmEntity.getChangesetId());
+    assertEquals(38, result.get(9).osmEntity.getChangesetId());
   }
 
   @Test
@@ -186,7 +186,7 @@ public class IterateByTimestampsWaysTest {
     assertEquals(3, result.get(3).geometry.get().getNumPoints());
     assertEquals(2, result.get(4).geometry.get().getNumPoints());
 
-    assertEquals(42, result.get(0).osmEntity.getChangeset());
+    assertEquals(42, result.get(0).osmEntity.getChangesetId());
     assertEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(3).geometry.get(), result.get(1).geometry.get());
     assertNotEquals(result.get(4).geometry.get(), result.get(3).geometry.get());

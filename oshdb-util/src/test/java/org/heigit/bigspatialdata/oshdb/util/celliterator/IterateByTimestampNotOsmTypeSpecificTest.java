@@ -10,6 +10,9 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
@@ -20,8 +23,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -39,12 +42,12 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     Map<Long, OSHNode> oshNodes = new TreeMap<>();
     for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.put(entry.getKey(), OSHNode.build(new ArrayList<>(entry.getValue())));
+      oshNodes.put(entry.getKey(), OSHNodeImpl.build(new ArrayList<>(entry.getValue())));
     }
     Map<Long, OSHWay> oshWays = new TreeMap<>();
     for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
       Collection<OSMWay> wayVersions = entry.getValue();
-      oshWays.put(entry.getKey(), OSHWay.build(new ArrayList<>(wayVersions),
+      oshWays.put(entry.getKey(), OSHWayImpl.build(new ArrayList<>(wayVersions),
           wayVersions.stream().flatMap(osmWay ->
               Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
           ).collect(Collectors.toSet())
@@ -53,7 +56,7 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
 
     for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
       Collection<OSMRelation> relationVersions = entry.getValue();
-      oshRelations.add(OSHRelation.build(new ArrayList<>(relationVersions),
+      oshRelations.add(OSHRelationImpl.build(new ArrayList<>(relationVersions),
           relationVersions.stream().flatMap(osmRelation ->
               Arrays.stream(osmRelation.getMembers())
                   .filter(member -> member.getType() == OSMType.NODE)

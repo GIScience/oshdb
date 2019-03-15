@@ -9,7 +9,7 @@ import java.util.function.LongFunction;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.TagToIdMapper;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.SortedLong2LongMap;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;

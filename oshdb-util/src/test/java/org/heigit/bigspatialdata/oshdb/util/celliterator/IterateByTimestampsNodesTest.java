@@ -10,13 +10,14 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByT
 import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.test.OSMXmlReader;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -136,11 +137,11 @@ public class IterateByTimestampsNodesTest {
 
     assertEquals(11, result.size());
     assertNotEquals(result.get(1).geometry.get().getCoordinates(), result.get(0).geometry.get().getCoordinates());
-    assertEquals(result.get(2).geometry.get().getCoordinates(), result.get(1).geometry.get().getCoordinates());
+    assertArrayEquals(result.get(2).geometry.get().getCoordinates(), result.get(1).geometry.get().getCoordinates());
     assertNotEquals(result.get(3).geometry.get().getCoordinates(), result.get(2).geometry.get().getCoordinates());
-    assertEquals(result.get(5).geometry.get().getCoordinates(), result.get(3).geometry.get().getCoordinates());
+    assertArrayEquals(result.get(5).geometry.get().getCoordinates(), result.get(3).geometry.get().getCoordinates());
     assertNotEquals(result.get(6).geometry.get().getCoordinates(), result.get(3).geometry.get().getCoordinates());
-    assertEquals(result.get(9).geometry.get().getCoordinates(), result.get(6).geometry.get().getCoordinates());
+    assertArrayEquals(result.get(9).geometry.get().getCoordinates(), result.get(6).geometry.get().getCoordinates());
     assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
     assertEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
     assertNotEquals(result.get(3).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());

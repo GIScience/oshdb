@@ -3,9 +3,8 @@ package org.heigit.bigspatialdata.oshdb.tool.importer.load;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHNode;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 
 
 public abstract class Loader {

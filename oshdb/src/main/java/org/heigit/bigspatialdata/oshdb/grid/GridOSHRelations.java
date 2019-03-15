@@ -2,13 +2,15 @@ package org.heigit.bigspatialdata.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
-
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 
-@SuppressWarnings("rawtypes")
-public class GridOSHRelations extends GridOSHEntity {
+public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelation> {
 
   private static final long serialVersionUID = 1L;
 
@@ -22,11 +24,11 @@ public class GridOSHRelations extends GridOSHEntity {
     final int[] index = new int[list.size()];
     // TODO user iterator!!
     for (int i = 0; i < index.length; i++) {
-      final OSHRelation c = list.get(i).rebase(baseId, baseTimestamp, baseLongitude, baseLatitude);
-      final byte[] buffer = c.getData();
+      final OSHRelation osh = list.get(i);
+      final ByteBuffer buffer = OSHRelationImpl.buildRecord(OSHEntities.toList(osh.getVersions()),osh.getNodes(),osh.getWays(),baseId, baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
-      out.write(buffer);
-      offset += buffer.length;
+      out.write(buffer.array(),0,buffer.remaining());
+      offset += buffer.remaining();
     }
     final byte[] data = out.toByteArray();
     return new GridOSHRelations(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index,
@@ -36,6 +38,11 @@ public class GridOSHRelations extends GridOSHEntity {
   private GridOSHRelations(final long id, final int level, final long baseId, final long baseTimestamp,
           final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
+  }
+  
+  @Override
+  public Iterable<? extends OSHEntity> getEntities() {
+    return this;
   }
 
   @Override
@@ -49,7 +56,7 @@ public class GridOSHRelations extends GridOSHEntity {
         int length = ((pos < index.length - 1) ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
-          return OSHRelation.instance(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude);
+          return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();
         }
