@@ -84,7 +84,7 @@ public class OSMRelationTest {
     OSMRelation instance =
         new OSMRelation(1L, 2, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
     long expResult = 1L;
-    long result = instance.getChangeset();
+    long result = instance.getChangesetId();
     assertEquals(expResult, result);
   }
 

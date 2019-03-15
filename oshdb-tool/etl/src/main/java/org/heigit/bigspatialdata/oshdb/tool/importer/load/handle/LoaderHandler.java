@@ -7,9 +7,9 @@ import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderKeyTables;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderNode;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderRelation;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderWay;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransfomRelation;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHNode;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransfomRelation;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 
 
 public class LoaderHandler implements LoaderKeyTables.Handler, LoaderNode.Handler, LoaderWay.Handler, LoaderRelation.Handler {

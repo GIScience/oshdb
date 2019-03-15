@@ -131,7 +131,7 @@ public class OSMNodeTest {
   public void testGetChangeset() {
     OSMNode instance = new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, 1000000000L, 1000000000L);
     long expResult = 1L;
-    long result = instance.getChangeset();
+    long result = instance.getChangesetId();
     assertEquals(expResult, result);
   }
 
