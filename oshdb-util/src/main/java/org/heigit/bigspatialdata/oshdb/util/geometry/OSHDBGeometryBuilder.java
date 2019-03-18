@@ -1,10 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -24,7 +27,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -217,6 +219,27 @@ public class OSHDBGeometryBuilder {
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
 
+    // check if there are any touching inner rings
+    Set<Integer> segments = new HashSet<>();
+    boolean touchingRings = false;
+    List<LinearRing> allRings = new ArrayList<>(innerRings.size() + outerRings.size());
+    allRings.addAll(outerRings);
+    allRings.addAll(innerRings);
+    checkInnerTouchingRings: for (LinearRing ring : allRings) {
+      int numPoints = ring.getNumPoints();
+      Coordinate prevPoint = ring.getCoordinateN(0);
+      for (int i = 1; i < numPoints; i++) {
+        Coordinate thisPoint = ring.getCoordinateN(i);
+        int segmentHashCode = prevPoint.hashCode() ^ thisPoint.hashCode();
+        if (segments.contains(segmentHashCode)) {
+          touchingRings = true;
+          break checkInnerTouchingRings;
+        }
+        segments.add(segmentHashCode);
+        prevPoint = thisPoint;
+      }
+    }
+
     // construct multipolygon from rings
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the
     // effort? see below for a possibly much easier implementation.
@@ -230,11 +253,18 @@ public class OSHDBGeometryBuilder {
     }).collect(Collectors.toList());
 
     // todo: what to do with unmatched inner rings??
+    Geometry result;
     if (polys.size() == 1) {
-      return polys.get(0);
+      result = polys.get(0);
     } else {
-      return new MultiPolygon(polys.toArray(new Polygon[polys.size()]), geometryFactory);
+      result = geometryFactory.createMultiPolygon(polys.toArray(new Polygon[polys.size()]));
     }
+    if (touchingRings) {
+      // try to clean up gometry by calling buffer(0).
+      // see https://locationtech.github.io/jts/jts-faq.html#G1
+      result = result.buffer(0);
+    }
+    return result;
   }
 
   // helper that joins adjacent osm ways into linear rings

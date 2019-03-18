@@ -16,6 +16,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.operation.valid.IsValidOp;
 
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
@@ -237,7 +238,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 2);
+      assertEquals(2, result.getNumGeometries());
     }
     catch(Exception e){
       e.printStackTrace();
@@ -252,7 +253,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 2);
+      assertEquals(2, result.getNumGeometries());
     }
     catch(Exception e){
       e.printStackTrace();
@@ -267,7 +268,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 1);
+      assertEquals(1, result.getNumGeometries());
     }
     catch(Exception e){
       e.printStackTrace();
@@ -282,7 +283,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 2);
+      assertEquals(2, result.getNumGeometries());
     }
     catch(Exception e){
       e.printStackTrace();
@@ -768,8 +769,10 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity = testData.relations().get(759900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
-    assertTrue(result.isValid());
-    assertEquals(1, ((Polygon) result).getNumInteriorRing());
+    IsValidOp isValidOp = new IsValidOp(result);
+    isValidOp.setSelfTouchingRingFormingHoleValid(true);
+    assertTrue(isValidOp.isValid());
+    assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     // In the result are 11 points, but it does not matter that we get 10, because the intersection is correct
     //assertEquals(10, result.getCoordinates().length, DELTA);
@@ -921,7 +924,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(2, ((Polygon)result).getNumInteriorRing());
-    assertEquals(1,result.getNumGeometries());
+    assertEquals(1, result.getNumGeometries());
     //assertEquals(16, result.getCoordinates().length, DELTA);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
