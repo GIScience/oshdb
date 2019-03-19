@@ -1,33 +1,51 @@
 ## 0.5.0 SNAPSHOT (current master)
 
-done up to 099dce8ee6e173eba12553724dec861efa5747ac
-
 ### breaking changes
 * general
-  - dropped methods marked as deprecated in 0.4
+  - JTS was updated to 1.16.1. Although this might seem like a minor change it breakes all imports because the suite is now [hosted by LocationTach](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115)
 * oshdb-api
-  - rename `where` filters to `osmTag` and `osmEntityFilter`
-  - rename osm type filter
-  - 
+  - Rename methods
+    - `where` filter on MapReducer-Objects was renamed to `osmTag` and `osmEntityFilter`
+    - `osmTypes` filter to `osmType`
+    - move `OSHEntites` to `osh`-Package
 
 ### bugfixes
 * oshdb-api
-  - deletions where not propperly detected
-  - return correct changeset and timestamp for concurrent updates of entities
+  - Fix [incorrect recognition](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/2cce34c97e564f1035374f7ddb43d22b7d259f84?view=parallel#note_3806) of deletions
+  - Fix [return of wrong changeset](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/40c837cec4d590fe73693b092e1976b3c74d515e) for concurrent updates on entities by different changesets
+  - Fix crash if [OSM-Geometry](https://github.com/GIScience/oshdb/pull/57) could not be created
+* oshdb
+  - Fix [false `isArea`-check](https://github.com/GIScience/oshdb/pull/31) on incomplete OSM-Data
+* oshdb-tool etl
+  - Make [importer](https://github.com/GIScience/oshdb/issues/49) usable for "factory-settings"-ignite
 
 ### new features
 * oshdb-api:
-  - implemented aggregation by polygonal geometries
-  - combination of gemetric and time aggregation
-  - working with Iterables more frequently
+  - [Aggregation by polygonal geometries](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/49) is now possible and can be combined with e.g. timestamp aggregations. Using the `.nest()` method on the output will deflade the result.
+  - Refactored some methods to accept a wider range of collection objects
+  - Instead of collecting MapReducer-results into a collection they can now be [streamed](https://github.com/GIScience/oshdb/pull/19) and immediately post-processed
+  - Implmentation of t-digest to calculate [quantiles](https://github.com/GIScience/oshdb/pull/34) for results in a sparse and therefore performant manner while still being very accurate
+  - All backends now support timeouts to [cancel calculations](https://github.com/GIScience/oshdb/pull/47) that exeed a certain limit
+  - GeometryCollections are no [longer ignored](https://github.com/GIScience/oshdb/pull/51) when calculating length or area of features
 
 ### performance
 * oshdb-api
-  - use spatial index
+  - Many small and medium improvements
+  - Filtering relevant entities with a [spatial index](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/commit/6ed0164c489c58470847f82af879ad806351863e) before processing them
+  - Getting the ModificationTimestamps of OSHEntites is now [faster](https://github.com/GIScience/oshdb/pull/10), especially on relations
+  - Polygon-BoundingBoxes are now [A LOT faster](https://github.com/GIScience/oshdb/pull/33)
+  - Creating geometries from OSMEntites is now [A LOT faster](https://github.com/GIScience/oshdb/pull/111)
+* oshdb-tool etl
+  - Improve speed and functionality of ETL
 
 ### other changes
 * general:
-  - update and prune dependencies
+  - The code is now released as open-source under [GPLv3](https://github.com/GIScience/oshdb/blob/master/LICENSE)
+  - Dependencies are updated and reduced to the minimum. Also they are now declared where needed instead of the toplevel pom. You might therefore have to declare dependencies of your code explicitely when upgrading.
+  - Most deprecated methods form 0.4.0 are now gone
+  - More [examples and documentation](https://github.com/GIScience/oshdb/tree/master/documentation) are available
+  - Many other bugfixes and improvements, especially for Ignite backends. Ignite can now be considered stable on a global cluster.
+  - The data format was [changed](https://github.com/GIScience/oshdb/pull/130). Gridcells are now overlapping allowing for Entities to be stored in lower zoomlevels when overlapping with a border.
 
 ## 0.4.0
 
