@@ -26,6 +26,7 @@ If applicable, add printed error messages, log files or screenshots to help expl
  - OS: [e.g. Ubuntu 18.04]
  - Java Version: [e.g. openjdk version "1.8.0_191"]
  - OSHDB Version [e.g. 0.5.0]
+ - Maven version [e.g. 3.3.2]
 
 **Additional context**
 Add any other context about the problem here.
