@@ -7,6 +7,8 @@
 
 -- todo
 
+list of special reducers
+
 ### hadoop remark
 
 **Remark:** If you are already familiar with
