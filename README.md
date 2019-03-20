@@ -1,5 +1,5 @@
-OSHDB - OpenStreetMap History DB
-================================
+OSHDB - OpenStreetMap History Data Analysis
+===========================================
 
 High-performance spatio-temporal data analysis platform for OpenStreetMap full-history data.
 
