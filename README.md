@@ -31,9 +31,18 @@ Because of it's size and variety, possibilities of working with OSM history data
 Central Concepts
 ----------------
 
+The OSHDB is designed to be appropriate for a large spectrum of potential use cases and is therefore built around the following central ideas and design goals:
+
+* _Lossless Information_: The full OSM history data set should be stored and be queryable by the OSHDB, including errorneous or partially incomplete data.
+* _Simple, Generic API_: Writing queries with the OSHDB should be simple, and intuitive, while at the same time flexbile and generic to allow a wide variety of analysis queries. 
+* _High Performance_: The OSM history data set is large and thus requires efficiency in the way the data is stored and in the way it can be accessed and processed. 
+* _Local and Distributed Deployment_: Analysis queries should scale well from data explorations of small regions up to global studies of the complete OSM data set.
+
 ### Data Model
 
 The OSHDB uses it's own binary data format that encapsulates the OSM history data available from [planet.osm.org](https://planet.osm.org/) and is optimized for efficiently storage and access to the history data. In order to allow parallelized data processing, the OSHDB data model also includes a data partitioning scheme.
+
+[![schematic overview of the OSHDB data model](documentation/manual/data-model.svg)](documentation/manual/data-model.md)
 
 See the [data model](documentation/manual/data-model.md) section of the documentation for further information about the OSHDB data model.
 
