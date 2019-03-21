@@ -57,7 +57,7 @@ pipeline {
       }
     }
 
-    stage ('Trigger Benchmark') {
+    stage ('Trigger Benchmark and build Examples') {
       when {
         expression {
           return env.BRANCH_NAME ==~ /(^master$)/
@@ -65,10 +65,11 @@ pipeline {
       }
       steps {
         build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
+        build job: 'oshdb-examples/master', quietPeriod: 360, wait: false
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Triggering of Benchmarks for oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Triggering of Benchmarks or Examples for oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
         }
       }
     }
