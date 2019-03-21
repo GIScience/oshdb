@@ -27,11 +27,10 @@ A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/
 GroupByEntity
 -------------
 
-The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity--) method of a MapReducer
+The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity--) method of a MapReducer slightly changes the way the MapReducers recieves and transforms values: Instead of iterating over each snapshot or contribution individually, in this mode all snapshots or all contributinos of an individual OSM entity are collected into a list of values first. This makes it possible to investigate the full edit history of individual OSM objects at once.
 
+It is recommended to call this method immediately after creating the MapReducer from a view:
 
-
-
---
-
-todo: groupByEntity (here or somewhere else)
+```java
+OSMEntitySnapshotView.on(oshdb).groupByEntity()
+```
