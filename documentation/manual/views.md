@@ -3,8 +3,8 @@ Views
 
 Two different _views_ are available, which determine how the OSM history data is actually analyzed in a given OSHDB query. 
 
-* The *snapshot view* ([`OSMEntitySnapshotView`](https://docs.ohsome.org/java/oshdb/0.5.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMEntitySnapshotView.html)) returns the state of the OSM history data at specific given points in time.
-* The *contribution view* ([`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.5.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html)) returns all modifications (e.g., creations, modifications or deletions) to the OSM elements within a given time period.
+* The *snapshot view* ([`OSMEntitySnapshotView`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMEntitySnapshotView.html)) returns the state of the OSM history data at specific given points in time.
+* The *contribution view* ([`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html)) returns all modifications (e.g., creations, modifications or deletions) to the OSM elements within a given time period.
 
 The snapshot view is particularly useful for analysing how the amount of OSM data changed over time. The contribution view can be used to determine the number of OSM contributors editing the OSM data.
 
@@ -13,7 +13,7 @@ The snapshot view is particularly useful for analysing how the amount of OSM dat
 Using OSHDB Views
 -----------------
 
-Both views can be used in the OSHDB API in very similar ways and only differ in the type of data that is returned by the [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.5.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html) object that is returned when calling the [`on`](https://docs.ohsome.org/java/oshdb/0.5.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html#on-org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase-) method of the respective view: The `OSMEntitySnapshotView` returns a MapReducer of [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.5.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) objects, while the `OSMContributionView` returns a MapReducer of [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.5.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html) objects.
+Both views can be used in the OSHDB API in very similar ways and only differ in the type of data that is returned by the [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html) object that is returned when calling the [`on`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html#on-org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase-) method of the respective view: The `OSMEntitySnapshotView` returns a MapReducer of [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) objects, while the `OSMContributionView` returns a MapReducer of [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html) objects.
 
 ```java
 OSHDBDatabase oshdb = …;
@@ -27,7 +27,7 @@ A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/
 GroupByEntity
 -------------
 
-The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.5.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity--) method of a MapReducer
+The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity--) method of a MapReducer
 
 
 
