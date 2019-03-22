@@ -1,5 +1,5 @@
-MapAggregator
-=============
+Data Aggregation
+================
 
 aggregateByTimestamp
 --------------------

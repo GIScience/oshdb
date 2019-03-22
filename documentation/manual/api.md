@@ -7,6 +7,6 @@ The [first steps tutorial](../first-steps) explains the main components of the O
 
 * [Data Views](views.md)
 * [Filtering of OSM data](filters.md)
-* [Map and Reduce Steps](map-reduce.md)
+* [Map and Reduce](map-reduce.md)
 * [Data Aggregation](aggregation.md)
 

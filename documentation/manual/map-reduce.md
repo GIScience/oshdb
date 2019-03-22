@@ -1,5 +1,5 @@
-MapReducer
-==========
+Map and Reduce
+==============
 
 The [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html) is the central object of every OSHDB query. It is returned by the initial OSHDB [_view_](views.md) and allows to [_filter_](filters.md) out defined subsets of the OSM history dataset. At that point one can transform (_map_) and aggregate (_reduce_) the respective OSM data into a final result. For example, a map function can calculate the length of every OSM highway, and a reduce function can sum up all of these length values. For many often used reduce operations, such as the summing up of many values, the counting of elements, etc. there exist specialized reducers.
 
