@@ -1,4 +1,4 @@
-
+[`MapReducer`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html)
 
 
 
