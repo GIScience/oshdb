@@ -14,6 +14,8 @@ This defines the region where the query should be restricted on. It can be eithe
 The OSHDB is able to cope well even with complex polygons that have many vertices, but keep in mind that using simpler geometries will generally result in higher query performance: For example a bounding-box query is executed slightly faster than a polygon-areaOfInterest query with a rectangular polygon. 
 <!-- todo: link to blog post with spacial filtering performance benchmarks -->  
 
+<!-- todo: clipping -->
+
 timestamps
 ----------
 
