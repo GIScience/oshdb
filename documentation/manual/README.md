@@ -1,3 +1,10 @@
+OSHDB User Manual
+=================
+
+<!-- todo: Background -->
+
+
+
 * [Data Model Manual](data-model.md)<br>
   Explains the design of the OSHDB data model.
 * [API Manual](api.md)<br>
