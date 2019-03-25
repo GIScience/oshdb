@@ -11,10 +11,15 @@ areaOfInterest
 
 This defines the region where the query should be restricted on. It can be either a [bounding box](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#areaOfInterest-org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox-) ([`OSHDBBoundingBox`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/util/OSHDBBoundingBox.html)) or any [(polygonal) JTS geomety](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#areaOfInterest-P-) such as a Polygon or MultiPolygon.
 
-The OSHDB is able to cope well even with complex polygons that have many vertices, but keep in mind that using simpler geometries will generally result in higher query performance: For example a bounding-box query is executed slightly faster than a polygon-areaOfInterest query with a rectangular polygon. 
-<!-- todo: link to blog post with spacial filtering performance benchmarks -->  
+The ouput of this filter will keep only OSM entities whose geometry lie within or which intersect the given areaOfInterest. This inclused also OSM entities for which that none of their child elements lie within the given area of interest.
 
-<!-- todo: clipping -->
+> For example, a large forest polygon in OSM that completely encompasses a small area of interest _is_ returned by the OSHDB API.
+
+The resulting geometries produced by the different OSHDB [views](views.md) are by default clipped to the specified area of interest. This makes it possible to directly calculate the length or area of linear or polygonal OSM features within the given query region, without having to consider the fact that some of the features might only partially lie within the region. It is, at the same time, still possible to access full extent of the respective OSM features' [unclipped](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getGeometryUnclipped--) [geometries](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getGeometryUnclippedBefore--).
+
+The OSHDB is able to cope well even with complex polygons that have many vertices, but keep in mind that using simpler geometries will generally result in higher query performance: For example a bounding-box query is executed slightly faster than a polygon-areaOfInterest query with a rectangular polygon. 
+
+<!-- todo: link to blog post with spatial filtering performance benchmarks -->
 
 timestamps
 ----------
