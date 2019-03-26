@@ -5,7 +5,7 @@ Changelog
 
 ### breaking changes
 
-* JTS library was updated to version 1.16. Because this libary is now maintained by a different company, import statements need to be adjusted as explained in their [JTS migration guide](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115).
+* JTS library was updated to version 1.16. Because this libary is now maintained by a different company, import statements need to be adjusted as explained in their [JTS migration guide](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115). #75
 
 ### bugfixes
 
@@ -23,7 +23,7 @@ Changelog
 * Add methods to aggregate results by [sub-regions](documentation/manual/aggregation.md#aggregateByGeometry).
 * Results of data extraction queries can now also be streamed and immediately post-processed. #19
 * Include of [t-digest](https://github.com/tdunning/t-digest) algorithm to calculate estimated quantiles of results. #34
-* All backends now support query timeouts. #47
+* All backends now support query timeouts. #47 #68
 
 #### oshdb core
 
@@ -46,12 +46,14 @@ Changelog
 ### other changes
 
 * Source code is now released as open-source under _GNU Lesser General Public License version 3_.
-* Dependencies are updated and reduced to the minimum. Also they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading.
+* Dependencies are updated and reduced to the minimum. Also they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading. #79 #5
 * Drop most deprecated methods from OSHDB version 0.4.0
 * More [examples and documentation](https://github.com/GIScience/oshdb/tree/master/documentation) are available.
 * Many small bugfixes and improvements, especially for the Ignite backend. Ignite can now be considered stable and used to analyze a global data set.
 * oshdb-api: renamed some methods (`where` filter → `osmTag` and `osmEntityFilter`, `osmTypes` filter → `osmType`) and refactored some methods to accept a wider range of input objects.
 * `GeometryCollection` geometries are no longer ignored when calculating lengths or areas of features. #51
+* Restructured core OSHDB data strutures to be more flexible in upcoming version changes. #138
+* Rename `getChangeset` method to `getChangesetId. #35
 
 ## 0.4.0
 
