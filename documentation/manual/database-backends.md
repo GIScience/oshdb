@@ -1,2 +1,15 @@
+OSHDB Database Backends
+=======================
 
-list of oshdb api backends
+OSHDBJdbc / OSHDBH2
+-------------------
+
+* //todo: **multithread**, singlethread 
+
+OSHDBIgnite
+-----------
+
+* LocalPeek - for small to mid scale queries
+* ScanQuery - for large scale query
+* AffinityCall - supports streaming
+
