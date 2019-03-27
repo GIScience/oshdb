@@ -1,10 +1,10 @@
 Views
 =====
 
-Two different _views_ are available, which determine how the OSM history data is actually analyzed in a given OSHDB query. 
+Two different ways of querying OSM data are available, which determine how the OSM history data is actually analyzed in a given OSHDB query: 
 
-* The *snapshot view* ([`OSMEntitySnapshotView`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMEntitySnapshotView.html)) returns the state of the OSM history data at specific given points in time.
-* The *contribution view* ([`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html)) returns all modifications (e.g., creations, modifications or deletions) to the OSM elements within a given time period.
+* The **snapshot view** ([`OSMEntitySnapshotView`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMEntitySnapshotView.html)) returns the state of the OSM history data at specific given points in time.
+* The **contribution view** ([`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html)) returns all modifications (e.g., creations, modifications or deletions) to the OSM elements within a given time period.
 
 The snapshot view is particularly useful for analysing how the amount of OSM data changed over time. The contribution view can be used to determine the number of OSM contributors editing the OSM data.
 
@@ -22,12 +22,11 @@ MapReducer<OSMEntitySnapshot> snapshotsMapReducer = OSMEntitySnapshotView.on(osh
 MapReducer<OSMContribution> contributionsMapReducer = OSMContributionView.on(oshdb);
 ```
 
-A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html) object in Java 8: It stores all the information about what kind of filters, transformation functions and aggregation methods should be applied to the data and is executed exactly once by calling a terminal operation, such as the _reduce_ method, or one of the supplied _special reducers_ (e.g., `count`, `sum`, etc.). The chapter [MapReduce](map-reduce.md) of this manual describes the ideas of the `MapReducer` object in more detail.
+A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html) object in Java 8: It stores all the information about what kind of filters, transformation functions and aggregation methods should be applied to the data and is executed exactly once by calling a terminal operation, such as the reduce method, or one of the supplied specialized reducers (e.g., `count`, `sum`, etc.). The chapter “[Map and Reduce](map-reduce.md)” of this manual describes the ideas of the `MapReducer` object in more detail.
 
-todo: explain views: what they do, what data they return, how they work, etc
 ### Snapshot View
 
-The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) is quite simple: it returns the state of the OSM data at a given point in time, or at multiple given points in time. In the OSHDB API, these are called _snapshots_ and are represented by [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) objects. They allow access to the following properties:
+The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) is quite simple: it returns the state of the OSM data at a given point in time, or at multiple given points in time. In the OSHDB API, these are called snapshots and are represented by [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) objects. They allow access to the following properties:
 
 * the [timestamp](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getTimestamp--) of the snapshot
 * the [geometry](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getGeometry--) of the queried OSM feature
@@ -46,7 +45,7 @@ Through the returned [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.5.
 * the [id of the OSM changeset](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getChangesetId--) in which this contribution was performed
 * the [type](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getContributionTypes--) of the contribution.
 
-The [_contribution type_](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/util/celliterator/ContributionType.html) can be either a _creation_, a _deletion_, a _tag change_ or a _geometry change_ of an OSM entity.
+The [contribution type](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/util/celliterator/ContributionType.html) can be either a **creation**, a **deletion**, a **tag change** or a **geometry change** of an OSM entity.
 
 All of these contribution types refer to the filtered set of OSM data of the current MapReducer. This means that an OSM feature that has gained a specific tag in one of versions greater than one, will be reported as a "creation" by the contribution view of the OSHDB API if the query was programmed to filter for that particular tag. Analogously this is also the case if an object was moved from outside an area of interest into the query region, and also for the inverse cases which are returned as deletions. This makes sure that summing up all creations and subtracting all deletions matches the results one can obtain from a query using the snapshot view.
 

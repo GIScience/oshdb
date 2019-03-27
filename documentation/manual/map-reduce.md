@@ -1,7 +1,7 @@
 Map and Reduce
 ==============
 
-The [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html) is the central object of every OSHDB query. It is returned by the initial OSHDB [_view_](views.md) and allows to [_filter_](filters.md) out defined subsets of the OSM history dataset. At that point one can transform (_map_) and aggregate (_reduce_) the respective OSM data into a final result.
+The [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html) is the central object of every OSHDB query. It is returned by the initial OSHDB [view](views.md) and allows to [filter](filters.md) out defined subsets of the OSM history dataset. At that point one can transform (**map**) and aggregate (**reduce**) the respective OSM data into a final result.
 
 > For example, a map function can calculate the length of every OSM highway, and a reduce function can sum up all of these length values.
 
@@ -10,7 +10,7 @@ For many of the most frequently used reduce operations, such as the summing up o
 map
 ---
 
-A _mapping_ transformation function can be set by calling the [`map`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#map-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction-) method of any MapReducer. It is allowed to have an OSHDB query without a map step or one with multiple map steps, which are executed one after each other. Such a map function can also transform the data type of the MapReducer it operates on.
+A transformation function can be set by calling the [`map`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#map-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction-) method of any MapReducer. It is allowed to have an OSHDB query without a map step or one with multiple map steps, which are executed one after each other. Such a map function can also transform the data type of the MapReducer it operates on.
 
 > For example, when calculating the length (which is a floating point number) of an entity snapshot, the underlying MapReducer changes from type `MapReducer<OSMEntitySnapshot>` to being a `MapReducer<Double>`.
 
@@ -24,16 +24,16 @@ filter
 
 It is possible to define [`filter`s](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate-) that can sort out values after they already have been transformed in a map step.
 
-Note that these filters are different from the OSM data filters described in the [_Filtering of OSM data_](filters.md) section of this manual, since those filters are always applied at the beginning of each query on the full OSM history data directly, while the filters described here are executed during the transformation of the data. Normally, it is best to use the less flexible, but more performant OSM data filters wherever possible, because they can reduce the amount of data to be iterated over right from the start of the query.
+Note that these filters are different from the OSM data filters described in the “[Filtering of OSM data](filters.md)” section of this manual, since those filters are always applied at the beginning of each query on the full OSM history data directly, while the filters described here are executed during the transformation of the data. Normally, it is best to use the less flexible, but more performant OSM data filters wherever possible, because they can reduce the amount of data to be iterated over right from the start of the query.
 
 reduce
 ------
 
-The [`reduce`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#reduce-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator-) operation produces the final result of an OSHDB query. It takes the result of the previous map steps and combines (_reduces_) these values into a final result. This can be something as simple as summing up all of the values, but also something more complicated, for example estimating statistical properties such as the median of the calculated values. Many query use common reduce operations, for which the OSHDB provides shorthand methods (see [below](#specialized-reducers)). 
+The [`reduce`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#reduce-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBinaryOperator-) operation produces the final result of an OSHDB query. It takes the result of the previous map steps and combines (reduces) these values into a final result. This can be something as simple as summing up all of the values, but also something more complicated, for example estimating statistical properties such as the median of the calculated values. Many query use common reduce operations, for which the OSHDB provides shorthand methods (see [below](#specialized-reducers)). 
 
-Every OSHDB query must have exactly one terminal reduce operation (or use the _stream_ method explained below).
+Every OSHDB query must have exactly one terminal reduce operation (or use the `stream` method explained [below](#stream)).
 
-_Remark: If you are already familiar with [Hadoop](https://en.wikipedia.org/wiki/Apache_Hadoop), note that for defining a reduce operation we use the terminology of the [Java stream API](https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html) which is slightly different from the terminology used in Hadoop. In particular, the Java stream API and Hadoop use the same term 'combiner' for different things._
+> Remark: If you are already familiar with [Hadoop](https://en.wikipedia.org/wiki/Apache_Hadoop), note that for defining a reduce operation we use the terminology of the [Java stream API](https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html) which is slightly different from the terminology used in Hadoop. In particular, the Java stream API and Hadoop use the same term 'combiner' for different things.
 
 specialized reducers
 --------------------

@@ -26,7 +26,7 @@ The OSHDB splits data storage and computations. It is then possible to use the [
 OpenStreetMap History Data
 --------------------------
 
-OpenStreetMap contains a large variety of geographic data, differing widely in scale and feature type. OSM contains everything from single points of interests to whole country borders, from concrete things like buildings up to more abstract concepts such as turn restrictions. OSM also offers metadata about the history and the modifications that are made to the data, which can be analyzed in a multitude of ways.
+[OpenStreetMap](https://www.openstreetmap.org/) contains a large variety of geographic data, differing widely in scale and feature type. OSM contains everything from single points of interests to whole country borders, from concrete things like buildings up to more abstract concepts such as turn restrictions. OSM also offers metadata about the [history](https://wiki.openstreetmap.org/wiki/Planet.osm/full) and the modifications that are made to the data, which can be analyzed in a multitude of ways.
 
 Because of it's size and variety, possibilities of working with OSM history data are limited and there exists a lack of an easy-to-use analysis software. A goal of the OSHDB is to make OSM data more accessible to researchers, data journalists, community members and other interested people.
 
@@ -42,7 +42,7 @@ The OSHDB is designed to be appropriate for a large spectrum of potential use ca
 
 ### Data Model
 
-The OSHDB uses it's own binary data format that encapsulates the OSM history data available from [planet.osm.org](https://planet.osm.org/) and is optimized for efficiently storage and access to the history data. In order to allow parallelized data processing, the OSHDB data model also includes a data partitioning scheme.
+The OSHDB uses it's own binary data format that encapsulates the OSM history data available from [planet.osm.org](https://planet.osm.org/) and is optimized for efficient storage and access to the history data. In order to allow parallelized data processing, the OSHDB data model also includes a data partitioning scheme.
 
 [![schematic overview of the OSHDB data model](documentation/manual/data-model.svg)](documentation/manual/data-model.md)
 
@@ -50,7 +50,7 @@ See the [data model](documentation/manual/data-model.md) section of the document
 
 ### API
 
-The OSHDB offers a flexible, simple and intuitive application programming interface that provides helpful abstractions on top of the offered OSM data entities. It provides different _views_ on the OSM history data that allow to either investigate the OSM data at specific points in time (as snapshots), or to investigate all contributions to the OSM data in their entirety. The OSHDB API also allows to filter the OSM data by arbitrary regions, time ranges and OSM properties such as tags, entity type, etc.
+The OSHDB offers a flexible, simple and intuitive application programming interface that provides helpful abstractions on top of the offered OSM data entities. It provides different **views** on the OSM history data that allow to either investigate the OSM data at specific points in time (as snapshots), or to investigate all contributions to the OSM data in their entirety. The OSHDB API also allows to filter the OSM data by arbitrary regions, time ranges and OSM properties such as tags, entity type, etc.
 
 The API is based on the MapReduce programming model, and offers powerful methods to aggregate and analyze the OSM history data. The OSHDB API is described in detail in the [api section](documentation/manual/api.md) of the documentation.
 

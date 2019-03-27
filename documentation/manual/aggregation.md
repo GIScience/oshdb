@@ -3,7 +3,7 @@ Data Aggregation
 
 Often, when querying OSM history data one is interested in getting multiple results at once that each refer to a certain subset of the queried data. For example, when querying for multiple [timestamps](filters.md#timestamps), typically the result should be in the form of one [result](map-reduce.md#specialized-reducers) per timestamp.
 
-The OSHDB API provides a flexible and powerful way to produce aggregated results that are calculated for arbitrary subsets of the data. This _"aggregateBy"_ functionality also supports the combination of multiple such grouping functions chained after each other.
+The OSHDB API provides a flexible and powerful way to produce aggregated results that are calculated for arbitrary subsets of the data. This `aggregateBy` functionality also supports the combination of multiple such grouping functions chained after each other.
 
 When executing any of the below listed aggregateBy methods, the query's MapReducer is transformed into a [`MapAggregator`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapAggregator.html) object which is (mostly) functionally equivalent to a MapReducer, with the difference that instead of returning single result values when calling any [reduce](map-reduce.md#reduce) method, an associative list of multiple values is returned instead: The result contains one entry for each requested grouping.
 
@@ -21,7 +21,7 @@ Map<OSMType, Integer> countBuildingsByType = OSMEntitySnapshotView.on(…)
     .count();
 ``` 
 
-Optionally, the [`aggregateBy`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#aggregateBy-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction-java.util.Collection-) method allows to specify a collection of groups  which are expected to be present in the result. If for a particular group, no matching OSM entities are found in the query, the result will then still contain this key, filled with a "zero" value. The actual value used to fill these no-data entries of the result are the _indentity_ values of the query's reduce method.
+Optionally, the [`aggregateBy`](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#aggregateBy-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction-java.util.Collection-) method allows to specify a collection of groups  which are expected to be present in the result. If for a particular group, no matching OSM entities are found in the query, the result will then still contain this key, filled with a "zero" value. The actual value used to fill these no-data entries of the result are the indentity values of the query's reduce method.
 
  > For example, if the count reducer is used in a query, the result contains `0` integer values in entries for witch no results were found. If instead the collect reduce method is used, empty lists are used to fill no-data entries.
 

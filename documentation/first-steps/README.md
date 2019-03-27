@@ -76,26 +76,26 @@ Every query must specify a spatial extent and a timestamp (or time range) for wh
     .timestamps("2019-01-01")
 ```
 
-Note that the OSHDB expects (and returns) coordinates in the cartesian XY order: _longitude_ first, then _latitude_. So, the parameters for specifying a bounding box in the OSHDB are in the following order: _left_, _bottom_, _right_, _top_. Just like the OpenStreetMap data, the OSHDB also works directly with coordinates in WGS84 coordinates ([EPSG:4326](http://epsg.io/4326)) of longitude and latitude. To quickly get the coordinates of a bounding box in this format, we recommend the following online tool: http://norbertrenner.de/osm/bbox.html
+Note that the OSHDB expects (and returns) coordinates in the cartesian XY order: longitude first, then latitude. So, the parameters for specifying a bounding box in the OSHDB are in the following order: left, bottom, right, top. Just like the OpenStreetMap data, the OSHDB also works directly with coordinates in WGS84 coordinates ([EPSG:4326](http://epsg.io/4326)) of longitude and latitude. To quickly get the coordinates of a bounding box in this format, we recommend the following online tool: http://norbertrenner.de/osm/bbox.html
 
 For now, we only define a single timestamp in our query. But the OSHDB also supports querying the OSM history data for multiple timestamps at once. For example, one can analyze the data in yearly steps between 2012 and 2019. At the end of this tutorial we will show what (few) changes are necessary to let our query generate the results for many timestamps at once.
 
 ## 6. Filtering OSM data
 
-There are several different ways to select a specific subset of the OSM dataset. In our example, we only want to look at OSM _way_ objects which have the `building` tag. To filter these objects for our query, we add the following statements to our query:
+There are several different ways to select a specific subset of the OSM dataset. In our example, we only want to look at OSM way objects which have the `building` tag. To filter these objects for our query, we add the following statements to our query:
 
 ```java
     .osmType(OSMType.WAY)
     .osmTag("building")
 ```
 
-There are other variants of these methods and a few more, all work in a similar way: one specifies which OSM objects should be keept. Multiple filters can be specified one after each other, resulting in the set of OSM objects that match all of the selectors (i.e. an _and_ operation). 
+There are other variants of these methods and a few more, all work in a similar way: one specifies which OSM objects should be keept. Multiple filters can be specified one after each other, resulting in the set of OSM objects that match all of the selectors (i.e. an **and** operation). 
 
 ## 7. Calculating intermediate results
 
-Now we can access the properties of all the OSM _way_ objects that have the _"building"_ tag. Since we specified the _snapshot_ view, each matching OSM objects will potentially be returned multiple times: once for each timestamp we requested.
+Now we can access the properties of all the OSM way objects that have the `building` tag. Since we specified the snapshot view, each matching OSM objects will potentially be returned multiple times: once for each timestamp we requested.
 
-In a so called `map` step (of the _MapReduce_ programming model), where these _snapshot_ objects can be accessed and transformed to any result one desires. For example, we can calculate the area of an OSM object's geometry in the following way.
+In a so called `map` step (of the MapReduce programming model), where these snapshot objects can be accessed and transformed to any result one desires. For example, we can calculate the area of an OSM object's geometry in the following way.
 
 ```java
     .map(snapshot -> Geo.areaOf(snapshot.getGeometry()))
@@ -111,7 +111,7 @@ One can optionally also filter the intermediate results generated in the map ste
 
 ## 9. Requesting aggregated result
 
-Now we only have to do one final operation, which is letting the OSHDB know how it should aggregate the intermediate results into a final result value. There are several predefined functions available for this, for example `sum`, `average`, `count`, `countUniq`, …. This is the `reduce` step of the _MapReduce_ programming model.
+Now we only have to do one final operation, which is letting the OSHDB know how it should aggregate the intermediate results into a final result value. There are several predefined functions available for this, for example `sum`, `average`, `count`, `countUniq`, …. This is the `reduce` step of the MapReduce programming model.
 
 ```java
      .sum();
@@ -158,4 +158,4 @@ System.out.println(result);
 
 ## 12. Next steps
 
-That's it for our first-steps tutorial. Of course there are many more options and features to explore in the OSHDB. For example how the _contibution view_ let's you analyze each modification to the OSM objects individually, more advanced filtering options, or other concepts like the _flatMap_ function, custom _aggregateBy_ and _reducers_, etc.
+That's it for our first-steps tutorial. Of course there are many more options and features to explore in the OSHDB. For example how the contibution view let's you analyze each modification to the OSM objects individually, more advanced filtering options, or other concepts like the `flatMap` function, custom `aggregateBy` and `reduce` operations, etc.
