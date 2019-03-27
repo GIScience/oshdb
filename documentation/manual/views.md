@@ -61,3 +61,5 @@ It is recommended to call this method immediately after creating the MapReducer 
 ```java
 OSMEntitySnapshotView.on(oshdb).groupByEntity()
 ```
+
+> Note that the similarly named [`aggregateBy`](aggregation.md) function of the OSHDB API does something different: it is used at a later stage of an OSHDB query to calculate aggregated results for multiple groups or partitions of the data at once.
