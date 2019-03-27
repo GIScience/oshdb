@@ -21,7 +21,7 @@ The OSHDB allows to investigate the evolution of the amount of data and the cont
     System.out.println(numberOfUsersEditingHighways);
 ```
 
-The OSHDB splits data storage and computations. It is then possible to use the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel, and optionally also on distributed databases. A central idea behind this concept is to bring the code to the data.
+The main functionality of the OSHDB is explained in the [first steps tutorial](documentation/first-steps/README.md).
 
 OpenStreetMap History Data
 --------------------------
@@ -39,6 +39,8 @@ The OSHDB is designed to be appropriate for a large spectrum of potential use ca
 * _Simple, Generic API_: Writing queries with the OSHDB should be simple, and intuitive, while at the same time flexbile and generic to allow a wide variety of analysis queries. 
 * _High Performance_: The OSM history data set is large and thus requires efficiency in the way the data is stored and in the way it can be accessed and processed. 
 * _Local and Distributed Deployment_: Analysis queries should scale well from data explorations of small regions up to global studies of the complete OSM data set.
+
+The OSHDB splits data storage and computations. It is then possible to use the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel, and optionally also on distributed databases. A central idea behind this concept is to bring the code to the data.
 
 ### Data Model
 
@@ -62,7 +64,7 @@ The OSHDB is available as a pre-compiled maven library and can be incorporated e
 Documentation
 ---
 
-* ["first steps" tutorial](documentation/first-steps/README.md)
+* [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
 * [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/0.5.0/aggregated/)
 
