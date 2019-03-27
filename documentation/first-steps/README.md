@@ -76,7 +76,7 @@ Every query must specify a spatial extent and a timestamp (or time range) for wh
     .timestamps("2019-01-01")
 ```
 
-Note that the OSHDB expects (and returns) coordinates in the cartesian XY order: longitude first, then latitude. So, the parameters for specifying a bounding box in the OSHDB are in the following order: left, bottom, right, top. Just like the OpenStreetMap data, the OSHDB also works directly with coordinates in WGS84 coordinates ([EPSG:4326](http://epsg.io/4326)) of longitude and latitude. To quickly get the coordinates of a bounding box in this format, we recommend the following online tool: http://norbertrenner.de/osm/bbox.html
+Note that the OSHDB expects (and returns) coordinates in the cartesian XY order: longitude first, then latitude. So, the parameters for specifying a bounding box in the OSHDB are in the following order: left, bottom, right, top (or: west, south, east, north). Just like the OpenStreetMap data, the OSHDB also works directly with coordinates in WGS84 coordinates ([EPSG:4326](http://epsg.io/4326)) of longitude and latitude. To quickly get the coordinates of a bounding box in this format, we recommend the following online tool: http://norbertrenner.de/osm/bbox.html
 
 For now, we only define a single timestamp in our query. But the OSHDB also supports querying the OSM history data for multiple timestamps at once. For example, one can analyze the data in yearly steps between 2012 and 2019. At the end of this tutorial we will show what (few) changes are necessary to let our query generate the results for many timestamps at once.
 
