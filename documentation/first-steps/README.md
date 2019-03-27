@@ -158,4 +158,4 @@ System.out.println(result);
 
 ## 12. Next steps
 
-That's it for our first-steps tutorial. Of course there are many more options and features to explore in the OSHDB. For example how the contibution view let's you analyze each modification to the OSM objects individually, more advanced filtering options, or other concepts like the `flatMap` function, custom `aggregateBy` and `reduce` operations, etc.
+That's it for our first-steps tutorial. Of course there are many more options and features to explore in the OSHDB. For example how the contibution [view](../manual/views.md) let's you analyze each modification to the OSM objects individually, more advanced [filtering](../manual/filters.md) options, or other concepts like the [`flatMap`](../manual/map-reduce.md#flatmap) function, custom [`aggregateBy`](../manual/aggregation.md) and [`reduce`](../manual/map-reduce.md#reduce) operations, etc.
