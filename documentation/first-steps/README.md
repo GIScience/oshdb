@@ -135,8 +135,8 @@ Number result = OSMEntitySnapshotView.on(oshdb)
     .sum();
 System.out.println(result);
 ```
-For this example we get >> `1360069.4871317672` << within seconds.
-Here, the result is simply printed to the terminal console. Alternatively, it could also be stored in a file, database or be used to generate graphics.
+
+This example prints the result (approximately `1360069.5`) to the terminal console. Alternatively, it could also be stored in a file, database or be used to generate graphics.
 
 ## 11. Multiple Timestamps
 
@@ -155,6 +155,9 @@ SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotView.on(oshdb)
     .sum();
 System.out.println(result);
 ```
+
+The result from this query is visualized in the following graph:
+
 ![BuildingAreaHeidelberg](./BuildingAreaHeidelberg.png "Result as Graph")
 
 ## 12. Next steps
