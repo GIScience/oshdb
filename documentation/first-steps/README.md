@@ -135,7 +135,7 @@ Number result = OSMEntitySnapshotView.on(oshdb)
     .sum();
 System.out.println(result);
 ```
-
+For this example we get >> `1360069.4871317672` << within seconds.
 Here, the result is simply printed to the terminal console. Alternatively, it could also be stored in a file, database or be used to generate graphics.
 
 ## 11. Multiple Timestamps
@@ -146,7 +146,7 @@ As mentioned earlier in this tutorial, the OSHDB also allows one to generate res
 OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
 SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotView.on(oshdb)
     .areaOfInterest(new OSHDBBoundingBox(8.6634,49.3965,8.7245,49.4268))
-    .timestamps("2019-01-01")
+    .timestamps("2012-01-01", "2019-01-01", Interval.YEARLY)
     .osmType(OSMType.WAY)
     .osmTag("building")
     .map(snapshot -> Geo.areaOf(snapshot.getGeometry()))
@@ -155,6 +155,7 @@ SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotView.on(oshdb)
     .sum();
 System.out.println(result);
 ```
+![BuildingAreaHeidelberg](./BuildingAreaHeidelberg.png "Result as Graph")
 
 ## 12. Next steps
 
