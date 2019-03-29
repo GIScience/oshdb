@@ -5,7 +5,7 @@ Changelog
 
 ### breaking changes
 
-* JTS library was updated to version 1.16. Because this libary is now maintained by a different company, import statements need to be adjusted as explained in their [JTS migration guide](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115). #75
+* JTS library was updated to version 1.16. Because this library is now maintained by a different company, import statements need to be adjusted as explained in their [JTS migration guide](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115). #75
 
 ### bugfixes
 
@@ -35,7 +35,7 @@ Changelog
 
 * Make the `getModificationTimestamps` method of OSHEntites faster, resulting in general performance improvement of every query, but especially when analyzing complex relations. #10
 * Improve performance of bbox-in-polygon checking routines. #33
-* Avoid unnecessary clipping of gemetries. #66
+* Avoid unnecessary clipping of geometries. #66
 * Improve building of complex multipolygon geometries. #111
 * Many small performance improvements.
 
@@ -52,7 +52,7 @@ Changelog
 * Many small bugfixes and improvements, especially for the Ignite backend. Ignite can now be considered stable and used to analyze a global data set.
 * oshdb-api: renamed some methods (`where` filter → `osmTag` and `osmEntityFilter`, `osmTypes` filter → `osmType`) and refactored some methods to accept a wider range of input objects.
 * `GeometryCollection` geometries are no longer ignored when calculating lengths or areas of features. #51
-* Restructured core OSHDB data strutures to be more flexible in upcoming version changes. #138
+* Restructured core OSHDB data structures to be more flexible in upcoming version changes. #138
 * Rename `getChangeset` method to `getChangesetId. #35
 
 ## 0.4.0
