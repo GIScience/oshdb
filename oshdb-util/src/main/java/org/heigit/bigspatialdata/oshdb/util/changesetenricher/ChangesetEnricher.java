@@ -6,16 +6,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChangesetEnricher {
-
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ChangesetEnricher.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ChangesetEnricher.class);
 
   private final Connection conn;
   private final Map<Long, OSMChangeset> changests;
@@ -92,27 +94,35 @@ public class ChangesetEnricher {
         final Long userId = resultSet.getLong("user_id");
 
         OSHDBTimestamp createdAt;
-        try {
-          createdAt = new OSHDBTimestamp(resultSet.getTimestamp("created_at"));
-        } catch (NullPointerException ex) {
+        Timestamp createdTs = resultSet.getTimestamp("created_at");
+        if (createdTs != null) {
+          createdAt = new OSHDBTimestamp(createdTs);
+        } else {
           createdAt = null;
         }
 
         OSHDBBoundingBox bbx;
-        try {
-          bbx = new OSHDBBoundingBox(
-              resultSet.getDouble("min_lon"),
-              resultSet.getDouble("min_lat"),
-              resultSet.getDouble("max_lon"),
-              resultSet.getDouble("max_lat"));
-        } catch (NullPointerException ex) {
+        boolean[] wasNull = new boolean[4];
+        double minLong = resultSet.getDouble("min_lon");
+        wasNull[0] = resultSet.wasNull();
+        double minLat = resultSet.getDouble("min_lat");
+        wasNull[1] = resultSet.wasNull();
+        double maxLon = resultSet.getDouble("max_lon");
+        wasNull[2] = resultSet.wasNull();
+        double maxLat = resultSet.getDouble("max_lat");
+        wasNull[3] = resultSet.wasNull();
+
+        if (IntStream.range(0, wasNull.length).anyMatch(i -> wasNull[i])) {
           bbx = null;
+        } else {
+          bbx = new OSHDBBoundingBox(minLong, minLat, maxLon, maxLat);
         }
 
         OSHDBTimestamp closedAt;
-        try {
-          closedAt = new OSHDBTimestamp(resultSet.getTimestamp("closed_at"));
-        } catch (NullPointerException ex) {
+        Timestamp closedTs = resultSet.getTimestamp("closed_at");
+        if (closedTs == null) {
+          closedAt = new OSHDBTimestamp(closedTs);
+        } else {
           closedAt = null;
         }
 
