@@ -36,7 +36,7 @@ public class UserNameResolver {
    *
    * @param userId ID of a user.
    * @return An OSMUser.
-   * @throws SQLException
+   * @throws SQLException If something went wrong when querying the db
    */
   public OSMUser getUser(long userId) throws SQLException {
     if (this.users.containsKey(userId)) {

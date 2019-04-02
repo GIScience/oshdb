@@ -11,20 +11,20 @@ public class OSMUser {
   private final long id;
   private final ArrayList<String> names;
 
-  /**
+  /** Create a user with all names.
    *
-   * @param id
-   * @param names
+   * @param id The user-id
+   * @param names A list of all names a user had
    */
   public OSMUser(long id, ArrayList<String> names) {
     this.id = id;
     this.names = names;
   }
 
-  /**
+  /** Create a user with most recent name.
    *
-   * @param id
-   * @param name
+   * @param id The user-id
+   * @param name The most recent name a user has
    */
   public OSMUser(long id, String name) {
     this.id = id;
@@ -33,9 +33,9 @@ public class OSMUser {
     this.names = namesTemp;
   }
 
-  /**
+  /** Get id of a user.
    *
-   * @return
+   * @return The id of the user
    */
   public long getId() {
     return id;
@@ -44,7 +44,7 @@ public class OSMUser {
   /**
    * Get latest name of User.
    *
-   * @return
+   * @return The latest name of the user
    */
   public String getCurrentName() {
     return names.get(0);
@@ -53,7 +53,7 @@ public class OSMUser {
   /**
    * Get ALL names a user had in his/her mapping carrer.
    *
-   * @return
+   * @return A list of all names a user ever had
    */
   public ArrayList<String> getAllNames() {
     return names;
