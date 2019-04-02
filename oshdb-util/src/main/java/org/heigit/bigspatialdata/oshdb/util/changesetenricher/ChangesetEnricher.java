@@ -53,7 +53,7 @@ public class ChangesetEnricher {
           + "tags "
         + "FROM osm_changeset "
         + "WHERE id = ? ;");
-    this.changesetCommentPs= this.conn.prepareStatement(
+    this.changesetCommentPs = this.conn.prepareStatement(
         "SELECT comment_user_id,comment_user_name,comment_date,comment_text "
         + "FROM osm_changeset_comment "
         + "WHERE comment_changeset_id = ? ;");
@@ -168,17 +168,9 @@ public class ChangesetEnricher {
 
   }
 
-  /**
-   * Get comments of a specified changeset. May be null if no comments exist. Any field may also be
-   * null. The result is not cached.
-   *
-   * @param changesetId The id of the changeset the comments are requested for
-   * @return A list of all changeset comments
-   * @throws SQLException If the db could not be queried
-   */
-  public List<OSMChangesetComment> getChangesetComments(long changesetId) throws SQLException {
+  private List<OSMChangesetComment> getChangesetComments(long changesetId) throws SQLException {
     List<OSMChangesetComment> commentList = new ArrayList<>(1);
-    
+
     this.changesetCommentPs.setLong(1, changesetId);
     try (ResultSet resultSet = this.changesetCommentPs.executeQuery()) {
       if (!resultSet.isBeforeFirst()) {
