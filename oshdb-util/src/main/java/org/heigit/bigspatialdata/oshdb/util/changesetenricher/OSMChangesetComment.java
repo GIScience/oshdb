@@ -4,63 +4,87 @@ import java.util.Objects;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
 public class OSMChangesetComment {
-  private final long comment_changeset_id;
-  private final Long comment_user_id;
-  private final String comment_user_name;
-  private final OSHDBTimestamp comment_date;
+  private final long commentChangesetId;
+  private final Long commentUserId;
+  private final String commentUserName;
+  private final OSHDBTimestamp commentDate;
 
   private final String comment_text;
 
-  public OSMChangesetComment(long comment_changeset_id, long comment_user_id, String comment_user_name, OSHDBTimestamp comment_date, String comment_text) {
-    this.comment_changeset_id = comment_changeset_id;
-    this.comment_user_id = comment_user_id;
-    this.comment_user_name = comment_user_name;
-    this.comment_date = comment_date;
-    this.comment_text = comment_text;
+  /**
+   * A changeset comment from a changeset discussion.
+   *
+   * @param commentChangesetId The id of the changeset the comment belongs to
+   * @param commentUserId The id of the user that made the comment
+   * @param commentUserName The name of the user that made the comment
+   * @param commentDate The timestamp the comment was made
+   * @param commentText The content of the comment
+   */
+  public OSMChangesetComment(
+      long commentChangesetId,
+      long commentUserId,
+      String commentUserName,
+      OSHDBTimestamp commentDate,
+      String commentText) {
+    this.commentChangesetId = commentChangesetId;
+    this.commentUserId = commentUserId;
+    this.commentUserName = commentUserName;
+    this.commentDate = commentDate;
+    this.comment_text = commentText;
   }
 
   /**
-   * @return the comment_changeset_id
+   * Get the id of the changeset, this comment belongs to.
+   * 
+   * @return the comment changeset id
    */
-  public long getComment_changeset_id() {
-    return comment_changeset_id;
+  public long getCommentChangesetId() {
+    return commentChangesetId;
   }
 
   /**
-   * @return the comment_user_id
+   * Get the user id of the user that made the comment.
+   * 
+   * @return the comment user id
    */
-  public long getComment_user_id() {
-    return comment_user_id;
+  public long getCommentUserId() {
+    return commentUserId;
   }
 
   /**
-   * @return the comment_user_name
+   * Get the user name of the user that made the comment.
+   * 
+   * @return the comment user name
    */
-  public String getComment_user_name() {
-    return comment_user_name;
+  public String getCommentUserName() {
+    return commentUserName;
   }
 
   /**
-   * @return the comment_date
+   * Get the Timestamp the comment was made at.
+   * 
+   * @return the comment date
    */
-  public OSHDBTimestamp getComment_date() {
-    return comment_date;
+  public OSHDBTimestamp getCommentDate() {
+    return commentDate;
   }
 
   /**
-   * @return the comment_text
+   * Get the actual comment (content).
+   * 
+   * @return the comment text
    */
-  public String getComment_text() {
+  public String getCommentText() {
     return comment_text;
   }
 
   @Override
   public int hashCode() {
     int hash = 5;
-    hash = 19 * hash + (int) (this.comment_changeset_id ^ (this.comment_changeset_id >>> 32));
-    hash = 19 * hash + Objects.hashCode(this.comment_user_id);
-    hash = 19 * hash + Objects.hashCode(this.comment_user_name);
-    hash = 19 * hash + Objects.hashCode(this.comment_date);
+    hash = 19 * hash + (int) (this.commentChangesetId ^ (this.commentChangesetId >>> 32));
+    hash = 19 * hash + Objects.hashCode(this.commentUserId);
+    hash = 19 * hash + Objects.hashCode(this.commentUserName);
+    hash = 19 * hash + Objects.hashCode(this.commentDate);
     hash = 19 * hash + Objects.hashCode(this.comment_text);
     return hash;
   }
@@ -77,19 +101,19 @@ public class OSMChangesetComment {
       return false;
     }
     final OSMChangesetComment other = (OSMChangesetComment) obj;
-    if (this.comment_changeset_id != other.comment_changeset_id) {
+    if (this.commentChangesetId != other.commentChangesetId) {
       return false;
     }
-    if (!Objects.equals(this.comment_user_name, other.comment_user_name)) {
+    if (!Objects.equals(this.commentUserName, other.commentUserName)) {
       return false;
     }
     if (!Objects.equals(this.comment_text, other.comment_text)) {
       return false;
     }
-    if (!Objects.equals(this.comment_user_id, other.comment_user_id)) {
+    if (!Objects.equals(this.commentUserId, other.commentUserId)) {
       return false;
     }
-    if (!Objects.equals(this.comment_date, other.comment_date)) {
+    if (!Objects.equals(this.commentDate, other.commentDate)) {
       return false;
     }
     return true;
@@ -97,7 +121,13 @@ public class OSMChangesetComment {
 
   @Override
   public String toString() {
-    return "OSMChangesetComment{" + "comment_changeset_id=" + comment_changeset_id + ", comment_user_id=" + comment_user_id + ", comment_user_name=" + comment_user_name + ", comment_date=" + comment_date + ", comment_text=" + comment_text + '}';
+    return "OSMChangesetComment{"
+        + "comment_changeset_id=" + commentChangesetId
+        + ", comment_user_id=" + commentUserId
+        + ", comment_user_name=" + commentUserName
+        + ", comment_date=" + commentDate
+        + ", comment_text=" + comment_text
+        + '}';
   }
 
 }
