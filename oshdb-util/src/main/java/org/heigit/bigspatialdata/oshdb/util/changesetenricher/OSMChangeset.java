@@ -139,7 +139,18 @@ public class OSMChangeset {
 
   @Override
   public String toString() {
-    return "OSMChangeset{" + "id=" + id + ", user_id=" + userId + ", created_at=" + createdAt + ", bbx=" + bbx + ", closed_at=" + closedAt + ", open=" + open + ", num_changes=" + numChanges + ", user_name=" + userName + ", tags=" + tags + ", comments=" + comments + '}';
+    return "OSMChangeset{" + 
+        "id=" + id + 
+        ", user_id=" + userId + 
+        ", created_at=" + createdAt + 
+        ", bbx=" + bbx + 
+        ", closed_at=" + closedAt + 
+        ", open=" + open + 
+        ", num_changes=" + numChanges + 
+        ", user_name=" + userName + 
+        ", tags=" + tags + 
+        ", comments=" + comments + 
+        '}';
   }
 
   @Override
