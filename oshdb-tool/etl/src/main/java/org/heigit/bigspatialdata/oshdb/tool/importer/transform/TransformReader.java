@@ -13,12 +13,11 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
-
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 
@@ -94,7 +93,7 @@ public class TransformReader{
         int length = data.getInt();
         byte[] content = new byte[length];
         data.get(content);
-        OSHNode node = OSHNode.instance(content, 0, length);
+        OSHNode node = OSHNodeImpl.instance(content, 0, length);
         System.out.println(node.getId());
         ret.add(node);
       }

@@ -7,9 +7,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
-import org.heigit.bigspatialdata.oshdb.tool.importer.osh.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 
 public class TransformWayReaders {
   private static class TransformWayReader extends TransformReader<TransformOSHWay> {

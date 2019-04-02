@@ -2,12 +2,15 @@ package org.heigit.bigspatialdata.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 
-@SuppressWarnings("rawtypes")
-public class GridOSHNodes extends GridOSHEntity {
+public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
 
   private static final long serialVersionUID = 1L;
 
@@ -19,13 +22,11 @@ public class GridOSHNodes extends GridOSHEntity {
 
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final int[] index = new int[list.size()];
-    // TODO user iterator!!
     for (int i = 0; i < index.length; i++) {
-      final OSHNode c = list.get(i).rebase(baseId, baseTimestamp, baseLongitude, baseLatitude);
-      final byte[] buffer = c.getData();
+      final ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(list.get(i).getVersions()), baseId, baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
-      out.write(buffer);
-      offset += buffer.length;
+      out.write(buffer.array(),0,buffer.remaining());
+      offset += buffer.remaining();
     }
     final byte[] data = out.toByteArray();
     return new GridOSHNodes(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index,
@@ -36,7 +37,12 @@ public class GridOSHNodes extends GridOSHEntity {
           final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
-
+  
+  @Override
+  public Iterable<? extends OSHEntity> getEntities() {
+    return this;
+  }
+  
   @Override
   public Iterator<OSHNode> iterator() {
     return new Iterator<OSHNode>() {
@@ -48,7 +54,7 @@ public class GridOSHNodes extends GridOSHEntity {
         int length = ((pos < index.length - 1) ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
-          return OSHNode.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
+          return OSHNodeImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
                   baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();

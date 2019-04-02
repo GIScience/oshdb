@@ -180,7 +180,7 @@ public class CellIterator implements Serializable {
       allFullyInside = false;
     }
 
-    Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
+    Iterable<? extends OSHEntity> cellData = cell.getEntities();
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
       if (!oshEntityUpdatePreFilter.test(oshEntity) ||
           !oshEntityPreFilter.test(oshEntity) ||
@@ -192,7 +192,7 @@ public class CellIterator implements Serializable {
         // area of interest -> skip it
         return Stream.empty();
       }
-      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+      if (Streams.stream(oshEntity.getVersions()).noneMatch(osmEntityFilter)) {
         // none of this osh entity's versions matches the filter -> skip it
         return Stream.empty();
       }
@@ -445,7 +445,7 @@ public class CellIterator implements Serializable {
     }
 
     //noinspection unchecked
-    Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
+    Iterable<? extends OSHEntity> cellData = cell.getEntities();
 
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
       if (!oshEntityUpdatePreFilter.test(oshEntity) ||
@@ -458,7 +458,7 @@ public class CellIterator implements Serializable {
         // area of interest -> skip it
         return Stream.empty();
       }
-      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+      if (Streams.stream(oshEntity.getVersions()).noneMatch(osmEntityFilter)) {
         // none of this osh entity's versions matches the filter -> skip it
         return Stream.empty();
       }
@@ -527,7 +527,7 @@ public class CellIterator implements Serializable {
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
-                osmEntity.getChangeset()
+                osmEntity.getChangesetId()
             );
             // cannot normally happen, because prev is never null while skipOutput is true (since no
             // previous result has yet been generated before the first modification in the query
