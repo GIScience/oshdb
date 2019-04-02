@@ -9,7 +9,7 @@ public class OSMChangesetComment {
   private final String commentUserName;
   private final OSHDBTimestamp commentDate;
 
-  private final String comment_text;
+  private final String commentText;
 
   /**
    * A changeset comment from a changeset discussion.
@@ -30,7 +30,7 @@ public class OSMChangesetComment {
     this.commentUserId = commentUserId;
     this.commentUserName = commentUserName;
     this.commentDate = commentDate;
-    this.comment_text = commentText;
+    this.commentText = commentText;
   }
 
   /**
@@ -75,7 +75,7 @@ public class OSMChangesetComment {
    * @return the comment text
    */
   public String getCommentText() {
-    return comment_text;
+    return commentText;
   }
 
   @Override
@@ -85,7 +85,7 @@ public class OSMChangesetComment {
     hash = 19 * hash + Objects.hashCode(this.commentUserId);
     hash = 19 * hash + Objects.hashCode(this.commentUserName);
     hash = 19 * hash + Objects.hashCode(this.commentDate);
-    hash = 19 * hash + Objects.hashCode(this.comment_text);
+    hash = 19 * hash + Objects.hashCode(this.commentText);
     return hash;
   }
 
@@ -107,7 +107,7 @@ public class OSMChangesetComment {
     if (!Objects.equals(this.commentUserName, other.commentUserName)) {
       return false;
     }
-    if (!Objects.equals(this.comment_text, other.comment_text)) {
+    if (!Objects.equals(this.commentText, other.commentText)) {
       return false;
     }
     if (!Objects.equals(this.commentUserId, other.commentUserId)) {
@@ -126,7 +126,7 @@ public class OSMChangesetComment {
         + ", comment_user_id=" + commentUserId
         + ", comment_user_name=" + commentUserName
         + ", comment_date=" + commentDate
-        + ", comment_text=" + comment_text
+        + ", comment_text=" + commentText
         + '}';
   }
 
