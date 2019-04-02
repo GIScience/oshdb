@@ -43,7 +43,8 @@ public class ChangesetEnricher {
   public OSHDBTimestamp getValidUntil() throws SQLException {
 
     Timestamp timestamp;
-    try (PreparedStatement prepareStatement = this.conn.prepareStatement("SELECT last_timestamp FROM osm_changeset_state")) {
+    try (PreparedStatement prepareStatement
+        = this.conn.prepareStatement("SELECT last_timestamp FROM osm_changeset_state")) {
       ResultSet executeQuery = prepareStatement.executeQuery();
       if (executeQuery.next()) {
         timestamp = executeQuery.getTimestamp(1);
@@ -70,7 +71,18 @@ public class ChangesetEnricher {
     }
     OSMChangeset changeset;
     try (PreparedStatement prepareStatement = this.conn.prepareStatement(
-        "SELECT user_id,created_at,min_lat,max_lat,min_lon,max_lon,closed_at,open,num_changes,user_name,tags "
+        "SELECT "
+          + "user_id,"
+          + "created_at,"
+          + "min_lat,"
+          + "max_lat,"
+          + "min_lon,"
+          + "max_lon,"
+          + "closed_at,"
+          + "open,"
+          + "num_changes,"
+          + "user_name,"
+          + "tags "
         + "FROM osm_changeset "
         + "WHERE id = ? ;")) {
       prepareStatement.setLong(1, changesetId);
@@ -88,7 +100,11 @@ public class ChangesetEnricher {
 
         OSHDBBoundingBox bbx;
         try {
-          bbx = new OSHDBBoundingBox(resultSet.getDouble("min_lon"), resultSet.getDouble("min_lat"), resultSet.getDouble("max_lon"), resultSet.getDouble("max_lat"));
+          bbx = new OSHDBBoundingBox(
+              resultSet.getDouble("min_lon"),
+              resultSet.getDouble("min_lat"),
+              resultSet.getDouble("max_lon"),
+              resultSet.getDouble("max_lat"));
         } catch (NullPointerException ex) {
           bbx = null;
         }
@@ -111,7 +127,17 @@ public class ChangesetEnricher {
 
         List<OSMChangesetComment> commentList = this.getChangesetComments(changesetId);
 
-        changeset = new OSMChangeset(changesetId, userId, createdAt, bbx, closedAt, open, numChanges, userName, tags, commentList);
+        changeset = new OSMChangeset(
+            changesetId,
+            userId,
+            createdAt,
+            bbx,
+            closedAt,
+            open,
+            numChanges,
+            userName,
+            tags,
+            commentList);
 
       } else {
         LOG.info("Unable to find changeset-id {} in database.", changesetId);
@@ -158,7 +184,12 @@ public class ChangesetEnricher {
 
           String commentText = resultSet.getString("comment_text");
 
-          OSMChangesetComment comment = new OSMChangesetComment(changesetId, commentUserId, commentUserName, commentDate, commentText);
+          OSMChangesetComment comment = new OSMChangesetComment(
+              changesetId,
+              commentUserId,
+              commentUserName,
+              commentDate,
+              commentText);
           commentList.add(comment);
         }
       }
