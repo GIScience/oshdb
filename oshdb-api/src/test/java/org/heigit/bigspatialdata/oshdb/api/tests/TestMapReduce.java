@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import java.util.List;
@@ -13,6 +8,8 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -184,5 +181,40 @@ abstract class TestMapReduce {
         .mapToInt(x -> x)
         .reduce(0, (a,b) -> a+b)
     );
+  }
+
+  @Test(expected = OSHDBTimeoutException.class)
+  public void testTimeoutMapReduce() throws Exception {
+    // set super short timeout -> all queries should fail
+    oshdb.timeoutInMilliseconds(1);
+
+    // simple query
+    //noinspection ResultOfMethodCallIgnored - we only test for thrown exceptions here
+    createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .map(snapshot -> snapshot.getEntity().getUserId())
+        .uniq();
+
+    // reset timeout
+    oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+  }
+
+  @Test(expected = OSHDBTimeoutException.class)
+  public void testTimeoutStream() throws Exception {
+    // set super short timeout -> all queries should fail
+    oshdb.timeoutInMilliseconds(1);
+
+    // simple query
+    //noinspection ResultOfMethodCallIgnored - we only test for thrown exceptions here
+    createMapReducerOSMEntitySnapshot()
+        .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .map(snapshot -> snapshot.getEntity().getUserId())
+        .stream()
+        .collect(Collectors.toSet());
+
+    // reset timeout
+    oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
   }
 }

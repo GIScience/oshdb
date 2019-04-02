@@ -2,9 +2,8 @@ package org.heigit.bigspatialdata.oshdb.index;
 
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid.IdRange;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import static org.junit.Assert.assertEquals;
@@ -261,13 +260,13 @@ public class XYGridTest {
   @Test
   public void testBbox2Ids() {
     OSHDBBoundingBox BBOX = new OSHDBBoundingBox(-180, -90, 180, 90);
-    Set<Pair<Long, Long>> result = zero.bbox2CellIdRanges(BBOX, false);
+    Set<IdRange> result = zero.bbox2CellIdRanges(BBOX, false);
 
     assertEquals(1, result.size());
-    Pair<Long, Long> interval = result.iterator().next();
+    IdRange interval = result.iterator().next();
 
-    assertEquals(0, interval.getLeft().longValue());
-    assertEquals(0, interval.getRight().longValue());
+    assertEquals(0, interval.getStart());
+    assertEquals(0, interval.getEnd());
 
     BBOX = new OSHDBBoundingBox(-180, -90, 180, 90);
     result = two.bbox2CellIdRanges(BBOX, false);
@@ -275,8 +274,8 @@ public class XYGridTest {
     assertEquals(2, result.size());
     interval = result.iterator().next();
 
-    assertEquals(0, interval.getLeft().longValue());
-    assertEquals(3, interval.getRight().longValue());
+    assertEquals(0, interval.getStart());
+    assertEquals(3, interval.getEnd());
 
     BBOX = new OSHDBBoundingBox(-10, -10, 10, 10);
     result = zero.bbox2CellIdRanges(BBOX, false);
@@ -284,8 +283,8 @@ public class XYGridTest {
     assertEquals(1, result.size());
     interval = result.iterator().next();
 
-    assertEquals(0, interval.getLeft().longValue());
-    assertEquals(0, interval.getRight().longValue());
+    assertEquals(0, interval.getStart());
+    assertEquals(0, interval.getEnd());
 
     BBOX = new OSHDBBoundingBox(179, 0, 89, 5);
     result = zero.bbox2CellIdRanges(BBOX, false);
@@ -293,8 +292,8 @@ public class XYGridTest {
     assertEquals(1, result.size());
     interval = result.iterator().next();
 
-    assertEquals(0, interval.getLeft().longValue());
-    assertEquals(0, interval.getRight().longValue());
+    assertEquals(0, interval.getStart());
+    assertEquals(0, interval.getEnd());
 
     BBOX = new OSHDBBoundingBox(-10, -10, 10, 10);
     TreeSet<Long> expectedCellIds = new TreeSet<>();
@@ -303,8 +302,8 @@ public class XYGridTest {
     expectedCellIds.add(5L);
     expectedCellIds.add(6L);
     result = two.bbox2CellIdRanges(BBOX, false);
-    for (Pair<Long, Long> interval2 : result) {
-      for (long cellId = interval2.getLeft(); cellId <= interval2.getRight(); cellId++) {
+    for (IdRange interval2 : result) {
+      for (long cellId = interval2.getStart(); cellId <= interval2.getEnd(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
       }
     }
@@ -317,8 +316,8 @@ public class XYGridTest {
     expectedCellIds.add(6L);
 
     result = two.bbox2CellIdRanges(BBOX, false);
-    for (Pair<Long, Long> interval2 : result) {
-      for (long cellId = interval2.getLeft(); cellId <= interval2.getRight(); cellId++) {
+    for (IdRange interval2 : result) {
+      for (long cellId = interval2.getStart(); cellId <= interval2.getEnd(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
       }
     }
@@ -332,8 +331,8 @@ public class XYGridTest {
     expectedCellIds.add(3L);
 
     result = two.bbox2CellIdRanges(BBOX, false);
-    for (Pair<Long, Long> interval2 : result) {
-      for (long cellId = interval2.getLeft(); cellId <= interval2.getRight(); cellId++) {
+    for (IdRange interval2 : result) {
+      for (long cellId = interval2.getStart(); cellId <= interval2.getEnd(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
       }
     }
@@ -342,8 +341,8 @@ public class XYGridTest {
     result = two.bbox2CellIdRanges(two.getCellDimensions(0), false);
     assertEquals(1, result.size());
     interval = result.iterator().next();
-    assertEquals(0, interval.getLeft().longValue());
-    assertEquals(0, interval.getRight().longValue());
+    assertEquals(0, interval.getStart());
+    assertEquals(0, interval.getEnd());
 
     // test performance for maximum sized BBOX
     BBOX = new OSHDBBoundingBox(-180, -90, 180, 90);
@@ -352,18 +351,18 @@ public class XYGridTest {
     result = new XYGrid(MAXZOOM).bbox2CellIdRanges(BBOX, true);
     assertEquals(expResult, result.size());
     interval = result.iterator().next();
-    assertEquals(0, interval.getLeft().longValue());
-    assertEquals((int)Math.pow(2,MAXZOOM)-1, interval.getRight().longValue());
+    assertEquals(0, interval.getStart());
+    assertEquals((int)Math.pow(2,MAXZOOM)-1, interval.getEnd());
   }
 
   @Test
   public void testGetNeighbours() {
     CellId center = new CellId(2, 6L);
-    Set<Pair<Long, Long>> expResult = new TreeSet<>();
-    expResult.add(new ImmutablePair<>(1L, 3L));
-    expResult.add(new ImmutablePair<>(5L, 7L));
-    expResult.add(new ImmutablePair<>(-1L, -1L));
-    Set<Pair<Long, Long>> result = two.getNeighbours(center);
+    Set<IdRange> expResult = new TreeSet<>();
+    expResult.add(IdRange.of(1L, 3L));
+    expResult.add(IdRange.of(5L, 7L));
+    expResult.add(IdRange.of(-1L, -1L));
+    Set<IdRange> result = two.getNeighbours(center);
     assertEquals(expResult, result);
   }
 

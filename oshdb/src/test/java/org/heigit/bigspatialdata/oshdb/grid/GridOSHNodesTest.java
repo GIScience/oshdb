@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import static org.junit.Assert.assertEquals;
@@ -24,7 +25,7 @@ public class GridOSHNodesTest {
             86809727l - 1000000 * i, 494094984l - 1000000 * i));
         versions.add(new OSMNode(123l + 10 * i, 2, new OSHDBTimestamp(123002l + 10 * i), 0l, 123, new int[] {},
             86809727l - 1000000 * i, 494094984l - 1000000 * i));
-        hosmNodes.add(OSHNode.build(versions));
+        hosmNodes.add(OSHNodeImpl.build(versions));
       }
 
       GridOSHNodes cell = GridOSHNodes.rebase(123, 2, 100, 100000l, 86000000, 490000000, hosmNodes);
@@ -34,7 +35,7 @@ public class GridOSHNodesTest {
       Iterator<OSHNode> itr = cell.iterator();
       while (itr.hasNext()) {
         OSHNode hn = itr.next();
-        Iterator<OSMNode> itr2 = hn.iterator();
+        Iterator<OSMNode> itr2 = hn.getVersions().iterator();
         while (itr2.hasNext()) {
           itr2.next();
           countNodes++;
@@ -59,7 +60,7 @@ public class GridOSHNodesTest {
           86809727l - 1000000 * i, 494094984l - 1000000 * i));
       versions.add(new OSMNode(123l + 10 * i, 2, new OSHDBTimestamp(123002l + 10 * i), 0l, 123, new int[] {},
           86809727l - 1000000 * i, 494094984l - 1000000 * i));
-      hosmNodes.add(OSHNode.build(versions));
+      hosmNodes.add(OSHNodeImpl.build(versions));
     }
 
     GridOSHNodes instance = GridOSHNodes.rebase(2, 2, 100, 100000l, 86000000, 490000000, hosmNodes);

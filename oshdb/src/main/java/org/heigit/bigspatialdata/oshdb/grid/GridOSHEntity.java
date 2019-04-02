@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.Locale;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
-public abstract class GridOSHEntity<HOSM extends OSHEntity<?>>
-    implements Iterable<HOSM>, Serializable {
+public abstract class GridOSHEntity
+    implements Serializable {
 
   private static final long serialVersionUID = 1L;
   protected final long id;
@@ -45,6 +45,8 @@ public abstract class GridOSHEntity<HOSM extends OSHEntity<?>>
   public int getLevel() {
     return level;
   }
+  
+  public abstract Iterable<? extends OSHEntity> getEntities();
 
   @Override
   public String toString() {

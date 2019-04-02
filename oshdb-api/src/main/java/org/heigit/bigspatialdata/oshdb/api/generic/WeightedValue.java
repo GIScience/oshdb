@@ -15,6 +15,8 @@ public class WeightedValue<X extends Number> {
   }
 
   /**
+   * Returns the stored numeric value.
+   *
    * @return the stored numeric value
    */
   public X getValue() {
@@ -22,6 +24,8 @@ public class WeightedValue<X extends Number> {
   }
 
   /**
+   * Returns the stored weight.
+   *
    * @return the value's associated weight
    */
   public double getWeight() {

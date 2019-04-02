@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.osh;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,10 +27,10 @@ public class OSHNodeTest {
     versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     versions.add(new OSMNode(123l, -2, new OSHDBTimestamp(2l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
 
-    OSHNode hnode = OSHNode.build(versions);
+    OSHNode hnode = OSHNodeImpl.build(versions);
     assertNotNull(hnode);
 
-    List<OSMNode> v = hnode.getVersions();
+    List<OSMNode> v = OSHEntities.toList(hnode.getVersions());
     assertNotNull(v);
     assertEquals(2, v.size());
   }
@@ -58,7 +59,7 @@ public class OSHNodeTest {
     versions.add(new OSMNode(3718143950l, 1, new OSHDBTimestamp(1440747974000l / 1000), 33637224, 3191558, new int[0],
         85391416000l / 100, 27676640000l / 100));
 
-    OSHNode hosm = OSHNode.build(versions);
+    OSHNode hosm = OSHNodeImpl.build(versions);
 
     /*
      * System.out.println("Datasize:" + hosm.getData().length);
@@ -76,7 +77,7 @@ public class OSHNodeTest {
     versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
 
-    OSHNode hnode = OSHNode.build(versions);
+    OSHNode hnode = OSHNodeImpl.build(versions);
 
     List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hnode);
     assertNotNull(tss);
@@ -92,7 +93,7 @@ public class OSHNodeTest {
     versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
     versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 0l, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1]));
 
-    OSHNode instance = OSHNode.build(versions);
+    OSHNode instance = OSHNodeImpl.build(versions);
     String expResult =
         "OSHNode ID:123 Vmax:+2+ Creation:1 BBox:(49.410283,8.675635),(49.418621,8.715334)";
     String result = instance.toString();

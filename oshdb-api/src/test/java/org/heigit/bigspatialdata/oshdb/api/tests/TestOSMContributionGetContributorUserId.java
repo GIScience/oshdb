@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
@@ -33,7 +35,7 @@ public class TestOSMContributionGetContributorUserId {
   public TestOSMContributionGetContributorUserId() throws Exception {
   }
 
-  private final OSHEntity dummyOshEntity = OSHNode.build(Collections.singletonList(
+  private final OSHEntity dummyOshEntity = OSHNodeImpl.build(Collections.singletonList(
       new OSMNode(-1L, 1, new OSHDBTimestamp(0L), 1L, 1, new int[]{}, 0, 0)
   ));
 
@@ -113,7 +115,7 @@ public class TestOSMContributionGetContributorUserId {
     versions.add(new OSMNode(3L, 1, new OSHDBTimestamp(121L), 2L, 6, new int[] {}, 0, 0));
 
     OSMWay entity = new OSMWay(1L, 1, new OSHDBTimestamp(122L), 1L, 1, new int[] {}, new OSMMember[] {
-        new OSMMember(3, OSMType.NODE, 0, OSHNode.build(versions))
+        new OSMMember(3, OSMType.NODE, 0, OSHNodeImpl.build(versions))
     });
     OSMContribution c = new OSMContribution(new IterateAllEntry(
         new OSHDBTimestamp(123),
@@ -147,7 +149,7 @@ public class TestOSMContributionGetContributorUserId {
     versions.add(new OSMWay(3L, 1, new OSHDBTimestamp(121L), 2L, 6, new int[] {}, new OSMMember[] {}));
 
     OSMRelation entity = new OSMRelation(1L, 1, new OSHDBTimestamp(122L), 1L, 1, new int[] {}, new OSMMember[] {
-        new OSMMember(3, OSMType.WAY, 0, OSHWay.build(versions, Collections.emptyList()))
+        new OSMMember(3, OSMType.WAY, 0, OSHWayImpl.build(versions, Collections.emptyList()))
     });
     OSMContribution c = new OSMContribution(new IterateAllEntry(
         new OSHDBTimestamp(123),
@@ -169,11 +171,11 @@ public class TestOSMContributionGetContributorUserId {
 
     List<OSMWay> versions = new ArrayList<>();
     versions.add(new OSMWay(2L, 1, new OSHDBTimestamp(120L), 0L, 2, new int[] {}, new OSMMember[] {
-        new OSMMember(3, OSMType.NODE, 0, OSHNode.build(nodeVersions))
+        new OSMMember(3, OSMType.NODE, 0, OSHNodeImpl.build(nodeVersions))
     }));
 
     OSMRelation entity = new OSMRelation(1L, 1, new OSHDBTimestamp(110L), 1L, 1, new int[] {}, new OSMMember[] {
-        new OSMMember(2, OSMType.WAY, 0, OSHWay.build(versions, Collections.singletonList(OSHNode.build(nodeVersions))))
+        new OSMMember(2, OSMType.WAY, 0, OSHWayImpl.build(versions, Collections.singletonList(OSHNodeImpl.build(nodeVersions))))
     });
     OSMContribution c = new OSMContribution(new IterateAllEntry(
         new OSHDBTimestamp(123),

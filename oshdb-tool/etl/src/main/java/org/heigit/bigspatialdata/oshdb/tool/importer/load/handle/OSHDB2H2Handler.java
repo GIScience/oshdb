@@ -13,8 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-
-import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
@@ -24,6 +22,7 @@ import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderNode;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderRelation;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.LoaderWay;
 import org.heigit.bigspatialdata.oshdb.tool.importer.load.cli.DBH2Arg;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 import com.beust.jcommander.JCommander;

@@ -14,7 +14,6 @@ public class OSMMember {
   private final long id;
   private final OSMType type;
   private final int roleId;
-  @SuppressWarnings("rawtypes")
   private final OSHEntity entity;
 
   public OSMMember(final long id, final OSMType type, final int roleId) {
@@ -22,7 +21,7 @@ public class OSMMember {
   }
 
   public OSMMember(final long id, final OSMType type, final int roleId,
-      @SuppressWarnings("rawtypes") OSHEntity entity) {
+      OSHEntity entity) {
     this.id = id;
     this.type = type;
     this.roleId = roleId;
@@ -45,7 +44,6 @@ public class OSMMember {
     return new OSHDBRole(roleId);
   }
 
-  @SuppressWarnings("rawtypes")
   public OSHEntity getEntity() {
     return entity;
   }

@@ -1,9 +1,16 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
 import com.google.common.collect.Streams;
-import com.vividsolutions.jts.geom.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -12,25 +19,41 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.*;
+import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
+import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
-import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
+import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Lineal;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.geom.Puntal;
+import org.locationtech.jts.geom.TopologyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
 
-  public interface OSHEntityFilter extends Predicate<OSHEntity>, Serializable {};
-  public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {};
+  public interface OSHEntityFilter extends Predicate<OSHEntity>, Serializable {}
+
+  public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {}
 
   private TreeSet<OSHDBTimestamp> timestamps;
   private OSHDBBoundingBox boundingBox;
@@ -146,7 +169,7 @@ public class CellIterator implements Serializable {
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
           cell.getLevel(),
           cell.getId()
-      ));
+      ), true);
       if (bboxOutsidePolygon.test(cellBoundingBox)) {
         return Stream.empty();
       }
@@ -155,7 +178,7 @@ public class CellIterator implements Serializable {
       allFullyInside = false;
     }
 
-    Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
+    Iterable<? extends OSHEntity> cellData = cell.getEntities();
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
@@ -166,13 +189,13 @@ public class CellIterator implements Serializable {
         // area of interest -> skip it
         return Stream.empty();
       }
-      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+      if (Streams.stream(oshEntity.getVersions()).noneMatch(osmEntityFilter)) {
         // none of this osh entity's versions matches the filter -> skip it
         return Stream.empty();
       }
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
-          (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+          (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
@@ -259,26 +282,26 @@ public class CellIterator implements Serializable {
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = new LazyEvaluatedObject<>(() -> {
-              Geometry _geom = OSHDBGeometryBuilder
+              Geometry geometry = OSHDBGeometryBuilder
                   .getGeometry(osmEntity, timestamp, tagInterpreter);
 
-              Polygon poly = (Polygon) _geom;
+              Polygon poly = (Polygon) geometry;
               Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
               for (int i = 0; i < poly.getNumInteriorRing(); i++) {
                 interiorRings[i] =
                     new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
               }
-              _geom = new MultiPolygon(interiorRings, gf);
+              geometry = new MultiPolygon(interiorRings, gf);
               if (!fullyInside) {
-                _geom = isBoundByPolygon
-                    ? fastPolygonClipper.intersection(_geom)
-                    : Geo.clip(_geom, boundingBox);
+                geometry = isBoundByPolygon
+                    ? fastPolygonClipper.intersection(geometry)
+                    : Geo.clip(geometry, boundingBox);
               }
-              return _geom;
+              return geometry;
             });
           }
 
-          if (fullyInside || (geom.get() != null && !geom.get().isEmpty())) {
+          if (fullyInside || !geom.get().isEmpty()) {
             LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
                 () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
             results.add(
@@ -291,13 +314,12 @@ public class CellIterator implements Serializable {
               );
             }
           }
-        } catch (UnsupportedOperationException err) {
-          // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
+          // maybe some corner case where JTS doesn't support operations on a broken geometry
           LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
-          // todo: can this even happen?
+          // happens e.g. in JTS intersection method when geometries are self-overlapping
           LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
               err.toString());
@@ -308,25 +330,48 @@ public class CellIterator implements Serializable {
     });
   }
 
-  private LazyEvaluatedObject<Geometry> constructClippedGeometry(OSMEntity osmEntity,
-      OSHDBTimestamp timestamp, boolean fullyInside) {
-    LazyEvaluatedObject<Geometry> geom;
+  private LazyEvaluatedObject<Geometry> constructClippedGeometry(
+      OSMEntity osmEntity,
+      OSHDBTimestamp timestamp,
+      boolean fullyInside
+  ) {
     if (fullyInside) {
-      geom = new LazyEvaluatedObject<>(() ->
+      return new LazyEvaluatedObject<>(() ->
           OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-      );
-    } else if (isBoundByPolygon) {
-      geom = new LazyEvaluatedObject<>(fastPolygonClipper.intersection(
-          OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter)
-      ));
-    } else {
-      geom = new LazyEvaluatedObject<>(
-          OSHDBGeometryBuilder.getGeometryClipped(
-              osmEntity, timestamp, tagInterpreter, boundingBox
-          )
       );
     }
-    return geom;
+    Geometry geometry = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+    OSHDBBoundingBox bbox = OSHDBGeometryBuilder.boundingBoxOf(geometry.getEnvelopeInternal());
+    if (isBoundByPolygon) {
+      if (bboxInPolygon.test(bbox)) {
+        return new LazyEvaluatedObject<>(geometry);
+      } else if (bboxOutsidePolygon.test(bbox)) {
+        return new LazyEvaluatedObject<>(createEmptyGeometryLike(geometry));
+      } else {
+        return new LazyEvaluatedObject<>(fastPolygonClipper.intersection(geometry));
+      }
+    } else {
+      if (bbox.isInside(this.boundingBox)) {
+        return new LazyEvaluatedObject<>(geometry);
+      } else if (!bbox.intersects(this.boundingBox)) {
+        return new LazyEvaluatedObject<>(createEmptyGeometryLike(geometry));
+      } else {
+        return new LazyEvaluatedObject<>(Geo.clip(geometry, this.boundingBox));
+      }
+    }
+  }
+
+  private Geometry createEmptyGeometryLike(Geometry geometry) {
+    GeometryFactory gf = new GeometryFactory();
+    if (geometry instanceof Polygonal) {
+      return gf.createPolygon((LinearRing) null);
+    } else if (geometry instanceof Lineal) {
+      return gf.createLineString((CoordinateSequence) null);
+    } else if (geometry instanceof Puntal) {
+      return gf.createPoint((Coordinate) null);
+    } else {
+      return gf.createGeometryCollection(null);
+    }
   }
 
   public static class IterateAllEntry {
@@ -382,7 +427,7 @@ public class CellIterator implements Serializable {
       OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
           cell.getLevel(),
           cell.getId()
-      ));
+      ), true);
       if (bboxOutsidePolygon.test(cellBoundingBox)) {
         return Stream.empty();
       }
@@ -397,7 +442,7 @@ public class CellIterator implements Serializable {
     }
 
     //noinspection unchecked
-    Iterable<OSHEntity<OSMEntity>> cellData = (Iterable<OSHEntity<OSMEntity>>) cell;
+    Iterable<? extends OSHEntity> cellData = cell.getEntities();
 
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity) ||
@@ -409,14 +454,14 @@ public class CellIterator implements Serializable {
         // area of interest -> skip it
         return Stream.empty();
       }
-      if (Streams.stream(oshEntity).noneMatch(osmEntityFilter)) {
+      if (Streams.stream(oshEntity.getVersions()).noneMatch(osmEntityFilter)) {
         // none of this osh entity's versions matches the filter -> skip it
         return Stream.empty();
       }
 
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox) &&
-              (!isBoundByPolygon || bboxInPolygon.test(boundingBox))
+              (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
@@ -478,8 +523,12 @@ public class CellIterator implements Serializable {
                 new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
                 new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
-                osmEntity.getChangeset()
+                osmEntity.getChangesetId()
             );
+            // cannot normally happen, because prev is never null while skipOutput is true (since no
+            // previous result has yet been generated before the first modification in the query
+            // timestamp inteval). But if the oshdb-api would at some point have to support non-
+            // contiguous timestamp intervals, this case could be needed.
             if (!skipOutput) {
               results.add(prev);
             }
@@ -541,23 +590,23 @@ public class CellIterator implements Serializable {
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = new LazyEvaluatedObject<>(() -> {
-              Geometry _geom = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
-              Polygon poly = (Polygon) _geom;
+              Geometry geometry = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+              Polygon poly = (Polygon) geometry;
               Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
               for (int i = 0; i < poly.getNumInteriorRing(); i++) {
                 interiorRings[i] =
                     new Polygon((LinearRing) poly.getInteriorRingN(i), new LinearRing[]{}, gf);
               }
-              _geom = new MultiPolygon(interiorRings, gf);
+              geometry = new MultiPolygon(interiorRings, gf);
               if (!fullyInside) {
-                _geom = Geo.clip(_geom, boundingBox);
+                geometry = Geo.clip(geometry, boundingBox);
               }
-              return _geom;
+              return geometry;
             });
           }
 
           LazyEvaluatedContributionTypes activity;
-          if (!fullyInside && (geom.get() == null || geom.get().isEmpty())) {
+          if (!fullyInside && geom.get().isEmpty()) {
             // either object is outside of current area or has invalid geometry
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
@@ -636,12 +685,12 @@ public class CellIterator implements Serializable {
             results.add(result);
           }
           prev = result;
-        } catch (UnsupportedOperationException err) {
-          // e.g. unsupported relation types go here
         } catch (IllegalArgumentException err) {
+          // maybe some corner case where JTS doesn't support operations on a broken geometry
           LOG.info("Entity {}/{} skipped because of invalid geometry at timestamp {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp);
         } catch (TopologyException err) {
+          // happens e.g. in JTS intersection method when geometries are self-overlapping
           LOG.info("Topology error with entity {}/{} at timestamp {}: {}",
               osmEntity.getType().toString().toLowerCase(), osmEntity.getId(), timestamp,
               err.toString());
