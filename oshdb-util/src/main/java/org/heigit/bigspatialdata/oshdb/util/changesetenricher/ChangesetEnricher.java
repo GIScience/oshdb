@@ -9,17 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChangesetEnricher {
+
   private static final Logger LOG = LoggerFactory.getLogger(ChangesetEnricher.class);
 
   private final Connection conn;
   private final Map<Long, OSMChangeset> changests;
+  private final PreparedStatement changesetPsbyId;
+  private final PreparedStatement changesetCommentPs;
 
   /**
    * This class works as a cache (like
@@ -33,9 +35,28 @@ public class ChangesetEnricher {
    *
    * @param conn The connection to the ohsome-changeset postgres-database.
    */
-  public ChangesetEnricher(Connection conn) {
+  public ChangesetEnricher(Connection conn) throws SQLException {
     this.changests = new ConcurrentHashMap<>(0);
     this.conn = conn;
+    this.changesetPsbyId = this.conn.prepareStatement(
+        "SELECT "
+          + "user_id,"
+          + "created_at,"
+          + "min_lat,"
+          + "max_lat,"
+          + "min_lon,"
+          + "max_lon,"
+          + "closed_at,"
+          + "open,"
+          + "num_changes,"
+          + "user_name,"
+          + "tags "
+        + "FROM osm_changeset "
+        + "WHERE id = ? ;");
+    this.changesetCommentPs= this.conn.prepareStatement(
+        "SELECT comment_user_id,comment_user_name,comment_date,comment_text "
+        + "FROM osm_changeset_comment "
+        + "WHERE comment_changeset_id = ? ;");
   }
 
   /**
@@ -74,23 +95,8 @@ public class ChangesetEnricher {
       return this.changests.get(changesetId);
     }
     OSMChangeset changeset;
-    try (PreparedStatement prepareStatement = this.conn.prepareStatement(
-        "SELECT "
-          + "user_id,"
-          + "created_at,"
-          + "min_lat,"
-          + "max_lat,"
-          + "min_lon,"
-          + "max_lon,"
-          + "closed_at,"
-          + "open,"
-          + "num_changes,"
-          + "user_name,"
-          + "tags "
-        + "FROM osm_changeset "
-        + "WHERE id = ? ;")) {
-      prepareStatement.setLong(1, changesetId);
-      ResultSet resultSet = prepareStatement.executeQuery();
+    this.changesetPsbyId.setLong(1, changesetId);
+    try (ResultSet resultSet = this.changesetPsbyId.executeQuery()) {
 
       if (resultSet.next()) {
         final Long userId = resultSet.getLong("user_id");
@@ -104,17 +110,17 @@ public class ChangesetEnricher {
         }
 
         OSHDBBoundingBox bbx;
-        boolean[] wasNull = new boolean[4];
+        boolean wasNull = false;
         double minLong = resultSet.getDouble("min_lon");
-        wasNull[0] = resultSet.wasNull();
+        wasNull &= resultSet.wasNull();
         double minLat = resultSet.getDouble("min_lat");
-        wasNull[1] = resultSet.wasNull();
+        wasNull &= resultSet.wasNull();
         double maxLon = resultSet.getDouble("max_lon");
-        wasNull[2] = resultSet.wasNull();
+        wasNull &= resultSet.wasNull();
         double maxLat = resultSet.getDouble("max_lat");
-        wasNull[3] = resultSet.wasNull();
+        wasNull &= resultSet.wasNull();
 
-        if (IntStream.range(0, wasNull.length).anyMatch(i -> wasNull[i])) {
+        if (wasNull) {
           bbx = null;
         } else {
           bbx = new OSHDBBoundingBox(minLong, minLat, maxLon, maxLat);
@@ -164,7 +170,7 @@ public class ChangesetEnricher {
 
   /**
    * Get comments of a specified changeset. May be null if no comments exist. Any field may also be
-   * null.
+   * null. The result is not cached.
    *
    * @param changesetId The id of the changeset the comments are requested for
    * @return A list of all changeset comments
@@ -172,13 +178,9 @@ public class ChangesetEnricher {
    */
   public List<OSMChangesetComment> getChangesetComments(long changesetId) throws SQLException {
     List<OSMChangesetComment> commentList = new ArrayList<>(1);
-    try (PreparedStatement prepareStatement = this.conn.prepareStatement(
-        "SELECT comment_user_id,comment_user_name,comment_date,comment_text "
-        + "FROM osm_changeset_comment "
-        + "WHERE comment_changeset_id = ? ;")) {
-      prepareStatement.setLong(1, changesetId);
-      ResultSet resultSet = prepareStatement.executeQuery();
-
+    
+    this.changesetCommentPs.setLong(1, changesetId);
+    try (ResultSet resultSet = this.changesetCommentPs.executeQuery()) {
       if (!resultSet.isBeforeFirst()) {
         return null;
       } else {
