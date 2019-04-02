@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.heigit.bigspatialdata.oshdb-api-tutorial</groupId>
+  <artifactId>oshdb-first-steps</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+ 
+  <dependencies>
+    <dependency>
+      <groupId>org.heigit.bigspatialdata</groupId>
+      <artifactId>oshdb-api</artifactId>
+      <version>0.5.0</version>
+      <type>jar</type>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>oshdb-releases</id>
+      <name>Heigit/GIScience repository (releases)</name>
+      <url>http://repo.heigit.org/artifactory/libs-release-local</url>
+    </repository>
+  </repositories>
+
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+</project>
