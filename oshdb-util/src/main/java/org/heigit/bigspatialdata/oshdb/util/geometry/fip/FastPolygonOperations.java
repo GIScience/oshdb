@@ -1,12 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygonal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Polygonal;
 
 public class FastPolygonOperations implements Serializable {
   private final int AVERAGE_VERTICES_PER_BLOCK = 40; // todo: finetune this value
@@ -104,7 +104,7 @@ public class FastPolygonOperations implements Serializable {
   }
 
   public Geometry intersection(Geometry other) {
-    if (other == null) return null;
+    if (other == null || other.isEmpty()) return other;
     Envelope otherEnv = other.getEnvelopeInternal();
 
     int minBandX = Math.max(0, Math.min(numBands - 1, (int)Math.floor((otherEnv.getMinX() - env.getMinX())/envWidth * numBands)));

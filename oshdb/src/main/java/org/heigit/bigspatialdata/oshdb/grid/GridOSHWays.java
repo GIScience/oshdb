@@ -2,12 +2,15 @@ package org.heigit.bigspatialdata.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 
-@SuppressWarnings("rawtypes")
-public class GridOSHWays extends GridOSHEntity {
+public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
 
   private static final long serialVersionUID = 1L;
 
@@ -18,11 +21,11 @@ public class GridOSHWays extends GridOSHEntity {
     final int[] index = new int[list.size()];
     int offset = 0;
     for (int i = 0; i < index.length; i++) {
-      final OSHWay c = list.get(i).rebase(baseId, baseTimestamp, baseLongitude, baseLatitude);
-      final byte[] buffer = c.getData();
+      final OSHWay osh = list.get(i);
+      final ByteBuffer buffer = OSHWayImpl.buildRecord(OSHEntities.toList(osh.getVersions()), osh.getNodes(), baseId, baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
-      out.write(buffer);
-      offset += buffer.length;
+      out.write(buffer.array(), 0, buffer.remaining());
+      offset += buffer.remaining();
     }
     final byte[] data = out.toByteArray();
 
@@ -32,6 +35,11 @@ public class GridOSHWays extends GridOSHEntity {
   public GridOSHWays(final long id, final int level, final long baseId, final long baseTimestamp,
           final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
+  }
+  
+  @Override
+  public Iterable<? extends OSHEntity> getEntities() {
+    return this;
   }
 
   @Override
@@ -45,7 +53,7 @@ public class GridOSHWays extends GridOSHEntity {
         int length = ((pos < index.length - 1) ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
-          return OSHWay.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
+          return OSHWayImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
                   baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();

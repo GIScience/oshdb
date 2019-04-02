@@ -7,9 +7,8 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
-import org.heigit.bigspatialdata.oshdb.osh2.OSHEntity2;
+import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.OSHEntity2;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
 

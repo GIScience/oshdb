@@ -27,6 +27,7 @@ public class ISODateTimeParser {
    *  combined: 2011-10-03T20[Z]
    *  combined: 2011-10-03T20:15[Z]
    *  combined: 2011-10-03T20:15:25[Z]
+   *  combined: 2011-10-03T20:15:25.123[Z]
    *  
    * @param isoDateTimeString ISO Date or ISO DateTime string
    * @return ZonedDateTime
@@ -72,6 +73,14 @@ public class ISODateTimeParser {
       break;
     case 20:
       // pattern = "uuuu-MM-DDTHH:MM:ssZ";
+      zdt = ZonedDateTime.parse(isoDateTimeString, DateTimeFormatter.ISO_DATE_TIME);
+      break;
+    case 23:
+      // pattern = "uuuu-MM-DDTHH:MM:ss.sss";
+      zdt = LocalDateTime.parse(isoDateTimeString+"Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
+      break;
+    case 24:
+      // pattern = "uuuu-MM-DDTHH:MM:ss.sssZ";
       zdt = ZonedDateTime.parse(isoDateTimeString, DateTimeFormatter.ISO_DATE_TIME);
       break;
     default:

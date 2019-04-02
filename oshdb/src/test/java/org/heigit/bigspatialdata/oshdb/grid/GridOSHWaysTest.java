@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
@@ -19,7 +21,7 @@ public class GridOSHWaysTest {
 
   static OSHNode buildHOSMNode(List<OSMNode> versions) {
     try {
-      return OSHNode.build(versions);
+      return OSHNodeImpl.build(versions);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -42,7 +44,7 @@ public class GridOSHWaysTest {
               new OSMWay(123, 1, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 1, 2, 1}, new OSMMember[]{new OSMMember(102, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)}));
       versions.add(
               new OSMWay(123, 3, new OSHDBTimestamp(3333l), 4444l, 23, new int[]{1, 1, 2, 2}, new OSMMember[]{new OSMMember(100, OSMType.NODE, 0), new OSMMember(104, OSMType.NODE, 0)}));
-      hosmWays.add(OSHWay.build(versions, Arrays.asList(node100, node102, node104)));
+      hosmWays.add(OSHWayImpl.build(versions, Arrays.asList(node100, node102, node104)));
     }
 
     GridOSHWays instance = GridOSHWays.compact(2, 2, 100, 100000l, 86000000, 490000000, hosmWays);

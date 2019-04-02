@@ -13,16 +13,24 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.tuple.Pair;
-import org.heigit.bigspatialdata.oshdb.TableNames;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.util.CellId;
+import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 
-abstract class MapReducerJdbc<X> extends MapReducer<X> {
+abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProcessStatus {
+
+  /**
+   * Stores the start time of reduce/stream operation as returned by
+   * {@link System#currentTimeMillis()}. Used to determine query timeouts.
+   */
+  protected long executionStartTimeMillis;
+
   MapReducerJdbc(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
@@ -32,26 +40,32 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> {
     super(obj);
   }
 
+  @Override
+  public boolean isActive() {
+    if (timeout != null && System.currentTimeMillis() - executionStartTimeMillis > timeout) {
+      throw new OSHDBTimeoutException();
+    }
+    return true;
+  }
 
-  protected ResultSet getOshCellsRawDataFromDb(Pair<CellId, CellId> cellIdRange) throws SQLException {
-    String sqlQuery = this._typeFilter.stream()
-        .map(osmType -> TableNames.forOSMType(osmType)
-            .map(tn -> tn.toString(this._oshdb.prefix())))
+  protected ResultSet getOshCellsRawDataFromDb(CellIdRange cellIdRange)
+      throws SQLException {
+    String sqlQuery = this.typeFilter.stream()
+        .map(osmType ->
+            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
+        )
         .filter(Optional::isPresent).map(Optional::get)
         .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
         .collect(Collectors.joining(" union all "));
-    // fetch data from H2 DB
-    PreparedStatement pstmt = ((OSHDBJdbc)this._oshdb).getConnection().prepareStatement(sqlQuery);
-    pstmt.setInt(1, cellIdRange.getLeft().getZoomLevel());
-    pstmt.setLong(2, cellIdRange.getLeft().getId());
-    pstmt.setLong(3, cellIdRange.getRight().getId());
-
-    // execute statement
+    PreparedStatement pstmt = ((OSHDBJdbc)this.oshdb).getConnection().prepareStatement(sqlQuery);
+    pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
+    pstmt.setLong(2, cellIdRange.getStart().getId());
+    pstmt.setLong(3, cellIdRange.getEnd().getId());
     return pstmt.executeQuery();
   }
 
   /**
-   * returns data of one cell from the raw data stream
+   * Returns data of one cell from the raw data stream.
    */
   protected GridOSHEntity readOshCellRawData(ResultSet oshCellsRawData)
       throws IOException, ClassNotFoundException, SQLException {
@@ -60,7 +74,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> {
   }
 
   @Nonnull
-  protected Stream<? extends GridOSHEntity> getOshCellsStream(Pair<CellId, CellId> cellIdRange) {
+  protected Stream<? extends GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange) {
     try {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
       if (!oshCellsRawData.next()) {

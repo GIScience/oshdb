@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-core-parent</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
 
@@ -24,11 +24,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>oshdb-util</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
     </dependency>
 
     <dependency>
@@ -71,13 +66,6 @@
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.25</version>
-      <scope>test</scope>
-    </dependency>
     
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -96,6 +84,20 @@
       <artifactId>t-digest</artifactId>
       <version>3.2</version>
     </dependency>
+    
+    <!-- TEST dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+    
   </dependencies>
 
   <build>

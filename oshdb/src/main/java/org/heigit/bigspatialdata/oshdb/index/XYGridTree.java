@@ -3,11 +3,11 @@ package org.heigit.bigspatialdata.oshdb.index;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
+import org.heigit.bigspatialdata.oshdb.index.XYGrid.IdRange;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
@@ -42,6 +42,7 @@ public class XYGridTree implements Serializable {
    * @param latitude
    * @return An iterator over the cellIds in all zoomlevel
    */
+  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
     return new Iterable<CellId>() {
 
@@ -96,7 +97,7 @@ public class XYGridTree implements Serializable {
   }
 
   /**
-   * Query cells for given BBOX. The boundingbox is automatically enlarged, so
+   * Query cells for given bbox. The boundingbox is automatically enlarged, so
    * lines and relations are included.
    *
    * @param BBOX
@@ -107,22 +108,23 @@ public class XYGridTree implements Serializable {
   }
 
   /**
-   * Get CellIds in all zoomlevel for a given BBOX.
+   * Get CellIds in all zoomlevel for a given bbox.
    *
    * @param BBOX
    * @param enlarge
    * @return
    */
+  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX, final boolean enlarge) {
     return new Iterable<CellId>() {
       @Override
       public Iterator<CellId> iterator() {
         return new Iterator<CellId>() {
           private int level = 0;
-          private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-          private Pair<Long, Long> row = rows.next();
-          private Long maxID = row.getRight();
-          private Long currID = row.getLeft() - 1;
+          private Iterator<IdRange> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+          private IdRange row = rows.next();
+          private long maxID = row.getEnd();
+          private long currID = row.getStart() - 1;
 
           @Override
           public boolean hasNext() {
@@ -143,15 +145,15 @@ public class XYGridTree implements Serializable {
             }
             if (rows.hasNext()) {
               row = rows.next();
-              currID = row.getLeft();
-              maxID = row.getRight();
+              currID = row.getStart();
+              maxID = row.getEnd();
               return new CellId(level, currID);
             }
             level++;
             rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
             row = rows.next();
-            currID = row.getLeft();
-            maxID = row.getRight();
+            currID = row.getStart();
+            maxID = row.getEnd();
             return new CellId(level, currID);
           }
         };
@@ -159,34 +161,88 @@ public class XYGridTree implements Serializable {
     };
   }
 
+  public static class CellIdRange implements Serializable{
+
+    private static final long serialVersionUID = -8704075537597232890L;
+
+    private final CellId start;
+    private final CellId end;
+
+    public static CellIdRange of(CellId start, CellId end) {
+      return new CellIdRange(start, end);
+    }
+
+    private CellIdRange(CellId start, CellId end) {
+      this.start = start;
+      this.end = end;
+    }
+    
+    public CellId getStart() {
+      return start;
+    }
+
+    public CellId getEnd() {
+      return end;
+    }
+
+
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(start, end);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (!(obj instanceof CellIdRange)) {
+        return false;
+      }
+      CellIdRange other = (CellIdRange) obj;
+      return Objects.equals(end, other.end) && Objects.equals(start, other.start);
+    }
+  }
+
   /**
-   * Get CellIds in all zoomlevel for a given BBOX.
+   * Get CellIds in all zoomlevel for a given bbox.
    *
-   * @param BBOX
+   * @param bbox
    * @param enlarge
    * @return
    */
-  public Iterable<Pair<CellId, CellId>> bbox2CellIdRanges(final OSHDBBoundingBox BBOX, final boolean enlarge) {
-    return (Iterable<Pair<CellId, CellId>> & Serializable) () -> new Iterator<Pair<CellId, CellId>>() {
-      private int level = 0;
-      private Iterator<Pair<Long, Long>> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-
+  @SuppressWarnings("Convert2Lambda")
+  public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox, final boolean enlarge) {
+    return new Iterable<CellIdRange>() {
       @Override
-      public boolean hasNext() {
-        return level < maxLevel || rows.hasNext();
-      }
+      public Iterator<CellIdRange> iterator() {
+        return new Iterator<CellIdRange>() {
+          private int level = 0;
+          private Iterator<IdRange> rows =
+              gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
 
-      @Override
-      public Pair<CellId, CellId> next() {
-        if (!rows.hasNext()) {
-          level++;
-          rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
-        }
-        Pair<Long, Long> row = rows.next();
-        return new ImmutablePair<>(
-            new CellId(level, row.getLeft()),
-            new CellId(level, row.getRight())
-        );
+          @Override
+          public boolean hasNext() {
+            return level < maxLevel || rows.hasNext();
+          }
+
+          @Override
+          public CellIdRange next() {
+            if (!rows.hasNext()) {
+              level++;
+              rows = gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
+            }
+            IdRange row = rows.next();
+            return CellIdRange.of(
+                new CellId(level, row.getStart()),
+                new CellId(level, row.getEnd())
+            );
+          }
+        };
       }
     };
   }

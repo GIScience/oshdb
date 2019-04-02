@@ -1,12 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map.Entry;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -40,21 +35,21 @@ public class TestFlatMapReduce {
 
   @Test
   public void test() throws Exception {
-    Set<Pair<Integer, Integer>> result = createMapReducerOSMContribution()
+    Set<Entry<Integer, Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(contribution -> {
           if (contribution.getEntityAfter().getId() != 617308093)
             return new ArrayList<>();
-          List<Pair<Integer, Integer>> ret = new ArrayList<>();
+          List<Entry<Integer, Integer>> ret = new ArrayList<>();
           int[] tags = contribution.getEntityAfter().getRawTags();
           for (int i=0; i<tags.length; i+=2)
-            ret.add(new ImmutablePair<>(tags[i], tags[i+1]));
+            ret.add(new SimpleImmutableEntry<>(tags[i], tags[i+1]));
           return ret;
         })
         .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
-            (x,y) -> { HashSet<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
+            (x,y) -> { HashSet<Entry<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
         );
 
     assertEquals(2, result.size());

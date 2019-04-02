@@ -5,11 +5,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
-
 public class OSHDBBoundingBoxTest {
 
   public OSHDBBoundingBoxTest() {

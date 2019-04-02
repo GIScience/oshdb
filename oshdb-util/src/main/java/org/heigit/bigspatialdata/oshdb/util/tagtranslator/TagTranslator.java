@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.util.tagtranslator;
 
-import org.heigit.bigspatialdata.oshdb.TableNames;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 import org.slf4j.Logger;

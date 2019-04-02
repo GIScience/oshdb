@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
+import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,18 +18,18 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedPolygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.Polygonal;
 
 /**
  *
@@ -192,12 +193,12 @@ public class OSHDBGeometryBuilder {
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the
     // effort? see below for a possibly much easier implementation.
     List<Polygon> polys = outerRings.stream().map(outer -> {
-      Polygon outerPolygon = new Polygon(outer, null, geometryFactory);
-      List<LinearRing> matchingInners = innerRings.stream()
-          .filter(ring -> ring.within(outerPolygon)).collect(Collectors.toList());
+      PreparedGeometry outerPolygon = new PreparedPolygon(geometryFactory.createPolygon(outer));
       // todo: check for inners containing other inners -> inner-in-outer-in-inner-in-outer case
-      return new Polygon(outer, matchingInners.toArray(new LinearRing[matchingInners.size()]),
-          geometryFactory);
+      return geometryFactory.createPolygon(
+          outer,
+          innerRings.stream().filter(outerPolygon::contains).toArray(LinearRing[]::new)
+      );
     }).collect(Collectors.toList());
 
     // todo: what to do with unmatched inner rings??
@@ -229,29 +230,29 @@ public class OSHDBGeometryBuilder {
         boolean joinable = false;
         for (int i = 0; i < ways.size(); i++) {
           List<OSMNode> what = ways.get(i);
-          if (lastId == what.get(0).getId()) { // end of partial ring matches to start of current
-                                               // line
+          if (lastId == what.get(0).getId()) {
+            // end of partial ring matches to start of current line
             what.remove(0);
             current.addAll(what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(what.size() - 1).getId()) { // start of partial ring
-                                                                     // matches end of current line
+          } else if (firstId == what.get(what.size() - 1).getId()) {
+            // start of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(0, what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (lastId == what.get(what.size() - 1).getId()) { // end of partial ring matches
-                                                                    // end of current line
+          } else if (lastId == what.get(what.size() - 1).getId()) {
+            // end of partial ring matches end of current line
             what.remove(what.size() - 1);
             current.addAll(Lists.reverse(what));
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(0).getId()) { // start of partial ring matches start of
-                                                       // current line
+          } else if (firstId == what.get(0).getId()) {
+            // start of partial ring matches start of current line
             what.remove(0);
             current.addAll(0, Lists.reverse(what));
             ways.remove(i);
@@ -281,24 +282,35 @@ public class OSHDBGeometryBuilder {
     return Geo.clip(geom, clipPoly);
   }
   
- 
- /**
-  * returns JTS geometry object for convenience
-  *
-  * @return com.vividsolutions.jts.geom.Geometry
-  */
- public static Polygon getGeometry(OSHDBBoundingBox bbox) {
-   GeometryFactory gf = new GeometryFactory();
-   Geometry g = gf.toGeometry(new Envelope(bbox.getMinLon(), bbox.getMaxLon(), bbox.getMinLat(), bbox.getMaxLat()));
-   if (g instanceof Polygon)
-     return (Polygon) g;
-   else
-    return gf.createPolygon((LinearRing) null);
- }
- 
- 
- public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
-   return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
- }
+  /**
+   * Converts a OSHDBBoundingBox to a rectangular polygon.
+   *
+   * <p>
+   * Will return a polygon with exactly 4 vertices even for point or line-like BoundingBox.
+   * Nevertheless, for degenerate bounding boxes (width and/or height of 0) the result might
+   * not pass the {@link Geometry#isRectangle() Geometry.isRectangle} test.
+   * </p>
+   *
+   * @param bbox The BoundingBox the polygon should be created for.
+   * @return a rectangular Polygon
+   */
+  public static Polygon getGeometry(OSHDBBoundingBox bbox) {
+    assert bbox != null : "a bounding box is not allowed to be null";
+    
+    GeometryFactory gf = new GeometryFactory();
+        
+    Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
+    Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
+    Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());
+    Coordinate ne = new Coordinate(bbox.getMinLon(), bbox.getMaxLat());
+
+    Coordinate[] cordAr = {sw, se, nw, ne, sw};
+
+    return gf.createPolygon(cordAr);
+  }
+  
+  public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
+    return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
+  }
 
 }

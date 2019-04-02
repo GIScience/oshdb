@@ -1,11 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.index;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -47,7 +46,6 @@ public class XYGrid implements Serializable {
   
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
-  private static final double EPSILON = OSHDB.GEOM_PRECISION;
 
   /**
    * Calculate the OSHDBBoundingBox of a specific GridCell.
@@ -56,8 +54,35 @@ public class XYGrid implements Serializable {
    * @return
    */
   public static OSHDBBoundingBox getBoundingBox(final CellId cellID) {
-    XYGrid temp = new XYGrid(cellID.getZoomLevel());
-    return temp.getCellDimensions(cellID.getId());
+    XYGrid grid = new XYGrid(cellID.getZoomLevel());
+    return grid.getCellDimensions(cellID.getId());
+  }
+
+  /**
+   * Calculate the OSHDBBoundingBox of a specific GridCell.
+   *
+   * @param cellID
+   * @param enlarge
+   * @return
+   */
+  public static OSHDBBoundingBox getBoundingBox(final CellId cellID, boolean enlarge) {
+    if (!enlarge) {
+      return getBoundingBox(cellID);
+    }
+    XYGrid grid = new XYGrid(cellID.getZoomLevel());
+    long id = cellID.getId();
+    int x = (int) (id % grid.zoompow);
+    int y = (int) ((id - x) / grid.zoompow);
+    long topRightId = id;
+    if (x < grid.zoompow - 1) {
+      topRightId += 1;
+    }
+    if (y < grid.zoompow / 2 - 1) {
+      topRightId += grid.zoompow;
+    }
+    OSHDBBoundingBox result = grid.getCellDimensions(id);
+    result.add(grid.getCellDimensions(topRightId));
+    return result;
   }
 
   private final int zoom;
@@ -197,24 +222,77 @@ public class XYGrid implements Serializable {
   public int getLevel() {
     return zoom;
   }
+  
+  public static class IdRange implements Comparable<IdRange>, Serializable {
+
+    private static final long serialVersionUID = 371851731642753753L;
+
+    public static final IdRange INVALID = new IdRange(-1L,-1L);
+
+    private final long start;
+    private final long end;
+
+    public static IdRange of(long start, long end) {
+      return new IdRange(start,end);
+    }
+
+    private IdRange(long start, long end) {
+      this.start = start;
+      this.end = end;
+    }
+
+    public long getStart() {
+      return start;
+    }
+
+    public long getEnd() {
+      return end;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(end, start);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (!(obj instanceof IdRange)) {
+        return false;
+      }
+      IdRange other = (IdRange) obj;
+      return end == other.end && start == other.start;
+    }
+
+    @Override
+    public int compareTo(IdRange o) {
+      int c = Long.compare(start, o.start);
+      if (c == 0) {
+        c = Long.compare(end, o.end);
+      }
+      return c;
+    }
+  }
 
   /**
-   * Calculates all tiles, that lie within a bounding-box. TODO but priority
-   * 999: Add possibility to snap the BBX to the tile-grid. TODO: is an
-   * exception needed?
+   * Calculates all tiles, that lie within a bounding-box.
    *
-   * @param bbox The bounding box. First dimension is longitude, second is
-   * latitude.
-   * @param enlarge if true, the BBOX is enlarged by one tile to the south-west
-   * to include tiles that possibly hold way or relation information, if false
-   * only holds tiles that intersect with the given BBOX. For queries: false is
-   * for nodes while true is for ways and relations.
+   * TODO but priority 999: Add possibility to snap the BBX to the tile-grid.
+   * TODO: is an exception needed?
    *
+   * @param bbox The bounding box. First dimension is longitude, second is latitude.
+   * @param enlarge if true, the BBOX is enlarged by one tile to the south-west (bottom-left)
+   *        direction, if false only holds tiles that intersect with the given BBOX.
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
-  public Set<Pair<Long, Long>> bbox2CellIdRanges(OSHDBBoundingBox bbox, boolean enlarge) {
+  public Set<IdRange> bbox2CellIdRanges(OSHDBBoundingBox bbox, boolean enlarge) {
     //initialise basic variables
-    Set<Pair<Long, Long>> result = new TreeSet<>();
+    Set<IdRange> result = new TreeSet<>();
     long minlong = bbox.getMinLonLong();
     long minlat = bbox.getMinLatLong();
     long maxlong = bbox.getMaxLonLong();
@@ -225,7 +303,7 @@ public class XYGrid implements Serializable {
       return null;
     }
 
-    Pair<Long, Long> outofboundsCell = new ImmutablePair<>(-1L, -1L);
+    IdRange outofboundsCell = IdRange.INVALID;
     //test if bbox is on earth or extends further
     if (minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
@@ -288,7 +366,7 @@ public class XYGrid implements Serializable {
     }
     //add the regular cell ranges
     for (int row = rowmin; row <= rowmax; row++) {
-      result.add(new ImmutablePair<>(row * zoompow + columnmin, row * zoompow + columnmax));
+      result.add(IdRange.of(row * zoompow + columnmin, row * zoompow + columnmax));
     }
     return result;
   }
@@ -301,7 +379,7 @@ public class XYGrid implements Serializable {
    * the cell itself. -1L,-1L will be added, if this cell lies on the edge of
    * the XYGrid
    */
-  public Set<Pair<Long, Long>> getNeighbours(CellId center) {
+  public Set<IdRange> getNeighbours(CellId center) {
     if (center.getZoomLevel() != this.zoom) {
       //might return neighbours in current zoomlevel given the bbox of the provided CellId one day
       return null;

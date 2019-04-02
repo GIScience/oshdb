@@ -1,61 +1,61 @@
 package org.heigit.bigspatialdata.oshdb.api.db;
 
+import com.google.common.base.Joiner;
 import java.io.File;
-import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.OptionalLong;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
-import org.heigit.bigspatialdata.oshdb.TableNames;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
-import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
 
-public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Serializable {
-
+/**
+ * OSHDB database backend connector to a Ignite system.
+ */
+public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   public enum ComputeMode {
     LocalPeek,
     ScanQuery,
     AffinityCall
   }
 
-  private final Ignite _ignite;
-  private ComputeMode _computeMode = ComputeMode.LocalPeek;
-  private Long _timeout = null;
+  private final transient Ignite ignite;
+  private ComputeMode computeMode = ComputeMode.LocalPeek;
 
-  private IgniteRunnable onOpenCallback = null;
   private IgniteRunnable onCloseCallback = null;
 
-  public OSHDBIgnite() throws SQLException, ClassNotFoundException {
+  public OSHDBIgnite() {
     this(new File("ignite-config.xml"));
   }
 
   public OSHDBIgnite(Ignite ignite) {
-    this._ignite = ignite;
-    this._ignite.cluster().active(true);
+    this.ignite = ignite;
+    this.ignite.cluster().active(true);
   }
 
   public OSHDBIgnite(String igniteConfigFilePath) {
     this(new File(igniteConfigFilePath));
   }
 
+  /**
+   * Opens a connection to oshdb data stored on an Ignite cluster.
+   *
+   * @param igniteConfig ignite configuration file
+   */
   public OSHDBIgnite(File igniteConfig) {
     Ignition.setClientMode(true);
 
-    this._ignite = Ignition.start(igniteConfig.toString());
-    this._ignite.cluster().active(true);
+    this.ignite = Ignition.start(igniteConfig.toString());
+    this.ignite.cluster().active(true);
   }
 
   @Override
@@ -72,7 +72,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
         .map(t -> t.toString(this.prefix()))
         .collect(Collectors.toList());
     if (!allCaches.containsAll(expectedCaches)) {
-      throw new OSHDBTableNotFoundException(StringUtils.join(expectedCaches, ", "));
+      throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedCaches));
     }
     switch (this.computeMode()) {
       case LocalPeek:
@@ -85,7 +85,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
         mapReducer = new MapReducerIgniteAffinityCall<X>(this, forClass);
         break;
       default:
-        throw new UnsupportedOperationException("Backend not implemented for this database option.");
+        throw new UnsupportedOperationException("Backend not implemented for this compute mode.");
     }
     return mapReducer;
   }
@@ -97,70 +97,38 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
   }
 
   public Ignite getIgnite() {
-    return this._ignite;
+    return this.ignite;
   }
 
   public void close() {
-    this._ignite.close();
+    this.ignite.close();
   }
 
+  /**
+   * Sets the compute mode.
+   *
+   * @param computeMode the compute mode to be used in calculations on this oshdb backend
+   * @return this backend
+   */
   public OSHDBIgnite computeMode(ComputeMode computeMode) {
-    this._computeMode = computeMode;
+    this.computeMode = computeMode;
     return this;
   }
 
+  /**
+   * Gets the set compute mode.
+   *
+   * @return the currently set compute mode
+   */
   public ComputeMode computeMode() {
-    return this._computeMode;
-  }
-
-  /**
-   * Set a timeout for queries on this ignite oshdb backend.
-   *
-   * If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be thrown.
-   *
-   * @param seconds time (in seconds) a query is allowed to run for.
-   * @return the current oshdb object
-   */
-  public OSHDBIgnite timeout(double seconds) {
-    if (this.computeMode() == ComputeMode.ScanQuery) {
-      throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
-    }
-    this._timeout = (long)Math.ceil(seconds*1000);
-    return this;
-  }
-
-  /**
-   * Set a timeout for queries on this ignite oshdb backend.
-   *
-   * If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be thrown.
-   *
-   * @param milliSeconds time (in milliseconds) a query is allowed to run for.
-   * @return the current oshdb object
-   */
-  public OSHDBIgnite timeoutInMilliseconds(long milliSeconds) {
-    if (this.computeMode() == ComputeMode.ScanQuery) {
-      throw new UnsupportedOperationException("Query timeouts not implemented in ScanQuery mode");
-    }
-    this._timeout = milliSeconds;
-    return this;
-  }
-
-  /**
-   * @return the currently set query timeout in milliseconds
-   */
-  public OptionalLong timeoutInMilliseconds() {
-    if (this._timeout == null) {
-      return OptionalLong.empty();
-    } else {
-      return OptionalLong.of(this._timeout);
-    }
+    return this.computeMode;
   }
 
   /**
    * Sets a callback to be executed on all ignite workers after the query has been finished.
    *
-   * This can be used to close connections to (temporary) databases that were used to store or
-   * retrieve intermediate data.
+   * <p>This can be used to close connections to (temporary) databases that were used to store or
+   * retrieve intermediate data.</p>
    *
    * @param action the callback to execute after a query is done
    * @return the current oshdb database object
@@ -172,6 +140,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable, Seriali
 
 
   /**
+   * Gets the onClose callback.
+   *
    * @return the currently set onClose callback
    */
   public Optional<IgniteRunnable> onClose() {

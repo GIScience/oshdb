@@ -1,12 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map.Entry;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -42,28 +37,28 @@ public class TestFlatMapAggregate {
 
   @Test
   public void test() throws Exception {
-    SortedMap<Long, Set<Pair<Integer, Integer>>> result = createMapReducerOSMContribution()
+    SortedMap<Long, Set<Entry<Integer, Integer>>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(
             contribution -> {
               if (contribution.getEntityAfter().getId() != 617308093)
                 return new ArrayList<>();
-              List<Pair<Long, Pair<Integer, Integer>>> ret = new ArrayList<>();
+              List<Entry<Long, Entry<Integer, Integer>>> ret = new ArrayList<>();
               int[] tags = contribution.getEntityAfter().getRawTags();
               for (int i=0; i<tags.length; i+=2)
-                ret.add(new ImmutablePair<>(
+                ret.add(new SimpleImmutableEntry<>(
                     contribution.getEntityAfter().getId(),
-                    new ImmutablePair<>(tags[i], tags[i+1])
+                    new SimpleImmutableEntry<>(tags[i], tags[i+1])
                 ));
               return ret;
             }
         )
-        .aggregateBy(Pair::getKey)
-        .map(Pair::getValue)
+        .aggregateBy(Entry::getKey)
+        .map(Entry::getValue)
         .reduce(
             HashSet::new,
             (x,y) -> { x.add(y); return x; },
-            (x,y) -> { Set<Pair<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
+            (x,y) -> { Set<Entry<Integer, Integer>> ret = new HashSet<>(x); ret.addAll(y); return ret; }
         );
 
     assertEquals(1, result.entrySet().size());

@@ -14,13 +14,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.LongFunction;
 import java.util.stream.Collectors;
-
-import org.heigit.bigspatialdata.oshdb.index.zfc.ZGrid;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.RoleToIdMapper;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.SizeEstimator;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.TagId;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.TagToIdMapper;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.SortedLong2LongMap;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshpbf.parser.osm.v0_6.Entity;
