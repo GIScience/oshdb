@@ -14,7 +14,7 @@ The OSHDB allows to investigate the evolution of the amount of data and the cont
 
     Integer numberOfUsersEditingHighways = OSMContributionView.on(oshdb)
         .timestamps("2007-10-07", "2009-04-09")
-        .where("highway")
+        .osmTag("highway")
         .map(contribution -> contribution.getContributorUserId())
         .countUniq();
         
@@ -36,11 +36,11 @@ Central Concepts
 The OSHDB is designed to be appropriate for a large spectrum of potential use cases and is therefore built around the following central ideas and design goals:
 
 * _Lossless Information_: The full OSM history data set should be stored and be queryable by the OSHDB, including errorneous or partially incomplete data.
-* _Simple, Generic API_: Writing queries with the OSHDB should be simple, and intuitive, while at the same time flexbile and generic to allow a wide variety of analysis queries. 
-* _High Performance_: The OSM history data set is large and thus requires efficiency in the way the data is stored and in the way it can be accessed and processed. 
+* _Simple, Generic API_: Writing queries with the OSHDB should be simple and intuitive, while at the same time flexbile and generic to allow a wide variety of analysis queries.
+* _High Performance_: The OSM history data set is large and thus requires efficiency in the way the data is stored and in the way it can be accessed and processed.
 * _Local and Distributed Deployment_: Analysis queries should scale well from data explorations of small regions up to global studies of the complete OSM data set.
 
-The OSHDB splits data storage and computations. It is then possible to use the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel, and optionally also on distributed databases. A central idea behind this concept is to bring the code to the data.
+The OSHDB splits data storage and computations. It is then possible to use the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model to analyse the data in parallel and optionally also on distributed databases. A central idea behind this concept is to bring the code to the data.
 
 ### Data Model
 
@@ -54,7 +54,7 @@ See the [data model](documentation/manual/data-model.md) section of the document
 
 The OSHDB offers a flexible, simple and intuitive application programming interface that provides helpful abstractions on top of the offered OSM data entities. It provides different **views** on the OSM history data that allow to either investigate the OSM data at specific points in time (as snapshots), or to investigate all contributions to the OSM data in their entirety. The OSHDB API also allows to filter the OSM data by arbitrary regions, time ranges and OSM properties such as tags, entity type, etc.
 
-The API is based on the MapReduce programming model, and offers powerful methods to aggregate and analyze the OSM history data. The OSHDB API is described in detail in the [api section](documentation/manual/api.md) of the documentation.
+The API is based on the MapReduce programming model and offers powerful methods to aggregate and analyze the OSM history data. The OSHDB API is described in detail in the [api section](documentation/manual/api.md) of the documentation.
 
 Installation
 ------------
