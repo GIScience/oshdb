@@ -14,6 +14,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.slf4j.LoggerFactory;
 
 public class ChangesetEnricher {
+
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ChangesetEnricher.class);
 
   private final Connection conn;
@@ -36,16 +37,19 @@ public class ChangesetEnricher {
   /**
    * Get latest update Timestamp of Changeset-Database (may be null if unknown).
    *
-   * @return
-   * @throws SQLException
+   * @return The timestamp of the last update performed on the queried db
+   * @throws SQLException If the db could not be queried
    */
   public OSHDBTimestamp getValidUntil() throws SQLException {
 
     Timestamp timestamp;
     try (PreparedStatement prepareStatement = this.conn.prepareStatement("SELECT last_timestamp FROM osm_changeset_state")) {
       ResultSet executeQuery = prepareStatement.executeQuery();
-      executeQuery.next();
-      timestamp = executeQuery.getTimestamp(1);
+      if (executeQuery.next()) {
+        timestamp = executeQuery.getTimestamp(1);
+      } else {
+        timestamp = null;
+      }
     }
     if (timestamp == null) {
       return null;
@@ -57,8 +61,8 @@ public class ChangesetEnricher {
    * Get a Changeset with comments. May be null if changesetId not in Database. Any field may also
    * be null.
    *
-   * @param changesetId
-   * @return
+   * @param changesetId The id of the changeset to be enriched
+   * @return The enriched changeset corresponding to the given id
    */
   public OSMChangeset getChangeset(long changesetId) throws SQLException {
     if (this.changests.containsKey(changesetId)) {
@@ -73,13 +77,13 @@ public class ChangesetEnricher {
       ResultSet resultSet = prepareStatement.executeQuery();
 
       if (resultSet.next()) {
-        Long user_id = resultSet.getLong("user_id");
+        final Long userId = resultSet.getLong("user_id");
 
-        OSHDBTimestamp created_at;
+        OSHDBTimestamp createdAt;
         try {
-          created_at = new OSHDBTimestamp(resultSet.getTimestamp("created_at"));
+          createdAt = new OSHDBTimestamp(resultSet.getTimestamp("created_at"));
         } catch (NullPointerException ex) {
-          created_at = null;
+          createdAt = null;
         }
 
         OSHDBBoundingBox bbx;
@@ -89,25 +93,25 @@ public class ChangesetEnricher {
           bbx = null;
         }
 
-        OSHDBTimestamp closed_at;
+        OSHDBTimestamp closedAt;
         try {
-          closed_at = new OSHDBTimestamp(resultSet.getTimestamp("closed_at"));
+          closedAt = new OSHDBTimestamp(resultSet.getTimestamp("closed_at"));
         } catch (NullPointerException ex) {
-          closed_at = null;
+          closedAt = null;
         }
 
         Boolean open = resultSet.getBoolean("open");
 
-        Integer num_changes = resultSet.getInt("num_changes");
+        Integer numChanges = resultSet.getInt("num_changes");
 
-        String user_name = resultSet.getString("user_name");
+        String userName = resultSet.getString("user_name");
 
         @SuppressWarnings("unchecked")
         Map<String, String> tags = (Map<String, String>) resultSet.getObject("tags");
 
         List<OSMChangesetComment> commentList = this.getChangesetComments(changesetId);
 
-        changeset = new OSMChangeset(changesetId, user_id, created_at, bbx, closed_at, open, num_changes, user_name, tags, commentList);
+        changeset = new OSMChangeset(changesetId, userId, createdAt, bbx, closedAt, open, numChanges, userName, tags, commentList);
 
       } else {
         LOG.info("Unable to find changeset-id {} in database.", changesetId);
@@ -124,9 +128,9 @@ public class ChangesetEnricher {
    * Get comments of a specified changeset. May be null if no comments exist. Any field may also be
    * null.
    *
-   * @param changesetId
-   * @return
-   * @throws SQLException
+   * @param changesetId The id of the changeset the comments are requested for
+   * @return A list of all changeset comments
+   * @throws SQLException If the db could not be queried
    */
   public List<OSMChangesetComment> getChangesetComments(long changesetId) throws SQLException {
     List<OSMChangesetComment> commentList = new ArrayList<>(1);
@@ -141,24 +145,25 @@ public class ChangesetEnricher {
         return null;
       } else {
         while (resultSet.next()) {
-          Long comment_user_id = resultSet.getLong("comment_user_id");
+          Long commentUserId = resultSet.getLong("comment_user_id");
 
-          String comment_user_name = resultSet.getString("comment_user_name");
+          String commentUserName = resultSet.getString("comment_user_name");
 
-          OSHDBTimestamp comment_date;
+          OSHDBTimestamp commentDate;
           try {
-            comment_date = new OSHDBTimestamp(resultSet.getTimestamp("comment_date"));
+            commentDate = new OSHDBTimestamp(resultSet.getTimestamp("comment_date"));
           } catch (NullPointerException ex) {
-            comment_date = null;
+            commentDate = null;
           }
 
-          String comment_text = resultSet.getString("comment_text");
+          String commentText = resultSet.getString("comment_text");
 
-          OSMChangesetComment comment = new OSMChangesetComment(changesetId, comment_user_id, comment_user_name, comment_date, comment_text);
+          OSMChangesetComment comment = new OSMChangesetComment(changesetId, commentUserId, commentUserName, commentDate, commentText);
           commentList.add(comment);
         }
       }
     }
     return commentList;
   }
+
 }
