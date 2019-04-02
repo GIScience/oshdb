@@ -1,5 +1,7 @@
 Changelog
 =========
+## 0.6.0 (current master)
+* Add `UserNameResolver` as wrapper for [Zveriks whosthat-scipt](https://github.com/Zverik/whosthat) to get user-names from user-ids
 
 ## 0.5.0
 
