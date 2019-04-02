@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## 0.6.0-SNAPSHOT (current master)
+
+* Add `ChangesetEnricher` wrapper class for [ToeBees' ChangesetMD skipt](https://github.com/ToeBee/ChangesetMD) to get tags, comments and discussion for a given changeset-id.
+
 ## 0.5.0
 
 ### breaking changes
