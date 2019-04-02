@@ -119,7 +119,7 @@ public class ChangesetEnricher {
 
         OSHDBTimestamp closedAt;
         Timestamp closedTs = resultSet.getTimestamp("closed_at");
-        if (closedTs == null) {
+        if (closedTs != null) {
           closedAt = new OSHDBTimestamp(closedTs);
         } else {
           closedAt = null;
