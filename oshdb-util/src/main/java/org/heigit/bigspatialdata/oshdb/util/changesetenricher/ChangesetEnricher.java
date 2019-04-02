@@ -23,10 +23,13 @@ public class ChangesetEnricher {
 
   /**
    * This class works as a cache (like
-   * {@link org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator}). Attention: The
-   * ChangesetDatabase is minutely updated but the cache isn't. So subsequent calls to this Class
-   * for the same ID will always return the same result. If you want to update the cache you will
-   * have to create a new instance.
+   * {@link org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator}). The sql-database is
+   * queried for every call an results are stored in a local cache. By using a ConcurrentHashMap
+   * internally, this class is threadsafe. The idea is to have one instance (cache) for all queries
+   * to gain maximum speed and prevent overuse of the SQL-db. Attention: The ChangesetDatabase is
+   * minutely updated but the cache isn't. So subsequent calls to this Class for the same ID will
+   * always return the same result. If you want to update the cache you will have to create a new
+   * instance.
    *
    * @param conn The connection to the ohsome-changeset postgres-database.
    */
