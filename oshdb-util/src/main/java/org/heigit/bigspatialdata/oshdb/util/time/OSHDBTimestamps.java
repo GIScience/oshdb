@@ -22,8 +22,11 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
    */
   public enum Interval {
     YEARLY("P1Y"),
+    QUARTERLY("P3M"),
     MONTHLY("P1M"),
-    DAILY("P1D");
+    WEEKLY("P1W"),
+    DAILY("P1D"),
+    HOURLY("PT1H");
 
     final String value;
     Interval(final String value) {
