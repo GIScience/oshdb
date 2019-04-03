@@ -40,17 +40,17 @@ public class ChangesetEnricher {
     this.conn = conn;
     this.changesetPsbyId = this.conn.prepareStatement(
         "SELECT "
-          + "user_id,"
-          + "created_at,"
-          + "min_lat,"
-          + "max_lat,"
-          + "min_lon,"
-          + "max_lon,"
-          + "closed_at,"
-          + "open,"
-          + "num_changes,"
-          + "user_name,"
-          + "tags "
+        + "user_id,"
+        + "created_at,"
+        + "min_lat,"
+        + "max_lat,"
+        + "min_lon,"
+        + "max_lon,"
+        + "closed_at,"
+        + "open,"
+        + "num_changes,"
+        + "user_name,"
+        + "tags "
         + "FROM osm_changeset "
         + "WHERE id = ? ;");
     this.changesetCommentPs = this.conn.prepareStatement(
@@ -67,14 +67,12 @@ public class ChangesetEnricher {
    */
   public OSHDBTimestamp getValidUntil() throws SQLException {
 
-    Timestamp timestamp;
+    Timestamp timestamp = null;
     try (PreparedStatement prepareStatement
         = this.conn.prepareStatement("SELECT last_timestamp FROM osm_changeset_state")) {
       ResultSet executeQuery = prepareStatement.executeQuery();
       if (executeQuery.next()) {
         timestamp = executeQuery.getTimestamp(1);
-      } else {
-        timestamp = null;
       }
     }
     if (timestamp == null) {
@@ -101,37 +99,31 @@ public class ChangesetEnricher {
       if (resultSet.next()) {
         final Long userId = resultSet.getLong("user_id");
 
-        OSHDBTimestamp createdAt;
+        OSHDBTimestamp createdAt = null;
         Timestamp createdTs = resultSet.getTimestamp("created_at");
         if (createdTs != null) {
           createdAt = new OSHDBTimestamp(createdTs);
-        } else {
-          createdAt = null;
         }
 
-        OSHDBBoundingBox bbx;
+        OSHDBBoundingBox bbx = null;
         boolean wasNull = false;
         double minLong = resultSet.getDouble("min_lon");
-        wasNull &= resultSet.wasNull();
+        wasNull |= resultSet.wasNull();
         double minLat = resultSet.getDouble("min_lat");
-        wasNull &= resultSet.wasNull();
+        wasNull |= resultSet.wasNull();
         double maxLon = resultSet.getDouble("max_lon");
-        wasNull &= resultSet.wasNull();
+        wasNull |= resultSet.wasNull();
         double maxLat = resultSet.getDouble("max_lat");
-        wasNull &= resultSet.wasNull();
+        wasNull |= resultSet.wasNull();
 
-        if (wasNull) {
-          bbx = null;
-        } else {
+        if (!wasNull) {
           bbx = new OSHDBBoundingBox(minLong, minLat, maxLon, maxLat);
         }
 
-        OSHDBTimestamp closedAt;
+        OSHDBTimestamp closedAt = null;
         Timestamp closedTs = resultSet.getTimestamp("closed_at");
         if (closedTs != null) {
           closedAt = new OSHDBTimestamp(closedTs);
-        } else {
-          closedAt = null;
         }
 
         Boolean open = resultSet.getBoolean("open");
@@ -181,11 +173,10 @@ public class ChangesetEnricher {
 
           String commentUserName = resultSet.getString("comment_user_name");
 
-          OSHDBTimestamp commentDate;
-          try {
-            commentDate = new OSHDBTimestamp(resultSet.getTimestamp("comment_date"));
-          } catch (NullPointerException ex) {
-            commentDate = null;
+          OSHDBTimestamp commentDate = null;
+          Timestamp timestamp = resultSet.getTimestamp("comment_date");
+          if (timestamp != null) {
+            commentDate = new OSHDBTimestamp(timestamp);
           }
 
           String commentText = resultSet.getString("comment_text");
@@ -200,6 +191,7 @@ public class ChangesetEnricher {
         }
       }
     }
+
     return commentList;
   }
 
