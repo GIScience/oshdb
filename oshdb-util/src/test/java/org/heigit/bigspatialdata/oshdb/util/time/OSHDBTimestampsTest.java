@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
 
@@ -54,7 +55,7 @@ public class OSHDBTimestampsTest {
     assertEquals(startList.size(), intervalList.size());
     assertEquals(startList.size(), expectedResultList.size());
 
-    List<Interval> testedIntervals = new ArrayList<>();
+    Set<Interval> testedIntervals = EnumSet.noneOf(Interval.class);
     for (int i = 0; i < startList.size(); i++) {
       OSHDBTimestamps timestamps = new OSHDBTimestamps(startList.get(i), endList.get(i),
           intervalList.get(i));
@@ -71,9 +72,7 @@ public class OSHDBTimestampsTest {
     }
 
     // check if all intervals in the enum are tested
-    for (Interval interval : EnumSet.allOf(Interval.class)) {
-      assertTrue(testedIntervals.contains(interval));
-    }
+    testedIntervals.containsAll(EnumSet.allOf(Interval.class));
   }
 
 }
