@@ -73,10 +73,14 @@ Examples
 
 A few usage examples can be found in our [oshdb-examples](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples) repository.
 
-References
-----------
+Publications and Presentations
+------------------------------
 
-> *Raifer, Martin; Troilo, Rafael; Kowatsch, Fabian; Auer, Michael; Loos, Lukas; Marx, Sabrina; Przybill, Katharina; Fendrich, Sascha; Mocnik, Franz-Benjamin; Zipf, Alexander (2019)*: [OSHDB: a framework for spatio-temporal analysis of OpenStreetMap history data](https://opengeospatialdata.springeropen.com/articles/10.1186/s40965-019-0061-3). Open Geospatial Data, Software and Standards, 4:3, [https://doi.org/10.1186/s40965-019-0061-3](https://doi.org/10.1186/s40965-019-0061-3).
+* Raifer, Martin; Troilo, Rafael; Kowatsch, Fabian; Auer, Michael; Loos, Lukas; Marx, Sabrina; Przybill, Katharina; Fendrich, Sascha; Mocnik, Franz-Benjamin; Zipf, Alexander (2019): [**OSHDB: a framework for spatio-temporal analysis of OpenStreetMap history data**](https://doi.org/10.1186/s40965-019-0061-3). Open Geospatial Data, Software and Standards.
+* Michael Auer, Melanie Eckle, Sascha Fendrich, Fabian Kowatsch, Sabrina Marx, Martin Raifer, Moritz Schott, Rafael Troilo, Alexander Zipf (2018): [Comprehensive OpenStreetMap History Data Analyses- for and with the OSM community](https://2018.stateofthemap.org/2018/A33-Comprehensive_OpenStreetMap_History_Data_Analyses-_for_and_with_the_OSM_community/). Talk at the State of the Map conference 2018, Milan.
+* Auer, Michael; Eckle, Melanie; Fendrich, Sascha; Kowatsch, Fabian; Loos, Lukas; Marx, Sabrina; Raifer, Martin; Schott, Moritz; Troilo, Rafael; Zipf, Alexander (2018): [Ohsome – eine Plattform zur Analyse raumzeitlicher Entwicklungen von OpenStreetMap-Daten für intrinsische Qualitätsbewertungen](https://gispoint.de/gisopen-paper/4514-ohsome-eine-plattform-zur-analyse-raumzeitlicherentwicklungen-von-openstreetmap-daten-fuer-intrinsische-qualitaetsbewertungen.html?IDjournalTitle=5). AGIT ‒ Journal für Angewandte Geoinformatik.
+* Auer, Michael; Eckle, Melanie; Fendrich, Sascha; Griesbaum, Luisa; Kowatsch, Fabian; Marx, Sabrina; Raifer, Martin; Schott, Moritz; Troilo, Rafael; Zipf, Alexander (2018): [Towards Using the Potential of OpenStreetMap History for Disaster Activation Monitoring](https://www.researchgate.net/publication/325397280_Towards_Using_the_Potential_of_OpenStreetMap_History_for_Disaster_Activation_Monitoring). Conference: Proceedings of the 15th ISCRAM Conference 2018, Rochester.
+* Martin Raifer (2017): [OSM history analysis using big data technology](https://2017.stateofthemap.org/2017/osm-history-analysis-using-big-data-technology/). Talk at the State of the Map conference 2017, Aizuwakamatsu.
 
 See Also
 --------
