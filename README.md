@@ -62,7 +62,7 @@ Installation
 The OSHDB is available as a pre-compiled maven library and can be incorporated easily in any maven project. If you're starting a new project, take a look at how your IDE handles maven projects (for example, here you find instructions how to create a new maven project using [IntelliJ](https://www.jetbrains.com/help/idea/maven-support.html#maven_create_project)). Our [first steps tutorial](https://github.com/GIScience/oshdb/tree/docu-update-cleanup/documentation/first-steps#2-add-maven-dependency) includes further information about how to add the OSHDB as a maven dependency to your projects.
 
 Documentation
----
+-------------
 
 * [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
@@ -72,6 +72,11 @@ Examples
 --------
 
 A few usage examples can be found in our [oshdb-examples](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples) repository.
+
+References
+----------
+
+> *Raifer, Martin; Troilo, Rafael; Kowatsch, Fabian; Auer, Michael; Loos, Lukas; Marx, Sabrina; Przybill, Katharina; Fendrich, Sascha; Mocnik, Franz-Benjamin; Zipf, Alexander (2019)*: [OSHDB: a framework for spatio-temporal analysis of OpenStreetMap history data](https://opengeospatialdata.springeropen.com/articles/10.1186/s40965-019-0061-3). Open Geospatial Data, Software and Standards, 4:3, [https://doi.org/10.1186/s40965-019-0061-3](https://doi.org/10.1186/s40965-019-0061-3).
 
 See Also
 --------
