@@ -1,7 +1,59 @@
-## 0.5.0 SNAPSHOT (current master)
+Changelog
+=========
 
-* oshdb-api: implemented aggregation by polygonal geometries
-* …
+## 0.5.0
+
+### breaking changes
+
+* JTS library was updated to version 1.16. Because this libary is now maintained by a different company, import statements need to be adjusted as explained in their [JTS migration guide](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115). #75
+
+### bugfixes
+
+* Fix incorrect detection of deletions in queries using the ContributionView.
+* Return the correct changeset id in case of concurrent updates on entities by different changesets.
+* Fix crash while checking empty geometries resulting from erroneous OSM data. #57
+* Fix a crash when trying to build polygons on partially incomplete OSM ways. #31
+* Make importer work with "factory-settings" ignite system. #49
+
+### new features
+
+#### oshdb-api:
+
+* Refactored how result aggregation by custom groupings works. It is now possible to [combine multiple](documentation/manual/aggregation.md#combining-multiple-aggregateby) aggregation groupings.
+* Add methods to aggregate results by [sub-regions](documentation/manual/aggregation.md#aggregateByGeometry).
+* Results of data extraction queries can now also be streamed and immediately post-processed. #19
+* Include of [t-digest](https://github.com/tdunning/t-digest) algorithm to calculate estimated quantiles of results. #34
+* All backends now support query timeouts. #47 #68
+
+#### oshdb core
+
+* Tweaked data format slightly to avoid overly full grid cells at low zoom levels. #130
+
+### performance
+
+#### oshdb-api
+
+* Make the `getModificationTimestamps` method of OSHEntites faster, resulting in general performance improvement of every query, but especially when analyzing complex relations. #10
+* Improve performance of bbox-in-polygon checking routines. #33
+* Avoid unnecessary clipping of gemetries. #66
+* Improve building of complex multipolygon geometries. #111
+* Many small performance improvements.
+
+#### oshdb-tool
+
+* Improve speed and functionality of the ETL module.
+
+### other changes
+
+* Source code is now released as open-source under _GNU Lesser General Public License version 3_.
+* Dependencies are updated and reduced to the minimum. Also they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading. #79 #5
+* Drop most deprecated methods from OSHDB version 0.4.0
+* More [examples and documentation](https://github.com/GIScience/oshdb/tree/master/documentation) are available.
+* Many small bugfixes and improvements, especially for the Ignite backend. Ignite can now be considered stable and used to analyze a global data set.
+* oshdb-api: renamed some methods (`where` filter → `osmTag` and `osmEntityFilter`, `osmTypes` filter → `osmType`) and refactored some methods to accept a wider range of input objects.
+* `GeometryCollection` geometries are no longer ignored when calculating lengths or areas of features. #51
+* Restructured core OSHDB data strutures to be more flexible in upcoming version changes. #138
+* Rename `getChangeset` method to `getChangesetId. #35
 
 ## 0.4.0
 
