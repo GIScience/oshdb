@@ -28,7 +28,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private final double DELTA = 1E-6;
+  private final double DELTA = 1E-8;
 
   public OSHDBGeometryBuilderTestOsmTestData7xxTest() {
     testData.add("./src/test/resources/osm-testdata/all.osm");
@@ -75,7 +75,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
         "MULTIPOLYGON(((7.14 1.01,7.11 1.01,7.11 1.04,7.14 1.04,7.14 1.01)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -93,7 +93,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
         "MULTIPOLYGON(((7.24 1.01,7.21 1.01,7.21 1.02,7.23 1.03,7.23 1.04,7.21 1.04,7.21 1.05,7.24 1.05,7.24 1.01)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -112,7 +112,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "7.32 1.05,7.34 1.05,7.34 1.01)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -131,7 +131,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "7.44 1.03,7.44 1.02,7.43 1.02,7.43 1.01,7.42 1.01,7.42 1.02,7.41 1.02)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -150,7 +150,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "7.53 1.03,7.51 1.04,7.52 1.08,7.54 1.07,7.55 1.09,7.56 1.09,7.59 1.06,7.58 1.02)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -169,7 +169,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.64 1.03,7.67 1.03,7.67 1.01,7.64 1.01,7.64 1.03)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -188,7 +188,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.74 1.03,7.77 1.03,7.77 1.01,7.74 1.01,7.74 1.03)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -208,7 +208,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "7.88 1.03,7.88 1.01,7.83 1.01,7.83 1.04)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -228,7 +228,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.95 1.05,7.97 1.03,7.98 1.08,7.95 1.05)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -303,7 +303,6 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     assertEquals(10, result.getCoordinates().length);
-    //assertEquals(10, entity., DELTA);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -311,7 +310,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.04 1.22,7.02 1.22,7.02 1.24,7.04 1.24,7.04 1.22)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -348,7 +347,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.43 1.22,7.42 1.24,7.44 1.25,7.45 1.24,7.43 1.22)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -366,7 +365,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
         "MULTIPOLYGON(((7.53 1.21,7.54 1.21,7.52 1.23,7.54 1.25,7.53 1.25,7.51 1.23,7.53 1.21)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
   @Test
   public void test726() throws ParseException {
@@ -394,7 +393,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
         "MULTIPOLYGON(((7.85 1.23,7.86 1.22,7.87 1.22,7.87 1.24,7.86 1.25,7.83 1.25,7.82 1.26,7.84 1.23,7.85 1.23)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -416,7 +415,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.96 1.26,7.94 1.26,7.94 1.24,7.96 1.24,7.96 1.26)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -437,7 +436,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.05 1.33,7.04 1.33,7.04 1.32,7.05 1.32,7.05 1.33)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -457,7 +456,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -479,7 +478,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.24 1.34,7.22 1.32,7.25 1.32,7.24 1.34)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -638,14 +637,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon)result).getNumInteriorRing());
     // In the result are 12 points, but it does not matter that we get 19, because the intersection is correct
-    //assertEquals(19, result.getCoordinates().length, DELTA);
+    //assertEquals(19, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.01 1.51,7.01 1.57,7.06 1.57,7.06 1.51,7.01 1.51),"
             + "(7.02 1.52,7.02 1.55,7.04 1.55,7.05 1.55,7.05 1.52,7.03 1.52,7.02 1.52)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -657,14 +656,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon)result).getNumInteriorRing());
     // In the result are 11 points, but it does not matter that we get 16, because the intersection is correct
-    //assertEquals(16, result.getCoordinates().length, DELTA);
+    //assertEquals(16, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.12 1.51,7.15 1.51,7.16 1.57,7.13 1.57,7.11 1.54,7.12 1.51),"
             + "(7.12 1.54,7.14 1.52,7.15 1.55,7.13 1.56,7.12 1.54)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -725,7 +724,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.55 1.56,7.57 1.54,7.55 1.52,7.53 1.54,7.55 1.56)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -775,8 +774,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(0, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
     // In the result are 11 points, but it does not matter that we get 10, because the intersection is correct
-    //assertEquals(10, result.getCoordinates().length, DELTA);
-    //assertEquals(10, entity., DELTA);
+    //assertEquals(10, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -784,7 +782,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.96 1.55,7.94 1.53,7.92 1.55,7.94 1.57,7.96 1.55)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -804,7 +802,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.05 1.65,7.03 1.65,7.03 1.63,7.05 1.63,7.05 1.65)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -824,7 +822,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.15 1.65,7.13 1.65,7.13 1.63,7.15 1.63,7.15 1.65)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -843,7 +841,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.25 1.65,7.23 1.65,7.23 1.63,7.25 1.63,7.25 1.65)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -858,7 +856,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(0, ((Polygon)result.getGeometryN(2)).getNumInteriorRing());
     assertEquals(0, ((Polygon)result.getGeometryN(3)).getNumInteriorRing());
     assertEquals(4,result.getNumGeometries());
-    //assertEquals(28, result.getCoordinates().length, DELTA);
+    //assertEquals(28, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -868,7 +866,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.35 1.65,7.36 1.67,7.37 1.68,7.38 1.68,7.38 1.67,7.37 1.66,7.35 1.65)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -880,7 +878,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(4, ((Polygon) result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    //assertEquals(33, result.getCoordinates().length, DELTA);
+    //assertEquals(33, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -891,7 +889,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.45 1.65,7.46 1.67,7.47 1.68,7.48 1.68,7.48 1.67,7.47 1.66,7.45 1.65)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -905,14 +903,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
     assertEquals(2,result.getNumGeometries());
-    //assertEquals(11, result.getCoordinates().length, DELTA);
+    //assertEquals(11, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.57 1.66,7.55 1.68,7.53 1.66,7.55 1.64,7.57 1.66)),"
             + "((7.55 1.63,7.58 1.63,7.58 1.62,7.52 1.62,7.52 1.63,7.55 1.63)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -925,7 +923,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(2, ((Polygon)result).getNumInteriorRing());
     assertEquals(1, result.getNumGeometries());
-    //assertEquals(16, result.getCoordinates().length, DELTA);
+    //assertEquals(16, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.61 1.61,7.61 1.69,7.69 1.69,7.69 1.61,7.61 1.61),"
@@ -933,7 +931,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.65 1.63,7.68 1.63,7.68 1.62,7.62 1.62,7.62 1.63,7.65 1.63)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -946,14 +944,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
     assertEquals(2,result.getNumGeometries());
-   // assertEquals(11, result.getCoordinates().length, DELTA);
+   // assertEquals(11, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.77 1.66,7.75 1.68,7.73 1.66,7.75 1.64,7.77 1.66)),"
             + "((7.75 1.63,7.78 1.63,7.78 1.62,7.72 1.62,7.72 1.63,7.75 1.63)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1000,7 +998,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(2, ((Polygon)result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    //assertEquals(16, result.getCoordinates().length, DELTA);
+    //assertEquals(16, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.21 1.71,7.21 1.79,7.29 1.79,7.29 1.71,7.21 1.71),"
@@ -1008,7 +1006,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "(7.24 1.74,7.26 1.76,7.24 1.78,7.22 1.76,7.24 1.74)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1034,7 +1032,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
-    //assertEquals(14, result.getCoordinates().length, DELTA);
+    //assertEquals(14, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1042,7 +1040,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.44 1.75,7.44 1.76,7.47 1.76,7.47 1.72,7.44 1.72,7.44 1.73,7.45 1.73,7.45 1.75,7.44 1.75)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1054,7 +1052,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
-    //assertEquals(14, result.getCoordinates().length, DELTA);
+    //assertEquals(14, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1062,7 +1060,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.54 1.75,7.54 1.76,7.57 1.76,7.57 1.72,7.54 1.72,7.54 1.73,7.55 1.73,7.55 1.75,7.54 1.75)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1074,7 +1072,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2,result.getNumGeometries());
-    //assertEquals(14, result.getCoordinates().length, DELTA);
+    //assertEquals(14, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1082,7 +1080,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.64 1.75,7.64 1.76,7.67 1.76,7.67 1.72,7.64 1.72,7.64 1.73,7.65 1.73,7.65 1.75,7.64 1.75)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1096,7 +1094,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(2,result.getNumGeometries());
     assertEquals(2, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
-    //assertEquals(19, result.getCoordinates().length, DELTA);
+    //assertEquals(19, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1105,7 +1103,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.74 1.73,7.75 1.73,7.75 1.75,7.74 1.75,7.74 1.73)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1119,7 +1117,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(2,result.getNumGeometries());
     assertEquals(2, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
-    //assertEquals(19, result.getCoordinates().length, DELTA);
+    //assertEquals(19, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1128,7 +1126,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.84 1.73,7.85 1.73,7.85 1.75,7.84 1.75,7.84 1.73)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1143,7 +1141,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(2,result.getNumGeometries());
     assertEquals(2, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
     assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
-    //assertEquals(19, result.getCoordinates().length, DELTA);
+    //assertEquals(19, result.getCoordinates().length);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1152,7 +1150,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.94 1.73,7.95 1.73,7.95 1.75,7.94 1.75,7.94 1.73)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1207,14 +1205,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon)result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    //assertEquals(11, result.getCoordinates().length, DELTA);
+    //assertEquals(11, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.32 1.81,7.35 1.81,7.36 1.87,7.33 1.87,7.31 1.84,7.32 1.81),"
             + "(7.32 1.84,7.34 1.82,7.35 1.85,7.33 1.86,7.32 1.84)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1227,14 +1225,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon)result).getNumInteriorRing());
     assertEquals(1,result.getNumGeometries());
-    //assertEquals(11, result.getCoordinates().length, DELTA);
+    //assertEquals(11, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.41 1.81,7.46 1.81,7.46 1.86,7.41 1.86,7.41 1.81),"
             + "(7.42 1.82,7.45 1.82,7.45 1.85,7.42 1.85,7.42 1.82)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1257,7 +1255,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
             + "((7.53 1.83,7.54 1.83,7.54 1.84,7.53 1.84,7.53 1.83)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
+    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
