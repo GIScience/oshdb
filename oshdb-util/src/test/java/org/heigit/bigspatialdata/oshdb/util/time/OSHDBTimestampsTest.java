@@ -72,7 +72,7 @@ public class OSHDBTimestampsTest {
     }
 
     // check if all intervals in the enum are tested
-    testedIntervals.containsAll(EnumSet.allOf(Interval.class));
+    assertTrue(testedIntervals.containsAll(EnumSet.allOf(Interval.class)));
   }
 
 }
