@@ -1245,10 +1245,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
-    assertEquals(2, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
-    assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
-    assertEquals(2,result.getNumGeometries());
-    //assertEquals(11, result.getCoordinates().length, DELTA);
+    assertEquals(2, result.getNumGeometries());
+    assertEquals(1,
+        ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
+        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing()
+    );
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.51 1.81,7.56 1.81,7.56 1.86,7.51 1.86,7.51 1.81),"
