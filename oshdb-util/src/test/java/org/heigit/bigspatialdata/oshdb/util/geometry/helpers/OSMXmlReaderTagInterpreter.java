@@ -12,6 +12,7 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
   private int areaYes;
   private int type;
   private int typeMultipolygon;
+  private int emptyRole;
   private int outer;
   private int inner;
 
@@ -20,6 +21,7 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
     areaYes = area == -1 ? -1 : osmXmlReader.keyValues().get(area).getOrDefault("yes", -1);
     type = osmXmlReader.keys().getOrDefault("type", -1);
     typeMultipolygon = type == -1 ? -1 : osmXmlReader.keyValues().get(type).getOrDefault("multipolygon", -1);
+    emptyRole = osmXmlReader.roles().getOrDefault("", -1);
     outer = osmXmlReader.roles().getOrDefault("outer", -1);
     inner = osmXmlReader.roles().getOrDefault("inner", -1);
   }
@@ -39,7 +41,7 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
 
   @Override
   public boolean isMultipolygonOuterMember(OSMMember osmMember) {
-    return osmMember.getRawRoleId() == outer;
+    return osmMember.getRawRoleId() == outer || osmMember.getRawRoleId() == emptyRole;
   }
 
   @Override

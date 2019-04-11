@@ -3,7 +3,7 @@ package org.heigit.bigspatialdata.oshdb.util.geometry.helpers;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 
 public abstract class FakeTagInterpreter implements TagInterpreter {
   @Override

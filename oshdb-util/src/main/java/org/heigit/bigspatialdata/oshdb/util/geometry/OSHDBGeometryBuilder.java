@@ -20,7 +20,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
@@ -219,7 +219,7 @@ public class OSHDBGeometryBuilder {
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
 
-    // check if there are any touching inner rings
+    // check if there are any touching inner/outer rings
     Set<Integer> segments = new HashSet<>();
     boolean touchingRings = false;
     List<LinearRing> allRings = new ArrayList<>(innerRings.size() + outerRings.size());

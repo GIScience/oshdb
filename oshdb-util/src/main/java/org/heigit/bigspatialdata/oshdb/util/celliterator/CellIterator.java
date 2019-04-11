@@ -32,7 +32,7 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
