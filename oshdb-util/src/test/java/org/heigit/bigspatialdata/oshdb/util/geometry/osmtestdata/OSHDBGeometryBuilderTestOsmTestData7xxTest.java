@@ -637,8 +637,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon)result).getNumInteriorRing());
     // In the result are 12 points, but it does not matter that we get 19, because the intersection is correct
-    //assertEquals(19, result.getCoordinates().length);
-    // compare if coordinates of created points equals the coordinates of polygon
+        // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.01 1.51,7.01 1.57,7.06 1.57,7.06 1.51,7.01 1.51),"
             + "(7.02 1.52,7.02 1.55,7.04 1.55,7.05 1.55,7.05 1.52,7.03 1.52,7.02 1.52)))"
@@ -1089,12 +1088,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     // Multipolygon with two outer rings and two inner rings touching in two nodes
     OSMEntity entity = testData.relations().get(777900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
-    //assertTrue(result instanceof MultiPolygon);
+    assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2, result.getNumGeometries());
-    assertEquals(2, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
-    assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
-    //assertEquals(19, result.getCoordinates().length);
+    assertEquals(1, ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
+        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1108,25 +1106,23 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test778() throws ParseException {
+    /*
+    I believe 778 is not really a valid test case.
+
+    According to https://wiki.openstreetmap.org/wiki/Relation:multipolygon: “[inner ways make] up
+    the optional inner ring(s) delimiting the excluded holes that must be fully inside the area
+    delimited by outer ring(s).”
+
+    For overlapping inner rings (such as it is the case here), it is not defined if the
+    geometry building algorithm should use the even-odd rule, the non-zero-winding rule, a
+    subtractive algorithm or something else.
+    */
     // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/137
     // Multipolygon with two outer rings and two inner rings touching in two nodes
     OSMEntity entity = testData.relations().get(778900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
-    assertTrue(result instanceof MultiPolygon);
+    assertTrue(result instanceof Polygonal);
     assertTrue(result.isValid());
-    assertEquals(2, result.getNumGeometries());
-    assertEquals(2, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
-    assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
-    //assertEquals(19, result.getCoordinates().length);
-
-    // compare if coordinates of created points equals the coordinates of polygon
-    Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.81 1.71,7.88 1.71,7.88 1.77,7.81 1.77,7.81 1.71),"
-            + "(7.82 1.73,7.82 1.75,7.84 1.75,7.84 1.76,7.87 1.76,7.87 1.72,7.84 1.72,7.84 1.73,7.82 1.73)),"
-            + "((7.84 1.73,7.85 1.73,7.85 1.75,7.84 1.75,7.84 1.73)))"
-    );
-    Geometry intersection = result.intersection(expectedPolygon);
-    assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
   @Test
@@ -1136,12 +1132,10 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity = testData.relations().get(779900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
-
     assertTrue(result.isValid());
     assertEquals(2, result.getNumGeometries());
-    assertTrue(((Polygon)result.getGeometryN(0)).getNumInteriorRing() > 0
-        ^ ((Polygon)result.getGeometryN(1)).getNumInteriorRing() > 0);
-    //assertEquals(19, result.getCoordinates().length);
+    assertEquals(1, ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
+        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
