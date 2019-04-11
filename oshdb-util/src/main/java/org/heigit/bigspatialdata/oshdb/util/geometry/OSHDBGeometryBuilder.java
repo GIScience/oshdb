@@ -220,23 +220,22 @@ public class OSHDBGeometryBuilder {
         .collect(Collectors.toList());
 
     // check if there are any touching inner/outer rings
-    Set<Integer> segments = new HashSet<>();
+
+    Set<Integer> vertices = new HashSet<>();
     boolean touchingRings = false;
     List<LinearRing> allRings = new ArrayList<>(innerRings.size() + outerRings.size());
     allRings.addAll(outerRings);
     allRings.addAll(innerRings);
-    checkInnerTouchingRings: for (LinearRing ring : allRings) {
+    checkTouchingRings: for (LinearRing ring : allRings) {
       int numPoints = ring.getNumPoints();
-      Coordinate prevPoint = ring.getCoordinateN(0);
       for (int i = 1; i < numPoints; i++) {
         Coordinate thisPoint = ring.getCoordinateN(i);
-        int segmentHashCode = prevPoint.hashCode() ^ thisPoint.hashCode();
-        if (segments.contains(segmentHashCode)) {
+        int vertexHashCode = thisPoint.hashCode();
+        if (vertices.contains(vertexHashCode)) {
           touchingRings = true;
-          break checkInnerTouchingRings;
+          break checkTouchingRings;
         }
-        segments.add(segmentHashCode);
-        prevPoint = thisPoint;
+        vertices.add(vertexHashCode);
       }
     }
 
