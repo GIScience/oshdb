@@ -128,8 +128,8 @@ public class OSMXmlReader {
         double lon = osm.isVisible() ? attrAsDouble(e, "lon") : 0.0;
         double lat = osm.isVisible() ? attrAsDouble(e, "lat") : 0.0;
 
-        long longitude = (long) (lon * OSHDB.GEOM_PRECISION_TO_LONG);
-        long latitude = (long) (lat * OSHDB.GEOM_PRECISION_TO_LONG);
+        long longitude = Math.round(lon * OSHDB.GEOM_PRECISION_TO_LONG);
+        long latitude = Math.round(lat * OSHDB.GEOM_PRECISION_TO_LONG);
 
         osm.setExtension(longitude, latitude);
 
