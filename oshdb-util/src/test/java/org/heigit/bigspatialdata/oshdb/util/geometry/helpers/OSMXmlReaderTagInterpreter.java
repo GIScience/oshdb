@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.util.geometry.helpers;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 
@@ -41,11 +42,12 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
 
   @Override
   public boolean isMultipolygonOuterMember(OSMMember osmMember) {
-    return osmMember.getRawRoleId() == outer || osmMember.getRawRoleId() == emptyRole;
+    return osmMember.getType() == OSMType.WAY
+        && (osmMember.getRawRoleId() == outer || osmMember.getRawRoleId() == emptyRole);
   }
 
   @Override
   public boolean isMultipolygonInnerMember(OSMMember osmMember) {
-    return osmMember.getRawRoleId() == inner;
+    return osmMember.getType() == OSMType.WAY && osmMember.getRawRoleId() == inner;
   }
 }
