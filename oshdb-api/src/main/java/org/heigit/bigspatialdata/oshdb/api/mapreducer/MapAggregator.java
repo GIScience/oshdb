@@ -40,6 +40,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.jetbrains.annotations.Contract;
@@ -173,9 +174,18 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       SerializableFunction<X, OSHDBTimestamp> indexer
   ) {
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.mapReducer.tstamps.get());
+    final OSHDBTimestamp minTime = timestamps.first();
+    final OSHDBTimestamp maxTime = timestamps.last();
     return this.aggregateBy(data -> {
       // match timestamps to the given timestamp list
-      return timestamps.floor(indexer.apply(data));
+      OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
+      if (aggregationTimestamp.compareTo(minTime) < 0
+          || aggregationTimestamp.compareTo(maxTime) > 0) {
+        throw new OSHDBInvalidTimestampException(
+            "Aggregation timestamp outside of time query interval."
+        );
+      }
+      return timestamps.floor(aggregationTimestamp);
     }, this.mapReducer.getZerofillTimestamps());
   }
   
