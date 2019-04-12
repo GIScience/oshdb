@@ -6,6 +6,7 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import java.util.List;
+import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -221,6 +222,13 @@ public class TestHelpersOSMContributionView {
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());
+
+    // doesn't crash with null pointers
+    Set<Object> result5 = this.createMapReducer()
+        .timestamps(timestamps2)
+        .map(x -> null)
+        .uniq();
+    assertEquals(result5.size(), 1);
   }
 
   @Test

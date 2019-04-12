@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -1923,7 +1924,7 @@ public abstract class MapReducer<X> implements
 
   @Contract(pure = true)
   static <T> Set<T> uniqIdentitySupplier() {
-    return new TreeSet<>();
+    return new HashSet<>();
   }
 
   @Contract(pure = false)
