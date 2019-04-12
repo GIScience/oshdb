@@ -59,6 +59,9 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     );
 
     S result = identitySupplier.get();
+    if (this.typeFilter.isEmpty()) {
+      return result;
+    }
     for (CellIdRange cellIdRange : this.getCellIdRanges()) {
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
