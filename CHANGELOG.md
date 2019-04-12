@@ -4,6 +4,7 @@ Changelog
 ## 0.6.0 SNAPSHOT (current master)
 
 * oshdb-util: implemented `QUARTERLY`, `WEEKLY`, `DAILY`, and `HOURLY` as additional time intervals
+* oshdb-api: (breaking) change how osm-type filters work when called multiple times: now, like with other filters, osm entity must match all supplied type filters
 
 ## 0.5.0
 
