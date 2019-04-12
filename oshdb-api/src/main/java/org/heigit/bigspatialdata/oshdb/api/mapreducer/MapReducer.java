@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.tdunning.math.stats.TDigest;
 import java.io.IOException;
 import java.io.Serializable;
@@ -396,6 +397,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> osmType(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
+    typeFilter = Sets.intersection(ret.typeFilter, typeFilter);
     if (typeFilter.isEmpty()) {
       ret.typeFilter = EnumSet.noneOf(OSMType.class);
     } else {
