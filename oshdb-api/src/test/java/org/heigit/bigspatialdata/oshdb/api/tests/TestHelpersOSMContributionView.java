@@ -231,16 +231,4 @@ public class TestHelpersOSMContributionView {
     assertEquals(result5.size(), 1);
   }
 
-  @Test
-  public void testIssue107() throws Exception {
-    // single timestamp
-    List<OSMContribution> result = this.createMapReducer()
-        .timestamps(timestamps72)
-        .collect();
-
-    assertEquals(true, result.get(0).getContributionTypes().contains(ContributionType.CREATION));
-    assertEquals(null, result.get(0).getEntityBefore());
-    assertEquals(null, result.get(0).getGeometryBefore());
-  }
-
 }
