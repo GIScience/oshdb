@@ -1935,7 +1935,7 @@ public abstract class MapReducer<X> implements
 
   @Contract(pure = true)
   static <T> Set<T> uniqCombiner(Set<T> a, Set<T> b) {
-    HashSet<T> result = new HashSet<>(a.size() + b.size());
+    HashSet<T> result = new HashSet<>((int) Math.ceil(Math.max(a.size(), b.size()) / 0.75));
     result.addAll(a);
     result.addAll(b);
     return result;
