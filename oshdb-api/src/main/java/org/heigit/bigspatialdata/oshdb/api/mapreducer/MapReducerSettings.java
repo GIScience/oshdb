@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -46,7 +47,7 @@ interface MapReducerSettings<M> {
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M osmType(EnumSet<OSMType> typeFilter);
+  M osmType(Set<OSMType> typeFilter);
 
   /**
    * Limits the analysis to the given osm entity types.
