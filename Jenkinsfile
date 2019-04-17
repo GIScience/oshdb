@@ -1,33 +1,38 @@
 pipeline {
   agent {label 'master'}
+
+  environment {
+    VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
+  }
+
   stages {
     stage ('Build and Test') {
       steps {
         script {
           env.MAVEN_HOME = '/usr/share/maven'
-          
+
           author = sh(returnStdout: true, script: 'git show -s --pretty=%an')
           echo author
-          
+
           commiti= sh(returnStdout: true, script: 'git log -1')
           echo commiti
-          
+
           reponame=sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
           echo reponame
-          
+
           gittiid=sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
           echo gittiid
-          
+
           echo env.BRANCH_NAME
           echo env.BUILD_NUMBER
-          
+
           server = Artifactory.server 'HeiGIT Repo'
           rtMaven = Artifactory.newMavenBuild()
-          
+
           rtMaven.resolver server: server, releaseRepo: 'main', snapshotRepo: 'main'
           rtMaven.deployer server: server, releaseRepo: 'libs-release-local', snapshotRepo: 'libs-snapshot-local'
           rtMaven.deployer.deployArtifacts = false
-          
+
           buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P git,withDep -Dmaven.repo.local=.m2'
         }
       }
@@ -38,10 +43,32 @@ pipeline {
       }
     }
 
-    stage ('Deploy') {
+    stage ('Deploy Snapshot') {
       when {
         expression {
-          return env.BRANCH_NAME ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)|(^master$)/
+          return env.BRANCH_NAME ==~ /(^master$)/ && VERSION ==~ /.*-SNAPSHOT$/
+        }
+      }
+      steps {
+        script {
+          rtMaven.deployer.deployArtifacts buildInfo
+          server.publishBuildInfo buildInfo
+        }
+      }
+      post {
+        failure {
+          rocketSend channel: 'jenkinsohsome', message: "Deployment of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+        }
+      }
+    }
+
+    stage ('Deploy Release') {
+      when {
+        allOf {
+          tag pattern: "(^[0-9]+\$)|(^(([0-9]+)(\\.))+([0-9]+)?\$)", comparator: "REGEXP"
+          expression {
+            return VERSION ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)/
+          }
         }
       }
       steps {
@@ -84,9 +111,8 @@ pipeline {
         script {
           //load dependencies to artifactory
           rtMaven.run pom: 'pom.xml', goals: 'org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2'
-          projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
 
-          javadc_dir="/srv/javadoc/java/" + reponame + "/" + projver + "/"
+          javadc_dir="/srv/javadoc/java/" + reponame + "/" + VERSION + "/"
           echo javadc_dir
 
           rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:javadoc -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2'
@@ -111,17 +137,15 @@ pipeline {
     stage ('Reports and Statistics') {
       steps {
         script {
-          projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
-
           //jacoco
-          report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/jacoco/"
+          report_dir="/srv/reports/" + reponame + "/" + VERSION + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/jacoco/"
 
           rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco -Dmaven.repo.local=.m2'
           sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
 
           //infer
           if(env.BRANCH_NAME ==~ /(^master$)/) {
-            report_dir="/srv/reports/" + reponame + "/" + projver + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
+            report_dir="/srv/reports/" + reponame + "/" + VERSION + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
             sh "mvn clean"
             sh "infer run -r -- mvn compile"
             sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
@@ -144,7 +168,7 @@ pipeline {
         }
       }
     }
-    
+
     stage ('Check Dependencies') {
       when {
         expression {
