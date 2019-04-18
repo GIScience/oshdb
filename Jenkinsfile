@@ -3,6 +3,9 @@ pipeline {
 
   environment {
     VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
+    RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
+    RELEASE_DEPLOY = false
+    SNAPSHOT_DEPLOY = false
   }
 
   stages {
@@ -25,6 +28,7 @@ pipeline {
 
           echo env.BRANCH_NAME
           echo env.BUILD_NUMBER
+          echo env.TAG_NAME
 
           server = Artifactory.server 'HeiGIT Repo'
           rtMaven = Artifactory.newMavenBuild()
@@ -55,6 +59,7 @@ pipeline {
         script {
           rtMaven.deployer.deployArtifacts buildInfo
           server.publishBuildInfo buildInfo
+          SNAPSHOT_DEPLOY = true
         }
       }
       post {
@@ -66,17 +71,15 @@ pipeline {
 
     stage ('Deploy Release') {
       when {
-        allOf {
-          tag pattern: "(^[0-9]+\$)|(^(([0-9]+)(\\.))+([0-9]+)?\$)", comparator: "REGEXP"
-          expression {
-            return VERSION ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)/
-          }
+        expression {
+          return VERSION ==~ RELEASE_REGEX && env.TAG_NAME ==~ RELEASE_REGEX
         }
       }
       steps {
         script {
           rtMaven.deployer.deployArtifacts buildInfo
           server.publishBuildInfo buildInfo
+          RELEASE_DEPLOY = true
         }
       }
       post {
@@ -105,8 +108,9 @@ pipeline {
 
     stage ('Publish Javadoc') {
       when {
-        expression {
-          return env.BRANCH_NAME ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)|(^master$)/
+        anyOf {
+          equals expected: true, actual: RELEASE_DEPLOY
+          equals expected: true, actual: SNAPSHOT_DEPLOY
         }
       }
       steps {
