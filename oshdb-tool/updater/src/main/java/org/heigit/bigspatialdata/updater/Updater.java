@@ -36,8 +36,14 @@ public class Updater {
   private static final Logger LOG = LoggerFactory.getLogger(Updater.class);
 
   public static void main(String[] args)
-      throws MalformedURLException, ClassNotFoundException,
-      IgniteCheckedException, FileNotFoundException, IOException, SQLException {
+      throws MalformedURLException,
+      ClassNotFoundException,
+      IgniteCheckedException,
+      FileNotFoundException,
+      IOException,
+      SQLException {
+
+    //read commandline
     UpdateArgs config = new UpdateArgs();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();
     try {
@@ -61,26 +67,47 @@ public class Updater {
     Class.forName("org.postgresql.Driver");
     Class.forName("org.h2.Driver");
     Class.forName("org.apache.ignite.IgniteJdbcThinDriver");
+
+    //establish jdbc-connections
     try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
-        Connection keytables = DriverManager.getConnection(config.keytables, "sa", "");
-        Connection dbBit = DriverManager.getConnection(config.baseArgs.dbbit)) {
+        Connection keytablesDb = DriverManager.getConnection(config.keytables, "sa", "");
+        Connection bitmapDb = DriverManager.getConnection(config.baseArgs.dbbit)) {
+
       if (config.kafka != null) {
+        //create Kafka-promoter
         Properties props = new Properties();
         FileInputStream input = new FileInputStream(config.kafka);
         props.load(input);
+        //run update with Kafka
         try (Producer<Long, Byte[]> producer = new KafkaProducer<>(props)) {
-          Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, dbBit,
-              producer);
+          Updater.update(
+              config.etl,
+              keytablesDb,
+              config.workDir,
+              updateDb,
+              config.baseURL,
+              bitmapDb,
+              producer
+          );
         }
       } else {
-        Updater.update(config.etl, keytables, config.workDir, updateDb, config.baseURL, dbBit);
+        //run update without kafka
+        Updater.update(
+            config.etl,
+            keytablesDb,
+            config.workDir,
+            updateDb,
+            config.baseURL,
+            bitmapDb,
+            null
+        );
       }
     }
   }
 
   /**
    * Downloads replication files, transforms them to OSHDB-Objects and stores them in a
-   * JDBC-Database.At the same time it provides an index of updated entites.
+   * JDBC-Database.At the same time it maintains an index of updated entites.
    *
    * @param etlFiles The directory for the Files containing all currently known Entites
    * @param keytables Database for keytables
@@ -90,28 +117,38 @@ public class Updater {
    * @param replicationUrl The URL to get replication files from. Determines if monthly, dayly etc.
    * updates are preferred.
    * @param dbBit Database for a BitMap flagging changed Entites
-   * @param producer a producer to promote updated entites to a kafka-cluster
+   * @param producer a producer to promote updated entites to a kafka-cluster. May be null if not
+   * desired.
    * @throws java.sql.SQLException
+   * @throws java.io.IOException
+   * @throws java.lang.ClassNotFoundException
    */
-  public static void update(Path etlFiles, Connection keytables, Path workingDirectory,
-      Connection updateDb, URL replicationUrl, Connection dbBit, Producer<Long, Byte[]> producer)
-      throws SQLException, IOException, ClassNotFoundException {
-    try (FileBasedLock fileLock = new FileBasedLock(workingDirectory.resolve(Updater.LOCK_FILE)
-        .toFile())) {
+  public static void update(
+      Path etlFiles,
+      Connection keytables,
+      Path workingDirectory,
+      Connection updateDb,
+      URL replicationUrl,
+      Connection dbBit,
+      Producer<Long, Byte[]> producer
+  ) throws SQLException,
+      IOException,
+      ClassNotFoundException {
+
+    try (FileBasedLock fileLock = new FileBasedLock(
+        workingDirectory.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
-      Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl,
-          workingDirectory);
+      //download replicationFiles
+      Iterable<ReplicationFile> replicationFiles
+          = OSCDownloader.download(replicationUrl, workingDirectory);
+      //parse replicationFiles
       Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
+      //transform files to OSHEntities
       Iterable<OSHEntity> oshEntities = OSCOSHTransformer.transform(etlFiles, keytables, changes);
+      //load data into updateDb
       OSHLoader.load(updateDb, oshEntities, dbBit, producer);
       fileLock.unlock();
     }
-  }
-
-  public static void update(Path etlFiles, Connection keytables, Path workingDirectory,
-      Connection conn, URL replicationUrl, Connection dbBit) throws SQLException, IOException,
-      ClassNotFoundException {
-    Updater.update(etlFiles, keytables, workingDirectory, conn, replicationUrl, dbBit, null);
   }
 
 }

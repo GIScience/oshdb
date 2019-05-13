@@ -24,8 +24,7 @@ public class EtlFileStore implements EtlStore {
   }
 
   @Override
-  public void appendEntity(OSHEntity entity, Set<Long> newMemberNodes, Set<Long> newMemberWays,
-      Set<Long> newMemberRelations) {
+  public void appendEntity(OSHEntity entity, Set<Long> newMemberNodes, Set<Long> newMemberWays) {
   }
 
   @Override

@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.updater;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -89,7 +90,7 @@ public class Flusher {
           switch (t) {
             case NODE:
               List<OSHNode> nodes = new ArrayList<>();
-              insertGrid.forEach((Object gridEntity) -> {
+              insertGrid.getEntities().forEach((Object gridEntity) -> {
                 if (((OSHNode) gridEntity).getId() == updateEntity.getId()) {
                   contains[0] = true;
                 } else {
@@ -104,7 +105,7 @@ public class Flusher {
                 }
               });
               nodes.add((OSHNode) updateEntity);
-              nodes.sort((node1, node2) -> node1.compareTo(node2));
+              nodes.sort((node1, node2) -> Long.compare(node1.getId(), node2.getId()));
               OSHDBBoundingBox bbox1 = bboxs.get(bboxs.size() - 1);
               bbox1.add(updateEntity.getBoundingBox());
               bboxs.add(bbox1);
@@ -112,7 +113,7 @@ public class Flusher {
                   insertId.getId(),
                   insertId.getZoomLevel(),
                   nodes.get(0).getId(),
-                  nodes.get(0).getVersions().get(0).getTimestamp().getRawUnixTimestamp(),
+                  nodes.get(0).getVersions().iterator().next().getTimestamp().getRawUnixTimestamp(),
                   XYGrid.getBoundingBox(insertId).getMinLonLong() + (XYGrid.getBoundingBox(insertId)
                   .getMaxLonLong() - XYGrid.getBoundingBox(insertId).getMinLonLong()) / 2,
                   XYGrid.getBoundingBox(insertId).getMinLatLong() + (XYGrid.getBoundingBox(insertId)
@@ -132,13 +133,14 @@ public class Flusher {
               insertId.getId(),
               insertId.getZoomLevel(),
               updateEntity.getId(),
-              ((OSMEntity) updateEntity.getVersions().get(0)).getTimestamp().getRawUnixTimestamp(),
+              ((OSMEntity) updateEntity.getVersions().iterator().next()).getTimestamp()
+                  .getRawUnixTimestamp(),
               XYGrid.getBoundingBox(insertId).getMinLonLong() + (XYGrid.getBoundingBox(insertId)
               .getMaxLonLong() - XYGrid.getBoundingBox(insertId).getMinLonLong()) / 2,
               XYGrid.getBoundingBox(insertId).getMinLatLong() + (XYGrid.getBoundingBox(insertId)
               .getMaxLatLong() - XYGrid.getBoundingBox(insertId).getMinLatLong()) / 2,
               Arrays.asList((OSHNode) updateEntity));
-          if (updateEntity.getVersions().size() < 2) {
+          if (Iterables.size(updateEntity.getVersions()) < 2) {
             contains[0] = true;
           } else {
             contains[0] = false;
@@ -161,7 +163,7 @@ public class Flusher {
           oshdbPreparedStatement.execute();
         }
         if (!contains[0]) {
-          if (updateEntity.getVersions().size() > 1) {
+          if (Iterables.size(updateEntity.getVersions()) > 1) {
             //update old cell
             //get insertID of earlier stages
             boolean[] found = {false};
@@ -177,7 +179,7 @@ public class Flusher {
               if (resultSetOSHDB2.next()) {
                 GridOSHEntity removeGrid = (GridOSHEntity) (new ObjectInputStream(resultSetOSHDB
                     .getBinaryStream(1))).readObject();
-                removeGrid.forEach((Object oshEntity) -> {
+                removeGrid.getEntities().forEach((Object oshEntity) -> {
                   OSHEntity entity = (OSHEntity) oshEntity;
                   //collect data for new entity here
                   //create new GridCell without entity (see above)

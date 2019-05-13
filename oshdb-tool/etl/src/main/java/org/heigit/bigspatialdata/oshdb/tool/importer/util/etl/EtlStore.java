@@ -22,9 +22,11 @@ public interface EtlStore {
    * @param entity
    * @param newMemberNodes
    * @param newMemberWays
-   * @param newMemberRelations
    */
-  void appendEntity(OSHEntity entity, Set<Long> newMemberNodes, Set<Long> newMemberWays,
-      Set<Long> newMemberRelations);
+  void appendEntity(
+      OSHEntity entity,
+      Set<Long> newMemberNodes,
+      Set<Long> newMemberWays
+  );
 
 }

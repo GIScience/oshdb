@@ -12,14 +12,11 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBUpdate;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
-import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
@@ -244,9 +241,10 @@ abstract class TestMapReduce {
   
   @Test
   public void testUpdate() throws SQLException, Exception {
-    if (this instanceof TestMapReduceOSHDB_H2_singlethread || this instanceof TestMapReduceOSHDB_H2_multithread) {
+    if (this instanceof TestMapReduceOSHDB_H2_singlethread 
+        || this instanceof TestMapReduceOSHDB_H2_multithread) {
       try (Connection conn = DriverManager.getConnection(
-          "jdbc:h2:./src/test/resources/update-test-data");) {
+          "jdbc:h2:./src/test/resources/test-update-data");) {
         this.update = new OSHDBUpdate(conn);
         // simple query
         Set<Long> result = createMapReducerOSMEntitySnapshotUpdate()
@@ -256,7 +254,7 @@ abstract class TestMapReduce {
               return snapshot.getEntity().getId();
             })
             .uniq();
-        assertTrue(result.contains(6286318977L));
+        assertTrue(result.contains(267346624L));
       }
     }
 

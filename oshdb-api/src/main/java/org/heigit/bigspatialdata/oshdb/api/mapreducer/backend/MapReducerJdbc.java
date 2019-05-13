@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.PreparedStatement;
@@ -24,12 +23,14 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
-import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.locationtech.jts.geom.Polygon;
@@ -69,7 +70,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
         .filter(Optional::isPresent).map(Optional::get)
         .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
         .collect(Collectors.joining(" union all "));
-    PreparedStatement pstmt = ((OSHDBJdbc)this.oshdb).getConnection().prepareStatement(sqlQuery);
+    PreparedStatement pstmt = ((OSHDBJdbc) this.oshdb).getConnection().prepareStatement(sqlQuery);
     pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
     pstmt.setLong(2, cellIdRange.getStart().getId());
     pstmt.setLong(3, cellIdRange.getEnd().getId());
@@ -81,8 +82,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
    */
   protected GridOSHEntity readOshCellRawData(ResultSet oshCellsRawData)
       throws IOException, ClassNotFoundException, SQLException {
-    return (GridOSHEntity)
-        (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+    return (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
   }
 
   @Nonnull
@@ -94,31 +94,32 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
       }
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
           new Iterator<GridOSHEntity>() {
-            @Override
-            public boolean hasNext() {
-              try {
-                return !oshCellsRawData.isClosed();
-              } catch (SQLException e) {
-                throw new RuntimeException(e);
-              }
-            }
+        @Override
+        public boolean hasNext() {
+          try {
+            return !oshCellsRawData.isClosed();
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }
 
-            @Override
-            public GridOSHEntity next() {
-              try {
-                if (!hasNext()) {
-                  throw new NoSuchElementException();
-                }
-                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
-                if (!oshCellsRawData.next()) {
-                  oshCellsRawData.close();
-                }
-                return data;
-              } catch (IOException | ClassNotFoundException | SQLException e) {
-                throw new RuntimeException(e);
-              }
+        @Override
+        public GridOSHEntity next() {
+          try {
+            if (!hasNext()) {
+              throw new NoSuchElementException();
             }
-          }, 0
+            GridOSHEntity data = readOshCellRawData(oshCellsRawData);
+            if (!oshCellsRawData.next()) {
+              oshCellsRawData.close();
+            }
+            return data;
+          } catch (IOException | ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+      }, 0
       ), false);
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -129,8 +130,9 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
       throws SQLException, IOException, ClassNotFoundException {
     WKTWriter wktWriter = new WKTWriter();
     String sqlQuery;
-    if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(this.update
-        .getConnection().getClass().getName())) {
+    if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(
+        this.update.getConnection().getClass().getName()
+    )) {
       sqlQuery = this.getPostGISQuery();
     } else {
       sqlQuery = this.getIgniteQuery();
@@ -139,33 +141,31 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
     Polygon geometry = OSHDBGeometryBuilder.getGeometry(this.bboxFilter);
     pstmt.setObject(1, wktWriter.write(geometry));
     ResultSet updateEntities = pstmt.executeQuery();
-    
-    ArrayList<GridOSHEntity> result=new ArrayList<>(10);
+
+    ArrayList<GridOSHEntity> result = new ArrayList<>(10);
     while (updateEntities.next()) {
+      int type = updateEntities.getInt("type");
       byte[] data = updateEntities.getBytes("data");
-      ByteArrayInputStream bais = new ByteArrayInputStream(data);
-      ObjectInputStream ois = new ObjectInputStream(bais);
-      OSHEntity entity = (OSHEntity) ois.readObject();
 
       GridOSHEntity updateCell = null;
-      switch (entity.getType()) {
-        case NODE:
+      switch (type) {
+        case 0:
           ArrayList<OSHNode> nodes = new ArrayList<>(1);
-          nodes.add((OSHNode) entity);
+          nodes.add(OSHNodeImpl.instance(data, 0, data.length));
           updateCell = GridOSHNodes.rebase(0, 0, 0, 0, 0, 0, nodes);
           break;
-        case WAY:
+        case 1:
           ArrayList<OSHWay> ways = new ArrayList<>(1);
-          ways.add((OSHWay) entity);
+          ways.add(OSHWayImpl.instance(data, 0, data.length));
           updateCell = GridOSHWays.compact(0, 0, 0, 0, 0, 0, ways);
           break;
-        case RELATION:
+        case 2:
           ArrayList<OSHRelation> relations = new ArrayList<>(1);
-          relations.add((OSHRelation) entity);
+          relations.add(OSHRelationImpl.instance(data, 0, data.length));
           updateCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, relations);
           break;
         default:
-          throw new AssertionError(entity.getType().name());
+          throw new AssertionError("type unknown: " + type);
       }
       result.add(updateCell);
     }
@@ -175,22 +175,29 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   private String getIgniteQuery() {
     return this.typeFilter.stream()
         .map(osmType ->
-            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
-        )
-        .filter(Optional::isPresent).map(Optional::get)
-        .map(tn ->
-            "(SELECT data FROM " + tn + " WHERE bbx && ?)")
+        {
+          Optional<String> map = TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb
+              .prefix()));
+          if (map.isPresent()) {
+            return "(SELECT " + osmType.intValue() + " as type, data as data FROM  " + map.get() + " WHERE bbx && ?)";
+          }
+          return null;
+        })
+        .filter((a) -> a != null)
         .collect(Collectors.joining(" union all "));
   }
 
   private String getPostGISQuery() {
     return this.typeFilter.stream()
-        .map(osmType ->
-            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
-        )
-        .filter(Optional::isPresent).map(Optional::get)
-        .map(tn ->
-            "(SELECT data FROM " + tn + " WHERE ST_Intersects(bbx,ST_GeomFromText(?,4326)))")
+        .map(osmType -> {
+          Optional<String> map = TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb
+              .prefix()));
+          if (map.isPresent()) {
+            return "(SELECT " + osmType.intValue() + " as type , data as data FROM " + map.get() + " WHERE ST_Intersects(bbx,ST_GeomFromText(?,4326)))";
+          }
+          return null;
+        })
+        .filter((a) -> a != null)
         .collect(Collectors.joining(" union all "));
   }
 
