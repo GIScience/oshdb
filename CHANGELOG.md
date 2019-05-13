@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## 0.6.0 SNAPSHOT (current master)
+
+* oshdb-util: implemented `QUARTERLY`, `WEEKLY`, `DAILY`, and `HOURLY` as additional time intervals
+
 ## 0.5.0
 
 ### breaking changes

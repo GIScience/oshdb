@@ -62,7 +62,7 @@ Installation
 The OSHDB is available as a pre-compiled maven library and can be incorporated easily in any maven project. If you're starting a new project, take a look at how your IDE handles maven projects (for example, here you find instructions how to create a new maven project using [IntelliJ](https://www.jetbrains.com/help/idea/maven-support.html#maven_create_project)). Our [first steps tutorial](https://github.com/GIScience/oshdb/tree/docu-update-cleanup/documentation/first-steps#2-add-maven-dependency) includes further information about how to add the OSHDB as a maven dependency to your projects.
 
 Documentation
----
+-------------
 
 * [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
@@ -72,6 +72,15 @@ Examples
 --------
 
 A few usage examples can be found in our [oshdb-examples](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples) repository.
+
+Publications and Presentations
+------------------------------
+
+* Raifer, Martin; Troilo, Rafael; Kowatsch, Fabian; Auer, Michael; Loos, Lukas; Marx, Sabrina; Przybill, Katharina; Fendrich, Sascha; Mocnik, Franz-Benjamin; Zipf, Alexander (2019): [**OSHDB: a framework for spatio-temporal analysis of OpenStreetMap history data**](https://doi.org/10.1186/s40965-019-0061-3). Open Geospatial Data, Software and Standards.
+* Auer, Michael; Eckle, Melanie; Fendrich, Sascha; Kowatsch, Fabian; Marx, Sabrina; Raifer, Martin; Schott, Moritz; Troilo, Rafael; Zipf, Alexander (2018): [Comprehensive OpenStreetMap History Data Analyses- for and with the OSM community](https://2018.stateofthemap.org/2018/A33-Comprehensive_OpenStreetMap_History_Data_Analyses-_for_and_with_the_OSM_community/). Talk at the State of the Map conference 2018, Milan.
+* Auer, Michael; Eckle, Melanie; Fendrich, Sascha; Kowatsch, Fabian; Loos, Lukas; Marx, Sabrina; Raifer, Martin; Schott, Moritz; Troilo, Rafael; Zipf, Alexander (2018): [Ohsome – eine Plattform zur Analyse raumzeitlicher Entwicklungen von OpenStreetMap-Daten für intrinsische Qualitätsbewertungen](https://gispoint.de/gisopen-paper/4514-ohsome-eine-plattform-zur-analyse-raumzeitlicherentwicklungen-von-openstreetmap-daten-fuer-intrinsische-qualitaetsbewertungen.html?IDjournalTitle=5). AGIT ‒ Journal für Angewandte Geoinformatik.
+* Auer, Michael; Eckle, Melanie; Fendrich, Sascha; Griesbaum, Luisa; Kowatsch, Fabian; Marx, Sabrina; Raifer, Martin; Schott, Moritz; Troilo, Rafael; Zipf, Alexander (2018): [Towards Using the Potential of OpenStreetMap History for Disaster Activation Monitoring](https://www.researchgate.net/publication/325397280_Towards_Using_the_Potential_of_OpenStreetMap_History_for_Disaster_Activation_Monitoring). Conference: Proceedings of the 15th ISCRAM Conference 2018, Rochester.
+* Raifer, Martin (2017): [OSM history analysis using big data technology](https://2017.stateofthemap.org/2017/osm-history-analysis-using-big-data-technology/). Talk at the State of the Map conference 2017, Aizuwakamatsu.
 
 See Also
 --------
