@@ -32,13 +32,13 @@ abstract class TestMapReduce {
   OSHDBJdbc keytables = null;
   OSHDBUpdate update = null;
 
-  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
+  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(6, 49, 9, 50);
   private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01",
       OSHDBTimestamps.Interval.YEARLY);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
   private final OSHDBTimestamps timestampsUpdate = new OSHDBTimestamps("2010-01-01", "2020-12-01",
-      OSHDBTimestamps.Interval.MONTHLY);
+      OSHDBTimestamps.Interval.YEARLY);
 
   TestMapReduce(OSHDBDatabase oshdb) throws Exception {
     this.oshdb = oshdb;
@@ -65,7 +65,7 @@ abstract class TestMapReduce {
     if (this.keytables != null) {
       mapRed = mapRed.keytables(this.keytables);
     }
-    return mapRed.osmType(OSMType.NODE);
+    return mapRed.osmType(OSMType.NODE).areaOfInterest(bbox);
   }
 
   @Test
@@ -242,7 +242,9 @@ abstract class TestMapReduce {
   @Test
   public void testUpdate() throws SQLException, Exception {
     if (this instanceof TestMapReduceOSHDB_H2_singlethread 
-        || this instanceof TestMapReduceOSHDB_H2_multithread) {
+        || this instanceof TestMapReduceOSHDB_H2_multithread
+        ||this instanceof TestMapReduceOSHDB_Ignite_AffinityCall
+        ) {
       try (Connection conn = DriverManager.getConnection(
           "jdbc:h2:./src/test/resources/test-update-data;ACCESS_MODE_DATA=r");) {
         this.update = new OSHDBUpdate(conn);
@@ -254,7 +256,7 @@ abstract class TestMapReduce {
               return snapshot.getEntity().getId();
             })
             .uniq();
-        assertTrue(result.contains(267346624L));
+        assertTrue(result.contains(6473006559L));
       }
     }
 

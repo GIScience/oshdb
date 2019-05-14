@@ -5,6 +5,8 @@ import com.tdunning.math.stats.TDigest;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -39,15 +42,26 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
@@ -66,7 +80,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.io.WKTWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1955,5 +1971,81 @@ public abstract class MapReducer<X> implements
     result.addAll(a);
     result.addAll(b);
     return result;
+  }
+
+  protected ArrayList<GridOSHEntity> getUpdates()
+      throws SQLException, IOException, ClassNotFoundException {
+    WKTWriter wktWriter = new WKTWriter();
+    String sqlQuery;
+    System.out.println(this.update.getConnection().getClass().getName());
+    if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(
+        this.update.getConnection().getClass().getName()
+    )) {
+      sqlQuery = this.getPostGISQuery();
+    } else {
+      sqlQuery = this.getIgniteQuery();
+    }
+    PreparedStatement pstmt = this.update.getConnection().prepareStatement(sqlQuery);
+    Polygon geometry = OSHDBGeometryBuilder.getGeometry(this.bboxFilter);
+    pstmt.setObject(1, wktWriter.write(geometry));
+    ResultSet updateEntities = pstmt.executeQuery();
+    
+    ArrayList<GridOSHEntity> result = new ArrayList<>(10);
+    while (updateEntities.next()) {
+      int type = updateEntities.getInt("type");
+      byte[] data = updateEntities.getBytes("data");
+
+      GridOSHEntity updateCell = null;
+      switch (type) {
+        case 0:
+          ArrayList<OSHNode> nodes = new ArrayList<>(1);
+          nodes.add(OSHNodeImpl.instance(data, 0, data.length));
+          updateCell = GridOSHNodes.rebase(0, 0, 0, 0, 0, 0, nodes);
+          break;
+        case 1:
+          ArrayList<OSHWay> ways = new ArrayList<>(1);
+          ways.add(OSHWayImpl.instance(data, 0, data.length));
+          updateCell = GridOSHWays.compact(0, 0, 0, 0, 0, 0, ways);
+          break;
+        case 2:
+          ArrayList<OSHRelation> relations = new ArrayList<>(1);
+          relations.add(OSHRelationImpl.instance(data, 0, data.length));
+          updateCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, relations);
+          break;
+        default:
+          throw new AssertionError("type unknown: " + type);
+      }
+      result.add(updateCell);
+    }
+    return result;
+  }
+
+  private String getIgniteQuery() {
+    return this.typeFilter.stream()
+        .map(osmType ->
+        {
+          Optional<String> map = TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb
+              .prefix()));
+          if (map.isPresent()) {
+            return "(SELECT " + osmType.intValue() + " as type, data as data FROM  " + map.get() + " WHERE bbx && ?)";
+          }
+          return null;
+        })
+        .filter((a) -> a != null)
+        .collect(Collectors.joining(" union all "));
+  }
+
+  private String getPostGISQuery() {
+    return this.typeFilter.stream()
+        .map(osmType -> {
+          Optional<String> map = TableNames.forOSMType(osmType)
+              .map(tn -> tn.toString(this.oshdb.prefix()));
+          if (map.isPresent()) {
+            return "(SELECT " + osmType.intValue() + " as type , data as data FROM " + map.get() + " WHERE ST_Intersects(bbx,ST_GeomFromText(?,4326)))";
+          }
+          return null;
+        })
+        .filter((a) -> a != null)
+        .collect(Collectors.joining(" union all "));
   }
 }

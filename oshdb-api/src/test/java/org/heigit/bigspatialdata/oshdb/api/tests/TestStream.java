@@ -68,7 +68,7 @@ public class TestStream {
   @Test
   public void testForEachUpdate() throws Exception {
       try (Connection conn = DriverManager.getConnection(
-          "jdbc:h2:./src/test/resources/test-update-data");) {
+          "jdbc:h2:./src/test/resources/test-update-data;ACCESS_MODE_DATA=r");) {
 
         ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
         this.createUpdateMapReducerOSMContribution()
@@ -78,7 +78,7 @@ public class TestStream {
             .forEach(contribution -> {
               result.put(contribution.getEntityAfter().getId(), true);
             });
-        assertTrue("The node from update-db is missing.",result.keySet().contains(267346624L));
+        assertTrue("The node from update-db is missing.",result.keySet().contains(6473006559L));
       }
   }
   

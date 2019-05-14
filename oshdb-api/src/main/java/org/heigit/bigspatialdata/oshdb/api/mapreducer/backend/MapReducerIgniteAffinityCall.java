@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -29,14 +30,17 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
+import org.roaringbitmap.longlong.LongBitmapDataProvider;
 
 /**
  * {@inheritDoc}
@@ -123,7 +127,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -131,15 +135,30 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
+    //because streams are lazy we have to have two celliterators and cannot change the first one
+    CellIterator updateIterator = new CellIterator(
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+    );
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+      cellIterator.excludeIDs(bitMapIndex);
+    }
 
     final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
-    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> {
+    });
 
-    return this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType -> {
+    Stream<S> streamA = this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType ->
+    {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
@@ -164,7 +183,27 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
               })
           ))
           .reduce(identitySupplier.get(), combiner);
-    }).reduce(identitySupplier.get(), combiner);
+    });
+
+    Stream<S> streamB = Stream.empty();
+    if (this.update != null) {
+      updateIterator.includeIDsOnly(bitMapIndex);
+      streamB = this.getUpdates().parallelStream()
+          .map(arg0 -> {
+            if(arg0 instanceof GridOSHNodes){
+              ((GridOSHEntity) arg0).getEntities().forEach(enti -> {
+                if (enti.getId()==267346624L) {
+                  System.out.println("also there");
+                }
+            });
+          }
+            return arg0;
+          })
+          .filter(ignored -> this.isActive())
+          .map(oshCell -> cellProcessor.apply(oshCell, updateIterator));
+    }
+
+    return Streams.concat(streamA, streamB).reduce(identitySupplier.get(), combiner);
   }
 
   /**
@@ -174,7 +213,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
    */
   private Stream<X> stream(
       CellProcessor<Collection<X>> processor
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -182,15 +221,31 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
+    //because streams are lazy we have to have two celliterators and cannot change the first one
+    CellIterator updateIterator = new CellIterator(
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+    );
+
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+      cellIterator.excludeIDs(bitMapIndex);
+    }
 
     final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
-    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> {
+    });
 
-    return typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
+    Stream<X> streamA = typeFilter.stream().map(
+        (SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
@@ -200,21 +255,32 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .parallel()
           .filter(ignored -> this.isActive())
           .mapToObj(cellLongId -> asyncGetHandleTimeouts(
-                compute.affinityCallAsync(cacheName, cellLongId, () -> {
-                  @SuppressWarnings("SerializableStoresNonSerializable")
-                  GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
-                  Collection<X> ret;
-                  if (oshEntityCell == null) {
-                    ret = Collections.<X>emptyList();
-                  } else {
-                    ret = processor.apply(oshEntityCell, cellIterator);
-                  }
-                  onClose.run();
-                  return ret;
-                })
+              compute.affinityCallAsync(cacheName, cellLongId, () -> {
+                @SuppressWarnings("SerializableStoresNonSerializable")
+                GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                Collection<X> ret;
+                if (oshEntityCell == null) {
+                  ret = Collections.<X>emptyList();
+                } else {
+                  ret = processor.apply(oshEntityCell, cellIterator);
+                }
+                onClose.run();
+                return ret;
+              })
           ))
           .flatMap(Collection::stream);
     }).flatMap(x -> x);
+
+    Stream<X> streamB = Stream.empty();
+    if (this.update != null) {
+      updateIterator.includeIDsOnly(bitMapIndex);
+      streamB = this.getUpdates().parallelStream()
+          .filter(ignored -> this.isActive())
+          .map(oshCell -> processor.apply(oshCell, updateIterator))
+          .flatMap(Collection::stream);
+    }
+
+    return Streams.concat(streamA, streamB);
   }
 
   // === map-reduce operations ===
