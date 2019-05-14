@@ -244,7 +244,7 @@ abstract class TestMapReduce {
     if (this instanceof TestMapReduceOSHDB_H2_singlethread 
         || this instanceof TestMapReduceOSHDB_H2_multithread) {
       try (Connection conn = DriverManager.getConnection(
-          "jdbc:h2:./src/test/resources/test-update-data");) {
+          "jdbc:h2:./src/test/resources/test-update-data;ACCESS_MODE_DATA=r");) {
         this.update = new OSHDBUpdate(conn);
         // simple query
         Set<Long> result = createMapReducerOSMEntitySnapshotUpdate()
