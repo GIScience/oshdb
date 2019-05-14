@@ -241,7 +241,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     long longitude = (long) (OSHDB.GEOM_PRECISION_TO_LONG * ((Node) entity).getLongitude());
     ArrayList<OSMNode> nodes = new ArrayList<>(1);
     nodes.add(
-        new OSMNode(id, version, timestamp, changeset, userId, tagsArray, latitude, longitude)
+        new OSMNode(id, version, timestamp, changeset, userId, tagsArray, longitude, latitude)
     );
     //get other versions (if any)
     if (ent2 != null) {
