@@ -42,6 +42,7 @@ public class Flusher {
 
   /**
    * Flush updates form JDBC to real Ignite (best done once in a while, when database-usage is low).
+   * Aka. merge, aka. commit
    *
    * @param oshdb
    * @param updatedb

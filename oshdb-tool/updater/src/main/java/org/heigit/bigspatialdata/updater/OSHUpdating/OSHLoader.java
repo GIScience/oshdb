@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
@@ -41,21 +41,6 @@ public class OSHLoader {
   /**
    * represents the Load-Step in an ETL-Pipeline of updates.
    *
-   * @param conn
-   * @param oshEntityList
-   * @param dbBit
-   * @throws java.sql.SQLException
-   * @throws java.io.IOException
-   * @throws java.lang.ClassNotFoundException
-   */
-  public static void load(Connection conn, ArrayList<OSHEntity> oshEntityList, Connection dbBit)
-      throws SQLException, IOException, ClassNotFoundException {
-    OSHLoader.load(conn, oshEntityList, dbBit, null);
-  }
-
-  /**
-   * represents the Load-Step in an ETL-Pipeline of updates.
-   *
    * @param updateDb
    * @param oshEntities
    * @param dbBit
@@ -66,7 +51,7 @@ public class OSHLoader {
    */
   public static void load(
       Connection updateDb,
-      Iterable<OSHEntity> oshEntities,
+      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities,
       Connection dbBit,
       Producer<Long, Byte[]> producer)
       throws SQLException, IOException, ClassNotFoundException {
@@ -75,81 +60,86 @@ public class OSHLoader {
     Map<OSMType, LongBitmapDataProvider> bitmapMap
         = UpdateDatabaseHandler.prepareDB(updateDb, dbBit);
 
-    for (OSHEntity oshEntity : oshEntities) {
-      PreparedStatement st;
-      Polygon geometry = OSHDBGeometryBuilder.getGeometry(oshEntity.getBoundingBox());
-      switch (updateDb.getClass().getName()) {
-        case "org.apache.ignite.internal.jdbc.thin.JdbcThinConnection":
-          st = OSHLoader.insertIgnite(updateDb, oshEntity);
-          break;
-        case "org.postgresql.jdbc.PgConnection":
-          st = OSHLoader.insertPostgres(updateDb, oshEntity);
-          break;
-        case "org.h2.jdbc.JdbcConnection":
-          st = OSHLoader.insertH2(updateDb, oshEntity);
-          break;
-        default:
-          throw new UnknownServiceException(
-              "The used driver --"
-              + updateDb.getClass().getName()
-              + "-- is not supportd yet. Please report to the developers");
-      }
+    for (Map<OSMType, Map<Long, OSHEntity>> currMapOuter : oshEntities) {
+      for (Entry<OSMType, Map<Long, OSHEntity>> currMap : currMapOuter.entrySet()) {
+        for (Entry<Long, OSHEntity> currEntry : currMap.getValue().entrySet()) {
+          OSHEntity currEntity = currEntry.getValue();
+          PreparedStatement st;
+          Polygon geometry = OSHDBGeometryBuilder.getGeometry(currEntity.getBoundingBox());
+          switch (updateDb.getClass().getName()) {
+            case "org.apache.ignite.internal.jdbc.thin.JdbcThinConnection":
+              st = OSHLoader.insertIgnite(updateDb, currEntity);
+              break;
+            case "org.postgresql.jdbc.PgConnection":
+              st = OSHLoader.insertPostgres(updateDb, currEntity);
+              break;
+            case "org.h2.jdbc.JdbcConnection":
+              st = OSHLoader.insertH2(updateDb, currEntity);
+              break;
+            default:
+              throw new UnknownServiceException(
+                  "The used driver --"
+                  + updateDb.getClass().getName()
+                  + "-- is not supportd yet. Please report to the developers");
+          }
 
-      LOG.trace(oshEntity.getType() + " -> " + oshEntity.toString());
-      ByteBuffer buildRecord;
-      switch (oshEntity.getType()) {
-        case NODE:
-          buildRecord = OSHNodeImpl.buildRecord(
-              Lists.newArrayList(((OSHNode) oshEntity).getVersions()),
-              0,
-              0,
-              0,
-              0);
-          break;
+          LOG.trace(currEntity.getType() + " -> " + currEntity.toString());
+          ByteBuffer buildRecord;
+          switch (currEntity.getType()) {
+            case NODE:
+              buildRecord = OSHNodeImpl.buildRecord(
+                  Lists.newArrayList(((OSHNode) currEntity).getVersions()),
+                  0,
+                  0,
+                  0,
+                  0);
+              break;
 
-        case WAY:
-          buildRecord = OSHWayImpl.buildRecord(
-              Lists.newArrayList(((OSHWay) oshEntity).getVersions()),
-              oshEntity.getNodes(),
-              0,
-              0,
-              0,
-              0);
-          break;
+            case WAY:
+              buildRecord = OSHWayImpl.buildRecord(
+                  Lists.newArrayList(((OSHWay) currEntity).getVersions()),
+                  currEntity.getNodes(),
+                  0,
+                  0,
+                  0,
+                  0);
+              break;
 
-        case RELATION:
-          buildRecord = OSHRelationImpl.buildRecord(
-              Lists.newArrayList(((OSHRelation) oshEntity).getVersions()),
-              oshEntity.getNodes(),
-              oshEntity.getWays(),
-              0,
-              0,
-              0,
-              0);
-          break;
-        default:
-          throw new AssertionError(oshEntity.getType().name());
-      }
-      st.setLong(1, oshEntity.getId());
-      st.setString(2, geometry.toText());
-      st.setBytes(3, Arrays.copyOfRange(
-          buildRecord.array(),
-          buildRecord.position(),
-          buildRecord.remaining()));
-      st.executeUpdate();
-      st.close();
+            case RELATION:
+              buildRecord = OSHRelationImpl.buildRecord(
+                  Lists.newArrayList(((OSHRelation) currEntity).getVersions()),
+                  currEntity.getNodes(),
+                  currEntity.getWays(),
+                  0,
+                  0,
+                  0,
+                  0);
+              break;
+            default:
+              throw new AssertionError(currEntity.getType().name());
+          }
+          st.setLong(1, currEntity.getId());
+          st.setString(2, geometry.toText());
+          st.setBytes(3, Arrays.copyOfRange(
+              buildRecord.array(),
+              buildRecord.position(),
+              buildRecord.remaining()));
+          st.executeUpdate();
+          st.close();
 
-      LongBitmapDataProvider get = bitmapMap.get(oshEntity.getType());
-      get.addLong(oshEntity.getId());
-      bitmapMap.put(oshEntity.getType(), get);
+          LongBitmapDataProvider get = bitmapMap.get(currEntity.getType());
+          get.addLong(currEntity.getId());
+          bitmapMap.put(currEntity.getType(), get);
 
-      if (producer != null) {
-        OSHLoader.promote(
-            producer,
-            oshEntity.getType(),
-            oshEntity.getVersions().iterator().next().getTimestamp(),
-            oshEntity.getId(),
-            buildRecord);
+          if (producer != null) {
+            OSHLoader.promote(
+                producer,
+                currEntity.getType(),
+                currEntity.getVersions().iterator().next().getTimestamp(),
+                currEntity.getId(),
+                buildRecord);
+          }
+        }
       }
     }
     if (producer != null) {

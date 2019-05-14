@@ -11,11 +11,13 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCDownloader;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCParser;
 import org.heigit.bigspatialdata.updater.OSHUpdating.OSHLoader;
@@ -144,7 +146,7 @@ public class Updater {
       //parse replicationFiles
       Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
       //transform files to OSHEntities
-      Iterable<OSHEntity> oshEntities = OSCOSHTransformer.transform(etlFiles, keytables, changes);
+      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities = OSCOSHTransformer.transform(etlFiles, keytables, changes);
       //load data into updateDb
       OSHLoader.load(updateDb, oshEntities, dbBit, producer);
       fileLock.unlock();
