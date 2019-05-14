@@ -1,9 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -15,7 +13,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GeoTest {
   private GeometryFactory gf = new GeometryFactory();
