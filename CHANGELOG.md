@@ -3,7 +3,10 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
-* oshdb-util: implemented `QUARTERLY`, `WEEKLY`, `DAILY`, and `HOURLY` as additional time intervals
+## 0.5.1
+
+* oshdb-util: Fix a bug in `Geo.areaOf` when applied to polygons with holes. Before this fix, the method errorneously skipped the first inner ring when calculating the total area of a polygon. This affected geometries constructed from OSM multipolygon relations.
+* oshdb-util: Implemented `QUARTERLY`, `WEEKLY`, `DAILY`, and `HOURLY` as additional time intervals.
 
 ## 0.5.0
 
