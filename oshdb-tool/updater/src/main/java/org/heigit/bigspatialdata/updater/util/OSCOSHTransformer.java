@@ -219,6 +219,8 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
           dependendDefaultMap.put(updateDependent.getId(), updateDependent);
           result.put(updateDependent.getType(), dependendDefaultMap);
 
+          //TODO: Dependencies of Dependencies need to be updated
+          //also and relations might be included in a later version
         }
       }
     }
@@ -462,6 +464,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       this.insertRoleStatement.execute();
       role = maxKey + 1;
     }
+    //tt also needs to be updated if keytables got updated (or insert exception neets to be caught)
     return role;
   }
 
@@ -521,6 +524,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       tagsArray[i] = oshdbTag.getValue();
       i++;
     }
+    //tt also needs to be updated if keytables got updated (or insert exception neets to be caught)
     return tagsArray;
   }
 

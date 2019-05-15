@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -34,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Updater {
 
-  private static final String LOCK_FILE = "update.lock";
+  static final String LOCK_FILE = "update.lock";
   private static final Logger LOG = LoggerFactory.getLogger(Updater.class);
 
   public static void main(String[] args)
@@ -63,7 +64,6 @@ public class Updater {
     if (config.baseArgs.dbbit == null) {
       config.baseArgs.dbbit = config.baseArgs.jdbc;
     }
-    config.workDir.toFile().mkdirs();
 
     //for some reason postgres stops to work and is overwritten by h2 if this is not called:
     Class.forName("org.postgresql.Driver");
@@ -83,9 +83,8 @@ public class Updater {
         //run update with Kafka
         try (Producer<Long, Byte[]> producer = new KafkaProducer<>(props)) {
           Updater.update(
-              config.etl,
+              config.baseArgs.etl,
               keytablesDb,
-              config.workDir,
               updateDb,
               config.baseURL,
               bitmapDb,
@@ -95,9 +94,8 @@ public class Updater {
       } else {
         //run update without kafka
         Updater.update(
-            config.etl,
+            config.baseArgs.etl,
             keytablesDb,
-            config.workDir,
             updateDb,
             config.baseURL,
             bitmapDb,
@@ -114,8 +112,6 @@ public class Updater {
    * @param etlFiles The directory for the Files containing all currently known Entites
    * @param keytables Database for keytables
    * @param updateDb Connection to JDBC-Database where Updates should be stored.
-   * @param workingDirectory The working-directory to download replication files to and save Update
-   * states.
    * @param replicationUrl The URL to get replication files from. Determines if monthly, dayly etc.
    * updates are preferred.
    * @param dbBit Database for a BitMap flagging changed Entites
@@ -128,7 +124,6 @@ public class Updater {
   public static void update(
       Path etlFiles,
       Connection keytables,
-      Path workingDirectory,
       Connection updateDb,
       URL replicationUrl,
       Connection dbBit,
@@ -136,13 +131,15 @@ public class Updater {
   ) throws SQLException,
       IOException,
       ClassNotFoundException {
+    Path wd = Paths.get("target/updaterWD/");
+    wd.toFile().mkdirs();
 
     try (FileBasedLock fileLock = new FileBasedLock(
-        workingDirectory.resolve(Updater.LOCK_FILE).toFile())) {
+        wd.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
       //download replicationFiles
       Iterable<ReplicationFile> replicationFiles
-          = OSCDownloader.download(replicationUrl, workingDirectory);
+          = OSCDownloader.download(replicationUrl, wd);
       //parse replicationFiles
       Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
       //transform files to OSHEntities

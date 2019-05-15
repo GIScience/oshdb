@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.updater.util.cmd;
 
 import com.beust.jcommander.Parameter;
+import java.nio.file.Path;
+import org.heigit.bigspatialdata.oshdb.tool.importer.cli.validator.DirExistValidator;
 
 public class BaseArgs {
 
@@ -21,5 +23,12 @@ public class BaseArgs {
       required = true,
       order = 1)
   public String jdbc;
+
+  @Parameter(names = {"-etl"},
+      description = "Path to etlFiles",
+      validateWith = DirExistValidator.class,
+      required = true,
+      order = 2)
+  public Path etl;
 
 }

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Set;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
 
 /**
  * During the ETL procedure of creating an OSHDB the planet-pbf-file has to be paresed multiple
@@ -43,5 +44,23 @@ public interface EtlStore {
       Set<Long> newMemberNodes,
       Set<Long> newMemberWays
   );
+
+  /**
+   * Retrieves the CellId an Object is currently located in.
+   *
+   * @param type
+   * @param id
+   * @return
+   */
+  CellId getCurrentCellId(OSMType type, long id);
+
+  /**
+   * Updates the CellId an Object is currently located in.
+   *
+   * @param type
+   * @param id
+   * @return
+   */
+  CellId writeCurrentCellId(OSMType type, long id);
 
 }

@@ -3,9 +3,11 @@ package org.heigit.bigspatialdata.oshdb.tool.importer.util.etl;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,19 @@ public class EtlFileStore implements EtlStore {
   }
 
   @Override
+  public CellId getCurrentCellId(OSMType type, long id) {
+    //dummy random return :-)
+    Random coin = new Random();
+    int toss = coin.nextInt(2);
+    if (toss == 0) {
+      return new CellId(0, 0);
+    }
+    //Entity has no earlyer cellId (was a creation od etl files incomplete)
+    return null;
+
+  }
+
+  @Override
   public Map<OSMType, Map<Long, OSHEntity>> getDependent(OSMType type, long id) {
     return new HashMap<>(0);
   }
@@ -39,6 +54,11 @@ public class EtlFileStore implements EtlStore {
   @Override
   public OSHEntity getEntity(OSMType type, long id) {
     return null;
+  }
+
+  @Override
+  public CellId writeCurrentCellId(OSMType type, long id) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
 }

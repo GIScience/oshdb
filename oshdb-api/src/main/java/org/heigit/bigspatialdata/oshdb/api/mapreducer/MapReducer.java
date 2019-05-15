@@ -39,6 +39,8 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableConsumer
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -229,14 +231,20 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Sets the update database and includes its content in results.
+   * Sets the update database and includes its content in results. IgniteLocalPeek and ScanQuery not
+   * yet supported.
    *
    * @param updateDb
    * @return
    */
   public MapReducer<X> updates(OSHDBUpdate updateDb) throws SQLException, IOException,
       ClassNotFoundException {
-
+    if (this instanceof MapReducerIgniteLocalPeek || this instanceof MapReducerIgniteScanQuery) {
+      throw new UnsupportedOperationException(
+          "Updates for "
+          + this.getClass().getName()
+          + " not yet implemented.");
+    }
     MapReducer<X> ret = this.copy();
     ret.update = updateDb;
     return ret;
@@ -1977,7 +1985,6 @@ public abstract class MapReducer<X> implements
       throws SQLException, IOException, ClassNotFoundException {
     WKTWriter wktWriter = new WKTWriter();
     String sqlQuery;
-    System.out.println(this.update.getConnection().getClass().getName());
     if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(
         this.update.getConnection().getClass().getName()
     )) {

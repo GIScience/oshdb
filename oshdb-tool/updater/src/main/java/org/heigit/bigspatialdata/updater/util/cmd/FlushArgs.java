@@ -6,7 +6,7 @@ import com.beust.jcommander.ParametersDelegate;
 public class FlushArgs {
 
   @Parameter(names = {"-dbConfig", "-dbcfg"},
-      description = "jdbc-connection of production database",
+      description = "connection of production database. JDBC definition for H2, Igntie file path otherwise",
       required = true,
       order = 1)
   public String dbconfig;

@@ -23,24 +23,24 @@ public class UpdateDatabaseHandler {
 
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UpdateDatabaseHandler.class);
 
-  public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit)
-      throws SQLException {
-    bitmapMap.forEach((type, bitmap) -> {
-      try {
-        PreparedStatement write = dbBit.prepareStatement("UPDATE " + TableNames.forOSMType(type)
-            .get() + "_bitmap SET bitmap=? WHERE id=1;");
-        ByteArrayOutputStream s = new ByteArrayOutputStream();
-        ObjectOutputStream d = new ObjectOutputStream(s);
-        d.writeObject(bitmap);
-        byte[] toByteArray = s.toByteArray();
-        write.setBytes(1, toByteArray);
-        write.executeUpdate();
-      } catch (SQLException ex) {
-        LOG.error("error", ex);
-      } catch (IOException ex) {
-        LOG.error("error", ex);
+  private UpdateDatabaseHandler() {
+  }
+
+  public static void ereaseDb(Connection updateDb, Connection dbBit) throws SQLException {
+    Map<OSMType, LongBitmapDataProvider> bitmapMap = new HashMap<>();
+    Statement createStatement = updateDb.createStatement();
+    for (OSMType type : OSMType.values()) {
+      if (type != OSMType.UNKNOWN) {
+        //is drop dable and prepareDB faster?
+        createStatement.execute(
+            "DELETE FROM "
+            + TableNames.forOSMType(type).get());
+        LongBitmapDataProvider bit = new Roaring64NavigableMap();
+        bitmapMap.put(type, bit);
       }
-    });
+    }
+    UpdateDatabaseHandler.writeBitMap(bitmapMap, dbBit);
+
   }
 
   public static Map<OSMType, LongBitmapDataProvider> getBitMap(Connection dbBit) throws SQLException,
@@ -95,6 +95,26 @@ public class UpdateDatabaseHandler {
       }
     }
     return UpdateDatabaseHandler.getBitMap(dbBit);
+  }
+
+  public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit)
+      throws SQLException {
+    bitmapMap.forEach((type, bitmap) -> {
+      try {
+        PreparedStatement write = dbBit.prepareStatement("UPDATE " + TableNames.forOSMType(type)
+            .get() + "_bitmap SET bitmap=? WHERE id=1;");
+        ByteArrayOutputStream s = new ByteArrayOutputStream();
+        ObjectOutputStream d = new ObjectOutputStream(s);
+        d.writeObject(bitmap);
+        byte[] toByteArray = s.toByteArray();
+        write.setBytes(1, toByteArray);
+        write.executeUpdate();
+      } catch (SQLException ex) {
+        LOG.error("error", ex);
+      } catch (IOException ex) {
+        LOG.error("error", ex);
+      }
+    });
   }
 
   private static void prepareH2BitmapDb(OSMType type, Connection dbBit, byte[] bytea) throws
