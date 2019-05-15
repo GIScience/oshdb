@@ -71,7 +71,7 @@ public class Flusher {
     //ignite.cluster().active(true);
     Statement updateDBStatement = updatedb.createStatement();
     for (OSMType t : OSMType.values()) {
-      if (t != OSMType.UNKNOWN) {
+      if (t == OSMType.UNKNOWN) {
         continue;
       }
 
@@ -104,7 +104,8 @@ public class Flusher {
     UpdateDatabaseHandler.ereaseDb(updatedb, dbBit);
   }
 
-  public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException {
+  public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException,
+      Exception {
     FlushArgs config = new FlushArgs();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();
     try {
@@ -130,11 +131,14 @@ public class Flusher {
       try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
           Connection dbBit = DriverManager.getConnection(config.baseArgs.dbbit);) {
         if (config.dbconfig.contains("h2")) {
-          OSHDBH2 oshdb = new OSHDBH2(config.dbconfig);
-          Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl);
+          try (Connection conn = DriverManager.getConnection(config.dbconfig, "sa", "");
+              OSHDBH2 oshdb = new OSHDBH2(conn);) {
+            Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl);
+          }
         } else {
-          OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);
-          Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl);
+          try (OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);) {
+            Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl);
+          }
         }
       }
     }

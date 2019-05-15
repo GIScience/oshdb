@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.oshdb.tool.importer.util.etl;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -35,15 +34,8 @@ public class EtlFileStore implements EtlStore {
 
   @Override
   public CellId getCurrentCellId(OSMType type, long id) {
-    //dummy random return :-)
-    Random coin = new Random();
-    int toss = coin.nextInt(2);
-    if (toss == 0) {
-      return new CellId(0, 0);
-    }
     //Entity has no earlyer cellId (was a creation od etl files incomplete)
     return null;
-
   }
 
   @Override
