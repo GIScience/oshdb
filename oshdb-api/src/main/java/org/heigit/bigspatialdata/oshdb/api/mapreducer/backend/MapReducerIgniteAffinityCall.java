@@ -30,7 +30,6 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -189,16 +188,6 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
       streamB = this.getUpdates().parallelStream()
-          .map(arg0 -> {
-            if(arg0 instanceof GridOSHNodes){
-              ((GridOSHEntity) arg0).getEntities().forEach(enti -> {
-                if (enti.getId()==267346624L) {
-                  System.out.println("also there");
-                }
-            });
-          }
-            return arg0;
-          })
           .filter(ignored -> this.isActive())
           .map(oshCell -> cellProcessor.apply(oshCell, updateIterator));
     }

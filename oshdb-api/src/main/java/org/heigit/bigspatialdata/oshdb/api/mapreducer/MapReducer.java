@@ -139,6 +139,20 @@ public abstract class MapReducer<X> implements
   // internal state
   Class<? extends OSHDBMapReducible> forClass;
 
+  private GridOSHEntity createCell(int type, ArrayList<? extends OSHEntity> elements)
+      throws IOException {
+    switch (type) {
+      case 0:
+        return GridOSHNodes.rebase(0, 0, 0, 0, 0, 0, (List<OSHNode>) elements);
+      case 1:
+        return GridOSHWays.compact(0, 0, 0, 0, 0, 0, (List<OSHWay>) elements);
+      case 2:
+        return GridOSHRelations.compact(0, 0, 0, 0, 0, 0, (List<OSHRelation>) elements);
+      default:
+        throw new AssertionError("type unknown: " + type);
+    }
+  }
+
   enum Grouping {
     NONE, BY_ID
   }
@@ -1998,32 +2012,43 @@ public abstract class MapReducer<X> implements
     ResultSet updateEntities = pstmt.executeQuery();
     
     ArrayList<GridOSHEntity> result = new ArrayList<>(10);
+    ArrayList<OSHNode> nodes = new ArrayList<>(1);
+    ArrayList<OSHWay> ways = new ArrayList<>(1);
+    ArrayList<OSHRelation> relations = new ArrayList<>(1);
     while (updateEntities.next()) {
       int type = updateEntities.getInt("type");
       byte[] data = updateEntities.getBytes("data");
 
-      GridOSHEntity updateCell = null;
+      GridOSHEntity updateCell;
       switch (type) {
         case 0:
-          ArrayList<OSHNode> nodes = new ArrayList<>(1);
           nodes.add(OSHNodeImpl.instance(data, 0, data.length));
-          updateCell = GridOSHNodes.rebase(0, 0, 0, 0, 0, 0, nodes);
+          if (nodes.size() >= this.update.getBatchSize()) {
+            result.add(this.createCell(0, nodes));
+            nodes.clear();
+          }
           break;
         case 1:
-          ArrayList<OSHWay> ways = new ArrayList<>(1);
           ways.add(OSHWayImpl.instance(data, 0, data.length));
-          updateCell = GridOSHWays.compact(0, 0, 0, 0, 0, 0, ways);
+          if (ways.size() >= this.update.getBatchSize()) {
+            result.add(this.createCell(1, ways));
+            nodes.clear();
+          }
           break;
         case 2:
-          ArrayList<OSHRelation> relations = new ArrayList<>(1);
           relations.add(OSHRelationImpl.instance(data, 0, data.length));
-          updateCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, relations);
+          if (relations.size() >= this.update.getBatchSize()) {
+            result.add(this.createCell(2, relations));
+            nodes.clear();
+          }
           break;
         default:
           throw new AssertionError("type unknown: " + type);
       }
-      result.add(updateCell);
     }
+    result.add(this.createCell(0, nodes));
+    result.add(this.createCell(1, ways));
+    result.add(this.createCell(2, relations));
     return result;
   }
 
