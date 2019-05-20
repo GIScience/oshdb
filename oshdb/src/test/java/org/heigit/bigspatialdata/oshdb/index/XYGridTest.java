@@ -369,7 +369,11 @@ public class XYGridTest {
   @Test
   public void testGetBoundingBox() {
     OSHDBBoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
-    OSHDBBoundingBox expResult = new OSHDBBoundingBox(0.0, -90.0, 90.0, 0.0 - OSHDB.GEOM_PRECISION);
-    assertEquals(expResult.toString(), result.toString());
+    OSHDBBoundingBox expResult = new OSHDBBoundingBox(
+        0.0,
+        -90.0,
+        90.0 - OSHDB.GEOM_PRECISION,
+        0.0 - OSHDB.GEOM_PRECISION);
+    assertEquals(expResult, result);
   }
 }
