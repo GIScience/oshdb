@@ -56,10 +56,6 @@ public class OSCDownloader {
           final File replicationFile = OSCDownloader.downloadReplicationFile(fileName);
           return new ReplicationFile(state, replicationFile);
         })
-        // we could limit how many file we would like to process in this run!
-        // just comment out this limit if you don't want it.
-        //TODO:
-        .limit(1)
         .blockingIterable();
   }
 

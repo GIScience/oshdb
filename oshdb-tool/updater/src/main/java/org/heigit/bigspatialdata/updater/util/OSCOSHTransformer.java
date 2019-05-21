@@ -39,10 +39,6 @@ import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
-import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
-import org.openstreetmap.osmosis.core.container.v0_6.NodeContainerFactory;
-import org.openstreetmap.osmosis.core.container.v0_6.RelationContainerFactory;
-import org.openstreetmap.osmosis.core.container.v0_6.WayContainerFactory;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 import org.openstreetmap.osmosis.core.domain.v0_6.EntityType;
 import org.openstreetmap.osmosis.core.domain.v0_6.Node;
@@ -58,6 +54,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
   //Attention: does not propperly handled missing data at time of Update. If data is provided with a later update, previous referencing Entities are not updated and remain in an incomplete state -> see comment about handling missing data
   private static final Logger LOG = LoggerFactory.getLogger(OSCOSHTransformer.class);
+  private final int batchSize;
 
   private final Iterator<ChangeContainer> containers;
   private final EtlStore etlStore;
@@ -66,11 +63,13 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
   private final PreparedStatement insertRoleStatement;
   private final TagTranslator tt;
 
-  private OSCOSHTransformer(Path etlFiles, Connection keytables, Iterable<ChangeContainer> changes)
+  private OSCOSHTransformer(Path etlFiles, Connection keytables, int batchSize,
+      Iterable<ChangeContainer> changes)
       throws OSHDBKeytablesNotFoundException, SQLException {
     this.containers = changes.iterator();
     this.tt = new TagTranslator(keytables);
     this.etlStore = new EtlFileStore(etlFiles);
+    this.batchSize = batchSize;
     this.insertKeyStatement
         = keytables.prepareStatement("INSERT INTO " + TableNames.E_KEY + " VALUES(?,?);");
     this.insertKeyValueStatement
@@ -97,12 +96,13 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
   public static Iterable<Map<OSMType, Map<Long, OSHEntity>>> transform(
       Path etlFiles,
       Connection keytables,
+      int batchSize,
       Iterable<ChangeContainer> changes) {
     LOG.info("processing");
     //define Iterable that creates Iterators as needed
     return () -> {
       try {
-        return new OSCOSHTransformer(etlFiles, keytables, changes);
+        return new OSCOSHTransformer(etlFiles, keytables, batchSize, changes);
       } catch (OSHDBKeytablesNotFoundException | SQLException ex) {
         LOG.error("", ex);
       }
@@ -117,19 +117,33 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
   @Override
   public Map<OSMType, Map<Long, OSHEntity>> next() {
-    ChangeContainer currContainer = this.containers.next();
-    try {
-      LOG.trace(currContainer.getAction() + " : " + currContainer.getEntityContainer().getEntity());
 
-      switch (currContainer.getAction()) {
-        case Create:
-          return this.onChange(currContainer);
-        case Modify:
-          return this.onChange(currContainer);
-        case Delete:
-          return this.onDelete(currContainer);
-        default:
-          throw new AssertionError(currContainer.getAction().name());
+    Map<EntityType, Map<Long, List<ChangeContainer>>> changes = new HashMap<>(1);
+
+    int i = 0;
+    //it should be checked, whether is actually improves things!
+    while (i < this.batchSize) {
+      if (this.containers.hasNext()) {
+        ChangeContainer currContainer = this.containers.next();
+        Entity entity = currContainer.getEntityContainer().getEntity();
+        Map<Long, List<ChangeContainer>> typeEntities
+            = changes.getOrDefault(entity.getType(), new HashMap<>(1));
+        List<ChangeContainer> entityChanges = typeEntities.getOrDefault(entity.getId(),
+            new ArrayList<>(1));
+        entityChanges.add(currContainer);
+        typeEntities.put(entity.getId(), entityChanges);
+        changes.put(entity.getType(), typeEntities);
+      } else {
+        break;
+      }
+      i++;
+    }
+
+    try {
+      for (Entry<EntityType, Map<Long, List<ChangeContainer>>> typeEntry : changes.entrySet()) {
+        for (Entry<Long, List<ChangeContainer>> entityEntry : typeEntry.getValue().entrySet()) {
+          return this.onChange(typeEntry.getKey(), entityEntry.getKey(), entityEntry.getValue());
+        }
       }
     } catch (IOException | SQLException ex) {
       LOG.error("error", ex);
@@ -139,65 +153,26 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
   //Combines an entity and an OSHEntity
   private Map<OSMType, Map<Long, OSHEntity>> combine(
-      Entity entity,
+      EntityType type,
+      long id,
+      List<ChangeContainer> changes,
       Map<OSMType, Map<Long, OSHEntity>> dependen,
       OSHEntity currEntity1)
       throws IOException, SQLException {
 
-    //get basic information on object
-    long id = entity.getId();
-    int version = entity.getVersion();
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
-    long changeset = entity.getChangesetId();
-    int userId = entity.getUser().getId();
-    int[] tagsArray;
-    try {
-      tagsArray = this.getTags(entity.getTags());
-    } catch (SQLException e) {
-      tagsArray = null;
-      LOG.error("Could not get Tags for this Object.", e);
-    }
-
     OSHEntity currEntity = currEntity1;
-    switch (entity.getType()) {
-      case Bound:
-        throw new UnsupportedOperationException("Unknown type in this context");
+    switch (type) {
       case Node:
-        currEntity = this.combineNode(
-            id,
-            version,
-            timestamp,
-            changeset,
-            userId,
-            tagsArray,
-            entity,
-            currEntity);
+        currEntity = this.combineNode(id, changes, currEntity);
         break;
       case Way:
-        currEntity = this.combineWay(
-            id,
-            version,
-            timestamp,
-            changeset,
-            userId,
-            tagsArray,
-            entity,
-            currEntity);
+        currEntity = this.combineWay(id, changes, currEntity);
         break;
       case Relation:
-        currEntity = this.combineRelation(
-            id,
-            version,
-            timestamp,
-            changeset,
-            userId,
-            tagsArray,
-            entity,
-            currEntity
-        );
+        currEntity = this.combineRelation(id, changes, currEntity);
         break;
       default:
-        throw new AssertionError(entity.getType().name());
+        throw new AssertionError(type);
     }
 
     //add updated Entity to result
@@ -229,22 +204,34 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
   private OSHEntity combineNode(
       long id,
-      int version,
-      OSHDBTimestamp timestamp,
-      long changeset,
-      int userId,
-      int[] tagsArray,
-      Entity entity,
+      List<ChangeContainer> changes,
       OSHEntity ent2)
       throws IOException {
 
-    //get object specific information
-    long latitude = (long) (OSHDB.GEOM_PRECISION_TO_LONG * ((Node) entity).getLatitude());
-    long longitude = (long) (OSHDB.GEOM_PRECISION_TO_LONG * ((Node) entity).getLongitude());
     ArrayList<OSMNode> nodes = new ArrayList<>(1);
-    nodes.add(
-        new OSMNode(id, version, timestamp, changeset, userId, tagsArray, longitude, latitude)
-    );
+
+    for (ChangeContainer cont : changes) {
+      Entity entity = cont.getEntityContainer().getEntity();
+      //get basic information on object
+      int version = entity.getVersion();
+      OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
+      long changeset = entity.getChangesetId();
+      int userId = entity.getUser().getId();
+      int[] tagsArray;
+      try {
+        tagsArray = this.getTags(entity.getTags());
+      } catch (SQLException e) {
+        tagsArray = null;
+        LOG.error("Could not get Tags for this Object.", e);
+      }
+
+      //get object specific information
+      long latitude = (long) (OSHDB.GEOM_PRECISION_TO_LONG * ((Node) entity).getLatitude());
+      long longitude = (long) (OSHDB.GEOM_PRECISION_TO_LONG * ((Node) entity).getLongitude());
+      nodes.add(
+          new OSMNode(id, version, timestamp, changeset, userId, tagsArray, longitude, latitude)
+      );
+    }
     //get other versions (if any)
     if (ent2 != null) {
       ent2.getVersions().forEach(node -> nodes.add((OSMNode) node));
@@ -262,96 +249,109 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
   private OSHEntity combineRelation(
       long id,
-      int version,
-      OSHDBTimestamp timestamp,
-      long changeset,
-      int userId,
-      int[] tagsArray,
-      Entity entity,
+      List<ChangeContainer> changes,
       OSHEntity ent2)
       throws IOException, SQLException {
 
-    Relation relation = (Relation) entity;
+    ArrayList<OSMRelation> relations = new ArrayList<>(1);
     Set<Long> missingNodeIds = new HashSet<>(1);
     Set<Long> missingWayIds = new HashSet<>(1);
-    Iterator<RelationMember> it = relation.getMembers().iterator();
     Set<OSHNode> rNodes = new HashSet<>(0);
     Set<OSHWay> rWays = new HashSet<>(0);
-    OSMMember[] refs2 = new OSMMember[relation.getMembers().size()];
-    int j = 0;
-    while (it.hasNext()) {
-      RelationMember rm = it.next();
-      int roleId = this.getRole(rm.getMemberRole());
-      switch (rm.getMemberType()) {
-        case Node:
-          OSHNode rNode = (OSHNode) this.etlStore.getEntity(OSMType.NODE, rm.getMemberId());
-          if (rNode != null) {
-            missingNodeIds.add(rNode.getId());
-            rNodes.add(rNode);
-          } else {
-            LOG.warn(
-                "Missing Data for "
-                + rm.getMemberType()
-                + " with ID "
-                + rm.getMemberId()
-                + ". Data output might be corrupt?");
-          }
-          OSMMember memberN = new OSMMember(
-              rm.getMemberId(),
-              OSMType.NODE,
-              roleId,
-              rNode
-          );
-          refs2[j] = memberN;
-          break;
-        case Way:
-          OSHWay rWay = (OSHWay) this.etlStore.getEntity(OSMType.WAY, rm.getMemberId());
-          if (rWay != null) {
-            missingWayIds.add(rWay.getId());
-            rWays.add(rWay);
-          } else {
-            LOG.warn(
-                "Missing Data for "
-                + rm.getMemberType()
-                + " with ID "
-                + rm.getMemberId()
-                + ". Data output might be corrupt?");
-          }
-          OSMMember memberW = new OSMMember(
-              rm.getMemberId(),
-              OSMType.WAY,
-              roleId,
-              rWay
-          );
-          refs2[j] = memberW;
-          break;
-        case Relation:
-          OSHRelation rRelation
-              = (OSHRelation) this.etlStore.getEntity(OSMType.RELATION, rm.getMemberId());
-          if (rRelation == null) {
-            LOG.warn(
-                "Missing Data for "
-                + rm.getMemberType()
-                + " with ID "
-                + rm.getMemberId()
-                + ". Data output might be corrupt?");
-          }
-          OSMMember memberR = new OSMMember(
-              rm.getMemberId(),
-              OSMType.RELATION,
-              roleId,
-              rRelation
-          );
-          refs2[j] = memberR;
-          break;
-        default:
-          throw new AssertionError(rm.getMemberType().name());
-      }
-      j++;
-    }
-    ArrayList<OSMRelation> relations = new ArrayList<>(1);
-    relations.add(new OSMRelation(id, version, timestamp, changeset, userId, tagsArray, refs2));
 
+    for (ChangeContainer cont : changes) {
+
+      Entity entity = cont.getEntityContainer().getEntity();
+
+      //get basic information on object
+      int version = entity.getVersion();
+      OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
+      long changeset = entity.getChangesetId();
+      int userId = entity.getUser().getId();
+      int[] tagsArray;
+      try {
+        tagsArray = this.getTags(entity.getTags());
+      } catch (SQLException e) {
+        tagsArray = null;
+        LOG.error("Could not get Tags for this Object.", e);
+      }
+
+      Relation relation = (Relation) entity;
+      Iterator<RelationMember> it = relation.getMembers().iterator();
+      OSMMember[] refs2 = new OSMMember[relation.getMembers().size()];
+      int j = 0;
+      while (it.hasNext()) {
+        RelationMember rm = it.next();
+        int roleId = this.getRole(rm.getMemberRole());
+        switch (rm.getMemberType()) {
+          case Node:
+            OSHNode rNode = (OSHNode) this.etlStore.getEntity(OSMType.NODE, rm.getMemberId());
+            if (rNode != null) {
+              missingNodeIds.add(rNode.getId());
+              rNodes.add(rNode);
+            } else {
+              LOG.warn(
+                  "Missing Data for "
+                  + rm.getMemberType()
+                  + " with ID "
+                  + rm.getMemberId()
+                  + ". Data output might be corrupt?");
+            }
+            OSMMember memberN = new OSMMember(
+                rm.getMemberId(),
+                OSMType.NODE,
+                roleId,
+                rNode
+            );
+            refs2[j] = memberN;
+            break;
+          case Way:
+            OSHWay rWay = (OSHWay) this.etlStore.getEntity(OSMType.WAY, rm.getMemberId());
+            if (rWay != null) {
+              missingWayIds.add(rWay.getId());
+              rWays.add(rWay);
+            } else {
+              LOG.warn(
+                  "Missing Data for "
+                  + rm.getMemberType()
+                  + " with ID "
+                  + rm.getMemberId()
+                  + ". Data output might be corrupt?");
+            }
+            OSMMember memberW = new OSMMember(
+                rm.getMemberId(),
+                OSMType.WAY,
+                roleId,
+                rWay
+            );
+            refs2[j] = memberW;
+            break;
+          case Relation:
+            OSHRelation rRelation
+                = (OSHRelation) this.etlStore.getEntity(OSMType.RELATION, rm.getMemberId());
+            if (rRelation == null) {
+              LOG.warn(
+                  "Missing Data for "
+                  + rm.getMemberType()
+                  + " with ID "
+                  + rm.getMemberId()
+                  + ". Data output might be corrupt?");
+            }
+            OSMMember memberR = new OSMMember(
+                rm.getMemberId(),
+                OSMType.RELATION,
+                roleId,
+                rRelation
+            );
+            refs2[j] = memberR;
+            break;
+          default:
+            throw new AssertionError(rm.getMemberType().name());
+        }
+        j++;
+      }
+      relations.add(new OSMRelation(id, version, timestamp, changeset, userId, tagsArray, refs2));
+    }
     if (ent2 != null) {
       ent2.getNodes().forEach(node -> missingNodeIds.remove(node.getId()));
       ent2.getWays().forEach(way -> missingWayIds.remove(way.getId()));
@@ -390,39 +390,55 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
   private OSHEntity combineWay(
       long id,
-      int version,
-      OSHDBTimestamp timestamp,
-      long changeset,
-      int userId,
-      int[] tagsArray,
-      Entity entity,
+      List<ChangeContainer> changes,
       OSHEntity ent2)
       throws IOException {
 
-    Way way = (Way) entity;
-    Set<Long> missingNodeIds = new HashSet<>(1);
-    List<WayNode> wayNodes = way.getWayNodes();
-    Set<OSHNode> allNodes = new HashSet<>(0);
-    OSMMember[] refs = new OSMMember[wayNodes.size()];
-    int i = 0;
-    //all members in current version
-    for (WayNode wn : wayNodes) {
-      missingNodeIds.add(wn.getNodeId());
-      OSHNode node = (OSHNode) this.etlStore.getEntity(OSMType.NODE, wn.getNodeId());
-      //Handling missing data: account for updates coming unordered (e.g. way creation before referencing node creation. Maybe dummy node with ID would be better?
-      if (node != null) {
-        allNodes.add(node);
-      } else {
-        LOG.warn(
-            "Missing Data for Node with ID: " + wn.getNodeId() + ". Data output might be corrupt?");
-      }
-      OSMMember member = new OSMMember(wn.getNodeId(), OSMType.NODE, 0, node);
-      refs[i] = member;
-      i++;
-    }
     ArrayList<OSMWay> ways = new ArrayList<>(1);
-    ways.add(new OSMWay(id, version, timestamp, changeset, userId, tagsArray, refs));
+    Set<Long> missingNodeIds = new HashSet<>(1);
+    Set<OSHNode> allNodes = new HashSet<>(0);
 
+    for (ChangeContainer cont : changes) {
+
+      Entity entity = cont.getEntityContainer().getEntity();
+
+      //get basic information on object
+      int version = entity.getVersion();
+      OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
+      long changeset = entity.getChangesetId();
+      int userId = entity.getUser().getId();
+      int[] tagsArray;
+      try {
+        tagsArray = this.getTags(entity.getTags());
+      } catch (SQLException e) {
+        tagsArray = null;
+        LOG.error("Could not get Tags for this Object.", e);
+      }
+
+      Way way = (Way) entity;
+
+      List<WayNode> wayNodes = way.getWayNodes();
+
+      OSMMember[] refs = new OSMMember[wayNodes.size()];
+      int i = 0;
+      //all members in current version
+      for (WayNode wn : wayNodes) {
+        missingNodeIds.add(wn.getNodeId());
+        OSHNode node = (OSHNode) this.etlStore.getEntity(OSMType.NODE, wn.getNodeId());
+        //Handling missing data: account for updates coming unordered (e.g. way creation before referencing node creation. Maybe dummy node with ID would be better?
+        if (node != null) {
+          allNodes.add(node);
+        } else {
+          LOG.warn(
+              "Missing Data for Node with ID: " + wn.getNodeId() + ". Data output might be corrupt?");
+        }
+        OSMMember member = new OSMMember(wn.getNodeId(), OSMType.NODE, 0, node);
+        refs[i] = member;
+        i++;
+      }
+
+      ways.add(new OSMWay(id, version, timestamp, changeset, userId, tagsArray, refs));
+    }
     if (ent2 != null) {
       ent2.getNodes().forEach(node -> missingNodeIds.remove(node.getId()));
       ent2.getVersions().forEach(way3 -> {
@@ -529,46 +545,19 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
   }
 
   //reads previeous versions of OSHEntity and combines them with this  change-entity to a new OSHEntity
-  private Map<OSMType, Map<Long, OSHEntity>> onChange(ChangeContainer change) throws IOException,
-      SQLException {
-    Entity entity = change.getEntityContainer().getEntity();
+  private Map<OSMType, Map<Long, OSHEntity>> onChange(
+      EntityType type,
+      long id,
+      List<ChangeContainer> changes)
+      throws IOException, SQLException {
     //get previous version of entity, if any. This ensures that updates may come in any order and may handle reactivations
-    OSHEntity currEnt = this.etlStore.getEntity(
-        OSCOSHTransformer.convertType(entity.getType()),
-        entity.getId()
-    );
+    OSHEntity currEnt = this.etlStore.getEntity(OSCOSHTransformer.convertType(type), id);
 
     Map<OSMType, Map<Long, OSHEntity>> dependent = this.etlStore.getDependent(
-        OSCOSHTransformer.convertType(entity.getType()),
-        entity.getId()
+        OSCOSHTransformer.convertType(type),
+        id
     );
-    return this.combine(entity, dependent, currEnt);
-  }
-
-  //creates a new change-entity with a deleted object (version nur *-1)
-  private Map<OSMType, Map<Long, OSHEntity>> onDelete(ChangeContainer change) throws IOException,
-      SQLException {
-    Entity newEnt = change.getEntityContainer().getEntity();
-    newEnt.setVersion(-1 * newEnt.getVersion());
-    EntityContainer newCont;
-    switch (newEnt.getType()) {
-      case Node:
-        NodeContainerFactory ncf = new NodeContainerFactory();
-        newCont = ncf.createContainer((Node) newEnt);
-        break;
-      case Way:
-        WayContainerFactory wcf = new WayContainerFactory();
-        newCont = wcf.createContainer((Way) newEnt);
-        break;
-      case Relation:
-        RelationContainerFactory rcf = new RelationContainerFactory();
-        newCont = rcf.createContainer((Relation) newEnt);
-        break;
-      default:
-        throw new AssertionError(newEnt.getType().name());
-    }
-    ChangeContainer cc = new ChangeContainer(newCont, change.getAction());
-    return this.onChange(cc);
+    return this.combine(type, id, changes, dependent, currEnt);
   }
 
   private OSHEntity updateDependent(

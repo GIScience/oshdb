@@ -88,6 +88,7 @@ public class Updater {
               updateDb,
               config.baseURL,
               bitmapDb,
+              config.batchSize,
               producer
           );
         }
@@ -99,6 +100,7 @@ public class Updater {
             updateDb,
             config.baseURL,
             bitmapDb,
+            config.batchSize,
             null
         );
       }
@@ -115,6 +117,7 @@ public class Updater {
    * @param replicationUrl The URL to get replication files from. Determines if monthly, dayly etc.
    * updates are preferred.
    * @param dbBit Database for a BitMap flagging changed Entites
+   * @param batchSize
    * @param producer a producer to promote updated entites to a kafka-cluster. May be null if not
    * desired.
    * @throws java.sql.SQLException
@@ -127,6 +130,7 @@ public class Updater {
       Connection updateDb,
       URL replicationUrl,
       Connection dbBit,
+      int batchSize,
       Producer<Long, Byte[]> producer
   ) throws SQLException,
       IOException,
@@ -138,12 +142,12 @@ public class Updater {
         wd.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
       //download replicationFiles
-      Iterable<ReplicationFile> replicationFiles
-          = OSCDownloader.download(replicationUrl, wd);
+      Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, wd);
       //parse replicationFiles
       Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
       //transform files to OSHEntities
-      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities = OSCOSHTransformer.transform(etlFiles, keytables, changes);
+      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities
+          = OSCOSHTransformer.transform(etlFiles, keytables, batchSize, changes);
       //load data into updateDb
       OSHLoader.load(updateDb, oshEntities, dbBit, producer);
       fileLock.unlock();

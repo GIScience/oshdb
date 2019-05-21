@@ -62,11 +62,7 @@ public class OSCParser extends IteratorTmpl<ChangeContainer> {
   private static Iterable<ChangeContainer> getChangeContainers(ReplicationFile replicationFile)
       throws FileNotFoundException {
     LOG.info(replicationFile.state + " -> " + replicationFile.file);
-    return generateChangeFlow(replicationFile.file)
-        // .limit(10)
-
-        .blockingIterable();
-
+    return generateChangeFlow(replicationFile.file).blockingIterable();
   }
 
   @Override
