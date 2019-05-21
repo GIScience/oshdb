@@ -47,6 +47,7 @@ import org.openstreetmap.osmosis.core.domain.v0_6.RelationMember;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
 import org.openstreetmap.osmosis.core.domain.v0_6.Way;
 import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
+import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,9 +212,14 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     ArrayList<OSMNode> nodes = new ArrayList<>(1);
 
     for (ChangeContainer cont : changes) {
+
       Entity entity = cont.getEntityContainer().getEntity();
+
       //get basic information on object
       int version = entity.getVersion();
+      if (cont.getAction() == ChangeAction.Delete) {
+        version *= -1;
+      }
       OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
       long changeset = entity.getChangesetId();
       int userId = entity.getUser().getId();
@@ -265,6 +271,9 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
       //get basic information on object
       int version = entity.getVersion();
+      if (cont.getAction() == ChangeAction.Delete) {
+        version *= -1;
+      }
       OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
       long changeset = entity.getChangesetId();
       int userId = entity.getUser().getId();
@@ -404,6 +413,9 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
       //get basic information on object
       int version = entity.getVersion();
+      if (cont.getAction() == ChangeAction.Delete) {
+        version *= -1;
+      }
       OSHDBTimestamp timestamp = new OSHDBTimestamp(entity.getTimestamp());
       long changeset = entity.getChangesetId();
       int userId = entity.getUser().getId();
