@@ -1,12 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygonal;
+import java.io.Serializable;
+import java.util.ArrayList;
 
 public class FastPolygonOperations implements Serializable {
   private final int AVERAGE_VERTICES_PER_BLOCK = 40; // todo: finetune this value
@@ -126,6 +126,7 @@ public class FastPolygonOperations implements Serializable {
     }
 
     assert intersector != null;
+
     return other.intersection(intersector);
   }
 

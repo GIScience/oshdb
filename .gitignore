@@ -61,3 +61,6 @@ transform_way_00_00
 # shade plugin results
 **/dependency-reduced-pom.xml
 
+# temporary directories
+**/tmp/*
+
