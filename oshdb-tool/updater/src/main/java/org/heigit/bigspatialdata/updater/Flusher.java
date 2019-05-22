@@ -86,19 +86,36 @@ public class Flusher {
         byte[] bytes = resultSetUpdate.getBytes("data");
         OSHEntity updateEntity = Flusher.createUpdateEntity(bytes, t);
 
-        CellId insertId = etlf.getCurrentCellId(updateEntity.getType(), updateEntity.getId());
-        GridOSHEntity updatedGrid;
-        if (insertId != null) {
-          GridOSHEntity outdatedGridCell = Flusher.getOutdatedGridCell(oshdb, t, insertId);
-          updatedGrid = Flusher.updateGridCell(outdatedGridCell, updateEntity);
+        CellId currentCellId = etlf.getCurrentCellId(updateEntity.getType(), updateEntity.getId());
+        CellId newCellId = xyt.getInsertId(updateEntity.getBoundingBox());
+
+        if (currentCellId != null) {
+          GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, currentCellId);
+
+          //new Version is in lower zoomlevel, must be promoted
+          if (newCellId.getZoomLevel() < currentCellId.getZoomLevel()) {
+            GridOSHEntity croppedGridCell = Flusher
+                .updateGridCell(outdatedGridCell, updateEntity, true, false);
+            Flusher.writeUpdatedGridCell(updateEntity.getType(), oshdb, croppedGridCell);
+
+            outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, newCellId);
+            GridOSHEntity insertedGrid = Flusher
+                .updateGridCell(outdatedGridCell, updateEntity, false, true);
+            Flusher.writeUpdatedGridCell(updateEntity.getType(), oshdb, insertedGrid);
+
+          } else {
+
+            GridOSHEntity updatedGrid = Flusher
+                .updateGridCell(outdatedGridCell, updateEntity, true, true);
+            Flusher.writeUpdatedGridCell(updateEntity.getType(), oshdb, updatedGrid);
+          }
         } else {
           //entity not yet in oshdb
           //this method might also be one day provided by ETL to make a load balancing but for now not possible
-          CellId insertId1 = xyt.getInsertId(updateEntity.getBoundingBox());
-          updatedGrid = Flusher.createGridCell(insertId1, updateEntity);
+          //this may cause some fragmentation on the cluster (creating small cells with only one object)
+          GridOSHEntity createdGrid = Flusher.createGridCell(newCellId, updateEntity);
+          Flusher.writeUpdatedGridCell(updateEntity.getType(), oshdb, createdGrid);
         }
-        //this could also collect entities first and write the in one go (better use of PreparedStatement in H2)
-        Flusher.writeUpdatedGridCell(updateEntity.getType(), oshdb, updatedGrid);
       }
     }
     UpdateDatabaseHandler.ereaseDb(updatedb, dbBit);
@@ -223,7 +240,7 @@ public class Flusher {
         / 2;
   }
 
-  private static GridOSHEntity getOutdatedGridCell(OSHDBDatabase oshdb, OSMType t, CellId insertId)
+  private static GridOSHEntity getSpecificGridCell(OSHDBDatabase oshdb, OSMType t, CellId insertId)
       throws SQLException, IOException, ClassNotFoundException {
     if (oshdb instanceof OSHDBH2) {
       Statement oshdbStatement = ((OSHDBH2) oshdb).getConnection().createStatement();
@@ -254,24 +271,35 @@ public class Flusher {
 
   private static GridOSHEntity updateGridCell(
       GridOSHEntity outdatedGridCell,
-      OSHEntity updateEntity)
+      OSHEntity updateEntity,
+      boolean remove,
+      boolean insert)
       throws SQLException, IOException, ClassNotFoundException {
+
+    //if(remove && insert) -> update
+    if (!(remove && insert)) {
+      throw new AssertionError("Why did you come here?");
+    }
 
     GridOSHEntity updatedGridCell;
     boolean contains = false;
     switch (updateEntity.getType()) {
       case NODE:
         List<OSHNode> nodes = new ArrayList<>();
-        for (OSHEntity gridEntity : outdatedGridCell.getEntities()) {
-          OSHNode theNode = (OSHNode) gridEntity;
-          if (theNode.getId() == updateEntity.getId()) {
-            contains = true;
-          } else {
-            nodes.add(theNode);
+        if (remove) {
+          for (OSHEntity gridEntity : outdatedGridCell.getEntities()) {
+            OSHNode theNode = (OSHNode) gridEntity;
+            if (theNode.getId() == updateEntity.getId()) {
+              contains = true;
+            } else {
+              nodes.add(theNode);
+            }
           }
         }
-        nodes.add((OSHNode) updateEntity);
-        nodes.sort((node1, node2) -> Long.compare(node1.getId(), node2.getId()));
+        if (insert) {
+          nodes.add((OSHNode) updateEntity);
+          nodes.sort((node1, node2) -> Long.compare(node1.getId(), node2.getId()));
+        }
         updatedGridCell = GridOSHNodes.rebase(
             outdatedGridCell.getId(),
             outdatedGridCell.getLevel(),
@@ -285,14 +313,18 @@ public class Flusher {
         List<OSHWay> ways = new ArrayList<>();
         for (OSHEntity gridEntity : outdatedGridCell.getEntities()) {
           OSHWay theWay = (OSHWay) gridEntity;
-          if (theWay.getId() == updateEntity.getId()) {
-            contains = true;
-          } else {
-            ways.add(theWay);
+          if (remove) {
+            if (theWay.getId() == updateEntity.getId()) {
+              contains = true;
+            } else {
+              ways.add(theWay);
+            }
           }
         }
-        ways.add((OSHWay) updateEntity);
-        ways.sort((way1, way2) -> Long.compare(way1.getId(), way2.getId()));
+        if (insert) {
+          ways.add((OSHWay) updateEntity);
+          ways.sort((way1, way2) -> Long.compare(way1.getId(), way2.getId()));
+        }
         updatedGridCell = GridOSHWays.compact(
             outdatedGridCell.getId(),
             outdatedGridCell.getLevel(),
@@ -304,17 +336,21 @@ public class Flusher {
         break;
       case RELATION:
         List<OSHRelation> relations = new ArrayList<>();
-        for (OSHEntity gridEntity : outdatedGridCell.getEntities()) {
-          OSHRelation theRelation = (OSHRelation) gridEntity;
-          if (theRelation.getId() == updateEntity.getId()) {
-            contains = true;
-          } else {
-            relations.add(theRelation);
+        if (remove) {
+          for (OSHEntity gridEntity : outdatedGridCell.getEntities()) {
+            OSHRelation theRelation = (OSHRelation) gridEntity;
+            if (theRelation.getId() == updateEntity.getId()) {
+              contains = true;
+            } else {
+              relations.add(theRelation);
+            }
           }
         }
-        relations.add((OSHRelation) updateEntity);
-        relations.sort((relation1, relation2) -> Long
-            .compare(relation1.getId(), relation2.getId()));
+        if (insert) {
+          relations.add((OSHRelation) updateEntity);
+          relations.sort((relation1, relation2) -> Long
+              .compare(relation1.getId(), relation2.getId()));
+        }
         updatedGridCell = GridOSHRelations.compact(
             outdatedGridCell.getId(),
             outdatedGridCell.getLevel(),
@@ -327,11 +363,12 @@ public class Flusher {
       default:
         throw new AssertionError(updateEntity.getType().name());
     }
-    if (!contains) {
-      throw new AssertionError(
-          "This check failed. The Entity "
+
+    if (remove && !contains) {
+      LOG.debug(
+          "The Entity "
           + updateEntity
-          + " should have been in the requested GridCell "
+          + " was previously not in the GridCell "
           + updatedGridCell);
     }
 
