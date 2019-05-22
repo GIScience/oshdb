@@ -27,12 +27,6 @@ public class UpdateArgs {
       order = 3)
   public String keytables;
 
-  @Parameter(names = {"-batchSize"},
-      description = "number of Changes to be processed at once",
-      required = false,
-      order = 5)
-  public int batchSize = 1000;
-
   @ParametersDelegate
   public BaseArgs baseArgs = new BaseArgs();
 }

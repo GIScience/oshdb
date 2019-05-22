@@ -31,4 +31,10 @@ public class BaseArgs {
       order = 2)
   public Path etl;
 
+  @Parameter(names = {"-batchSize"},
+      description = "number of Changes or Entities to be processed at once",
+      required = false,
+      order = 5)
+  public int batchSize = 1000;
+
 }

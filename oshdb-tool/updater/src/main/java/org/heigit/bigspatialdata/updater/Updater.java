@@ -88,7 +88,7 @@ public class Updater {
               updateDb,
               config.baseURL,
               bitmapDb,
-              config.batchSize,
+              config.baseArgs.batchSize,
               producer
           );
         }
@@ -100,7 +100,7 @@ public class Updater {
             updateDb,
             config.baseURL,
             bitmapDb,
-            config.batchSize,
+            config.baseArgs.batchSize,
             null
         );
       }
