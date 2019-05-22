@@ -234,7 +234,7 @@ public class IterateByContributionWaysTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
 
-    assertEquals(5, result.size());
+    assertEquals(6, result.size());
     assertEquals(2, result.get(0).geometry.get().getNumPoints());
     assertEquals(3, result.get(1).geometry.get().getNumPoints());
     assertEquals(2, result.get(2).geometry.get().getNumPoints());
