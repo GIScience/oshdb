@@ -462,7 +462,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       if (oshdbTag.getKey() < 0) {
         //update
         Statement getMaxKey = this.tt.getConnection().createStatement();
-        getMaxKey.execute("SELECT MAX(id) from " + TableNames.E_KEY);
+        getMaxKey.execute("SELECT MAX(id) + 1 from " + TableNames.E_KEY);
         ResultSet resultSet = getMaxKey.getResultSet();
         int maxKey;
         if (resultSet.next()) {
@@ -470,22 +470,24 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
         } else {
           maxKey = -1;
         }
-        this.insertKeyStatement.setInt(1, maxKey + 1);
+        this.insertKeyStatement.setInt(1, maxKey);
         this.insertKeyStatement.setString(2, tag.getKey());
         this.insertKeyStatement.execute();
 
-        this.insertKeyValueStatement.setInt(1, maxKey + 1);
+        this.insertKeyValueStatement.setInt(1, maxKey);
         this.insertKeyValueStatement.setInt(2, 0);
         this.insertKeyValueStatement.setString(3, tag.getValue());
         this.insertKeyValueStatement.execute();
 
-        oshdbTag = new OSHDBTag(maxKey + 1, 0);
-      }
+        oshdbTag = new OSHDBTag(maxKey, 0);
 
-      if (oshdbTag.getValue() < 0) {
+        this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
+
+      } else if (oshdbTag.getValue() < 0) {
+
         Statement getMaxKey = this.tt.getConnection().createStatement();
         getMaxKey.execute(
-            "SELECT MAX(valueid) FROM "
+            "SELECT MAX(valueid) + 1 FROM "
             + TableNames.E_KEYVALUE
             + " WHERE keyid = "
             + oshdbTag.getKey()
@@ -498,18 +500,18 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
           maxValue = -1;
         }
         this.insertKeyValueStatement.setInt(1, oshdbTag.getKey());
-        this.insertKeyValueStatement.setInt(2, maxValue + 1);
+        this.insertKeyValueStatement.setInt(2, maxValue);
         this.insertKeyValueStatement.setString(3, tag.getValue());
         this.insertKeyValueStatement.execute();
 
         oshdbTag = new OSHDBTag(oshdbTag.getKey(), maxValue);
+
+        this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
       }
       tagsArray[i] = oshdbTag.getKey();
       i++;
       tagsArray[i] = oshdbTag.getValue();
       i++;
-
-      this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
     }
     return tagsArray;
   }

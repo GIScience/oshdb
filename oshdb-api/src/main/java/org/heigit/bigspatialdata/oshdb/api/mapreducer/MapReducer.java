@@ -39,7 +39,6 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableConsumer
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -252,12 +251,6 @@ public abstract class MapReducer<X> implements
    */
   public MapReducer<X> updates(OSHDBUpdate updateDb) throws SQLException, IOException,
       ClassNotFoundException {
-    if (this instanceof MapReducerIgniteScanQuery) {
-      throw new UnsupportedOperationException(
-          "Updates for "
-          + this.getClass().getName()
-          + " not yet implemented.");
-    }
     MapReducer<X> ret = this.copy();
     ret.update = updateDb;
     return ret;
