@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
-
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
@@ -25,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class OSHDBGeometryBuilderTest {
+
   private final OSMXmlReader testData = new OSMXmlReader();
   private final double DELTA = 1E-6;
 
@@ -173,47 +173,68 @@ public class OSHDBGeometryBuilderTest {
     Geometry expectedPolygon = (new WKTReader()).read(
         "POLYGON((-180.0 -90.0, 180.0 -90.0, 180.0 90.0, -180.0 90.0, -180.0 -90.0))"
     );
-    assertEquals(expectedPolygon,clipPoly);
+    assertEquals(expectedPolygon, clipPoly);
   }
 
   @Test
   public void testBoundingBoxOf() throws ParseException {
-    OSHDBBoundingBox clipPoly = OSHDBGeometryBuilder.boundingBoxOf(new Envelope(-180, 180, -90, 90));
-    Envelope expectedPolygon = new Envelope(-180, 180, -90, 90);
-    assertEquals(new String("(-180.000000,-90.000000) (180.000000,90.000000)"),clipPoly.toString());
+    OSHDBBoundingBox bbox = OSHDBGeometryBuilder.boundingBoxOf(new Envelope(-180, 180, -90, 90));
+    assertEquals(new String("(-180.0000000,-90.0000000,180.0000000,90.0000000)"), bbox.toString());
   }
-  
+
   @Test
   public void testBoundingBoxGetGeometry() {
     // regular bbox
     OSHDBBoundingBox bbox = new OSHDBBoundingBox(0, 0, 1, 1);
     Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbox);
-    Coordinate[] test = { new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1),
-        new Coordinate(0, 1), new Coordinate(0, 0) };
+    Coordinate[] test = {
+      new Coordinate(0, 0),
+      new Coordinate(1, 0),
+      new Coordinate(1, 1),
+      new Coordinate(0, 1),
+      new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: point
     bbox = new OSHDBBoundingBox(0, 0, 0, 0);
     geometry = OSHDBGeometryBuilder.getGeometry(bbox);
-    test = new Coordinate[] { new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 0),
-        new Coordinate(0, 0), new Coordinate(0, 0) };
+    test = new Coordinate[]{
+      new Coordinate(0, 0),
+      new Coordinate(0, 0),
+      new Coordinate(0, 0),
+      new Coordinate(0, 0),
+      new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: line
     bbox = new OSHDBBoundingBox(0, 0, 0, 1);
     geometry = OSHDBGeometryBuilder.getGeometry(bbox);
-    test = new Coordinate[]{new Coordinate(0, 0), new Coordinate(0, 0), new Coordinate(0, 1),
-        new Coordinate(0, 1), new Coordinate(0, 0) };
+    test = new Coordinate[]{
+      new Coordinate(0, 0),
+      new Coordinate(0, 0),
+      new Coordinate(0, 1),
+      new Coordinate(0, 1),
+      new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
   }
 
+  abstract class FakeTagInterpreter implements TagInterpreter {
 
-abstract class FakeTagInterpreter implements TagInterpreter {
-  @Override
-  public boolean isArea(OSMEntity entity) { return false; }
-  @Override
-  public boolean isLine(OSMEntity entity) { return false; }
-  @Override
-  public boolean hasInterestingTagKey(OSMEntity osm) { return false; }
-}
+    @Override
+    public boolean isArea(OSMEntity entity) {
+      return false;
+    }
+
+    @Override
+    public boolean isLine(OSMEntity entity) {
+      return false;
+    }
+
+    @Override
+    public boolean hasInterestingTagKey(OSMEntity osm) {
+      return false;
+    }
+
+  }
+
 }
