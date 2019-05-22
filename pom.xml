@@ -9,8 +9,8 @@
 
   <artifactId>oshdb-parent</artifactId>
   <version>0.6.0-SNAPSHOT</version>
-  <name>HeiGIT Big Spatial Data Core Parent POM</name>
-  <description>The set of base functionality provided for all configurations of BigSpatialData</description>
+  <name>OSHDB parent module</name>
+  <description>Common dependencies, settings and profiles that are shared by all components of the OSHDB</description>
   <packaging>pom</packaging>
 
   <modules>
