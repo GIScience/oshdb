@@ -239,7 +239,7 @@ public class Flusher {
 
         List<OSHEntity> updateEntitys = updateCellEntities.getValue();
         CellId currentCellId = updateCellEntities.getKey();
-        CellId newCellId = updateCellEntities.getKey();
+        CellId newCellId = insertCellEntities.getKey();
 
         if (currentCellId != null) {
           GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, currentCellId);
@@ -287,7 +287,7 @@ public class Flusher {
       throws SQLException, IOException, ClassNotFoundException {
 
     //if(remove && insert) -> update
-    if (!(remove && insert)) {
+    if (!(remove || insert)) {
       throw new AssertionError("Why did you come here?");
     }
 
