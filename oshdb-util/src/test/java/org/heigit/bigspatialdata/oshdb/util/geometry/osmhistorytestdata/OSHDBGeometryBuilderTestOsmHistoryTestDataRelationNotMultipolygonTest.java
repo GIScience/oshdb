@@ -421,7 +421,6 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     try {
       Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
       assertTrue(result_after instanceof GeometryCollection);
-      System.out.println(result_after);
       assertTrue(result_after.isEmpty());
     }
     catch (Exception e) {
