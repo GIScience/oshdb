@@ -466,11 +466,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
-    assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
-    assertEquals(1, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
     assertEquals(2, result.getNumGeometries());
-    // 16 because of double node
-    assertEquals(16, result.getCoordinates().length);
+    assertEquals(1,
+        ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
+        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing()
+    );
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.21 1.36,7.22 1.37,7.23 1.36,7.22 1.35,7.21 1.36)),"
@@ -863,7 +863,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity1 = testData.relations().get(768900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
-      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1136,7 +1136,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity1 = testData.relations().get(790900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
-      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
@@ -1150,7 +1150,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity1 = testData.relations().get(791900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
-      assertTrue(result instanceof GeometryCollection);
+      assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
     }
     catch(Exception e){
       e.printStackTrace();
