@@ -130,10 +130,13 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       if (this.containers.hasNext()) {
         ChangeContainer currContainer = this.containers.next();
         Entity entity = currContainer.getEntityContainer().getEntity();
+
         Map<Long, List<ChangeContainer>> typeEntities
             = changes.getOrDefault(entity.getType(), new HashMap<>(1));
-        List<ChangeContainer> entityChanges = typeEntities.getOrDefault(entity.getId(),
-            new ArrayList<>(1));
+
+        List<ChangeContainer> entityChanges
+            = typeEntities.getOrDefault(entity.getId(), new ArrayList<>(1));
+
         entityChanges.add(currContainer);
         typeEntities.put(entity.getId(), entityChanges);
         changes.put(entity.getType(), typeEntities);
@@ -146,64 +149,13 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     try {
       for (Entry<EntityType, Map<Long, List<ChangeContainer>>> typeEntry : changes.entrySet()) {
         for (Entry<Long, List<ChangeContainer>> entityEntry : typeEntry.getValue().entrySet()) {
-          return this.onChange(typeEntry.getKey(), entityEntry.getKey(), entityEntry.getValue());
+          return this.updateEntity(typeEntry.getKey(), entityEntry.getKey(), entityEntry.getValue());
         }
       }
     } catch (IOException | SQLException ex) {
       LOG.error("error", ex);
     }
     return null;
-  }
-
-  //Combines an entity and an OSHEntity
-  private Map<OSMType, Map<Long, OSHEntity>> combine(
-      EntityType type,
-      long id,
-      List<ChangeContainer> changes,
-      Map<OSMType, Map<Long, OSHEntity>> dependen,
-      OSHEntity currEntity1)
-      throws IOException, SQLException {
-
-    OSHEntity currEntity = currEntity1;
-    switch (type) {
-      case Node:
-        currEntity = this.combineNode(id, changes, currEntity);
-        break;
-      case Way:
-        currEntity = this.combineWay(id, changes, currEntity);
-        break;
-      case Relation:
-        currEntity = this.combineRelation(id, changes, currEntity);
-        break;
-      default:
-        throw new AssertionError(type);
-    }
-
-    //add updated Entity to result
-    Map<OSMType, Map<Long, OSHEntity>> result = new HashMap<>();
-    Map<Long, OSHEntity> defaultMap = result.getOrDefault(currEntity.getType(), new TreeMap<>());
-    defaultMap.put(currEntity.getId(), currEntity);
-    result.put(currEntity.getType(), defaultMap);
-
-    //get updated entities of dependend objects and add to result
-    for (Entry<OSMType, Map<Long, OSHEntity>> entry : dependen.entrySet()) {
-      for (Entry<Long, OSHEntity> entityEntry : entry.getValue().entrySet()) {
-        //change to relation does not update dependent relations
-        if (entry.getKey() != OSMType.RELATION) {
-          OSHEntity updateDependent
-              = this.updateDependent(entityEntry.getValue(), currEntity);
-
-          Map<Long, OSHEntity> dependendDefaultMap = result
-              .getOrDefault(updateDependent.getType(), new TreeMap<>());
-          dependendDefaultMap.put(updateDependent.getId(), updateDependent);
-          result.put(updateDependent.getType(), dependendDefaultMap);
-
-          //TODO: Dependencies of Dependencies need to be updated
-          //also and relations might be included in a later version
-        }
-      }
-    }
-    return result;
   }
 
   private OSHEntity combineNode(
@@ -556,61 +508,114 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       i++;
       tagsArray[i] = oshdbTag.getValue();
       i++;
+
       this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
     }
     return tagsArray;
   }
 
-  //reads previeous versions of OSHEntity and combines them with this  change-entity to a new OSHEntity
-  private Map<OSMType, Map<Long, OSHEntity>> onChange(
+  private Map<OSMType, Map<Long, OSHEntity>> updateDependent(OSHEntity currEntity) throws
+      IOException {
+
+    //get dependentEntities
+    Map<OSMType, Map<Long, OSHEntity>> dependent = this.etlStore.getDependent(
+        currEntity.getType(),
+        currEntity.getId()
+    );
+
+    Map<OSMType, Map<Long, OSHEntity>> result = new HashMap<>();
+    //iterate dependend Entities
+    for (Entry<OSMType, Map<Long, OSHEntity>> entry : dependent.entrySet()) {
+      for (Entry<Long, OSHEntity> entityEntry : entry.getValue().entrySet()) {
+
+        //change to relation does not update dependent relations (might change in later Update)
+        if (currEntity.getType() != OSMType.RELATION) {
+
+          //dependenEntity==Way||Relation
+          //currEntity==Node||Way
+          OSHEntity dependEntity = entityEntry.getValue();
+          List<OSHNode> nodes = dependEntity.getNodes();
+          List<OSHWay> ways = dependEntity.getWays();
+
+          //replace with new current Entity
+          switch (currEntity.getType()) {
+            case NODE:
+              nodes.replaceAll(node ->
+                  node.getId() == currEntity.getId() ? (OSHNode) currEntity : node);
+              break;
+
+            case WAY:
+              ways
+                  .replaceAll(way -> way.getId() == currEntity.getId() ? (OSHWay) currEntity : way);
+              break;
+            default:
+              throw new AssertionError(currEntity.getType().name());
+          }
+
+          //recreate dependency
+          OSHEntity resultEnt;
+          switch (dependEntity.getType()) {
+            case WAY:
+              resultEnt = OSHWayImpl.build(
+                  Lists.newArrayList(((OSHWay) dependEntity).getVersions()),
+                  nodes);
+              break;
+            case RELATION:
+              resultEnt = OSHRelationImpl.build(
+                  Lists.newArrayList(((OSHRelation) dependEntity).getVersions()),
+                  nodes,
+                  ways);
+              break;
+            default:
+              throw new AssertionError(dependEntity.getType().name());
+          }
+
+          //update dependencies of dependency...
+          result.putAll(this.updateDependent(resultEnt));
+
+          //put current updated Dependency
+          Map<Long, OSHEntity> dependendDefaultMap = result
+              .getOrDefault(dependEntity.getType(), new TreeMap<>());
+          dependendDefaultMap.put(dependEntity.getId(), dependEntity);
+          result.put(dependEntity.getType(), dependendDefaultMap);
+        }
+      }
+    }
+    return result;
+  }
+
+  //Combines an entity and an OSHEntity
+  private Map<OSMType, Map<Long, OSHEntity>> updateEntity(
       EntityType type,
       long id,
       List<ChangeContainer> changes)
       throws IOException, SQLException {
     //get previous version of entity, if any. This ensures that updates may come in any order and may handle reactivations
-    OSHEntity currEnt = this.etlStore.getEntity(OSCOSHTransformer.convertType(type), id);
+    OSHEntity currEntity = this.etlStore.getEntity(OSCOSHTransformer.convertType(type), id);
 
-    Map<OSMType, Map<Long, OSHEntity>> dependent = this.etlStore.getDependent(
-        OSCOSHTransformer.convertType(type),
-        id
-    );
-    return this.combine(type, id, changes, dependent, currEnt);
-  }
-
-  private OSHEntity updateDependent(
-      OSHEntity dependEntity,
-      OSHEntity currEntity) throws IOException {
-    //dependenEntity==Way||Relation
-    //currEntity==Node||Way
-    List<OSHNode> nodes = dependEntity.getNodes();
-    List<OSHWay> ways = dependEntity.getWays();
-
-    switch (currEntity.getType()) {
-      case NODE:
-        nodes.replaceAll(node -> node.getId() == currEntity.getId() ? (OSHNode) currEntity : node);
+    switch (type) {
+      case Node:
+        currEntity = this.combineNode(id, changes, currEntity);
         break;
-
-      case WAY:
-        ways.replaceAll(way -> way.getId() == currEntity.getId() ? (OSHWay) currEntity : way);
+      case Way:
+        currEntity = this.combineWay(id, changes, currEntity);
+        break;
+      case Relation:
+        currEntity = this.combineRelation(id, changes, currEntity);
         break;
       default:
-        throw new AssertionError(currEntity.getType().name());
+        throw new AssertionError(type);
     }
 
-    switch (dependEntity.getType()) {
-      case WAY:
-        return OSHWayImpl.build(
-            Lists.newArrayList(((OSHWay) dependEntity).getVersions()),
-            nodes);
+    //add updated Entity to result
+    Map<OSMType, Map<Long, OSHEntity>> result = new HashMap<>();
+    Map<Long, OSHEntity> defaultMap = result.getOrDefault(currEntity.getType(), new TreeMap<>());
+    defaultMap.put(currEntity.getId(), currEntity);
+    result.put(currEntity.getType(), defaultMap);
 
-      case RELATION:
-        return OSHRelationImpl.build(
-            Lists.newArrayList(((OSHRelation) dependEntity).getVersions()),
-            nodes,
-            ways);
-      default:
-        throw new AssertionError(dependEntity.getType().name());
-    }
+    result.putAll(this.updateDependent(currEntity));
+
+    return result;
   }
 
 }
