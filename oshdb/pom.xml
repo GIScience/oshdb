@@ -11,7 +11,8 @@
   </parent>
 
   <artifactId>oshdb</artifactId>
-  <description>The central database-concept for osh-objects.</description>
+  <name>OSHDB core</name>
+  <description>The central data model of the OpenStreetMap History Database.</description>
 
   <dependencies>
     <dependency>
