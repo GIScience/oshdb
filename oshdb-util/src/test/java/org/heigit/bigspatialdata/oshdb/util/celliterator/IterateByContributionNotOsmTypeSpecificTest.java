@@ -1,27 +1,14 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
-import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
-import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
-import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
-import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
-import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.helpers.GridOSHFactory;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
@@ -37,41 +24,14 @@ public class IterateByContributionNotOsmTypeSpecificTest {
 
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
-  private final List<OSHRelation> oshRelations = new ArrayList<>();
+  private final List<OSHRelation> oshRelations;
   private final double DELTA = 1E-6;
 
   public IterateByContributionNotOsmTypeSpecificTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    Map<Long, OSHNode> oshNodes = new TreeMap<>();
-    for (Entry<Long, Collection<OSMNode>> entry : osmXmlTestData.nodes().asMap().entrySet()) {
-      oshNodes.put(entry.getKey(), OSHNodeImpl.build(new ArrayList<>(entry.getValue())));
-    }
-    Map<Long, OSHWay> oshWays = new TreeMap<>();
-    for (Entry<Long, Collection<OSMWay>> entry : osmXmlTestData.ways().asMap().entrySet()) {
-      Collection<OSMWay> wayVersions = entry.getValue();
-      oshWays.put(entry.getKey(), OSHWayImpl.build(new ArrayList<>(wayVersions),
-          wayVersions.stream().flatMap(osmWay ->
-              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
-
-    for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
-      Collection<OSMRelation> relationVersions = entry.getValue();
-      oshRelations.add(OSHRelationImpl.build(new ArrayList<>(relationVersions),
-          relationVersions.stream().flatMap(osmRelation ->
-              Arrays.stream(osmRelation.getMembers())
-                  .filter(member -> member.getType() == OSMType.NODE)
-                  .map(member -> oshNodes.get(member.getId()))
-          ).collect(Collectors.toSet()),
-          relationVersions.stream().flatMap(osmRelation ->
-              Arrays.stream(osmRelation.getMembers())
-                  .filter(member -> member.getType() == OSMType.WAY)
-                  .map(member -> oshWays.get(member.getId()))
-          ).collect(Collectors.toSet())
-      ));
-    }
+    GridOSHRelations oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
+    oshRelations = Lists.newArrayList((Iterable<OSHRelation>) oshdbDataGridCell.getEntities());
   }
 
   @Test

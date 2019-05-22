@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
@@ -85,12 +86,12 @@ public class GridOSHFactory {
               Arrays.stream(osmRelation.getMembers())
                   .filter(member -> member.getType() == OSMType.NODE)
                   .map(member -> oshNodes.get(member.getId()))
-          ).collect(Collectors.toSet()),
+          ).filter(Objects::nonNull).collect(Collectors.toSet()),
           relationVersions.stream().flatMap(osmRelation ->
               Arrays.stream(osmRelation.getMembers())
                   .filter(member -> member.getType() == OSMType.WAY)
                   .map(member -> oshWays.get(member.getId()))
-          ).collect(Collectors.toSet())
+          ).filter(Objects::nonNull).collect(Collectors.toSet())
       ));
     }
     oshdbDataGridCellRelations = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
