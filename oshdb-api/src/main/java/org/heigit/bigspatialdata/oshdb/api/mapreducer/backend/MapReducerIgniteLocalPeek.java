@@ -1,9 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -33,16 +36,20 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
+import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
+import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,11 +93,39 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return IgniteLocalPeekHelper.mapReduceCellsOSMContributionOnIgniteCache(
+
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+    }
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
+
+    //get regular result
+    S resultA = IgniteLocalPeekHelper.mapReduceCellsOSMContributionOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner);
+        accumulator, combiner, bitMapIndex);
+
+    S resultB = identitySupplier.get();
+    if (this.update != null) {
+      CellProcessor<S> cellProcessor = Kernels.getOSMContributionCellReducer(
+          mapper,
+          identitySupplier,
+          accumulator
+      );
+      resultB = this.getResultFromUpdates(
+          execStart,
+          cellProcessor,
+          identitySupplier,
+          combiner,
+          bitMapIndex);
+    }
+
+    return combiner.apply(resultA, resultB);
   }
 
   @Override
@@ -98,11 +133,40 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return IgniteLocalPeekHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+    }
+
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
+
+    //get regular result
+    S resultA = IgniteLocalPeekHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner);
+        accumulator, combiner, bitMapIndex);
+
+    S resultB = identitySupplier.get();
+    if (this.update != null) {
+      CellProcessor<S> cellProcessor = Kernels.getOSMContributionGroupingCellReducer(
+          mapper,
+          identitySupplier,
+          accumulator
+      );
+      resultB = this.getResultFromUpdates(
+          execStart,
+          cellProcessor,
+          identitySupplier,
+          combiner,
+          bitMapIndex);
+    }
+
+    return combiner.apply(resultA, resultB);
   }
 
 
@@ -111,11 +175,40 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
-    return IgniteLocalPeekHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+    }
+
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
+
+    //get regular result
+    S resultA = IgniteLocalPeekHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner);
+        accumulator, combiner, bitMapIndex);
+
+    S resultB = identitySupplier.get();
+    if (this.update != null) {
+      CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotCellReducer(
+          mapper,
+          identitySupplier,
+          accumulator
+      );
+      resultB = this.getResultFromUpdates(
+          execStart,
+          cellProcessor,
+          identitySupplier,
+          combiner,
+          bitMapIndex);
+    }
+
+    return combiner.apply(resultA, resultB);
   }
 
   @Override
@@ -123,12 +216,72 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
-    return IgniteLocalPeekHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+
+    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    if (this.update != null) {
+      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+          this.update.getBitArrayDb()
+      );
+    }
+
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
+
+    //get regular result
+    S resultA = IgniteLocalPeekHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner);
+        accumulator, combiner, bitMapIndex);
+
+    S resultB = identitySupplier.get();
+    if (this.update != null) {
+      CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotGroupingCellReducer(
+          mapper,
+          identitySupplier,
+          accumulator
+      );
+      resultB = this.getResultFromUpdates(
+          execStart,
+          cellProcessor,
+          identitySupplier,
+          combiner,
+          bitMapIndex);
+    }
+
+    return combiner.apply(resultA, resultB);
   }
+
+  private <R, S> S getResultFromUpdates(
+      long execStart,
+      CellProcessor<S> cellProcessor,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBinaryOperator<S> combiner,
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex)
+      throws ClassNotFoundException, ParseException, SQLException, IOException {
+
+    CellIterator updateIterator = new CellIterator(
+        this.tstamps.get(),
+        this.bboxFilter, this.getPolyFilter(),
+        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+    );
+
+    S resultB = identitySupplier.get();
+    if (this.update != null) {
+      updateIterator.includeIDsOnly(bitMapIndex);
+      resultB = this.getUpdates().parallelStream()
+          .filter(ignored -> {
+            if (timeout != null && System.currentTimeMillis() - execStart > timeout) {
+              throw new OSHDBTimeoutException();
+            }
+            return true;
+          })
+          .map(oshCell -> cellProcessor.apply(oshCell, updateIterator))
+          .reduce(identitySupplier.get(), combiner);
+    }
+    return resultB;
+  }
+
 }
 
 
@@ -159,13 +312,17 @@ class IgniteLocalPeekHelper {
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<V, M> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-        SerializableBinaryOperator<S> combiner) {
+        SerializableBinaryOperator<S> combiner,
+        Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
       this.cacheNames = cacheNames;
       this.cellIdRanges = cellIdRanges;
       this.bbox = bbox;
       this.cellIterator = new CellIterator(
           tstamps, bbox, poly, tagInterpreter, preFilter, filter, false
       );
+      if (bitMapIndex != null) {
+        this.cellIterator.excludeIDs(bitMapIndex);
+      }
       this.mapper = mapper;
       this.identitySupplier = identitySupplier;
       this.accumulator = accumulator;
@@ -272,9 +429,10 @@ class IgniteLocalPeekHelper {
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
-        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
+        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner,
+        Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
       super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
-          identitySupplier, accumulator, combiner);
+          identitySupplier, accumulator, combiner,bitMapIndex);
     }
 
     @Override
@@ -297,9 +455,10 @@ class IgniteLocalPeekHelper {
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-        SerializableBinaryOperator<S> combiner) {
+        SerializableBinaryOperator<S> combiner,
+        Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
       super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
-          identitySupplier, accumulator, combiner);
+          identitySupplier, accumulator, combiner,bitMapIndex);
     }
 
     @Override
@@ -321,9 +480,10 @@ class IgniteLocalPeekHelper {
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
-        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
+        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner,
+        Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
       super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter,
-          mapper, identitySupplier, accumulator, combiner);
+          mapper, identitySupplier, accumulator, combiner,bitMapIndex);
     }
 
     @Override
@@ -346,9 +506,10 @@ class IgniteLocalPeekHelper {
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-        SerializableBinaryOperator<S> combiner) {
+        SerializableBinaryOperator<S> combiner,
+        Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
       super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter,
-          mapper, identitySupplier, accumulator, combiner);
+          mapper, identitySupplier, accumulator, combiner, bitMapIndex);
     }
 
     @Override
@@ -403,11 +564,12 @@ class IgniteLocalPeekHelper {
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) {
+      SerializableBinaryOperator<S> combiner,
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
     return mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new MapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
             cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
-            identitySupplier, accumulator, combiner));
+            identitySupplier, accumulator, combiner, bitMapIndex));
   }
 
   static <R, S, P extends Geometry & Polygonal>
@@ -418,12 +580,12 @@ class IgniteLocalPeekHelper {
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) {
+      SerializableBinaryOperator<S> combiner,
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
     return mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
             cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
-            identitySupplier, accumulator, combiner));
+            identitySupplier, accumulator, combiner, bitMapIndex));
   }
 
   static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMEntitySnapshotOnIgniteCache(
@@ -433,11 +595,12 @@ class IgniteLocalPeekHelper {
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<OSMEntitySnapshot, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) {
+      SerializableBinaryOperator<S> combiner,
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
     return mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
             cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
-            identitySupplier, accumulator, combiner));
+            identitySupplier, accumulator, combiner, bitMapIndex));
   }
 
   static <R, S, P extends Geometry & Polygonal>
@@ -448,10 +611,11 @@ class IgniteLocalPeekHelper {
       CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) {
+      SerializableBinaryOperator<S> combiner,
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex) {
     return mapReduceOnIgniteCache(oshdb, identitySupplier, combiner,
         new FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
             cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter, mapper,
-            identitySupplier, accumulator, combiner));
+            identitySupplier, accumulator, combiner, bitMapIndex));
   }
 }

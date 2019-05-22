@@ -4,7 +4,6 @@ import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -89,7 +88,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     if (this.update != null) {
       cellIterator.includeIDsOnly(bitMapIndex);
 
-      ArrayList<GridOSHEntity> updateEntites = this.getUpdates();
+      List<GridOSHEntity> updateEntites = this.getUpdates();
       Iterator<GridOSHEntity> iterator = updateEntites.iterator();
       while (iterator.hasNext()) {
         GridOSHEntity updateCell = iterator.next();

@@ -39,7 +39,6 @@ import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableConsumer
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableSupplier;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
@@ -253,7 +252,7 @@ public abstract class MapReducer<X> implements
    */
   public MapReducer<X> updates(OSHDBUpdate updateDb) throws SQLException, IOException,
       ClassNotFoundException {
-    if (this instanceof MapReducerIgniteLocalPeek || this instanceof MapReducerIgniteScanQuery) {
+    if (this instanceof MapReducerIgniteScanQuery) {
       throw new UnsupportedOperationException(
           "Updates for "
           + this.getClass().getName()
@@ -1995,7 +1994,7 @@ public abstract class MapReducer<X> implements
     return result;
   }
 
-  protected ArrayList<GridOSHEntity> getUpdates()
+  protected List<GridOSHEntity> getUpdates()
       throws SQLException, IOException, ClassNotFoundException {
     WKTWriter wktWriter = new WKTWriter();
     String sqlQuery;
@@ -2011,7 +2010,7 @@ public abstract class MapReducer<X> implements
     pstmt.setObject(1, wktWriter.write(geometry));
     ResultSet updateEntities = pstmt.executeQuery();
     
-    ArrayList<GridOSHEntity> result = new ArrayList<>(10);
+    List<GridOSHEntity> result = new ArrayList<>(10);
     ArrayList<OSHNode> nodes = new ArrayList<>(1);
     ArrayList<OSHWay> ways = new ArrayList<>(1);
     ArrayList<OSHRelation> relations = new ArrayList<>(1);

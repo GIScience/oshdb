@@ -45,4 +45,10 @@ public class TestMapReduceOSHDB_IgniteMissingCache extends TestMapReduceOSHDB_Ig
   public void testTimeoutStream() throws Exception {
     super.testTimeoutStream();
   }
+
+  @Override
+  @Test(expected = OSHDBTableNotFoundException.class)
+  public void testUpdate() throws Exception {
+    super.testTimeoutStream();
+  }
 }
