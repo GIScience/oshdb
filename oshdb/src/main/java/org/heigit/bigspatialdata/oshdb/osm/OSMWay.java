@@ -28,8 +28,10 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   }
 
   public Stream<OSMNode> getRefEntities(OSHDBTimestamp timestamp) {
-    return Arrays.stream(this.getRefs()).map(OSMMember::getEntity).filter(Objects::nonNull)
-        .map(entity -> (OSMNode) OSHEntities.getByTimestamp((OSHNode) entity, timestamp));
+    return Arrays.stream(this.getRefs())
+        .map(OSMMember::getEntity)
+        .filter(Objects::nonNull)
+        .map(entity -> (OSMNode) OSHEntities.getByTimestamp(entity, timestamp));
   }
 
   @Override

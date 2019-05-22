@@ -12,7 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -126,8 +128,8 @@ public class OSMXmlReader {
         double lon = osm.isVisible() ? attrAsDouble(e, "lon") : 0.0;
         double lat = osm.isVisible() ? attrAsDouble(e, "lat") : 0.0;
 
-        long longitude = (long) (lon * OSHDB.GEOM_PRECISION_TO_LONG);
-        long latitude = (long) (lat * OSHDB.GEOM_PRECISION_TO_LONG);
+        long longitude = Math.round(lon * OSHDB.GEOM_PRECISION_TO_LONG);
+        long latitude = Math.round(lat * OSHDB.GEOM_PRECISION_TO_LONG);
 
         osm.setExtension(longitude, latitude);
 
@@ -223,7 +225,10 @@ public class OSMXmlReader {
                 }
               }
               if (this.ways().containsKey(memId)) {
-                data = OSHWayImpl.build(this.ways().get(memId), wayNodes.values());
+                data = OSHWayImpl.build(
+                    this.ways().get(memId),
+                    wayNodes.values().stream().filter(Objects::nonNull).collect(Collectors.toList())
+                );
               }
               break;
           }
@@ -277,11 +282,11 @@ public class OSMXmlReader {
 
   private void entity(MutableOSMEntity osm, Element e) {
     osm.setId(attrAsLong(e, "id"));
-    osm.isVisible(attrAsBoolean(e, "visible"));
+    osm.isVisible(attrAsBoolean(e, "visible", true));
     osm.setVersion(attrAsInt(e, "version"));
     osm.setChangeset(attrAsLong(e, "changeset"));
     osm.setTimestamp(attrAsTimestampInSeconds(e, "timestamp"));
-    osm.setUserId(attrAsInt(e, "uid"));
+    osm.setUserId(attrAsInt(e, "uid", -1));
     osm.setTags(tags(e));
   }
 
@@ -367,12 +372,28 @@ public class OSMXmlReader {
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
   }
 
+  public static int attrAsInt(Element e, String name, int defaultValue) {
+    Attr attr = e.getAttributeNode(name);
+    if (attr != null) {
+      return Integer.parseInt(attr.getValue());
+    }
+    return defaultValue;
+  }
+
   public static boolean attrAsBoolean(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
       return Boolean.parseBoolean(attr.getValue());
     }
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
+  }
+
+  public static boolean attrAsBoolean(Element e, String name, boolean defaultValue) {
+    Attr attr = e.getAttributeNode(name);
+    if (attr != null) {
+      return Boolean.parseBoolean(attr.getValue());
+    }
+    return defaultValue;
   }
 
   public static long attrAsTimestampInSeconds(Element e, String name) {

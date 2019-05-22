@@ -1,10 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -17,13 +20,13 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -32,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Builds JTS geometries from OSM entities.
  */
 public class OSHDBGeometryBuilder {
 
@@ -41,11 +44,13 @@ public class OSHDBGeometryBuilder {
   /**
    * Gets the geometry of an OSM entity at a specific timestamp.
    *
+   * <p>
    * The given timestamp must be in the valid timestamp range of the given entity version:
    * <ul>
    *   <li>timestamp must be equal or bigger than entity.getTimestamp()</li>
    *   <li>timestamp must be less than the next version of this osm entity (if one exists)</li>
    * </ul>
+   * </p>
    *
    * @param entity the osm entity to generate the geometry of
    * @param timestamp the timestamp for which to create the entity's geometry
@@ -58,18 +63,29 @@ public class OSHDBGeometryBuilder {
   public static Geometry getGeometry(
       OSMEntity entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider
   ) {
-    assert timestamp.compareTo(entity.getTimestamp()) >= 0 :
-        "cannot produce geometry of entity for timestamp before this entity's version's timestamp";
+    GeometryFactory geometryFactory = new GeometryFactory();
+    if (timestamp.compareTo(entity.getTimestamp()) < 0) {
+      throw new AssertionError(
+          "cannot produce geometry of entity for timestamp before this entity's version's timestamp"
+      );
+    }
     if (entity instanceof OSMNode) {
       OSMNode node = (OSMNode) entity;
-      GeometryFactory geometryFactory = new GeometryFactory();
-      return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
+      if (node.isVisible()) {
+        return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
+      } else {
+        return geometryFactory.createPoint((Coordinate) null);
+      }
     } else if (entity instanceof OSMWay) {
       OSMWay way = (OSMWay) entity;
+      if (!way.isVisible()) {
+        LOG.info("way/{} is deleted - falling back to empty (line) geometry", way.getId());
+        return geometryFactory.createLineString((CoordinateSequence) null);
+      }
       // todo: handle old-style multipolygons here???
-      GeometryFactory geometryFactory = new GeometryFactory();
       Coordinate[] coords =
-          way.getRefEntities(timestamp).filter(node -> node != null && node.isVisible())
+          way.getRefEntities(timestamp)
+              .filter(OSMEntity::isVisible)
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
       if (areaDecider.isArea(entity)) {
@@ -87,29 +103,43 @@ public class OSHDBGeometryBuilder {
         return geometryFactory.createPoint(coords[0]);
       } else {
         LOG.warn("way/{} with no nodes - falling back to empty (point) geometry", way.getId());
-        return geometryFactory.createPoint((Coordinate)null);
+        return geometryFactory.createPoint((Coordinate) null);
       }
-    }
-    OSMRelation relation = (OSMRelation) entity;
-    if (areaDecider.isArea(entity)) {
-      try {
-        return OSHDBGeometryBuilder.getMultiPolygonGeometry(relation, timestamp, areaDecider);
-      } catch (IllegalArgumentException e) {
-        // fall back to geometry collection builder
+    } else {
+      OSMRelation relation = (OSMRelation) entity;
+      if (!relation.isVisible()) {
+        LOG.info(
+            "relation/{} is deleted - falling back to empty geometry (collection)",
+            relation.getId()
+        );
+        return geometryFactory.createGeometryCollection(null);
       }
+      if (areaDecider.isArea(entity)) {
+        try {
+          Geometry multipolygon = OSHDBGeometryBuilder.getMultiPolygonGeometry(
+              relation, timestamp, areaDecider, geometryFactory
+          );
+          if (!multipolygon.isEmpty()) {
+            return multipolygon;
+          }
+          // otherwise (empty geometry): fall back to geometry collection builder
+        } catch (IllegalArgumentException e) {
+          // fall back to geometry collection builder
+        }
+      }
+      /* todo:implement multilinestring mode for stuff like route relations
+       * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
+       */
+      return getGeometryCollectionGeometry(relation, timestamp, areaDecider, geometryFactory);
     }
-    /*
-     * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
-     */
-    return getGeometryCollectionGeometry(relation, timestamp, areaDecider);
   }
 
   private static Geometry getGeometryCollectionGeometry(
       OSMRelation relation,
       OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider
-  ){
-    GeometryFactory geometryFactory = new GeometryFactory();
+      TagInterpreter areaDecider,
+      GeometryFactory geometryFactory
+  ) {
     OSMMember[] relationMembers = relation.getMembers();
     Geometry[] geoms = new Geometry[relationMembers.length];
     boolean completeGeometry = true;
@@ -120,10 +150,10 @@ public class OSHDBGeometryBuilder {
           OSHEntities.getByTimestamp(memberOSHEntity, timestamp);
       /*
       memberEntity might be null when working with redacted data, for example:
-       * user 1 creates node 1 (timestamp 1)
-       * user 2 creates relation 1 with node 1 as member (timestamp 2)
-       * user 2 edits node 1, which now has a version 2 (timestamp 3)
-       * user 1's edits are redacted -> node 1 version 1 is now hidden (version 2 isn't)
+       - user 1 creates node 1 (timestamp 1)
+       - user 2 creates relation 1 with node 1 as member (timestamp 2)
+       - user 2 edits node 1, which now has a version 2 (timestamp 3)
+       - user 1's edits are redacted -> node 1 version 1 is now hidden (version 2 isn't)
       now when requesting relation 1's geometry at timestamps between 2 and 3, memberOSHEntity
       is not null, but memberEntity is.
       */
@@ -154,27 +184,27 @@ public class OSHDBGeometryBuilder {
   private static Geometry getMultiPolygonGeometry(
       OSMRelation relation,
       OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider
+      TagInterpreter areaDecider,
+      GeometryFactory geometryFactory
   ) {
-    GeometryFactory geometryFactory = new GeometryFactory();
-
     Stream<OSMWay> outerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember)
-            .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
+            .map(osm -> (OSMWay) osm)
+            .filter(OSMEntity::isVisible);
 
     Stream<OSMWay> innerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonInnerMember)
-            .map(osm -> (OSMWay) osm).filter(way -> way != null && way.isVisible());
+            .map(osm -> (OSMWay) osm).filter(OSMEntity::isVisible);
 
     OSMNode[][] outerLines =
         outerMembers
             .map(way -> way.getRefEntities(timestamp)
-                .filter(node -> node != null && node.isVisible()).toArray(OSMNode[]::new))
+                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
     OSMNode[][] innerLines =
         innerMembers
             .map(way -> way.getRefEntities(timestamp)
-                .filter(node -> node != null && node.isVisible()).toArray(OSMNode[]::new))
+                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
 
     // construct rings from polygons
@@ -189,6 +219,26 @@ public class OSHDBGeometryBuilder {
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
 
+    // check if there are any touching inner/outer rings
+
+    Set<Integer> vertices = new HashSet<>();
+    boolean touchingRings = false;
+    List<LinearRing> allRings = new ArrayList<>(innerRings.size() + outerRings.size());
+    allRings.addAll(outerRings);
+    allRings.addAll(innerRings);
+    checkTouchingRings: for (LinearRing ring : allRings) {
+      int numPoints = ring.getNumPoints();
+      for (int i = 1; i < numPoints; i++) {
+        Coordinate thisPoint = ring.getCoordinateN(i);
+        int vertexHashCode = thisPoint.hashCode();
+        if (vertices.contains(vertexHashCode)) {
+          touchingRings = true;
+          break checkTouchingRings;
+        }
+        vertices.add(vertexHashCode);
+      }
+    }
+
     // construct multipolygon from rings
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the
     // effort? see below for a possibly much easier implementation.
@@ -202,11 +252,18 @@ public class OSHDBGeometryBuilder {
     }).collect(Collectors.toList());
 
     // todo: what to do with unmatched inner rings??
+    Geometry result;
     if (polys.size() == 1) {
-      return polys.get(0);
+      result = polys.get(0);
     } else {
-      return new MultiPolygon(polys.toArray(new Polygon[polys.size()]), geometryFactory);
+      result = geometryFactory.createMultiPolygon(polys.toArray(new Polygon[polys.size()]));
     }
+    if (touchingRings) {
+      // try to clean up gometry by calling buffer(0).
+      // see https://locationtech.github.io/jts/jts-faq.html#G1
+      result = result.buffer(0);
+    }
+    return result;
   }
 
   // helper that joins adjacent osm ways into linear rings
@@ -309,7 +366,7 @@ public class OSHDBGeometryBuilder {
     return gf.createPolygon(cordAr);
   }
   
-  public static OSHDBBoundingBox boundingBoxOf(Envelope envelope){
+  public static OSHDBBoundingBox boundingBoxOf(Envelope envelope) {
     return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
   }
 
