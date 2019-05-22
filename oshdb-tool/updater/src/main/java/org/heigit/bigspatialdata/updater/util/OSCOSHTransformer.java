@@ -33,10 +33,13 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlFileStore;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlStore;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMRole;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
@@ -227,6 +230,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       try {
         tagsArray = this.getTags(entity.getTags());
       } catch (SQLException e) {
+        //empty array better?
         tagsArray = null;
         LOG.error("Could not get Tags for this Object.", e);
       }
@@ -491,8 +495,9 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       this.insertRoleStatement.setString(2, memberRole);
       this.insertRoleStatement.execute();
       role = maxKey + 1;
+
+      this.tt.updateRole(new OSMRole(memberRole), new OSHDBRole(role));
     }
-    //tt also needs to be updated if keytables got updated (or insert exception neets to be caught)
     return role;
   }
 
@@ -551,8 +556,8 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       i++;
       tagsArray[i] = oshdbTag.getValue();
       i++;
+      this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
     }
-    //tt also needs to be updated if keytables got updated (or insert exception neets to be caught)
     return tagsArray;
   }
 
