@@ -114,15 +114,17 @@ public class Flusher {
         List<OSHEntity> entitiesList = insertCellEntities
             .getOrDefault(currentCellId, new ArrayList<>());
 
+        entitiesList.add(updateEntity);
+        insertCellEntities.put(currentCellId, entitiesList);
+        entities.put(newCellId, insertCellEntities);
+
+        i++;
+
         if (i >= batchSize) {
           Flusher.runBatch(entities, oshdb, t);
           entities.clear();
-        } else {
-          entitiesList.add(updateEntity);
-          insertCellEntities.put(currentCellId, entitiesList);
-          entities.put(newCellId, insertCellEntities);
+          i = 0;
         }
-        i++;
       }
       Flusher.runBatch(entities, oshdb, t);
     }
