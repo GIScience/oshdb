@@ -273,7 +273,7 @@ public class OSHDBGeometryBuilder {
       result = geometryFactory.createMultiPolygon(polys);
     }
     if (touchingRings) {
-      // try to clean up gometry by calling buffer(0).
+      // try to clean up geometry by calling buffer(0).
       // see https://locationtech.github.io/jts/jts-faq.html#G1
       result = result.buffer(0);
     }
