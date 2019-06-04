@@ -290,7 +290,7 @@ public class OSHDBGeometryBuilder {
         List<LinearRing> innerCandidates = inners.query(outer.getEnvelopeInternal());
     return geometryFactory.createPolygon(
         (LinearRing) outer.getExteriorRing(),
-        innerCandidates.stream().filter(outerPolygon::intersects).toArray(LinearRing[]::new)
+        innerCandidates.stream().filter(outerPolygon::contains).toArray(LinearRing[]::new)
     );
   }
 
