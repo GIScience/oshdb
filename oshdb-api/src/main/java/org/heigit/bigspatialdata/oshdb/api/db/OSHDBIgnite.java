@@ -4,9 +4,11 @@ import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -14,6 +16,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAf
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
@@ -22,14 +25,11 @@ import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundExcepti
  * OSHDB database backend connector to a Ignite system.
  */
 public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
-  public enum ComputeMode {
-    LocalPeek,
-    ScanQuery,
-    AffinityCall
-  }
+
+  private ComputeMode computeMode = ComputeMode.LocalPeek;
 
   private final transient Ignite ignite;
-  private ComputeMode computeMode = ComputeMode.LocalPeek;
+  private Lock lock;
 
   private IgniteRunnable onCloseCallback = null;
 
@@ -58,9 +58,29 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     this.ignite.cluster().active(true);
   }
 
-  @Override
-  public OSHDBIgnite prefix(String prefix) {
-    return (OSHDBIgnite) super.prefix(prefix);
+
+  public void close() {
+    this.ignite.close();
+  }
+
+  /**
+   * Sets the compute mode.
+   *
+   * @param computeMode the compute mode to be used in calculations on this oshdb backend
+   * @return this backend
+   */
+  public OSHDBIgnite computeMode(ComputeMode computeMode) {
+    this.computeMode = computeMode;
+    return this;
+  }
+
+  /**
+   * Gets the set compute mode.
+   *
+   * @return the currently set compute mode
+   */
+  public ComputeMode computeMode() {
+    return this.computeMode;
   }
 
   @Override
@@ -90,38 +110,22 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     return mapReducer;
   }
 
-  @Override
-  public String metadata(String property) {
-    // todo: implement this
-    return null;
-  }
-
   public Ignite getIgnite() {
     return this.ignite;
   }
 
-  public void close() {
-    this.ignite.close();
+  @Override
+  public void lock(String cacheToLock) {
+    IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheToLock);
+    this.lock = cache.lock(1L);
+    this.lock.lock();
+
   }
 
-  /**
-   * Sets the compute mode.
-   *
-   * @param computeMode the compute mode to be used in calculations on this oshdb backend
-   * @return this backend
-   */
-  public OSHDBIgnite computeMode(ComputeMode computeMode) {
-    this.computeMode = computeMode;
-    return this;
-  }
-
-  /**
-   * Gets the set compute mode.
-   *
-   * @return the currently set compute mode
-   */
-  public ComputeMode computeMode() {
-    return this.computeMode;
+  @Override
+  public String metadata(String property) {
+    // todo: implement this
+    return null;
   }
 
   /**
@@ -150,5 +154,21 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     } else {
       return Optional.of(this.onCloseCallback);
     }
+  }
+
+  @Override
+  public OSHDBIgnite prefix(String prefix) {
+    return (OSHDBIgnite) super.prefix(prefix);
+  }
+
+  @Override
+  public void unlock(String cacheToLock) {
+    this.lock.unlock();
+  }
+
+  public enum ComputeMode {
+    LocalPeek,
+    ScanQuery,
+    AffinityCall
   }
 }

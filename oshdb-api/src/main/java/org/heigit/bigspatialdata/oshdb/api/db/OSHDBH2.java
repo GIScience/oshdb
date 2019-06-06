@@ -126,5 +126,14 @@ public class OSHDBH2 extends OSHDBJdbc {
     this.connection = dest;
     return this;
   }
+  @Override
+  public void lock(String tableToLock) {
+    //nothing to do here, h2 is for single users any way.
+  }
+
+  @Override
+  public void unlock(String tableToLock) {
+    //nothing to do here, h2 is for single users any way.
+  }
 
 }

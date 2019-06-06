@@ -256,13 +256,20 @@ public class Flusher {
             //new Version is in lower zoomlevel, must be promoted
             GridOSHEntity croppedGridCell = Flusher
                 .updateGridCell(currentCellId, outdatedGridCell, updateEntitys, t, true, false);
-            Flusher.writeUpdatedGridCell(t, oshdb, croppedGridCell);
 
             outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, newCellId);
             GridOSHEntity insertedGrid = Flusher
                 .updateGridCell(newCellId, outdatedGridCell, updateEntitys, t, false, true);
-            Flusher.writeUpdatedGridCell(t, oshdb, insertedGrid);
 
+            oshdb.lock(oshdb.prefix() + TableNames.forOSMType(t).get());
+            try {
+              Flusher.writeUpdatedGridCell(t, oshdb, croppedGridCell);
+              //at this stage the updated entities are missing in the updated Entities in the database.
+              //therefore the database is locked for a short period
+              Flusher.writeUpdatedGridCell(t, oshdb, insertedGrid);
+            } finally {
+              oshdb.unlock(oshdb.prefix() + TableNames.forOSMType(t).get());
+            }
           } else {
 
             GridOSHEntity updatedGrid = Flusher
