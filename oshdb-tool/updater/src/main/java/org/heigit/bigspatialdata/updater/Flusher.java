@@ -162,10 +162,13 @@ public class Flusher {
               OSHDBH2 oshdb = new OSHDBH2(conn);) {
             Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize);
           }
-        } else {
+        } else if (config.dbconfig.contains("ignite")) {
           try (OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);) {
             Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize);
           }
+        } else {
+          throw new AssertionError(
+              "Backend of type " + config.dbconfig + " not supported yet.");
         }
       }
     }
@@ -220,11 +223,14 @@ public class Flusher {
             .readObject();
       }
       return null;
-    } else {
+    } else if (oshdb instanceof OSHDBIgnite) {
       IgniteCache<Long, GridOSHEntity> cache = ((OSHDBIgnite) oshdb)
           .getIgnite()
           .cache(oshdb.prefix() + TableNames.forOSMType(t));
       return cache.get(insertId.getLevelId());
+    } else {
+      throw new AssertionError(
+          "Backend of type " + oshdb.getClass().getName() + " not supported yet.");
     }
 
   }
@@ -393,11 +399,14 @@ public class Flusher {
         oshdbPreparedStatement.setBytes(3, baos.toByteArray());
         oshdbPreparedStatement.execute();
       }
-    } else {
+    } else if (oshdb instanceof OSHDBIgnite) {
       IgniteCache<Long, GridOSHEntity> cache = ((OSHDBIgnite) oshdb)
           .getIgnite()
           .cache(oshdb.prefix() + TableNames.forOSMType(t));
       cache.put(updatedGridCell.getId(), updatedGridCell);
+    } else {
+      throw new AssertionError(
+          "Backend of type " + oshdb.getClass().getName() + " not supported yet.");
     }
 
   }
