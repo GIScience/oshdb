@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
@@ -26,20 +27,42 @@ public class UpdateDatabaseHandler {
   private UpdateDatabaseHandler() {
   }
 
-  public static void ereaseDb(Connection updateDb, Connection dbBit) throws SQLException {
+  public static void ereaseDb(Connection updateDb, Connection dbBit) throws SQLException,
+      UnknownServiceException {
     Map<OSMType, LongBitmapDataProvider> bitmapMap = new HashMap<>();
     Statement createStatement = updateDb.createStatement();
     for (OSMType type : OSMType.values()) {
       if (type != OSMType.UNKNOWN) {
-        //is drop dable and prepareDB faster?
-        createStatement.execute(
-            "DELETE FROM "
-            + TableNames.forOSMType(type).get());
+        //update bitmap first
         LongBitmapDataProvider bit = new Roaring64NavigableMap();
         bitmapMap.put(type, bit);
+        UpdateDatabaseHandler.writeBitMap(bitmapMap, dbBit);
+
+        //delete associated data after
+        switch (updateDb.getClass().getName()) {
+          case "org.postgresql.jdbc.PgConnection":
+            createStatement.execute(
+                "TRUNCATE "
+                + TableNames.forOSMType(type).get());
+            break;
+          case "org.h2.jdbc.JdbcConnection":
+            createStatement.execute(
+                "TRUNCATE TABLE "
+                + TableNames.forOSMType(type).get());
+            break;
+          case "org.apache.ignite.internal.jdbc.thin.JdbcThinConnection":
+            createStatement.execute(
+                "DELETE FROM "
+                + TableNames.forOSMType(type).get());
+            break;
+          default:
+            throw new UnknownServiceException(
+                "The used driver --"
+                + updateDb.getClass().getName()
+                + "-- is not supportd yet. Please report to the developers");
+        }
       }
     }
-    UpdateDatabaseHandler.writeBitMap(bitmapMap, dbBit);
 
   }
 
@@ -99,21 +122,23 @@ public class UpdateDatabaseHandler {
 
   public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit)
       throws SQLException {
-    bitmapMap.forEach((type, bitmap) -> {
-      try {
-        PreparedStatement write = dbBit.prepareStatement("UPDATE " + TableNames.forOSMType(type)
-            .get() + "_bitmap SET bitmap=? WHERE id=1;");
-        ByteArrayOutputStream s = new ByteArrayOutputStream();
-        ObjectOutputStream d = new ObjectOutputStream(s);
-        d.writeObject(bitmap);
-        byte[] toByteArray = s.toByteArray();
-        write.setBytes(1, toByteArray);
-        write.executeUpdate();
-      } catch (SQLException ex) {
-        LOG.error("error", ex);
-      } catch (IOException ex) {
-        LOG.error("error", ex);
+    bitmapMap.forEach(new BiConsumer<OSMType, LongBitmapDataProvider>() {
+      @Override
+      public void accept(OSMType type, LongBitmapDataProvider bitmap) {
+        try {
+          PreparedStatement write = dbBit.prepareStatement("UPDATE " + TableNames.forOSMType(type)
+              .get() + "_bitmap SET bitmap=? WHERE id=1;");
+          ByteArrayOutputStream s = new ByteArrayOutputStream();
+          ObjectOutputStream d = new ObjectOutputStream(s);
+          d.writeObject(bitmap);
+          byte[] toByteArray = s.toByteArray();
+          write.setBytes(1, toByteArray);
+          write.executeUpdate();
+        } catch (SQLException | IOException ex) {
+          LOG.error("error", ex);
+        }
       }
+
     });
   }
 
