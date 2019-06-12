@@ -124,10 +124,8 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
 
     Map<EntityType, Map<Long, List<ChangeContainer>>> changes = new HashMap<>(1);
 
-    int i = 0;
     //it should be checked, whether is actually improves things!
-    while (i < this.batchSize) {
-      if (this.containers.hasNext()) {
+    for(int i=0; (this.containers.hasNext() && i < this.batchSize) ;i++) {
         ChangeContainer currContainer = this.containers.next();
         Entity entity = currContainer.getEntityContainer().getEntity();
 
@@ -140,10 +138,6 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
         entityChanges.add(currContainer);
         typeEntities.put(entity.getId(), entityChanges);
         changes.put(entity.getType(), typeEntities);
-      } else {
-        break;
-      }
-      i++;
     }
 
     try {
