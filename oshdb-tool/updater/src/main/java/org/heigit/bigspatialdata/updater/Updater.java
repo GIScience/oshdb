@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 public class Updater {
 
   static final String LOCK_FILE = "update.lock";
+  static final Path wd = Paths.get("target/updaterWD/");
   private static final Logger LOG = LoggerFactory.getLogger(Updater.class);
 
   public static void main(String[] args)
@@ -140,11 +141,10 @@ public class Updater {
   ) throws SQLException,
       IOException,
       ClassNotFoundException {
-    Path wd = Paths.get("target/updaterWD/");
-    wd.toFile().mkdirs();
+    Updater.wd.toFile().mkdirs();
 
     try (FileBasedLock fileLock = new FileBasedLock(
-        wd.resolve(Updater.LOCK_FILE).toFile())) {
+        Updater.wd.resolve(Updater.LOCK_FILE).toFile())) {
       fileLock.lock();
       //download replicationFiles
       Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, wd);

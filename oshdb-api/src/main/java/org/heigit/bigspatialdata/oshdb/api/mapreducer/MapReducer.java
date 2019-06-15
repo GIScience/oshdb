@@ -1991,8 +1991,14 @@ public abstract class MapReducer<X> implements
   protected List<GridOSHEntity> getUpdates()
       throws SQLException, IOException, ClassNotFoundException {
     
-    OSHDBTimestamp timestampOSHDB = (new OSHDBTimestamps(
+    OSHDBTimestamp timestampOSHDB=new OSHDBTimestamp(0);
+    try{
+      timestampOSHDB = (new OSHDBTimestamps(
         this.oshdb.metadata("data.timerange").split(",")[1])).get().first();
+    }catch(Exception ex){
+      LOG.error("Could not get metadata of OSHDB. I can handle this but you should solve that!",ex);
+    }
+    
     List<GridOSHEntity> result = new ArrayList<>();
     
     //get updates only if they are needed (requested ts later that oshdb ts)

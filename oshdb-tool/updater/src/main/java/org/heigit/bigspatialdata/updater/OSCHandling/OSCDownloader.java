@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 public class OSCDownloader {
 
-  private static final String LOCAL_STATE_FILE = "update_state.txt";
+  public static final String LOCAL_STATE_FILE = "update_state.txt";
   private static final Logger LOG = LoggerFactory.getLogger(OSCDownloader.class);
 
   private static URL baseUrl;
@@ -125,7 +125,7 @@ public class OSCDownloader {
     return flow;
   }
 
-  public static ReplicationState getState() {
+  private static ReplicationState getState() {
     final ServerStateReader serverStateReader = new ServerStateReader();
     final ReplicationState serverState = serverStateReader.getServerState(OSCDownloader.baseUrl);
     LOG.info("latest server state form " + OSCDownloader.baseUrl + " -> " + serverState.toString());

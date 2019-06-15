@@ -49,6 +49,8 @@ import org.heigit.bigspatialdata.updater.OSCHandling.OSCDownloader;
 import org.heigit.bigspatialdata.updater.util.cmd.FlushArgs;
 import org.heigit.bigspatialdata.updater.util.dbhandler.DatabaseHandler;
 import org.openstreetmap.osmosis.core.util.FileBasedLock;
+import org.openstreetmap.osmosis.core.util.PropertiesPersister;
+import org.openstreetmap.osmosis.replication.common.ReplicationState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +60,14 @@ public class Flusher {
 
   /**
    * Flush updates form JDBC to real Ignite (best done once in a while, when database-usage is
-   * low).Aka.merge, aka. commit.
+   * low).Aka.merge, aka.commit.
    *
    * @param oshdb
    * @param updatedb
    * @param dbBit
    * @param etlPath
    * @param batchSize
+   * @param updateMeta
    * @throws java.sql.SQLException
    * @throws java.io.IOException
    * @throws java.lang.ClassNotFoundException
@@ -74,7 +77,8 @@ public class Flusher {
       Connection updatedb,
       Connection dbBit,
       Path etlPath,
-      int batchSize)
+      int batchSize,
+      boolean updateMeta)
       throws SQLException, IOException, ClassNotFoundException {
 
     EtlFileStore etlf = new EtlFileStore(etlPath);
@@ -130,7 +134,13 @@ public class Flusher {
       Flusher.runBatch(entities, oshdb, t);
     }
     DatabaseHandler.ereaseDb(updatedb, dbBit);
-    DatabaseHandler.updateOSHDBMetadata(oshdb, OSCDownloader.getState());
+    if (updateMeta) {
+      PropertiesPersister propertiesPersister = new PropertiesPersister(Updater.wd
+          .resolve(
+              OSCDownloader.LOCAL_STATE_FILE).toFile());
+      DatabaseHandler.updateOSHDBMetadata(oshdb, new ReplicationState(propertiesPersister
+          .loadMap()));
+    }
   }
 
   public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException,
@@ -162,11 +172,15 @@ public class Flusher {
         if (config.dbconfig.contains("h2")) {
           try (Connection conn = DriverManager.getConnection(config.dbconfig, "sa", "");
               OSHDBH2 oshdb = new OSHDBH2(conn);) {
-            Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize);
+            Flusher
+                .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
+                    config.updateMeta);
           }
         } else if (config.dbconfig.contains("ignite")) {
           try (OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);) {
-            Flusher.flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize);
+            Flusher
+                .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
+                    config.updateMeta);
           }
         } else {
           throw new AssertionError(
