@@ -111,13 +111,18 @@ public class Updater {
    * Downloads replication files, transforms them to OSHDB-Objects and stores them in a
    * JDBC-Database.At the same time it maintains an index of updated entites.
    *
+   * If working on a regional extract be aware that there is currently no method to limit imports to
+   * that region. Updated entities outside the scope of the used @link{etlFile} will have missing
+   * data.
+   *
    * @param etlFiles The directory for the Files containing all currently known Entites
    * @param keytables Database for keytables
    * @param updateDb Connection to JDBC-Database where Updates should be stored.
    * @param replicationUrl The URL to get replication files from. Determines if monthly, dayly etc.
    * updates are preferred.
    * @param dbBit Database for a BitMap flagging changed Entites
-   * @param batchSize
+   * @param batchSize the number of changes that are processes in batches. This may help if you
+   * expect a high number of entities to be modified multiple times during this update period.
    * @param producer a producer to promote updated entites to a kafka-cluster. May be null if not
    * desired.
    * @throws java.sql.SQLException

@@ -23,7 +23,7 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
+import org.heigit.bigspatialdata.oshdb.util.update.UpdateDbHelper;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
@@ -66,7 +66,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
       cellIterator.excludeIDs(bitMapIndex);
@@ -120,7 +120,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
       cellIterator.excludeIDs(bitMapIndex);

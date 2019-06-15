@@ -45,8 +45,9 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlFileStore;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
+import org.heigit.bigspatialdata.updater.OSCHandling.OSCDownloader;
 import org.heigit.bigspatialdata.updater.util.cmd.FlushArgs;
+import org.heigit.bigspatialdata.updater.util.dbhandler.DatabaseHandler;
 import org.openstreetmap.osmosis.core.util.FileBasedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +129,8 @@ public class Flusher {
       }
       Flusher.runBatch(entities, oshdb, t);
     }
-    UpdateDatabaseHandler.ereaseDb(updatedb, dbBit);
+    DatabaseHandler.ereaseDb(updatedb, dbBit);
+    DatabaseHandler.updateOSHDBMetadata(oshdb, OSCDownloader.getState());
   }
 
   public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException,

@@ -1,30 +1,34 @@
-package org.heigit.bigspatialdata.oshdb.util.dbhandler.update;
+package org.heigit.bigspatialdata.updater.util.dbhandler;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.UnknownServiceException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.heigit.bigspatialdata.oshdb.util.update.UpdateDbHelper;
+import org.openstreetmap.osmosis.replication.common.ReplicationState;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 import org.slf4j.LoggerFactory;
 
-public class UpdateDatabaseHandler {
+public class DatabaseHandler {
 
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(UpdateDatabaseHandler.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(DatabaseHandler.class);
 
-  private UpdateDatabaseHandler() {
+  private DatabaseHandler() {
   }
 
   public static void ereaseDb(Connection updateDb, Connection dbBit) throws SQLException,
@@ -36,7 +40,7 @@ public class UpdateDatabaseHandler {
         //update bitmap first
         LongBitmapDataProvider bit = new Roaring64NavigableMap();
         bitmapMap.put(type, bit);
-        UpdateDatabaseHandler.writeBitMap(bitmapMap, dbBit);
+        DatabaseHandler.writeBitMap(bitmapMap, dbBit);
 
         //delete associated data after
         switch (updateDb.getClass().getName()) {
@@ -66,25 +70,6 @@ public class UpdateDatabaseHandler {
 
   }
 
-  public static Map<OSMType, LongBitmapDataProvider> getBitMap(Connection dbBit) throws SQLException,
-      IOException, ClassNotFoundException {
-    Map<OSMType, LongBitmapDataProvider> map = new HashMap<>();
-    for (OSMType type : OSMType.values()) {
-      if (type != OSMType.UNKNOWN) {
-        Statement retreave = dbBit.createStatement();
-        String retrSQL = "SELECT bitmap FROM " + TableNames.forOSMType(type).get() + "_bitmap WHERE id=1;";
-        ResultSet executeQuery = retreave.executeQuery(retrSQL);
-        executeQuery.next();
-        byte[] bytes = executeQuery.getBytes("bitmap");
-        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        ObjectInputStream input = new ObjectInputStream(bais);
-        LongBitmapDataProvider r = (LongBitmapDataProvider) input.readObject();
-        map.put(type, r);
-      }
-    }
-    return map;
-  }
-
   public static Map<OSMType, LongBitmapDataProvider> prepareDB(Connection updateDb, Connection dbBit)
       throws SQLException, IOException, ClassNotFoundException {
     for (OSMType type : OSMType.values()) {
@@ -98,16 +83,16 @@ public class UpdateDatabaseHandler {
 
         switch (updateDb.getClass().getName()) {
           case "org.postgresql.jdbc.PgConnection":
-            UpdateDatabaseHandler.preparePostgresUpdateDb(type, updateDb);
-            UpdateDatabaseHandler.preparePostgresBitmapDb(type, dbBit, toByteArray);
+            DatabaseHandler.preparePostgresUpdateDb(type, updateDb);
+            DatabaseHandler.preparePostgresBitmapDb(type, dbBit, toByteArray);
             break;
           case "org.h2.jdbc.JdbcConnection":
-            UpdateDatabaseHandler.prepareH2UpdateDb(type, updateDb);
-            UpdateDatabaseHandler.prepareH2BitmapDb(type, dbBit, toByteArray);
+            DatabaseHandler.prepareH2UpdateDb(type, updateDb);
+            DatabaseHandler.prepareH2BitmapDb(type, dbBit, toByteArray);
             break;
           case "org.apache.ignite.internal.jdbc.thin.JdbcThinConnection":
-            UpdateDatabaseHandler.prepareIgniteUpdateDb(type, updateDb);
-            UpdateDatabaseHandler.prepareIgniteBitmapDb(type, dbBit, toByteArray);
+            DatabaseHandler.prepareIgniteUpdateDb(type, updateDb);
+            DatabaseHandler.prepareIgniteBitmapDb(type, dbBit, toByteArray);
             break;
           default:
             throw new UnknownServiceException(
@@ -117,7 +102,7 @@ public class UpdateDatabaseHandler {
         }
       }
     }
-    return UpdateDatabaseHandler.getBitMap(dbBit);
+    return UpdateDbHelper.getBitMap(dbBit);
   }
 
   public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit)
@@ -242,6 +227,34 @@ public class UpdateDatabaseHandler {
         + TableNames.forOSMType(type).get() + "_gix ON "
         + TableNames.forOSMType(type).get() + " USING GIST (bbx);";
     dbStatement.execute(sqlIndex);
+  }
+
+  public static void updateOSHDBMetadata(OSHDBDatabase oshdb, ReplicationState state) throws
+      SQLException {
+    if (oshdb instanceof OSHDBJdbc) {
+      try (
+          PreparedStatement stmt = ((OSHDBJdbc) oshdb).getConnection().prepareStatement(
+              "UPDATE " + TableNames.T_METADATA.toString(oshdb.prefix()) + " SET value=? where key=?;"
+          )) {
+            //timerange
+            OSHDBTimestamp startOSHDB = (new OSHDBTimestamps(
+                oshdb.metadata("data.timerange").split(",")[0])).get().first();
+            stmt.setString(1,
+                startOSHDB.toString() + "," + (new OSHDBTimestamp(state.getTimestamp())).toString());
+            stmt.setString(2, "data.timerange");
+            stmt.executeUpdate();
+
+            //replication sequence
+            stmt.setString(1, "" + state.getSequenceNumber());
+            stmt.setString(2, "header.osmosis_replication_sequence_number");
+            stmt.executeUpdate();
+          }
+    } else if (oshdb instanceof OSHDBIgnite) {
+      throw new UnsupportedOperationException("Ignite backend does not provide metadata yet?");
+    } else {
+      throw new AssertionError(
+          "Backend of type " + oshdb.getClass().getName() + " not supported yet.");
+    }
   }
 
 }

@@ -1987,60 +1987,68 @@ public abstract class MapReducer<X> implements
     return result;
   }
 
+  //convert to stream for performance and memory!
   protected List<GridOSHEntity> getUpdates()
       throws SQLException, IOException, ClassNotFoundException {
-    WKTWriter wktWriter = new WKTWriter();
-    String sqlQuery;
-    if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(
-        this.update.getConnection().getClass().getName()
-    )) {
-      sqlQuery = this.getPostGISQuery();
-    } else {
-      sqlQuery = this.getIgniteQuery();
-    }
-    PreparedStatement pstmt = this.update.getConnection().prepareStatement(sqlQuery);
-    Polygon geometry = OSHDBGeometryBuilder.getGeometry(this.bboxFilter);
-    pstmt.setObject(1, wktWriter.write(geometry));
-    ResultSet updateEntities = pstmt.executeQuery();
     
-    List<GridOSHEntity> result = new ArrayList<>(10);
-    ArrayList<OSHNode> nodes = new ArrayList<>(1);
-    ArrayList<OSHWay> ways = new ArrayList<>(1);
-    ArrayList<OSHRelation> relations = new ArrayList<>(1);
-    while (updateEntities.next()) {
-      int type = updateEntities.getInt("type");
-      byte[] data = updateEntities.getBytes("data");
+    OSHDBTimestamp timestampOSHDB = (new OSHDBTimestamps(
+        this.oshdb.metadata("data.timerange").split(",")[1])).get().first();
+    List<GridOSHEntity> result = new ArrayList<>();
+    
+    //get updates only if they are needed (requested ts later that oshdb ts)
+    if (timestampOSHDB.compareTo(this.tstamps.get().last()) < 0) {
 
-      GridOSHEntity updateCell;
-      switch (type) {
-        case 0:
-          nodes.add(OSHNodeImpl.instance(data, 0, data.length));
-          if (nodes.size() >= this.update.getBatchSize()) {
-            result.add(this.createCell(0, nodes));
-            nodes.clear();
-          }
-          break;
-        case 1:
-          ways.add(OSHWayImpl.instance(data, 0, data.length));
-          if (ways.size() >= this.update.getBatchSize()) {
-            result.add(this.createCell(1, ways));
-            nodes.clear();
-          }
-          break;
-        case 2:
-          relations.add(OSHRelationImpl.instance(data, 0, data.length));
-          if (relations.size() >= this.update.getBatchSize()) {
-            result.add(this.createCell(2, relations));
-            nodes.clear();
-          }
-          break;
-        default:
-          throw new AssertionError("type unknown: " + type);
+      WKTWriter wktWriter = new WKTWriter();
+      String sqlQuery;
+      if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(
+          this.update.getConnection().getClass().getName()
+      )) {
+        sqlQuery = this.getPostGISQuery();
+      } else {
+        sqlQuery = this.getIgniteQuery();
       }
+      PreparedStatement pstmt = this.update.getConnection().prepareStatement(sqlQuery);
+      Polygon geometry = OSHDBGeometryBuilder.getGeometry(this.bboxFilter);
+      pstmt.setObject(1, wktWriter.write(geometry));
+      ResultSet updateEntities = pstmt.executeQuery();
+
+      ArrayList<OSHNode> nodes = new ArrayList<>(1);
+      ArrayList<OSHWay> ways = new ArrayList<>(1);
+      ArrayList<OSHRelation> relations = new ArrayList<>(1);
+      while (updateEntities.next()) {
+        int type = updateEntities.getInt("type");
+        byte[] data = updateEntities.getBytes("data");
+
+        switch (type) {
+          case 0:
+            nodes.add(OSHNodeImpl.instance(data, 0, data.length));
+            if (nodes.size() >= this.update.getBatchSize()) {
+              result.add(this.createCell(0, nodes));
+              nodes.clear();
+            }
+            break;
+          case 1:
+            ways.add(OSHWayImpl.instance(data, 0, data.length));
+            if (ways.size() >= this.update.getBatchSize()) {
+              result.add(this.createCell(1, ways));
+              nodes.clear();
+            }
+            break;
+          case 2:
+            relations.add(OSHRelationImpl.instance(data, 0, data.length));
+            if (relations.size() >= this.update.getBatchSize()) {
+              result.add(this.createCell(2, relations));
+              nodes.clear();
+            }
+            break;
+          default:
+            throw new AssertionError("type unknown: " + type);
+        }
+      }
+      result.add(this.createCell(0, nodes));
+      result.add(this.createCell(1, ways));
+      result.add(this.createCell(2, relations));
     }
-    result.add(this.createCell(0, nodes));
-    result.add(this.createCell(1, ways));
-    result.add(this.createCell(2, relations));
     return result;
   }
 

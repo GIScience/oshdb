@@ -45,9 +45,9 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.update.UpdateDbHelper;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
@@ -96,7 +96,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     }else{
@@ -143,7 +143,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     } else {
@@ -191,7 +191,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     } else {
@@ -238,7 +238,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     } else {

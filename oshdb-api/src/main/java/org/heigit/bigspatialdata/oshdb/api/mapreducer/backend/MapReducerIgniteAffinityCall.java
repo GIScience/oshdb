@@ -35,8 +35,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
+import org.heigit.bigspatialdata.oshdb.util.update.UpdateDbHelper;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
@@ -142,7 +142,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     );
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
       cellIterator.excludeIDs(bitMapIndex);
@@ -219,7 +219,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
 
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
       cellIterator.excludeIDs(bitMapIndex);

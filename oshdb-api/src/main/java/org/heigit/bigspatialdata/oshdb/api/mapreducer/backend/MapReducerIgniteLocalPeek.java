@@ -42,9 +42,9 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
-import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.update.UpdateDbHelper;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
@@ -96,7 +96,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     }
@@ -136,7 +136,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     }
@@ -178,7 +178,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     }
@@ -219,7 +219,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
     if (this.update != null) {
-      bitMapIndex = UpdateDatabaseHandler.getBitMap(
+      bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
     }

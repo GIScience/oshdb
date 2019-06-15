@@ -125,7 +125,7 @@ public class OSCDownloader {
     return flow;
   }
 
-  private static ReplicationState getState() {
+  public static ReplicationState getState() {
     final ServerStateReader serverStateReader = new ServerStateReader();
     final ReplicationState serverState = serverStateReader.getServerState(OSCDownloader.baseUrl);
     LOG.info("latest server state form " + OSCDownloader.baseUrl + " -> " + serverState.toString());

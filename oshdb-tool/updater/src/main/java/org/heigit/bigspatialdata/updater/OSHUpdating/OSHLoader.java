@@ -22,7 +22,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.oshdb.util.dbhandler.update.UpdateDatabaseHandler;
+import org.heigit.bigspatialdata.updater.util.dbhandler.DatabaseHandler;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.locationtech.jts.geom.Polygon;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
@@ -58,7 +58,7 @@ public class OSHLoader {
 
     LOG.info("loading");
     Map<OSMType, LongBitmapDataProvider> bitmapMap
-        = UpdateDatabaseHandler.prepareDB(updateDb, dbBit);
+        = DatabaseHandler.prepareDB(updateDb, dbBit);
 
     for (Map<OSMType, Map<Long, OSHEntity>> currMapOuter : oshEntities) {
       for (Entry<OSMType, Map<Long, OSHEntity>> currMap : currMapOuter.entrySet()) {
@@ -145,7 +145,7 @@ public class OSHLoader {
     if (producer != null) {
       producer.close();
     }
-    UpdateDatabaseHandler.writeBitMap(bitmapMap, dbBit);
+    DatabaseHandler.writeBitMap(bitmapMap, dbBit);
 
   }
 
