@@ -79,21 +79,21 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
     final List<CellIdRange> cellIdRanges = new ArrayList<>();
     this.getCellIdRanges().forEach(cellIdRanges::add);
 
-    Stream<S> streamA = cellIdRanges.parallelStream()
+    Stream<S> oshdbStream = cellIdRanges.parallelStream()
         .filter(ignored -> this.isActive())
         .flatMap(this::getOshCellsStream)
         .filter(ignored -> this.isActive())
         .map(oshCell -> processor.apply(oshCell, cellIterator));
 
-    Stream<S> streamB = Stream.empty();
+    Stream<S> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      streamB = this.getUpdates().parallelStream()
+      updateStream = this.getUpdates().parallelStream()
           .filter(ignored -> this.isActive())
           .map(oshCell -> processor.apply(oshCell, updateIterator));;
     }
     
-    return Streams.concat(streamA, streamB)
+    return Streams.concat(oshdbStream, updateStream)
         .reduce(identitySupplier.get(), combiner);
   }
 
@@ -125,23 +125,23 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
     final List<CellIdRange> cellIdRanges = new ArrayList<>();
     this.getCellIdRanges().forEach(cellIdRanges::add);
 
-    Stream<X> streamA = cellIdRanges.parallelStream()
+    Stream<X> oshdbStream = cellIdRanges.parallelStream()
         .filter(ignored -> this.isActive())
         .flatMap(this::getOshCellsStream)
         .filter(ignored -> this.isActive())
         .map(oshCell -> processor.apply(oshCell, cellIterator))
         .flatMap(Collection::stream);
 
-    Stream<X> streamB = Stream.empty();
+    Stream<X> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      streamB = this.getUpdates().parallelStream()
+      updateStream = this.getUpdates().parallelStream()
           .filter(ignored -> this.isActive())
           .map(oshCell -> processor.apply(oshCell, updateIterator))
           .flatMap(Collection::stream);
     }
     
-    return Streams.concat(streamA, streamB);
+    return Streams.concat(oshdbStream, updateStream);
   }
 
   // === map-reduce operations ===

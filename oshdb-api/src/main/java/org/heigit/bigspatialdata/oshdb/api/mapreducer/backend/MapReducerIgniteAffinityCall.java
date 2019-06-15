@@ -155,7 +155,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     IgniteCompute compute = ignite.compute();
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
-    Stream<S> streamA = this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType ->
+    Stream<S> oshdbStream = this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType ->
     {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
@@ -183,15 +183,15 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .reduce(identitySupplier.get(), combiner);
     });
 
-    Stream<S> streamB = Stream.empty();
+    Stream<S> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      streamB = this.getUpdates().parallelStream()
+      updateStream = this.getUpdates().parallelStream()
           .filter(ignored -> this.isActive())
           .map(oshCell -> cellProcessor.apply(oshCell, updateIterator));
     }
 
-    return Streams.concat(streamA, streamB).reduce(identitySupplier.get(), combiner);
+    return Streams.concat(oshdbStream, updateStream).reduce(identitySupplier.get(), combiner);
   }
 
   /**
@@ -231,7 +231,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     IgniteCompute compute = ignite.compute();
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
-    Stream<X> streamA = typeFilter.stream().map(
+    Stream<X> oshdbStream = typeFilter.stream().map(
         (SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
@@ -258,16 +258,16 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .flatMap(Collection::stream);
     }).flatMap(x -> x);
 
-    Stream<X> streamB = Stream.empty();
+    Stream<X> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      streamB = this.getUpdates().parallelStream()
+      updateStream = this.getUpdates().parallelStream()
           .filter(ignored -> this.isActive())
           .map(oshCell -> processor.apply(oshCell, updateIterator))
           .flatMap(Collection::stream);
     }
 
-    return Streams.concat(streamA, streamB);
+    return Streams.concat(updateStream, updateStream);
   }
 
   // === map-reduce operations ===

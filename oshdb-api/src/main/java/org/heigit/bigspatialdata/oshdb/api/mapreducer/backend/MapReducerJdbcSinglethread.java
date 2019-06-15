@@ -125,20 +125,20 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       cellIterator.excludeIDs(bitMapIndex);
     }
     
-    Stream<X> streamA = Streams.stream(this.getCellIdRanges())
+    Stream<X> oshdbStream = Streams.stream(this.getCellIdRanges())
         .flatMap(this::getOshCellsStream)
         .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator))
         .flatMap(Collection::stream);
     
-    Stream<X> streamB = Stream.empty();
+    Stream<X> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      streamB = this.getUpdates().stream()
+      updateStream = this.getUpdates().stream()
           .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, updateIterator))
           .flatMap(Collection::stream);
     }
     
-    return Streams.concat(streamA,streamB);
+    return Streams.concat(oshdbStream,updateStream);
   }
 
   // === map-reduce operations ===
