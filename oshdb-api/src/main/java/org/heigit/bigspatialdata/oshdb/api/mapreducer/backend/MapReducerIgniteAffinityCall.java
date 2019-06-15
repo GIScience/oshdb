@@ -153,8 +153,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
-    IgniteRunnable onClose = oshdb.onClose().orElse(() -> {
-    });
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
     Stream<S> streamA = this.typeFilter.stream().map((SerializableFunction<OSMType, S>) osmType ->
     {
@@ -230,8 +229,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     OSHDBIgnite oshdb = (OSHDBIgnite) this.oshdb;
     Ignite ignite = oshdb.getIgnite();
     IgniteCompute compute = ignite.compute();
-    IgniteRunnable onClose = oshdb.onClose().orElse(() -> {
-    });
+    IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
     Stream<X> streamA = typeFilter.stream().map(
         (SerializableFunction<OSMType, Stream<X>>) osmType -> {

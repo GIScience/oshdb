@@ -29,7 +29,6 @@ import org.json.simple.parser.ParseException;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
 
 public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
-
   public MapReducerJdbcSinglethread(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
@@ -143,6 +142,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   }
 
   // === map-reduce operations ===
+
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(
       SerializableFunction<OSMContribution, R> mapper,
@@ -220,6 +220,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   }
 
   // === stream operations ===
+
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
       SerializableFunction<OSMContribution, X> mapper) throws Exception {

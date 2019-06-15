@@ -27,16 +27,13 @@ import static org.junit.Assert.assertTrue;
  *
  */
 abstract class TestMapReduce {
-
   final OSHDBDatabase oshdb;
   OSHDBJdbc keytables = null;
   OSHDBUpdate update = null;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(6, 49, 9, 50);
-  private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01",
-      OSHDBTimestamps.Interval.YEARLY);
-  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
-      OSHDBTimestamps.Interval.MONTHLY);
+  private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY);
+  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
   private final OSHDBTimestamps timestampsUpdate = new OSHDBTimestamps("2010-01-01", "2020-12-01",
       OSHDBTimestamps.Interval.YEARLY);
 
@@ -46,17 +43,13 @@ abstract class TestMapReduce {
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     MapReducer<OSMContribution> mapRed = OSMContributionView.on(oshdb);
-    if (this.keytables != null) {
-      mapRed = mapRed.keytables(this.keytables);
-    }
+    if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
     return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     MapReducer<OSMEntitySnapshot> mapRed = OSMEntitySnapshotView.on(oshdb);
-    if (this.keytables != null) {
-      mapRed = mapRed.keytables(this.keytables);
-    }
+    if (this.keytables != null) mapRed = mapRed.keytables(this.keytables);
     return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
   }
 
@@ -165,7 +158,7 @@ abstract class TestMapReduce {
         .map(List::size)
         .stream()
         .mapToInt(x -> x)
-        .reduce(0, (a, b) -> a + b)
+        .reduce(0, (a,b) -> a+b)
     );
   }
 
@@ -200,7 +193,7 @@ abstract class TestMapReduce {
         .map(List::size)
         .stream()
         .mapToInt(x -> x)
-        .reduce(0, (a, b) -> a + b)
+        .reduce(0, (a,b) -> a+b)
     );
   }
 

@@ -338,7 +338,7 @@ public class OSHDBGeometryBuilder {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipPoly);
   }
-
+  
   /**
    * Converts a OSHDBBoundingBox to a rectangular polygon.
    *

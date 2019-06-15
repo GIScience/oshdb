@@ -57,7 +57,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
         .filter(Optional::isPresent).map(Optional::get)
         .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
         .collect(Collectors.joining(" union all "));
-    PreparedStatement pstmt = ((OSHDBJdbc) this.oshdb).getConnection().prepareStatement(sqlQuery);
+    PreparedStatement pstmt = ((OSHDBJdbc)this.oshdb).getConnection().prepareStatement(sqlQuery);
     pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
     pstmt.setLong(2, cellIdRange.getStart().getId());
     pstmt.setLong(3, cellIdRange.getEnd().getId());
@@ -69,7 +69,8 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
    */
   protected GridOSHEntity readOshCellRawData(ResultSet oshCellsRawData)
       throws IOException, ClassNotFoundException, SQLException {
-    return (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
+    return (GridOSHEntity)
+        (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
   }
 
   @Nonnull
@@ -81,36 +82,34 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
       }
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
           new Iterator<GridOSHEntity>() {
-        @Override
-        public boolean hasNext() {
-          try {
-            return !oshCellsRawData.isClosed();
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public GridOSHEntity next() {
-          try {
-            if (!hasNext()) {
-              throw new NoSuchElementException();
+            @Override
+            public boolean hasNext() {
+              try {
+                return !oshCellsRawData.isClosed();
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
             }
-            GridOSHEntity data = readOshCellRawData(oshCellsRawData);
-            if (!oshCellsRawData.next()) {
-              oshCellsRawData.close();
-            }
-            return data;
-          } catch (IOException | ClassNotFoundException | SQLException e) {
-            throw new RuntimeException(e);
-          }
-        }
 
-      }, 0
+            @Override
+            public GridOSHEntity next() {
+              try {
+                if (!hasNext()) {
+                  throw new NoSuchElementException();
+                }
+                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
+                if (!oshCellsRawData.next()) {
+                  oshCellsRawData.close();
+                }
+                return data;
+              } catch (IOException | ClassNotFoundException | SQLException e) {
+                throw new RuntimeException(e);
+              }
+            }
+          }, 0
       ), false);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
-
 }
