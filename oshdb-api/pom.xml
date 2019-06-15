@@ -33,6 +33,12 @@
     </dependency>
     
     <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
+    </dependency>
+    
+    <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>${postgresql.version}</version>
@@ -97,7 +103,6 @@
       <groupId>org.orbisgis</groupId>
       <artifactId>h2gis</artifactId>
       <version>${h2gis.version}</version>
-      <type>bundle</type>
     </dependency>
     
     <dependency>

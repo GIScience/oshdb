@@ -26,7 +26,6 @@
       <groupId>org.orbisgis</groupId>
       <artifactId>h2gis</artifactId>
       <version>${h2gis.version}</version>
-      <type>bundle</type>
     </dependency>
     
     <dependency>
