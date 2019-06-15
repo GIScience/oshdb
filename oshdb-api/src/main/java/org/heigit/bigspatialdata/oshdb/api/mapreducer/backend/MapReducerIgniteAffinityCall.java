@@ -267,7 +267,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .flatMap(Collection::stream);
     }
 
-    return Streams.concat(updateStream, updateStream);
+    return Streams.concat(oshdbStream, updateStream);
   }
 
   // === map-reduce operations ===
