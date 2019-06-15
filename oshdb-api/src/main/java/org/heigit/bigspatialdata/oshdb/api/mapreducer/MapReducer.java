@@ -2018,9 +2018,9 @@ public abstract class MapReducer<X> implements
       pstmt.setObject(1, wktWriter.write(geometry));
       ResultSet updateEntities = pstmt.executeQuery();
 
-      ArrayList<OSHNode> nodes = new ArrayList<>(1);
-      ArrayList<OSHWay> ways = new ArrayList<>(1);
-      ArrayList<OSHRelation> relations = new ArrayList<>(1);
+      ArrayList<OSHNode> nodes = new ArrayList<>(this.update.getBatchSize());
+      ArrayList<OSHWay> ways = new ArrayList<>(this.update.getBatchSize());
+      ArrayList<OSHRelation> relations = new ArrayList<>(this.update.getBatchSize());
       while (updateEntities.next()) {
         int type = updateEntities.getInt("type");
         byte[] data = updateEntities.getBytes("data");

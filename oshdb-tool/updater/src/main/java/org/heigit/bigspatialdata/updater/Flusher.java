@@ -102,7 +102,7 @@ public class Flusher {
           + ";");
       ResultSet resultSetUpdate = updateDBStatement.getResultSet();
 
-      Map<CellId, Map<CellId, List<OSHEntity>>> entities = new HashMap<>(3);
+      Map<CellId, Map<CellId, List<OSHEntity>>> entities = new HashMap<>();
       int i = 0;
       while (resultSetUpdate.next()) {
         byte[] bytes = resultSetUpdate.getBytes("data");
