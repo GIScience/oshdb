@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.updater;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.google.common.collect.Iterables;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -17,12 +16,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.compress.utils.Lists;
+import java.util.stream.StreamSupport;
 import org.apache.ignite.IgniteCache;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
@@ -102,7 +102,9 @@ public class Flusher {
           + ";");
       ResultSet resultSetUpdate = updateDBStatement.getResultSet();
 
-      Map<CellId, Map<CellId, List<OSHEntity>>> entities = new HashMap<>();
+      //this could also be a bitmap
+      Map<CellId, Set<Long>> filterEntities = new HashMap<>();
+      Map<CellId, List<OSHEntity>> insertOrUpdateCells = new HashMap<>();
       int i = 0;
       while (resultSetUpdate.next()) {
         byte[] bytes = resultSetUpdate.getBytes("data");
@@ -111,28 +113,48 @@ public class Flusher {
         CellId currentCellId = etlf.getCurrentCellId(updateEntity.getType(), updateEntity.getId());
         CellId newCellId = xyt.getInsertId(updateEntity.getBoundingBox());
 
-        if ((currentCellId != null) && !(newCellId.getZoomLevel() < currentCellId.getZoomLevel())) {
+        if (currentCellId == null) {
+          currentCellId = newCellId;
+        } else if (newCellId.getZoomLevel() > currentCellId.getZoomLevel()) {
           newCellId = currentCellId;
         }
 
-        Map<CellId, List<OSHEntity>> insertCellEntities = entities
-            .getOrDefault(newCellId, new HashMap<>());
-        List<OSHEntity> entitiesList = insertCellEntities
-            .getOrDefault(currentCellId, new ArrayList<>());
+        insertOrUpdateCells.compute(newCellId, (k, v) -> {
+          if (v == null) {
+            v = new ArrayList<>();
+          }
+          v.add(updateEntity);
+          return v;
+        });
 
-        entitiesList.add(updateEntity);
-        insertCellEntities.put(currentCellId, entitiesList);
-        entities.put(newCellId, insertCellEntities);
+        //could be tested if actually needs to be removed
+        filterEntities.compute(newCellId, (k, v) -> {
+          if (v == null) {
+            v = new HashSet<>();
+          }
+          v.add(updateEntity.getId());
+          return v;
+        });
+
+        //could be tested if actually needs to be removed
+        filterEntities.compute(currentCellId, (k, v) -> {
+          if (v == null) {
+            v = new HashSet<>();
+          }
+          v.add(updateEntity.getId());
+          return v;
+        });
 
         i++;
 
         if (i >= batchSize) {
-          Flusher.runBatch(entities, oshdb, t);
-          entities.clear();
+          Flusher.runBatch(insertOrUpdateCells, filterEntities, oshdb, t);
+          insertOrUpdateCells.clear();
+          filterEntities.clear();
           i = 0;
         }
       }
-      Flusher.runBatch(entities, oshdb, t);
+      Flusher.runBatch(insertOrUpdateCells, filterEntities, oshdb, t);
     }
     DatabaseHandler.ereaseDb(updatedb, dbBit);
     if (updateMeta) {
@@ -253,138 +275,94 @@ public class Flusher {
   }
 
   private static void runBatch(
-      Map<CellId, Map<CellId, List<OSHEntity>>> entities,
+      Map<CellId, List<OSHEntity>> insertOrUpdateCells,
+      Map<CellId, Set<Long>> removeCells,
       OSHDBDatabase oshdb,
       OSMType t
-  )
-      throws SQLException, IOException, ClassNotFoundException {
-    for (Entry<CellId, Map<CellId, List<OSHEntity>>> insertCellEntities : entities.entrySet()) {
-      for (Entry<CellId, List<OSHEntity>> updateCellEntities
-          : insertCellEntities.getValue().entrySet()) {
+  ) throws SQLException, IOException, ClassNotFoundException {
+    //at any stage duplicates and missing data are possible
+    for (Entry<CellId, List<OSHEntity>> insertCellEntities : insertOrUpdateCells.entrySet()) {
 
-        List<OSHEntity> updateEntitys = updateCellEntities.getValue();
-        CellId currentCellId = updateCellEntities.getKey();
-        CellId newCellId = insertCellEntities.getKey();
+      CellId currentCellId = insertCellEntities.getKey();
+      List<OSHEntity> updateEntities = insertCellEntities.getValue();
+      Set<Long> removeEntities = removeCells.remove(currentCellId);
+      GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, currentCellId);
 
-        if (currentCellId != null) {
-          GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, currentCellId);
-
-          if (newCellId != currentCellId) {
-            //new Version is in lower zoomlevel, must be promoted
-            GridOSHEntity croppedGridCell = Flusher
-                .updateGridCell(currentCellId, outdatedGridCell, updateEntitys, t, true, false);
-
-            outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, newCellId);
-            GridOSHEntity insertedGrid = Flusher
-                .updateGridCell(newCellId, outdatedGridCell, updateEntitys, t, false, true);
-
-            Flusher.writeUpdatedGridCell(t, oshdb, croppedGridCell);
-            //at this stage the updated entities are missing in the database.
-            Flusher.writeUpdatedGridCell(t, oshdb, insertedGrid);
-          } else {
-
-            GridOSHEntity updatedGrid = Flusher
-                .updateGridCell(newCellId, outdatedGridCell, updateEntitys, t, true, true);
-            Flusher.writeUpdatedGridCell(t, oshdb, updatedGrid);
-          }
-        } else {
-          //entity not yet in oshdb
-          GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, newCellId);
-
-          //this method might also be one day provided by ETL to make a load balancing but for now not possible
-          //this may cause some fragmentation on the cluster (creating small cells with only one object)
-          //insert entity
-          GridOSHEntity insertedGrid = Flusher
-              .updateGridCell(newCellId, outdatedGridCell, updateEntitys, t, false, true);
-          Flusher.writeUpdatedGridCell(t, oshdb, insertedGrid);
-
-        }
-      }
+      GridOSHEntity updatedGridCell = Flusher.updateGridCell(currentCellId, outdatedGridCell,
+          updateEntities, removeEntities, t);
+      //this method might also be one day provided by ETL to make a load balancing but for now not possible
+      //this may cause some fragmentation on the cluster (creating small cells with only one object)
+      //insert entity
+      Flusher.writeUpdatedGridCell(t, oshdb, updatedGridCell);
     }
+
+    for (Entry<CellId, Set<Long>> removeCellEntities : removeCells.entrySet()) {
+      CellId currentCellId = removeCellEntities.getKey();
+      List<OSHEntity> updateEntities = new ArrayList<>();
+      Set<Long> removeEntities = removeCellEntities.getValue();
+      GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, currentCellId);
+      GridOSHEntity updatedGridCell = Flusher.updateGridCell(currentCellId, outdatedGridCell,
+          updateEntities, removeEntities, t);
+      Flusher.writeUpdatedGridCell(t, oshdb, updatedGridCell);
+    }
+
   }
 
   private static GridOSHEntity updateGridCell(
-      CellId outdatedCellId,
+      CellId currentCellId,
       GridOSHEntity outdatedGridCell,
-      List<OSHEntity> updateEntities,
-      OSMType t,
-      boolean remove,
-      boolean insert)
+      List<? extends OSHEntity> updateEntities,
+      Set<Long> removeEntities,
+      OSMType t)
       throws SQLException, IOException, ClassNotFoundException {
 
-    //if(remove && insert) -> update
-    if (!(remove || insert)) {
-      throw new AssertionError("Why did you come here?");
-    }
+    List<? extends OSHEntity> filteredEntities = StreamSupport.stream(
+        outdatedGridCell.getEntities().spliterator(), true)
+        .filter(theEnt -> removeEntities.contains(theEnt.getId()))
+        .collect(Collectors.toList());
 
     GridOSHEntity updatedGridCell;
-    List<OSHEntity> filteredEntities = null;
-    if (remove) {
-      Set<Long> ids = updateEntities
-          .stream()
-          .map(entity -> entity.getId())
-          .collect(Collectors.toSet());
-      filteredEntities = Lists.newArrayList(
-          Iterables.filter(outdatedGridCell.getEntities(), theEnt -> ids.contains(theEnt.getId()))
-              .iterator());
-    }
     switch (t) {
       case NODE:
-        List<OSHNode> nodes = new ArrayList<>();
-        if (remove) {
-          nodes.addAll((List<OSHNode>) (List<?>) filteredEntities);
-        }
+        List<OSHNode> nodes = (List<OSHNode>) filteredEntities;
 
-        if (insert) {
-          nodes.addAll((List<OSHNode>) (List<?>) updateEntities);
-          nodes.sort((node1, node2) -> Long.compare(node1.getId(), node2.getId()));
-        }
+        nodes.addAll((List<OSHNode>) updateEntities);
 
         updatedGridCell = GridOSHNodes.rebase(
-            outdatedCellId.getLevelId(),
-            outdatedCellId.getZoomLevel(),
+            currentCellId.getLevelId(),
+            currentCellId.getZoomLevel(),
             nodes.get(0).getId(),
             nodes.get(0).getVersions().iterator().next().getTimestamp().getRawUnixTimestamp(),
-            Flusher.getBaseLon(outdatedCellId.getZoomLevel(), outdatedCellId.getLevelId()),
-            Flusher.getBaseLat(outdatedCellId.getZoomLevel(), outdatedCellId.getLevelId()),
+            Flusher.getBaseLon(currentCellId.getZoomLevel(), currentCellId.getLevelId()),
+            Flusher.getBaseLat(currentCellId.getZoomLevel(), currentCellId.getLevelId()),
             nodes);
         break;
       case WAY:
-        List<OSHWay> ways = new ArrayList<>();
-        if (remove) {
-          ways.addAll((List<OSHWay>) (List<?>) filteredEntities);
-        }
+        List<OSHWay> ways = (List<OSHWay>) filteredEntities;
 
-        if (insert) {
-          ways.addAll((List<OSHWay>) (List<?>) updateEntities);
-          ways.sort((node1, node2) -> Long.compare(node1.getId(), node2.getId()));
-        }
+        ways.addAll((List<OSHWay>) updateEntities);
+
         updatedGridCell = GridOSHWays.compact(
-            outdatedCellId.getLevelId(),
-            outdatedCellId.getZoomLevel(),
+            currentCellId.getLevelId(),
+            currentCellId.getZoomLevel(),
             ways.get(0).getId(),
             ways.get(0).getVersions().iterator().next().getTimestamp().getRawUnixTimestamp(),
-            Flusher.getBaseLon(outdatedCellId.getZoomLevel(), outdatedCellId.getLevelId()),
-            Flusher.getBaseLat(outdatedCellId.getZoomLevel(), outdatedCellId.getLevelId()),
+            Flusher.getBaseLon(currentCellId.getZoomLevel(), currentCellId.getLevelId()),
+            Flusher.getBaseLat(currentCellId.getZoomLevel(), currentCellId.getLevelId()),
             ways);
         break;
       case RELATION:
-        List<OSHRelation> relations = new ArrayList<>();
-        if (remove) {
-          relations.addAll((List<OSHRelation>) (List<?>) filteredEntities);
-        }
+        List<OSHRelation> relations = (List<OSHRelation>) filteredEntities;
 
-        if (insert) {
-          relations.addAll((List<OSHRelation>) (List<?>) updateEntities);
-          relations.sort((node1, node2) -> Long.compare(node1.getId(), node2.getId()));
-        }
+        relations.addAll((List<OSHRelation>) updateEntities);
+
         updatedGridCell = GridOSHRelations.compact(
-            outdatedCellId.getLevelId(),
-            outdatedCellId.getZoomLevel(),
+            currentCellId.getLevelId(),
+            currentCellId.getZoomLevel(),
             relations.get(0).getId(),
             relations.get(0).getVersions().iterator().next().getTimestamp().getRawUnixTimestamp(),
-            Flusher.getBaseLon(outdatedCellId.getZoomLevel(), outdatedCellId.getLevelId()),
-            Flusher.getBaseLat(outdatedCellId.getZoomLevel(), outdatedCellId.getLevelId()),
+            Flusher.getBaseLon(currentCellId.getZoomLevel(), currentCellId.getLevelId()),
+            Flusher.getBaseLat(currentCellId.getZoomLevel(), currentCellId.getLevelId()),
             relations);
         break;
       default:
