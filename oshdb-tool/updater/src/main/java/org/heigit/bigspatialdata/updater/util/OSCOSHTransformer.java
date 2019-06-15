@@ -158,7 +158,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
             });
           }
         } catch (SQLException | IOException ex) {
-          LOG.error("Could not update entity Type: " + typeEntry.getKey() + " ID: " + entityEntry
+          LOG.error("Could not update entity for Entity of Type: " + typeEntry.getKey() + " with ID: " + entityEntry
               .getKey(), ex);
         }
       }
