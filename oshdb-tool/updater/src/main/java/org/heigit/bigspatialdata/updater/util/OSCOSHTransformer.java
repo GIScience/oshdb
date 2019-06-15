@@ -125,31 +125,45 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     Map<EntityType, Map<Long, List<ChangeContainer>>> changes = new HashMap<>(1);
 
     //it should be checked, whether is actually improves things!
-    for(int i=0; (this.containers.hasNext() && i < this.batchSize) ;i++) {
-        ChangeContainer currContainer = this.containers.next();
-        Entity entity = currContainer.getEntityContainer().getEntity();
+    for (int i = 0; (this.containers.hasNext() && i < this.batchSize); i++) {
+      ChangeContainer currContainer = this.containers.next();
+      Entity entity = currContainer.getEntityContainer().getEntity();
 
-        Map<Long, List<ChangeContainer>> typeEntities
-            = changes.getOrDefault(entity.getType(), new HashMap<>(1));
+      Map<Long, List<ChangeContainer>> typeEntities
+          = changes.getOrDefault(entity.getType(), new HashMap<>(1));
 
-        List<ChangeContainer> entityChanges
-            = typeEntities.getOrDefault(entity.getId(), new ArrayList<>(1));
+      List<ChangeContainer> entityChanges
+          = typeEntities.getOrDefault(entity.getId(), new ArrayList<>(1));
 
-        entityChanges.add(currContainer);
-        typeEntities.put(entity.getId(), entityChanges);
-        changes.put(entity.getType(), typeEntities);
+      entityChanges.add(currContainer);
+      typeEntities.put(entity.getId(), entityChanges);
+      changes.put(entity.getType(), typeEntities);
     }
 
-    try {
-      for (Entry<EntityType, Map<Long, List<ChangeContainer>>> typeEntry : changes.entrySet()) {
-        for (Entry<Long, List<ChangeContainer>> entityEntry : typeEntry.getValue().entrySet()) {
-          return this.updateEntity(typeEntry.getKey(), entityEntry.getKey(), entityEntry.getValue());
+    Map<OSMType, Map<Long, OSHEntity>> result = new HashMap<>(3);
+    for (Entry<EntityType, Map<Long, List<ChangeContainer>>> typeEntry : changes.entrySet()) {
+      for (Entry<Long, List<ChangeContainer>> entityEntry : typeEntry.getValue().entrySet()) {
+        try {
+          Map<OSMType, Map<Long, OSHEntity>> updateEntityAndAffiliates = this.updateEntity(typeEntry
+              .getKey(), entityEntry.getKey(), entityEntry.getValue());
+          for (Entry<OSMType, Map<Long, OSHEntity>> resultEntry : updateEntityAndAffiliates
+              .entrySet()) {
+            result.compute(resultEntry.getKey(), (k, v) -> {
+              if (v == null) {
+                return resultEntry.getValue();
+              } else {
+                v.putAll(resultEntry.getValue());
+                return v;
+              }
+            });
+          }
+        } catch (SQLException | IOException ex) {
+          LOG.error("Could not update entity Type: " + typeEntry.getKey() + " ID: " + entityEntry
+              .getKey(), ex);
         }
       }
-    } catch (IOException | SQLException ex) {
-      LOG.error("error", ex);
     }
-    return null;
+    return result;
   }
 
   private OSHEntity combineNode(
