@@ -242,18 +242,18 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .parallel()
           .filter(ignored -> this.isActive())
           .mapToObj(cellLongId -> asyncGetHandleTimeouts(
-              compute.affinityCallAsync(cacheName, cellLongId, () -> {
-                @SuppressWarnings("SerializableStoresNonSerializable")
-                GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
-                Collection<X> ret;
-                if (oshEntityCell == null) {
-                  ret = Collections.<X>emptyList();
-                } else {
-                  ret = processor.apply(oshEntityCell, cellIterator);
-                }
-                onClose.run();
-                return ret;
-              })
+                compute.affinityCallAsync(cacheName, cellLongId, () -> {
+                  @SuppressWarnings("SerializableStoresNonSerializable")
+                  GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                  Collection<X> ret;
+                  if (oshEntityCell == null) {
+                    ret = Collections.<X>emptyList();
+                  } else {
+                    ret = processor.apply(oshEntityCell, cellIterator);
+                  }
+                  onClose.run();
+                  return ret;
+                })
           ))
           .flatMap(Collection::stream);
     }).flatMap(x -> x);
