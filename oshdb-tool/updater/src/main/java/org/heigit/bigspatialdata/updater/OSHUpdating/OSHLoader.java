@@ -22,8 +22,8 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.updater.util.dbhandler.DatabaseHandler;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.bigspatialdata.updater.util.dbhandler.DatabaseHandler;
 import org.locationtech.jts.geom.Polygon;
 import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.LoggerFactory;
@@ -127,9 +127,11 @@ public class OSHLoader {
           st.executeUpdate();
           st.close();
 
-          LongBitmapDataProvider get = bitmapMap.get(currEntity.getType());
-          get.addLong(currEntity.getId());
-          bitmapMap.put(currEntity.getType(), get);
+          bitmapMap.compute(currEntity.getType(), (k, v) -> {
+            //we know v is present so no checking here
+            v.addLong(currEntity.getId());
+            return v;
+          });
 
           if (producer != null) {
             OSHLoader.promote(

@@ -122,7 +122,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
   @Override
   public Map<OSMType, Map<Long, OSHEntity>> next() {
 
-    Map<EntityType, Map<Long, List<ChangeContainer>>> changes = new HashMap<>(1);
+    Map<EntityType, Map<Long, List<ChangeContainer>>> changes = new HashMap<>(3);
 
     //it should be checked, whether is actually improves things!
     for (int i = 0; (this.containers.hasNext() && i < this.batchSize); i++) {
@@ -130,10 +130,10 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       Entity entity = currContainer.getEntityContainer().getEntity();
 
       Map<Long, List<ChangeContainer>> typeEntities
-          = changes.getOrDefault(entity.getType(), new HashMap<>(1));
+          = changes.getOrDefault(entity.getType(), new HashMap<>(this.batchSize));
 
       List<ChangeContainer> entityChanges
-          = typeEntities.getOrDefault(entity.getId(), new ArrayList<>(1));
+          = typeEntities.getOrDefault(entity.getId(), new ArrayList<>());
 
       entityChanges.add(currContainer);
       typeEntities.put(entity.getId(), entityChanges);
@@ -158,7 +158,8 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
             });
           }
         } catch (SQLException | IOException ex) {
-          LOG.error("Could not update Entity of Type: " + typeEntry.getKey() + " with ID: " + entityEntry
+          LOG.error(
+              "Could not update Entity of Type: " + typeEntry.getKey() + " with ID: " + entityEntry
               .getKey(), ex);
         }
       }
@@ -172,7 +173,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       OSHEntity ent2)
       throws IOException {
 
-    ArrayList<OSMNode> nodes = new ArrayList<>(1);
+    ArrayList<OSMNode> nodes = new ArrayList<>();
 
     for (ChangeContainer cont : changes) {
 
@@ -205,9 +206,6 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     //get other versions (if any)
     if (ent2 != null) {
       ent2.getVersions().forEach(node -> nodes.add((OSMNode) node));
-      nodes.sort((OSMNode node1, OSMNode node2) -> {
-        return node1.compareTo(node2);
-      });
     }
     //create object
     OSHNode theNode = OSHNodeImpl.build(nodes);
@@ -223,11 +221,11 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       OSHEntity ent2)
       throws IOException, SQLException {
 
-    ArrayList<OSMRelation> relations = new ArrayList<>(1);
-    Set<Long> missingNodeIds = new HashSet<>(1);
-    Set<Long> missingWayIds = new HashSet<>(1);
-    Set<OSHNode> rNodes = new HashSet<>(0);
-    Set<OSHWay> rWays = new HashSet<>(0);
+    ArrayList<OSMRelation> relations = new ArrayList<>();
+    Set<Long> missingNodeIds = new HashSet<>();
+    Set<Long> missingWayIds = new HashSet<>();
+    Set<OSHNode> rNodes = new HashSet<>();
+    Set<OSHWay> rWays = new HashSet<>();
 
     for (ChangeContainer cont : changes) {
 
@@ -346,9 +344,6 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
           }
         }
       });
-      relations.sort((OSMRelation realation1, OSMRelation relation2) -> {
-        return realation1.compareTo(relation2);
-      });
     }
 
     OSHRelation theRelation = OSHRelationImpl.build(relations, rNodes, rWays);
@@ -367,9 +362,9 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       OSHEntity ent2)
       throws IOException {
 
-    ArrayList<OSMWay> ways = new ArrayList<>(1);
-    Set<Long> missingNodeIds = new HashSet<>(1);
-    Set<OSHNode> allNodes = new HashSet<>(0);
+    ArrayList<OSMWay> ways = new ArrayList<>();
+    Set<Long> missingNodeIds = new HashSet<>();
+    Set<OSHNode> allNodes = new HashSet<>();
 
     for (ChangeContainer cont : changes) {
 
@@ -424,7 +419,6 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
           allNodes.add((OSHNode) mem.getEntity());
         }
       });
-      ways.sort((OSMWay way1, OSMWay way2) -> way1.compareTo(way2));
     }
 
     OSHWay theWay = OSHWayImpl.build(ways, allNodes);
@@ -432,7 +426,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     this.etlStore.appendEntity(
         theWay,
         missingNodeIds,
-        new HashSet<>(0)
+        new HashSet<>()
     );
 
     return theWay;
