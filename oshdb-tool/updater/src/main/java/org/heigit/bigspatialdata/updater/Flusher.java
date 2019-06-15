@@ -59,8 +59,9 @@ public class Flusher {
   private static final Logger LOG = LoggerFactory.getLogger(Updater.class);
 
   /**
-   * Flush updates form JDBC to real Ignite (best done once in a while, when database-usage is
-   * low).Aka.merge, aka.commit.
+   * Flush updates form JDBC to real Ignite. Aka.merge, aka.commit. This Class does not ensure
+   * concurrency and data sefety. Entities might be doubled ore missing for a short period of time.
+   * Database has to be locked by user.
    *
    * @param oshdb
    * @param updatedb
@@ -277,15 +278,9 @@ public class Flusher {
             GridOSHEntity insertedGrid = Flusher
                 .updateGridCell(newCellId, outdatedGridCell, updateEntitys, t, false, true);
 
-            oshdb.lock(oshdb.prefix() + TableNames.forOSMType(t).get());
-            try {
-              Flusher.writeUpdatedGridCell(t, oshdb, croppedGridCell);
-              //at this stage the updated entities are missing in the updated Entities in the database.
-              //therefore the database is locked for a short period
-              Flusher.writeUpdatedGridCell(t, oshdb, insertedGrid);
-            } finally {
-              oshdb.unlock(oshdb.prefix() + TableNames.forOSMType(t).get());
-            }
+            Flusher.writeUpdatedGridCell(t, oshdb, croppedGridCell);
+            //at this stage the updated entities are missing in the database.
+            Flusher.writeUpdatedGridCell(t, oshdb, insertedGrid);
           } else {
 
             GridOSHEntity updatedGrid = Flusher

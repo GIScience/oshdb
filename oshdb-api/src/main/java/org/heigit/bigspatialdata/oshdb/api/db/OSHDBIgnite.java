@@ -8,7 +8,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -16,7 +15,6 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAf
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
 import org.heigit.bigspatialdata.oshdb.api.object.OSHDBMapReducible;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
@@ -95,13 +93,6 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     return mapReducer;
   }
 
-  public void lock(String cacheToLock) {
-    IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheToLock);
-    this.lock = cache.lock(1L);
-    this.lock.lock();
-
-  }
-
   @Override
   public String metadata(String property) {
     // todo: implement this
@@ -162,10 +153,5 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     } else {
       return Optional.of(this.onCloseCallback);
     }
-  }
-
-  @Override
-  public void unlock(String cacheToLock) {
-    this.lock.unlock();
   }
 }

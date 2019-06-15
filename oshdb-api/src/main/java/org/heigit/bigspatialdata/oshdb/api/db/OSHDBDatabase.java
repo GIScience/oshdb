@@ -24,13 +24,6 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
   public abstract <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass);
 
   /**
-   * Lock the Database for a transaction.
-   */
-  public void lock(String tableToLock) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  /**
    * Returns metadata about the given OSHDB.
    *
    * <p>For example copyright information, currentness of the data, spatial extent, etc.</p>
@@ -100,13 +93,6 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
     } else {
       return OptionalLong.of(this.timeout);
     }
-  }
-
-  /**
-   * Release the lock, if any.
-   */
-  public void unlock(String tableToLock) {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
 }
