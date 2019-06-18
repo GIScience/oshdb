@@ -30,10 +30,13 @@ import org.locationtech.jts.io.WKTWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Wraps around a ResultSet of updated Entities.
+ */
 public class UpdateIterator implements Iterator<GridOSHEntity> {
 
   private static final Logger LOG = LoggerFactory.getLogger(UpdateIterator.class);
-  
+
   private final List<OSHEntity> batch;
   private final int batchSize;
   private final OSHDBBoundingBox copyOfBboxFilter;
@@ -44,8 +47,20 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
   private final Connection updateConn;
   private ResultSet updateEntities;
 
-  public UpdateIterator(Iterator<OSMType> typeIt, String prefix, Connection updateConn,
-      OSHDBBoundingBox copyOfBboxFilter, int batchSize) {
+  /**
+   * Iterator on an Update-ResultSet.
+   *
+   * @param typeIt "List" of types to be queried.
+   * @param prefix prefix for tables
+   * @param updateConn connection to update database
+   * @param copyOfBboxFilter boundingbox for entities to get
+   * @param batchSize number of entites to group in one GridCell
+   */
+  public UpdateIterator(Iterator<OSMType> typeIt,
+      String prefix,
+      Connection updateConn,
+      OSHDBBoundingBox copyOfBboxFilter,
+      int batchSize) {
     this.typeIt = typeIt;
     this.prefix = prefix;
     this.updateConn = updateConn;
