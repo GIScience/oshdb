@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -285,7 +286,7 @@ public class Flusher {
     
     for (Entry<CellId, Set<Long>> removeCellEntities : removeCells.entrySet()) {
       CellId currentCellId = removeCellEntities.getKey();
-      List<OSHEntity> updateEntities = new ArrayList<>();
+      List<OSHEntity> updateEntities = Collections.EMPTY_LIST;
       Set<Long> removeEntities = removeCellEntities.getValue();
       GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, currentCellId);
       GridOSHEntity updatedGridCell = Flusher.updateGridCell(currentCellId, outdatedGridCell,

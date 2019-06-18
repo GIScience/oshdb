@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.ignite.Ignite;
@@ -31,8 +30,6 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
 
   private final transient Ignite ignite;
   private ComputeMode computeMode = ComputeMode.LocalPeek;
-
-  private Lock lock;
 
   private IgniteRunnable onCloseCallback = null;
 

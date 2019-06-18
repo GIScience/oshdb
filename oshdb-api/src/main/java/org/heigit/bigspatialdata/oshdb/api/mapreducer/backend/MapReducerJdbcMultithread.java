@@ -88,7 +88,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
     Stream<S> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      updateStream = this.getUpdates().parallelStream()
+      updateStream = Streams.stream(this.getUpdates())
+          .parallel()
           .filter(ignored -> this.isActive())
           .map(oshCell -> processor.apply(oshCell, updateIterator));;
     }
@@ -135,7 +136,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
     Stream<X> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      updateStream = this.getUpdates().parallelStream()
+      updateStream = Streams.stream(this.getUpdates())
+          .parallel()
           .filter(ignored -> this.isActive())
           .map(oshCell -> processor.apply(oshCell, updateIterator))
           .flatMap(Collection::stream);

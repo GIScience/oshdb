@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
+import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -304,7 +305,8 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     S resultB = identitySupplier.get();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      resultB = this.getUpdates().parallelStream()
+      resultB = Streams.stream(this.getUpdates())
+          .parallel()
           .filter(ignored -> {
             if (timeout != null && System.currentTimeMillis() - execStart > timeout) {
               throw new OSHDBTimeoutException();

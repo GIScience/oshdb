@@ -87,8 +87,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     if (this.update != null) {
       cellIterator.includeIDsOnly(bitMapIndex);
 
-      List<GridOSHEntity> updateEntites = this.getUpdates();
-      Iterator<GridOSHEntity> iterator = updateEntites.iterator();
+      Iterator<GridOSHEntity> iterator = this.getUpdates();
       while (iterator.hasNext()) {
         GridOSHEntity updateCell = iterator.next();
         result = combiner.apply(
@@ -133,7 +132,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     Stream<X> updateStream = Stream.empty();
     if (this.update != null) {
       updateIterator.includeIDsOnly(bitMapIndex);
-      updateStream = this.getUpdates().stream()
+      updateStream = Streams.stream(this.getUpdates())
           .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, updateIterator))
           .flatMap(Collection::stream);
     }

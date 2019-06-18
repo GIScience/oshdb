@@ -94,5 +94,4 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
       return OptionalLong.of(this.timeout);
     }
   }
-
 }
