@@ -12,8 +12,8 @@
 
   <properties>
     <osmosis>0.47</osmosis>
-    <guava>26.0-jre</guava>
-    <rxjava2>2.2.3</rxjava2>
+    <guava>27.1-jre</guava>
+    <rxjava2>2.2.8</rxjava2>
   </properties>
 
 
@@ -52,9 +52,6 @@
       <artifactId>postgresql</artifactId>
       <version>${postgresql.version}</version>
     </dependency>
-
-
-
     
     <dependency>
       <groupId>org.apache.kafka</groupId>

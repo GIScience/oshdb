@@ -1960,8 +1960,9 @@ public abstract class MapReducer<X> implements
   }
 
   /**
+   * Get Iterator over updates respecting MapReducer-Settings.
    *
-   * @return
+   * @return An Iterator backed by a JDBC-ResultSet.
    */
   protected UpdateIterator getUpdates() {
     Iterator<OSMType> typeIt = this.typeFilter.iterator();
