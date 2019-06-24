@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.updater.util;
+package org.heigit.bigspatialdata.updater.OSCHandling;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -54,6 +54,10 @@ import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Provides a static method to transform osmium-ChangeContainrs to OSHDB-Objects. Returns itself as
+ * an Iterator.
+ */
 public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEntity>>> {
 
   //Attention: does not propperly handled missing data at time of Update. If data is provided with a later update, previous referencing Entities are not updated and remain in an incomplete state -> see comment about handling missing data
@@ -82,21 +86,17 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
         = keytables.prepareStatement("INSERT INTO " + TableNames.E_ROLE + " VALUES(?,?);");
   }
 
-  public static OSMType convertType(EntityType type) {
-    switch (type) {
-      case Bound:
-        return null;
-      case Node:
-        return OSMType.NODE;
-      case Way:
-        return OSMType.WAY;
-      case Relation:
-        return OSMType.RELATION;
-      default:
-        throw new AssertionError(type.name());
-    }
-  }
-
+  /**
+   * Transforms ChangeContainers to OSHDBEntities.
+   *
+   * @param etlFiles the etlFiles old versions can be read from
+   * @param keytables the keytables-DB to be queried and updated
+   * @param batchSize the number of ChangeContainers to be processed at once (large numbers may help
+   * if you expect entities to be changed multiple times during a short timeframe, wich seams
+   * unlikely)
+   * @param changes the ChangeContainers to be processed
+   * @return the Class itself as an Iterable with OSHDBEntities
+   */
   public static Iterable<Map<OSMType, Map<Long, OSHEntity>>> transform(
       Path etlFiles,
       Connection keytables,
@@ -112,6 +112,21 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       }
       return null;
     };
+  }
+
+  private static OSMType convertType(EntityType type) {
+    switch (type) {
+      case Bound:
+        return null;
+      case Node:
+        return OSMType.NODE;
+      case Way:
+        return OSMType.WAY;
+      case Relation:
+        return OSMType.RELATION;
+      default:
+        throw new AssertionError(type.name());
+    }
   }
 
   @Override

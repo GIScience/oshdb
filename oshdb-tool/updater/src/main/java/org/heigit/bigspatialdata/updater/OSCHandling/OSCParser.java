@@ -7,14 +7,17 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Iterator;
 import org.heigit.bigspatialdata.updater.util.IteratorTmpl;
-import org.heigit.bigspatialdata.updater.util.ReplicationFile;
-import org.heigit.bigspatialdata.updater.util.XmlChangeReaderIterator;
+import org.heigit.bigspatialdata.updater.util.replication.ReplicationFile;
+import org.heigit.bigspatialdata.updater.util.replication.XmlChangeReaderIterator;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.xml.common.CompressionActivator;
 import org.openstreetmap.osmosis.xml.common.CompressionMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Static method provider to parse OSC-Files.
+ */
 public class OSCParser extends IteratorTmpl<ChangeContainer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(OSCParser.class);
@@ -30,8 +33,8 @@ public class OSCParser extends IteratorTmpl<ChangeContainer> {
   /**
    * Represents the transform-step in an etl pipeline.
    *
-   * @param replicationFiles
-   * @return
+   * @param replicationFiles the files to be parsed
+   * @return the osmium-ChangeContainers parsed from the OSC-Files
    */
   public static Iterable<ChangeContainer> parse(Iterable<ReplicationFile> replicationFiles) {
     return () -> new OSCParser(replicationFiles.iterator());

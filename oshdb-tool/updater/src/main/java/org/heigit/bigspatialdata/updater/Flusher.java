@@ -55,8 +55,11 @@ import org.openstreetmap.osmosis.replication.common.ReplicationState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Provides static methods to merge an update-db into an oshdb.
+ */
 public class Flusher {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(Updater.class);
 
   /**
@@ -64,12 +67,12 @@ public class Flusher {
    * concurrency and data sefety. Entities might be doubled ore missing for a short period of time.
    * Database has to be locked by user.
    *
-   * @param oshdb
-   * @param updatedb
-   * @param dbBit
-   * @param etlPath
-   * @param batchSize
-   * @param updateMeta
+   * @param oshdb the OSHDB to flush into
+   * @param updatedb the update-db to flush from
+   * @param dbBit the bitmap-db to update (probably the same as the update-db)
+   * @param etlPath the path to the etl-files
+   * @param batchSize the number of OSH-Entities to be flushed at once
+   * @param updateMeta if true, metadate of oshdb will be updated
    * @throws java.sql.SQLException
    * @throws java.io.IOException
    * @throws java.lang.ClassNotFoundException
@@ -82,7 +85,7 @@ public class Flusher {
       int batchSize,
       boolean updateMeta)
       throws SQLException, IOException, ClassNotFoundException {
-    
+
     EtlFileStore etlf = new EtlFileStore(etlPath);
     XYGridTree xyt = new XYGridTree(OSHDB.MAXZOOM);
     //do i need to block the cluster somehow, to prevent false operations?
@@ -110,16 +113,16 @@ public class Flusher {
       while (resultSetUpdate.next()) {
         byte[] bytes = resultSetUpdate.getBytes("data");
         OSHEntity updateEntity = Flusher.createUpdateEntity(bytes, t);
-        
+
         CellId currentCellId = etlf.getCurrentCellId(updateEntity.getType(), updateEntity.getId());
         CellId newCellId = xyt.getInsertId(updateEntity.getBoundingBox());
-        
+
         if (currentCellId == null) {
           currentCellId = newCellId;
         } else if (newCellId.getZoomLevel() > currentCellId.getZoomLevel()) {
           newCellId = currentCellId;
         }
-        
+
         insertOrUpdateCells
             .computeIfAbsent(newCellId, k -> new ArrayList<>())
             .add(updateEntity);
@@ -133,7 +136,7 @@ public class Flusher {
         filterEntities
             .computeIfAbsent(currentCellId, k -> new HashSet<>())
             .add(updateEntity.getId());
-        
+
         i++;
         if (i >= batchSize) {
           Flusher.runBatch(insertOrUpdateCells, filterEntities, oshdb, t);
@@ -153,7 +156,17 @@ public class Flusher {
           .loadMap()));
     }
   }
-  
+
+  /**
+   * A commandline wrapper around the flusher-method.
+   *
+   * @param args The arguments that will be passed on to the flusher method. See @link{#FlushArgs}
+   * for details.
+   * @throws SQLException
+   * @throws IOException
+   * @throws ClassNotFoundException
+   * @throws Exception
+   */
   public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException,
       Exception {
     FlushArgs config = new FlushArgs();
@@ -172,10 +185,10 @@ public class Flusher {
     if (config.baseArgs.dbbit == null) {
       config.baseArgs.dbbit = config.baseArgs.jdbc;
     }
-    
+
     Path wd = Paths.get("target/updaterWD/");
     wd.toFile().mkdirs();
-    
+
     try (FileBasedLock fileLock = new FileBasedLock(
         wd.resolve(Updater.LOCK_FILE).toFile())) {
       try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
@@ -200,7 +213,7 @@ public class Flusher {
       }
     }
   }
-  
+
   private static OSHEntity createUpdateEntity(byte[] bytes, OSMType t) throws IOException {
     switch (t) {
       case NODE:
@@ -213,7 +226,7 @@ public class Flusher {
         throw new AssertionError(t.name());
     }
   }
-  
+
   private static long getBaseLat(int level, long id) {
     CellId insertId = new CellId(level, id);
     return XYGrid.getBoundingBox(insertId).getMinLatLong()
@@ -221,7 +234,7 @@ public class Flusher {
         - XYGrid.getBoundingBox(insertId).getMinLatLong())
         / 2;
   }
-  
+
   private static long getBaseLon(int level, long id) {
     CellId insertId = new CellId(level, id);
     return XYGrid.getBoundingBox(insertId).getMinLonLong()
@@ -229,7 +242,7 @@ public class Flusher {
         - XYGrid.getBoundingBox(insertId).getMinLonLong())
         / 2;
   }
-  
+
   private static GridOSHEntity getSpecificGridCell(OSHDBDatabase oshdb, OSMType t, CellId insertId)
       throws SQLException, IOException, ClassNotFoundException {
     if (oshdb instanceof OSHDBH2) {
@@ -259,9 +272,9 @@ public class Flusher {
       throw new AssertionError(
           "Backend of type " + oshdb.getClass().getName() + " not supported yet.");
     }
-    
+
   }
-  
+
   private static void runBatch(
       Map<CellId, List<OSHEntity>> insertOrUpdateCells,
       Map<CellId, Set<Long>> removeCells,
@@ -270,12 +283,12 @@ public class Flusher {
   ) throws SQLException, IOException, ClassNotFoundException {
     //at any stage duplicates and missing data are possible
     for (Entry<CellId, List<OSHEntity>> insertCellEntities : insertOrUpdateCells.entrySet()) {
-      
+
       CellId currentCellId = insertCellEntities.getKey();
       List<OSHEntity> updateEntities = insertCellEntities.getValue();
       Set<Long> removeEntities = removeCells.remove(currentCellId);
       GridOSHEntity outdatedGridCell = Flusher.getSpecificGridCell(oshdb, t, currentCellId);
-      
+
       GridOSHEntity updatedGridCell = Flusher.updateGridCell(currentCellId, outdatedGridCell,
           updateEntities, removeEntities, t);
       //this method might also be one day provided by ETL to make a load balancing but for now not possible
@@ -283,7 +296,7 @@ public class Flusher {
       //insert entity
       Flusher.writeUpdatedGridCell(t, oshdb, updatedGridCell);
     }
-    
+
     for (Entry<CellId, Set<Long>> removeCellEntities : removeCells.entrySet()) {
       CellId currentCellId = removeCellEntities.getKey();
       List<OSHEntity> updateEntities = Collections.EMPTY_LIST;
@@ -293,9 +306,9 @@ public class Flusher {
           updateEntities, removeEntities, t);
       Flusher.writeUpdatedGridCell(t, oshdb, updatedGridCell);
     }
-    
+
   }
-  
+
   private static GridOSHEntity updateGridCell(
       CellId currentCellId,
       GridOSHEntity outdatedGridCell,
@@ -303,7 +316,7 @@ public class Flusher {
       Set<Long> removeEntities,
       OSMType t)
       throws SQLException, IOException, ClassNotFoundException {
-    
+
     List<? extends OSHEntity> filteredEntities = new ArrayList<>();
     //check if grid cell does not yet exist (e.g. insertion)
     if (outdatedGridCell != null) {
@@ -313,15 +326,15 @@ public class Flusher {
           .filter(theEnt -> removeEntities.contains(theEnt.getId()))
           .collect(Collectors.toList());
     }
-    
+
     GridOSHEntity updatedGridCell;
     switch (t) {
       case NODE:
         List<OSHNode> nodes = (List<OSHNode>) filteredEntities;
-        
+
         nodes.addAll((List<OSHNode>) updateEntities);
         nodes.sort((enta, entb) -> Long.compare(enta.getId(), entb.getId()));
-        
+
         updatedGridCell = GridOSHNodes.rebase(
             currentCellId.getLevelId(),
             currentCellId.getZoomLevel(),
@@ -333,10 +346,10 @@ public class Flusher {
         break;
       case WAY:
         List<OSHWay> ways = (List<OSHWay>) filteredEntities;
-        
+
         ways.addAll((List<OSHWay>) updateEntities);
         ways.sort((enta, entb) -> Long.compare(enta.getId(), entb.getId()));
-        
+
         updatedGridCell = GridOSHWays.compact(
             currentCellId.getLevelId(),
             currentCellId.getZoomLevel(),
@@ -348,10 +361,10 @@ public class Flusher {
         break;
       case RELATION:
         List<OSHRelation> relations = (List<OSHRelation>) filteredEntities;
-        
+
         relations.addAll((List<OSHRelation>) updateEntities);
         relations.sort((enta, entb) -> Long.compare(enta.getId(), entb.getId()));
-        
+
         updatedGridCell = GridOSHRelations.compact(
             currentCellId.getLevelId(),
             currentCellId.getZoomLevel(),
@@ -364,16 +377,16 @@ public class Flusher {
       default:
         throw new AssertionError(t.name());
     }
-    
+
     return updatedGridCell;
   }
-  
+
   private static void writeUpdatedGridCell(
       OSMType t,
       OSHDBDatabase oshdb,
       GridOSHEntity updatedGridCell)
       throws SQLException, IOException {
-    
+
     if (oshdb instanceof OSHDBH2) {
       PreparedStatement oshdbPreparedStatement = ((OSHDBH2) oshdb).getConnection().prepareStatement(
           "MERGE INTO "
@@ -400,7 +413,7 @@ public class Flusher {
       throw new AssertionError(
           "Backend of type " + oshdb.getClass().getName() + " not supported yet.");
     }
-    
+
   }
-  
+
 }

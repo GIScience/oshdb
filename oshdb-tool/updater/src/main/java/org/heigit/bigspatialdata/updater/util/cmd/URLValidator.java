@@ -1,13 +1,18 @@
-package org.heigit.bigspatialdata.updater.util;
+package org.heigit.bigspatialdata.updater.util.cmd;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Validats a URL passed via CMD.
+ */
 public class URLValidator implements IParameterValidator {
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(URLValidator.class);
+
+  private static final Logger LOG = LoggerFactory.getLogger(URLValidator.class);
 
   @Override
   public void validate(String name, String value) throws ParameterException {
@@ -17,4 +22,5 @@ public class URLValidator implements IParameterValidator {
       LOG.error("URL not valid!", ex);
     }
   }
+
 }

@@ -22,8 +22,8 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCDownloader;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCParser;
 import org.heigit.bigspatialdata.updater.OSHUpdating.OSHLoader;
-import org.heigit.bigspatialdata.updater.util.OSCOSHTransformer;
-import org.heigit.bigspatialdata.updater.util.ReplicationFile;
+import org.heigit.bigspatialdata.updater.OSCHandling.OSCOSHTransformer;
+import org.heigit.bigspatialdata.updater.util.replication.ReplicationFile;
 import org.heigit.bigspatialdata.updater.util.cmd.UpdateArgs;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.util.FileBasedLock;
@@ -39,6 +39,17 @@ public class Updater {
   static final Path wd = Paths.get("target/updaterWD/");
   private static final Logger LOG = LoggerFactory.getLogger(Updater.class);
 
+  /**
+   * A command-line wrapper to update an existing OSHDB.
+   *
+   * @param args The arguments passed on to the update-method. see @link{#UpdateArgs}
+   * @throws MalformedURLException
+   * @throws ClassNotFoundException
+   * @throws IgniteCheckedException
+   * @throws FileNotFoundException
+   * @throws IOException
+   * @throws SQLException
+   */
   public static void main(String[] args)
       throws MalformedURLException,
       ClassNotFoundException,
@@ -110,7 +121,7 @@ public class Updater {
 
   /**
    * Downloads replication files, transforms them to OSHDB-Objects and stores them in a
-   * JDBC-Database.At the same time it maintains an index of updated entites.
+   * JDBC-Database. At the same time it maintains an index of updated entites.
    *
    * If working on a regional extract be aware that there is currently no method to limit imports to
    * that region. Updated entities outside the scope of the used @link{etlFile} will have missing

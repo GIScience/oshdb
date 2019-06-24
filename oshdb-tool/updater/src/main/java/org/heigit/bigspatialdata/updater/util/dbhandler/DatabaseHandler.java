@@ -24,6 +24,9 @@ import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Helper for database actions.
+ */
 public class DatabaseHandler {
 
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(DatabaseHandler.class);
@@ -31,9 +34,17 @@ public class DatabaseHandler {
   private DatabaseHandler() {
   }
 
+  /**
+   * Deletes all data from the given update-db.
+   *
+   * @param updateDb Connection to the update-db
+   * @param dbBit Connection to the bitmap-db
+   * @throws SQLException
+   * @throws UnknownServiceException
+   */
   public static void ereaseDb(Connection updateDb, Connection dbBit) throws SQLException,
       UnknownServiceException {
-    Map<OSMType, LongBitmapDataProvider> bitmapMap = new HashMap<>();
+    Map<OSMType, LongBitmapDataProvider> bitmapMap = new HashMap<>(3);
     Statement createStatement = updateDb.createStatement();
     for (OSMType type : OSMType.values()) {
       if (type != OSMType.UNKNOWN) {
@@ -70,6 +81,16 @@ public class DatabaseHandler {
 
   }
 
+  /**
+   * Creates all necessary tables to be filled during the update process.
+   *
+   * @param updateDb the update-db to be prepared
+   * @param dbBit the bitmap-db to be prepared
+   * @return returns the current state of the bitmaps (should be empty)
+   * @throws SQLException
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
   public static Map<OSMType, LongBitmapDataProvider> prepareDB(Connection updateDb, Connection dbBit)
       throws SQLException, IOException, ClassNotFoundException {
     for (OSMType type : OSMType.values()) {
@@ -105,6 +126,48 @@ public class DatabaseHandler {
     return UpdateDbHelper.getBitMap(dbBit);
   }
 
+  /**
+   * Updates the metadata of an OSHDB.
+   *
+   * @param oshdb The oshdb
+   * @param state the latest state file with values used to update metadata
+   * @throws SQLException
+   */
+  public static void updateOSHDBMetadata(OSHDBDatabase oshdb, ReplicationState state) throws
+      SQLException {
+    if (oshdb instanceof OSHDBJdbc) {
+      try (
+          PreparedStatement stmt = ((OSHDBJdbc) oshdb).getConnection().prepareStatement(
+              "UPDATE " + TableNames.T_METADATA.toString(oshdb.prefix()) + " SET value=? where key=?;"
+          )) {
+            //timerange
+            OSHDBTimestamp startOSHDB = (new OSHDBTimestamps(
+                oshdb.metadata("data.timerange").split(",")[0])).get().first();
+            stmt.setString(1,
+                startOSHDB.toString() + "," + (new OSHDBTimestamp(state.getTimestamp())).toString());
+            stmt.setString(2, "data.timerange");
+            stmt.executeUpdate();
+
+            //replication sequence
+            stmt.setString(1, "" + state.getSequenceNumber());
+            stmt.setString(2, "header.osmosis_replication_sequence_number");
+            stmt.executeUpdate();
+          }
+    } else if (oshdb instanceof OSHDBIgnite) {
+      throw new UnsupportedOperationException("Ignite backend does not provide metadata yet?");
+    } else {
+      throw new AssertionError(
+          "Backend of type " + oshdb.getClass().getName() + " not supported yet.");
+    }
+  }
+
+  /**
+   * Write a new and filled bitamp to the bitmap-db.
+   *
+   * @param bitmapMap the new bitmaps
+   * @param dbBit the database holding the old bitmaps
+   * @throws SQLException
+   */
   public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit)
       throws SQLException {
     bitmapMap.forEach(new BiConsumer<OSMType, LongBitmapDataProvider>() {
@@ -227,34 +290,6 @@ public class DatabaseHandler {
         + TableNames.forOSMType(type).get() + "_gix ON "
         + TableNames.forOSMType(type).get() + " USING GIST (bbx);";
     dbStatement.execute(sqlIndex);
-  }
-
-  public static void updateOSHDBMetadata(OSHDBDatabase oshdb, ReplicationState state) throws
-      SQLException {
-    if (oshdb instanceof OSHDBJdbc) {
-      try (
-          PreparedStatement stmt = ((OSHDBJdbc) oshdb).getConnection().prepareStatement(
-              "UPDATE " + TableNames.T_METADATA.toString(oshdb.prefix()) + " SET value=? where key=?;"
-          )) {
-            //timerange
-            OSHDBTimestamp startOSHDB = (new OSHDBTimestamps(
-                oshdb.metadata("data.timerange").split(",")[0])).get().first();
-            stmt.setString(1,
-                startOSHDB.toString() + "," + (new OSHDBTimestamp(state.getTimestamp())).toString());
-            stmt.setString(2, "data.timerange");
-            stmt.executeUpdate();
-
-            //replication sequence
-            stmt.setString(1, "" + state.getSequenceNumber());
-            stmt.setString(2, "header.osmosis_replication_sequence_number");
-            stmt.executeUpdate();
-          }
-    } else if (oshdb instanceof OSHDBIgnite) {
-      throw new UnsupportedOperationException("Ignite backend does not provide metadata yet?");
-    } else {
-      throw new AssertionError(
-          "Backend of type " + oshdb.getClass().getName() + " not supported yet.");
-    }
   }
 
 }

@@ -29,7 +29,7 @@ import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Static method provider to load updates into the update-db.
  */
 public class OSHLoader {
 
@@ -41,10 +41,11 @@ public class OSHLoader {
   /**
    * represents the Load-Step in an ETL-Pipeline of updates.
    *
-   * @param updateDb
-   * @param oshEntities
-   * @param dbBit
-   * @param producer
+   * @param updateDb The database to write updates to
+   * @param oshEntities The entities to be written
+   * @param dbBit the bitmap-db to be updated with newly changed OSM-Ids
+   * @param producer An optional Kafka producer to promote new OSH-Ojects to a
+   * Kafka-Messaging-Cluster.
    * @throws java.sql.SQLException
    * @throws java.io.IOException
    * @throws java.lang.ClassNotFoundException

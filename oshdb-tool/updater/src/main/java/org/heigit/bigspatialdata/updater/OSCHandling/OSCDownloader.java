@@ -11,8 +11,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.Map;
-import org.heigit.bigspatialdata.updater.util.ReplicationFile;
-import org.heigit.bigspatialdata.updater.util.StateIterator;
+import org.heigit.bigspatialdata.updater.util.replication.ReplicationFile;
+import org.heigit.bigspatialdata.updater.util.replication.StateIterator;
 import org.openstreetmap.osmosis.core.OsmosisConstants;
 import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.util.PropertiesPersister;
@@ -22,6 +22,9 @@ import org.openstreetmap.osmosis.replication.common.ServerStateReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Provided static methods to download OSC-Replicafiles.
+ */
 public class OSCDownloader {
 
   public static final String LOCAL_STATE_FILE = "update_state.txt";
@@ -37,10 +40,12 @@ public class OSCDownloader {
   }
 
   /**
+   * Download prelicas, the start of a processing-line.
    *
-   * @param baseURL
-   * @param workingDirectory
-   * @return
+   * @param baseURL The base URL to be used (e.g. https://planet.openstreetmap.org/replication/day/)
+   * @param workingDirectory the directory the replication files will be stored in. Should hold an
+   * osmium state.txt otherwise the download will only request the latest replication file.
+   * @return An iterable over all replication files starting at state.txt until now
    */
   public static Iterable<ReplicationFile> download(URL baseURL, Path workingDirectory) {
     OSCDownloader.baseUrl = baseURL;
@@ -59,6 +64,11 @@ public class OSCDownloader {
         .blockingIterable();
   }
 
+  /**
+   * Update the state.txt to download the next replication file.
+   *
+   * @param state State to be written to file
+   */
   public static void updateState(Map<String, String> state) {
     OSCDownloader.localStatePersistor.store(state);
   }
