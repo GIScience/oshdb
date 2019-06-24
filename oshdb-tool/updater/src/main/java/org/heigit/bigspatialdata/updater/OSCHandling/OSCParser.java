@@ -76,8 +76,11 @@ public class OSCParser extends IteratorTmpl<ChangeContainer> {
       currFile = replicationFiles.next();
       currChangeIterator = OSCParser.getChangeContainers(currFile).iterator();
       OSCDownloader.updateState(currFile.state.store());
-      currFile.file.delete();
-      return this.getNext();
+      if (currFile.file.delete()) {
+        return this.getNext();
+      } else {
+        throw new AssertionError("Could not delete File.");
+      }
     } else {
       return null;
     }

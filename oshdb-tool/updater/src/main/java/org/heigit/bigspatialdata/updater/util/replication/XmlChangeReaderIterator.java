@@ -80,6 +80,8 @@ public class XmlChangeReaderIterator extends IteratorTmpl<ChangeContainer> imple
           qName = reader.getName().toString();
           osmHandler.endElement(uri, localName, qName);
           break;
+        default:
+          throw new UnsupportedOperationException("Eventtype " + eventType + " unknown.");
       }
     }
     if (!reader.hasNext()) {

@@ -20,11 +20,11 @@ import org.apache.kafka.clients.producer.Producer;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCDownloader;
+import org.heigit.bigspatialdata.updater.OSCHandling.OSCOSHTransformer;
 import org.heigit.bigspatialdata.updater.OSCHandling.OSCParser;
 import org.heigit.bigspatialdata.updater.OSHUpdating.OSHLoader;
-import org.heigit.bigspatialdata.updater.OSCHandling.OSCOSHTransformer;
-import org.heigit.bigspatialdata.updater.util.replication.ReplicationFile;
 import org.heigit.bigspatialdata.updater.util.cmd.UpdateArgs;
+import org.heigit.bigspatialdata.updater.util.replication.ReplicationFile;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.util.FileBasedLock;
 import org.slf4j.Logger;
@@ -152,21 +152,24 @@ public class Updater {
   ) throws SQLException,
       IOException,
       ClassNotFoundException {
-    Updater.wd.toFile().mkdirs();
+    if (Updater.wd.toFile().mkdirs()) {
 
-    try (FileBasedLock fileLock = new FileBasedLock(
-        Updater.wd.resolve(Updater.LOCK_FILE).toFile())) {
-      fileLock.lock();
-      //download replicationFiles
-      Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, wd);
-      //parse replicationFiles
-      Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
-      //transform files to OSHEntities
-      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities
-          = OSCOSHTransformer.transform(etlFiles, keytables, batchSize, changes);
-      //load data into updateDb
-      OSHLoader.load(updateDb, oshEntities, dbBit, producer);
-      fileLock.unlock();
+      try (FileBasedLock fileLock = new FileBasedLock(
+          Updater.wd.resolve(Updater.LOCK_FILE).toFile())) {
+        fileLock.lock();
+        //download replicationFiles
+        Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, wd);
+        //parse replicationFiles
+        Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
+        //transform files to OSHEntities
+        Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities
+            = OSCOSHTransformer.transform(etlFiles, keytables, batchSize, changes);
+        //load data into updateDb
+        OSHLoader.load(updateDb, oshEntities, dbBit, producer);
+        fileLock.unlock();
+      }
+    } else {
+      throw new AssertionError("Could not create working directory.");
     }
   }
 

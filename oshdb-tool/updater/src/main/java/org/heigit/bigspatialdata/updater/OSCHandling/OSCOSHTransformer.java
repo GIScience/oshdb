@@ -451,21 +451,23 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     int role = this.tt.getOSHDBRoleOf(memberRole).toInt();
     if (role < 0) {
       //update
-      Statement getMaxKey = this.tt.getConnection().createStatement();
-      getMaxKey.execute("SELECT MAX(id) from " + TableNames.E_ROLE);
-      ResultSet resultSet = getMaxKey.getResultSet();
-      int maxKey;
-      if (resultSet.next()) {
-        maxKey = resultSet.getInt(1);
-      } else {
-        maxKey = -1;
-      }
-      this.insertRoleStatement.setInt(1, maxKey + 1);
-      this.insertRoleStatement.setString(2, memberRole);
-      this.insertRoleStatement.execute();
-      role = maxKey + 1;
+      try (Statement getMaxKey = this.tt.getConnection().createStatement()) {
+        getMaxKey.execute("SELECT MAX(id) from " + TableNames.E_ROLE);
+        try (ResultSet resultSet = getMaxKey.getResultSet()) {
+          int maxKey;
+          if (resultSet.next()) {
+            maxKey = resultSet.getInt(1);
+          } else {
+            maxKey = -1;
+          }
+          this.insertRoleStatement.setInt(1, maxKey + 1);
+          this.insertRoleStatement.setString(2, memberRole);
+          this.insertRoleStatement.execute();
+          role = maxKey + 1;
 
-      this.tt.updateRole(new OSMRole(memberRole), new OSHDBRole(role));
+          this.tt.updateRole(new OSMRole(memberRole), new OSHDBRole(role));
+        }
+      }
     }
     return role;
   }
@@ -478,52 +480,55 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       //insert yet unknown tags (do same with roles and at other occurances
       if (oshdbTag.getKey() < 0) {
         //update
-        Statement getMaxKey = this.tt.getConnection().createStatement();
-        getMaxKey.execute("SELECT MAX(id) + 1 from " + TableNames.E_KEY);
-        ResultSet resultSet = getMaxKey.getResultSet();
-        int maxKey;
-        if (resultSet.next()) {
-          maxKey = resultSet.getInt(1);
-        } else {
-          maxKey = -1;
+        try (Statement getMaxKey = this.tt.getConnection().createStatement()) {
+          getMaxKey.execute("SELECT MAX(id) + 1 from " + TableNames.E_KEY);
+          try (ResultSet resultSet = getMaxKey.getResultSet()) {
+            int maxKey;
+            if (resultSet.next()) {
+              maxKey = resultSet.getInt(1);
+            } else {
+              maxKey = -1;
+            }
+            this.insertKeyStatement.setInt(1, maxKey);
+            this.insertKeyStatement.setString(2, tag.getKey());
+            this.insertKeyStatement.execute();
+
+            this.insertKeyValueStatement.setInt(1, maxKey);
+            this.insertKeyValueStatement.setInt(2, 0);
+            this.insertKeyValueStatement.setString(3, tag.getValue());
+            this.insertKeyValueStatement.execute();
+
+            oshdbTag = new OSHDBTag(maxKey, 0);
+
+            this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
+          }
         }
-        this.insertKeyStatement.setInt(1, maxKey);
-        this.insertKeyStatement.setString(2, tag.getKey());
-        this.insertKeyStatement.execute();
-
-        this.insertKeyValueStatement.setInt(1, maxKey);
-        this.insertKeyValueStatement.setInt(2, 0);
-        this.insertKeyValueStatement.setString(3, tag.getValue());
-        this.insertKeyValueStatement.execute();
-
-        oshdbTag = new OSHDBTag(maxKey, 0);
-
-        this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
-
       } else if (oshdbTag.getValue() < 0) {
 
-        Statement getMaxKey = this.tt.getConnection().createStatement();
-        getMaxKey.execute(
-            "SELECT MAX(valueid) + 1 FROM "
-            + TableNames.E_KEYVALUE
-            + " WHERE keyid = "
-            + oshdbTag.getKey()
-        );
-        ResultSet resultSet = getMaxKey.getResultSet();
-        int maxValue;
-        if (resultSet.next()) {
-          maxValue = resultSet.getInt(1);
-        } else {
-          maxValue = -1;
+        try (Statement getMaxKey = this.tt.getConnection().createStatement()) {
+          getMaxKey.execute(
+              "SELECT MAX(valueid) + 1 FROM "
+              + TableNames.E_KEYVALUE
+              + " WHERE keyid = "
+              + oshdbTag.getKey()
+          );
+          try (ResultSet resultSet = getMaxKey.getResultSet()) {
+            int maxValue;
+            if (resultSet.next()) {
+              maxValue = resultSet.getInt(1);
+            } else {
+              maxValue = -1;
+            }
+            this.insertKeyValueStatement.setInt(1, oshdbTag.getKey());
+            this.insertKeyValueStatement.setInt(2, maxValue);
+            this.insertKeyValueStatement.setString(3, tag.getValue());
+            this.insertKeyValueStatement.execute();
+
+            oshdbTag = new OSHDBTag(oshdbTag.getKey(), maxValue);
+
+            this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
+          }
         }
-        this.insertKeyValueStatement.setInt(1, oshdbTag.getKey());
-        this.insertKeyValueStatement.setInt(2, maxValue);
-        this.insertKeyValueStatement.setString(3, tag.getValue());
-        this.insertKeyValueStatement.execute();
-
-        oshdbTag = new OSHDBTag(oshdbTag.getKey(), maxValue);
-
-        this.tt.updateTag(new OSMTag(tag.getKey(), tag.getValue()), oshdbTag);
       }
       tagsArray[i] = oshdbTag.getKey();
       i++;
