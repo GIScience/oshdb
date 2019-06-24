@@ -137,6 +137,9 @@ public class Flusher {
             .computeIfAbsent(currentCellId, k -> new HashSet<>())
             .add(updateEntity.getId());
 
+        //updates all links in etl, might check if needed
+        etlf.writeCurrentCellId(t, updateEntity.getId(), newCellId);
+
         i++;
         if (i >= batchSize) {
           Flusher.runBatch(insertOrUpdateCells, filterEntities, oshdb, t);

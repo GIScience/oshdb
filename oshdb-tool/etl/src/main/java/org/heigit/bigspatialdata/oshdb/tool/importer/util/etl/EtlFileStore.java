@@ -49,8 +49,7 @@ public class EtlFileStore implements EtlStore {
   }
 
   @Override
-  public CellId writeCurrentCellId(OSMType type, long id) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public void writeCurrentCellId(OSMType type, long id, CellId newId) {
   }
 
 }

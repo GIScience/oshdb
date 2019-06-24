@@ -8,8 +8,8 @@ import org.heigit.bigspatialdata.oshdb.util.CellId;
 
 /**
  * During the ETL procedure of creating an OSHDB the planet-pbf-file has to be paresed multiple
- * times and a complete, sorted and indexed list of OSH-Objects is created
- * {@link ClassThatDoesThis}.
+ * times and a complete, sorted and indexed list of OSH-Objects is created. This class mimics a
+ * wrapper around the output.
  */
 public interface EtlStore {
 
@@ -50,7 +50,7 @@ public interface EtlStore {
    *
    * @param type
    * @param id
-   * @return
+   * @return The cellId the object currently resides in
    */
   CellId getCurrentCellId(OSMType type, long id);
 
@@ -59,8 +59,8 @@ public interface EtlStore {
    *
    * @param type
    * @param id
-   * @return
+   * @param newId
    */
-  CellId writeCurrentCellId(OSMType type, long id);
+  void writeCurrentCellId(OSMType type, long id, CellId newId);
 
 }
