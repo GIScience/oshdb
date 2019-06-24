@@ -28,7 +28,7 @@
     <googlejson.version>1.1.1</googlejson.version>
     <guava.version>23.6-jre</guava.version>
     <h2.version>1.4.197</h2.version>
-    <ignite.version>2.7.0</ignite.version>
+    <ignite.version>2.7.2</ignite.version>
     <jcommander.version>1.72</jcommander.version>
     <jetbrainsannotations.version>13.0</jetbrainsannotations.version>
     <kafka.version>0.11.0.0</kafka.version>
