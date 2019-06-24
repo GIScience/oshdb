@@ -94,8 +94,8 @@ public class OscOshTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
    * @param etlFiles the etlFiles old versions can be read from
    * @param keytables the keytables-DB to be queried and updated
    * @param batchSize the number of ChangeContainers to be processed at once (large numbers may help
-   *    if you expect entities to be changed multiple times during a short timeframe, wich seams
-   *    unlikely)
+   *     if you expect entities to be changed multiple times during a short timeframe, wich seams
+   *     unlikely)
    * @param changes the ChangeContainers to be processed
    * @return the Class itself as an Iterable with OSHDBEntities
    */
@@ -273,7 +273,8 @@ public class OscOshTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
         int roleId = this.getRole(rm.getMemberRole());
         switch (rm.getMemberType()) {
           case Node:
-            OSHNode relationNode = (OSHNode) this.etlStore.getEntity(OSMType.NODE, rm.getMemberId());
+            OSHNode relationNode = (OSHNode) this.etlStore.getEntity(
+                OSMType.NODE, rm.getMemberId());
             if (relationNode != null) {
               missingNodeIds.add(relationNode.getId());
               relationNodes.add(relationNode);

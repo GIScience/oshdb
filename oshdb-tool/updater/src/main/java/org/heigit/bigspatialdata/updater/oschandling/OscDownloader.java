@@ -42,13 +42,13 @@ public class OscDownloader {
   /**
    * Download prelicas, the start of a processing-line.
    *
-   * @param baseURL The base URL to be used (e.g. https://planet.openstreetmap.org/replication/day/)
+   * @param baseUrl The base URL to be used (e.g. https://planet.openstreetmap.org/replication/day/)
    * @param workingDirectory the directory the replication files will be stored in. Should hold an
    *     osmium state.txt otherwise the download will only request the latest replication file.
    * @return An iterable over all replication files starting at state.txt until now
    */
-  public static Iterable<ReplicationFile> download(URL baseURL, Path workingDirectory) {
-    OscDownloader.baseUrl = baseURL;
+  public static Iterable<ReplicationFile> download(URL baseUrl, Path workingDirectory) {
+    OscDownloader.baseUrl = baseUrl;
     OscDownloader.workingDirectory = workingDirectory;
     OscDownloader.localStatePersistor
         = new PropertiesPersister(workingDirectory.resolve(LOCAL_STATE_FILE).toFile());
