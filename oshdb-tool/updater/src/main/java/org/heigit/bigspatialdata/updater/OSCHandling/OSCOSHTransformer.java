@@ -140,7 +140,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     Map<EntityType, Map<Long, List<ChangeContainer>>> changes = new HashMap<>(3);
 
     //it should be checked, whether is actually improves things!
-    for (int i = 0; (this.containers.hasNext() && i < this.batchSize); i++) {
+    for (int i = 0; this.containers.hasNext() && i < this.batchSize; i++) {
       ChangeContainer currContainer = this.containers.next();
       Entity entity = currContainer.getEntityContainer().getEntity();
 

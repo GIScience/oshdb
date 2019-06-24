@@ -4,22 +4,18 @@ import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Validats a URL passed via CMD.
  */
 public class URLValidator implements IParameterValidator {
 
-  private static final Logger LOG = LoggerFactory.getLogger(URLValidator.class);
-
   @Override
   public void validate(String name, String value) throws ParameterException {
     try {
-      final URL url = new URL(value);
+      new URL(value);
     } catch (MalformedURLException ex) {
-      LOG.error("URL not valid!", ex);
+      throw new ParameterException("The URL passed via " + name + " is not valid", ex);
     }
   }
 

@@ -34,7 +34,7 @@ public abstract class IteratorTmpl<T> implements Iterator<T> {
   @Override
   public boolean hasNext() {
     try {
-      return (next != null) || ((next = getNext()) != null);
+      return next != null || (next = getNext()) != null;
     } catch (Exception e) {
       this.ex = e;
     }

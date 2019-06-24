@@ -223,11 +223,11 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Sets the update database and includes its content in results. IgniteLocalPeek and ScanQuery not
-   * yet supported.
+   * Sets the update database and includes its content in results. If timestamps are already set,
+   * the currentness of the oshdb is checked against them to avoid unesseray calls to the update-db.
    *
-   * @param updateDb
-   * @return
+   * @param updateDb The new updateDatabase
+   * @return A new mapreducer with updates enabled (if necessary)
    */
   public MapReducer<X> updates(OSHDBUpdate updateDb) throws SQLException, IOException,
       ClassNotFoundException {
@@ -312,6 +312,9 @@ public abstract class MapReducer<X> implements
    * osm contributions (only the first and last timestamp of this list are contributing).
    * </li></ul>
    * Additionally, these timestamps are used in the `aggregateByTimestamp` functionality.
+   * 
+   * An already set update-db will be removed if the new timestamps indicate that it is not
+   * necessary.
    * </p>
    *
    * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the

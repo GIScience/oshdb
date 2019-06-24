@@ -141,8 +141,8 @@ public class DatabaseHandler {
               "UPDATE " + TableNames.T_METADATA.toString(oshdb.prefix()) + " SET value=? where key=?;"
           )) {
             //timerange
-            OSHDBTimestamp startOSHDB = (new OSHDBTimestamps(
-                oshdb.metadata("data.timerange").split(",")[0])).get().first();
+            OSHDBTimestamp startOSHDB = new OSHDBTimestamps(
+                oshdb.metadata("data.timerange").split(",")[0]).get().first();
             stmt.setString(1,
                 startOSHDB.toString() + "," + (new OSHDBTimestamp(state.getTimestamp())).toString());
             stmt.setString(2, "data.timerange");

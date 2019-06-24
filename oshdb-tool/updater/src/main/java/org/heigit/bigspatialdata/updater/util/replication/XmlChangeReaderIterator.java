@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.updater.util.replication;
 
-import org.heigit.bigspatialdata.updater.util.replication.DefaultChangeSink;
 import java.io.InputStream;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
