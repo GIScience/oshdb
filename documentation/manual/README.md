@@ -25,6 +25,8 @@ Contents
   Explains the design of the OSHDB data model.
 * [Installation](installation.md)<br>
   A guide for how to install the OSHDB from sources.
+* [Data Updates](dataupdate.md)<br>
+  Describes how to set up a data update mechanism
 
 See also
 --------
