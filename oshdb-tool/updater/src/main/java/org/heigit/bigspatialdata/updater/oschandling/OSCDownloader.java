@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.updater.OSCHandling;
+package org.heigit.bigspatialdata.updater.oschandling;
 
 import io.reactivex.Flowable;
 import java.io.BufferedInputStream;
@@ -74,7 +74,7 @@ public class OSCDownloader {
   }
 
   /**
-   * Download osc file from server
+   * Download osc file from server.
    */
   private static File downloadReplicationFile(String fileName) {
     URL changesetUrl;
@@ -101,7 +101,9 @@ public class OSCDownloader {
             65536)) {
           // Download the file.
           byte[] buffer = new byte[65536];
-          for (int bytesRead = source.read(buffer); bytesRead > 0; bytesRead = source.read(buffer)) {
+          for (int bytesRead = source.read(buffer);
+              bytesRead > 0;
+              bytesRead = source.read(buffer)) {
             sink.write(buffer, 0, bytesRead);
           }
         }
@@ -143,7 +145,9 @@ public class OSCDownloader {
     final ReplicationState localState;
     if (!localStatePersistor.exists()) {
       LOG.warn(
-          "no prior state.txt exist in " + workingDirectory + " starting from latest server state now");
+          "no prior state.txt exist in "
+          + workingDirectory
+          + " starting from latest server state now");
       localState = serverStateReader.getServerState(OSCDownloader.baseUrl, serverState
           .getSequenceNumber() - 1);
       localStatePersistor.store(localState.store());

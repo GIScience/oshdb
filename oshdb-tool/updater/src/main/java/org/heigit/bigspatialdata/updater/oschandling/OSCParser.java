@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.updater.OSCHandling;
+package org.heigit.bigspatialdata.updater.oschandling;
 
 import io.reactivex.Flowable;
 import java.io.File;

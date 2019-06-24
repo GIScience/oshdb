@@ -34,7 +34,6 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
-import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
@@ -46,6 +45,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.Puntal;
 import org.locationtech.jts.geom.TopologyException;
+import org.roaringbitmap.longlong.LongBitmapDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,12 +199,11 @@ public class CellIterator implements Serializable {
 
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
-      if (!oshEntityUpdatePreFilter.test(oshEntity) ||
-          !oshEntityPreFilter.test(oshEntity) ||
-          !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox) ||
-              (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
-      )) {
+      if (!oshEntityUpdatePreFilter.test(oshEntity)
+          || !oshEntityPreFilter.test(oshEntity)
+          || !allFullyInside
+          && (!oshEntity.getBoundingBox().intersects(boundingBox)
+          || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox())))) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         return Stream.empty();
@@ -465,12 +464,11 @@ public class CellIterator implements Serializable {
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
 
     return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
-      if (!oshEntityUpdatePreFilter.test(oshEntity) ||
-          !oshEntityPreFilter.test(oshEntity) ||
-          !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox) ||
-                  (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
-          )) {
+      if (!oshEntityUpdatePreFilter.test(oshEntity)
+          || !oshEntityPreFilter.test(oshEntity)
+          || !allFullyInside
+          && (!oshEntity.getBoundingBox().intersects(boundingBox)
+          || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox())))) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         return Stream.empty();

@@ -47,7 +47,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlFileStore;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.updater.OSCHandling.OSCDownloader;
+import org.heigit.bigspatialdata.updater.oschandling.OSCDownloader;
 import org.heigit.bigspatialdata.updater.util.cmd.FlushArgs;
 import org.heigit.bigspatialdata.updater.util.dbhandler.DatabaseHandler;
 import org.openstreetmap.osmosis.core.util.FileBasedLock;
@@ -174,7 +174,8 @@ public class Flusher {
    * @throws ClassNotFoundException if etl-file handling went wrong
    * @throws Exception if oshdb handling went wrong
    */
-  public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException, Exception{
+  public static void main(String[] args)
+      throws SQLException, IOException, ClassNotFoundException, Exception {
     FlushArgs config = new FlushArgs();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();
     try {

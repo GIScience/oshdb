@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.updater.OSHUpdating;
+package org.heigit.bigspatialdata.updater.oshupdating;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;

@@ -36,8 +36,8 @@ public class UpdateDbHelper {
     for (OSMType type : OSMType.values()) {
       if (type != OSMType.UNKNOWN) {
         Statement retreave = dbBit.createStatement();
-        String retrSQL = "SELECT bitmap FROM " + TableNames.forOSMType(type).get() + "_bitmap WHERE id=1;";
-        ResultSet executeQuery = retreave.executeQuery(retrSQL);
+        String retrSql = "SELECT bitmap FROM " + TableNames.forOSMType(type).get() + "_bitmap WHERE id=1;";
+        ResultSet executeQuery = retreave.executeQuery(retrSql);
         executeQuery.next();
         byte[] bytes = executeQuery.getBytes("bitmap");
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
