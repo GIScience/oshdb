@@ -93,7 +93,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   @Override
   public String metadata(String property) {
     // todo: implement this
-    return null;
+    // implementing dummy responce for updater
+    return "1970-01-01T00:00:00,1970-01-02T00:00:00";
   }
 
   public Ignite getIgnite() {
