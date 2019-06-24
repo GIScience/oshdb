@@ -29,6 +29,7 @@ import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
@@ -93,70 +94,73 @@ public class Flusher {
     //wait for all queries to finish
     //do flush here: can I use something from the etl?
     //ignite.cluster().active(true);
-    Statement updateDBStatement = updatedb.createStatement();
-    for (OSMType t : OSMType.values()) {
-      if (t == OSMType.UNKNOWN) {
-        continue;
-      }
-
-      //get alls updated entities
-      updateDBStatement.execute(
-          "SELECT id as id, data as data FROM "
-          + TableNames.forOSMType(t).get()
-          + ";");
-      ResultSet resultSetUpdate = updateDBStatement.getResultSet();
-
-      //this could also be a bitmap
-      Map<CellId, Set<Long>> filterEntities = new HashMap<>();
-      Map<CellId, List<OSHEntity>> insertOrUpdateCells = new HashMap<>();
-      int i = 0;
-      while (resultSetUpdate.next()) {
-        byte[] bytes = resultSetUpdate.getBytes("data");
-        OSHEntity updateEntity = Flusher.createUpdateEntity(bytes, t);
-
-        CellId currentCellId = etlf.getCurrentCellId(updateEntity.getType(), updateEntity.getId());
-        CellId newCellId = xyt.getInsertId(updateEntity.getBoundingBox());
-
-        if (currentCellId == null) {
-          currentCellId = newCellId;
-        } else if (newCellId.getZoomLevel() > currentCellId.getZoomLevel()) {
-          newCellId = currentCellId;
+    try (Statement updateDBStatement = updatedb.createStatement();) {
+      for (OSMType t : OSMType.values()) {
+        if (t == OSMType.UNKNOWN) {
+          continue;
         }
 
-        insertOrUpdateCells
-            .computeIfAbsent(newCellId, k -> new ArrayList<>())
-            .add(updateEntity);
+        //get alls updated entities
+        updateDBStatement.execute(
+            "SELECT id as id, data as data FROM "
+            + TableNames.forOSMType(t).get()
+            + ";");
+        try (ResultSet resultSetUpdate = updateDBStatement.getResultSet();) {
 
-        //could be tested if actually needs to be removed
-        filterEntities
-            .computeIfAbsent(newCellId, k -> new HashSet<>())
-            .add(updateEntity.getId());
+          //this could also be a bitmap
+          Map<CellId, Set<Long>> filterEntities = new HashMap<>();
+          Map<CellId, List<OSHEntity>> insertOrUpdateCells = new HashMap<>();
+          int i = 0;
+          while (resultSetUpdate.next()) {
+            byte[] bytes = resultSetUpdate.getBytes("data");
+            OSHEntity updateEntity = Flusher.createUpdateEntity(bytes, t);
 
-        //could be tested if actually needs to be removed
-        filterEntities
-            .computeIfAbsent(currentCellId, k -> new HashSet<>())
-            .add(updateEntity.getId());
+            CellId currentCellId = etlf.getCurrentCellId(updateEntity.getType(), updateEntity
+                .getId());
+            CellId newCellId = xyt.getInsertId(updateEntity.getBoundingBox());
 
-        //updates all links in etl, might check if needed
-        etlf.writeCurrentCellId(t, updateEntity.getId(), newCellId);
+            if (currentCellId == null) {
+              currentCellId = newCellId;
+            } else if (newCellId.getZoomLevel() > currentCellId.getZoomLevel()) {
+              newCellId = currentCellId;
+            }
 
-        i++;
-        if (i >= batchSize) {
+            insertOrUpdateCells
+                .computeIfAbsent(newCellId, k -> new ArrayList<>())
+                .add(updateEntity);
+
+            //could be tested if actually needs to be removed
+            filterEntities
+                .computeIfAbsent(newCellId, k -> new HashSet<>())
+                .add(updateEntity.getId());
+
+            //could be tested if actually needs to be removed
+            filterEntities
+                .computeIfAbsent(currentCellId, k -> new HashSet<>())
+                .add(updateEntity.getId());
+
+            //updates all links in etl, might check if needed
+            etlf.writeCurrentCellId(t, updateEntity.getId(), newCellId);
+
+            i++;
+            if (i >= batchSize) {
+              Flusher.runBatch(insertOrUpdateCells, filterEntities, oshdb, t);
+              insertOrUpdateCells.clear();
+              filterEntities.clear();
+              i = 0;
+            }
+          }
           Flusher.runBatch(insertOrUpdateCells, filterEntities, oshdb, t);
-          insertOrUpdateCells.clear();
-          filterEntities.clear();
-          i = 0;
+        }
+        DatabaseHandler.ereaseDb(updatedb, dbBit);
+        if (updateMeta) {
+          PropertiesPersister propertiesPersister = new PropertiesPersister(Updater.wd
+              .resolve(
+                  OSCDownloader.LOCAL_STATE_FILE).toFile());
+          DatabaseHandler.updateOSHDBMetadata(oshdb, new ReplicationState(propertiesPersister
+              .loadMap()));
         }
       }
-      Flusher.runBatch(insertOrUpdateCells, filterEntities, oshdb, t);
-    }
-    DatabaseHandler.ereaseDb(updatedb, dbBit);
-    if (updateMeta) {
-      PropertiesPersister propertiesPersister = new PropertiesPersister(Updater.wd
-          .resolve(
-              OSCDownloader.LOCAL_STATE_FILE).toFile());
-      DatabaseHandler.updateOSHDBMetadata(oshdb, new ReplicationState(propertiesPersister
-          .loadMap()));
     }
   }
 
@@ -190,30 +194,32 @@ public class Flusher {
     }
 
     Path wd = Paths.get("target/updaterWD/");
-    wd.toFile().mkdirs();
-
-    try (FileBasedLock fileLock = new FileBasedLock(
-        wd.resolve(Updater.LOCK_FILE).toFile())) {
-      try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
-          Connection dbBit = DriverManager.getConnection(config.baseArgs.dbbit);) {
-        if (config.dbconfig.contains("h2")) {
-          try (Connection conn = DriverManager.getConnection(config.dbconfig, "sa", "");
-              OSHDBH2 oshdb = new OSHDBH2(conn);) {
-            Flusher
-                .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
-                    config.updateMeta);
+    if (wd.toFile().mkdirs()) {
+      try (FileBasedLock fileLock = new FileBasedLock(
+          wd.resolve(Updater.LOCK_FILE).toFile())) {
+        try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
+            Connection dbBit = DriverManager.getConnection(config.baseArgs.dbbit);) {
+          if (config.dbconfig.contains("h2")) {
+            try (Connection conn = DriverManager.getConnection(config.dbconfig, "sa", "");
+                OSHDBH2 oshdb = new OSHDBH2(conn);) {
+              Flusher
+                  .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
+                      config.updateMeta);
+            }
+          } else if (config.dbconfig.contains("ignite")) {
+            try (OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);) {
+              Flusher
+                  .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
+                      config.updateMeta);
+            }
+          } else {
+            throw new AssertionError(
+                "Backend of type " + config.dbconfig + " not supported yet.");
           }
-        } else if (config.dbconfig.contains("ignite")) {
-          try (OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);) {
-            Flusher
-                .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
-                    config.updateMeta);
-          }
-        } else {
-          throw new AssertionError(
-              "Backend of type " + config.dbconfig + " not supported yet.");
         }
       }
+    } else {
+      throw new AssertionError("Could not create working directory!");
     }
   }
 
@@ -249,21 +255,24 @@ public class Flusher {
   private static GridOSHEntity getSpecificGridCell(OSHDBDatabase oshdb, OSMType t, CellId insertId)
       throws SQLException, IOException, ClassNotFoundException {
     if (oshdb instanceof OSHDBH2) {
-      Statement oshdbStatement = ((OSHDBH2) oshdb).getConnection().createStatement();
-      oshdbStatement.execute(
-          "SELECT data FROM "
-          + oshdb.prefix()
-          + TableNames.forOSMType(t).get()
-          + " WHERE id="
-          + insertId.getId()
-          + " and level="
-          + insertId.getZoomLevel()
-          + ";"
-      );
-      ResultSet resultSetOSHDB = oshdbStatement.getResultSet();
-      if (resultSetOSHDB.next()) {
-        return (GridOSHEntity) (new ObjectInputStream(resultSetOSHDB.getBinaryStream(1)))
-            .readObject();
+      try (Statement oshdbStatement = ((OSHDBJdbc) oshdb).getConnection().createStatement()) {
+        oshdbStatement.execute(
+            "SELECT data FROM "
+            + oshdb.prefix()
+            + TableNames.forOSMType(t).get()
+            + " WHERE id="
+            + insertId.getId()
+            + " and level="
+            + insertId.getZoomLevel()
+            + ";"
+        );
+        try (ResultSet resultSetOSHDB = oshdbStatement.getResultSet()) {
+          if (resultSetOSHDB.next()) {
+            try (ObjectInputStream ois = new ObjectInputStream(resultSetOSHDB.getBinaryStream(1))) {
+              return (GridOSHEntity) ois.readObject();
+            }
+          }
+        }
       }
       return null;
     } else if (oshdb instanceof OSHDBIgnite) {
@@ -391,14 +400,14 @@ public class Flusher {
       throws SQLException, IOException {
 
     if (oshdb instanceof OSHDBH2) {
-      PreparedStatement oshdbPreparedStatement = ((OSHDBH2) oshdb).getConnection().prepareStatement(
-          "MERGE INTO "
-          + oshdb.prefix()
-          + TableNames.forOSMType(t).get()
-          + " KEY(level,id) "
-          + "VALUES (?,?,?);"
-      );
-      try (
+      try (PreparedStatement oshdbPreparedStatement = ((OSHDBJdbc) oshdb).getConnection()
+          .prepareStatement(
+              "MERGE INTO "
+              + oshdb.prefix()
+              + TableNames.forOSMType(t).get()
+              + " KEY(level,id) "
+              + "VALUES (?,?,?);"
+          );
           ByteArrayOutputStream baos = new ByteArrayOutputStream();
           ObjectOutputStream oos = new ObjectOutputStream(baos);) {
         oos.writeObject(updatedGridCell);
