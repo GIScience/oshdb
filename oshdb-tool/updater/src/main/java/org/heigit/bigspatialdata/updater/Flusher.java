@@ -47,7 +47,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlFileStore;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import org.heigit.bigspatialdata.updater.oschandling.OSCDownloader;
+import org.heigit.bigspatialdata.updater.oschandling.OscDownloader;
 import org.heigit.bigspatialdata.updater.util.cmd.FlushArgs;
 import org.heigit.bigspatialdata.updater.util.dbhandler.DatabaseHandler;
 import org.openstreetmap.osmosis.core.util.FileBasedLock;
@@ -155,8 +155,7 @@ public class Flusher {
         DatabaseHandler.ereaseDb(updatedb, dbBit);
         if (updateMeta) {
           PropertiesPersister propertiesPersister = new PropertiesPersister(Updater.wd
-              .resolve(
-                  OSCDownloader.LOCAL_STATE_FILE).toFile());
+              .resolve(OscDownloader.LOCAL_STATE_FILE).toFile());
           DatabaseHandler.updateOSHDBMetadata(oshdb, new ReplicationState(propertiesPersister
               .loadMap()));
         }
@@ -168,7 +167,7 @@ public class Flusher {
    * A commandline wrapper around the flusher-method.
    *
    * @param args The arguments that will be passed on to the flusher method. See @link{#FlushArgs}
-   * for details.
+   *     for details.
    * @throws SQLException If database handling went wrong
    * @throws IOException if Etl-File handling went wrong
    * @throws ClassNotFoundException if etl-file handling went wrong
@@ -303,7 +302,8 @@ public class Flusher {
 
       GridOSHEntity updatedGridCell = Flusher.updateGridCell(currentCellId, outdatedGridCell,
           updateEntities, removeEntities, t);
-      //this method might also be one day provided by ETL to make a load balancing but for now not possible
+      //this method might also be one day provided by ETL to make a load balancing 
+      //but for now not possible
       //this may cause some fragmentation on the cluster (creating small cells with only one object)
       //insert entity
       Flusher.writeUpdatedGridCell(t, oshdb, updatedGridCell);

@@ -25,10 +25,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Provided static methods to download OSC-Replicafiles.
  */
-public class OSCDownloader {
+public class OscDownloader {
 
   public static final String LOCAL_STATE_FILE = "update_state.txt";
-  private static final Logger LOG = LoggerFactory.getLogger(OSCDownloader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OscDownloader.class);
 
   private static URL baseUrl;
   private static PropertiesPersister localStatePersistor;
@@ -36,7 +36,7 @@ public class OSCDownloader {
       = new ReplicationSequenceFormatter(9, 3);
   private static Path workingDirectory;
 
-  private OSCDownloader() {
+  private OscDownloader() {
   }
 
   /**
@@ -44,21 +44,21 @@ public class OSCDownloader {
    *
    * @param baseURL The base URL to be used (e.g. https://planet.openstreetmap.org/replication/day/)
    * @param workingDirectory the directory the replication files will be stored in. Should hold an
-   * osmium state.txt otherwise the download will only request the latest replication file.
+   *     osmium state.txt otherwise the download will only request the latest replication file.
    * @return An iterable over all replication files starting at state.txt until now
    */
   public static Iterable<ReplicationFile> download(URL baseURL, Path workingDirectory) {
-    OSCDownloader.baseUrl = baseURL;
-    OSCDownloader.workingDirectory = workingDirectory;
-    OSCDownloader.localStatePersistor
+    OscDownloader.baseUrl = baseURL;
+    OscDownloader.workingDirectory = workingDirectory;
+    OscDownloader.localStatePersistor
         = new PropertiesPersister(workingDirectory.resolve(LOCAL_STATE_FILE).toFile());
 
-    return OSCDownloader
-        .generateStateFlow(OSCDownloader.getState())
+    return OscDownloader
+        .generateStateFlow(OscDownloader.getState())
         .map((ReplicationState state) -> {
-          final String fileName = OSCDownloader.sequenceFormatter
+          final String fileName = OscDownloader.sequenceFormatter
               .getFormattedName(state.getSequenceNumber(), ".osc.gz");
-          final File replicationFile = OSCDownloader.downloadReplicationFile(fileName);
+          final File replicationFile = OscDownloader.downloadReplicationFile(fileName);
           return new ReplicationFile(state, replicationFile);
         })
         .blockingIterable();
@@ -70,7 +70,7 @@ public class OSCDownloader {
    * @param state State to be written to file
    */
   public static void updateState(Map<String, String> state) {
-    OSCDownloader.localStatePersistor.store(state);
+    OscDownloader.localStatePersistor.store(state);
   }
 
   /**
@@ -79,7 +79,7 @@ public class OSCDownloader {
   private static File downloadReplicationFile(String fileName) {
     URL changesetUrl;
     try {
-      changesetUrl = new URL(OSCDownloader.baseUrl, fileName);
+      changesetUrl = new URL(OscDownloader.baseUrl, fileName);
     } catch (MalformedURLException e) {
       throw new OsmosisRuntimeException("The server file URL could not be created.", e);
     }
@@ -139,8 +139,8 @@ public class OSCDownloader {
 
   private static ReplicationState getState() {
     final ServerStateReader serverStateReader = new ServerStateReader();
-    final ReplicationState serverState = serverStateReader.getServerState(OSCDownloader.baseUrl);
-    LOG.info("latest server state form " + OSCDownloader.baseUrl + " -> " + serverState.toString());
+    final ReplicationState serverState = serverStateReader.getServerState(OscDownloader.baseUrl);
+    LOG.info("latest server state form " + OscDownloader.baseUrl + " -> " + serverState.toString());
 
     final ReplicationState localState;
     if (!localStatePersistor.exists()) {
@@ -148,7 +148,7 @@ public class OSCDownloader {
           "no prior state.txt exist in "
           + workingDirectory
           + " starting from latest server state now");
-      localState = serverStateReader.getServerState(OSCDownloader.baseUrl, serverState
+      localState = serverStateReader.getServerState(OscDownloader.baseUrl, serverState
           .getSequenceNumber() - 1);
       localStatePersistor.store(localState.store());
     } else {

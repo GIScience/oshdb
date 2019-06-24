@@ -21,10 +21,10 @@ public class UpdateArgs {
    */
   @Parameter(names = {"-url"},
       description = "URL to take replication-files from e.g. https://planet.openstreetmap.org/replication/minute/",
-      validateWith = URLValidator.class,
+      validateWith = UrlValidator.class,
       required = true,
       order = 1)
-  public URL baseURL;
+  public URL baseUrl;
 
   /**
    * The path to the config-file for the Kafka-Producer.

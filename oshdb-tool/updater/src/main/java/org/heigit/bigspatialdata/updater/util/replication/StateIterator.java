@@ -19,7 +19,7 @@ public class StateIterator extends IteratorTmpl<ReplicationState> {
    * Create a new StateIterator.
    *
    * @param baseUrl The base url to be requested (e.g.
-   * https://planet.openstreetmap.org/replication/day/)
+   *     https://planet.openstreetmap.org/replication/day/)
    * @param startState The state to start replicating from
    */
   public StateIterator(URL baseUrl, ReplicationState startState) {

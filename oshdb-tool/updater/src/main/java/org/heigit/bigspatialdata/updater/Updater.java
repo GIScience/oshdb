@@ -19,10 +19,10 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.updater.oschandling.OSCDownloader;
-import org.heigit.bigspatialdata.updater.oschandling.OSCOSHTransformer;
-import org.heigit.bigspatialdata.updater.oschandling.OSCParser;
-import org.heigit.bigspatialdata.updater.oshupdating.OSHLoader;
+import org.heigit.bigspatialdata.updater.oschandling.OscDownloader;
+import org.heigit.bigspatialdata.updater.oschandling.OscOshTransformer;
+import org.heigit.bigspatialdata.updater.oschandling.OscParser;
+import org.heigit.bigspatialdata.updater.oshupdating.OshLoader;
 import org.heigit.bigspatialdata.updater.util.cmd.UpdateArgs;
 import org.heigit.bigspatialdata.updater.util.replication.ReplicationFile;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
@@ -43,12 +43,12 @@ public class Updater {
    * A command-line wrapper to update an existing OSHDB.
    *
    * @param args The arguments passed on to the update-method. see @link{#UpdateArgs}
-   * @throws MalformedURLException
-   * @throws ClassNotFoundException
-   * @throws IgniteCheckedException
-   * @throws FileNotFoundException
-   * @throws IOException
-   * @throws SQLException
+   * @throws MalformedURLException When given URL could not be parsed
+   * @throws ClassNotFoundException On etl-error
+   * @throws IgniteCheckedException On error while handling ignite
+   * @throws FileNotFoundException on etl-error
+   * @throws IOException on etl-error
+   * @throws SQLException on error while handling db
    */
   public static void main(String[] args)
       throws MalformedURLException,
@@ -94,11 +94,10 @@ public class Updater {
         props.load(input);
         //run update with Kafka
         try (Producer<Long, Byte[]> producer = new KafkaProducer<>(props)) {
-          Updater.update(
-              config.baseArgs.etl,
+          Updater.update(config.baseArgs.etl,
               keytablesDb,
               updateDb,
-              config.baseURL,
+              config.baseUrl,
               bitmapDb,
               config.baseArgs.batchSize,
               producer
@@ -106,11 +105,10 @@ public class Updater {
         }
       } else {
         //run update without kafka
-        Updater.update(
-            config.baseArgs.etl,
+        Updater.update(config.baseArgs.etl,
             keytablesDb,
             updateDb,
-            config.baseURL,
+            config.baseUrl,
             bitmapDb,
             config.baseArgs.batchSize,
             null
@@ -122,7 +120,6 @@ public class Updater {
   /**
    * Downloads replication files, transforms them to OSHDB-Objects and stores them in a
    * JDBC-Database. At the same time it maintains an index of updated entites.
-   *
    * If working on a regional extract be aware that there is currently no method to limit imports to
    * that region. Updated entities outside the scope of the used @link{etlFile} will have missing
    * data.
@@ -131,15 +128,15 @@ public class Updater {
    * @param keytables Database for keytables
    * @param updateDb Connection to JDBC-Database where Updates should be stored.
    * @param replicationUrl The URL to get replication files from. Determines if monthly, dayly etc.
-   * updates are preferred.
+   *     updates are preferred.
    * @param dbBit Database for a BitMap flagging changed Entites
    * @param batchSize the number of changes that are processes in batches. This may help if you
-   * expect a high number of entities to be modified multiple times during this update period.
+   *     expect a high number of entities to be modified multiple times during this update period.
    * @param producer a producer to promote updated entites to a kafka-cluster. May be null if not
-   * desired.
-   * @throws java.sql.SQLException
-   * @throws java.io.IOException
-   * @throws java.lang.ClassNotFoundException
+   *     desired.
+   * @throws java.sql.SQLException on error while handling db
+   * @throws java.io.IOException on etl-error
+   * @throws java.lang.ClassNotFoundException on etl-error
    */
   public static void update(
       Path etlFiles,
@@ -158,14 +155,14 @@ public class Updater {
           Updater.wd.resolve(Updater.LOCK_FILE).toFile())) {
         fileLock.lock();
         //download replicationFiles
-        Iterable<ReplicationFile> replicationFiles = OSCDownloader.download(replicationUrl, wd);
+        Iterable<ReplicationFile> replicationFiles = OscDownloader.download(replicationUrl, wd);
         //parse replicationFiles
-        Iterable<ChangeContainer> changes = OSCParser.parse(replicationFiles);
+        Iterable<ChangeContainer> changes = OscParser.parse(replicationFiles);
         //transform files to OSHEntities
         Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities
-            = OSCOSHTransformer.transform(etlFiles, keytables, batchSize, changes);
+            = OscOshTransformer.transform(etlFiles, keytables, batchSize, changes);
         //load data into updateDb
-        OSHLoader.load(updateDb, oshEntities, dbBit, producer);
+        OshLoader.load(updateDb, oshEntities, dbBit, producer);
         fileLock.unlock();
       }
     } else {

@@ -128,7 +128,7 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
       if (!"org.apache.ignite.internal.jdbc.JdbcConnection".equals(
           updateConn.getClass().getName()
       )) {
-        sqlQuery = this.getPostGISQuery(type);
+        sqlQuery = this.getPostGisQuery(type);
       } else {
         sqlQuery = this.getIgniteQuery(type);
       }
@@ -185,11 +185,13 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
 
   }
 
-  private String getPostGISQuery(OSMType type) {
+  private String getPostGisQuery(OSMType type) {
     Optional<String> map = TableNames.forOSMType(type)
         .map(tn -> tn.toString(prefix));
     if (map.isPresent()) {
-      return "(SELECT data as data FROM " + map.get() + " WHERE ST_Intersects(bbx,ST_GeomFromText(?,4326)))";
+      return "(SELECT data as data FROM "
+          + map.get()
+          + " WHERE ST_Intersects(bbx,ST_GeomFromText(?,4326)))";
     }
     return null;
   }

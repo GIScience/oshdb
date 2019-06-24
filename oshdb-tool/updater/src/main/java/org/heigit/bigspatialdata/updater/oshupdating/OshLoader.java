@@ -31,11 +31,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Static method provider to load updates into the update-db.
  */
-public class OSHLoader {
+public class OshLoader {
 
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(OSHLoader.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(OshLoader.class);
 
-  private OSHLoader() {
+  private OshLoader() {
   }
 
   /**
@@ -45,10 +45,10 @@ public class OSHLoader {
    * @param oshEntities The entities to be written
    * @param dbBit the bitmap-db to be updated with newly changed OSM-Ids
    * @param producer An optional Kafka producer to promote new OSH-Ojects to a
-   * Kafka-Messaging-Cluster.
-   * @throws java.sql.SQLException
-   * @throws java.io.IOException
-   * @throws java.lang.ClassNotFoundException
+   *     Kafka-Messaging-Cluster.
+   * @throws java.sql.SQLException On error while handling databases
+   * @throws java.io.IOException On etl-error
+   * @throws java.lang.ClassNotFoundException on etl-error
    */
   public static void load(
       Connection updateDb,
@@ -66,16 +66,15 @@ public class OSHLoader {
         for (Entry<Long, OSHEntity> currEntry : currMap.getValue().entrySet()) {
           OSHEntity currEntity = currEntry.getValue();
           PreparedStatement st;
-          Polygon geometry = OSHDBGeometryBuilder.getGeometry(currEntity.getBoundingBox());
           switch (updateDb.getClass().getName()) {
             case "org.apache.ignite.internal.jdbc.thin.JdbcThinConnection":
-              st = OSHLoader.insertIgnite(updateDb, currEntity);
+              st = OshLoader.insertIgnite(updateDb, currEntity);
               break;
             case "org.postgresql.jdbc.PgConnection":
-              st = OSHLoader.insertPostgres(updateDb, currEntity);
+              st = OshLoader.insertPostgres(updateDb, currEntity);
               break;
             case "org.h2.jdbc.JdbcConnection":
-              st = OSHLoader.insertH2(updateDb, currEntity);
+              st = OshLoader.insertH2(updateDb, currEntity);
               break;
             default:
               throw new UnknownServiceException(
@@ -119,6 +118,7 @@ public class OSHLoader {
             default:
               throw new AssertionError(currEntity.getType().name());
           }
+          Polygon geometry = OSHDBGeometryBuilder.getGeometry(currEntity.getBoundingBox());
           st.setLong(1, currEntity.getId());
           st.setString(2, geometry.toText());
           st.setBytes(3, Arrays.copyOfRange(
@@ -135,7 +135,7 @@ public class OSHLoader {
           });
 
           if (producer != null) {
-            OSHLoader.promote(
+            OshLoader.promote(
                 producer,
                 currEntity.getType(),
                 currEntity.getVersions().iterator().next().getTimestamp(),

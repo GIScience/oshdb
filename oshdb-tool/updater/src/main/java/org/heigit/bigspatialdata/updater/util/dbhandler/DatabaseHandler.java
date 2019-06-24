@@ -39,11 +39,11 @@ public class DatabaseHandler {
    *
    * @param updateDb Connection to the update-db
    * @param dbBit Connection to the bitmap-db
-   * @throws SQLException
-   * @throws UnknownServiceException
+   * @throws SQLException if database handling error occurred
+   * @throws UnknownServiceException if the porvided db-backend is not supported
    */
-  public static void ereaseDb(Connection updateDb, Connection dbBit) throws SQLException,
-      UnknownServiceException {
+  public static void ereaseDb(Connection updateDb, Connection dbBit)
+      throws SQLException, UnknownServiceException {
     Map<OSMType, LongBitmapDataProvider> bitmapMap = new HashMap<>(3);
     try (Statement createStatement = updateDb.createStatement()) {
       for (OSMType type : OSMType.values()) {
@@ -87,11 +87,13 @@ public class DatabaseHandler {
    * @param updateDb the update-db to be prepared
    * @param dbBit the bitmap-db to be prepared
    * @return returns the current state of the bitmaps (should be empty)
-   * @throws SQLException
-   * @throws IOException
-   * @throws ClassNotFoundException
+   * @throws SQLException If db-handling went wrong
+   * @throws IOException if bintmap handling went wrong
+   * @throws ClassNotFoundException if bitmap handling went wrong
    */
-  public static Map<OSMType, LongBitmapDataProvider> prepareDB(Connection updateDb, Connection dbBit)
+  public static Map<OSMType, LongBitmapDataProvider> prepareDB(
+      Connection updateDb,
+      Connection dbBit)
       throws SQLException, IOException, ClassNotFoundException {
     for (OSMType type : OSMType.values()) {
       if (type != OSMType.UNKNOWN) {
@@ -131,28 +133,29 @@ public class DatabaseHandler {
    *
    * @param oshdb The oshdb
    * @param state the latest state file with values used to update metadata
-   * @throws SQLException
+   * @throws SQLException if database handling went wrong
    */
   public static void updateOSHDBMetadata(OSHDBDatabase oshdb, ReplicationState state) throws
       SQLException {
     if (oshdb instanceof OSHDBJdbc) {
       try (
           PreparedStatement stmt = ((OSHDBJdbc) oshdb).getConnection().prepareStatement(
-              "UPDATE " + TableNames.T_METADATA.toString(oshdb.prefix()) + " SET value=? where key=?;"
-          )) {
-            //timerange
-            OSHDBTimestamp startOSHDB = new OSHDBTimestamps(
-                oshdb.metadata("data.timerange").split(",")[0]).get().first();
-            stmt.setString(1,
-                startOSHDB.toString() + "," + (new OSHDBTimestamp(state.getTimestamp())).toString());
-            stmt.setString(2, "data.timerange");
-            stmt.executeUpdate();
+              "UPDATE "
+              + TableNames.T_METADATA.toString(oshdb.prefix())
+              + " SET value=? where key=?;")) {
+        //timerange
+        OSHDBTimestamp startOSHDB = new OSHDBTimestamps(
+            oshdb.metadata("data.timerange").split(",")[0]).get().first();
+        stmt.setString(1,
+            startOSHDB.toString() + "," + (new OSHDBTimestamp(state.getTimestamp())).toString());
+        stmt.setString(2, "data.timerange");
+        stmt.executeUpdate();
 
-            //replication sequence
-            stmt.setString(1, "" + state.getSequenceNumber());
-            stmt.setString(2, "header.osmosis_replication_sequence_number");
-            stmt.executeUpdate();
-          }
+        //replication sequence
+        stmt.setString(1, "" + state.getSequenceNumber());
+        stmt.setString(2, "header.osmosis_replication_sequence_number");
+        stmt.executeUpdate();
+      }
     } else if (oshdb instanceof OSHDBIgnite) {
       throw new UnsupportedOperationException("Ignite backend does not provide metadata yet?");
     } else {
@@ -166,7 +169,7 @@ public class DatabaseHandler {
    *
    * @param bitmapMap the new bitmaps
    * @param dbBit the database holding the old bitmaps
-   * @throws SQLException
+   * @throws SQLException if database handling went wrong
    */
   public static void writeBitMap(Map<OSMType, LongBitmapDataProvider> bitmapMap, Connection dbBit)
       throws SQLException {

@@ -18,15 +18,15 @@ import org.slf4j.LoggerFactory;
 /**
  * Static method provider to parse OSC-Files.
  */
-public class OSCParser extends IteratorTmpl<ChangeContainer> {
+public class OscParser extends IteratorTmpl<ChangeContainer> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OSCParser.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OscParser.class);
 
   private Iterator<ChangeContainer> currChangeIterator;
   private ReplicationFile currFile;
   private final Iterator<ReplicationFile> replicationFiles;
 
-  private OSCParser(Iterator<ReplicationFile> replicationFiles) {
+  private OscParser(Iterator<ReplicationFile> replicationFiles) {
     this.replicationFiles = replicationFiles;
   }
 
@@ -37,13 +37,14 @@ public class OSCParser extends IteratorTmpl<ChangeContainer> {
    * @return the osmium-ChangeContainers parsed from the OSC-Files
    */
   public static Iterable<ChangeContainer> parse(Iterable<ReplicationFile> replicationFiles) {
-    return () -> new OSCParser(replicationFiles.iterator());
+    return () -> new OscParser(replicationFiles.iterator());
   }
 
   /**
-   * generate flow for ChangeContainer within a osc file
+   * generate flow for ChangeContainer within a osc file.
    */
-  private static Flowable<ChangeContainer> generateChangeFlow(File osc) throws FileNotFoundException {
+  private static Flowable<ChangeContainer> generateChangeFlow(File osc)
+      throws FileNotFoundException {
     InputStream inputStream = new CompressionActivator(CompressionMethod.GZip)
         .createCompressionInputStream(new FileInputStream(osc));
     Flowable<ChangeContainer> flow = Flowable.generate(() -> XmlChangeReaderIterator.of(
@@ -74,8 +75,8 @@ public class OSCParser extends IteratorTmpl<ChangeContainer> {
       return currChangeIterator.next();
     } else if (replicationFiles.hasNext()) {
       currFile = replicationFiles.next();
-      currChangeIterator = OSCParser.getChangeContainers(currFile).iterator();
-      OSCDownloader.updateState(currFile.state.store());
+      currChangeIterator = OscParser.getChangeContainers(currFile).iterator();
+      OscDownloader.updateState(currFile.state.store());
       if (currFile.file.delete()) {
         return this.getNext();
       } else {

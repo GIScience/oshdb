@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.updater.util.replication;
 
 import java.io.InputStream;
-import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -30,11 +29,9 @@ public class XmlChangeReaderIterator extends IteratorTmpl<ChangeContainer> imple
    *
    * @param inputStream The data-stream
    * @return An Iterator over ChangeContainers in that input
-   * @throws XMLStreamException
-   * @throws FactoryConfigurationError
+   * @throws XMLStreamException If XML could not be streamed
    */
-  public static XmlChangeReaderIterator of(InputStream inputStream)
-      throws XMLStreamException, FactoryConfigurationError {
+  public static XmlChangeReaderIterator of(InputStream inputStream) throws XMLStreamException {
     return new XmlChangeReaderIterator(XMLInputFactory.newInstance()
         .createXMLStreamReader(inputStream));
   }

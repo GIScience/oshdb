@@ -19,7 +19,8 @@ public class FlushArgs {
    * Ignite -> file-path).
    */
   @Parameter(names = {"-dbConfig", "-dbcfg"},
-      description = "connection of production database. JDBC definition for H2, Igntie file path otherwise",
+      description = "connection of production database. "
+      + "JDBC definition for H2, Igntie file path otherwise",
       required = true,
       order = 1)
   public String dbconfig;
@@ -28,7 +29,8 @@ public class FlushArgs {
    * True if metadate of oshdb should be updated.
    */
   @Parameter(names = {"-updateMeta"},
-      description = "Set wheather the matadata of the OSHDB should be updated. Make sure metadatatable is present and properly configured.",
+      description = "Set wheather the matadata of the OSHDB should be updated. "
+      + "Make sure metadatatable is present and properly configured.",
       required = false)
   public boolean updateMeta = false;
 

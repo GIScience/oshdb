@@ -26,17 +26,19 @@ public class UpdateDbHelper {
    *
    * @param dbBit connection to the bitmap-db. Commonly equals the connection to the update-db
    * @return the current bitmaps where updated OSHEntites are flagged.
-   * @throws SQLException
-   * @throws IOException
-   * @throws ClassNotFoundException
+   * @throws SQLException if db-handling went wrong
+   * @throws IOException if byte array handling went wrong
+   * @throws ClassNotFoundException if byte array handling went wrong
    */
-  public static Map<OSMType, LongBitmapDataProvider> getBitMap(Connection dbBit) throws SQLException,
-      IOException, ClassNotFoundException {
+  public static Map<OSMType, LongBitmapDataProvider> getBitMap(Connection dbBit)
+      throws SQLException, IOException, ClassNotFoundException {
     Map<OSMType, LongBitmapDataProvider> map = new HashMap<>(3);
     for (OSMType type : OSMType.values()) {
       if (type != OSMType.UNKNOWN) {
         Statement retreave = dbBit.createStatement();
-        String retrSql = "SELECT bitmap FROM " + TableNames.forOSMType(type).get() + "_bitmap WHERE id=1;";
+        String retrSql = "SELECT bitmap FROM "
+            + TableNames.forOSMType(type).get()
+            + "_bitmap WHERE id=1;";
         ResultSet executeQuery = retreave.executeQuery(retrSql);
         executeQuery.next();
         byte[] bytes = executeQuery.getBytes("bitmap");

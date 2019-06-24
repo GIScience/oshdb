@@ -48,8 +48,8 @@ public interface EtlStore {
   /**
    * Retrieves the CellId an Object is currently located in.
    *
-   * @param type
-   * @param id
+   * @param type The type of the requested entity
+   * @param id the id of the requested entity
    * @return The cellId the object currently resides in
    */
   CellId getCurrentCellId(OSMType type, long id);
@@ -57,9 +57,9 @@ public interface EtlStore {
   /**
    * Updates the CellId an Object is currently located in.
    *
-   * @param type
-   * @param id
-   * @param newId
+   * @param type the type of the entity to update
+   * @param id the id of the entity to update
+   * @param newId the new CellId of the entity
    */
   void writeCurrentCellId(OSMType type, long id, CellId newId);
 

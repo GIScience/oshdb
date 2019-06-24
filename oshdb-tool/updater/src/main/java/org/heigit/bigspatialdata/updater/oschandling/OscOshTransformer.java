@@ -58,10 +58,12 @@ import org.slf4j.LoggerFactory;
  * Provides a static method to transform osmium-ChangeContainrs to OSHDB-Objects. Returns itself as
  * an Iterator.
  */
-public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEntity>>> {
+public class OscOshTransformer implements Iterator<Map<OSMType, Map<Long, OSHEntity>>> {
 
-  //Attention: does not propperly handled missing data at time of Update. If data is provided with a later update, previous referencing Entities are not updated and remain in an incomplete state -> see comment about handling missing data
-  private static final Logger LOG = LoggerFactory.getLogger(OSCOSHTransformer.class);
+  //Attention: does not propperly handled missing data at time of Update. 
+  //If data is provided with a later update, previous referencing Entities 
+  //are not updated and remain in an incomplete state -> see comment about handling missing data
+  private static final Logger LOG = LoggerFactory.getLogger(OscOshTransformer.class);
   private final int batchSize;
 
   private final Iterator<ChangeContainer> containers;
@@ -71,7 +73,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
   private final PreparedStatement insertRoleStatement;
   private final TagTranslator tt;
 
-  private OSCOSHTransformer(Path etlFiles, Connection keytables, int batchSize,
+  private OscOshTransformer(Path etlFiles, Connection keytables, int batchSize,
       Iterable<ChangeContainer> changes)
       throws OSHDBKeytablesNotFoundException, SQLException {
     this.containers = changes.iterator();
@@ -92,8 +94,8 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
    * @param etlFiles the etlFiles old versions can be read from
    * @param keytables the keytables-DB to be queried and updated
    * @param batchSize the number of ChangeContainers to be processed at once (large numbers may help
-   * if you expect entities to be changed multiple times during a short timeframe, wich seams
-   * unlikely)
+   *    if you expect entities to be changed multiple times during a short timeframe, wich seams
+   *    unlikely)
    * @param changes the ChangeContainers to be processed
    * @return the Class itself as an Iterable with OSHDBEntities
    */
@@ -106,7 +108,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     //define Iterable that creates Iterators as needed
     return () -> {
       try {
-        return new OSCOSHTransformer(etlFiles, keytables, batchSize, changes);
+        return new OscOshTransformer(etlFiles, keytables, batchSize, changes);
       } catch (OSHDBKeytablesNotFoundException | SQLException ex) {
         LOG.error("", ex);
       }
@@ -239,8 +241,8 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
     ArrayList<OSMRelation> relations = new ArrayList<>();
     Set<Long> missingNodeIds = new HashSet<>();
     Set<Long> missingWayIds = new HashSet<>();
-    Set<OSHNode> rNodes = new HashSet<>();
-    Set<OSHWay> rWays = new HashSet<>();
+    Set<OSHNode> relationNodes = new HashSet<>();
+    Set<OSHWay> relationWays = new HashSet<>();
 
     for (ChangeContainer cont : changes) {
 
@@ -271,10 +273,10 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
         int roleId = this.getRole(rm.getMemberRole());
         switch (rm.getMemberType()) {
           case Node:
-            OSHNode rNode = (OSHNode) this.etlStore.getEntity(OSMType.NODE, rm.getMemberId());
-            if (rNode != null) {
-              missingNodeIds.add(rNode.getId());
-              rNodes.add(rNode);
+            OSHNode relationNode = (OSHNode) this.etlStore.getEntity(OSMType.NODE, rm.getMemberId());
+            if (relationNode != null) {
+              missingNodeIds.add(relationNode.getId());
+              relationNodes.add(relationNode);
             } else {
               LOG.warn(
                   "Missing Data for "
@@ -287,15 +289,15 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
                 rm.getMemberId(),
                 OSMType.NODE,
                 roleId,
-                rNode
+                relationNode
             );
             refs2[j] = memberN;
             break;
           case Way:
-            OSHWay rWay = (OSHWay) this.etlStore.getEntity(OSMType.WAY, rm.getMemberId());
-            if (rWay != null) {
-              missingWayIds.add(rWay.getId());
-              rWays.add(rWay);
+            OSHWay relationWay = (OSHWay) this.etlStore.getEntity(OSMType.WAY, rm.getMemberId());
+            if (relationWay != null) {
+              missingWayIds.add(relationWay.getId());
+              relationWays.add(relationWay);
             } else {
               LOG.warn(
                   "Missing Data for "
@@ -308,14 +310,14 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
                 rm.getMemberId(),
                 OSMType.WAY,
                 roleId,
-                rWay
+                relationWay
             );
             refs2[j] = memberW;
             break;
           case Relation:
-            OSHRelation rRelation
+            OSHRelation relationRelation
                 = (OSHRelation) this.etlStore.getEntity(OSMType.RELATION, rm.getMemberId());
-            if (rRelation == null) {
+            if (relationRelation == null) {
               LOG.warn(
                   "Missing Data for "
                   + rm.getMemberType()
@@ -327,7 +329,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
                 rm.getMemberId(),
                 OSMType.RELATION,
                 roleId,
-                rRelation
+                relationRelation
             );
             refs2[j] = memberR;
             break;
@@ -347,10 +349,10 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
         for (OSMMember mem : refs1) {
           switch (mem.getType()) {
             case NODE:
-              rNodes.add((OSHNode) mem.getEntity());
+              relationNodes.add((OSHNode) mem.getEntity());
               break;
             case WAY:
-              rWays.add((OSHWay) mem.getEntity());
+              relationWays.add((OSHWay) mem.getEntity());
               break;
             case RELATION:
               break;
@@ -361,7 +363,7 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       });
     }
 
-    OSHRelation theRelation = OSHRelationImpl.build(relations, rNodes, rWays);
+    OSHRelation theRelation = OSHRelationImpl.build(relations, relationNodes, relationWays);
 
     this.etlStore.appendEntity(
         theRelation,
@@ -411,12 +413,16 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       for (WayNode wn : wayNodes) {
         missingNodeIds.add(wn.getNodeId());
         OSHNode node = (OSHNode) this.etlStore.getEntity(OSMType.NODE, wn.getNodeId());
-        //Handling missing data: account for updates coming unordered (e.g. way creation before referencing node creation. Maybe dummy node with ID would be better?
+        //Handling missing data: account for updates coming unordered 
+        //(e.g. way creation before referencing node creation. 
+        //Maybe dummy node with ID would be better?
         if (node != null) {
           allNodes.add(node);
         } else {
           LOG.warn(
-              "Missing Data for Node with ID: " + wn.getNodeId() + ". Data output might be corrupt?");
+              "Missing Data for Node with ID: "
+              + wn.getNodeId()
+              + ". Data output might be corrupt?");
         }
         OSMMember member = new OSMMember(wn.getNodeId(), OSMType.NODE, 0, node);
         refs[i] = member;
@@ -614,8 +620,9 @@ public class OSCOSHTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       long id,
       List<ChangeContainer> changes)
       throws IOException, SQLException {
-    //get previous version of entity, if any. This ensures that updates may come in any order and may handle reactivations
-    OSHEntity currEntity = this.etlStore.getEntity(OSCOSHTransformer.convertType(type), id);
+    //get previous version of entity, if any. 
+    //This ensures that updates may come in any order and may handle reactivations
+    OSHEntity currEntity = this.etlStore.getEntity(OscOshTransformer.convertType(type), id);
 
     switch (type) {
       case Node:

@@ -8,7 +8,7 @@ import java.net.URL;
 /**
  * Validats a URL passed via CMD.
  */
-public class URLValidator implements IParameterValidator {
+public class UrlValidator implements IParameterValidator {
 
   @Override
   public void validate(String name, String value) throws ParameterException {

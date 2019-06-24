@@ -39,7 +39,7 @@ public class BaseArgs {
   public Path etl;
 
   /**
-   * HELP!
+   * HELP.
    */
   @Parameter(names = {"-help", "--help", "-h", "--h"},
       description = "prints this help",
@@ -51,7 +51,8 @@ public class BaseArgs {
    * The JDBC-Parameter for the update-db.
    */
   @Parameter(names = {"-jdbc"},
-      description = "Connection details for jdbc-storage of updates: jdbc:dbms://host:port/database?user=UserName&password=Password",
+      description = "Connection details for jdbc-storage of updates: "
+      + "jdbc:dbms://host:port/database?user=UserName&password=Password",
       required = true,
       order = 1)
   public String jdbc;
