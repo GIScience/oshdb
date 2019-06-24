@@ -100,8 +100,8 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-    }else{
-      bitMapIndex=null;
+    } else {
+      bitMapIndex = null;
     }
     //implement Timeoout for updates
     long execStart = System.currentTimeMillis();

@@ -72,7 +72,7 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
   @Override
   public boolean hasNext() {
     try {
-      return next != null || ((next = getNext()) != null);
+      return next != null || (next = getNext()) != null;
     } catch (SQLException | IOException ex) {
       LOG.error("There was an error getting results. They will be incomplete.", ex);
     }
@@ -80,6 +80,7 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
       try {
         updateEntities.close();
       } catch (SQLException ex) {
+        LOG.warn("Failed to close the db-connection.", ex);
       }
     }
     return false;
@@ -120,6 +121,7 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
 
   private GridOSHEntity getNext() throws SQLException, IOException {
     WKTWriter wktWriter = new WKTWriter();
+    PreparedStatement pstmt = null;
     if (updateEntities == null && typeIt.hasNext()) {
       type = typeIt.next();
       String sqlQuery;
@@ -130,7 +132,7 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
       } else {
         sqlQuery = this.getIgniteQuery(type);
       }
-      PreparedStatement pstmt = updateConn.prepareStatement(sqlQuery);
+      pstmt = updateConn.prepareStatement(sqlQuery);
       Polygon geometry = OSHDBGeometryBuilder.getGeometry(copyOfBboxFilter);
       pstmt.setObject(1, wktWriter.write(geometry));
       updateEntities = pstmt.executeQuery();
@@ -165,7 +167,11 @@ public class UpdateIterator implements Iterator<GridOSHEntity> {
     if (!more) {
       try {
         updateEntities.close();
+        if (pstmt != null) {
+          pstmt.close();
+        }
       } catch (SQLException ex) {
+        LOG.warn("Failed to close the db-connection.", ex);
       }
       updateEntities = null;
     }

@@ -91,7 +91,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
       updateStream = Streams.stream(this.getUpdates())
           .parallel()
           .filter(ignored -> this.isActive())
-          .map(oshCell -> processor.apply(oshCell, updateIterator));;
+          .map(oshCell -> processor.apply(oshCell, updateIterator));
     }
     
     return Streams.concat(oshdbStream, updateStream)

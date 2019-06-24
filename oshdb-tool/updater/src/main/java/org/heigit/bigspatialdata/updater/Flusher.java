@@ -74,9 +74,9 @@ public class Flusher {
    * @param etlPath the path to the etl-files
    * @param batchSize the number of OSH-Entities to be flushed at once
    * @param updateMeta if true, metadate of oshdb will be updated
-   * @throws java.sql.SQLException
-   * @throws java.io.IOException
-   * @throws java.lang.ClassNotFoundException
+   * @throws java.sql.SQLException If Database handling went wrong
+   * @throws java.io.IOException if etl-file handling wnt wrong
+   * @throws java.lang.ClassNotFoundException if etl-file handling went wrong
    */
   public static void flush(
       OSHDBDatabase oshdb,
@@ -169,13 +169,12 @@ public class Flusher {
    *
    * @param args The arguments that will be passed on to the flusher method. See @link{#FlushArgs}
    * for details.
-   * @throws SQLException
-   * @throws IOException
-   * @throws ClassNotFoundException
-   * @throws Exception
+   * @throws SQLException If database handling went wrong
+   * @throws IOException if Etl-File handling went wrong
+   * @throws ClassNotFoundException if etl-file handling went wrong
+   * @throws Exception if oshdb handling went wrong
    */
-  public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException,
-      Exception {
+  public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException, Exception{
     FlushArgs config = new FlushArgs();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();
     try {
@@ -327,7 +326,7 @@ public class Flusher {
       List<? extends OSHEntity> updateEntities,
       Set<Long> removeEntities,
       OSMType t)
-      throws SQLException, IOException, ClassNotFoundException {
+      throws SQLException, IOException {
 
     List<? extends OSHEntity> filteredEntities = new ArrayList<>();
     //check if grid cell does not yet exist (e.g. insertion)

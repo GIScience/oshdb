@@ -146,7 +146,7 @@ public abstract class MapReducer<X> implements
       TimestampFormatter.getInstance().date(new Date()),
       OSHDBTimestamps.Interval.MONTHLY
   );
-  private OSHDBTimestamp timestampOSHDB=new OSHDBTimestamp(0);
+  private OSHDBTimestamp timestampOSHDB = new OSHDBTimestamp(0);
   protected OSHDBBoundingBox bboxFilter = new OSHDBBoundingBox(-180, -90, 180, 90);
   private Geometry polyFilter = null;
   protected EnumSet<OSMType> typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
@@ -159,10 +159,11 @@ public abstract class MapReducer<X> implements
   protected MapReducer(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     this.oshdb = oshdb;
     try {
-      timestampOSHDB = (new OSHDBTimestamps(
-          this.oshdb.metadata("data.timerange").split(",")[1])).get().first();
+      timestampOSHDB = new OSHDBTimestamps(
+          this.oshdb.metadata("data.timerange").split(",")[1]).get().first();
     } catch (Exception ex) {
-      LOG.error("Could not get metadata of OSHDB. I can handle this but you should solve that!", ex);
+      LOG.error("Could not get metadata of OSHDB. I can handle this but you should solve that!",
+           ex);
     }
     this.forClass = forClass;
   }
@@ -179,14 +180,14 @@ public abstract class MapReducer<X> implements
     this.tagInterpreter = obj.tagInterpreter;
 
     this.tstamps = obj.tstamps;
-    this.timestampOSHDB=obj.timestampOSHDB;
+    this.timestampOSHDB = obj.timestampOSHDB;
     this.bboxFilter = obj.bboxFilter;
     this.polyFilter = obj.polyFilter;
     this.typeFilter = obj.typeFilter.clone();
     this.preFilters.addAll(obj.preFilters);
     this.filters.addAll(obj.filters);
     this.mappers.addAll(obj.mappers);
-    this.update=obj.update;
+    this.update = obj.update;
   }
 
   @NotNull
@@ -328,7 +329,8 @@ public abstract class MapReducer<X> implements
     if (timestampOSHDB.compareTo(ret.tstamps.get().last()) > 0) {
       ret.update = null;
       LOG.info(
-          "Excluding updates based on new timestamps because the OSHDB is suffitiently up to date.");
+          "Excluding updates based on new timestamps "
+          + "because the OSHDB is suffitiently up to date.");
     }
     return ret;
   }

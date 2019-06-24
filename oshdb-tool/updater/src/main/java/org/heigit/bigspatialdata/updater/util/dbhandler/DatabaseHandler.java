@@ -210,7 +210,8 @@ public class DatabaseHandler {
   private static void prepareH2UpdateDb(OSMType type, Connection updateDb) throws SQLException {
     try (Statement dbStatement = updateDb.createStatement()) {
       String setMode = "SET MODE MySQL; "
-          + "CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR \"org.h2gis.functions.factory.H2GISFunctions.load\"; "
+          + "CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR "
+          + "\"org.h2gis.functions.factory.H2GISFunctions.load\"; "
           + "CALL H2GIS_SPATIAL();";
       dbStatement.execute(setMode);
 
