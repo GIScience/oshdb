@@ -149,24 +149,22 @@ public class Updater {
   ) throws SQLException,
       IOException,
       ClassNotFoundException {
-    if (Updater.wd.toFile().mkdirs()) {
+    //create directory if not exists
+    Updater.wd.toFile().mkdirs();
 
-      try (FileBasedLock fileLock = new FileBasedLock(
-          Updater.wd.resolve(Updater.LOCK_FILE).toFile())) {
-        fileLock.lock();
-        //download replicationFiles
-        Iterable<ReplicationFile> replicationFiles = OscDownloader.download(replicationUrl, wd);
-        //parse replicationFiles
-        Iterable<ChangeContainer> changes = OscParser.parse(replicationFiles);
-        //transform files to OSHEntities
-        Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities
-            = OscOshTransformer.transform(etlFiles, keytables, batchSize, changes);
-        //load data into updateDb
-        OshLoader.load(updateDb, oshEntities, dbBit, producer);
-        fileLock.unlock();
-      }
-    } else {
-      throw new AssertionError("Could not create working directory.");
+    try (FileBasedLock fileLock = new FileBasedLock(
+        Updater.wd.resolve(Updater.LOCK_FILE).toFile())) {
+      fileLock.lock();
+      //download replicationFiles
+      Iterable<ReplicationFile> replicationFiles = OscDownloader.download(replicationUrl, wd);
+      //parse replicationFiles
+      Iterable<ChangeContainer> changes = OscParser.parse(replicationFiles);
+      //transform files to OSHEntities
+      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities
+          = OscOshTransformer.transform(etlFiles, keytables, batchSize, changes);
+      //load data into updateDb
+      OshLoader.load(updateDb, oshEntities, dbBit, producer);
+      fileLock.unlock();
     }
   }
 

@@ -104,7 +104,6 @@ public class OscOshTransformer implements Iterator<Map<OSMType, Map<Long, OSHEnt
       Connection keytables,
       int batchSize,
       Iterable<ChangeContainer> changes) {
-    LOG.info("processing");
     //define Iterable that creates Iterators as needed
     return () -> {
       try {

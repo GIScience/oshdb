@@ -189,32 +189,30 @@ public class Flusher {
     }
 
     Path wd = Paths.get("target/updaterWD/");
-    if (wd.toFile().mkdirs()) {
-      try (FileBasedLock fileLock = new FileBasedLock(
-          wd.resolve(Updater.LOCK_FILE).toFile())) {
-        try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
-            Connection dbBit = DriverManager.getConnection(config.baseArgs.dbbit);) {
-          if (config.dbconfig.contains("h2")) {
-            try (Connection conn = DriverManager.getConnection(config.dbconfig, "sa", "");
-                OSHDBH2 oshdb = new OSHDBH2(conn);) {
-              Flusher
-                  .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
-                      config.updateMeta);
-            }
-          } else if (config.dbconfig.contains("ignite")) {
-            try (OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);) {
-              Flusher
-                  .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
-                      config.updateMeta);
-            }
-          } else {
-            throw new AssertionError(
-                "Backend of type " + config.dbconfig + " not supported yet.");
+    //create directory if not exists
+    wd.toFile().mkdirs();
+    try (FileBasedLock fileLock = new FileBasedLock(
+        wd.resolve(Updater.LOCK_FILE).toFile())) {
+      try (Connection updateDb = DriverManager.getConnection(config.baseArgs.jdbc);
+          Connection dbBit = DriverManager.getConnection(config.baseArgs.dbbit);) {
+        if (config.dbconfig.contains("h2")) {
+          try (Connection conn = DriverManager.getConnection(config.dbconfig, "sa", "");
+              OSHDBH2 oshdb = new OSHDBH2(conn);) {
+            Flusher
+                .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
+                    config.updateMeta);
           }
+        } else if (config.dbconfig.contains("ignite")) {
+          try (OSHDBIgnite oshdb = new OSHDBIgnite(config.dbconfig);) {
+            Flusher
+                .flush(oshdb, updateDb, dbBit, config.baseArgs.etl, config.baseArgs.batchSize,
+                    config.updateMeta);
+          }
+        } else {
+          throw new AssertionError(
+              "Backend of type " + config.dbconfig + " not supported yet.");
         }
       }
-    } else {
-      throw new AssertionError("Could not create working directory!");
     }
   }
 

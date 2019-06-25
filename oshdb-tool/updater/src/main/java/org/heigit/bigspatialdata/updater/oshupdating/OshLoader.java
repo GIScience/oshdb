@@ -57,7 +57,6 @@ public class OshLoader {
       Producer<Long, Byte[]> producer)
       throws SQLException, IOException, ClassNotFoundException {
 
-    LOG.info("loading");
     Map<OSMType, LongBitmapDataProvider> bitmapMap
         = DatabaseHandler.prepareDB(updateDb, dbBit);
 
