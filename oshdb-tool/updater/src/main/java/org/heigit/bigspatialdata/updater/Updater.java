@@ -160,7 +160,7 @@ public class Updater {
       //parse replicationFiles
       Iterable<ChangeContainer> changes = OscParser.parse(replicationFiles);
       //transform files to OSHEntities
-      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities
+      Iterable<Map<OSMType, Map<Long, ? extends OSHEntity>>> oshEntities
           = OscOshTransformer.transform(etlFiles, keytables, batchSize, changes);
       //load data into updateDb
       OshLoader.load(updateDb, oshEntities, dbBit, producer);

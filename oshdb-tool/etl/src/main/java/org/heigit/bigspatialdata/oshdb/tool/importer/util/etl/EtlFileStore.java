@@ -1,9 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.util.etl;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
@@ -15,41 +15,45 @@ import org.slf4j.LoggerFactory;
  */
 public class EtlFileStore implements EtlStore {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EtlFileStore.class);
-  private final Path path;
+	private static final Logger LOG = LoggerFactory.getLogger(EtlFileStore.class);
 
-  /**
-   * Creates a new ETL-FileStore defining the path of the files and providing the methods to read
-   * and write OSH-Objects.
-   *
-   * @param path Path ot the ETL-Files.
-   */
-  public EtlFileStore(Path path) {
-    this.path = path;
-  }
+	public EtlFileStore(Path etlPath) {
+		// TODO Auto-generated constructor stub
+	}
 
-  @Override
-  public void appendEntity(OSHEntity entity, Set<Long> newMemberNodes, Set<Long> newMemberWays) {
-  }
+	@Override
+	public EtlStoreContainer getEntity(OSMType type, long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-  @Override
-  public CellId getCurrentCellId(OSMType type, long id) {
-    //Entity has no earlyer cellId (was a creation od etl files incomplete)
-    return null;
-  }
+	@Override
+	public Map<OSMType, Set<EtlStoreContainer>> getDependent(EtlStoreContainer container) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-  @Override
-  public Map<OSMType, Map<Long, OSHEntity>> getDependent(OSMType type, long id) {
-    return new HashMap<>(0);
-  }
+	@Override
+	public EtlStoreContainer appendEntity(EtlStoreContainer container, OSHEntity entity) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-  @Override
-  public OSHEntity getEntity(OSMType type, long id) {
-    return null;
-  }
+	@Override
+	public void writeCurrentCellId(OSMType type, long id, CellId newId) {
+		// TODO Auto-generated method stub
 
-  @Override
-  public void writeCurrentCellId(OSMType type, long id, CellId newId) {
-  }
+	}
+
+	@Override
+	public void updateBackRefs(EtlStoreContainer container, Set<Long> newMemberNodes, Set<Long> newMemberWays) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public CellId getCurrentCellId(OSMType type, long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

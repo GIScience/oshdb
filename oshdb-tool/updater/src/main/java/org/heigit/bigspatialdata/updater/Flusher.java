@@ -45,6 +45,7 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlFileStore;
+import org.heigit.bigspatialdata.oshdb.tool.importer.util.etl.EtlStore;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.updater.oschandling.OscDownloader;
@@ -87,7 +88,7 @@ public class Flusher {
       boolean updateMeta)
       throws SQLException, IOException, ClassNotFoundException {
 
-    EtlFileStore etlf = new EtlFileStore(etlPath);
+    EtlStore etlf = new EtlFileStore(etlPath);
     XYGridTree xyt = new XYGridTree(OSHDB.MAXZOOM);
     try (Statement updateDBStatement = updatedb.createStatement();) {
       for (OSMType t : OSMType.values()) {
@@ -150,8 +151,7 @@ public class Flusher {
         }
         DatabaseHandler.ereaseDb(updatedb, dbBit);
         if (updateMeta) {
-          PropertiesPersister propertiesPersister = new PropertiesPersister(Updater.wd
-              .resolve(OscDownloader.LOCAL_STATE_FILE).toFile());
+          PropertiesPersister propertiesPersister = new PropertiesPersister(Updater.wd.resolve(OscDownloader.LOCAL_STATE_FILE).toFile());
           DatabaseHandler.updateOSHDBMetadata(oshdb, new ReplicationState(propertiesPersister
               .loadMap()));
         }

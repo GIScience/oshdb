@@ -52,7 +52,7 @@ public class OshLoader {
    */
   public static void load(
       Connection updateDb,
-      Iterable<Map<OSMType, Map<Long, OSHEntity>>> oshEntities,
+      Iterable<Map<OSMType, Map<Long,? extends OSHEntity>>> oshEntities,
       Connection dbBit,
       Producer<Long, Byte[]> producer)
       throws SQLException, IOException, ClassNotFoundException {
@@ -60,9 +60,9 @@ public class OshLoader {
     Map<OSMType, LongBitmapDataProvider> bitmapMap
         = DatabaseHandler.prepareDB(updateDb, dbBit);
 
-    for (Map<OSMType, Map<Long, OSHEntity>> currMapOuter : oshEntities) {
-      for (Entry<OSMType, Map<Long, OSHEntity>> currMap : currMapOuter.entrySet()) {
-        for (Entry<Long, OSHEntity> currEntry : currMap.getValue().entrySet()) {
+    for (Map<OSMType, Map<Long, ? extends OSHEntity>> currMapOuter : oshEntities) {
+      for (Entry<OSMType, Map<Long, ? extends OSHEntity>> currMap : currMapOuter.entrySet()) {
+        for (Entry<Long, ? extends OSHEntity> currEntry : currMap.getValue().entrySet()) {
           OSHEntity currEntity = currEntry.getValue();
           PreparedStatement st;
           switch (updateDb.getClass().getName()) {
