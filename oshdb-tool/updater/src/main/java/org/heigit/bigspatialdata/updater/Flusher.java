@@ -89,11 +89,6 @@ public class Flusher {
 
     EtlFileStore etlf = new EtlFileStore(etlPath);
     XYGridTree xyt = new XYGridTree(OSHDB.MAXZOOM);
-    //do i need to block the cluster somehow, to prevent false operations?
-    //ignite.cluster().active(false);
-    //wait for all queries to finish
-    //do flush here: can I use something from the etl?
-    //ignite.cluster().active(true);
     try (Statement updateDBStatement = updatedb.createStatement();) {
       for (OSMType t : OSMType.values()) {
         if (t == OSMType.UNKNOWN) {
@@ -115,6 +110,7 @@ public class Flusher {
             byte[] bytes = resultSetUpdate.getBytes("data");
             OSHEntity updateEntity = Flusher.createUpdateEntity(bytes, t);
 
+            //get new and old location
             CellId currentCellId = etlf.getCurrentCellId(updateEntity.getType(), updateEntity
                 .getId());
             CellId newCellId = xyt.getInsertId(updateEntity.getBoundingBox());
