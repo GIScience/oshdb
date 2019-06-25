@@ -96,18 +96,30 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
+    S updateResult = identitySupplier.get();
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
     if (this.update != null) {
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
+      CellProcessor<S> cellProcessor = Kernels.getOSMContributionCellReducer(
+          mapper,
+          identitySupplier,
+          accumulator
+      );
+      updateResult = this.getResultFromUpdates(
+          execStart,
+          cellProcessor,
+          identitySupplier,
+          combiner,
+          bitMapIndex);
     } else {
       bitMapIndex = null;
     }
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
 
     //get regular result
-    S resultA = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+    S oshdbResult = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       return IgniteScanQueryHelper.mapReduceCellsOSMContributionOnIgniteCache(
           (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
@@ -116,22 +128,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
           bitMapIndex);
     }).reduce(identitySupplier.get(), combiner);
 
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
-      CellProcessor<S> cellProcessor = Kernels.getOSMContributionCellReducer(
-          mapper,
-          identitySupplier,
-          accumulator
-      );
-      resultB = this.getResultFromUpdates(
-          execStart,
-          cellProcessor,
-          identitySupplier,
-          combiner,
-          bitMapIndex);
-    }
-
-    return combiner.apply(resultA, resultB);
+    return combiner.apply(oshdbResult, updateResult);
   }
 
   @Override
@@ -143,28 +140,14 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
+    S resultB = identitySupplier.get();
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
+
     if (this.update != null) {
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-    } else {
-      bitMapIndex = null;
-    }
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
-
-    //get regular result
-    S resultA = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
-      return IgniteScanQueryHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
-          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
-          this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner,
-          bitMapIndex);
-    }).reduce(identitySupplier.get(), combiner);
-    
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
       CellProcessor<S> cellProcessor = Kernels.getOSMContributionGroupingCellReducer(
           mapper,
           identitySupplier,
@@ -176,7 +159,19 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
           identitySupplier,
           combiner,
           bitMapIndex);
+    } else {
+      bitMapIndex = null;
     }
+
+    //get regular result
+    S resultA = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
+      return IgniteScanQueryHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner,
+          bitMapIndex);
+    }).reduce(identitySupplier.get(), combiner);
 
     return combiner.apply(resultA, resultB);
   }
@@ -191,18 +186,30 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
+      //implement Timeoout for updates
+      long execStart = System.currentTimeMillis();
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
+      CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotCellReducer(
+          mapper,
+          identitySupplier,
+          accumulator
+      );
+      updateResult = this.getResultFromUpdates(
+          execStart,
+          cellProcessor,
+          identitySupplier,
+          combiner,
+          bitMapIndex);
     } else {
       bitMapIndex = null;
     }
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
 
     //get regular result
-    S resultA = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+    S oshdbResult = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       return IgniteScanQueryHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
           (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
@@ -211,22 +218,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
           bitMapIndex);
     }).reduce(identitySupplier.get(), combiner);
 
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
-      CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotCellReducer(
-          mapper,
-          identitySupplier,
-          accumulator
-      );
-      resultB = this.getResultFromUpdates(
-          execStart,
-          cellProcessor,
-          identitySupplier,
-          combiner,
-          bitMapIndex);
-    }
-
-    return combiner.apply(resultA, resultB);
+    return combiner.apply(oshdbResult, updateResult);
   }
 
   @Override
@@ -238,18 +230,30 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
     final Map<OSMType, LongBitmapDataProvider> bitMapIndex;
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
+      //implement Timeoout for updates
+      long execStart = System.currentTimeMillis();
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
+      CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotGroupingCellReducer(
+          mapper,
+          identitySupplier,
+          accumulator
+      );
+      updateResult = this.getResultFromUpdates(
+          execStart,
+          cellProcessor,
+          identitySupplier,
+          combiner,
+          bitMapIndex);
     } else {
       bitMapIndex = null;
     }
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
 
     //get regular result
-    S resultA = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
+    S oshdbResult = this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       return IgniteScanQueryHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
           (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
@@ -258,22 +262,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
           bitMapIndex);
     }).reduce(identitySupplier.get(), combiner);
 
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
-      CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotGroupingCellReducer(
-          mapper,
-          identitySupplier,
-          accumulator
-      );
-      resultB = this.getResultFromUpdates(
-          execStart,
-          cellProcessor,
-          identitySupplier,
-          combiner,
-          bitMapIndex);
-    }
-
-    return combiner.apply(resultA, resultB);
+    return combiner.apply(oshdbResult, updateResult);
   }
 
   private Map<Integer, TreeMap<Long, CellIdRange>> getCellIdRangesByLevel() {
@@ -296,16 +285,15 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
       Map<OSMType, LongBitmapDataProvider> bitMapIndex)
       throws ClassNotFoundException, ParseException, SQLException, IOException {
 
-    CellIterator updateIterator = new CellIterator(
-        this.tstamps.get(),
-        this.bboxFilter, this.getPolyFilter(),
-        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
-    );
-
-    S resultB = identitySupplier.get();
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
+      CellIterator updateIterator = new CellIterator(
+          this.tstamps.get(),
+          this.bboxFilter, this.getPolyFilter(),
+          this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+      );
       updateIterator.includeIDsOnly(bitMapIndex);
-      resultB = Streams.stream(this.getUpdates())
+      updateResult = Streams.stream(this.getUpdates())
           .parallel()
           .filter(ignored -> {
             if (timeout != null && System.currentTimeMillis() - execStart > timeout) {
@@ -316,7 +304,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
           .map(oshCell -> cellProcessor.apply(oshCell, updateIterator))
           .reduce(identitySupplier.get(), combiner);
     }
-    return resultB;
+    return updateResult;
   }
 
 }

@@ -61,19 +61,28 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
-    //because streams are lazy we have to have two celliterators and cannot change the first one
-    CellIterator updateIterator = new CellIterator(
-        this.tstamps.get(),
-        this.bboxFilter, this.getPolyFilter(),
-        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
-    );
     
-    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    Stream<S> updateStream = Stream.empty();
     if (this.update != null) {
-      bitMapIndex = UpdateDbHelper.getBitMap(
+      //get bitmap of changed entities
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
+      //create a second celliterator for updates, copy settings from first
+      //because streams are lazy we have to have two celliterators and cannot change the first one
+      CellIterator updateIterator = new CellIterator(
+          this.tstamps.get(),
+          this.bboxFilter, this.getPolyFilter(),
+          this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+      );
+      //exclude updated entities in original data and include in updates
       cellIterator.excludeIDs(bitMapIndex);
+      updateIterator.includeIDsOnly(bitMapIndex);
+      //create a stream of updaten data
+      updateStream = Streams.stream(this.getUpdates())
+          .parallel()
+          .filter(ignored -> this.isActive())
+          .map(oshCell -> processor.apply(oshCell, updateIterator));
     }
 
     final List<CellIdRange> cellIdRanges = new ArrayList<>();
@@ -84,15 +93,6 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         .flatMap(this::getOshCellsStream)
         .filter(ignored -> this.isActive())
         .map(oshCell -> processor.apply(oshCell, cellIterator));
-
-    Stream<S> updateStream = Stream.empty();
-    if (this.update != null) {
-      updateIterator.includeIDsOnly(bitMapIndex);
-      updateStream = Streams.stream(this.getUpdates())
-          .parallel()
-          .filter(ignored -> this.isActive())
-          .map(oshCell -> processor.apply(oshCell, updateIterator));
-    }
     
     return Streams.concat(oshdbStream, updateStream)
         .reduce(identitySupplier.get(), combiner);
@@ -108,19 +108,29 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         this.bboxFilter, this.getPolyFilter(),
         this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
     );
-    //because streams are lazy we have to have two celliterators and cannot change the first one
-    CellIterator updateIterator = new CellIterator(
-        this.tstamps.get(),
-        this.bboxFilter, this.getPolyFilter(),
-        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
-    );
-
-    Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    
+    Stream<X> updateStream = Stream.empty();
     if (this.update != null) {
-      bitMapIndex = UpdateDbHelper.getBitMap(
+      //get bitmap of changed entities
+      Map<OSMType, LongBitmapDataProvider> bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
+      //create a second celliterator for updates, copy settings from first
+      //because streams are lazy we have to have two celliterators and cannot change the first one
+      CellIterator updateIterator = new CellIterator(
+          this.tstamps.get(),
+          this.bboxFilter, this.getPolyFilter(),
+          this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+      );
+      //exclude updated entities in original data and include in updates
       cellIterator.excludeIDs(bitMapIndex);
+      updateIterator.includeIDsOnly(bitMapIndex);
+      //create a stream of updaten data
+      updateStream = Streams.stream(this.getUpdates())
+          .parallel()
+          .filter(ignored -> this.isActive())
+          .map(oshCellRawData -> processor.apply(oshCellRawData, updateIterator))
+          .flatMap(Collection::stream);
     }
 
     final List<CellIdRange> cellIdRanges = new ArrayList<>();
@@ -132,16 +142,6 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         .filter(ignored -> this.isActive())
         .map(oshCell -> processor.apply(oshCell, cellIterator))
         .flatMap(Collection::stream);
-
-    Stream<X> updateStream = Stream.empty();
-    if (this.update != null) {
-      updateIterator.includeIDsOnly(bitMapIndex);
-      updateStream = Streams.stream(this.getUpdates())
-          .parallel()
-          .filter(ignored -> this.isActive())
-          .map(oshCell -> processor.apply(oshCell, updateIterator))
-          .flatMap(Collection::stream);
-    }
     
     return Streams.concat(oshdbStream, updateStream);
   }

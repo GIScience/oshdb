@@ -158,6 +158,7 @@ public abstract class MapReducer<X> implements
   // basic constructor
   protected MapReducer(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     this.oshdb = oshdb;
+    // get up to dateness of oshdb for updater functionality
     try {
       timestampOSHDB = new OSHDBTimestamps(
           this.oshdb.metadata("data.timerange").split(",")[1]).get().first();
@@ -233,6 +234,7 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> updates(OSHDBUpdate updateDb) throws SQLException, IOException,
       ClassNotFoundException {
     MapReducer<X> ret = this.copy();
+    //check if updates are needed
     if (timestampOSHDB.compareTo(this.tstamps.get().last()) < 0) {
       ret.update = updateDb;
     } else {
@@ -326,6 +328,7 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> timestamps(OSHDBTimestampList tstamps) {
     MapReducer<X> ret = this.copy();
     ret.tstamps = tstamps;
+    //check if updates are still needed
     if (timestampOSHDB.compareTo(ret.tstamps.get().last()) > 0) {
       ret.update = null;
       LOG.info(

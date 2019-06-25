@@ -95,30 +95,20 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
 
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-    }
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
-
-    //get regular result
-    S resultA = IgniteLocalPeekHelper.mapReduceCellsOSMContributionOnIgniteCache(
-        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
-        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
-        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner, bitMapIndex);
-
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
       CellProcessor<S> cellProcessor = Kernels.getOSMContributionCellReducer(
           mapper,
           identitySupplier,
           accumulator
       );
-      resultB = this.getResultFromUpdates(
+      updateResult = this.getResultFromUpdates(
           execStart,
           cellProcessor,
           identitySupplier,
@@ -126,7 +116,14 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    return combiner.apply(resultA, resultB);
+    //get regular result
+    S oshdbResult = IgniteLocalPeekHelper.mapReduceCellsOSMContributionOnIgniteCache(
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
+        accumulator, combiner, bitMapIndex);
+
+    return combiner.apply(oshdbResult, updateResult);
   }
 
   @Override
@@ -135,31 +132,20 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
 
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-    }
-
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
-
-    //get regular result
-    S resultA = IgniteLocalPeekHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
-        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
-        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
-        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner, bitMapIndex);
-
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
       CellProcessor<S> cellProcessor = Kernels.getOSMContributionGroupingCellReducer(
           mapper,
           identitySupplier,
           accumulator
       );
-      resultB = this.getResultFromUpdates(
+      updateResult = this.getResultFromUpdates(
           execStart,
           cellProcessor,
           identitySupplier,
@@ -167,7 +153,14 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    return combiner.apply(resultA, resultB);
+    //get regular result
+    S oshdbResult = IgniteLocalPeekHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
+        accumulator, combiner, bitMapIndex);
+
+    return combiner.apply(oshdbResult, updateResult);
   }
 
 
@@ -177,31 +170,20 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
 
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-    }
-
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
-
-    //get regular result
-    S resultA = IgniteLocalPeekHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
-        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
-        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
-        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner, bitMapIndex);
-
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
       CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotCellReducer(
           mapper,
           identitySupplier,
           accumulator
       );
-      resultB = this.getResultFromUpdates(
+      updateResult = this.getResultFromUpdates(
           execStart,
           cellProcessor,
           identitySupplier,
@@ -209,7 +191,14 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    return combiner.apply(resultA, resultB);
+    //get regular result
+    S oshdbResult = IgniteLocalPeekHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
+        accumulator, combiner, bitMapIndex);
+
+    return combiner.apply(oshdbResult, updateResult);
   }
 
   @Override
@@ -219,30 +208,19 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       SerializableBinaryOperator<S> combiner) throws Exception {
 
     Map<OSMType, LongBitmapDataProvider> bitMapIndex = null;
+    //implement Timeoout for updates
+    long execStart = System.currentTimeMillis();
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
       bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-    }
-
-    //implement Timeoout for updates
-    long execStart = System.currentTimeMillis();
-
-    //get regular result
-    S resultA = IgniteLocalPeekHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
-        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
-        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
-        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
-        accumulator, combiner, bitMapIndex);
-
-    S resultB = identitySupplier.get();
-    if (this.update != null) {
       CellProcessor<S> cellProcessor = Kernels.getOSMEntitySnapshotGroupingCellReducer(
           mapper,
           identitySupplier,
           accumulator
       );
-      resultB = this.getResultFromUpdates(
+      updateResult = this.getResultFromUpdates(
           execStart,
           cellProcessor,
           identitySupplier,
@@ -250,7 +228,14 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    return combiner.apply(resultA, resultB);
+    //get regular result
+    S oshdbResult = IgniteLocalPeekHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+        (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
+        this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
+        this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
+        accumulator, combiner, bitMapIndex);
+
+    return combiner.apply(oshdbResult, updateResult);
   }
 
   private <R, S> S getResultFromUpdates(
@@ -261,16 +246,15 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
       Map<OSMType, LongBitmapDataProvider> bitMapIndex)
       throws ClassNotFoundException, ParseException, SQLException, IOException {
 
-    CellIterator updateIterator = new CellIterator(
-        this.tstamps.get(),
-        this.bboxFilter, this.getPolyFilter(),
-        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
-    );
-
-    S resultB = identitySupplier.get();
+    S updateResult = identitySupplier.get();
     if (this.update != null) {
+      CellIterator updateIterator = new CellIterator(
+          this.tstamps.get(),
+          this.bboxFilter, this.getPolyFilter(),
+          this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+      );
       updateIterator.includeIDsOnly(bitMapIndex);
-      resultB = Streams.stream(this.getUpdates())
+      updateResult = Streams.stream(this.getUpdates())
           .parallel()
           .filter(ignored -> {
             if (timeout != null && System.currentTimeMillis() - execStart > timeout) {
@@ -281,7 +265,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           .map(oshCell -> cellProcessor.apply(oshCell, updateIterator))
           .reduce(identitySupplier.get(), combiner);
     }
-    return resultB;
+    return updateResult;
   }
 
 }
