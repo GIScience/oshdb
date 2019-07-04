@@ -5,6 +5,10 @@ Changelog
 
 * bigspatialdata-parent version bump to 1.1, rename bigspatialdata-core-parent → oshdb-parent
 
+## 0.5.2
+
+* prevent crashes while building certain invalid multipolygon relation geometries #179
+
 ## 0.5.1
 
 * oshdb-util: Fix a bug in `Geo.areaOf` when applied to polygons with holes. Before this fix, the method errorneously skipped the first inner ring when calculating the total area of a polygon. This affected geometries constructed from OSM multipolygon relations.
