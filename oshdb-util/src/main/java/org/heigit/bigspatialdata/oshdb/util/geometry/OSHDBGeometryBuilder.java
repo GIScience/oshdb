@@ -29,8 +29,10 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedPolygon;
+import org.locationtech.jts.index.strtree.STRtree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,7 +222,6 @@ public class OSHDBGeometryBuilder {
         .collect(Collectors.toList());
 
     // check if there are any touching inner/outer rings
-
     Set<Integer> vertices = new HashSet<>();
     boolean touchingRings = false;
     List<LinearRing> allRings = new ArrayList<>(innerRings.size() + outerRings.size());
@@ -242,28 +243,55 @@ public class OSHDBGeometryBuilder {
     // construct multipolygon from rings
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the
     // effort? see below for a possibly much easier implementation.
-    List<Polygon> polys = outerRings.stream().map(outer -> {
-      PreparedGeometry outerPolygon = new PreparedPolygon(geometryFactory.createPolygon(outer));
-      // todo: check for inners containing other inners -> inner-in-outer-in-inner-in-outer case
-      return geometryFactory.createPolygon(
-          outer,
-          innerRings.stream().filter(outerPolygon::contains).toArray(LinearRing[]::new)
-      );
-    }).collect(Collectors.toList());
-
-    // todo: what to do with unmatched inner rings??
     Geometry result;
-    if (polys.size() == 1) {
-      result = polys.get(0);
+    if (outerRings.size() == 1) {
+      result = geometryFactory.createPolygon(
+          outerRings.get(0),
+          innerRings.toArray(new LinearRing[0])
+      );
     } else {
-      result = geometryFactory.createMultiPolygon(polys.toArray(new Polygon[polys.size()]));
+      STRtree innersTree = new STRtree();
+      innerRings.forEach(inner -> innersTree.insert(inner.getEnvelopeInternal(), inner));
+      Polygon[] polys = outerRings.stream().map(outer -> {
+        // todo: check for inners containing other inners -> inner-in-outer-in-inner-in-outer case
+        try {
+          return constructMultipolygonPart(
+              geometryFactory,
+              innersTree,
+              geometryFactory.createPolygon(outer)
+          );
+        } catch (TopologyException e) {
+          // try again with buffer(0) on outer ring
+          return constructMultipolygonPart(
+              geometryFactory,
+              innersTree,
+              (Polygon) geometryFactory.createPolygon(outer).buffer(0)
+          );
+        }
+      }).toArray(Polygon[]::new);
+      // todo: what to do with unmatched inner rings??
+      result = geometryFactory.createMultiPolygon(polys);
     }
     if (touchingRings) {
-      // try to clean up gometry by calling buffer(0).
+      // try to clean up geometry by calling buffer(0).
       // see https://locationtech.github.io/jts/jts-faq.html#G1
       result = result.buffer(0);
     }
     return result;
+  }
+
+  private static Polygon constructMultipolygonPart(
+      GeometryFactory geometryFactory,
+      STRtree inners,
+      Polygon outer
+  ) throws TopologyException {
+    PreparedGeometry outerPolygon = new PreparedPolygon(outer);
+    @SuppressWarnings("unchecked") // JTS returns raw types, but they are actually LinearRings
+        List<LinearRing> innerCandidates = inners.query(outer.getEnvelopeInternal());
+    return geometryFactory.createPolygon(
+        (LinearRing) outer.getExteriorRing(),
+        innerCandidates.stream().filter(outerPolygon::contains).toArray(LinearRing[]::new)
+    );
   }
 
   // helper that joins adjacent osm ways into linear rings

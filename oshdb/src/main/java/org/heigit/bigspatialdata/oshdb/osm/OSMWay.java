@@ -1,10 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntities;
-import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 
 public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializable {
