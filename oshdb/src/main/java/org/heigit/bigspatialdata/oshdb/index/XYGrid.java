@@ -211,7 +211,10 @@ public class XYGrid implements Serializable {
    */
   public long getEstimatedIdCount(final OSHDBBoundingBox data) {
     //number of Cells in x * number of cells in y
-    return ((long) Math.ceil(Math.max((data.getMaxLonLong() - data.getMinLonLong()) / cellWidth, (data.getMaxLatLong() - data.getMinLatLong()) / cellWidth)));
+    return Math.max(
+        (long) Math.ceil(data.getMaxLonLong() / cellWidth) - (long) Math.floor(data.getMinLonLong() / cellWidth),
+        (long) Math.ceil(data.getMaxLatLong() / cellWidth) - (long) Math.floor(data.getMinLatLong() / cellWidth)
+    );
   }
 
   /**
