@@ -16,14 +16,14 @@ import org.locationtech.jts.geom.Point;
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertTrue;
 
-public class OSHDBGeometryBuilderTestRelationTypeNotMultipolygonTest {
+public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestRelationTypeNotMultipolygonTest() {
+  public OSHDBGeometryBuilderRelationTypeNotMultipolygonTest() {
     testData.add("./src/test/resources/relations/relationTypeNotMultipolygon.osm");
     tagInterpreter = new OSMXmlReaderTagInterpreter(testData);
   }

@@ -8,6 +8,7 @@ Changelog
 ## 0.5.2
 
 * fix calculation of insertIds / entities stored in too high zoom levels, which resulted in partially missing data in some queries #183
+* prevent crashes while building certain invalid multipolygon relation geometries #179
 
 ## 0.5.1
 
