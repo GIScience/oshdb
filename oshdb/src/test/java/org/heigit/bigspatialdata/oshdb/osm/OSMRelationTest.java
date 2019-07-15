@@ -9,7 +9,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
+ * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
  */
 public class OSMRelationTest {
 

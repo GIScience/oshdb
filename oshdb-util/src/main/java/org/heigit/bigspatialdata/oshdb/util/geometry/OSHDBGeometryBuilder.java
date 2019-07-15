@@ -48,11 +48,11 @@ public class OSHDBGeometryBuilder {
    *
    * <p>
    * The given timestamp must be in the valid timestamp range of the given entity version:
+   * </p>
    * <ul>
    *   <li>timestamp must be equal or bigger than entity.getTimestamp()</li>
    *   <li>timestamp must be less than the next version of this osm entity (if one exists)</li>
    * </ul>
-   * </p>
    *
    * @param entity the osm entity to generate the geometry of
    * @param timestamp the timestamp for which to create the entity's geometry
