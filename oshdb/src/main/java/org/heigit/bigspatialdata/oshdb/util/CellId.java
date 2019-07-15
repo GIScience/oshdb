@@ -20,7 +20,7 @@ public class CellId implements Serializable {
    * this information.
    *
    * @param zoomLevel between 0:30
-   * @param id >=0
+   * @param id &gt;= 0
    */
   public CellId(int zoomLevel, long id) {
     if (id < -1 || zoomLevel < 0 || zoomLevel > 30) {

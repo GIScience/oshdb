@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
+ * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
  */
 public class XYGridTest {
 

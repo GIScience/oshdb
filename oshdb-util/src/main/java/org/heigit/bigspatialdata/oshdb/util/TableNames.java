@@ -10,30 +10,6 @@ import java.util.Optional;
 public enum TableNames {
 
   /**
-   * Table in
-   * {@link org.heigit.bigspatialdata.oshdb.etl.EtlFiles#E_TEMPRELATIONS}
-   * holding nodes that are parts of ways.
-   */
-  E_NODE2WAY("node2way"),
-  /**
-   * Table in
-   * {@link org.heigit.bigspatialdata.oshdb.etl.EtlFiles#E_TEMPRELATIONS}
-   * holding nodes that are parts of relations.
-   */
-  E_NODE2RELATION("node2relation"),
-  /**
-   * Table in
-   * {@link org.heigit.bigspatialdata.oshdb.etl.EtlFiles#E_TEMPRELATIONS}
-   * holding ways that are parts of relations.
-   */
-  E_WAY2RELATION("way2relation"),
-  /**
-   * Table in
-   * {@link org.heigit.bigspatialdata.oshdb.etl.EtlFiles#E_TEMPRELATIONS}
-   * holding relations that are parts of relations.
-   */
-  E_RELATION2RELATION("relation2relation"),
-  /**
    * Table holding keys in keytables.
    */
   E_KEY("key"),
