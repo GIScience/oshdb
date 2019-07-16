@@ -16,43 +16,50 @@ import org.locationtech.jts.geom.Polygonal;
  */
 public class Geo {
 
-  public static double earthRadius = 6371000; //meters
+  private static double earthRadiusMean = 6371000.0; //meters
+  private static double earthRadiusEquator = 6378137.0; //meters
+  private static final double earthInverseFlattening = 298.257223563;
+  private static final double f_ = 1.0 - 1.0 / earthInverseFlattening;
 
   // =====================
   // = line calculations =
   // =====================
 
-  public static double distanceBetweenCoordinatesHaversine(
-      double lat1, double lng1, double lat2, double lng2
-  ) {
-    double dLat = Math.toRadians(lat2 - lat1);
-    double dLng = Math.toRadians(lng2 - lng1);
-    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return earthRadius * c;
-  }
-
-  // Equirectangular distance approximation (works well assuming segments are short)
-  public static double distanceBetweenCoordinates(
-      double lat1, double lng1, double lat2, double lng2
-  ) {
-    double dLat = Math.toRadians(lat2 - lat1);
-    double dLng = Math.toRadians(lng2 - lng1);
-    dLng *= Math.cos(Math.toRadians((lat2 + lat1) / 2));
-
-    return earthRadius * Math.sqrt(dLng * dLng + dLat * dLat);
-  }
-
+  /**
+   * Calculate the approximate length of a line string.
+   *
+   * Uses an equirectangular distance approximation, which works well assuming segments are short.
+   *
+   * Adjusted to partially account for the spheroidal shape of the earth (WGS84 coordinates).
+   * See https://gis.stackexchange.com/a/63047/41632
+   *
+   * For typical features present in OpenStreetMap data, the relative error introduced by
+   * this approximation is below 0.1%
+   *
+   * @param line the coordinates of the line. coordinates are in WGS84
+   * @return The approximate geodesic length of the line string in meters.
+   */
   public static double lengthOf(LineString line) {
     double dist = 0.0;
     Coordinate[] coords = line.getCoordinates();
+    // this partially accounts for the non-spherical shape of the earth
+    // see https://gis.stackexchange.com/a/63047/41632
+    double sphereFact = Math.pow(f_, 1.5);
 
-    for (int i = 1; i < coords.length; i++) {
-      dist += distanceBetweenCoordinates(
-        coords[i - 1].y, coords[i - 1].x,
-        coords[i].y, coords[i].x
-      );
+    if (coords.length > 1) {
+      double prevLon = Math.toRadians(coords[0].x);
+      double prevLat = Math.atan( sphereFact * Math.tan(Math.toRadians(coords[0].y)) );
+      for (int i = 1; i < coords.length; i++) {
+        double thisLon = Math.toRadians(coords[i].x);
+        double thisLat = Math.atan( sphereFact * Math.tan(Math.toRadians(coords[i].y)) );
+        double dLon = thisLon - prevLon;
+        double dLat = thisLat - prevLat;
+        dLon *= Math.cos( (thisLat + prevLat) / 2 );
+        dist += Math.sqrt(dLon * dLon + dLat * dLat);
+        prevLon = thisLon;
+        prevLat = thisLat;
+      }
+      dist *= earthRadiusMean;
     }
 
     return dist;
@@ -130,29 +137,37 @@ public class Geo {
   }
 
   /**
-   * Calculate the approximate area of the polygon were it projected onto
-   *     the earth.  Note that this area will be positive if ring is oriented
-   *     clockwise, otherwise it will be negative.
+   * Calculate the approximate area of the polygon.
+   *
+   * Note that this area will be positive if ring is oriented clockwise,
+   * otherwise it will be negative.
    *
    * Ported to Java from https://github.com/mapbox/geojson-area/
    *
-   * Reference:
-   * Robert. G. Chamberlain and William H. Duquette, "Some Algorithms for
-   *     Polygons on a Sphere", JPL Publication 07-03, Jet Propulsion
-   *     Laboratory, Pasadena, CA, June 2007 http://trs-new.jpl.nasa.gov/dspace/handle/2014/40409
+   * Adjusted to partially account for the spheroidal shape of the earth (WGS84 coordinates).
    *
-   * Returns:
-   * {float} The approximate signed geodesic area of the polygon in square meters.
+   * For typical features present in OpenStreetMap data, the relative error introduced by
+   * this approximation is below 0.1%
+   *
+   * Reference:
+   *   Robert. G. Chamberlain and William H. Duquette, "Some Algorithms for
+   *   Polygons on a Sphere", JPL Publication 07-03, Jet Propulsion
+   *   Laboratory, Pasadena, CA, June 2007
+   *   https://trs.jpl.nasa.gov/handle/2014/40409
+   *
+   * @param ring the closed ring delimiting the area to be calculated. coordinates are in WGS84
+   * @return The approximate signed geodesic area of the polygon in square meters.
    */
-  public static double ringArea(LinearRing ring) {
+  private static double ringArea(LinearRing ring) {
     double area = 0.0;
     Coordinate[] coords = ring.getCoordinates();
     int coordsLength = coords.length;
-    int i, lowerIndex, middleIndex, upperIndex;
-    Coordinate p1,p2,p3;
 
     if (coordsLength > 2) {
-      for (i = 0; i < coordsLength; i++) {
+      for (int i = 0; i < coordsLength; i++) {
+        int lowerIndex;
+        int middleIndex;
+        int upperIndex;
         if (i == coordsLength - 2) { // i = N-2
           lowerIndex = coordsLength - 2;
           middleIndex = coordsLength - 1;
@@ -166,13 +181,19 @@ public class Geo {
           middleIndex = i + 1;
           upperIndex = i + 2;
         }
-        p1 = coords[lowerIndex];
-        p2 = coords[middleIndex];
-        p3 = coords[upperIndex];
-        area += (Math.toRadians(p3.x) - Math.toRadians(p1.x)) * Math.sin(Math.toRadians(p2.y));
+        Coordinate p1 = coords[lowerIndex];
+        Coordinate p2 = coords[middleIndex];
+        Coordinate p3 = coords[upperIndex];
+        // wgs84 latitudes are not the same as spherical latitudes.
+        // this converts the latitude from a wgs84 coordinate into its corresponding spherical value
+        double x = f_ * Math.tan( Math.toRadians(p2.y) );
+        double sinLat = x / Math.sqrt(x*x + 1.0);
+        area += (Math.toRadians(p3.x - p1.x)) * sinLat;
       }
-
-      area = area * earthRadius * earthRadius / 2;
+      double midLat =
+          (ring.getEnvelopeInternal().getMaxY() + ring.getEnvelopeInternal().getMinY()) / 2;
+      area *= 0.5 * earthRadiusEquator * earthRadiusEquator
+          * (1 - 1 / earthInverseFlattening * Math.pow(Math.cos(Math.toRadians(midLat)), 2) );
     }
 
     return area;
