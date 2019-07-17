@@ -8,7 +8,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Rafael Troilo &lt;rafael.troilo@uni-heidelberg.de&gt;
+ * @author Rafael Troilo &lt;rafael.troilo@heigit.org&gt;
  * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
  */
 public class OSMNodeTest {

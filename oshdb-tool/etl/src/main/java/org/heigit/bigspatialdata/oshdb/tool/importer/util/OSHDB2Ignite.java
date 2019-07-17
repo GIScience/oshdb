@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Rafael Troilo &lt;rafael.troilo@uni-heidelberg.de&gt;
+ * @author Rafael Troilo &lt;rafael.troilo@heigit.org&gt;
  */
 public class OSHDB2Ignite {
 
