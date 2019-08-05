@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
  * Longitude +180 will be wrapped around to -180. Coordinates lying on
  * grid-borders will be assigned to the north-eastern cell.
  *
- * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
+ * @author Rafael Troilo &lt;rafael.troilo@uni-heidelberg.de&gt;
+ * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
  *
  */
 public class XYGrid implements Serializable {
@@ -211,7 +211,10 @@ public class XYGrid implements Serializable {
    */
   public long getEstimatedIdCount(final OSHDBBoundingBox data) {
     //number of Cells in x * number of cells in y
-    return ((long) Math.ceil(Math.max((data.getMaxLonLong() - data.getMinLonLong()) / cellWidth, (data.getMaxLatLong() - data.getMinLatLong()) / cellWidth)));
+    return Math.max(
+        (long) Math.ceil(data.getMaxLonLong() / cellWidth) - (long) Math.floor(data.getMinLonLong() / cellWidth),
+        (long) Math.ceil(data.getMaxLatLong() / cellWidth) - (long) Math.floor(data.getMinLatLong() / cellWidth)
+    );
   }
 
   /**

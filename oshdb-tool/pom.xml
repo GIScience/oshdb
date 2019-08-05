@@ -6,12 +6,12 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-core-parent</artifactId>
-    <version>0.5.1</version>
+    <version>0.5.2</version>
     <relativePath>../</relativePath>
   </parent>
 
   <artifactId>oshdb-tool</artifactId>
-  <name>oshdb-toolkit</name>
+  <name>OSHDB toolkit</name>
   <description>This is a toolkit that holds plug-in-like executable tools and their background. They are not directly a cornerstone of the core but hold some interesting tools you might want to check out!</description>
   <packaging>pom</packaging>
   

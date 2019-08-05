@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util.tagInterpreter;
+package org.heigit.bigspatialdata.oshdb.util.taginterpreter;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;

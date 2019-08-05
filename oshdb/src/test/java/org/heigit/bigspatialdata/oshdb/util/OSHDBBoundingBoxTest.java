@@ -13,7 +13,7 @@ public class OSHDBBoundingBoxTest {
   @Test
   public void testToString() {
     OSHDBBoundingBox instance = new OSHDBBoundingBox(0.0, 1.0, 89.0, 90.0);
-    String expResult = "(0.000000,1.000000) (89.000000,90.000000)";
+    String expResult = "(0.0000000,1.0000000,89.0000000,90.0000000)";
     String result = instance.toString();
     assertEquals(expResult, result);
   }

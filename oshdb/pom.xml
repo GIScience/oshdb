@@ -6,12 +6,13 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-core-parent</artifactId>
-    <version>0.5.1</version>
+    <version>0.5.2</version>
     <relativePath>../</relativePath>
   </parent>
 
   <artifactId>oshdb</artifactId>
-  <description>The central database-concept for osh-objects.</description>
+  <name>OSHDB core</name>
+  <description>The central data model of the OpenStreetMap History Database.</description>
 
   <dependencies>
     <dependency>

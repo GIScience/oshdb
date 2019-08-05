@@ -146,7 +146,12 @@ public class OSHDBBoundingBox implements Serializable {
   
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "(%f,%f) (%f,%f)", this.getMinLon(), this.getMinLat(), this.getMaxLon(), this.getMaxLat());
+    return String.format(Locale.ENGLISH, 
+        "(%3.7f,%3.7f,%3.7f,%3.7f)", 
+        this.getMinLon(), 
+        this.getMinLat(), 
+        this.getMaxLon(), 
+        this.getMaxLat());
   }
 
   @Override

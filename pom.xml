@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-parent</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
   </parent>
 
   <artifactId>bigspatialdata-core-parent</artifactId>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <name>HeiGIT Big Spatial Data Core Parent POM</name>
   <description>The set of base functionality provided for all configurations of BigSpatialData</description>
   <packaging>pom</packaging>
