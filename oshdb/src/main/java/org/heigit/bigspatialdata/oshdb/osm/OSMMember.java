@@ -5,8 +5,6 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 
 /**
  * Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
- *
- * @author Rafael Troilo &lt;rafael.troilo@heigit.org&gt;
  */
 public class OSMMember {
   

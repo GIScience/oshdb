@@ -37,8 +37,6 @@ import org.slf4j.LoggerFactory;
  * Longitude +180 will be wrapped around to -180. Coordinates lying on
  * grid-borders will be assigned to the north-eastern cell.
  *
- * @author Rafael Troilo &lt;rafael.troilo@heigit.org&gt;
- * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
  *
  */
 public class XYGrid implements Serializable {

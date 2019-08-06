@@ -29,9 +29,6 @@ import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author Rafael Troilo &lt;rafael.troilo@heigit.org&gt;
- */
 public class OSHDB2Ignite {
 
   private static final Logger LOG = LoggerFactory.getLogger(OSHDB2Ignite.class);
