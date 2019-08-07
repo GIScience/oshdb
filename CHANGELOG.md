@@ -3,7 +3,11 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
-* bigspatialdata-parent version bump to 1.1, rename bigspatialdata-core-parent → oshdb-parent
+* bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent → oshdb-parent
+
+## 0.5.3
+
+* update ignite version to 2.7.5
 
 ## 0.5.2
 
