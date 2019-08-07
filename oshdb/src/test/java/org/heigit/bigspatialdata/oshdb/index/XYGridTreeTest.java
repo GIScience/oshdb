@@ -10,10 +10,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-/**
- *
- * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
- */
 public class XYGridTreeTest {
 
   @Test

@@ -10,10 +10,6 @@ import static org.junit.Assert.assertEquals;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.junit.Test;
 
-/**
- *
- * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
- */
 public class CellIdTest {
   public CellIdTest() {
   }

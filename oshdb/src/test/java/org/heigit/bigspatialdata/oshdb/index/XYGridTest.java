@@ -13,10 +13,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author Moritz Schott &lt;m.schott@stud.uni-heidelberg.de&gt;
- */
 public class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
