@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## 0.5.3
+
+* update ignite version to 2.7.5
+
 ## 0.5.2
 
 * fix calculation of insertIds / entities stored in too high zoom levels, which resulted in partially missing data in some queries #183
