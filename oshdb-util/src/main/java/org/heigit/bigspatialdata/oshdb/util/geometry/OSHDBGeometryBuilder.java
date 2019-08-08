@@ -193,11 +193,14 @@ public class OSHDBGeometryBuilder {
     Stream<OSMWay> outerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember)
             .map(osm -> (OSMWay) osm)
+            .filter(Objects::nonNull)
             .filter(OSMEntity::isVisible);
 
     Stream<OSMWay> innerMembers =
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonInnerMember)
-            .map(osm -> (OSMWay) osm).filter(OSMEntity::isVisible);
+            .map(osm -> (OSMWay) osm)
+            .filter(Objects::nonNull)
+            .filter(OSMEntity::isVisible);
 
     OSMNode[][] outerLines =
         outerMembers
