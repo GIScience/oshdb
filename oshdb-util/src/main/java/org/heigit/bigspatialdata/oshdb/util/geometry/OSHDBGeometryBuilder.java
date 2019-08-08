@@ -87,6 +87,7 @@ public class OSHDBGeometryBuilder {
       // todo: handle old-style multipolygons here???
       Coordinate[] coords =
           way.getRefEntities(timestamp)
+              .filter(Objects::nonNull)
               .filter(OSMEntity::isVisible)
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
               .toArray(Coordinate[]::new);
@@ -201,11 +202,13 @@ public class OSHDBGeometryBuilder {
     OSMNode[][] outerLines =
         outerMembers
             .map(way -> way.getRefEntities(timestamp)
+                .filter(Objects::nonNull)
                 .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
     OSMNode[][] innerLines =
         innerMembers
             .map(way -> way.getRefEntities(timestamp)
+                .filter(Objects::nonNull)
                 .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
             .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
 
