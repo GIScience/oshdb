@@ -365,4 +365,12 @@
   <!--way with nodes not existent-->
   <way id="113" visible="true" version="1" timestamp="2007-12-01T00:00:00Z" uid="1" user="test" changeset="68">
   </way>
+
+  <!-- broken node reference because of partial data redaction -->
+  <node id="3516928189" visible="true" version="2" changeset="31825893" timestamp="2015-06-08T18:50:54Z" user="tommystyle84" uid="438632" lat="50.0048563" lon="8.4080260"/>
+  <node id="3516928189" visible="false" version="3" changeset="46567125" timestamp="2017-03-04T09:14:47Z" user="SomeoneElse_Revert" uid="1778799"/>
+  <way id="177974941" visible="true" version="6" changeset="31179049" timestamp="2015-05-15T14:54:14Z" user="MichaH" uid="8464">
+    <nd ref="3516928189"/>
+    <nd ref="1"/>
+  </way>
 </osm>
