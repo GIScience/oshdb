@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## 0.5.4
+
+* fix a regression where broken referential integrity in OSM data causes a crash during geometry building
+
 ## 0.5.3
 
 * update ignite version to 2.7.5
