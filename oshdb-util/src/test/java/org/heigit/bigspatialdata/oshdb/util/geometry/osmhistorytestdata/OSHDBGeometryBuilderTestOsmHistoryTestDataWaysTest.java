@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.osmhistorytestdata;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
@@ -274,5 +275,15 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
     Geometry result4 = OSHDBGeometryBuilder.getGeometry(entity4, timestamp4, areaDecider);
     assertTrue(result4 instanceof LineString);
     assertEquals(4, result4.getNumPoints());
+  }
+
+  @Test
+  public void testNullRefEntities() {
+    // broken way references (=invalid OSM data) can occur after "partial" data redactions
+    OSMWay way = testData.ways().get(177974941L).get(0);
+    OSHDBTimestamp timestamp = way.getTimestamp();
+    Geometry result = OSHDBGeometryBuilder.getGeometry(way, timestamp, areaDecider);
+    // no exception should have been thrown at this point
+    assertTrue(result.getCoordinates().length < way.getRefs().length);
   }
 }
