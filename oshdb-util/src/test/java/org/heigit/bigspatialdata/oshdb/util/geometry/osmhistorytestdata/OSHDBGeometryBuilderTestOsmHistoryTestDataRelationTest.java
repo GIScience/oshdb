@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.osmhistorytestdata;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
@@ -493,5 +495,15 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     );
     Geometry intersection1 = result1.intersection(expectedPolygon1);
     assertEquals(expectedPolygon1.getArea(), intersection1.getArea(), DELTA);
+  }
+
+  @Test
+  public void testNullRefEntities() {
+    // broken rel references (=invalid OSM data) can occur after "partial" data redactions
+    OSMRelation rel = testData.relations().get(524L).get(0);
+    OSHDBTimestamp timestamp = rel.getTimestamp();
+    Geometry result = OSHDBGeometryBuilder.getGeometry(rel, timestamp, areaDecider);
+    // no exception should have been thrown at this point
+    assertTrue(result.getNumGeometries() < rel.getMembers().length);
   }
 }
