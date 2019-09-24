@@ -196,7 +196,7 @@ public class TypeStartFinder {
 			return OSMType.WAY;
 		if (group.getRelationsCount() > 0)
 			return OSMType.RELATION;
-		return OSMType.UNKNOWN;
+		return null;
 
 	}
 

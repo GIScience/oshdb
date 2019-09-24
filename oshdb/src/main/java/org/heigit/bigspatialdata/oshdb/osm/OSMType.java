@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.osm;
 
 public enum OSMType {
-  UNKNOWN(-1),
   NODE(0),
   WAY(1),
   RELATION(2);
@@ -20,8 +19,10 @@ public enum OSMType {
         return WAY;
       case 2:
         return RELATION;
-      default:
-        return UNKNOWN;
+      default: {
+          final String msg = String.format("Unkwon OSMType! Should between 0-2, got [%d]", value);
+          throw new IllegalArgumentException(msg);
+      } 
     }
     
   }
