@@ -199,9 +199,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       Function<CellIdRange, LongStream> cellIdRangeToCellIds = cellIdRangeToCellIds();
-      return compute.broadcast(
+      return compute.broadcastAsync(
               new GetMatchingKeysPreflight(ignite, cacheName, cellIdRangeToCellIds, cellIdRanges, processor, cellIterator)
-          )
+          ).get(this.timeout)
           .stream()
           .flatMap(Collection::stream).parallel()
           .filter(ignored -> this.isActive())
