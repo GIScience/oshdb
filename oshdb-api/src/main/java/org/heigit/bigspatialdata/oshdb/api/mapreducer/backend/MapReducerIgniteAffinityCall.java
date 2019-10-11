@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -14,8 +15,10 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
 import org.apache.ignite.IgniteException;
+import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.lang.IgniteFuture;
 import org.apache.ignite.lang.IgniteRunnable;
+import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
@@ -93,7 +96,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
   }
 
   @Nonnull
-  private static Function<CellIdRange, LongStream> cellIdRangeToCellIds() {
+  private static SerializableFunction<CellIdRange, LongStream> cellIdRangeToCellIds() {
     return cellIdRange -> {
       int level = cellIdRange.getStart().getZoomLevel();
       long from = CellId.getLevelId(level, cellIdRange.getStart().getId());
@@ -173,7 +176,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
    * @throws OSHDBTimeoutException if a timeout was set and the computations took too long.
    */
   private Stream<X> stream(
-      CellProcessor<Collection<X>> processor
+      CellProcessor<Stream<X>> processor
   ) throws ParseException, SQLException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
@@ -190,31 +193,33 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     IgniteCompute compute = ignite.compute();
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
-    return typeFilter.stream().map((SerializableFunction<OSMType, Stream<X>>) osmType -> {
+    return typeFilter.stream().flatMap((SerializableFunction<OSMType, Stream<X>>) osmType -> {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      return Streams.stream(cellIdRanges)
-          .flatMapToLong(cellIdRangeToCellIds())
-          .parallel()
+      Function<CellIdRange, LongStream> cellIdRangeToCellIds = cellIdRangeToCellIds();
+      return compute.broadcast(
+              new GetMatchingKeysPreflight(ignite, cacheName, cellIdRangeToCellIds, cellIdRanges, processor, cellIterator)
+          )
+          .stream()
+          .flatMap(Collection::stream).parallel()
           .filter(ignored -> this.isActive())
-          .mapToObj(cellLongId -> asyncGetHandleTimeouts(
-                compute.affinityCallAsync(cacheName, cellLongId, () -> {
-                  @SuppressWarnings("SerializableStoresNonSerializable")
-                  GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
-                  Collection<X> ret;
-                  if (oshEntityCell == null) {
-                    ret = Collections.<X>emptyList();
-                  } else {
-                    ret = processor.apply(oshEntityCell, cellIterator);
-                  }
-                  onClose.run();
-                  return ret;
-                })
+          .map(cellLongId -> asyncGetHandleTimeouts(
+              compute.affinityCallAsync(cacheName, cellLongId, () -> {
+                GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                Collection<X> ret;
+                if (oshEntityCell == null) {
+                  ret = Collections.<X>emptyList();
+                } else {
+                  ret = processor.apply(oshEntityCell, cellIterator).collect(Collectors.toList());
+                }
+                onClose.run();
+                return ret;
+              })
           ))
           .flatMap(Collection::stream);
-    }).flatMap(x -> x);
+    });
   }
 
   // === map-reduce operations ===
@@ -320,5 +325,48 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
     return stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper, this));
+  }
+
+  private static class GetMatchingKeysPreflight implements IgniteCallable<Collection<Long>> {
+    @IgniteInstanceResource
+    private Ignite ignite;
+
+    //private final Ignite ignite;
+    private final String cacheName;
+    private final Function<CellIdRange, LongStream> cellIdRangeToCellIds;
+    private final Iterable<CellIdRange> cellIdRanges;
+    private final CellProcessor<? extends Stream<?>> cellProcessor;
+    private final CellIterator cellIterator;
+
+    public GetMatchingKeysPreflight(
+        Ignite ignite,
+        String cacheName,
+        Function<CellIdRange, LongStream> cellIdRangeToCellIds,
+        Iterable<CellIdRange> cellIdRanges,
+        CellProcessor<? extends Stream<?>> cellProcessor,
+        CellIterator cellIterator
+    ) {
+      //this.ignite = ignite;
+      this.cacheName = cacheName;
+      this.cellIdRangeToCellIds = cellIdRangeToCellIds;
+      this.cellIdRanges = cellIdRanges;
+      this.cellProcessor = cellProcessor;
+      this.cellIterator = cellIterator;
+    }
+
+    @Override
+    public Collection<Long> call() throws Exception {
+      IgniteCache<Long, GridOSHEntity> localCache = ignite.cache(cacheName);
+      return Streams.stream(cellIdRanges)
+          .flatMapToLong(cellIdRangeToCellIds)
+          .parallel()
+          .filter(cellLongId -> {
+            // test if cell exists and contains any relevant data
+            GridOSHEntity cell = localCache.localPeek(cellLongId);
+            return cell != null && cellProcessor.apply(cell, cellIterator).findAny().isPresent();
+          })
+          .boxed()
+          .collect(Collectors.toList());
+    }
   }
 }

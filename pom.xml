@@ -50,6 +50,7 @@
     <mavenpmd.version>2.9</mavenpmd.version>
     <pmd.version>6.11.0</pmd.version>
     <mavenpmd.version>3.11.0</mavenpmd.version>
+    <roaringbitmap.version>0.6.59</roaringbitmap.version>
   </properties>
 
   <repositories>

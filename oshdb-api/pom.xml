@@ -85,6 +85,12 @@
       <artifactId>t-digest</artifactId>
       <version>3.2</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.roaringbitmap</groupId>
+      <artifactId>RoaringBitmap</artifactId>
+      <version>${roaringbitmap.version}</version>
+    </dependency>
     
     <!-- TEST dependencies -->
     <dependency>
