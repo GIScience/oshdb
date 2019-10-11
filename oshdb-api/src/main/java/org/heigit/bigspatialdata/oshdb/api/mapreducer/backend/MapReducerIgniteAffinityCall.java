@@ -176,7 +176,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
    * @throws OSHDBTimeoutException if a timeout was set and the computations took too long.
    */
   private Stream<X> stream(
-      CellProcessor<Stream<X>> processor
+      CellProcessor<Stream<X>> cellProcessor
   ) throws ParseException, SQLException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
@@ -198,10 +198,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      Function<CellIdRange, LongStream> cellIdRangeToCellIds = cellIdRangeToCellIds();
-      return compute.broadcastAsync(
-              new GetMatchingKeysPreflight(ignite, cacheName, cellIdRangeToCellIds, cellIdRanges, processor, cellIterator)
-          ).get(this.timeout)
+      return compute.broadcastAsync(new GetMatchingKeysPreflight(
+              cacheName, cellIdRangeToCellIds(), cellIdRanges, cellProcessor, cellIterator
+          )).get(this.timeout)
           .stream()
           .flatMap(Collection::stream).parallel()
           .filter(ignored -> this.isActive())
@@ -212,7 +211,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
                 if (oshEntityCell == null) {
                   ret = Collections.<X>emptyList();
                 } else {
-                  ret = processor.apply(oshEntityCell, cellIterator).collect(Collectors.toList());
+                  ret = cellProcessor.apply(oshEntityCell, cellIterator)
+                      .collect(Collectors.toList());
                 }
                 onClose.run();
                 return ret;
@@ -331,7 +331,6 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     @IgniteInstanceResource
     private Ignite ignite;
 
-    //private final Ignite ignite;
     private final String cacheName;
     private final Function<CellIdRange, LongStream> cellIdRangeToCellIds;
     private final Iterable<CellIdRange> cellIdRanges;
@@ -339,14 +338,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     private final CellIterator cellIterator;
 
     public GetMatchingKeysPreflight(
-        Ignite ignite,
         String cacheName,
         Function<CellIdRange, LongStream> cellIdRangeToCellIds,
         Iterable<CellIdRange> cellIdRanges,
         CellProcessor<? extends Stream<?>> cellProcessor,
         CellIterator cellIterator
     ) {
-      //this.ignite = ignite;
       this.cacheName = cacheName;
       this.cellIdRangeToCellIds = cellIdRangeToCellIds;
       this.cellIdRanges = cellIdRanges;
