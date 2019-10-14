@@ -20,7 +20,7 @@ public enum OSMType {
       case 2:
         return RELATION;
       default: {
-          final String msg = String.format("Unkwon OSMType! Should between 0-2, got [%d]", value);
+          final String msg = String.format("Unknown OSMType! Should be between 0 and 2, got [%d]", value);
           throw new IllegalArgumentException(msg);
       } 
     }
