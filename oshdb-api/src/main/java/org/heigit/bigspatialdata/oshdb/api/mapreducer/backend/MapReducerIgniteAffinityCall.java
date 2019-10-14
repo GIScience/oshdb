@@ -17,6 +17,7 @@ import org.apache.ignite.IgniteCompute;
 import org.apache.ignite.IgniteException;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.lang.IgniteFuture;
+import org.apache.ignite.lang.IgniteFutureTimeoutException;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
@@ -105,9 +106,26 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     };
   }
 
-  private static <T> T asyncGetHandleTimeouts(IgniteFuture<T> async) {
+  /**
+   * Converts remote OSHDB and native ignite future timeouts.
+   *
+   * @param async the ignite future to execute and inspect
+   * @param timeout max individual request runtime in milliseconds
+   * @param <T> result data type
+   * @return the result
+   * @throws OSHDBTimeoutException if the request took to long or a OSHDBTimeoutException was
+   *         thrown remotely
+   */
+  private static <T> T asyncGetHandleTimeouts(IgniteFuture<T> async, Long timeout)
+      throws OSHDBTimeoutException {
     try {
-      return async.get();
+      if (timeout == null) {
+        return async.get();
+      } else {
+        return async.get(timeout);
+      }
+    } catch (IgniteFutureTimeoutException e) {
+      throw new OSHDBTimeoutException();
     } catch (IgniteException e) {
       if (e.getCause().getCause() instanceof OSHDBTimeoutException) {
         throw (OSHDBTimeoutException) e.getCause().getCause();
@@ -164,7 +182,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
                 }
                 onClose.run();
                 return ret;
-              })
+              }),
+              this.timeout
           ))
           .reduce(identitySupplier.get(), combiner);
     }).reduce(identitySupplier.get(), combiner);
@@ -199,10 +218,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      Stream<X> resultForType = compute.broadcastAsync(new GetMatchingKeysPreflight(
+      Stream<X> resultForType = asyncGetHandleTimeouts(
+          compute.broadcastAsync(new GetMatchingKeysPreflight(
               cacheName, cellIdRangeToCellIds(), cellIdRanges, cellProcessor, cellIterator
-          )).get(this.timeout)
-          .stream()
+          )),
+          this.timeout
+      ).stream()
           .flatMap(Collection::stream).parallel()
           .filter(ignored -> this.isActive())
           .map(cellLongId -> asyncGetHandleTimeouts(
@@ -217,7 +238,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
                 }
                 onClose.run();
                 return ret;
-              })
+              }),
+              this.timeout
           ))
           .flatMap(Collection::stream);
       result = Stream.concat(result, resultForType);
