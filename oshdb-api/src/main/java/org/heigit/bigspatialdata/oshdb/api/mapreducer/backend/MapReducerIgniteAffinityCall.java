@@ -193,12 +193,13 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     IgniteCompute compute = ignite.compute();
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
 
-    return typeFilter.stream().flatMap((SerializableFunction<OSMType, Stream<X>>) osmType -> {
+    Stream<X> result = Stream.empty();
+    for (OSMType osmType : typeFilter) {
       assert TableNames.forOSMType(osmType).isPresent();
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      return compute.broadcastAsync(new GetMatchingKeysPreflight(
+      Stream<X> resultForType = compute.broadcastAsync(new GetMatchingKeysPreflight(
               cacheName, cellIdRangeToCellIds(), cellIdRanges, cellProcessor, cellIterator
           )).get(this.timeout)
           .stream()
@@ -219,7 +220,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
               })
           ))
           .flatMap(Collection::stream);
-    });
+      result = Stream.concat(result, resultForType);
+    }
+    return result;
   }
 
   // === map-reduce operations ===
