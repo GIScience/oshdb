@@ -4,7 +4,6 @@ import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
@@ -74,7 +73,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   }
 
   private Stream<X> stream(
-      CellProcessor<Collection<X>> cellProcessor
+      CellProcessor<Stream<X>> cellProcessor
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
@@ -86,8 +85,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
     return Streams.stream(this.getCellIdRanges())
         .flatMap(this::getOshCellsStream)
-        .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator))
-        .flatMap(Collection::stream);
+        .flatMap(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator));
   }
 
   // === map-reduce operations ===
