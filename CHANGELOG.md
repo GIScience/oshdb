@@ -5,6 +5,7 @@ Changelog
 
 * bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent → oshdb-parent
 * improved performance of data [stream](https://docs.ohsome.org/java/oshdb/0.6.0-SNAPSHOT/oshdb-api/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--)ing queries on ignite (using AffinityCall backend)
+* make monthly time intervals more intuitive #201 
 
 ## 0.5.3
 
