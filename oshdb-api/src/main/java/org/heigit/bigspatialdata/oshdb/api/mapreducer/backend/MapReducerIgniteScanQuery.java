@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Function;
-import javax.cache.Cache;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -43,6 +46,8 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.OSHEntityFilter;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.OSMEntityFilter;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
@@ -71,6 +76,24 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     super(obj);
   }
 
+  static boolean cellKeyInRange(
+      Long cellKey, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel
+  ) {
+    CellId cellId = CellId.fromLevelId(cellKey);
+    int level = cellId.getZoomLevel();
+    long id = cellId.getId();
+    if (!cellIdRangesByLevel.containsKey(level)) {
+      return false;
+    }
+    Entry<Long, CellIdRange> cellIdRangeEntry =
+        cellIdRangesByLevel.get(level).floorEntry(id);
+    if (cellIdRangeEntry == null) {
+      return false;
+    }
+    CellIdRange cellIdRange = cellIdRangeEntry.getValue();
+    return cellIdRange.getStart().getId() <= id && cellIdRange.getEnd().getId() >= id;
+  }
+
   @NotNull
   @Override
   protected MapReducer<X> copy() {
@@ -82,6 +105,8 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     return true;
   }
 
+  // === map-reduce operations ===
+
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
@@ -91,7 +116,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
-      return IgniteScanQueryHelper.mapReduceCellsOSMContributionOnIgniteCache(
+      return IgniteScanQueryHelperMapReduce.mapReduceCellsOSMContribution(
           (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
           this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
           this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
@@ -108,7 +133,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
-      return IgniteScanQueryHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+      return IgniteScanQueryHelperMapReduce.flatMapReduceCellsOSMContributionGroupedById(
           (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
           this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
           this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
@@ -126,7 +151,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
-      return IgniteScanQueryHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+      return IgniteScanQueryHelperMapReduce.mapReduceCellsOSMEntitySnapshot(
           (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
           this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
           this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
@@ -143,12 +168,76 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
     return this.typeFilter.stream().map((Function<OSMType, S> & Serializable) osmType -> {
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
-      return IgniteScanQueryHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+      return IgniteScanQueryHelperMapReduce.flatMapReduceCellsOSMEntitySnapshotGroupedById(
           (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
           this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
           this.getPreFilter(), this.getFilter(), mapper, identitySupplier, accumulator, combiner);
     }).reduce(identitySupplier.get(), combiner);
   }
+
+  // === stream operations ===
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMContribution(
+      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+    // load tag interpreter helper which is later used for geometry building
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
+
+    return this.typeFilter.stream().map((Function<OSMType, Stream<X>> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
+      return IgniteScanQueryHelperMapStream.mapStreamCellsOSMContributionOnIgniteCache(
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper);
+    }).flatMap(x -> x);
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+    // load tag interpreter helper which is later used for geometry building
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
+
+    return this.typeFilter.stream().map((Function<OSMType, Stream<X>> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
+      return IgniteScanQueryHelperMapStream.flatMapStreamCellsOSMContributionGroupedById(
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper);
+    }).flatMap(x -> x);
+  }
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+    // load tag interpreter helper which is later used for geometry building
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
+
+    return this.typeFilter.stream().map((Function<OSMType, Stream<X>> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
+      return IgniteScanQueryHelperMapStream.mapStreamCellsOSMEntitySnapshot(
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper);
+    }).flatMap(x -> x);
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+    // load tag interpreter helper which is later used for geometry building
+    TagInterpreter tagInterpreter = this.getTagInterpreter();
+
+    return this.typeFilter.stream().map((Function<OSMType, Stream<X>> & Serializable) osmType -> {
+      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
+      return IgniteScanQueryHelperMapStream.flatMapStreamCellsOSMEntitySnapshotGroupedById(
+          (OSHDBIgnite) this.oshdb, tagInterpreter, cacheName, this.getCellIdRangesByLevel(),
+          this.tstamps.get(), this.bboxFilter, this.getPolyFilter(),
+          this.getPreFilter(), this.getFilter(), mapper);
+    }).flatMap(x -> x);
+  }
+
+  // === helper functions ===
 
   private Map<Integer, TreeMap<Long, CellIdRange>> getCellIdRangesByLevel() {
     Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel = new HashMap<>();
@@ -163,9 +252,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
   }
 }
 
-
-
-class IgniteScanQueryHelper {
+class IgniteScanQueryHelperMapReduce {
   /**
    * Compute closure that iterates over every partition owned by a node located in a partition.
    */
@@ -221,19 +308,7 @@ class IgniteScanQueryHelper {
     }
 
     boolean cellKeyInRange(Long cellKey) {
-      CellId cellId = CellId.fromLevelId(cellKey);
-      int level = cellId.getZoomLevel();
-      long id = cellId.getId();
-      if (!cellIdRangesByLevel.containsKey(level)) {
-        return false;
-      }
-      Entry<Long, CellIdRange> cellIdRangeEntry =
-          cellIdRangesByLevel.get(level).floorEntry(id);
-      if (cellIdRangeEntry == null) {
-        return false;
-      }
-      CellIdRange cellIdRange = cellIdRangeEntry.getValue();
-      return cellIdRange.getStart().getId() <= id && cellIdRange.getEnd().getId() >= id;
+      return MapReducerIgniteScanQuery.cellKeyInRange(cellKey, cellIdRangesByLevel);
     }
 
     S execute(Ignite node, CellProcessor<S> cellProcessor) {
@@ -245,17 +320,16 @@ class IgniteScanQueryHelper {
       return myPartitions.parallelStream()
           .filter(ignored -> this.isActive())
           .map(part -> {
-            // noinspection unchecked
             try (
                 QueryCursor<S> cursor = cache.query(
-                    new ScanQuery((key, cell) ->
-                        this.isActive() && this.cellKeyInRange((Long)key)
+                    new ScanQuery<Long, Object>((key, cell) ->
+                        this.isActive() && this.cellKeyInRange(key)
                     ).setPartition(part), cacheEntry -> {
                       if (!this.isActive()) {
                         return identitySupplier.get();
                       }
                       // iterate over the history of all OSM objects in the current cell
-                      Object data = ((Cache.Entry<Long, Object>) cacheEntry).getValue();
+                      Object data = cacheEntry.getValue();
                       GridOSHEntity oshEntityCell;
                       if (data instanceof BinaryObject) {
                         oshEntityCell = ((BinaryObject) data).deserialize();
@@ -430,7 +504,7 @@ class IgniteScanQueryHelper {
     return ret;
   }
 
-  static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMContributionOnIgniteCache(
+  static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMContribution(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
@@ -445,7 +519,7 @@ class IgniteScanQueryHelper {
   }
 
   static <R, S, P extends Geometry & Polygonal>
-      S flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+      S flatMapReduceCellsOSMContributionGroupedById(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
@@ -459,7 +533,7 @@ class IgniteScanQueryHelper {
             identitySupplier, accumulator, combiner));
   }
 
-  static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+  static <R, S, P extends Geometry & Polygonal> S mapReduceCellsOSMEntitySnapshot(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
@@ -474,7 +548,7 @@ class IgniteScanQueryHelper {
   }
 
   static <R, S, P extends Geometry & Polygonal>
-      S flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+      S flatMapReduceCellsOSMEntitySnapshotGroupedById(
       OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
       Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
       SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
@@ -486,5 +560,103 @@ class IgniteScanQueryHelper {
         new FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<R, S, P>(tagInterpreter,
             cacheName, cellIdRangesByLevel, tstamps, bbox, poly, preFilter, filter, mapper,
             identitySupplier, accumulator, combiner));
+  }
+}
+
+class IgniteScanQueryHelperMapStream {
+
+  /**
+   * Executes a scanquery resulting in the requested data.
+   *
+   * @throws OSHDBTimeoutException if a timeout was set and the computations took too long.
+   */
+  private static <X> Stream<X> mapStreamOnIgniteCache(
+      OSHDBIgnite oshdb,
+      String cacheName,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+      CellIterator cellIterator,
+      CellProcessor<Stream<X>> cellProcessor
+  ) {
+    // run processing in parallel
+    QueryCursor<List<X>> cursor = oshdb.getIgnite().cache(cacheName).withKeepBinary().query(
+        new ScanQuery<Long, Object>((key, cell) ->
+            /*isActive() &&*/ MapReducerIgniteScanQuery.cellKeyInRange(key, cellIdRangesByLevel)
+        ), cacheEntry -> {
+          // iterate over the history of all OSM objects in the current cell
+          Object data = cacheEntry.getValue();
+          GridOSHEntity oshEntityCell;
+          if (data instanceof BinaryObject) {
+            oshEntityCell = ((BinaryObject) data).deserialize();
+          } else {
+            oshEntityCell = (GridOSHEntity) data;
+          }
+          return cellProcessor.apply(oshEntityCell, cellIterator).collect(Collectors.toList());
+        }
+    );
+    // todo: ignite scan query doesn't support timeouts -> implement ourself?
+    return StreamSupport.stream(cursor.spliterator(), true).flatMap(Collection::stream);
+  }
+
+  static <X, P extends Geometry & Polygonal> Stream<X> mapStreamCellsOSMContributionOnIgniteCache(
+      OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+      SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+      CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+      SerializableFunction<OSMContribution, X> mapper) {
+    return mapStreamOnIgniteCache(
+        oshdb,
+        cacheName,
+        cellIdRangesByLevel,
+        new CellIterator(tstamps, bbox, poly, tagInterpreter, preFilter, filter, false),
+        Kernels.getOSMContributionCellStreamer(mapper)
+    );
+  }
+
+  static <X, P extends Geometry & Polygonal>
+  Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+      SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+      OSHEntityFilter preFilter, OSMEntityFilter filter,
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) {
+    return mapStreamOnIgniteCache(
+        oshdb,
+        cacheName,
+        cellIdRangesByLevel,
+        new CellIterator(tstamps, bbox, poly, tagInterpreter, preFilter, filter, false),
+        Kernels.getOSMContributionGroupingCellStreamer(mapper)
+    );
+  }
+
+  public static <X, P extends Geometry & Polygonal>
+  Stream<X> mapStreamCellsOSMEntitySnapshot(
+      OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+      SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+      OSHEntityFilter preFilter, OSMEntityFilter filter,
+      SerializableFunction<OSMEntitySnapshot, X> mapper) {
+    return mapStreamOnIgniteCache(
+        oshdb,
+        cacheName,
+        cellIdRangesByLevel,
+        new CellIterator(tstamps, bbox, poly, tagInterpreter, preFilter, filter, false),
+        Kernels.getOSMEntitySnapshotCellStreamer(mapper)
+    );
+  }
+
+  static <X, P extends Geometry & Polygonal>
+  Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
+      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+      SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+      OSHEntityFilter preFilter, OSMEntityFilter filter,
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) {
+    return mapStreamOnIgniteCache(
+        oshdb,
+        cacheName,
+        cellIdRangesByLevel,
+        new CellIterator(tstamps, bbox, poly, tagInterpreter, preFilter, filter, false),
+        Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper)
+    );
   }
 }
