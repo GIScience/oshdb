@@ -1,11 +1,18 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Streams;
+import com.google.common.primitives.Ints;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -15,6 +22,9 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
 import org.apache.ignite.IgniteException;
+import org.apache.ignite.binary.BinaryObject;
+import org.apache.ignite.cache.query.QueryCursor;
+import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.lang.IgniteFuture;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
@@ -218,13 +228,33 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
-      Stream<X> resultForType = asyncGetHandleTimeouts(
-          compute.broadcastAsync(new GetMatchingKeysPreflight(
-              cacheName, cellIdRangeToCellIds(), cellIdRanges, cellProcessor, cellIterator
-          )),
+      GetMatchingKeysPreflight preflight;
+      int maxNumCells = 0;
+      for (CellIdRange cellIdRange : cellIdRanges) {
+        maxNumCells += cellIdRange.getEnd().getId() - cellIdRange.getStart().getId();
+      }
+      // if number of "maximum to be requested cells" is larger than the total avaiable cells
+      // -> use scanquery based preflight, otherwise use localpeek implementation.
+      // this works as long as the assumption that calling "localPeek" is about the same effort
+      // than checking wether a cell is in the requested area.
+      // todo: benchmark if this assumption is really the case
+      if (maxNumCells > cache.size()) {
+        preflight = new GetMatchingKeysPreflightScanQuery(
+            cacheName, cellIdRangeToCellIds(), cellIdRanges, cellProcessor, cellIterator
+        );
+      } else {
+        preflight = new GetMatchingKeysPreflightLocalPeek(
+            cacheName, cellIdRangeToCellIds(), cellIdRanges, cellProcessor, cellIterator
+        );
+      }
+      List<Long> cellsWithData = asyncGetHandleTimeouts(
+          compute.broadcastAsync(preflight),
           this.timeout
       ).stream()
-          .flatMap(Collection::stream).parallel()
+          .flatMap(Collection::stream)
+          .collect(Collectors.toList());
+      Collections.shuffle(cellsWithData);
+      Stream<X> resultForType = cellsWithData.parallelStream()
           .filter(ignored -> this.isActive())
           .map(cellLongId -> asyncGetHandleTimeouts(
               compute.affinityCallAsync(cacheName, cellLongId, () -> {
@@ -352,17 +382,22 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     return stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper, this));
   }
 
-  private static class GetMatchingKeysPreflight implements IgniteCallable<Collection<Long>> {
+  abstract static class GetMatchingKeysPreflight implements IgniteCallable<Collection<Long>> {
+
     @IgniteInstanceResource
-    private Ignite ignite;
+    Ignite ignite;
 
-    private final String cacheName;
-    private final Function<CellIdRange, LongStream> cellIdRangeToCellIds;
-    private final Iterable<CellIdRange> cellIdRanges;
-    private final CellProcessor<? extends Stream<?>> cellProcessor;
-    private final CellIterator cellIterator;
+    final String cacheName;
+    final Function<CellIdRange, LongStream> cellIdRangeToCellIds;
+    final Iterable<CellIdRange> cellIdRanges;
+    final CellProcessor<? extends Stream<?>> cellProcessor;
+    final CellIterator cellIterator;
 
-    public GetMatchingKeysPreflight(
+    private GetMatchingKeysPreflight() {
+      throw new IllegalStateException("utility class");
+    }
+
+    GetMatchingKeysPreflight(
         String cacheName,
         Function<CellIdRange, LongStream> cellIdRangeToCellIds,
         Iterable<CellIdRange> cellIdRanges,
@@ -375,9 +410,21 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       this.cellProcessor = cellProcessor;
       this.cellIterator = cellIterator;
     }
+  }
+
+  static class GetMatchingKeysPreflightLocalPeek extends GetMatchingKeysPreflight {
+    GetMatchingKeysPreflightLocalPeek(
+        String cacheName,
+        Function<CellIdRange, LongStream> cellIdRangeToCellIds,
+        Iterable<CellIdRange> cellIdRanges,
+        CellProcessor<? extends Stream<?>> cellProcessor,
+        CellIterator cellIterator
+    ) {
+      super(cacheName, cellIdRangeToCellIds, cellIdRanges, cellProcessor, cellIterator);
+    }
 
     @Override
-    public Collection<Long> call() throws Exception {
+    public Collection<Long> call() {
       IgniteCache<Long, GridOSHEntity> localCache = ignite.cache(cacheName);
       return Streams.stream(cellIdRanges)
           .flatMapToLong(cellIdRangeToCellIds)
@@ -388,6 +435,67 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
             return cell != null && cellProcessor.apply(cell, cellIterator).findAny().isPresent();
           })
           .boxed()
+          .collect(Collectors.toList());
+    }
+  }
+
+  static class GetMatchingKeysPreflightScanQuery extends GetMatchingKeysPreflight {
+    private final Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel;
+
+    GetMatchingKeysPreflightScanQuery(
+        String cacheName,
+        Function<CellIdRange, LongStream> cellIdRangeToCellIds,
+        Iterable<CellIdRange> cellIdRanges,
+        CellProcessor<? extends Stream<?>> cellProcessor,
+        CellIterator cellIterator
+    ) {
+      super(cacheName, cellIdRangeToCellIds, cellIdRanges, cellProcessor, cellIterator);
+
+      this.cellIdRangesByLevel = new HashMap<>();
+      for (CellIdRange cellIdRange : cellIdRanges) {
+        int level = cellIdRange.getStart().getZoomLevel();
+        if (!this.cellIdRangesByLevel.containsKey(level)) {
+          this.cellIdRangesByLevel.put(level, new TreeMap<>());
+        }
+        this.cellIdRangesByLevel.get(level).put(cellIdRange.getStart().getId(), cellIdRange);
+      }
+    }
+
+    @Override
+    public Collection<Long> call() {
+      IgniteCache<Long, BinaryObject> localCache = ignite.cache(cacheName).withKeepBinary();
+      // Getting a list of the partitions owned by this node.
+      List<Integer> myPartitions = Ints.asList(
+          ignite.affinity(cacheName).primaryPartitions(ignite.cluster().localNode())
+      );
+      Collections.shuffle(myPartitions);
+
+      return myPartitions.parallelStream()
+          .map(part -> {
+            try (QueryCursor<Optional<Long>> cursor = localCache.query(
+                new ScanQuery<Long, Object>((key, cell) ->
+                    MapReducerIgniteScanQuery.cellKeyInRange(key, cellIdRangesByLevel)
+                ).setPartition(part), cacheEntry -> {
+                  Object data = cacheEntry.getValue();
+                  GridOSHEntity oshEntityCell;
+                  if (data instanceof BinaryObject) {
+                    oshEntityCell = ((BinaryObject) data).deserialize();
+                  } else {
+                    oshEntityCell = (GridOSHEntity) data;
+                  }
+                  return cellProcessor.apply(oshEntityCell, this.cellIterator).findAny().map(
+                      ignored -> cacheEntry.getKey()
+                  );
+                }
+            )) {
+              List<Long> acc = new LinkedList<>();
+              for (Optional<Long> entry : cursor) {
+                entry.ifPresent(acc::add);
+              }
+              return acc;
+            }
+          })
+          .flatMap(Collection::stream)
           .collect(Collectors.toList());
     }
   }
