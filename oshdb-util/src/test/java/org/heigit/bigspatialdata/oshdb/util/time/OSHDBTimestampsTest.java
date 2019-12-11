@@ -28,12 +28,12 @@ public class OSHDBTimestampsTest {
     startList.add("2008-01-31T12:34:56");
     endList.add("2008-07-31T12:34:56");
     intervalList.add(Interval.QUARTERLY);
-    expectedResultList.add(Arrays.asList("2008-01-31T12:34:56", "2008-04-30T12:34:56", "2008-07-30T12:34:56"));
+    expectedResultList.add(Arrays.asList("2008-01-31T12:34:56", "2008-04-30T12:34:56", "2008-07-31T12:34:56"));
 
     startList.add("2008-01-31T12:34:56");
     endList.add("2008-03-31T12:34:56");
     intervalList.add(Interval.MONTHLY);
-    expectedResultList.add(Arrays.asList("2008-01-31T12:34:56", "2008-02-29T12:34:56", "2008-03-29T12:34:56"));
+    expectedResultList.add(Arrays.asList("2008-01-31T12:34:56", "2008-02-29T12:34:56", "2008-03-31T12:34:56"));
 
     startList.add("2008-01-31T12:34:56");
     endList.add("2008-02-14T12:34:56");

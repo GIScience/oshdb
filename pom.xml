@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>bigspatialdata-parent</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
   </parent>
 
   <artifactId>bigspatialdata-core-parent</artifactId>
-  <version>0.5.4</version>
+  <version>0.5.5</version>
   <name>HeiGIT Big Spatial Data Core Parent POM</name>
   <description>The set of base functionality provided for all configurations of BigSpatialData</description>
   <packaging>pom</packaging>
@@ -50,6 +50,7 @@
     <mavenpmd.version>2.9</mavenpmd.version>
     <pmd.version>6.11.0</pmd.version>
     <mavenpmd.version>3.11.0</mavenpmd.version>
+    <roaringbitmap.version>0.6.59</roaringbitmap.version>
   </properties>
 
   <repositories>
@@ -203,6 +204,31 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>deploy-central</id>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.8</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            </configuration>
           </plugin>
         </plugins>
       </build>
