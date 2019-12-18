@@ -60,7 +60,11 @@ public class FastPolygonOperations implements Serializable {
             gcPolys.add((Polygon) gcGeom);
           }
         }
-        theGeom = gf.createMultiPolygon(gcPolys.toArray(new Polygon[0]));
+        if (gcPolys.size() == 1) {
+          theGeom = gcPolys.get(0);
+        } else {
+          theGeom = gf.createMultiPolygon(gcPolys.toArray(new Polygon[0]));
+        }
       } else {
         theGeom = gf.createPolygon();
       }
