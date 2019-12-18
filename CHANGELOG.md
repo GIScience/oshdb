@@ -3,11 +3,13 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
+* (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
+* fix bug where polygonal areas of interest would throw an exception in some (rare) edge cases. #204
+
 ## 0.5.5
 
 * improved performance of data [stream](https://docs.ohsome.org/java/oshdb/0.5.4/oshdb-api/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--)ing queries on ignite (using AffinityCall backend).
 * make monthly time intervals more intuitive to use. #201
-* (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
 
 ## 0.5.4
 

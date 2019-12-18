@@ -1,9 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
 import java.util.Arrays;
+import java.util.List;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,6 +48,31 @@ public class FastPolygonOperations implements Serializable {
       GeometryFactory gf,
       Geometry[] resultBuffer
   ) {
+    if (!(theGeom instanceof Polygonal)) {
+      // after clipping, the geometry might contain superfluous points or lines along the clipping
+      // edges. These GeometryCollections would cause issues in the intersection method (e.g.
+      // during the "union" operation). Here we need to clean these up.
+      if (theGeom instanceof GeometryCollection) {
+        List<Polygon> gcPolys = new ArrayList<>(theGeom.getNumGeometries());
+        for (int i = 0; i < theGeom.getNumGeometries(); i++) {
+          Geometry gcGeom = theGeom.getGeometryN(i);
+          if (gcGeom instanceof Polygon) {
+            gcPolys.add((Polygon) gcGeom);
+          } else if (gcGeom instanceof MultiPolygon) {
+            for (int j = 0; j < gcGeom.getNumGeometries(); j++) {
+              gcPolys.add((Polygon) gcGeom.getGeometryN(j));
+            }
+          }
+        }
+        if (gcPolys.size() == 1) {
+          theGeom = gcPolys.get(0);
+        } else {
+          theGeom = gf.createMultiPolygon(gcPolys.toArray(new Polygon[0]));
+        }
+      } else {
+        theGeom = gf.createPolygon();
+      }
+    }
     if (level == 0) {
       int index = y + x * numBands;
       resultBuffer[index] = theGeom;
