@@ -14,13 +14,12 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 public class FastPolygonOperationsTest {
+  private GeometryFactory gf = new GeometryFactory();
 
   @Test
   public void testEmptyGeometryPolygon() {
     Polygon p = FastPointInPolygonTest.createPolygon();
     FastPolygonOperations pop = new FastPolygonOperations(p);
-
-    GeometryFactory gf = new GeometryFactory();
 
     assertEquals(
         gf.createPoint((Coordinate) null),
@@ -45,8 +44,45 @@ public class FastPolygonOperationsTest {
     FastPolygonOperations pop = new FastPolygonOperations(poly);
 
     String testWkt = "POLYGON ((-0.0478421 51.5540544,-0.0478399 51.5541248,-0.0478499 51.5541249,-0.0478549 51.5541307,-0.0478795 51.5541313,-0.0478858 51.5541252,-0.0479136 51.5541254,-0.0479185 51.5540142,-0.0478768 51.5540135,-0.047875 51.5540547,-0.0478614 51.5540546,-0.0478616 51.5540458,-0.0478423 51.5540457,-0.0478421 51.5540544))";
-    Polygon test = (Polygon) (new WKTReader()).read(testWkt);
+    Geometry test = (new WKTReader()).read(testWkt);
 
     assertNotNull(pop.intersection(test));
+  }
+
+  @Test
+  public void testGeometries() throws ParseException {
+    String polyWkt = "POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0), (1 1, 1 9, 9 9, 9 1, 1 1))";
+    Polygon poly = (Polygon) (new WKTReader()).read(polyWkt).buffer(0.1, 200);
+    FastPolygonOperations pop = new FastPolygonOperations(poly);
+
+    // points
+    for (int i = 0; i < 30; i++) {
+      Geometry testGeom = gf.createPoint(new Coordinate(0.4 * i, 0.35 * i));
+      assertEquals(
+          poly.intersection(testGeom),
+          pop.intersection(testGeom)
+      );
+    }
+
+    // lines
+    for (int i = 0; i < 30; i++) {
+      Geometry testGeom = gf.createLineString(new Coordinate[] {
+          new Coordinate(0.4 * i, 0.35 * i),
+          new Coordinate(0.4 * i + 0.01, 0.35 * i)
+      });
+      assertEquals(
+          poly.intersection(testGeom),
+          pop.intersection(testGeom)
+      );
+    }
+
+    // polygons
+    for (int i = 0; i < 30; i++) {
+      Geometry testGeom = gf.createPoint(new Coordinate(0.4 * i, 0.35 * i)).buffer(0.01);
+      assertEquals(
+          poly.intersection(testGeom),
+          pop.intersection(testGeom)
+      );
+    }
   }
 }
