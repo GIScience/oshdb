@@ -6,6 +6,7 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import java.io.Serializable;
@@ -52,12 +53,15 @@ public class FastPolygonOperations implements Serializable {
       // edges. These GeometryCollections would cause issues in the intersection method (e.g.
       // during the "union" operation). Here we need to clean these up.
       if (theGeom instanceof GeometryCollection) {
-        GeometryCollection gc = (GeometryCollection) theGeom;
-        List<Polygon> gcPolys = new ArrayList<>(gc.getNumGeometries());
-        for (int i = 0; i < gc.getNumGeometries(); i++) {
-          Geometry gcGeom = gc.getGeometryN(i);
+        List<Polygon> gcPolys = new ArrayList<>(theGeom.getNumGeometries());
+        for (int i = 0; i < theGeom.getNumGeometries(); i++) {
+          Geometry gcGeom = theGeom.getGeometryN(i);
           if (gcGeom instanceof Polygon) {
             gcPolys.add((Polygon) gcGeom);
+          } else if (gcGeom instanceof MultiPolygon) {
+            for (int j = 0; j < gcGeom.getNumGeometries(); j++) {
+              gcPolys.add((Polygon) gcGeom.getGeometryN(j));
+            }
           }
         }
         if (gcPolys.size() == 1) {
