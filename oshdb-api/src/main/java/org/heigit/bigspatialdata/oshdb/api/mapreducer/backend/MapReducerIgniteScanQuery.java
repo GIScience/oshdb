@@ -581,7 +581,7 @@ class IgniteScanQueryHelperMapStream {
     QueryCursor<List<X>> cursor = oshdb.getIgnite().cache(cacheName).withKeepBinary().query(
         new ScanQuery<Long, Object>((key, cell) ->
             /*isActive() &&*/ MapReducerIgniteScanQuery.cellKeyInRange(key, cellIdRangesByLevel)
-        ), cacheEntry -> {
+        ).setPageSize(16), cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           Object data = cacheEntry.getValue();
           GridOSHEntity oshEntityCell;
@@ -594,7 +594,9 @@ class IgniteScanQueryHelperMapStream {
         }
     );
     // todo: ignite scan query doesn't support timeouts -> implement ourself?
-    return StreamSupport.stream(cursor.spliterator(), true).flatMap(Collection::stream);
+    return StreamSupport.stream(cursor.spliterator(), true)
+        .onClose(cursor::close)
+        .flatMap(Collection::stream);
   }
 
   static <X, P extends Geometry & Polygonal> Stream<X> mapStreamCellsOSMContributionOnIgniteCache(
