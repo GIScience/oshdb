@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.junit.Test;
@@ -67,8 +68,8 @@ public class FastPolygonOperationsTest {
     // lines
     for (int i = 0; i < 30; i++) {
       Geometry testGeom = gf.createLineString(new Coordinate[] {
-          new Coordinate(0.4 * i, 0.35 * i),
-          new Coordinate(0.4 * i + 0.01, 0.35 * i)
+          new Coordinate(0.4 * i + 1.0, 0.35 * i),
+          new Coordinate(0.4 * i, 0.35 * i + 1.0)
       });
       assertEquals(
           poly.intersection(testGeom),
