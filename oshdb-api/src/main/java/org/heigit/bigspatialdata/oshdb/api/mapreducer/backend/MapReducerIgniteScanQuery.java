@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +15,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -564,6 +564,7 @@ class IgniteScanQueryHelperMapReduce {
 }
 
 class IgniteScanQueryHelperMapStream {
+  private static final int SCAN_QUERY_PAGE_SIZE = 16;
 
   /**
    * Executes a scanquery resulting in the requested data.
@@ -581,7 +582,7 @@ class IgniteScanQueryHelperMapStream {
     QueryCursor<List<X>> cursor = oshdb.getIgnite().cache(cacheName).withKeepBinary().query(
         new ScanQuery<Long, Object>((key, cell) ->
             /*isActive() &&*/ MapReducerIgniteScanQuery.cellKeyInRange(key, cellIdRangesByLevel)
-        ).setPageSize(16), cacheEntry -> {
+        ).setPageSize(SCAN_QUERY_PAGE_SIZE), cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           Object data = cacheEntry.getValue();
           GridOSHEntity oshEntityCell;
@@ -594,7 +595,7 @@ class IgniteScanQueryHelperMapStream {
         }
     );
     // todo: ignite scan query doesn't support timeouts -> implement ourself?
-    return StreamSupport.stream(cursor.spliterator(), true)
+    return Streams.stream(cursor)
         .onClose(cursor::close)
         .flatMap(Collection::stream);
   }
