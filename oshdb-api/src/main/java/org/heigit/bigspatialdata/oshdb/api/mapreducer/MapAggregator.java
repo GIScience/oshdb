@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,7 +23,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -618,7 +618,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   ) throws Exception {
     return transformSortedMap(
         this.estimatedQuantiles(mapper),
-        quantileFunction -> StreamSupport.stream(q.spliterator(), false)
+        quantileFunction -> Streams.stream(q)
             .mapToDouble(Double::doubleValue)
             .map(quantileFunction)
             .boxed()
