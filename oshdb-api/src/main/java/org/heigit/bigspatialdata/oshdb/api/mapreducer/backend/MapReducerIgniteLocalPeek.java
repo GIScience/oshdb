@@ -237,7 +237,7 @@ class IgniteLocalPeekHelper {
           .map(node::<Long, GridOSHEntity>cache)
           .collect(Collectors.toSet());
 
-      return Streams.stream(() -> new CellKeysIterator(cellIdRanges))
+      return Streams.stream(new CellKeysIterator(cellIdRanges))
           .filter(ignored -> this.isActive())
           .flatMap(cellKey ->
               // get local data from all requested caches
