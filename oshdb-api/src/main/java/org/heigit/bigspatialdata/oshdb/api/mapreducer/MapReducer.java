@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
 import java.io.IOException;
 import java.io.Serializable;
@@ -23,7 +24,6 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -1314,7 +1314,7 @@ public abstract class MapReducer<X> implements
       SerializableFunction<X, R> mapper,
       Iterable<Double> q
   ) throws Exception {
-    return StreamSupport.stream(q.spliterator(), false)
+    return Streams.stream(q)
         .mapToDouble(Double::doubleValue)
         .map(this.estimatedQuantiles(mapper))
         .boxed()
