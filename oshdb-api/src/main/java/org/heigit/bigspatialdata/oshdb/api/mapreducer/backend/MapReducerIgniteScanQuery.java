@@ -578,7 +578,6 @@ class IgniteScanQueryHelperMapStream {
       CellIterator cellIterator,
       CellProcessor<Stream<X>> cellProcessor
   ) {
-    // run processing in parallel
     QueryCursor<List<X>> cursor = oshdb.getIgnite().cache(cacheName).withKeepBinary().query(
         new ScanQuery<Long, Object>((key, cell) ->
             /*isActive() &&*/ MapReducerIgniteScanQuery.cellKeyInRange(key, cellIdRangesByLevel)
