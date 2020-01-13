@@ -432,7 +432,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .filter(cellLongId -> {
             // test if cell exists and contains any relevant data
             GridOSHEntity cell = localCache.localPeek(cellLongId);
-            return cell != null && cellProcessor.apply(cell, cellIterator).findAny().isPresent();
+            return cell != null
+                && cellProcessor.apply(cell, cellIterator).anyMatch(ignored -> true);
           })
           .boxed()
           .collect(Collectors.toList());
@@ -483,9 +484,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
                   } else {
                     oshEntityCell = (GridOSHEntity) data;
                   }
-                  return cellProcessor.apply(oshEntityCell, this.cellIterator).findAny().map(
-                      ignored -> cacheEntry.getKey()
-                  );
+                  Stream<?> cellStream = cellProcessor.apply(oshEntityCell, this.cellIterator);
+                  if (cellStream.anyMatch(ignored -> true)) {
+                    return Optional.of(cacheEntry.getKey());
+                  } else {
+                    return Optional.empty();
+                  }
                 }
             )) {
               List<Long> acc = new LinkedList<>();
