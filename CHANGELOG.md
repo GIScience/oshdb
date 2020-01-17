@@ -5,6 +5,7 @@ Changelog
 
 * (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
 * fix bug where polygonal areas of interest would throw an exception in some (rare) edge cases. #204
+* allow osmTag filters more flexible: when used with a list of tags, it now accepts also `tagKey=*` statements (which can be mixed with `key=value` statements as before). #209
 
 ## 0.5.5
 
