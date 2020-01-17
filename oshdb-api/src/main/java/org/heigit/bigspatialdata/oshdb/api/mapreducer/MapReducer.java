@@ -586,35 +586,43 @@ public abstract class MapReducer<X> implements
 
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
-   * of the supplied tags (key=value pairs).
+   * of the supplied tags (key=value pairs or key=*).
    *
-   * @param tags the tags (key/value pairs) to filter the osm entities for
+   * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmTag(Collection<OSMTag> tags) {
+  public MapReducer<X> osmTag(Collection<? extends OSMTagInterface> tags) {
     MapReducer<X> ret = this.copy();
-    if (tags.size() == 0) {
+    if (tags.isEmpty()) {
       LOG.warn("Empty tag list. No data will match this filter.");
       ret.preFilters.add(ignored -> false);
       ret.filters.add(ignored -> false);
       return ret;
     }
+    Set<Integer> preKeyIds = new HashSet<>();
     Set<Integer> keyIds = new HashSet<>();
     Set<OSHDBTag> keyValueIds = new HashSet<>();
-    for (OSMTag tag : tags) {
-      OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(tag);
-      if (!keyValueId.isPresentInKeytables()) {
-        LOG.warn("Tag {}={} not found. No data will match this tag value.",
-            tag.getKey(), tag.getValue());
+    for (OSMTagInterface tag : tags) {
+      if (tag instanceof OSMTag) {
+        OSMTag keyValue = (OSMTag) tag;
+        OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(keyValue);
+        if (!keyValueId.isPresentInKeytables()) {
+          LOG.warn("Tag {}={} not found. No data will match this tag value.",
+              keyValue.getKey(), keyValue.getValue());
+        } else {
+          preKeyIds.add(keyValueId.getKey());
+          keyValueIds.add(keyValueId);
+        }
       } else {
-        keyIds.add(keyValueId.getKey());
-        keyValueIds.add(keyValueId);
+        OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf((OSMTagKey) tag);
+        preKeyIds.add(keyId.toInt());
+        keyIds.add(keyId.toInt());
       }
     }
     ret.preFilters.add(oshEntitiy -> {
       for (int key : oshEntitiy.getRawTagKeys()) {
-        if (keyIds.contains(key)) {
+        if (preKeyIds.contains(key)) {
           return true;
         }
       }
@@ -622,7 +630,7 @@ public abstract class MapReducer<X> implements
     });
     ret.filters.add(osmEntity -> {
       for (OSHDBTag oshdbTag : osmEntity.getTags()) {
-        if (keyValueIds.contains(oshdbTag)) {
+        if (keyIds.contains(oshdbTag.getKey()) || keyValueIds.contains(oshdbTag)) {
           return true;
         }
       }

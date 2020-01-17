@@ -123,7 +123,7 @@ interface MapReducerSettings<M> {
    * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M osmTag(Collection<OSMTag> keyValuePairs);
+  M osmTag(Collection<? extends OSMTagInterface> keyValuePairs);
 
   /** deprecated.
    * @deprecated replaced by {@link #osmType(OSMType, OSMType...)}
