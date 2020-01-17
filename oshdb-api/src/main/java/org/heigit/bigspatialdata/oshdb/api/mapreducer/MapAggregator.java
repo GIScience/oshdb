@@ -347,7 +347,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
 
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
-   * of the supplied tags (key=value pairs).
+   * of the supplied tags (key=value pairs or key=*).
    *
    * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)

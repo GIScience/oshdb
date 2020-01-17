@@ -483,7 +483,7 @@ public abstract class MapReducer<X> implements
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
    * and value.
    *
-   * @param tag the tag (key-value pair) to filter the osm entities for
+   * @param tag the tag (key-value pair or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
