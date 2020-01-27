@@ -142,7 +142,7 @@ public class TestOSMDataFilters {
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
-    // only tags
+    // tags and keys mixed
     result = createMapReducerOSMEntitySnapshot()
         .osmTag(Arrays.asList(
             new OSMTag("highway", "residential"),
@@ -153,7 +153,7 @@ public class TestOSMDataFilters {
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .count();
-    assertEquals(5+42, result.intValue());
+    assertEquals(5 + 42, result.intValue());
   }
 
   @Test
