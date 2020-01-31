@@ -43,7 +43,7 @@
     <jts.version>1.16.1</jts.version>
     <wololo.version>0.13.0</wololo.version>
     <mavencheckstyle.version>3.0.0</mavencheckstyle.version>
-    <checkstyle.version>8.18</checkstyle.version>
+    <checkstyle.version>8.29</checkstyle.version>
     <jacoco.version>0.8.3</jacoco.version>
     <gitcommitplugin.version>2.2.6</gitcommitplugin.version>
     <mavenprojectinfo.version>3.0.0</mavenprojectinfo.version>
