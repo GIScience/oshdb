@@ -22,7 +22,9 @@ hs_err_pid*
 
 # intellij stuff
 *.iml
-.idea
+.idea/*
+# track checkstyle version to switch automatically inside of IDEA for older branches
+!.idea/checkstyle-idea.xml
 
 # netbeans stuff
 nb-configuration.xml
