@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 
-class TypeFilter extends Filter {
+class TypeFilter implements Filter {
   final String type;
 
   TypeFilter(String type) {

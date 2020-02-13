@@ -2,7 +2,7 @@ package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 
-class BinaryOperator extends Operator {
+class BinaryOperator implements Operator {
   final FilterExpression e1;
   final String operator;
   final FilterExpression e2;
