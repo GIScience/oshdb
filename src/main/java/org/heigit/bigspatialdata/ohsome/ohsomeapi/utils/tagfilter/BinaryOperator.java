@@ -1,6 +1,9 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
-abstract class BinaryOperator implements Operator {
+/**
+ * A boolean operator with two sub-expressions.
+ */
+abstract class BinaryOperator implements FilterExpression {
   final FilterExpression e1;
   final FilterExpression e2;
 
@@ -9,6 +12,15 @@ abstract class BinaryOperator implements Operator {
     this.e2 = e2;
   }
 
+  /**
+   * Returns a new binary operator object fulfilling the given "operator" and two sub-expressions.
+   *
+   * @param e1 The first sub-expression.
+   * @param operator The operator, such as "and" or "or".
+   * @param e2 The second sub-expression.
+   * @throws IllegalStateException if an unknown operator was given.
+   * @return A new binary operator object fulfilling the given "operator" on two sub-expressions.
+   */
   public static BinaryOperator fromOperator(
       FilterExpression e1,
       String operator,

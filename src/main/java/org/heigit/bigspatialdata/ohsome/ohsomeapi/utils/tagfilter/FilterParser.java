@@ -12,9 +12,23 @@ import org.jparsec.Scanners;
 import org.jparsec.Terminals.StringLiteral;
 import org.jparsec.pattern.Patterns;
 
+/**
+ * A parser for OSM entity filters.
+ *
+ * <p>Such filters can select OSM entites by their tags, their type or other attributes. Filters
+ * can contain boolean operators (and/or/not) and parentheses can be used.</p>
+ *
+ * <p>Example: "type:way and highway=residential and not (lit=yes or lit=automatic)"</p>
+ */
 public class FilterParser {
   private Parser<FilterExpression> parser;
 
+  /**
+   * Creates a new parser for OSM entity filters.
+   *
+   * @param tt A tagtranslator object, used to transform OSM tags (e.g. "building=yes") to their
+   *           respective OSHDB counterparts.
+   */
   public FilterParser(TagTranslator tt) {
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
@@ -88,6 +102,12 @@ public class FilterParser {
     this.parser = parser;
   }
 
+  /**
+   * Parse a filter expression.
+   *
+   * @param str A string representing an OSM entity filter.
+   * @return A tree structure representing this filter, can be applied to OSM entities.
+   */
   public FilterExpression parse(String str) {
     return this.parser.parse(str);
   }

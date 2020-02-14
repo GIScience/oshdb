@@ -3,6 +3,9 @@ package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 
+/**
+ * A tag filter which executes a "key=value" check.
+ */
 public class TagFilterEquals implements TagFilter {
   OSHDBTag tag;
 

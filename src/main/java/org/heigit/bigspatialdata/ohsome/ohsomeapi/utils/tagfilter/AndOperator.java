@@ -2,6 +2,9 @@ package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 
+/**
+ * A boolean "and" of two sub-expressions.
+ */
 public class AndOperator extends BinaryOperator {
   AndOperator(FilterExpression e1, FilterExpression e2) {
     super(e1, e2);

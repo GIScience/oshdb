@@ -5,7 +5,21 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 
-interface TagFilter extends Filter {
+/**
+ * A tag filter which can be applied to an OSM entity.
+ */
+interface TagFilter extends FilterExpression {
+  /**
+   * Returns a new tag filter object fulfilling the given "selector" and OSM tag.
+   *
+   * <p>This can be either an exact tag match (key=value), or a tag presence check (key=*), or
+   * the inverse of these.</p>
+   *
+   * @param selector The type of tag filter, such as "=" or "!=".
+   * @param tag The tag to use for this filter - can be either a OSMTag or OSMTagKey object.
+   * @throws IllegalStateException if an unknown selector was given.
+   * @return A new tag-filter object fulfilling the given parameters.
+   */
   static TagFilter fromSelector(String selector, OSMTagInterface tag, TagTranslator tt) {
     switch (selector) {
       case "=":
