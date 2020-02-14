@@ -75,7 +75,7 @@ public class FilterParser {
     final Parser<FilterExpression> parser = new OperatorTable<FilterExpression>()
         .infixl(or.retn((a, b) -> new BinaryOperator(a, "or", b)), 10)
         .infixl(and.retn((a, b) -> new BinaryOperator(a, "and", b)), 20)
-        .prefix(not.retn(x -> new UnaryOperator("not", x)), 50)
+        .prefix(not.retn(x -> UnaryOperator.fromOperator("not", x)), 50)
         .build(unit);
     ref.set(parser);
     this.parser = parser;

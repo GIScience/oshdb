@@ -1,29 +1,19 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-
-class UnaryOperator implements Operator {
-  final String operator;
+abstract class UnaryOperator implements Operator {
   final FilterExpression sub;
 
-  UnaryOperator(String operator, FilterExpression sub) {
-    this.operator = operator;
+  UnaryOperator(FilterExpression sub) {
     this.sub = sub;
   }
 
-  @Override
-  public boolean applyOSM(OSMEntity e) {
+  public static UnaryOperator fromOperator(String operator, FilterExpression sub) {
     //noinspection SwitchStatementWithTooFewBranches
     switch (operator) {
       case "not":
-        return !sub.applyOSM(e);
+        return new NotOperator(sub);
       default:
-        throw new RuntimeException("unknown operator: " + operator);
+        throw new IllegalStateException("unknown operator: " + operator);
     }
-  }
-
-  @Override
-  public String toString() {
-    return operator + "(" + sub.toString() + ")";
   }
 }
