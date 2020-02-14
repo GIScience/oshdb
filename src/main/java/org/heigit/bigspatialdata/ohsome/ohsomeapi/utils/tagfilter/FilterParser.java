@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
@@ -24,9 +25,12 @@ public class FilterParser {
     final Parser<String> notEquals = Patterns.string("!=").toScanner("NOT_EQUALS").map(ignored -> "!=");
     final Parser<String> colon = Patterns.string(":").toScanner("COLON").map(ignored -> ":");
     final Parser<String> type = Patterns.string("type").toScanner("TYPE").map(ignored -> "type");
-    final Parser<String> node = Patterns.string("node").toScanner("NODE").map(ignored -> "node");
-    final Parser<String> way = Patterns.string("way").toScanner("WAY").map(ignored -> "way");
-    final Parser<String> relation = Patterns.string("relation").toScanner("RELATION").map(ignored -> "relation");
+    final Parser<OSMType> node = Patterns.string("node").toScanner("NODE")
+        .map(ignored -> OSMType.NODE);
+    final Parser<OSMType> way = Patterns.string("way").toScanner("WAY")
+        .map(ignored -> OSMType.WAY);
+    final Parser<OSMType> relation = Patterns.string("relation").toScanner("RELATION")
+        .map(ignored -> OSMType.RELATION);
     final Parser<String> star = Patterns.string("*").toScanner("STAR").map(ignored -> "*");
 
     final Parser<FilterExpression> tagFilter = Parsers.sequence(

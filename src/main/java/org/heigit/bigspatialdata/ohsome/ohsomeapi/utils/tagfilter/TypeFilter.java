@@ -1,21 +1,22 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
 class TypeFilter implements Filter {
-  final String type;
+  final OSMType type;
 
-  TypeFilter(String type) {
+  TypeFilter(OSMType type) {
     this.type = type;
   }
 
   @Override
   public boolean applyOSM(OSMEntity e) {
-    return e.getType().toString().equalsIgnoreCase(type);
+    return e.getType() == type;
   }
 
   @Override
   public String toString() {
-    return "type:" + type;
+    return "type:" + type.toString();
   }
 }
