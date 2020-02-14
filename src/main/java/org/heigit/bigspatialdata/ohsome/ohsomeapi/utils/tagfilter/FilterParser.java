@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
 import java.util.Arrays;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.jparsec.OperatorTable;
 import org.jparsec.Parser;
@@ -35,14 +37,16 @@ public class FilterParser {
         Parsers.or(string, star)
     )).map(l -> {
       if (l.get(4).equals("*")) {
-        return new TagFilter(
+        return TagFilter.fromSelector(
             (String) l.get(2),
-            tt.getOSHDBTagOf((String) l.get(0), (String) l.get(4))
+            new OSMTag((String) l.get(0), (String) l.get(4)),
+            tt
         );
       } else {
-        return new TagFilter(
+        return TagFilter.fromSelector(
             (String) l.get(2),
-            tt.getOSHDBTagKeyOf((String) l.get(0))
+            new OSMTagKey((String) l.get(0)),
+            tt
         );
       }
     });

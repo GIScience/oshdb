@@ -1,44 +1,27 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 
-class TagFilter implements Filter {
-  final String selector;
-  final int tagKeyId;
-  final int tagValueId;
-
-  TagFilter(String selector, OSHDBTag tag) {
-    this.selector = selector;
-    this.tagKeyId = tag.getKey();
-    this.tagValueId = tag.getValue();
-  }
-
-  TagFilter(String selector, OSHDBTagKey tag) {
-    this.selector = selector;
-    this.tagKeyId = tag.toInt();
-    this.tagValueId = -1;
-  }
-
-  @Override
-  public boolean applyOSM(OSMEntity e) {
+interface TagFilter extends Filter {
+  static TagFilter fromSelector(String selector, OSMTagInterface tag, TagTranslator tt) {
     switch (selector) {
       case "=":
-        return e.hasTagValue(this.tagKeyId, this.tagValueId);
+        if (tag instanceof OSMTag) {
+          return new TagFilterEquals(tt.getOSHDBTagOf((OSMTag) tag));
+        } else {
+          return new TagFilterEqualsAny(tt.getOSHDBTagKeyOf((OSMTagKey) tag));
+        }
       case "!=":
-        return !e.hasTagValue(this.tagKeyId, this.tagValueId);
-      case "=*":
-        return e.hasTagKey(this.tagKeyId);
-      case "!=*":
-        return !e.hasTagKey(this.tagKeyId);
+        if (tag instanceof OSMTag) {
+          return new TagFilterNotEquals(tt.getOSHDBTagOf((OSMTag) tag));
+        } else {
+          return new TagFilterNotEqualsAny(tt.getOSHDBTagKeyOf((OSMTagKey) tag));
+        }
       default:
-        throw new RuntimeException("unknown tagfilter selector: " + selector);
+        throw new IllegalStateException("unknown tagfilter selector: " + selector);
     }
-  }
-
-  @Override
-  public String toString() {
-    return "tag:" + tagKeyId + selector + tagValueId;
   }
 }
