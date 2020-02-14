@@ -1,7 +1,7 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
-import java.util.Arrays;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.jparsec.OperatorTable;
@@ -29,34 +29,25 @@ public class FilterParser {
     final Parser<String> relation = Patterns.string("relation").toScanner("RELATION").map(ignored -> "relation");
     final Parser<String> star = Patterns.string("*").toScanner("STAR").map(ignored -> "*");
 
-    final Parser<FilterExpression> tagFilter = Parsers.list(Arrays.asList(
+    final Parser<FilterExpression> tagFilter = Parsers.sequence(
         string,
         whitespace,
         Parsers.or(equals, notEquals),
         whitespace,
-        Parsers.or(string, star)
-    )).map(l -> {
-      if (l.get(4).equals("*")) {
-        return TagFilter.fromSelector(
-            (String) l.get(2),
-            new OSMTag((String) l.get(0), (String) l.get(4)),
-            tt
-        );
-      } else {
-        return TagFilter.fromSelector(
-            (String) l.get(2),
-            new OSMTagKey((String) l.get(0)),
-            tt
-        );
-      }
-    });
-    final Parser<FilterExpression> typeFilter = Parsers.list(Arrays.asList(
+        Parsers.or(string, star),
+        (key, ignored, selector, ignored2, value) -> {
+          OSMTagInterface tag = value.equals("*")
+              ? new OSMTagKey(key)
+              : new OSMTag(key, value);
+          return TagFilter.fromSelector(selector, tag, tt);
+        });
+    final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
         whitespace,
         colon,
         whitespace,
-        Parsers.or(node, way, relation)
-    )).map(l -> new TypeFilter((String) l.get(4)));
+        Parsers.or(node, way, relation))
+        .map(TypeFilter::new);
 
     final Parser<FilterExpression> filter = Parsers.or(tagFilter, typeFilter);
 
