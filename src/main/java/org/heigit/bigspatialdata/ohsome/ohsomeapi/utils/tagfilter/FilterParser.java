@@ -73,8 +73,8 @@ public class FilterParser {
         .followedBy(whitespace)
         .map(ignored -> "not");
     final Parser<FilterExpression> parser = new OperatorTable<FilterExpression>()
-        .infixl(or.retn((a, b) -> new BinaryOperator(a, "or", b)), 10)
-        .infixl(and.retn((a, b) -> new BinaryOperator(a, "and", b)), 20)
+        .infixl(or.retn((a, b) -> BinaryOperator.fromOperator(a, "or", b)), 10)
+        .infixl(and.retn((a, b) -> BinaryOperator.fromOperator(a, "and", b)), 20)
         .prefix(not.retn(x -> UnaryOperator.fromOperator("not", x)), 50)
         .build(unit);
     ref.set(parser);
