@@ -10,7 +10,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
  * <p>Such an expression might be a simple key=value tag filter, or a more complex combination
  * of boolean operators, parentheses, tag filters and/or other filters.</p>
  */
-interface FilterExpression {
+public interface FilterExpression {
   /**
    * Apply the filter to an OSM entity.
    *
