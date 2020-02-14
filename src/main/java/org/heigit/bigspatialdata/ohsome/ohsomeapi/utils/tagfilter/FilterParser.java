@@ -18,20 +18,27 @@ public class FilterParser {
   public FilterParser(TagTranslator tt) {
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
-    final Parser<String> keystr = Patterns.regex("[a-zA-Z][a-zA-Z_@0-9:]*").toScanner("KEY_STRING").source();
+    final Parser<String> keystr = Patterns.regex("[a-zA-Z][a-zA-Z_@0-9:]*")
+        .toScanner("KEY_STRING")
+        .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
 
-    final Parser<String> equals = Patterns.string("=").toScanner("EQUALS").map(ignored -> "=");
-    final Parser<String> notEquals = Patterns.string("!=").toScanner("NOT_EQUALS").map(ignored -> "!=");
-    final Parser<String> colon = Patterns.string(":").toScanner("COLON").map(ignored -> ":");
-    final Parser<String> type = Patterns.string("type").toScanner("TYPE").map(ignored -> "type");
+    final Parser<String> equals = Patterns.string("=").toScanner("EQUALS")
+        .map(ignored -> "=");
+    final Parser<String> notEquals = Patterns.string("!=").toScanner("NOT_EQUALS")
+        .map(ignored -> "!=");
+    final Parser<String> colon = Patterns.string(":").toScanner("COLON")
+        .map(ignored -> ":");
+    final Parser<String> type = Patterns.string("type").toScanner("TYPE")
+        .map(ignored -> "type");
     final Parser<OSMType> node = Patterns.string("node").toScanner("NODE")
         .map(ignored -> OSMType.NODE);
     final Parser<OSMType> way = Patterns.string("way").toScanner("WAY")
         .map(ignored -> OSMType.WAY);
     final Parser<OSMType> relation = Patterns.string("relation").toScanner("RELATION")
         .map(ignored -> OSMType.RELATION);
-    final Parser<String> star = Patterns.string("*").toScanner("STAR").map(ignored -> "*");
+    final Parser<String> star = Patterns.string("*").toScanner("STAR")
+        .map(ignored -> "*");
 
     final Parser<FilterExpression> tagFilter = Parsers.sequence(
         string,
