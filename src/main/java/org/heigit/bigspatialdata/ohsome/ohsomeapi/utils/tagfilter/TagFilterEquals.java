@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 
@@ -16,6 +17,11 @@ public class TagFilterEquals implements TagFilter {
   @Override
   public boolean applyOSM(OSMEntity e) {
     return e.hasTagValue(tag.getKey(), tag.getValue());
+  }
+
+  @Override
+  public boolean applyOSH(OSHEntity e) {
+    return e.hasTagKey(tag.getKey());
   }
 
   @Override

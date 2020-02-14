@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
+import com.google.common.collect.Streams;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
@@ -12,6 +14,11 @@ class TypeFilter implements FilterExpression {
 
   @Override
   public boolean applyOSM(OSMEntity e) {
+    return e.getType() == type;
+  }
+
+  @Override
+  public boolean applyOSH(OSHEntity e) {
     return e.getType() == type;
   }
 
