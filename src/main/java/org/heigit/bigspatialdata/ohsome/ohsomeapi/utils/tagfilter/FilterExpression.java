@@ -1,10 +1,8 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
 import com.google.common.collect.Streams;
-import java.util.EnumSet;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
 /**
  * Represents a filter expression which can be applied on OSM/OSH entities.
