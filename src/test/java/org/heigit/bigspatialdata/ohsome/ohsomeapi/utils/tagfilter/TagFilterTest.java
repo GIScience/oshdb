@@ -81,4 +81,11 @@ public class TagFilterTest {
     assertFalse(expression.applyOSM(createTestEntity("highway", "track")));
     assertTrue(expression.applyOSM(createTestEntity("building", "yes")));
   }
+
+  @Test
+  public void testTypeFilter() {
+    assertTrue(parser.parse("type:way") instanceof TypeFilter);
+    assertTrue(parser.parse("type:node").applyOSM(createTestEntity()));
+    assertFalse(parser.parse("type:way").applyOSM(createTestEntity()));
+  }
 }
