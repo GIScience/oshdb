@@ -7,7 +7,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
  * A tag filter which executes a "key!=*" check.
  */
 public class TagFilterNotEqualsAny implements TagFilter {
-  OSHDBTagKey tag;
+  private final OSHDBTagKey tag;
 
   TagFilterNotEqualsAny(OSHDBTagKey tag) {
     this.tag = tag;

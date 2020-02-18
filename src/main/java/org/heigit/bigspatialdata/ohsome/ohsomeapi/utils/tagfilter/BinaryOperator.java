@@ -13,6 +13,24 @@ abstract class BinaryOperator implements FilterExpression {
   }
 
   /**
+   * Returns the first sub-expression of this binary expression.
+   *
+   * @return the first sub-expression of a binary expression.
+   */
+  public FilterExpression getExpression1() {
+    return e1;
+  }
+
+  /**
+   * Returns the second sub-expression of this binary expression.
+   *
+   * @return the second sub-expression of a binary expression.
+   */
+  public FilterExpression getExpression2() {
+    return e2;
+  }
+
+  /**
    * Returns a new binary operator object fulfilling the given "operator" and two sub-expressions.
    *
    * @param e1 The first sub-expression.

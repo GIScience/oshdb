@@ -1,15 +1,23 @@
 package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 
-import com.google.common.collect.Streams;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
-class TypeFilter implements FilterExpression {
-  final OSMType type;
+public class TypeFilter implements FilterExpression {
+  private final OSMType type;
 
   TypeFilter(OSMType type) {
     this.type = type;
+  }
+
+  /**
+   * Returns the OSM type of this filter.
+   *
+   * @return the OSM type of this filter.
+   */
+  public OSMType getType() {
+    return this.type;
   }
 
   @Override

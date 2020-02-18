@@ -8,10 +8,19 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
  * A tag filter which executes a "key=*" check.
  */
 public class TagFilterEqualsAny implements TagFilter {
-  OSHDBTagKey tag;
+  private final OSHDBTagKey tag;
 
   TagFilterEqualsAny(OSHDBTagKey tag) {
     this.tag = tag;
+  }
+
+  /**
+   * Returns the OSM tag of this filter.
+   *
+   * @return the OSM tag of this filter.
+   */
+  public OSHDBTagKey getTag() {
+    return this.tag;
   }
 
   @Override
