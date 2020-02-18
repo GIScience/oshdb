@@ -58,6 +58,14 @@ public class TagFilterTest {
   }
 
   @Test
+  public void testTagFilterStrings() {
+    // tag key with colon; quoted string as value
+    assertTrue(parser.parse("addr:street=\"Hauptstraße\"") instanceof TagFilter);
+    // whitespace (in string; between key and value, single quotes
+    assertTrue(parser.parse("name = \"Colorado River\"") instanceof TagFilter);
+  }
+
+  @Test
   public void testTagFilterEqualsAny() {
     FilterExpression expression = parser.parse("highway=*");
     assertTrue(expression instanceof TagFilterEqualsAny);
@@ -84,8 +92,41 @@ public class TagFilterTest {
 
   @Test
   public void testTypeFilter() {
-    assertTrue(parser.parse("type:way") instanceof TypeFilter);
+    assertTrue(parser.parse("type:node") instanceof TypeFilter);
     assertTrue(parser.parse("type:node").applyOSM(createTestEntity()));
     assertFalse(parser.parse("type:way").applyOSM(createTestEntity()));
+  }
+
+  @Test
+  public void testNotOperator() {
+    FilterExpression expression = parser.parse("not type:way");
+    assertTrue(expression instanceof NotOperator);
+    assertTrue(expression.applyOSM(createTestEntity()));
+  }
+
+  @Test
+  public void testAndOperator() {
+    FilterExpression expression = parser.parse("highway=residential and name=*");
+    assertTrue(expression instanceof AndOperator);
+    assertTrue(((AndOperator) expression).getExpression1() instanceof TagFilter);
+    assertTrue(((AndOperator) expression).getExpression2() instanceof TagFilter);
+    assertTrue(expression.applyOSM(createTestEntity(
+        "highway", "residential",
+        "name", "FIXME"
+    )));
+    assertFalse(expression.applyOSM(createTestEntity(
+        "highway", "residential"
+    )));
+  }
+
+  @Test
+  public void testOrOperator() {
+    FilterExpression expression = parser.parse("highway=residential or name=*");
+    assertTrue(expression instanceof OrOperator);
+    assertTrue(((OrOperator) expression).getExpression1() instanceof TagFilter);
+    assertTrue(((OrOperator) expression).getExpression2() instanceof TagFilter);
+    assertTrue(expression.applyOSM(createTestEntity("highway", "residential")));
+    assertTrue(expression.applyOSM(createTestEntity("name", "FIXME")));
+    assertFalse(expression.applyOSM(createTestEntity("building", "yes")));
   }
 }
