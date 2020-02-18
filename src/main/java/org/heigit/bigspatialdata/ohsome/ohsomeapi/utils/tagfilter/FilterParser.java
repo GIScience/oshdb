@@ -5,6 +5,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
+import org.jetbrains.annotations.Contract;
 import org.jparsec.OperatorTable;
 import org.jparsec.Parser;
 import org.jparsec.Parsers;
@@ -108,6 +109,7 @@ public class FilterParser {
    * @param str A string representing an OSM entity filter.
    * @return A tree structure representing this filter, can be applied to OSM entities.
    */
+  @Contract(pure = true)
   public FilterExpression parse(String str) {
     return this.parser.parse(str);
   }
