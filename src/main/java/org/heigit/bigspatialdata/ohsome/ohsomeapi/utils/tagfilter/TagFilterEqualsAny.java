@@ -34,6 +34,11 @@ public class TagFilterEqualsAny implements TagFilter {
   }
 
   @Override
+  public FilterExpression negate() {
+    return new TagFilterNotEqualsAny(tag);
+  }
+
+  @Override
   public String toString() {
     return "tag:" + tag.toInt() + "!=*";
   }

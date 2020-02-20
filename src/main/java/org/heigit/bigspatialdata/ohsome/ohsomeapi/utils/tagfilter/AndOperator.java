@@ -22,6 +22,11 @@ public class AndOperator extends BinaryOperator {
   }
 
   @Override
+  public FilterExpression negate() {
+    return new OrOperator(e1.negate(), e2.negate());
+  }
+
+  @Override
   public String toString() {
     return e1.toString() + " and " + e2.toString();
   }

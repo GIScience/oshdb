@@ -8,7 +8,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 /**
  * A tag filter which can be applied to an OSM entity.
  */
-interface TagFilter extends FilterExpression {
+public interface TagFilter extends Filter {
   /**
    * Returns a new tag filter object fulfilling the given "selector" and OSM tag.
    *

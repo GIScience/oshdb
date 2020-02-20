@@ -17,6 +17,11 @@ public class NotOperator extends UnaryOperator {
   }
 
   @Override
+  public FilterExpression negate() {
+    return sub;
+  }
+
+  @Override
   public String toString() {
     return "not(" + sub.toString() + ")";
   }
