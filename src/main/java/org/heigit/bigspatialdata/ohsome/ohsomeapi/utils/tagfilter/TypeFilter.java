@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
