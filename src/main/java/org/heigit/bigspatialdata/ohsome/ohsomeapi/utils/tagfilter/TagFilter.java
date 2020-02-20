@@ -17,8 +17,9 @@ public interface TagFilter extends Filter {
    *
    * @param selector The type of tag filter, such as "=" or "!=".
    * @param tag The tag to use for this filter - can be either a OSMTag or OSMTagKey object.
-   * @throws IllegalStateException if an unknown selector was given.
+   * @param tt Tag Translator object for converting OSM tags to OSHDB tag ids
    * @return A new tag-filter object fulfilling the given parameters.
+   * @throws IllegalStateException if an unknown selector was given.
    */
   static TagFilter fromSelector(String selector, OSMTagInterface tag, TagTranslator tt) {
     switch (selector) {

@@ -24,8 +24,8 @@ abstract class UnaryOperator implements FilterExpression {
    *
    * @param operator The operator, such as "and" or "or".
    * @param sub The second sub-expression.
-   * @throws IllegalStateException if an unknown operator was given.
    * @return A new unary operator object fulfilling the given "operator" on a single sub-expression.
+   * @throws IllegalStateException if an unknown operator was given.
    */
   public static UnaryOperator fromOperator(String operator, FilterExpression sub) {
     //noinspection SwitchStatementWithTooFewBranches

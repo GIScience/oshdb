@@ -36,8 +36,8 @@ abstract class BinaryOperator implements FilterExpression {
    * @param e1 The first sub-expression.
    * @param operator The operator, such as "and" or "or".
    * @param e2 The second sub-expression.
-   * @throws IllegalStateException if an unknown operator was given.
    * @return A new binary operator object fulfilling the given "operator" on two sub-expressions.
+   * @throws IllegalStateException if an unknown operator was given.
    */
   public static BinaryOperator fromOperator(
       FilterExpression e1,
