@@ -63,6 +63,9 @@ public class TagFilterTest {
     assertTrue(parser.parse("addr:street=\"Hauptstraße\"") instanceof TagFilter);
     // whitespace (in string; between key and value, single quotes
     assertTrue(parser.parse("name = \"Colorado River\"") instanceof TagFilter);
+
+    // "Allowed characters are: the letters `a-z` and `A-Z`, digits, underscore, dashes and colons."
+    assertTrue(parser.parse("name=a0_-:") instanceof TagFilter);
   }
 
   @Test

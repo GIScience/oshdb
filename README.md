@@ -77,7 +77,7 @@ Operators follow the following order of precedence: parentheses before `not`, be
 
 ### Special Characters & Whitespace
 
-When writing filters, tags without special characters can be supplied directly, without needing to quote them. Example: `amenity=drinking_water` or `name:it=*`. Allowed characters are: the letters `a-z` and `A-Z`, numbers, underscore, dashes and colons.
+When writing filters, tags without special characters can be supplied directly, without needing to quote them. Example: `amenity=drinking_water` or `name:it=*`. Allowed characters are: the letters `a-z` and `A-Z`, digits, underscore, dashes and colons.
 When filtering by tags with any other characters in their key or value, these strings need to be supplied as double-quoted strings, e.g. `name="Heidelberger Brückenaffe"` or `opening_hours="24/7"`. Escape sequences can be used to represent a literal double-quote character `\"`, while a literal backslash is written as `\\`.
 
 Whitespace such as spaces, tabs or newlines can be put freely between operators or parts of selectors (`name = *` is equivalent to `name=*`) to make a filter more readable.

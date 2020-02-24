@@ -33,7 +33,7 @@ public class FilterParser {
   public FilterParser(TagTranslator tt) {
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
-    final Parser<String> keystr = Patterns.regex("[a-zA-Z][a-zA-Z_@0-9:]*")
+    final Parser<String> keystr = Patterns.regex("[a-zA-Z_0-9:-]+")
         .toScanner("KEY_STRING")
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
