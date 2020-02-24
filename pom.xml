@@ -63,7 +63,30 @@
     <junit.version>4.12</junit.version>
     <h2.version>1.4.193</h2.version>
     <slf4j-log4j.version>1.7.25</slf4j-log4j.version>
+    <mavencheckstyle.version>3.1.0</mavencheckstyle.version>
+    <checkstyle.version>8.29</checkstyle.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
+
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${mavencheckstyle.version}</version>
+        <configuration>
+          <configLocation>checkstyle-google-oshdb.xml</configLocation>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>${checkstyle.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 </project>
