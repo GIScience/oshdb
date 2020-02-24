@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
+package org.heigit.ohsome.filter;
 
 import com.google.common.collect.Streams;
 import java.util.ArrayList;

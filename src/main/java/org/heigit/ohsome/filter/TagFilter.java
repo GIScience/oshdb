@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
+package org.heigit.ohsome.filter;
 
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;

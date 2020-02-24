@@ -1,0 +1,43 @@
+# Compiled class file
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# maven generated target folder
+**/target/
+
+# eclipse stuff
+.project
+.classpath
+.settings
+
+# intellij stuff
+*.iml
+.idea/*
+# track checkstyle version to switch automatically inside of IDEA for older branches
+!.idea/checkstyle-idea.xml
+
+# netbeans stuff
+nb-configuration.xml
+nbactions*.xml
+**/nbproject/
+
+# gedit stuff
+*~
+*.swp
+
+# shade plugin results
+**/dependency-reduced-pom.xml
+
+# temporary directories
+**/tmp/*
+

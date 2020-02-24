@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
+package org.heigit.ohsome.filter;
 
 /**
  * A boolean operator with two sub-expressions.

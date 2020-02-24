@@ -1,17 +1,14 @@
-package org.heigit.bigspatialdata.ohsome.ohsomeapi.utils.tagfilter;
+package org.heigit.ohsome.filter;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.After;
@@ -27,8 +24,11 @@ public class TagFilterTest {
 
   @Before
   public void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
-    this.tagTranslator = new TagTranslator(
-        (new OSHDBH2("./src/test/resources/tagFilterTestKeytables")).getConnection());
+    Class.forName("org.h2.Driver");
+    this.tagTranslator = new TagTranslator(DriverManager.getConnection(
+        "jdbc:h2:./src/test/resources/keytables;ACCESS_MODE_DATA=r",
+        "sa", ""
+    ));
     this.parser = new FilterParser(this.tagTranslator);
   }
 
