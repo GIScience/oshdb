@@ -10,6 +10,12 @@
   <description>A flexible filtering library for OSM entities.</description>
   <packaging>jar</packaging>
 
+  <parent>
+    <groupId>org.heigit.bigspatialdata</groupId>
+    <artifactId>bigspatialdata-parent</artifactId>
+    <version>1.2</version>
+  </parent>
+
   <dependencies>
     <!-- parser combinator library -->
     <dependency>
