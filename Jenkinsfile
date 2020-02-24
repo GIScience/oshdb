@@ -1,6 +1,18 @@
 pipeline {
 
-agent {label 'master'}
+  agent {label 'master'}
+
+  environment {
+    RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
+    RELEASE_DEPLOY = false
+    SNAPSHOT_DEPLOY = false
+
+    VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
+    PACKAGING = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.packaging | grep -Ev "(^\\[|Download\\w+)"').trim()
+    GROUP_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.groupId | grep -Ev "(^\\[|Download\\w+)"').trim()
+    ARTIFACT_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.artifactId | grep -Ev "(^\\[|Download\\w+)"').trim()
+  }
+
   stages {
     stage ('Build and Test') {
       steps {
@@ -33,11 +45,52 @@ agent {label 'master'}
         }
       }
     }
+
+    stage ('Deploy Snapshot') {
+      when {
+        expression {
+          return env.BRANCH_NAME ==~ /(^master$)/ && VERSION ==~ /.*-SNAPSHOT$/
+        }
+      }
+      steps {
+        script {
+          rtMaven.deployer.deployArtifacts buildInfo
+          server.publishBuildInfo buildInfo
+          SNAPSHOT_DEPLOY = true
+        }
+      }
+      post {
+        failure {
+          rocketSend channel: 'jenkinsohsome', message: "Deployment of ohsome-filter build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+        }
+      }
+    }
+
+    stage ('Deploy Release') {
+      when {
+        expression {
+          return VERSION ==~ RELEASE_REGEX && env.TAG_NAME ==~ RELEASE_REGEX
+        }
+      }
+      steps {
+        script {
+          rtMaven.deployer.deployArtifacts buildInfo
+          server.publishBuildInfo buildInfo
+          RELEASE_DEPLOY = true
+        }
+      }
+      post {
+        failure {
+          rocketSend channel: 'jenkinsohsome', message: "Deployment of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+        }
+      }
+    }
     
     stage ('publish Javadoc'){
       when {
-        expression {
-          return env.BRANCH_NAME ==~ /(^[0-9]+$)|(^(([0-9]+)(\.))+([0-9]+)?$)|(^master$)/
+        anyOf {
+          equals expected: true, actual: RELEASE_DEPLOY
+          equals expected: true, actual: SNAPSHOT_DEPLOY
         }
       }
       steps {
