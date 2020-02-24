@@ -1,6 +1,9 @@
 package org.heigit.ohsome.filter;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
@@ -67,6 +70,24 @@ public class FilterParser {
               : new OSMTag(key, value);
           return TagFilter.fromSelector(selector, tag, tt);
         });
+    final Parser<String> in = whitespace
+        .followedBy(Patterns.string("in").toScanner("IN"))
+        .followedBy(whitespace)
+        .map(ignored -> "in");
+    final Parser<List<String>> stringSequence = Parsers.sequence(
+        Scanners.isChar('('),
+        string.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
+        Scanners.isChar(')'),
+        (ignored, list, ignored2) -> list);
+    final Parser<FilterExpression> multiTagFilter = Parsers.sequence(
+        string,
+        in,
+        stringSequence,
+        (key, ignored, values) -> {
+          List<OSHDBTag> tags = new ArrayList<>(values.size());
+          values.forEach(value -> tags.add(tt.getOSHDBTagOf(key, value)));
+          return new TagFilterEqualsAnyOf(tags);
+        });
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
         whitespace,
@@ -75,7 +96,7 @@ public class FilterParser {
         Parsers.or(node, way, relation))
         .map(TypeFilter::new);
 
-    final Parser<FilterExpression> filter = Parsers.or(tagFilter, typeFilter);
+    final Parser<FilterExpression> filter = Parsers.or(tagFilter, multiTagFilter, typeFilter);
 
     final Parser<Void> parensStart = Patterns.string("(").toScanner("(");
     final Parser<Void> parensEnd = Patterns.string(")").toScanner(")");

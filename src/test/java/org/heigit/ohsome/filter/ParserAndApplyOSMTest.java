@@ -96,6 +96,16 @@ public class ParserAndApplyOSMTest {
   }
 
   @Test
+  public void testTagFilterEqualsAnyOf() {
+    FilterExpression expression = parser.parse("highway in (residential, track)");
+    assertTrue(expression instanceof TagFilterEqualsAnyOf);
+    assertTrue(expression.applyOSM(createTestEntity("highway", "residential")));
+    assertTrue(expression.applyOSM(createTestEntity("highway", "track")));
+    assertFalse(expression.applyOSM(createTestEntity("building", "yes")));
+    assertFalse(expression.applyOSM(createTestEntity("highway", "primary")));
+  }
+
+  @Test
   public void testTypeFilter() {
     assertTrue(parser.parse("type:node") instanceof TypeFilter);
     assertTrue(parser.parse("type:node").applyOSM(createTestEntity()));
