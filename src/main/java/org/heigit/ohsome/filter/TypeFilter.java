@@ -7,6 +7,9 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
+/**
+ * A filter which selects OSM entities by their OSM type (i.e., node, way or relation).
+ */
 public class TypeFilter implements Filter {
   private final OSMType type;
 

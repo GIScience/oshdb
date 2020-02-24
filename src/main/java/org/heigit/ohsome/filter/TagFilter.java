@@ -6,7 +6,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 
 /**
- * A tag filter which can be applied to an OSM entity.
+ * A filter which selects OSM entities by their OSM tags (e.g., key=value, key=*, etc.).
  */
 public interface TagFilter extends Filter {
   /**
