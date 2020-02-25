@@ -1,6 +1,6 @@
 pipeline {
 
-  agent {label 'master'}
+  agent { label 'master' }
 
   environment {
     RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
@@ -39,7 +39,7 @@ pipeline {
           }
         } 
       }
-      post{
+      post {
         failure {
           rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "ohsome-filter build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Review the code!" , rawMessage: true
         }
@@ -86,7 +86,7 @@ pipeline {
       }
     }
     
-    stage ('publish Javadoc'){
+    stage ('publish Javadoc') {
       when {
         anyOf {
           equals expected: true, actual: RELEASE_DEPLOY
@@ -94,7 +94,7 @@ pipeline {
         }
       }
       steps {
-        script{
+        script {
           //load dependencies to artifactory
           rtMaven.run pom: 'pom.xml', goals: 'org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2'
           projver=sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+:)"').trim()
@@ -115,9 +115,9 @@ pipeline {
       }
     }
     
-    stage ('reports and statistics'){
+    stage ('reports and statistics') {
       steps {
-        script{
+        script {
           rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
 
           recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
@@ -130,7 +130,7 @@ pipeline {
       }   
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Reporting of ohsome-api-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Reporting of ohsome-filter build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }  
     }
@@ -158,22 +158,20 @@ pipeline {
       }  
     }
     
-    stage ('Report status change'){
+    stage ('Report status change') {
       when {
         expression {
           return ((currentBuild.number > 1) && (currentBuild.getPreviousBuild().result == 'FAILURE'))
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: ohsome-api-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: ohsome-filter build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
       }
       post {
         failure {
           rocketSend channel: 'jenkinsohsome', message: "Reporting of ohsome-filter build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
-      
     }
-
   }
 }
