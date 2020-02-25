@@ -16,9 +16,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test class for the tagfilter package.
+ * Test class for the ohsome-filter package.
+ *
+ * <p>Tests the parsing of filters and the application to OSM entities.</p>
  */
-public class TagFilterTest {
+public class ParserAndApplyOSMTest {
   private FilterParser parser;
   private TagTranslator tagTranslator;
 
