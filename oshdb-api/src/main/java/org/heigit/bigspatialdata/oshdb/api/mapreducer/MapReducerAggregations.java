@@ -155,7 +155,7 @@ interface MapReducerAggregations<X> {
   /**
    * Gets all unique values of the results provided by a given mapper function.
    *
-   * This is a shorthand for `.map(mapper).uniq()`.
+   * <p>This is a shorthand for `.map(mapper).uniq()`.</p>
    *
    * @param mapper function that returns some values
    * @param <R> the type that is returned by the `mapper` function

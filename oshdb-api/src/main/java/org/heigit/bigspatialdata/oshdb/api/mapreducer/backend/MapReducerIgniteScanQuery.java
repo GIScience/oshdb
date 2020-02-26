@@ -615,12 +615,13 @@ class IgniteScanQueryHelperMapStream {
   }
 
   static <X, P extends Geometry & Polygonal>
-  Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-      OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
-      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
-      SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      OSHEntityFilter preFilter, OSMEntityFilter filter,
-      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) {
+      Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+          OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
+          Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+          SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+          OSHEntityFilter preFilter, OSMEntityFilter filter,
+          SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
+  ) {
     return mapStreamOnIgniteCache(
         oshdb,
         cacheName,
@@ -631,12 +632,13 @@ class IgniteScanQueryHelperMapStream {
   }
 
   public static <X, P extends Geometry & Polygonal>
-  Stream<X> mapStreamCellsOSMEntitySnapshot(
-      OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
-      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
-      SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      OSHEntityFilter preFilter, OSMEntityFilter filter,
-      SerializableFunction<OSMEntitySnapshot, X> mapper) {
+      Stream<X> mapStreamCellsOSMEntitySnapshot(
+          OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
+          Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+          SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+          OSHEntityFilter preFilter, OSMEntityFilter filter,
+          SerializableFunction<OSMEntitySnapshot, X> mapper
+  ) {
     return mapStreamOnIgniteCache(
         oshdb,
         cacheName,
@@ -647,12 +649,13 @@ class IgniteScanQueryHelperMapStream {
   }
 
   static <X, P extends Geometry & Polygonal>
-  Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-      OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
-      Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
-      SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-      OSHEntityFilter preFilter, OSMEntityFilter filter,
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) {
+      Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+          OSHDBIgnite oshdb, TagInterpreter tagInterpreter, String cacheName,
+          Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
+          SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
+          OSHEntityFilter preFilter, OSMEntityFilter filter,
+          SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper
+  ) {
     return mapStreamOnIgniteCache(
         oshdb,
         cacheName,

@@ -600,7 +600,8 @@ public abstract class MapReducer<X> implements
       ret.filters.add(ignored -> false);
       return ret;
     }
-    // for the "pre"-filter which removes all entitits wich don't have at least one of the given tag keys
+    // for the "pre"-filter which removes all entities which don't match at least one of the
+    // given tag keys
     Set<Integer> preKeyIds = new HashSet<>();
     // sets of tag keys and tags for the concrete entity filter: either one of these must match
     Set<Integer> keyIds = new HashSet<>();
