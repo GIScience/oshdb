@@ -20,7 +20,7 @@ public class TestMapReduceOSHDB_Ignite_AffinityCall extends TestMapReduceOSHDB_I
         .timestamps(new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY))
         .osmEntityFilter(entity -> entity.getId() == 617308093)
         .map(snapshot -> snapshot.getEntity().getUserId())
-        .map(x -> (Integer)null)
+        .map(x -> (Integer) null)
         .stream()
         .collect(Collectors.toSet());
 
