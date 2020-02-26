@@ -186,15 +186,13 @@ abstract class TestMapReduce {
   @Test(expected = OSHDBTimeoutException.class)
   public void testTimeoutMapReduce() throws Exception {
     // set super short timeout -> all queries should fail
-    oshdb.timeoutInMilliseconds(1);
+    oshdb.timeoutInMilliseconds(0);
 
     // simple query
     //noinspection ResultOfMethodCallIgnored - we only test for thrown exceptions here
     createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
-        .map(snapshot -> snapshot.getEntity().getUserId())
-        .uniq();
+        .count();
 
     // reset timeout
     oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
@@ -203,16 +201,15 @@ abstract class TestMapReduce {
   @Test(expected = OSHDBTimeoutException.class)
   public void testTimeoutStream() throws Exception {
     // set super short timeout -> all queries should fail
-    oshdb.timeoutInMilliseconds(1);
+    oshdb.timeoutInMilliseconds(0);
 
     // simple query
     //noinspection ResultOfMethodCallIgnored - we only test for thrown exceptions here
     createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
-        .map(snapshot -> snapshot.getEntity().getUserId())
+        .map(snapshot -> snapshot.getEntity().getId())
         .stream()
-        .collect(Collectors.toSet());
+        .count();
 
     // reset timeout
     oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
