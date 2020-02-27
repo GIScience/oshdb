@@ -185,13 +185,22 @@ abstract class TestMapReduce {
 
   @Test(expected = OSHDBTimeoutException.class)
   public void testTimeoutMapReduce() throws Exception {
-    // set super short timeout -> all queries should fail
-    oshdb.timeoutInMilliseconds(0);
+    // set short timeout -> query should fail
+    oshdb.timeoutInMilliseconds(30);
 
-    // simple query
+    // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
     //noinspection ResultOfMethodCallIgnored - we only test for thrown exceptions here
     createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .map(ignored -> {
+          try {
+            Thread.sleep(100);
+            return null;
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        })
         .count();
 
     // reset timeout
