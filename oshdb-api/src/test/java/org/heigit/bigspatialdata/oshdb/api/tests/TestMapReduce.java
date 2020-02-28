@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
+import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -193,14 +194,7 @@ abstract class TestMapReduce {
     createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .osmEntityFilter(entity -> entity.getId() == 617308093)
-        .map(ignored -> {
-          try {
-            Thread.sleep(100);
-            return null;
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-        })
+        .map(delay(100))
         .count();
 
     // reset timeout
@@ -210,17 +204,31 @@ abstract class TestMapReduce {
   @Test(expected = OSHDBTimeoutException.class)
   public void testTimeoutStream() throws Exception {
     // set super short timeout -> all queries should fail
-    oshdb.timeoutInMilliseconds(0);
+    oshdb.timeoutInMilliseconds(30);
 
     // simple query
     //noinspection ResultOfMethodCallIgnored - we only test for thrown exceptions here
     createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
+        .osmEntityFilter(entity -> entity.getId() == 617308093)
         .map(snapshot -> snapshot.getEntity().getId())
+        .map(delay(100))
         .stream()
         .count();
 
     // reset timeout
     oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
   }
+
+  private static <T> SerializableFunction<T, T> delay(int ms) {
+    return x -> {
+      try {
+        Thread.sleep(ms);
+        return x;
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    };
+  }
+
 }
