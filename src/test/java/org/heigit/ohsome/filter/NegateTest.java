@@ -103,8 +103,8 @@ public class NegateTest {
     assertTrue(expression instanceof AndOperator);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof OrOperator);
-    testAllTypes(sub1, ((BinaryOperator) negation).getExpression1());
-    testAllTypes(sub2, ((BinaryOperator) negation).getExpression2());
+    testAllTypes(sub1, ((BinaryOperator) negation).getLeftOperand());
+    testAllTypes(sub2, ((BinaryOperator) negation).getRightOperand());
   }
 
   @Test
@@ -115,7 +115,7 @@ public class NegateTest {
     assertTrue(expression instanceof OrOperator);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof AndOperator);
-    testAllTypes(sub1, ((BinaryOperator) negation).getExpression1());
-    testAllTypes(sub2, ((BinaryOperator) negation).getExpression2());
+    testAllTypes(sub1, ((BinaryOperator) negation).getLeftOperand());
+    testAllTypes(sub2, ((BinaryOperator) negation).getRightOperand());
   }
 }

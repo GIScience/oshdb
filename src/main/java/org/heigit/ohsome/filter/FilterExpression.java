@@ -61,10 +61,10 @@ public interface FilterExpression {
     if (this instanceof Filter) {
       return Collections.singletonList(Collections.singletonList((Filter) this));
     } else if (this instanceof NotOperator) {
-      return ((NotOperator) this).getSubExpression().negate().normalize();
+      return ((NotOperator) this).getOperand().negate().normalize();
     } else if (this instanceof AndOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getExpression1().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getExpression2().normalize();
+      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
+      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
       // return cross product of exp1 and exp2
       List<List<Filter>> c = new LinkedList<>();
       for (List<Filter> e1 : exp1) {
@@ -77,8 +77,8 @@ public interface FilterExpression {
       }
       return c;
     } else if (this instanceof OrOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getExpression1().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getExpression2().normalize();
+      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
+      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
       List<List<Filter>> or = new ArrayList<>(exp1.size() + exp2.size());
       or.addAll(exp1);
       or.addAll(exp2);

@@ -113,8 +113,8 @@ public class ParserAndApplyOSMTest {
   public void testAndOperator() {
     FilterExpression expression = parser.parse("highway=residential and name=*");
     assertTrue(expression instanceof AndOperator);
-    assertTrue(((AndOperator) expression).getExpression1() instanceof TagFilter);
-    assertTrue(((AndOperator) expression).getExpression2() instanceof TagFilter);
+    assertTrue(((AndOperator) expression).getLeftOperand() instanceof TagFilter);
+    assertTrue(((AndOperator) expression).getRightOperand() instanceof TagFilter);
     assertTrue(expression.applyOSM(createTestEntity(
         "highway", "residential",
         "name", "FIXME"
@@ -128,8 +128,8 @@ public class ParserAndApplyOSMTest {
   public void testOrOperator() {
     FilterExpression expression = parser.parse("highway=residential or name=*");
     assertTrue(expression instanceof OrOperator);
-    assertTrue(((OrOperator) expression).getExpression1() instanceof TagFilter);
-    assertTrue(((OrOperator) expression).getExpression2() instanceof TagFilter);
+    assertTrue(((OrOperator) expression).getLeftOperand() instanceof TagFilter);
+    assertTrue(((OrOperator) expression).getRightOperand() instanceof TagFilter);
     assertTrue(expression.applyOSM(createTestEntity("highway", "residential")));
     assertTrue(expression.applyOSM(createTestEntity("name", "FIXME")));
     assertFalse(expression.applyOSM(createTestEntity("building", "yes")));

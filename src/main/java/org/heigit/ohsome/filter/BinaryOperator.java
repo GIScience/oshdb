@@ -4,51 +4,52 @@ package org.heigit.ohsome.filter;
  * A boolean operator with two sub-expressions.
  */
 abstract class BinaryOperator implements FilterExpression {
-  final FilterExpression e1;
-  final FilterExpression e2;
+  final FilterExpression op1;
+  final FilterExpression op2;
 
-  BinaryOperator(FilterExpression e1, FilterExpression e2) {
-    this.e1 = e1;
-    this.e2 = e2;
+  BinaryOperator(FilterExpression op1, FilterExpression op2) {
+    this.op1 = op1;
+    this.op2 = op2;
   }
 
   /**
-   * Returns the first sub-expression of this binary expression.
+   * Returns the first (left) operand of this binary expression.
    *
-   * @return the first sub-expression of a binary expression.
+   * @return the left operand of a binary expression.
    */
-  public FilterExpression getExpression1() {
-    return e1;
+  public FilterExpression getLeftOperand() {
+    return op1;
   }
 
   /**
-   * Returns the second sub-expression of this binary expression.
+   * Returns the right operand of this binary expression.
    *
-   * @return the second sub-expression of a binary expression.
+   * @return the right operand of a binary expression.
    */
-  public FilterExpression getExpression2() {
-    return e2;
+  public FilterExpression getRightOperand() {
+    return op2;
   }
 
   /**
-   * Returns a new binary operator object fulfilling the given "operator" and two sub-expressions.
+   * Returns a new binary operator object fulfilling the given "operator" and two operands
+   * (a "left" and a "right" sub-expressions).
    *
-   * @param e1 The first sub-expression.
+   * @param leftOperand The left operand.
    * @param operator The operator, such as "and" or "or".
-   * @param e2 The second sub-expression.
+   * @param rightOperand The right operand.
    * @return A new binary operator object fulfilling the given "operator" on two sub-expressions.
    * @throws IllegalStateException if an unknown operator was given.
    */
   public static BinaryOperator fromOperator(
-      FilterExpression e1,
+      FilterExpression leftOperand,
       String operator,
-      FilterExpression e2
+      FilterExpression rightOperand
   ) {
     switch (operator) {
       case "and":
-        return new AndOperator(e1, e2);
+        return new AndOperator(leftOperand, rightOperand);
       case "or":
-        return new OrOperator(e1, e2);
+        return new OrOperator(leftOperand, rightOperand);
       default:
         throw new IllegalStateException("unknown operator: " + operator);
     }

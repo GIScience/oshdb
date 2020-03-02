@@ -7,27 +7,27 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
  * A boolean "or" of two sub-expressions.
  */
 public class OrOperator extends BinaryOperator {
-  OrOperator(FilterExpression e1, FilterExpression e2) {
-    super(e1, e2);
+  OrOperator(FilterExpression op1, FilterExpression op2) {
+    super(op1, op2);
   }
 
   @Override
   public boolean applyOSM(OSMEntity e) {
-    return e1.applyOSM(e) || e2.applyOSM(e);
+    return op1.applyOSM(e) || op2.applyOSM(e);
   }
 
   @Override
   public boolean applyOSH(OSHEntity e) {
-    return e1.applyOSH(e) || e2.applyOSH(e);
+    return op1.applyOSH(e) || op2.applyOSH(e);
   }
 
   @Override
   public FilterExpression negate() {
-    return new AndOperator(e1.negate(), e2.negate());
+    return new AndOperator(op1.negate(), op2.negate());
   }
 
   @Override
   public String toString() {
-    return e1.toString() + " or " + e2.toString();
+    return op1.toString() + " or " + op2.toString();
   }
 }

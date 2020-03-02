@@ -12,16 +12,16 @@ public class NotOperator extends UnaryOperator {
 
   @Override
   public boolean applyOSM(OSMEntity e) {
-    return !sub.applyOSM(e);
+    return !op.applyOSM(e);
   }
 
   @Override
   public FilterExpression negate() {
-    return sub;
+    return op;
   }
 
   @Override
   public String toString() {
-    return "not(" + sub.toString() + ")";
+    return "not(" + op.toString() + ")";
   }
 }
