@@ -12,13 +12,13 @@ public class OrOperator extends BinaryOperator {
   }
 
   @Override
-  public boolean applyOSM(OSMEntity e) {
-    return op1.applyOSM(e) || op2.applyOSM(e);
+  public boolean applyOSM(OSMEntity entity) {
+    return op1.applyOSM(entity) || op2.applyOSM(entity);
   }
 
   @Override
-  public boolean applyOSH(OSHEntity e) {
-    return op1.applyOSH(e) || op2.applyOSH(e);
+  public boolean applyOSH(OSHEntity entity) {
+    return op1.applyOSH(entity) || op2.applyOSH(entity);
   }
 
   @Override

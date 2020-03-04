@@ -14,8 +14,8 @@ public class TagFilterNotEqualsAny implements TagFilter {
   }
 
   @Override
-  public boolean applyOSM(OSMEntity e) {
-    return !e.hasTagKey(tag.toInt());
+  public boolean applyOSM(OSMEntity entity) {
+    return !entity.hasTagKey(tag.toInt());
   }
 
   @Override

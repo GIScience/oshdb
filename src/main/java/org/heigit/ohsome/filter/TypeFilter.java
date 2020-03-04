@@ -27,13 +27,13 @@ public class TypeFilter implements Filter {
   }
 
   @Override
-  public boolean applyOSM(OSMEntity e) {
-    return e.getType() == type;
+  public boolean applyOSM(OSMEntity entity) {
+    return entity.getType() == type;
   }
 
   @Override
-  public boolean applyOSH(OSHEntity e) {
-    return e.getType() == type;
+  public boolean applyOSH(OSHEntity entity) {
+    return entity.getType() == type;
   }
 
   @Override

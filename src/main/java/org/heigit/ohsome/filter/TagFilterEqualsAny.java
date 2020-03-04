@@ -24,13 +24,13 @@ public class TagFilterEqualsAny implements TagFilter {
   }
 
   @Override
-  public boolean applyOSM(OSMEntity e) {
-    return e.hasTagKey(tag.toInt());
+  public boolean applyOSM(OSMEntity entity) {
+    return entity.hasTagKey(tag.toInt());
   }
 
   @Override
-  public boolean applyOSH(OSHEntity e) {
-    return e.hasTagKey(tag);
+  public boolean applyOSH(OSHEntity entity) {
+    return entity.hasTagKey(tag);
   }
 
   @Override

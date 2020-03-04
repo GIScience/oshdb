@@ -11,8 +11,8 @@ public class NotOperator extends UnaryOperator {
   }
 
   @Override
-  public boolean applyOSM(OSMEntity e) {
-    return !op.applyOSM(e);
+  public boolean applyOSM(OSMEntity entity) {
+    return !op.applyOSM(entity);
   }
 
   @Override

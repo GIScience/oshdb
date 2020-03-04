@@ -19,24 +19,24 @@ public interface FilterExpression {
   /**
    * Apply the filter to an OSM entity.
    *
-   * @param e the OSM entity to check.
+   * @param entity the OSM entity to check.
    * @return true if the entity fulfills the specified filter, otherwise false.
    */
   @Contract(pure = true)
-  boolean applyOSM(OSMEntity e);
+  boolean applyOSM(OSMEntity entity);
 
   /**
    * Apply the filter to an OSH entity.
    *
    * <p>Must return the same as <code>oshEntity.getVersions().….anyMatch(applyOSM)</code>.</p>
    *
-   * @param e the OSH entity to check.
+   * @param entity the OSH entity to check.
    * @return true if the at least one of the OSH entity's versions fulfills the specified filter,
    *         false otherwise.
    */
   @Contract(pure = true)
-  default boolean applyOSH(OSHEntity e) {
-    return Streams.stream(e.getVersions()).anyMatch(this::applyOSM);
+  default boolean applyOSH(OSHEntity entity) {
+    return Streams.stream(entity.getVersions()).anyMatch(this::applyOSM);
   }
 
   /**
@@ -66,23 +66,23 @@ public interface FilterExpression {
       List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
       List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
       // return cross product of exp1 and exp2
-      List<List<Filter>> c = new LinkedList<>();
+      List<List<Filter>> combined = new LinkedList<>();
       for (List<Filter> e1 : exp1) {
         for (List<Filter> e2 : exp2) {
-          List<Filter> and = new ArrayList<>(e1.size() + e2.size());
-          and.addAll(e1);
-          and.addAll(e2);
-          c.add(and);
+          List<Filter> crossProduct = new ArrayList<>(e1.size() + e2.size());
+          crossProduct.addAll(e1);
+          crossProduct.addAll(e2);
+          combined.add(crossProduct);
         }
       }
-      return c;
+      return combined;
     } else if (this instanceof OrOperator) {
       List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
       List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
-      List<List<Filter>> or = new ArrayList<>(exp1.size() + exp2.size());
-      or.addAll(exp1);
-      or.addAll(exp2);
-      return or;
+      List<List<Filter>> combined = new ArrayList<>(exp1.size() + exp2.size());
+      combined.addAll(exp1);
+      combined.addAll(exp2);
+      return combined;
     } else {
       String error = "unsupported state during filter normalization";
       assert false : error;
