@@ -17,6 +17,7 @@ that you are in the base directory of the downloaded
 
 ```bash
 cd oshdb-tool/etl
+mvn compile
 mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.extract.Extract" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles --timevalidity_from YYYY-MM-DD"
 ```
 
