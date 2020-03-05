@@ -11,6 +11,8 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -177,6 +179,7 @@ public class TestOSMDataFilters {
 
   @Test
   public void tagList() throws Exception {
+    // only tags
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag(Arrays.asList(
             new OSMTag("highway", "residential"),
@@ -187,6 +190,18 @@ public class TestOSMDataFilters {
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
+    // tags and keys mixed
+    result = createMapReducerOSMEntitySnapshot()
+        .osmTag(Arrays.asList(
+            new OSMTag("highway", "residential"),
+            new OSMTag("highway", "unclassified"),
+            new OSMTagKey("building"))
+        )
+        .osmType(OSMType.WAY)
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(5 + 42, result.intValue());
   }
 
   @Test

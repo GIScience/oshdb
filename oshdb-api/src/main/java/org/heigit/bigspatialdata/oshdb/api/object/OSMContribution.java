@@ -17,6 +17,7 @@ import org.locationtech.jts.geom.Geometry;
  *
  * <p>
  * It holds the information about:
+ * </p>
  * <ul>
  *   <li>the timestamp at which this change happened</li>
  *   <li>state of the entity before and after the modification</li>
@@ -24,7 +25,6 @@ import org.locationtech.jts.geom.Geometry;
  *   <li>the type(s) of change which has happened here (e.g. creation/deletion of an entity,
  *   modification of a geometry, altering of the tag list, etc.)</li>
  * </ul>
- * </p>
  */
 public class OSMContribution implements OSHDBMapReducible {
   private final IterateAllEntry data;
@@ -146,13 +146,13 @@ public class OSMContribution implements OSHDBMapReducible {
    *
    * <p>
    * It can be one or more of:
+   * </p>
    * <ul>
    *   <li>CREATION</li>
    *   <li>DELETION</li>
    *   <li>TAG_CHANGE</li>
    *   <li>GEOMETRY_CHANGE</li>
    * </ul>
-   * </p>
    *
    * <p>
    * If this is a entity creation or deletion, the other flags are not set (even though one might
@@ -170,13 +170,13 @@ public class OSMContribution implements OSHDBMapReducible {
    *
    * <p>
    * Can be one or more of:
+   * </p>
    * <ul>
    *   <li>CREATION</li>
    *   <li>DELETION</li>
    *   <li>TAG_CHANGE</li>
    *   <li>GEOMETRY_CHANGE</li>
    * </ul>
-   * </p>
    *
    * <p>
    * If this is a entity creation or deletion, the other flags are not set (even though one might

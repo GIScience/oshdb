@@ -1,4 +1,4 @@
-package org.heigit.bigspatialdata.oshdb.util.tagInterpreter;
+package org.heigit.bigspatialdata.oshdb.util.taginterpreter;
 
 import java.util.HashSet;
 import java.util.Set;

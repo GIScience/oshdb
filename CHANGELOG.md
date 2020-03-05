@@ -3,8 +3,33 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
-* oshdb-util: implemented `QUARTERLY`, `WEEKLY`, `DAILY`, and `HOURLY` as additional time intervals
 * oshdb-api: (breaking) change how osm-type filters work when called multiple times: now, like with other filters, osm entity must match all supplied type filters
+* (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
+* fix bug where polygonal areas of interest would throw an exception in some (rare) edge cases. #204
+* allow osmTag filters more flexible: when used with a list of tags, it now accepts also `tagKey=*` statements (which can be mixed with `key=value` statements as before). #209
+
+## 0.5.5
+
+* improved performance of data [stream](https://docs.ohsome.org/java/oshdb/0.5.4/oshdb-api/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--)ing queries on ignite (using AffinityCall backend).
+* make monthly time intervals more intuitive to use. #201
+
+## 0.5.4
+
+* fix a regression where broken referential integrity in OSM data causes a crash during geometry building
+
+## 0.5.3
+
+* update ignite version to 2.7.5
+
+## 0.5.2
+
+* fix calculation of insertIds / entities stored in too high zoom levels, which resulted in partially missing data in some queries #183
+* prevent crashes while building certain invalid multipolygon relation geometries #179
+
+## 0.5.1
+
+* oshdb-util: Fix a bug in `Geo.areaOf` when applied to polygons with holes. Before this fix, the method errorneously skipped the first inner ring when calculating the total area of a polygon. This affected geometries constructed from OSM multipolygon relations.
+* oshdb-util: Implemented `QUARTERLY`, `WEEKLY`, `DAILY`, and `HOURLY` as additional time intervals.
 
 ## 0.5.0
 

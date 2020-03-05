@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import java.util.List;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -221,18 +215,13 @@ public class TestHelpersOSMContributionView {
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());
-  }
 
-  @Test
-  public void testIssue107() throws Exception {
-    // single timestamp
-    List<OSMContribution> result = this.createMapReducer()
-        .timestamps(timestamps72)
-        .collect();
-
-    assertEquals(true, result.get(0).getContributionTypes().contains(ContributionType.CREATION));
-    assertEquals(null, result.get(0).getEntityBefore());
-    assertEquals(null, result.get(0).getGeometryBefore());
+    // doesn't crash with null pointers
+    Set<Object> result5 = this.createMapReducer()
+        .timestamps(timestamps2)
+        .map(x -> null)
+        .uniq();
+    assertEquals(result5.size(), 1);
   }
 
 }

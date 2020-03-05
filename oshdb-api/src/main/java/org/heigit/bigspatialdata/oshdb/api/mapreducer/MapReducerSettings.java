@@ -118,13 +118,13 @@ interface MapReducerSettings<M> {
   M osmTag(String key, Pattern valuePattern);
 
   /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have
-   * at least one of the supplied tags (key=value pairs).
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
+   * of the supplied tags (key=value pairs or key=*).
    *
-   * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
+   * @param keyValuePairs the tags (key/value pairs or key=*) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M osmTag(Collection<OSMTag> keyValuePairs);
+  M osmTag(Collection<? extends OSMTagInterface> keyValuePairs);
 
   /** deprecated.
    * @deprecated replaced by {@link #osmType(OSMType, OSMType...)}

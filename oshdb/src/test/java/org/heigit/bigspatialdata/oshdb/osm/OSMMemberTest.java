@@ -7,10 +7,6 @@ package org.heigit.bigspatialdata.oshdb.osm;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-/**
- *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
- */
 public class OSMMemberTest {
 
   public OSMMemberTest() {}

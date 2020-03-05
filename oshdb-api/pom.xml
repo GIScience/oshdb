@@ -5,13 +5,14 @@
 
   <parent>
     <groupId>org.heigit.bigspatialdata</groupId>
-    <artifactId>bigspatialdata-core-parent</artifactId>
+    <artifactId>oshdb-parent</artifactId>
     <version>0.6.0-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
 
   <artifactId>oshdb-api</artifactId>
-  <description>Functionallity of the Java-API.</description>
+  <name>OSHDB API</name>
+  <description>API to query the OpenStreetMap History Database. Includes MapReduce functionality to filter, analyze and aggregate data.</description>
 
   <dependencies>
     <dependency>
@@ -105,7 +106,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.20.1</version>
         <configuration>
           <classpathDependencyExcludes>
             <classpathDependencyExcludes>org.slf4j:slf4j-simple</classpathDependencyExcludes>

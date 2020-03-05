@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
@@ -32,7 +31,7 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
-import org.heigit.bigspatialdata.oshdb.util.tagInterpreter.TagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampInterval;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
@@ -111,6 +110,23 @@ public class CellIterator implements Serializable {
       this.fastPolygonClipper = new FastPolygonOperations(boundingPolygon);
     }
   }
+  public <P extends Geometry & Polygonal> CellIterator(
+      SortedSet<OSHDBTimestamp> timestamps,
+      @Nonnull P boundingPolygon,
+      TagInterpreter tagInterpreter,
+      OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
+      boolean includeOldStyleMultipolygons
+  ) {
+    this(
+        timestamps,
+        OSHDBGeometryBuilder.boundingBoxOf(boundingPolygon.getEnvelopeInternal()),
+        boundingPolygon,
+        tagInterpreter,
+        oshEntityPreFilter,
+        osmEntityFilter,
+        includeOldStyleMultipolygons
+    );
+  }
   public CellIterator(
       SortedSet<OSHDBTimestamp> timestamps,
       OSHDBBoundingBox boundingBox,
@@ -179,7 +195,7 @@ public class CellIterator implements Serializable {
     }
 
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
-    return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
+    return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
@@ -444,7 +460,7 @@ public class CellIterator implements Serializable {
     //noinspection unchecked
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
 
-    return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
+    return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity) ||
           !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox) ||
@@ -646,13 +662,7 @@ public class CellIterator implements Serializable {
                   return tagsChange;
                 case GEOMETRY_CHANGE:
                   // look if geometry has been changed between versions
-                  boolean geometryChange = false;
-                  if (geom.get() != null && prevGeometry.get() != null) {
-                    // todo: what if both are null? -> maybe fall back to MEMBER_CHANGE?
-                    // todo: check: does this work as expected?
-                    geometryChange = !prevGeometry.equals(geom);
-                  }
-                  return geometryChange;
+                  return !prevGeometry.equals(geom);
                 default:
                   return false;
               }

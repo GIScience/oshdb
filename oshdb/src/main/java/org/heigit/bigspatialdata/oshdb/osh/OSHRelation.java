@@ -12,5 +12,4 @@ public interface OSHRelation extends OSHEntity {
   
   @Override
   Iterable<OSMRelation> getVersions();
-
 }

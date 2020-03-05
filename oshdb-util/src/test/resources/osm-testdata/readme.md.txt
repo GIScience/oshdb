@@ -1,0 +1,1 @@
+Test data from [osmcode/osm-testdata](https://github.com/osmcode/osm-testdata). Downloaded on 2018-03-20.

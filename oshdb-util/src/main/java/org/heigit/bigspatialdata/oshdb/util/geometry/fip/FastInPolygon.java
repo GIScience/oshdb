@@ -97,7 +97,7 @@ abstract class FastInPolygon implements Serializable {
    * which is derived from https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
    *
    * @param point
-   * @param dir   boolean: true -> horizontal test, false -> vertical test
+   * @param dir   boolean: true -&gt; horizontal test, false -&gt; vertical test
    * @return crossing number of this point in the chosen direction, if the value is even the point is outside of the polygon, otherwise it is inside
    */
   protected int crossingNumber(Point point, boolean dir) {
