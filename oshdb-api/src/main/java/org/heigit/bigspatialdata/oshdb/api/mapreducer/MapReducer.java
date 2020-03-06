@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
 import java.io.IOException;
@@ -394,9 +395,14 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmType(EnumSet<OSMType> typeFilter) {
+  public MapReducer<X> osmType(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
-    ret.typeFilter = typeFilter;
+    typeFilter = Sets.intersection(ret.typeFilter, typeFilter);
+    if (typeFilter.isEmpty()) {
+      ret.typeFilter = EnumSet.noneOf(OSMType.class);
+    } else {
+      ret.typeFilter = EnumSet.copyOf(typeFilter);
+    }
     return ret;
   }
 

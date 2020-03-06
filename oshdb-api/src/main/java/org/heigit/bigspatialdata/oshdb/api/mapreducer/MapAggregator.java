@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -264,7 +263,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> osmType(EnumSet<OSMType> typeFilter) {
+  public MapAggregator<U, X> osmType(Set<OSMType> typeFilter) {
     return this.copyTransform(this.mapReducer.osmType(typeFilter));
   }
 
