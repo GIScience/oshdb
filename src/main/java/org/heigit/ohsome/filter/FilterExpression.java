@@ -8,6 +8,7 @@ import java.util.List;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.jetbrains.annotations.Contract;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Represents a filter expression which can be applied on OSM/OSH entities.
@@ -16,6 +17,7 @@ import org.jetbrains.annotations.Contract;
  * of boolean operators, parentheses, tag filters and/or other filters.</p>
  */
 public interface FilterExpression {
+
   /**
    * Apply the filter to an OSM entity.
    *
@@ -37,6 +39,20 @@ public interface FilterExpression {
   @Contract(pure = true)
   default boolean applyOSH(OSHEntity entity) {
     return Streams.stream(entity.getVersions()).anyMatch(this::applyOSM);
+  }
+
+  /**
+   * Apply the filter to an "OSM feature" (i.e. an entity with a geometry).
+   *
+   * <p>The default implementation doesn't perform a geometry type check, but any Filter can
+   * override it to do so.</p>
+   *
+   * @param entity the OSM entity to check.
+   * @param geometry the geometry of this OSM feature to check.
+   * @return true if the OSM feature fulfills the specified filter, otherwise false.
+   */
+  default boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
+    return applyOSM(entity);
   }
 
   /**
