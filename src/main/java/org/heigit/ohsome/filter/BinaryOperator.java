@@ -3,7 +3,7 @@ package org.heigit.ohsome.filter;
 /**
  * A boolean operator with two sub-expressions.
  */
-abstract class BinaryOperator implements FilterExpression {
+public abstract class BinaryOperator implements FilterExpression {
   final FilterExpression op1;
   final FilterExpression op2;
 
