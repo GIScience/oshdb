@@ -2,6 +2,7 @@ package org.heigit.ohsome.filter;
 
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * A boolean "or" of two sub-expressions.
@@ -19,6 +20,11 @@ public class OrOperator extends BinaryOperator {
   @Override
   public boolean applyOSH(OSHEntity entity) {
     return op1.applyOSH(entity) || op2.applyOSH(entity);
+  }
+
+  @Override
+  public boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
+    return op1.applyOSMGeometry(entity, geometry) || op2.applyOSMGeometry(entity, geometry);
   }
 
   @Override

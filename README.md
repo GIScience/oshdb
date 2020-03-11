@@ -44,10 +44,12 @@ OSMEntitySnapshotView.on(…)
     .areaOfInterest(…)
     .timestamps(…)
     .osmEntityFilter(filter::applyOSM)
-    .groupByTimestamp()
+    .aggregateByTimestamp()
     .count()
     .forEach((t, val) -> System.out.println(t + "\t" + val)); 
 ```
+
+If a filter should also test the geometry type of the results (by using the `geometry:…` selector, see below), one needs to apply the filter also to the respective geometries built for the OSM entities, e.g. by adding `.filter(snapshot -> filter.applyOSMGeometry(snapshot.getEntity(), snapshot.getGeometry()))` to the query above after the `aggregateByTimestamp` line.
 
 Syntax
 ------
@@ -64,6 +66,7 @@ Filters are defined in textual form. A filter expression can be composed out of 
 | `key!=*` | matches all entites which no not have any tag with the given key | `name!=*` |
 | `key in (valuelist)` | matches all entities with have a tag with the given key and one of the given comma separated values | `highway in (residential, living_street)` |
 | `type:osm-type` | matches all entites of the given osm type | `type:node` |
+| `geometry:geom-type` | matches anything which has a geometry of the given type (_point_, _line_, _polygon_, or _other_) | `geometry:polygon` |
 
 ### Operators
 

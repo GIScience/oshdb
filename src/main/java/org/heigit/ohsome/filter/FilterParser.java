@@ -8,6 +8,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
+import org.heigit.ohsome.filter.GeometryTypeFilter.GeometryType;
 import org.jetbrains.annotations.Contract;
 import org.jparsec.OperatorTable;
 import org.jparsec.Parser;
@@ -55,6 +56,16 @@ public class FilterParser {
         .map(ignored -> OSMType.WAY);
     final Parser<OSMType> relation = Patterns.string("relation").toScanner("RELATION")
         .map(ignored -> OSMType.RELATION);
+    final Parser<String> geometry = Patterns.string("geometry").toScanner("GEOMETRY")
+        .map(ignored -> "geometry");
+    final Parser<GeometryType> point = Patterns.string("point").toScanner("POINT")
+        .map(ignored -> GeometryType.POINT);
+    final Parser<GeometryType> line = Patterns.string("line").toScanner("LINE")
+        .map(ignored -> GeometryType.LINE);
+    final Parser<GeometryType> polygon = Patterns.string("polygon").toScanner("POLYGON")
+        .map(ignored -> GeometryType.POLYGON);
+    final Parser<GeometryType> other = Patterns.string("other").toScanner("OTHER")
+        .map(ignored -> GeometryType.OTHER);
     final Parser<String> star = Patterns.string("*").toScanner("STAR")
         .map(ignored -> "*");
 
@@ -95,8 +106,19 @@ public class FilterParser {
         whitespace,
         Parsers.or(node, way, relation))
         .map(TypeFilter::new);
+    final Parser<FilterExpression> geometryTypeFilter = Parsers.sequence(
+        geometry,
+        whitespace,
+        colon,
+        whitespace,
+        Parsers.or(point, line, polygon, other))
+        .map(geometryType -> new GeometryTypeFilter(geometryType, tt));
 
-    final Parser<FilterExpression> filter = Parsers.or(tagFilter, multiTagFilter, typeFilter);
+    final Parser<FilterExpression> filter = Parsers.or(
+        tagFilter,
+        multiTagFilter,
+        typeFilter,
+        geometryTypeFilter);
 
     final Parser<Void> parensStart = Patterns.string("(").toScanner("(");
     final Parser<Void> parensEnd = Patterns.string(")").toScanner(")");
