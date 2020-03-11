@@ -7,13 +7,18 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
+import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Test class for the ohsome-filter package.
@@ -39,24 +44,39 @@ public class ParserAndApplyOSMTest {
     this.tagTranslator.getConnection().close();
   }
 
-  private OSMEntity createTestEntity(String ...keyValues) {
+  private int[] createTestTags(String ...keyValues) {
     ArrayList<Integer> tags = new ArrayList<>(keyValues.length);
     for (int i = 0; i < keyValues.length; i += 2) {
       OSHDBTag t = tagTranslator.getOSHDBTagOf(keyValues[i], keyValues[i + 1]);
       tags.add(t.getKey());
       tags.add(t.getValue());
     }
-    int[] tagIds = tags.stream().mapToInt(x -> x).toArray();
-    return new OSMNode(1, 1, null, 1, 1, tagIds, 0, 0);
+    return tags.stream().mapToInt(x -> x).toArray();
+  }
+
+  private OSMEntity createTestEntityNode(String ...keyValues) {
+    return new OSMNode(1, 1, null, 1, 1, createTestTags(keyValues), 0, 0);
+  }
+
+  private OSMEntity createTestEntityWay(long[] nodeIds, String ...keyValues) {
+    OSMMember[] refs = new OSMMember[nodeIds.length];
+    for (int i = 0; i < refs.length; i++) {
+      refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
+    }
+    return new OSMWay(1, 1, null, 1, 1, createTestTags(keyValues), refs);
+  }
+
+  private OSMEntity createTestEntityRelation(String ...keyValues) {
+    return new OSMRelation(1, 1, null, 1, 1, createTestTags(keyValues), new OSMMember[] {});
   }
 
   @Test
   public void testTagFilterEquals() {
     FilterExpression expression = parser.parse("highway=residential");
     assertTrue(expression instanceof TagFilterEquals);
-    assertTrue(expression.applyOSM(createTestEntity("highway", "residential")));
-    assertFalse(expression.applyOSM(createTestEntity("highway", "track")));
-    assertFalse(expression.applyOSM(createTestEntity("building", "yes")));
+    assertTrue(expression.applyOSM(createTestEntityNode("highway", "residential")));
+    assertFalse(expression.applyOSM(createTestEntityNode("highway", "track")));
+    assertFalse(expression.applyOSM(createTestEntityNode("building", "yes")));
   }
 
   @Test
@@ -74,39 +94,39 @@ public class ParserAndApplyOSMTest {
   public void testTagFilterEqualsAny() {
     FilterExpression expression = parser.parse("highway=*");
     assertTrue(expression instanceof TagFilterEqualsAny);
-    assertTrue(expression.applyOSM(createTestEntity("highway", "residential")));
-    assertFalse(expression.applyOSM(createTestEntity("building", "yes")));
+    assertTrue(expression.applyOSM(createTestEntityNode("highway", "residential")));
+    assertFalse(expression.applyOSM(createTestEntityNode("building", "yes")));
   }
 
   @Test
   public void testTagFilterNotEquals() {
     FilterExpression expression = parser.parse("highway!=residential");
     assertTrue(expression instanceof TagFilterNotEquals);
-    assertFalse(expression.applyOSM(createTestEntity("highway", "residential")));
-    assertTrue(expression.applyOSM(createTestEntity("highway", "track")));
-    assertTrue(expression.applyOSM(createTestEntity("building", "yes")));
+    assertFalse(expression.applyOSM(createTestEntityNode("highway", "residential")));
+    assertTrue(expression.applyOSM(createTestEntityNode("highway", "track")));
+    assertTrue(expression.applyOSM(createTestEntityNode("building", "yes")));
   }
 
   @Test
   public void testTagFilterNotEqualsAny() {
     FilterExpression expression = parser.parse("highway!=*");
     assertTrue(expression instanceof TagFilterNotEqualsAny);
-    assertFalse(expression.applyOSM(createTestEntity("highway", "track")));
-    assertTrue(expression.applyOSM(createTestEntity("building", "yes")));
+    assertFalse(expression.applyOSM(createTestEntityNode("highway", "track")));
+    assertTrue(expression.applyOSM(createTestEntityNode("building", "yes")));
   }
 
   @Test
   public void testTypeFilter() {
     assertTrue(parser.parse("type:node") instanceof TypeFilter);
-    assertTrue(parser.parse("type:node").applyOSM(createTestEntity()));
-    assertFalse(parser.parse("type:way").applyOSM(createTestEntity()));
+    assertTrue(parser.parse("type:node").applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("type:way").applyOSM(createTestEntityNode()));
   }
 
   @Test
   public void testNotOperator() {
     FilterExpression expression = parser.parse("not type:way");
     assertTrue(expression instanceof NotOperator);
-    assertTrue(expression.applyOSM(createTestEntity()));
+    assertTrue(expression.applyOSM(createTestEntityNode()));
   }
 
   @Test
@@ -115,11 +135,11 @@ public class ParserAndApplyOSMTest {
     assertTrue(expression instanceof AndOperator);
     assertTrue(((AndOperator) expression).getLeftOperand() instanceof TagFilter);
     assertTrue(((AndOperator) expression).getRightOperand() instanceof TagFilter);
-    assertTrue(expression.applyOSM(createTestEntity(
+    assertTrue(expression.applyOSM(createTestEntityNode(
         "highway", "residential",
         "name", "FIXME"
     )));
-    assertFalse(expression.applyOSM(createTestEntity(
+    assertFalse(expression.applyOSM(createTestEntityNode(
         "highway", "residential"
     )));
   }
@@ -130,8 +150,73 @@ public class ParserAndApplyOSMTest {
     assertTrue(expression instanceof OrOperator);
     assertTrue(((OrOperator) expression).getLeftOperand() instanceof TagFilter);
     assertTrue(((OrOperator) expression).getRightOperand() instanceof TagFilter);
-    assertTrue(expression.applyOSM(createTestEntity("highway", "residential")));
-    assertTrue(expression.applyOSM(createTestEntity("name", "FIXME")));
-    assertFalse(expression.applyOSM(createTestEntity("building", "yes")));
+    assertTrue(expression.applyOSM(createTestEntityNode("highway", "residential")));
+    assertTrue(expression.applyOSM(createTestEntityNode("name", "FIXME")));
+    assertFalse(expression.applyOSM(createTestEntityNode("building", "yes")));
+  }
+
+  @Test
+  public void testGeometryTypeFilterPoint() {
+    FilterExpression expression = parser.parse("geometry:point");
+    assertTrue(expression instanceof GeometryTypeFilter);
+    // test expression.applyOSM
+    assertTrue(expression.applyOSM(createTestEntityNode()));
+    assertFalse(expression.applyOSM(createTestEntityWay(new long[] {})));
+    assertFalse(expression.applyOSM(createTestEntityRelation()));
+    // test expression.applyOSMGeometry
+    GeometryFactory gf = new GeometryFactory();
+    assertTrue(expression.applyOSMGeometry(createTestEntityNode(), gf.createPoint()));
+  }
+
+  @Test
+  public void testGeometryTypeFilterLine() {
+    FilterExpression expression = parser.parse("geometry:line");
+    assertTrue(expression instanceof GeometryTypeFilter);
+    // test expression.applyOSM
+    assertTrue(expression.applyOSM(createTestEntityWay(new long[] {})));
+    assertTrue(expression.applyOSM(createTestEntityWay(new long[] {1,2,3,4,1})));
+    assertFalse(expression.applyOSM(createTestEntityNode()));
+    assertFalse(expression.applyOSM(createTestEntityRelation()));
+    // test expression.applyOSMGeometry
+    GeometryFactory gf = new GeometryFactory();
+    OSMEntity validWay = createTestEntityWay(new long[]{1, 2, 3, 4, 1});
+    assertTrue(expression.applyOSMGeometry(validWay, gf.createLineString()));
+    assertFalse(expression.applyOSMGeometry(validWay, gf.createPolygon()));
+  }
+
+  @Test
+  public void testGeometryTypeFilterPolygon() {
+    FilterExpression expression = parser.parse("geometry:polygon");
+    assertTrue(expression instanceof GeometryTypeFilter);
+    // test expression.applyOSM
+    assertTrue(expression.applyOSM(createTestEntityWay(new long[] {1,2,3,1})));
+    assertFalse(expression.applyOSM(createTestEntityWay(new long[] {1,2,3,4})));
+    assertFalse(expression.applyOSM(createTestEntityWay(new long[] {1,2,1})));
+    assertTrue(expression.applyOSM(createTestEntityRelation("type", "multipolygon")));
+    assertFalse(expression.applyOSM(createTestEntityRelation()));
+    assertFalse(expression.applyOSM(createTestEntityNode()));
+    // test expression.applyOSMGeometry
+    GeometryFactory gf = new GeometryFactory();
+    OSMEntity validWay = createTestEntityWay(new long[]{1, 2, 3, 4, 1});
+    assertTrue(expression.applyOSMGeometry(validWay, gf.createPolygon()));
+    assertFalse(expression.applyOSMGeometry(validWay, gf.createLineString()));
+    OSMEntity validRelation = createTestEntityRelation("type", "multipolygon");
+    assertTrue(expression.applyOSMGeometry(validRelation, gf.createPolygon()));
+    assertFalse(expression.applyOSMGeometry(validRelation, gf.createGeometryCollection()));
+  }
+
+  @Test
+  public void testGeometryTypeFilterOther() {
+    FilterExpression expression = parser.parse("geometry:other");
+    assertTrue(expression instanceof GeometryTypeFilter);
+    // test expression.applyOSM
+    assertFalse(expression.applyOSM(createTestEntityWay(new long[] {})));
+    assertFalse(expression.applyOSM(createTestEntityNode()));
+    assertTrue(expression.applyOSM(createTestEntityRelation()));
+    // test expression.applyOSMGeometry
+    GeometryFactory gf = new GeometryFactory();
+    OSMEntity validRelation = createTestEntityRelation();
+    assertTrue(expression.applyOSMGeometry(validRelation, gf.createGeometryCollection()));
+    assertFalse(expression.applyOSMGeometry(validRelation, gf.createPolygon()));
   }
 }
