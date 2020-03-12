@@ -123,13 +123,6 @@ public class ParserAndApplyOSMTest {
   }
 
   @Test
-  public void testNotOperator() {
-    FilterExpression expression = parser.parse("not type:way");
-    assertTrue(expression instanceof NotOperator);
-    assertTrue(expression.applyOSM(createTestEntityNode()));
-  }
-
-  @Test
   public void testAndOperator() {
     FilterExpression expression = parser.parse("highway=residential and name=*");
     assertTrue(expression instanceof AndOperator);

@@ -58,9 +58,6 @@ public interface FilterExpression {
   /**
    * Returns the opposite of the current filter expression.
    *
-   * <p>Must never return anything based on a NotOperator.
-   * Non-negatable expressions should throw a runtime exception instead.</p>
-   *
    * @return the opposite of the current filter expression.
    */
   @Contract(pure = true)
@@ -76,8 +73,6 @@ public interface FilterExpression {
   default List<List<Filter>> normalize() {
     if (this instanceof Filter) {
       return Collections.singletonList(Collections.singletonList((Filter) this));
-    } else if (this instanceof NotOperator) {
-      return ((NotOperator) this).getOperand().negate().normalize();
     } else if (this instanceof AndOperator) {
       List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
       List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();

@@ -88,14 +88,6 @@ public class NegateTest {
   }
 
   @Test
-  public void testNotOperator() {
-    FilterExpression sub = new TypeFilter(OSMType.NODE);
-    FilterExpression expression = new NotOperator(sub);
-    FilterExpression negation = expression.negate();
-    assertEquals(sub, negation);
-  }
-
-  @Test
   public void testAndOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);

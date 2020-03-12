@@ -54,14 +54,4 @@ public class NormalizeTest {
     assertEquals(1, norm.get(0).size());
     assertEquals(1, norm.get(1).size());
   }
-
-  @Test
-  public void testNotOperator() {
-    FilterExpression sub = TagFilter.fromSelector("=", new OSMTag("highway", "residential"), tagTranslator);
-    FilterExpression expression = new NotOperator(sub);
-    List<List<Filter>> norm = expression.normalize();
-    assertEquals(1, norm.size());
-    assertEquals(1, norm.get(0).size());
-    assertFalse(norm.get(0).get(0) instanceof NotOperator);
-  }
 }
