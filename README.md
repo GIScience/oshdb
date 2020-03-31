@@ -15,16 +15,13 @@ Add the module to your maven dependencies (`pom.xml`):
 <dependency>
   <groupId>org.heigit.ohsome</groupId>
   <artifactId>ohsome-filter</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.1.0</version>
 </dependency>
 …
 <repository>
-  <snapshots>
-    <enabled>true</enabled>
-  </snapshots>
-  <id>heigit-snapshots</id>
-  <name>Heigit/GIScience repository (snapshots)</name>
-  <url>http://repo.heigit.org/artifactory/libs-snapshot-local</url>
+  <id>heigit</id>
+  <name>Heigit/GIScience repository</name>
+  <url>http://repo.heigit.org/artifactory/libs-release-local</url>
 </repository>
 ```
 
@@ -75,7 +72,7 @@ Filters are defined in textual form. A filter expression can be composed out of 
 | `(…)` | can be used to change precedence of operators | `highway=primary and (name=* or ref=*)` |
 | `not X` | negates the following filter expression | `not type:node` |
 | `X and Y` | returns entities which match both filter expressions X and Y | `highway=service and service=driveway` |
-| `X or Y` | returns entities which match at least one of the filter expressions X or Y | `natural=woor or landuse=forest` |
+| `X or Y` | returns entities which match at least one of the filter expressions X or Y | `natural=wood or landuse=forest` |
 
 Operators follow the following order of precedence: parentheses before `not`, before `and`, before `or`.
 

@@ -52,6 +52,38 @@ public class GeometryTypeFilter implements Filter {
     this.geometryType = geometryType;
   }
 
+  /**
+   * Returns the specified geometry type of this filter.
+   *
+   * @return the geometry type of this filter (POINT, LINE, POLYGON or OTHER).
+   */
+  public GeometryType getGeometryType() {
+    return this.geometryType;
+  }
+
+  /**
+   * Returns associated osm types of the geometry type filter.
+   *
+   * <p>For example, if the geometry type filter is set to POINT (`geometry:point`), this will
+   * return a set containing OSMType.NODE. Or if the filter is for POLYGONs (`geometry:polygon`),
+   * a set containing both OSMType.WAY and OSMType.RELATION will be returned.</p>
+   *
+   * @return the OSM types associated with the geometry type filter.
+   */
+  public Set<OSMType> getOSMTypes() {
+    switch (geometryType) {
+      case POINT:
+        return EnumSet.of(OSMType.NODE);
+      case LINE:
+        return EnumSet.of(OSMType.WAY);
+      case POLYGON:
+        return POLYGON_TYPES;
+      case OTHER:
+      default:
+        return EnumSet.of(OSMType.RELATION);
+    }
+  }
+
   private boolean checkOSMType(OSMType osmType) {
     switch (geometryType) {
       case POINT:
