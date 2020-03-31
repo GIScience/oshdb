@@ -74,7 +74,7 @@ Filters are defined in textual form. A filter expression can be composed out of 
 | `(…)` | can be used to change precedence of operators | `highway=primary and (name=* or ref=*)` |
 | `not X` | negates the following filter expression | `not type:node` |
 | `X and Y` | returns entities which match both filter expressions X and Y | `highway=service and service=driveway` |
-| `X or Y` | returns entities which match at least one of the filter expressions X or Y | `natural=woor or landuse=forest` |
+| `X or Y` | returns entities which match at least one of the filter expressions X or Y | `natural=wood or landuse=forest` |
 
 Operators follow the following order of precedence: parentheses before `not`, before `and`, before `or`.
 
