@@ -15,16 +15,13 @@ Add the module to your maven dependencies (`pom.xml`):
 <dependency>
   <groupId>org.heigit.ohsome</groupId>
   <artifactId>ohsome-filter</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1.0</version>
 </dependency>
 …
 <repository>
-  <snapshots>
-    <enabled>true</enabled>
-  </snapshots>
-  <id>heigit-snapshots</id>
-  <name>Heigit/GIScience repository (snapshots)</name>
-  <url>http://repo.heigit.org/artifactory/libs-snapshot-local</url>
+  <id>heigit</id>
+  <name>Heigit/GIScience repository</name>
+  <url>http://repo.heigit.org/artifactory/libs-release-local</url>
 </repository>
 ```
 
