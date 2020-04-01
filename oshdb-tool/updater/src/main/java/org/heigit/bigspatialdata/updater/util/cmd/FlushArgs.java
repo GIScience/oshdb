@@ -15,8 +15,8 @@ public class FlushArgs {
   public BaseArgs baseArgs = new BaseArgs();
 
   /**
-   * The configuration for the oshdb. Content of string may vary according to type (H2 -> jdbc,
-   * Ignite -> file-path).
+   * The configuration for the oshdb. Content of string may vary according to type (H2 -&gt; jdbc,
+   * Ignite -&gt; file-path).
    */
   @Parameter(names = {"-dbConfig", "-dbcfg"},
       description = "connection of production database. "

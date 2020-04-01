@@ -55,7 +55,7 @@ public abstract class IteratorTmpl<T> implements Iterator<T> {
   }
 
   /**
-   * A wrapper around hasNext -> next.
+   * A wrapper around hasNext -&gt; next.
    *
    * @return null if no next element extists, the element otherwise
    * @throws Exception May throw excpetions
