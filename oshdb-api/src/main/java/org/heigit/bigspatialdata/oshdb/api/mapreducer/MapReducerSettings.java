@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -46,7 +47,7 @@ interface MapReducerSettings<M> {
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M osmType(EnumSet<OSMType> typeFilter);
+  M osmType(Set<OSMType> typeFilter);
 
   /**
    * Limits the analysis to the given osm entity types.
@@ -117,13 +118,13 @@ interface MapReducerSettings<M> {
   M osmTag(String key, Pattern valuePattern);
 
   /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have
-   * at least one of the supplied tags (key=value pairs).
+   * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
+   * of the supplied tags (key=value pairs or key=*).
    *
-   * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
+   * @param keyValuePairs the tags (key/value pairs or key=*) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
    */
-  M osmTag(Collection<OSMTag> keyValuePairs);
+  M osmTag(Collection<? extends OSMTagInterface> keyValuePairs);
 
   /** deprecated.
    * @deprecated replaced by {@link #osmType(OSMType, OSMType...)}

@@ -1,6 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
 import java.io.IOException;
 import java.io.Serializable;
@@ -23,7 +25,6 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.OSHDB;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBJdbc;
@@ -394,9 +395,14 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmType(EnumSet<OSMType> typeFilter) {
+  public MapReducer<X> osmType(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
-    ret.typeFilter = typeFilter;
+    typeFilter = Sets.intersection(ret.typeFilter, typeFilter);
+    if (typeFilter.isEmpty()) {
+      ret.typeFilter = EnumSet.noneOf(OSMType.class);
+    } else {
+      ret.typeFilter = EnumSet.copyOf(typeFilter);
+    }
     return ret;
   }
 
@@ -483,7 +489,7 @@ public abstract class MapReducer<X> implements
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
    * and value.
    *
-   * @param tag the tag (key-value pair) to filter the osm entities for
+   * @param tag the tag (key-value pair or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
@@ -586,35 +592,45 @@ public abstract class MapReducer<X> implements
 
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
-   * of the supplied tags (key=value pairs).
+   * of the supplied tags (key=value pairs or key=*).
    *
-   * @param tags the tags (key/value pairs) to filter the osm entities for
+   * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> osmTag(Collection<OSMTag> tags) {
+  public MapReducer<X> osmTag(Collection<? extends OSMTagInterface> tags) {
     MapReducer<X> ret = this.copy();
-    if (tags.size() == 0) {
+    if (tags.isEmpty()) {
       LOG.warn("Empty tag list. No data will match this filter.");
       ret.preFilters.add(ignored -> false);
       ret.filters.add(ignored -> false);
       return ret;
     }
+    // for the "pre"-filter which removes all entitits wich don't have at least one of the given tag keys
+    Set<Integer> preKeyIds = new HashSet<>();
+    // sets of tag keys and tags for the concrete entity filter: either one of these must match
     Set<Integer> keyIds = new HashSet<>();
     Set<OSHDBTag> keyValueIds = new HashSet<>();
-    for (OSMTag tag : tags) {
-      OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(tag);
-      if (!keyValueId.isPresentInKeytables()) {
-        LOG.warn("Tag {}={} not found. No data will match this tag value.",
-            tag.getKey(), tag.getValue());
+    for (OSMTagInterface tag : tags) {
+      if (tag instanceof OSMTag) {
+        OSMTag keyValue = (OSMTag) tag;
+        OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(keyValue);
+        if (!keyValueId.isPresentInKeytables()) {
+          LOG.warn("Tag {}={} not found. No data will match this tag value.",
+              keyValue.getKey(), keyValue.getValue());
+        } else {
+          preKeyIds.add(keyValueId.getKey());
+          keyValueIds.add(keyValueId);
+        }
       } else {
-        keyIds.add(keyValueId.getKey());
-        keyValueIds.add(keyValueId);
+        OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf((OSMTagKey) tag);
+        preKeyIds.add(keyId.toInt());
+        keyIds.add(keyId.toInt());
       }
     }
     ret.preFilters.add(oshEntitiy -> {
       for (int key : oshEntitiy.getRawTagKeys()) {
-        if (keyIds.contains(key)) {
+        if (preKeyIds.contains(key)) {
           return true;
         }
       }
@@ -622,7 +638,7 @@ public abstract class MapReducer<X> implements
     });
     ret.filters.add(osmEntity -> {
       for (OSHDBTag oshdbTag : osmEntity.getTags()) {
-        if (keyValueIds.contains(oshdbTag)) {
+        if (keyIds.contains(oshdbTag.getKey()) || keyValueIds.contains(oshdbTag)) {
           return true;
         }
       }
@@ -1314,7 +1330,7 @@ public abstract class MapReducer<X> implements
       SerializableFunction<X, R> mapper,
       Iterable<Double> q
   ) throws Exception {
-    return StreamSupport.stream(q.spliterator(), false)
+    return Streams.stream(q)
         .mapToDouble(Double::doubleValue)
         .map(this.estimatedQuantiles(mapper))
         .boxed()

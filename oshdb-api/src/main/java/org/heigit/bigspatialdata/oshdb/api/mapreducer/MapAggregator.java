@@ -1,12 +1,12 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.heigit.bigspatialdata.oshdb.api.generic.NumberUtils;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
@@ -264,7 +263,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> osmType(EnumSet<OSMType> typeFilter) {
+  public MapAggregator<U, X> osmType(Set<OSMType> typeFilter) {
     return this.copyTransform(this.mapReducer.osmType(typeFilter));
   }
 
@@ -347,14 +346,14 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
 
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
-   * of the supplied tags (key=value pairs).
+   * of the supplied tags (key=value pairs or key=*).
    *
-   * @param keyValuePairs the tags (key/value pairs) to filter the osm entities for
+   * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(Collection<OSMTag> keyValuePairs) {
-    return this.copyTransform(this.mapReducer.osmTag(keyValuePairs));
+  public MapAggregator<U, X> osmTag(Collection<? extends OSMTagInterface> tags) {
+    return this.copyTransform(this.mapReducer.osmTag(tags));
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -618,7 +617,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   ) throws Exception {
     return transformSortedMap(
         this.estimatedQuantiles(mapper),
-        quantileFunction -> StreamSupport.stream(q.spliterator(), false)
+        quantileFunction -> Streams.stream(q)
             .mapToDouble(Double::doubleValue)
             .map(quantileFunction)
             .boxed()
