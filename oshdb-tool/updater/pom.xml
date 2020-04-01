@@ -16,8 +16,6 @@
     <rxjava2>2.2.8</rxjava2>
   </properties>
 
-
-  
   <packaging>jar</packaging>
   
   <dependencies>
@@ -37,13 +35,6 @@
     <dependency>
       <groupId>org.apache.ignite</groupId>
       <artifactId>ignite-indexing</artifactId>
-      <version>${ignite.version}</version>
-    </dependency>
-    
-            
-    <dependency>
-      <groupId>org.apache.ignite</groupId>
-      <artifactId>ignite-geospatial</artifactId>
       <version>${ignite.version}</version>
     </dependency>
     
@@ -130,7 +121,12 @@
       <artifactId>RoaringBitmap</artifactId>
       <version>${roaringbitmap.version}</version>
     </dependency>
-    
+
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>${jcommander.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
