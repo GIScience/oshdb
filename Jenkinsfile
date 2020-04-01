@@ -2,10 +2,14 @@ pipeline {
   agent {label 'master'}
 
   environment {
-    VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
     RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
     RELEASE_DEPLOY = false
     SNAPSHOT_DEPLOY = false
+
+    VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
+    PACKAGING = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.packaging | grep -Ev "(^\\[|Download\\w+)"').trim()
+    GROUP_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.groupId | grep -Ev "(^\\[|Download\\w+)"').trim()
+    ARTIFACT_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.artifactId | grep -Ev "(^\\[|Download\\w+)"').trim()
   }
 
   stages {
@@ -80,6 +84,13 @@ pipeline {
           rtMaven.deployer.deployArtifacts buildInfo
           server.publishBuildInfo buildInfo
           RELEASE_DEPLOY = true
+        }
+        withCredentials([
+            file(credentialsId: 'ossrh-settings', variable: 'settingsFile'),
+            string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')
+        ]) {
+          // copy of the above build, since "deploy" does rebuild the packages, without withDep profile
+          sh 'mvn -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
         }
       }
       post {

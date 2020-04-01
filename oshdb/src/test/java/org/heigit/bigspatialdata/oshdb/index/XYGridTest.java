@@ -13,10 +13,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
- */
 public class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
@@ -247,6 +243,12 @@ public class XYGridTest {
     data = new OSHDBBoundingBox(0.0, 0.0, 0.0000053, 0.0000053);
     expResult = 16L;
     result = thirty.getEstimatedIdCount(data);
+    assertEquals(expResult, result);
+
+    // "just" touching three cells, see https://github.com/GIScience/oshdb/pull/183
+    data = new OSHDBBoundingBox(-0.1, 0, 90.1, 89);
+    expResult = 3L;
+    result = two.getEstimatedIdCount(data);
     assertEquals(expResult, result);
   }
 

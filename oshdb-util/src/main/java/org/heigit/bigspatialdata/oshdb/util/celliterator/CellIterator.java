@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHEntity;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
@@ -198,7 +197,7 @@ public class CellIterator implements Serializable {
     }
 
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
-    return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
+    return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityUpdatePreFilter.test(oshEntity)
           || !oshEntityPreFilter.test(oshEntity)
           || !allFullyInside
@@ -463,7 +462,7 @@ public class CellIterator implements Serializable {
     //noinspection unchecked
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
 
-    return StreamSupport.stream(cellData.spliterator(), false).flatMap(oshEntity -> {
+    return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityUpdatePreFilter.test(oshEntity)
           || !oshEntityPreFilter.test(oshEntity)
           || !allFullyInside

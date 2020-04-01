@@ -12,11 +12,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Spliterators;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import java.util.stream.StreamSupport;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -116,14 +114,14 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    //get regular result
-    S oshdbResult = IgniteLocalPeekHelper.mapReduceCellsOSMContributionOnIgniteCache(
+    // get regular result
+    S result = IgniteLocalPeekHelper.mapReduceCellsOSMContributionOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner, bitMapIndex);
 
-    return combiner.apply(oshdbResult, updateResult);
+    return combiner.apply(result, updateResult);
   }
 
   @Override
@@ -153,14 +151,14 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    //get regular result
-    S oshdbResult = IgniteLocalPeekHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
+    // get regular result
+    S result = IgniteLocalPeekHelper.flatMapReduceCellsOSMContributionGroupedByIdOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner, bitMapIndex);
 
-    return combiner.apply(oshdbResult, updateResult);
+    return combiner.apply(result, updateResult);
   }
 
 
@@ -191,14 +189,14 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    //get regular result
-    S oshdbResult = IgniteLocalPeekHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
+    // get regular result
+    S result = IgniteLocalPeekHelper.mapReduceCellsOSMEntitySnapshotOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner, bitMapIndex);
 
-    return combiner.apply(oshdbResult, updateResult);
+    return combiner.apply(result, updateResult);
   }
 
   @Override
@@ -228,17 +226,17 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           bitMapIndex);
     }
 
-    //get regular result
-    S oshdbResult = IgniteLocalPeekHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
+    // get regular result
+    S result = IgniteLocalPeekHelper.flatMapReduceCellsOSMEntitySnapshotGroupedByIdOnIgniteCache(
         (OSHDBIgnite) this.oshdb, this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
         this.getTagInterpreter(), this.tstamps.get(), this.bboxFilter,
         this.getPolyFilter(), this.getPreFilter(), this.getFilter(), mapper, identitySupplier,
         accumulator, combiner, bitMapIndex);
 
-    return combiner.apply(oshdbResult, updateResult);
+    return combiner.apply(result, updateResult);
   }
 
-  private <R, S> S getResultFromUpdates(
+  private <S> S getResultFromUpdates(
       long execStart,
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
@@ -334,10 +332,7 @@ class IgniteLocalPeekHelper {
       final int bufferSize = 102400 * ForkJoinPool.commonPool().getParallelism();
 
       CellKeysIterator(Iterable<CellIdRange> cellIdRanges) {
-        this.cellIds = StreamSupport.stream(
-            Spliterators.spliteratorUnknownSize(cellIdRanges.iterator(), 0),
-            true
-        )
+        this.cellIds = Streams.stream(cellIdRanges)
         .filter(ignored -> isActive())
         .flatMap(cellIdRange -> {
           int level = cellIdRange.getStart().getZoomLevel();
@@ -379,19 +374,12 @@ class IgniteLocalPeekHelper {
       }
     }
 
-    public abstract S execute(Ignite node);
-
     S execute(Ignite node, CellProcessor<S> cellProcessor) {
-      Iterator<Long> cellKeysIterator = new CellKeysIterator(cellIdRanges);
-
       Set<IgniteCache<Long, GridOSHEntity>> caches = this.cacheNames.stream()
           .map(node::<Long, GridOSHEntity>cache)
           .collect(Collectors.toSet());
 
-      return StreamSupport.stream(
-              Spliterators.spliteratorUnknownSize(cellKeysIterator, 0),
-              true
-          )
+      return Streams.stream(new CellKeysIterator(cellIdRanges))
           .filter(ignored -> this.isActive())
           .flatMap(cellKey ->
               // get local data from all requested caches

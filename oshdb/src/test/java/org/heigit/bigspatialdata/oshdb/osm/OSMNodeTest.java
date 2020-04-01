@@ -6,11 +6,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-/**
- *
- * @author Rafael Troilo <rafael.troilo@uni-heidelberg.de>
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
- */
 public class OSMNodeTest {
 
   public OSMNodeTest() {}

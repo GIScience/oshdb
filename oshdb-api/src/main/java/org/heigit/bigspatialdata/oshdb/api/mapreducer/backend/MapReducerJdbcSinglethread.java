@@ -64,23 +64,28 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     );
     
     S result = identitySupplier.get();
+
+    if (this.typeFilter.isEmpty()) {
+      return result;
+    }
+
     if (this.update != null) {
-      //get bitmap of changed entities
+      // get bitmap of changed entities
       Map<OSMType, LongBitmapDataProvider> bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-      //create a second celliterator for updates, copy settings from first
-      //because streams are lazy we have to have two celliterators and cannot change the first one
+      // create a second celliterator for updates, copy settings from first
+      // because streams are lazy we have to have two celliterators and cannot change the first one
       CellIterator updateIterator = new CellIterator(
           this.tstamps.get(),
           this.bboxFilter, this.getPolyFilter(),
           this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
       );
-      //exclude updated entities in original data and include in updates
+      // exclude updated entities in original data and include in updates
       cellIterator.excludeIDs(bitMapIndex);
       updateIterator.includeIDsOnly(bitMapIndex);
 
-      //create result for updated data
+      // create result for updated data
       Iterator<GridOSHEntity> iterator = this.getUpdates();
       while (iterator.hasNext()) {
         GridOSHEntity updateCell = iterator.next();
@@ -107,7 +112,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   }
 
   private Stream<X> stream(
-      CellProcessor<Collection<X>> cellProcessor
+      CellProcessor<Stream<X>> cellProcessor
   ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
@@ -119,32 +124,30 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
     
     Stream<X> updateStream = Stream.empty();
     if (this.update != null) {
-      //get bitmap of changed entities
+      // get bitmap of changed entities
       Map<OSMType, LongBitmapDataProvider> bitMapIndex = UpdateDbHelper.getBitMap(
           this.update.getBitArrayDb()
       );
-      //create a second celliterator for updates, copy settings from first
-      //because streams are lazy we have to have two celliterators and cannot change the first one
+      // create a second celliterator for updates, copy settings from first
+      // because streams are lazy we have to have two celliterators and cannot change the first one
       CellIterator updateIterator = new CellIterator(
           this.tstamps.get(),
           this.bboxFilter, this.getPolyFilter(),
           this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
       );
-      //exclude updated entities in original data and include in updates
+      // exclude updated entities in original data and include in updates
       cellIterator.excludeIDs(bitMapIndex);
       updateIterator.includeIDsOnly(bitMapIndex);
-      //create a stream of updaten data
+      // create a stream of updaten data
       updateStream = Streams.stream(this.getUpdates())
-          .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, updateIterator))
-          .flatMap(Collection::stream);
+          .flatMap(oshCellRawData -> cellProcessor.apply(oshCellRawData, updateIterator));
     }
     
-    Stream<X> oshdbStream = Streams.stream(this.getCellIdRanges())
+    Stream<X> result = Streams.stream(this.getCellIdRanges())
         .flatMap(this::getOshCellsStream)
-        .map(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator))
-        .flatMap(Collection::stream);
+        .flatMap(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator));
     
-    return Streams.concat(oshdbStream,updateStream);
+    return Streams.concat(result, updateStream);
   }
 
   // === map-reduce operations ===

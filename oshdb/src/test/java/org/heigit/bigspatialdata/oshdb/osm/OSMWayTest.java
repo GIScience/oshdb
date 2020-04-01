@@ -7,10 +7,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-/**
- *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
- */
 public class OSMWayTest {
 
   public OSMWayTest() {}
