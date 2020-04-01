@@ -3,10 +3,13 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
-* oshdb-api: fix how osm-type filters work when called multiple times: now, like with other filters, osm entity must match all supplied type filters
-* oshdb-api: allow osmTag filters more flexible: when used with a list of tags, it now accepts also `tagKey=*` statements (which can be mixed with `key=value` statements as before). #209
-* oshdb-api: fix a bug where polygonal areas of interest would throw an exception in some (rare) edge cases. #204
 * (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
+
+## 0.5.6
+
+* fix how osm-type filters work when called multiple times: now, like with other filters, osm entity must match all supplied type filters. #157
+* osmTag filters are more flexible: when used with a list of tags, it now accepts also `tagKey=*` statements (which can be mixed with `key=value` statements as before). #209
+* fix a bug where polygonal areas of interest would throw an exception in some (rare) edge cases. #204
 
 ## 0.5.5
 

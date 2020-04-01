@@ -25,17 +25,14 @@ If you already have an existing Java maven project, the OSHDB-API can be added t
 <dependency>
   <groupId>org.heigit.bigspatialdata</groupId>
   <artifactId>oshdb-api</artifactId>
-  <version>0.5.5</version>
+  <version>0.5.6</version>
 </dependency>
 ```
 
 ```xml
 <repository>
-  <snapshots>
-    <enabled>false</enabled>
-  </snapshots>
   <id>oshdb-releases</id>
-  <name>Heigit/GIScience repository (releases)</name>
+  <name>Heigit/GIScience repository</name>
   <url>http://repo.heigit.org/artifactory/libs-release-local</url>
 </repository>
 ```
