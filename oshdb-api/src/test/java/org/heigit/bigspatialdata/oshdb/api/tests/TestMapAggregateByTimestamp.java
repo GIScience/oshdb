@@ -13,6 +13,7 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -164,6 +165,17 @@ public class TestMapAggregateByTimestamp {
 
     assertEquals(72, resultCustom.entrySet().size());
     assertEquals(1, resultCustom.entrySet().stream().filter(entry -> entry.getValue() > 0).count());
+  }
+
+  @Test(expected = OSHDBInvalidTimestampException.class)
+  public void testInvalidUsage() throws Exception {
+    // indexing function returns a timestamp outside the requested time range -> should throw
+    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
+    createMapReducerOSMContribution()
+        .timestamps(timestamps2)
+        .groupByEntity()
+        .aggregateByTimestamp(ignored -> timestamps72.get().first())
+        .collect();
   }
 
   @Test(expected = UnsupportedOperationException.class)
