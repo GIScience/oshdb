@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
@@ -10,6 +11,8 @@ import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
@@ -19,6 +22,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -80,6 +84,52 @@ public class TestOSMDataFilters {
     assertEquals(2, result.intValue());
   }
 
+  @Test
+  public void types() throws Exception {
+    Set<OSMType> result;
+    // single type
+    result = createMapReducerOSMEntitySnapshot()
+        .osmType(OSMType.NODE)
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .map(snapshot -> snapshot.getEntity().getType())
+        .stream().collect(Collectors.toSet());
+    assertTrue(result.equals(EnumSet.of(OSMType.NODE)));
+    // multiple types
+    result = createMapReducerOSMEntitySnapshot()
+        .osmType(OSMType.NODE, OSMType.WAY)
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .map(snapshot -> snapshot.getEntity().getType())
+        .stream().collect(Collectors.toSet());
+    assertTrue(result.equals(EnumSet.of(OSMType.NODE, OSMType.WAY)));
+    // multiple types (set)
+    result = createMapReducerOSMEntitySnapshot()
+        .osmType(EnumSet.of(OSMType.NODE, OSMType.WAY))
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .map(snapshot -> snapshot.getEntity().getType())
+        .stream().collect(Collectors.toSet());
+    assertTrue(result.equals(EnumSet.of(OSMType.NODE, OSMType.WAY)));
+    // empty set
+    result = createMapReducerOSMEntitySnapshot()
+        .osmType(new HashSet<>())
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .map(snapshot -> snapshot.getEntity().getType())
+        .stream().collect(Collectors.toSet());
+    assertTrue(result.equals(EnumSet.noneOf(OSMType.class)));
+    // called multiple times
+    result = createMapReducerOSMEntitySnapshot()
+        .osmType(OSMType.NODE)
+        .osmType(EnumSet.allOf(OSMType.class))
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .map(snapshot -> snapshot.getEntity().getType())
+        .stream().collect(Collectors.toSet());
+    assertTrue(result.equals(EnumSet.of(OSMType.NODE)));
+  }
+
   // filter: osm tags
 
   @Test
@@ -129,6 +179,7 @@ public class TestOSMDataFilters {
 
   @Test
   public void tagList() throws Exception {
+    // only tags
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag(Arrays.asList(
             new OSMTag("highway", "residential"),
@@ -139,6 +190,18 @@ public class TestOSMDataFilters {
         .timestamps(timestamps1)
         .count();
     assertEquals(5, result.intValue());
+    // tags and keys mixed
+    result = createMapReducerOSMEntitySnapshot()
+        .osmTag(Arrays.asList(
+            new OSMTag("highway", "residential"),
+            new OSMTag("highway", "unclassified"),
+            new OSMTagKey("building"))
+        )
+        .osmType(OSMType.WAY)
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(5 + 42, result.intValue());
   }
 
   @Test

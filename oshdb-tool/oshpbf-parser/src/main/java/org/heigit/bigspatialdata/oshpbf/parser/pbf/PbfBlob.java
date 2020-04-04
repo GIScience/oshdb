@@ -17,8 +17,6 @@ import crosby.binary.Osmformat;
  * 
  * inputstream for this block.
  * 
- * @author rtroilo
- *
  */
 public class PbfBlob {
 

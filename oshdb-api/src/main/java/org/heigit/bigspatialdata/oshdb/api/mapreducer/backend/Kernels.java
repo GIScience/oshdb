@@ -3,11 +3,10 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableBiFunction;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction;
@@ -188,14 +187,14 @@ class Kernels implements Serializable {
   // === stream processors ===
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMContributionCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMContributionCellStreamer(
       SerializableFunction<OSMContribution, S> mapper
   ) {
     return getOSMContributionCellStreamer(mapper, NC);
   }
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMContributionCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMContributionCellStreamer(
       SerializableFunction<OSMContribution, S> mapper,
       CancelableProcessStatus process
   ) {
@@ -204,20 +203,19 @@ class Kernels implements Serializable {
       return cellIterator.iterateByContribution(oshEntityCell)
           .filter(ignored -> process.isActive())
           .map(OSMContribution::new)
-          .map(mapper)
-          .collect(Collectors.toList());
+          .map(mapper);
     };
   }
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMContributionGroupingCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMContributionGroupingCellStreamer(
       SerializableFunction<List<OSMContribution>, Iterable<S>> mapper
   ) {
     return getOSMContributionGroupingCellStreamer(mapper, NC);
   }
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMContributionGroupingCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMContributionGroupingCellStreamer(
       SerializableFunction<List<OSMContribution>, Iterable<S>> mapper,
       CancelableProcessStatus process
   ) {
@@ -241,19 +239,19 @@ class Kernels implements Serializable {
       if (contributions.size() > 0) {
         Iterables.addAll(result, mapper.apply(contributions));
       }
-      return result;
+      return result.stream();
     };
   }
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMEntitySnapshotCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotCellStreamer(
       SerializableFunction<OSMEntitySnapshot, S> mapper
   ) {
     return getOSMEntitySnapshotCellStreamer(mapper, NC);
   }
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMEntitySnapshotCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotCellStreamer(
       SerializableFunction<OSMEntitySnapshot, S> mapper,
       CancelableProcessStatus process
   ) {
@@ -262,20 +260,19 @@ class Kernels implements Serializable {
       return cellIterator.iterateByTimestamps(oshEntityCell)
           .filter(ignored -> process.isActive())
           .map(OSMEntitySnapshot::new)
-          .map(mapper)
-          .collect(Collectors.toList());
+          .map(mapper);
     };
   }
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMEntitySnapshotGroupingCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotGroupingCellStreamer(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<S>> mapper
   ) {
     return getOSMEntitySnapshotGroupingCellStreamer(mapper, NC);
   }
 
   @Nonnull
-  static <S> CellProcessor<Collection<S>> getOSMEntitySnapshotGroupingCellStreamer(
+  static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotGroupingCellStreamer(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<S>> mapper,
       CancelableProcessStatus process
   ) {
@@ -299,7 +296,7 @@ class Kernels implements Serializable {
       if (snapshots.size() > 0) {
         Iterables.addAll(result, mapper.apply(snapshots));
       }
-      return result;
+      return result.stream();
     };
   }
 }

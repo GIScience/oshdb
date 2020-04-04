@@ -74,8 +74,11 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   }
 
   @Nonnull
-  protected Stream<? extends GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange) {
+  protected Stream<GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange) {
     try {
+      if (this.typeFilter.isEmpty()) {
+        return Stream.empty();
+      }
       ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
       if (!oshCellsRawData.next()) {
         return Stream.empty();

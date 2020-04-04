@@ -13,10 +13,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author Moritz Schott <m.schott@stud.uni-heidelberg.de>
- */
 public class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
@@ -248,6 +244,12 @@ public class XYGridTest {
     expResult = 16L;
     result = thirty.getEstimatedIdCount(data);
     assertEquals(expResult, result);
+
+    // "just" touching three cells, see https://github.com/GIScience/oshdb/pull/183
+    data = new OSHDBBoundingBox(-0.1, 0, 90.1, 89);
+    expResult = 3L;
+    result = two.getEstimatedIdCount(data);
+    assertEquals(expResult, result);
   }
 
   @Test
@@ -369,7 +371,11 @@ public class XYGridTest {
   @Test
   public void testGetBoundingBox() {
     OSHDBBoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
-    OSHDBBoundingBox expResult = new OSHDBBoundingBox(0.0, -90.0, 90.0, 0.0 - OSHDB.GEOM_PRECISION);
-    assertEquals(expResult.toString(), result.toString());
+    OSHDBBoundingBox expResult = new OSHDBBoundingBox(
+        0.0,
+        -90.0,
+        90.0 - OSHDB.GEOM_PRECISION,
+        0.0 - OSHDB.GEOM_PRECISION);
+    assertEquals(expResult, result);
   }
 }
