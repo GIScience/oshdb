@@ -179,7 +179,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     return this.aggregateBy(data -> {
       // match timestamps to the given timestamp list
       OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
-      if (aggregationTimestamp.compareTo(minTime) < 0
+      if (aggregationTimestamp == null
+          || aggregationTimestamp.compareTo(minTime) < 0
           || aggregationTimestamp.compareTo(maxTime) > 0) {
         throw new OSHDBInvalidTimestampException(
             "Aggregation timestamp outside of time query interval."

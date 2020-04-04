@@ -843,7 +843,8 @@ public abstract class MapReducer<X> implements
     return new MapAggregator<OSHDBTimestamp, X>(this, data -> {
       // match timestamps to the given timestamp list
       OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
-      if (aggregationTimestamp.compareTo(minTime) < 0
+      if (aggregationTimestamp == null
+          || aggregationTimestamp.compareTo(minTime) < 0
           || aggregationTimestamp.compareTo(maxTime) > 0) {
         throw new OSHDBInvalidTimestampException(
             "Aggregation timestamp outside of time query interval."
