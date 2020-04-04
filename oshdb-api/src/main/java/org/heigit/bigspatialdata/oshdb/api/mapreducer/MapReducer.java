@@ -196,13 +196,17 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> keytables(OSHDBJdbc keytables) {
     if (keytables != this.oshdb && this.oshdb instanceof OSHDBJdbc) {
       Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
+      boolean oshdbContainsKeytables = true;
       try {
         new TagTranslator(c);
+      } catch (OSHDBKeytablesNotFoundException e) {
+        // this is the expected path -> the oshdb doesn't have the key tables
+        oshdbContainsKeytables = false;
+      }
+      if (oshdbContainsKeytables) {
         LOG.warn("It looks like as if the current OSHDB comes with keytables included. "
             + "Usually this means that you should use this file's keytables "
             + "and should not set the keytables manually.");
-      } catch (OSHDBKeytablesNotFoundException e) {
-        // this is the expected path -> the oshdb doesn't have the key tables
       }
     }
     MapReducer<X> ret = this.copy();
@@ -606,7 +610,8 @@ public abstract class MapReducer<X> implements
       ret.filters.add(ignored -> false);
       return ret;
     }
-    // for the "pre"-filter which removes all entitits wich don't have at least one of the given tag keys
+    // for the "pre"-filter which removes all entities which don't match at least one of the
+    // given tag keys
     Set<Integer> preKeyIds = new HashSet<>();
     // sets of tag keys and tags for the concrete entity filter: either one of these must match
     Set<Integer> keyIds = new HashSet<>();
