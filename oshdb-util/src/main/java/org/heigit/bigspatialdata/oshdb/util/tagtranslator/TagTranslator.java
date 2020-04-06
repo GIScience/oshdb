@@ -136,10 +136,12 @@ public class TagTranslator implements AutoCloseable {
     }
     OSHDBTagKey keyInt;
     try {
-      keyIdQuery.setString(1, key.toString());
-      try (ResultSet keys = keyIdQuery.executeQuery()) {
-        keys.next();
-        keyInt = new OSHDBTagKey(keys.getInt("ID"));
+      synchronized (keyIdQuery) {
+        keyIdQuery.setString(1, key.toString());
+        try (ResultSet keys = keyIdQuery.executeQuery()) {
+          keys.next();
+          keyInt = new OSHDBTagKey(keys.getInt("ID"));
+        }
       }
     } catch (SQLException ex) {
       LOG.info("Unable to find tag key {} in keytables.", key);
@@ -174,12 +176,14 @@ public class TagTranslator implements AutoCloseable {
     }
     OSMTagKey keyString;
     try {
-      keyTxtQuery.setInt(1, key.toInt());
-      try (ResultSet keys = keyTxtQuery.executeQuery()) {
-        keys.next();
-        keyString = new OSMTagKey(keys.getString("TXT"));
+      synchronized (keyTxtQuery) {
+        keyTxtQuery.setInt(1, key.toInt());
+        try (ResultSet keys = keyTxtQuery.executeQuery()) {
+          keys.next();
+          keyString = new OSMTagKey(keys.getString("TXT"));
+        }
+        this.keyToInt.put(keyString, key);
       }
-      this.keyToInt.put(keyString, key);
     } catch (SQLException ex) {
       throw new OSHDBTagOrRoleNotFoundException(String.format(
           "Unable to find tag key id %d in keytables.", key.toInt()
@@ -214,11 +218,13 @@ public class TagTranslator implements AutoCloseable {
     OSHDBTag tagInt;
     // key or value is not in cache so let's go toInt them
     try {
-      valueIdQuery.setString(1, tag.getKey());
-      valueIdQuery.setString(2, tag.getValue());
-      try (ResultSet values = valueIdQuery.executeQuery()) {
-        values.next();
-        tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
+      synchronized (valueIdQuery) {
+        valueIdQuery.setString(1, tag.getKey());
+        valueIdQuery.setString(2, tag.getValue());
+        try (ResultSet values = valueIdQuery.executeQuery()) {
+          values.next();
+          tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
+        }
       }
     } catch (SQLException ex) {
       LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
@@ -257,11 +263,13 @@ public class TagTranslator implements AutoCloseable {
 
     // key or value is not in cache so let's go toInt them
     try {
-      valueTxtQuery.setInt(1, tag.getKey());
-      valueTxtQuery.setInt(2, tag.getValue());
-      try (ResultSet values = valueTxtQuery.executeQuery()) {
-        values.next();
-        tagString = new OSMTag(values.getString("KEYTXT"), values.getString("VALUETXT"));
+      synchronized (valueTxtQuery) {
+        valueTxtQuery.setInt(1, tag.getKey());
+        valueTxtQuery.setInt(2, tag.getValue());
+        try (ResultSet values = valueTxtQuery.executeQuery()) {
+          values.next();
+          tagString = new OSMTag(values.getString("KEYTXT"), values.getString("VALUETXT"));
+        }
       }
     } catch (SQLException ex) {
       throw new OSHDBTagOrRoleNotFoundException(String.format(
@@ -297,10 +305,12 @@ public class TagTranslator implements AutoCloseable {
     }
     OSHDBRole roleInt;
     try {
-      roleIdQuery.setString(1, role.toString());
-      try (ResultSet roles = roleIdQuery.executeQuery()) {
-        roles.next();
-        roleInt = new OSHDBRole(roles.getInt("ID"));
+      synchronized (roleIdQuery) {
+        roleIdQuery.setString(1, role.toString());
+        try (ResultSet roles = roleIdQuery.executeQuery()) {
+          roles.next();
+          roleInt = new OSHDBRole(roles.getInt("ID"));
+        }
       }
     } catch (SQLException ex) {
       LOG.info("Unable to find role {} in keytables.", role);
@@ -335,10 +345,12 @@ public class TagTranslator implements AutoCloseable {
     }
     OSMRole roleString;
     try {
-      roleTxtQuery.setInt(1, role.toInt());
-      try (ResultSet roles = roleTxtQuery.executeQuery()) {
-        roles.next();
-        roleString = new OSMRole(roles.getString("TXT"));
+      synchronized (roleTxtQuery) {
+        roleTxtQuery.setInt(1, role.toInt());
+        try (ResultSet roles = roleTxtQuery.executeQuery()) {
+          roles.next();
+          roleString = new OSMRole(roles.getString("TXT"));
+        }
       }
     } catch (SQLException ex) {
       throw new OSHDBTagOrRoleNotFoundException(String.format(
