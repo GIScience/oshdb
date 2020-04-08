@@ -59,8 +59,8 @@ Filters are defined in textual form. A filter expression can be composed out of 
 |---|-------------|---------|
 | `key=value` | matches all entites which have this exact tag | `natural=tree` |
 | `key=*` | matches all entites which have any tag with the given key | `addr:housenumber=*` |
-| `key!=value` | matches all entites which do not have this exact tag | `oneway!=yes` |
-| `key!=*` | matches all entites which no not have any tag with the given key | `name!=*` |
+| `key!=value` | matches all entites which do not have this exact tag – shorthand for `not key=value` | `oneway!=yes` |
+| `key!=*` | matches all entites which do not have any tag with the given key ~ shorthand for `not key=*`  | `name!=*` |
 | `type:osm-type` | matches all entites of the given osm type | `type:node` |
 | `geometry:geom-type` | matches anything which has a geometry of the given type (_point_, _line_, _polygon_, or _other_) | `geometry:polygon` |
 
