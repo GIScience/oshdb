@@ -59,8 +59,8 @@ Filters are defined in textual form. A filter expression can be composed out of 
 |---|-------------|---------|
 | `key=value` | matches all entites which have this exact tag | `natural=tree` |
 | `key=*` | matches all entites which have any tag with the given key | `addr:housenumber=*` |
-| `key!=value` | matches all entites which do not have this exact tag – shorthand for `not key=value` | `oneway!=yes` |
-| `key!=*` | matches all entites which do not have any tag with the given key ~ shorthand for `not key=*`  | `name!=*` |
+| `key!=value` | matches all entites which do not have this exact tag – the same as `not key=value` | `oneway!=yes` |
+| `key!=*` | matches all entites which do not have any tag with the given key – the same as `not key=*`  | `name!=*` |
 | `type:osm-type` | matches all entites of the given osm type | `type:node` |
 | `geometry:geom-type` | matches anything which has a geometry of the given type (_point_, _line_, _polygon_, or _other_) | `geometry:polygon` |
 
@@ -81,6 +81,19 @@ When writing filters, tags without special characters can be supplied directly, 
 When filtering by tags with any other characters in their key or value, these strings need to be supplied as double-quoted strings, e.g. `name="Heidelberger Brückenaffe"` or `opening_hours="24/7"`. Escape sequences can be used to represent a literal double-quote character `\"`, while a literal backslash is written as `\\`.
 
 Whitespace such as spaces, tabs or newlines can be put freely between operators or parts of selectors (`name = *` is equivalent to `name=*`) to make a filter more readable.
+
+Examples
+--------
+
+Here's some useful examples for querying some OSM features:
+
+| OSM Feature | filter | comment |
+|-------------|--------|---------|
+| forests/woods | `landuse=forest or natural=wood and geometry:polygon` | Using `geometry:polygon` will select closed ways as well as multipolygons (e.g. a forest with clearings). |
+| parks and park benches | `leisure=park and geometry:polygon or amenity=bench and (geometry:point or geometry:line)` | A query can also fetch features of different geometry types: this returns parks (polygons) as well as park benches (points or lines). |
+| buildings | `building=* and building!=no and geometry:polygon` | This query also excludes the (rare) objects marked with `building=no`, which is a tag used to indicate that a feature might be expected to be a building (e.g. from an outdated aerial imagery source), but is in reality not one. |
+| highways | `type:way and (highway=motorway or highway=motorway_link or highway=trunk or highway=trunk_link or highway=primary or highway=primary_link or highway=secondary or highway=secondary_link or highway=tertiary or highway=tertiary_link or highway=unclassified or highway=residential or highway=living_street or highway=pedestrian or (highway=service and service=alley))` | The list of used tags depends on the exact definition of a "highway". In a different context, it may also incude less or even more tags (`highway=footway`, `highway=cycleway`, `highway=track`, `highway=path`, all `highway=service`, etc.). |
+| residential roads missing a name (for quality assurance) | `type:way and highway=residential and name!=* and noname!=yes` | Note that some roads might be actually unnamed in reality. Such features can be marked as unnamed with the [`noname`](https://wiki.openstreetmap.org/wiki/Key:noname) tag in OSM. |
 
 Documentation
 -------------
