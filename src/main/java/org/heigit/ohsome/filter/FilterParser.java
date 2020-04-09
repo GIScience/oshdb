@@ -35,35 +35,35 @@ public class FilterParser {
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
     final Parser<String> keystr = Patterns.regex("[a-zA-Z_0-9:-]+")
-        .toScanner("KEY_STRING")
+        .toScanner("KEY_STRING (a-z, 0-9, : or -)")
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
 
-    final Parser<String> equals = Patterns.string("=").toScanner("EQUALS")
+    final Parser<String> equals = Patterns.string("=").toScanner("EQUALS (=)")
         .map(ignored -> "=");
-    final Parser<String> notEquals = Patterns.string("!=").toScanner("NOT_EQUALS")
+    final Parser<String> notEquals = Patterns.string("!=").toScanner("NOT_EQUALS (!=)")
         .map(ignored -> "!=");
-    final Parser<String> colon = Patterns.string(":").toScanner("COLON")
+    final Parser<String> colon = Patterns.string(":").toScanner("COLON (:)")
         .map(ignored -> ":");
-    final Parser<String> type = Patterns.string("type").toScanner("TYPE")
+    final Parser<String> type = Patterns.string("type").toScanner("type")
         .map(ignored -> "type");
-    final Parser<OSMType> node = Patterns.string("node").toScanner("NODE")
+    final Parser<OSMType> node = Patterns.string("node").toScanner("node")
         .map(ignored -> OSMType.NODE);
-    final Parser<OSMType> way = Patterns.string("way").toScanner("WAY")
+    final Parser<OSMType> way = Patterns.string("way").toScanner("way")
         .map(ignored -> OSMType.WAY);
-    final Parser<OSMType> relation = Patterns.string("relation").toScanner("RELATION")
+    final Parser<OSMType> relation = Patterns.string("relation").toScanner("relation")
         .map(ignored -> OSMType.RELATION);
-    final Parser<String> geometry = Patterns.string("geometry").toScanner("GEOMETRY")
+    final Parser<String> geometry = Patterns.string("geometry").toScanner("geometry")
         .map(ignored -> "geometry");
-    final Parser<GeometryType> point = Patterns.string("point").toScanner("POINT")
+    final Parser<GeometryType> point = Patterns.string("point").toScanner("point")
         .map(ignored -> GeometryType.POINT);
-    final Parser<GeometryType> line = Patterns.string("line").toScanner("LINE")
+    final Parser<GeometryType> line = Patterns.string("line").toScanner("line")
         .map(ignored -> GeometryType.LINE);
-    final Parser<GeometryType> polygon = Patterns.string("polygon").toScanner("POLYGON")
+    final Parser<GeometryType> polygon = Patterns.string("polygon").toScanner("polygon")
         .map(ignored -> GeometryType.POLYGON);
-    final Parser<GeometryType> other = Patterns.string("other").toScanner("OTHER")
+    final Parser<GeometryType> other = Patterns.string("other").toScanner("other")
         .map(ignored -> GeometryType.OTHER);
-    final Parser<String> star = Patterns.string("*").toScanner("STAR")
+    final Parser<String> star = Patterns.string("*").toScanner("STAR (*)")
         .map(ignored -> "*");
 
     final Parser<FilterExpression> tagFilter = Parsers.sequence(
