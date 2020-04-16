@@ -3,6 +3,7 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
+* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (dafault) "LocalPeek" backend. #229
 * throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside of the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. #158
 * (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
 
