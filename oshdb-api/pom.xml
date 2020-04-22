@@ -112,6 +112,12 @@
     </dependency>
     
     <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-geospatial</artifactId>
+      <version>${ignite.version}</version>
+    </dependency>
+    
+    <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
       <version>${roaringbitmap.version}</version>
