@@ -206,7 +206,7 @@ public class OSMXmlReader {
           } else if ("relation".equalsIgnoreCase(type)) {
             t = OSMType.RELATION;
           } else {
-            t = OSMType.UNKNOWN;
+            t = null;
           }
 
           // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
