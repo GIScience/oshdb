@@ -669,8 +669,9 @@ public abstract class MapReducer<X> implements
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
     MapReducer<?> ret = this.copy();
     ret.mappers.add(new MapFunction(mapper, false));
-    //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
-    return (MapReducer<R>) ret;
+    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
+    MapReducer<R> result = (MapReducer<R>) ret;
+    return result;
   }
 
   /**
@@ -687,8 +688,9 @@ public abstract class MapReducer<X> implements
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
     ret.mappers.add(new MapFunction(flatMapper, true));
-    //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
-    return (MapReducer<R>) ret;
+    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
+    MapReducer<R> result = (MapReducer<R>) ret;
+    return result;
   }
 
   /**
@@ -738,8 +740,9 @@ public abstract class MapReducer<X> implements
     }
     MapReducer<X> ret = this.copy();
     ret.grouping = Grouping.BY_ID;
-    //noinspection unchecked – now in the reduce() step, the backend will return a list of items
-    return (MapReducer<List<X>>) ret;
+    @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of items
+    MapReducer<List<X>> result = (MapReducer<List<X>>) ret;
+    return result;
   }
 
   /**
@@ -829,15 +832,18 @@ public abstract class MapReducer<X> implements
           new MapAggregator<>(ret, indexer, this.getZerofillTimestamps());
       for (MapFunction action : mappers) {
         if (action.isFlatMapper()) {
-          //noinspection unchecked – applying untyped function (we don't know intermediate types)
-          mapAggregator = mapAggregator.flatMap(action);
+          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
+          MapAggregator<OSHDBTimestamp, ?> flatMappedMapAggregator = mapAggregator.flatMap(action);
+          mapAggregator = flatMappedMapAggregator;
         } else {
-          //noinspection unchecked – applying untyped function (we don't know intermediate types)
-          mapAggregator = mapAggregator.map(action);
+          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
+          MapAggregator<OSHDBTimestamp, ?> mappedMapAggregator = mapAggregator.map(action);
+          mapAggregator = mappedMapAggregator;
         }
       }
-      //noinspection unchecked – after applying all (flat)map functions, the final type is X
-      return (MapAggregator<OSHDBTimestamp, X>)mapAggregator;
+      @SuppressWarnings("unchecked") // after applying all (flat)map functions the final type is X
+      MapAggregator<OSHDBTimestamp, X> result = (MapAggregator<OSHDBTimestamp, X>) mapAggregator;
+      return result;
     } else {
       return new MapAggregator<>(this, indexer, this.getZerofillTimestamps());
     }
