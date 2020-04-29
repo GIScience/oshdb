@@ -80,8 +80,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)));
     // todo: check json schema for validity
 
-    //noinspection unchecked
-    for (JSONObject tag : (Iterable<JSONObject>)tagList) {
+    @SuppressWarnings("unchecked") // we expect only JSON objects here in a valid definition file
+    Iterable<JSONObject> iterableTagList = tagList;
+    for (JSONObject tag : iterableTagList) {
       String key = (String)tag.get("key");
       switch ((String)tag.get("polygon")) {
         case "all":
@@ -94,8 +95,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
           valueIds = new HashSet<>();
           keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
           JSONArray values = (JSONArray) tag.get("values");
-          //noinspection unchecked
-          for (String value : (Iterable<String>) values) {
+          @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
+          Iterable<String> iterableWhitelistValues = values;
+          for (String value : iterableWhitelistValues) {
             OSMTag keyValue = new OSMTag(key, value);
             valueIds.add(tagTranslator.getOSHDBTagOf(keyValue).getValue());
           }
@@ -106,8 +108,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
           valueIds = new InvertedHashSet<>();
           keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
           values = (JSONArray) tag.get("values");
-          //noinspection unchecked
-          for (String value : (Iterable<String>) values) {
+          @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
+          Iterable<String> iterableBlacklistValues = values;
+          for (String value : iterableBlacklistValues) {
             OSMTag keyValue = new OSMTag(key, value);
             valueIds.add(tagTranslator.getOSHDBTagOf(keyValue).getValue());
           }
@@ -135,8 +138,10 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     Set<Integer> uninterestingTagKeys = new HashSet<>();
     JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(uninterestingTagsDefinitionFile)));
     // todo: check json schema for validity
-    //noinspection unchecked
-    for (String tagKey : (Iterable<String>)uninterestingTagsList) {
+
+    @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
+    Iterable<String> iterableUninterestingTagsList = uninterestingTagsList;
+    for (String tagKey : iterableUninterestingTagsList) {
       uninterestingTagKeys.add(tagTranslator.getOSHDBTagKeyOf(tagKey).toInt());
     }
 

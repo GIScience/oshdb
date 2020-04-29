@@ -457,7 +457,6 @@ public class CellIterator implements Serializable {
       throw new Error("this is not yet properly implemented (probably)");
     }
 
-    //noinspection unchecked
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
 
     return Streams.stream(cellData).flatMap(oshEntity -> {
