@@ -196,7 +196,7 @@ public class TypeStartFinder {
 			return OSMType.WAY;
 		if (group.getRelationsCount() > 0)
 			return OSMType.RELATION;
-		return null;
+		throw new IllegalArgumentException("unkown type for Pbf PrimitiveGroup!");
 
 	}
 
