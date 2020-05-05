@@ -101,15 +101,15 @@ public class FilterParser {
     final Parser<FilterExpression> unit = ref.lazy().between(parensStart, parensEnd)
         .or(filter);
     final Parser<String> and = whitespace
-        .followedBy(Patterns.string("and").toScanner("AND"))
+        .followedBy(Patterns.string("and").toScanner("and"))
         .followedBy(whitespace)
         .map(ignored -> "or");
     final Parser<String> or = whitespace
-        .followedBy(Patterns.string("or").toScanner("OR"))
+        .followedBy(Patterns.string("or").toScanner("or"))
         .followedBy(whitespace)
         .map(ignored -> "or");
     final Parser<String> not = whitespace
-        .followedBy(Patterns.string("not").toScanner("NOT"))
+        .followedBy(Patterns.string("not").toScanner("not"))
         .followedBy(whitespace)
         .map(ignored -> "not");
     final Parser<FilterExpression> parser = new OperatorTable<FilterExpression>()
