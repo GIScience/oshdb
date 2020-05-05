@@ -15,7 +15,7 @@ Add the module to your maven dependencies (`pom.xml`):
 <dependency>
   <groupId>org.heigit.ohsome</groupId>
   <artifactId>ohsome-filter</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
 </dependency>
 …
 <repository>

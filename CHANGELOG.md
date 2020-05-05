@@ -1,8 +1,12 @@
+1.1.2
+-----
+
+* Fix more spelling of keywords in error messages.
+
 1.1.1
 -----
 
 * Improve documentation by adding some examples to readme.
-* Fix spelling of keywords in error messages. 
 
 1.1.0
 -----
