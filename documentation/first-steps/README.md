@@ -25,7 +25,7 @@ If you already have an existing Java maven project, the OSHDB-API can be added t
 <dependency>
   <groupId>org.heigit.bigspatialdata</groupId>
   <artifactId>oshdb-api</artifactId>
-  <version>0.5.6</version>
+  <version>0.5.7</version>
 </dependency>
 ```
 
