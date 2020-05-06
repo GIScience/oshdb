@@ -27,6 +27,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.TopologyException;
@@ -268,13 +269,20 @@ public class OSHDBGeometryBuilder {
           );
         } catch (TopologyException e) {
           // try again with buffer(0) on outer ring
-          return constructMultipolygonPart(
-              geometryFactory,
-              innersTree,
-              (Polygon) geometryFactory.createPolygon(outer).buffer(0)
-          );
+          Geometry buffered = geometryFactory.createPolygon(outer).buffer(0);
+          if (buffered instanceof Polygon) {
+            return constructMultipolygonPart(
+                geometryFactory,
+                innersTree,
+                (Polygon) buffered
+            );
+          } else {
+            return null;
+          }
         }
-      }).toArray(Polygon[]::new);
+      })
+      .filter(Objects::nonNull)
+      .toArray(Polygon[]::new);
       // todo: what to do with unmatched inner rings??
       result = geometryFactory.createMultiPolygon(polys);
     }
