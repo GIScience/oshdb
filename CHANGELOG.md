@@ -1,6 +1,13 @@
 Changelog
 =========
 
+## 0.5.7
+
+* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (dafault) "LocalPeek" backend. #229
+* throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside of the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. #158
+* improve querying of tag from keytables. #224
+* minor bug fixes and coding clean up. #216, #198, #206
+
 ## 0.5.6
 
 * fix how osm-type filters work when called multiple times: now, like with other filters, osm entity must match all supplied type filters. #157

@@ -49,6 +49,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
+import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -196,13 +197,17 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> keytables(OSHDBJdbc keytables) {
     if (keytables != this.oshdb && this.oshdb instanceof OSHDBJdbc) {
       Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
+      boolean oshdbContainsKeytables = true;
       try {
         new TagTranslator(c);
+      } catch (OSHDBKeytablesNotFoundException e) {
+        // this is the expected path -> the oshdb doesn't have the key tables
+        oshdbContainsKeytables = false;
+      }
+      if (oshdbContainsKeytables) {
         LOG.warn("It looks like as if the current OSHDB comes with keytables included. "
             + "Usually this means that you should use this file's keytables "
             + "and should not set the keytables manually.");
-      } catch (OSHDBKeytablesNotFoundException e) {
-        // this is the expected path -> the oshdb doesn't have the key tables
       }
     }
     MapReducer<X> ret = this.copy();
@@ -606,7 +611,8 @@ public abstract class MapReducer<X> implements
       ret.filters.add(ignored -> false);
       return ret;
     }
-    // for the "pre"-filter which removes all entitits wich don't have at least one of the given tag keys
+    // for the "pre"-filter which removes all entities which don't match at least one of the
+    // given tag keys
     Set<Integer> preKeyIds = new HashSet<>();
     // sets of tag keys and tags for the concrete entity filter: either one of these must match
     Set<Integer> keyIds = new HashSet<>();
@@ -853,9 +859,19 @@ public abstract class MapReducer<X> implements
       SerializableFunction<X, OSHDBTimestamp> indexer
   ) throws UnsupportedOperationException {
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
+    final OSHDBTimestamp minTime = timestamps.first();
+    final OSHDBTimestamp maxTime = timestamps.last();
     return new MapAggregator<OSHDBTimestamp, X>(this, data -> {
       // match timestamps to the given timestamp list
-      return timestamps.floor(indexer.apply(data));
+      OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
+      if (aggregationTimestamp == null
+          || aggregationTimestamp.compareTo(minTime) < 0
+          || aggregationTimestamp.compareTo(maxTime) > 0) {
+        throw new OSHDBInvalidTimestampException(
+            "Aggregation timestamp outside of time query interval."
+        );
+      }
+      return timestamps.floor(aggregationTimestamp);
     }, getZerofillTimestamps());
   }
 

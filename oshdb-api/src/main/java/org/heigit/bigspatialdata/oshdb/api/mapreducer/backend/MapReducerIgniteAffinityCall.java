@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
@@ -432,7 +431,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .filter(cellLongId -> {
             // test if cell exists and contains any relevant data
             GridOSHEntity cell = localCache.localPeek(cellLongId);
-            return cell != null && cellProcessor.apply(cell, cellIterator).findAny().isPresent();
+            return cell != null
+                && cellProcessor.apply(cell, cellIterator).anyMatch(ignored -> true);
           })
           .boxed()
           .collect(Collectors.toList());
@@ -483,9 +483,12 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
                   } else {
                     oshEntityCell = (GridOSHEntity) data;
                   }
-                  return cellProcessor.apply(oshEntityCell, this.cellIterator).findAny().map(
-                      ignored -> cacheEntry.getKey()
-                  );
+                  Stream<?> cellStream = cellProcessor.apply(oshEntityCell, this.cellIterator);
+                  if (cellStream.anyMatch(ignored -> true)) {
+                    return Optional.of(cacheEntry.getKey());
+                  } else {
+                    return Optional.empty();
+                  }
                 }
             )) {
               List<Long> acc = new LinkedList<>();
