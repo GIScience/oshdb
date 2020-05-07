@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.reader.TransformWayReaders;
@@ -69,6 +67,11 @@ public class LoaderWay extends Loader {
     this.nodeLoader = nodeLoader;
     nodeLoader.addLoader(this);
     this.maxZoomLevel = Math.max(1, maxZoomLevel);
+  }
+  
+  @Override
+  public void close() throws IOException {
+    reader.close();
   }
 
   public int count = 0;
@@ -182,36 +185,19 @@ public class LoaderWay extends Loader {
 
   @Override
   public void visitNode(TransformOSHNode node) {
-    final long id = node.getId();
-    final Long id2 = node.getId();
-    if(nodesForCellSet.contains(id2)){
+    final Long id = node.getId();
+    if(nodesForCellSet.contains(id)){
       forGrid.add(node);
-      nodesForCellSet.remove(id2);
+      nodesForCellSet.remove(id);
     }else {
       for(int i=lastZoom; i>=0; i--){
         final Grid g = zoomLevel.get(i);
-        if(g.nodesSet.contains(id2)){
+        if(g.nodesSet.contains(id)){
           g.forGrid.add(node);
-          g.nodesSet.remove(id2);;
+          g.nodesSet.remove(id);;
           break;
         }
       }
     }    
   }
-  
-  public static void main(String[] args) throws IOException {
-    Path workDirectory = Paths.get("./temp");
-    TransformWayReaders reader = new TransformWayReaders(
-        workDirectory.resolve(String.format("transform_%s_%02d", OSMType.WAY.toString().toLowerCase(), 0)));
-    
-    int count=0;
-    int sum = 0;
-    while(reader.hasNext()){
-      sum += reader.next().size();
-      count++;
-    }
-    
-    System.out.println("count "+count+" sum "+sum);
-  }
-  
 }

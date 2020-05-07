@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.transform.reader;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransfomRelation;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 
-public class TransformRelationReaders {
+public class TransformRelationReaders implements Closeable {
   private static class TransformRelationReader extends TransformReader<TransfomRelation> {
 
     public TransformRelationReader(Path path) throws IOException {
@@ -22,20 +23,31 @@ public class TransformRelationReaders {
       return TransfomRelation.instance(data, offset, length,baseId,baseTimestamp,baseLongitude,baseLatitude);
     }
   }
-
+  final List<TransformRelationReader> readers;
   final PriorityQueue<TransformRelationReader> queue;
   final List<TransformRelationReader> next;
   
   public TransformRelationReaders(Path... path) throws IOException{
     queue = new PriorityQueue<>(path.length, (a,b) -> ZGrid.ORDER_DFS_TOP_DOWN.compare(a.getCellId(), b.getCellId()));
     next = new ArrayList<>(path.length);
+    readers = new ArrayList<>(path.length);
     for(Path p : path){
       TransformRelationReader reader = new TransformRelationReader(p);
+      readers.add(reader);
       if(reader.hasNext()){
         reader.next();
         queue.add(reader);
       }
     }
+  }
+  
+  @Override
+  public void close() throws IOException {
+     readers.forEach(reader -> {
+       try {
+        reader.close();
+      } catch (IOException e) {}
+     });
   }
   
   public boolean hasNext(){

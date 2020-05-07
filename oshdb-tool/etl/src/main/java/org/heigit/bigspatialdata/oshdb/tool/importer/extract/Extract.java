@@ -243,9 +243,9 @@ public class Extract {
 
     final Function<OutputStream, OutputStream> output = Functions.identity();
     final List<KeyValuePointer> keys = new ArrayList<>();
-    try (
-        CountingOutputStream keyValuesPositionOutput = new CountingOutputStream(output.apply(
-            new BufferedOutputStream(new FileOutputStream(workDirectory.resolve("extract_keyvalues").toFile()))));
+    try (FileOutputStream fout = new FileOutputStream(workDirectory.resolve("extract_keyvalues").toFile());
+        BufferedOutputStream bout = new BufferedOutputStream(fout);
+        CountingOutputStream keyValuesPositionOutput = new CountingOutputStream(output.apply(bout));
         DataOutputStream keyValuesDataOutput = new DataOutputStream(keyValuesPositionOutput)) {
       kvFrequency.forEach(kvf -> {
         try {
@@ -290,9 +290,9 @@ public class Extract {
   public void sortByFrequency(RoleCollector roleFrequency) throws FileNotFoundException, IOException {
     final long maxSize = maxMemory;
     final Function<OutputStream, OutputStream> output = Functions.identity();
-    try (
-        OutputStream os = output
-            .apply(new BufferedOutputStream(new FileOutputStream(workDirectory.resolve("extract_roles").toFile())));
+    try (FileOutputStream fout = new FileOutputStream(workDirectory.resolve("extract_roles").toFile());
+        BufferedOutputStream bout = new BufferedOutputStream(fout);
+        OutputStream os = output.apply(bout);
         DataOutputStream rolesDataOutput = new DataOutputStream(os)) {
       final int keyCount = (int) Streams.stream(ExternalSort.of((a, b) -> {
         final int c = Integer.compare(a.freq, b.freq);

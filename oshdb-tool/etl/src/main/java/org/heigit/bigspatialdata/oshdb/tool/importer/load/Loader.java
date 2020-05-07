@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.load;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -7,7 +8,7 @@ import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOS
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 
 
-public abstract class Loader {
+public abstract class Loader implements Closeable {
 
   protected final int minEntitiesPerCell;
 

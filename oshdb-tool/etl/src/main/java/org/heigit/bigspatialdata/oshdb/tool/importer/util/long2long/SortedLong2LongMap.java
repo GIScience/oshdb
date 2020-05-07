@@ -10,22 +10,19 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.page.Page;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.long2long.page.PageLoader;
 import org.heigit.bigspatialdata.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.roaringbitmap.RoaringBitmap;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.Weigher;
-
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-public class SortedLong2LongMap implements LongToLongMap {
+public class SortedLong2LongMap implements Closeable, LongToLongMap {
   public static class Sink implements Closeable {
     private final int pageSizePower;
     private final int pageSize;
@@ -134,16 +131,19 @@ public class SortedLong2LongMap implements LongToLongMap {
     this(pathWithoutSuffix, maxMemory, (in, size) -> in);
   }
 
-  public SortedLong2LongMap(Path pathWithoutSuffix, long maxMemory, BiFunction<byte[], Integer, byte[]> comression)
-      throws IOException {
+  public SortedLong2LongMap(Path pathWithoutSuffix, long maxMemory,
+      BiFunction<byte[], Integer, byte[]> comression) throws IOException {
     this.rafPages = new RandomAccessFile(pathWithoutSuffix.toString() + ".map", "r");
-    PageLoader pageLoader = new PageLoader(pathWithoutSuffix.toString() + ".idx", rafPages, comression);
+    PageLoader pageLoader =
+        new PageLoader(pathWithoutSuffix.toString() + ".idx", rafPages, comression);
     this.cache = initCache(maxMemory, pageLoader);
 
     this.pageSizePower = pageLoader.getPageSizePower();
     this.pageSize = (int) Math.pow(2, pageSizePower);
     this.pageOffsetMask = pageSize - 1;
   }
+
+
 
   public LongSortedSet get(LongSortedSet ids) {
     if (ids.isEmpty())
@@ -164,10 +164,13 @@ public class SortedLong2LongMap implements LongToLongMap {
           page = cache.get(pageNumber);
           currentPageNumber = pageNumber;
         }
-        
+        if(page == null) {
+          throw new RuntimeException("page is null!");
+        }
         long cellId = page.get(pageOffset);
-        if(cellId >= 0)
+        if (cellId >= 0)
           result.add(cellId);
+        
       }
       return result;
     } catch (ExecutionException e) {
@@ -194,6 +197,7 @@ public class SortedLong2LongMap implements LongToLongMap {
     return -1;
   }
 
+  @Override
   public void close() {
     try {
       rafPages.close();
@@ -202,24 +206,22 @@ public class SortedLong2LongMap implements LongToLongMap {
     }
   }
 
-  private LoadingCache<Integer, Page> initCache(long maxMemory, CacheLoader<Integer, Page> cacheLoader) {
-    return CacheBuilder.newBuilder()
-        .maximumWeight(maxMemory)
-        .weigher(new Weigher<Integer, Page>() {
-          @Override
-          public int weigh(Integer arg0, Page page) {
-            return page.weigh();
-          }
-        })
+  private LoadingCache<Integer, Page> initCache(long maxMemory,
+      CacheLoader<Integer, Page> cacheLoader) {
+    return CacheBuilder.newBuilder().maximumWeight(maxMemory).weigher(new Weigher<Integer, Page>() {
+      @Override
+      public int weigh(Integer arg0, Page page) {
+        return page.weigh();
+      }
+    })
         /*
-        .removalListener(new RemovalListener<Integer, Page>() {
-          @Override
-          public void onRemoval(RemovalNotification<Integer, Page> notification) {
-            System.out.println("evict "+ notification.getKey());
-            
-          }
-        })
-        */
+         * .removalListener(new RemovalListener<Integer, Page>() {
+         * 
+         * @Override public void onRemoval(RemovalNotification<Integer, Page> notification) {
+         * System.out.println("evict "+ notification.getKey());
+         * 
+         * } })
+         */
         .build(cacheLoader);
   }
 

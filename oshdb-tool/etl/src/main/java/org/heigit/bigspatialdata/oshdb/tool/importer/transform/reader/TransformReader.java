@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.transform.reader;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -12,7 +13,7 @@ import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 
 
-public abstract class TransformReader<T extends OSHEntity2> {
+public abstract class TransformReader<T extends OSHEntity2> implements Closeable {
   
   public final Path path;
   private final RandomAccessFile raf;
@@ -33,7 +34,11 @@ public abstract class TransformReader<T extends OSHEntity2> {
     this.end = raf.length();
     this.channel = raf.getChannel();
   }
-
+  
+  @Override
+  public void close() throws IOException {
+    raf.close();
+  }
   
   public long getCellId(){
     return cellId;
@@ -65,6 +70,7 @@ public abstract class TransformReader<T extends OSHEntity2> {
     return pos+bytes < end;
   }
   
+  @SuppressWarnings("rawtypes")
   public TransformReader next(){
     try {
       readHeader();

@@ -275,17 +275,14 @@ public class OSHDB2H2Handler extends OSHDBHandler {
         }
 
         
-        Loader loader;
-        LoaderNode node;
-        loader = node = new LoaderNode(workDirectory, handler, minNodesPerGrid, onlyNodesWithTags, maxZoomLevel);
-        LoaderWay way;
-        loader = way = new LoaderWay(workDirectory, handler, minWaysPerGrid, node, maxZoomLevel);
-        LoaderRelation rel;
-        loader = rel = new LoaderRelation(workDirectory, handler, minRelationPerGrid, node, way, maxZoomLevel);
-
-        System.out.print("loading to grid ...");
-        loadingWatch.reset().start();
-        loader.load();
+        
+        try(LoaderNode node = new LoaderNode(workDirectory, handler, minNodesPerGrid, onlyNodesWithTags, maxZoomLevel);
+            LoaderWay way= new LoaderWay(workDirectory, handler, minWaysPerGrid, node, maxZoomLevel);
+            LoaderRelation rel = new LoaderRelation(workDirectory, handler, minRelationPerGrid, node, way, maxZoomLevel);){
+          System.out.print("loading to grid ...");
+          loadingWatch.reset().start();
+          rel.load();
+        }
         System.out.println(" done! "+loadingWatch);
       } 
     }catch (IOException | SQLException e) {

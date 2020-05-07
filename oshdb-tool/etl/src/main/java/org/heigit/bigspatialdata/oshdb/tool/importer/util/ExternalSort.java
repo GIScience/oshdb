@@ -139,7 +139,9 @@ public class ExternalSort<T> {
   private File saveBatch(List<T> batch) throws IOException {
     File newTmpFile = File.createTempFile("sortInBatch", "flatfile", tmpDirectory);
     newTmpFile.deleteOnExit();
-    try (ObjectOutputStream out = new ObjectOutputStream(output.apply(new BufferedOutputStream(new FileOutputStream(newTmpFile))))) {
+    try (FileOutputStream fout = new FileOutputStream(newTmpFile);
+        BufferedOutputStream bout = new BufferedOutputStream(fout);
+        ObjectOutputStream out = new ObjectOutputStream(output.apply(bout))) {
       for (T item : batch) {
         serialize.write(item, out);
       }
