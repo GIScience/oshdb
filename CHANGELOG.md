@@ -3,7 +3,7 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
-* (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
+* reorganize maven packages: rename group parent to ohsome-parent (version bump to 2.0), rename local parent to oshdb-parent, and change groupId to org.heigit.ohsome
 
 ## 0.5.7
 
