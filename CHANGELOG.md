@@ -1,3 +1,9 @@
+1.1.3
+-----
+* switch to ohsome-parent module
+* replace local checkstyle config with ohsome group definitions
+* prepare for deployment to central
+
 1.1.2
 -----
 

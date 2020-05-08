@@ -78,6 +78,12 @@ pipeline {
           server.publishBuildInfo buildInfo
           RELEASE_DEPLOY = true
         }
+        withCredentials([
+            file(credentialsId: 'ossrh-settings', variable: 'settingsFile'),
+            string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')
+        ]) {
+          sh 'mvn -s $settingsFile javadoc:jar source:jar deploy -P sign,deploy-central -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+        }
       }
       post {
         failure {
