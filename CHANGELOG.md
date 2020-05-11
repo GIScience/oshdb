@@ -5,6 +5,11 @@ Changelog
 
 * (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
 
+## 0.5.8
+
+* fix a regression in 0.5.7 when using oshdb on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. #235
+* fix a bug in the geometry builder utility causing exceptions to be thrown for certain invalid OSM multipolygons. #231
+
 ## 0.5.7
 
 * fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (dafault) "LocalPeek" backend. #229
