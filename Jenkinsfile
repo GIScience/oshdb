@@ -13,11 +13,6 @@ pipeline {
     stage ('Build and Test') {
       steps {
         script {
-          if(!(VERSION ==~ RELEASE_REGEX) || !(VERSION ==~ /.*-SNAPSHOT$/)) {
-            throw new Exception("The version-variable is invalid. The Build neither creates a release nor a snapshot and would not have beed deployed!")
-          }
-        }
-        script {
           env.MAVEN_HOME = '/usr/share/maven'
 
           author = sh(returnStdout: true, script: 'git show -s --pretty=%an')
@@ -35,6 +30,14 @@ pipeline {
           echo env.BRANCH_NAME
           echo env.BUILD_NUMBER
           echo env.TAG_NAME
+
+          if(!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
+            echo 'Version:'
+            echo VERSION
+            error 'The version declaration is invalid. It is neither a release nor a snapshot. Mabe some error while fetching it using maven.'
+          }
+        }
+        script {
 
           server = Artifactory.server 'HeiGIT Repo'
           rtMaven = Artifactory.newMavenBuild()
