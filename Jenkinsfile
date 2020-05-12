@@ -23,6 +23,12 @@ pipeline {
           echo reponame
           echo env.BRANCH_NAME
           echo env.BUILD_NUMBER
+
+          if(!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
+            echo 'Version:'
+            echo VERSION
+            error 'The version declaration is invalid. It is neither a release nor a snapshot. Mabe some error while fetching it using maven.'
+          }
         }
         script {
           server = Artifactory.server 'HeiGIT Repo'
