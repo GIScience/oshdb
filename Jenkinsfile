@@ -14,7 +14,7 @@ pipeline {
       steps {
         script {
           if(!(VERSION ==~ RELEASE_REGEX) || !(VERSION ==~ /.*-SNAPSHOT$/)) {
-            error("The version-variable is invalid. The Build neither creates a release nor a snapshot and would not have beed deployed!")
+            throw new Exception("The version-variable is invalid. The Build neither creates a release nor a snapshot and would not have beed deployed!")
           }
         }
         script {
