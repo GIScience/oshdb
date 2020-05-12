@@ -38,7 +38,6 @@ pipeline {
           }
         }
         script {
-
           server = Artifactory.server 'HeiGIT Repo'
           rtMaven = Artifactory.newMavenBuild()
 
