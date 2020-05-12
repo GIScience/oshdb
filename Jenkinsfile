@@ -7,9 +7,6 @@ pipeline {
     SNAPSHOT_DEPLOY = false
 
     VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
-    PACKAGING = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.packaging | grep -Ev "(^\\[|Download\\w+)"').trim()
-    GROUP_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.groupId | grep -Ev "(^\\[|Download\\w+)"').trim()
-    ARTIFACT_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.artifactId | grep -Ev "(^\\[|Download\\w+)"').trim()
   }
 
   stages {
@@ -34,6 +31,13 @@ pipeline {
           echo env.BUILD_NUMBER
           echo env.TAG_NAME
 
+          if(!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
+            echo 'Version:'
+            echo VERSION
+            error 'The version declaration is invalid. It is neither a release nor a snapshot. Mabe some error while fetching it using maven.'
+          }
+        }
+        script {
           server = Artifactory.server 'HeiGIT Repo'
           rtMaven = Artifactory.newMavenBuild()
 
