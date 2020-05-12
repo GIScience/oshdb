@@ -7,14 +7,14 @@ pipeline {
     SNAPSHOT_DEPLOY = false
 
     VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
-    PACKAGING = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.packaging | grep -Ev "(^\\[|Download\\w+)"').trim()
-    GROUP_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.groupId | grep -Ev "(^\\[|Download\\w+)"').trim()
-    ARTIFACT_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.artifactId | grep -Ev "(^\\[|Download\\w+)"').trim()
   }
 
   stages {
     stage ('Build and Test') {
       steps {
+        script {
+          sh(script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version')
+        }
         script {
           env.MAVEN_HOME = '/usr/share/maven'
 
