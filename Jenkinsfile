@@ -13,7 +13,9 @@ pipeline {
     stage ('Build and Test') {
       steps {
         script {
-          sh(script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version')
+          if(!(VERSION ==~ RELEASE_REGEX) || !(VERSION ==~ /.*-SNAPSHOT$/)) {
+            error("The version-variable is invalid. The Build neither creates a release nor a snapshot and would not have beed deployed!")
+          }
         }
         script {
           env.MAVEN_HOME = '/usr/share/maven'
