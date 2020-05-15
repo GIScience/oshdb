@@ -3,7 +3,7 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
-* reorganize maven packages: rename group parent to ohsome-parent (version bump to 2.0), rename local parent to oshdb-parent, and change groupId to org.heigit.ohsome
+* reorganize maven packages: rename group parent to ohsome-parent (version bump to 2.2), rename local parent to oshdb-parent, and change groupId to org.heigit.ohsome
 
 ## 0.5.8
 
