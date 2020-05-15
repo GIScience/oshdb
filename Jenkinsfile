@@ -7,9 +7,7 @@ pipeline {
     SNAPSHOT_DEPLOY = false
 
     VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
-    PACKAGING = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.packaging | grep -Ev "(^\\[|Download\\w+)"').trim()
-    GROUP_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.groupId | grep -Ev "(^\\[|Download\\w+)"').trim()
-    ARTIFACT_ID = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.artifactId | grep -Ev "(^\\[|Download\\w+)"').trim()
+    MAVEN_TEST_OPTIONS = ' '
   }
 
   stages {
@@ -34,6 +32,13 @@ pipeline {
           echo env.BUILD_NUMBER
           echo env.TAG_NAME
 
+          if(!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
+            echo 'Version:'
+            echo VERSION
+            error 'The version declaration is invalid. It is neither a release nor a snapshot. Mabe some error while fetching it using maven.'
+          }
+        }
+        script {
           server = Artifactory.server 'HeiGIT Repo'
           rtMaven = Artifactory.newMavenBuild()
 
@@ -42,13 +47,13 @@ pipeline {
           rtMaven.deployer.deployArtifacts = false
 
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE'
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
           }
         }
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Review the code!" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "$reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Review the code!" , rawMessage: true
         }
       }
     }
@@ -68,7 +73,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Deployment of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Deployment of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
         }
       }
     }
@@ -95,11 +100,12 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Deployment of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Deployment of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
         }
       }
     }
 
+    // START CUSTOM oshdb
     stage ('Trigger Benchmark and build Examples') {
       when {
         expression {
@@ -112,10 +118,11 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Triggering of Benchmarks or Examples for oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Triggering of Benchmarks or Examples for $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
         }
       }
     }
+    // END CUSTOM oshdb
 
     stage ('Publish Javadoc') {
       when {
@@ -126,7 +133,7 @@ pipeline {
       }
       steps {
         script {
-          //load dependencies to artifactory
+          // load dependencies to artifactory
           rtMaven.run pom: 'pom.xml', goals: 'org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2'
 
           javadc_dir="/srv/javadoc/java/" + reponame + "/" + VERSION + "/"
@@ -134,19 +141,21 @@ pipeline {
 
           rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:javadoc -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2'
           sh "echo $javadc_dir"
-          //make sure jenkins uses bash not dash!
+          // make sure jenkins uses bash not dash!
           sh "mkdir -p $javadc_dir && rm -Rf $javadc_dir* && find . -path '*/target/site/apidocs' -exec cp -R --parents {} $javadc_dir \\; && find $javadc_dir -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find $javadc_dir -type d -empty -delete"
         }
 
+        // START CUSTOM oshdb
         script {
           javadc_dir=javadc_dir + "aggregated/"
           rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:aggregate -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2'
           sh "mkdir -p $javadc_dir && rm -Rf $javadc_dir* && find . -path './target/site/apidocs' -exec cp -R --parents {} $javadc_dir \\; && find $javadc_dir -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find $javadc_dir -type d -empty -delete"
         }
+        // END CUSTOM oshdb
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Deployment of javadoc oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Deployment of javadoc $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
     }
@@ -154,13 +163,13 @@ pipeline {
     stage ('Reports and Statistics') {
       steps {
         script {
-          //jacoco
+          // jacoco
           report_dir="/srv/reports/" + reponame + "/" + VERSION + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/jacoco/"
 
-          rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco -Dmaven.repo.local=.m2'
+          rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
           sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
 
-          //infer
+          // infer
           if(env.BRANCH_NAME ==~ /(^master$)/) {
             report_dir="/srv/reports/" + reponame + "/" + VERSION + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
             sh "mvn clean"
@@ -168,8 +177,8 @@ pipeline {
             sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
           }
 
-          //warnings plugin
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
+          // warnings plugin
+          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e compile checkstyle:checkstyle pmd:pmd pmd:cpd findbugs:findbugs com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
 
           recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
           recordIssues enabledForFailure: true, tool: checkStyle()
@@ -181,7 +190,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Reporting of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Reporting of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
     }
@@ -208,7 +217,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:' , message: "Checking for updates in oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:' , message: "Checking for updates in $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
     }
@@ -228,11 +237,11 @@ pipeline {
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you on OSHDB-Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you on $reponame Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Reporting of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Reporting of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
     }
@@ -244,11 +253,11 @@ pipeline {
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: oshdb-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: $reponame-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Reporting of oshdb-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', message: "Reporting of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
         }
       }
     }
