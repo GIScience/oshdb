@@ -64,6 +64,7 @@
 
   <properties>
     <h2.version>1.4.193</h2.version>
+    <jacoco.version>0.8.5</jacoco.version>
     <jetbrains-annotations.version>13.0</jetbrains-annotations.version>
     <jparsec.version>3.1</jparsec.version>
     <junit.version>4.12</junit.version>
@@ -94,4 +95,33 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+              <execution>
+                <id>default-prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>default-report</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
