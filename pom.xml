@@ -67,7 +67,31 @@
     <jetbrains-annotations.version>13.0</jetbrains-annotations.version>
     <jparsec.version>3.1</jparsec.version>
     <junit.version>4.12</junit.version>
+    <mavenpmd.version>3.11.0</mavenpmd.version>
     <oshdb.version>[0.5,0.6)</oshdb.version>
+    <pmd.version>6.11.0</pmd.version>
     <slf4j-log4j.version>1.7.25</slf4j-log4j.version>
   </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>${mavenpmd.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-core</artifactId>
+            <version>${pmd.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-java</artifactId>
+            <version>${pmd.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 </project>
