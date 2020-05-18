@@ -1,5 +1,6 @@
 package org.heigit.ohsome.filter;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -120,6 +121,7 @@ public class ParserAndApplyOSMTest {
     assertTrue(parser.parse("type:node") instanceof TypeFilter);
     assertTrue(parser.parse("type:node").applyOSM(createTestEntityNode()));
     assertFalse(parser.parse("type:way").applyOSM(createTestEntityNode()));
+    assertEquals(OSMType.NODE, ((TypeFilter) parser.parse("type:node")).getType());
   }
 
   @Test
