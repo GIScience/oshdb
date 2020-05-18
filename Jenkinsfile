@@ -151,7 +151,7 @@ pipeline {
           if(env.BRANCH_NAME ==~ /(^master$)/) {
             report_dir="/srv/reports/" + reponame + "/" + VERSION + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
             sh "mvn clean"
-            sh "infer run -r -- mvn compile"
+            sh "infer run --pmd-xml -r -- mvn compile"
             sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
           }
 
@@ -164,6 +164,7 @@ pipeline {
           recordIssues enabledForFailure: true, tool: spotBugs()
           recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
           recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
+          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/infer-out/report.xml', id: 'infer')
         }
       }
       post {
