@@ -40,6 +40,6 @@ public class TagFilterEqualsAny implements TagFilter {
 
   @Override
   public String toString() {
-    return "tag:" + tag.toInt() + "!=*";
+    return "tag:" + tag.toInt() + "=*";
   }
 }

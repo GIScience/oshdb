@@ -52,6 +52,6 @@ public class TypeFilter implements Filter {
 
   @Override
   public String toString() {
-    return "type:" + type.toString();
+    return "type:" + type.toString().toLowerCase();
   }
 }

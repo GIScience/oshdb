@@ -165,6 +165,6 @@ public class GeometryTypeFilter implements Filter {
 
   @Override
   public String toString() {
-    return "geometry:" + geometryType.toString();
+    return "geometry:" + geometryType.toString().toLowerCase();
   }
 }
