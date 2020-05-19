@@ -35,7 +35,7 @@ pipeline {
           if(!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
             echo 'Version:'
             echo VERSION
-            error 'The version declaration is invalid. It is neither a release nor a snapshot. Mabe some error while fetching it using maven.'
+            error 'The version declaration is invalid. It is neither a release nor a snapshot. Maybe an error occured while fetching the parent pom using maven?'
           }
         }
         script {
