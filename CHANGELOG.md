@@ -1,3 +1,9 @@
+1.1.4
+-----
+
+* fix a bug triggered when serializing a geometry-type filter
+* add license files (LGPL)
+
 1.1.3
 -----
 * switch to ohsome-parent module
