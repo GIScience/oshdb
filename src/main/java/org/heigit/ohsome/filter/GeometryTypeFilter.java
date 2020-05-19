@@ -37,7 +37,6 @@ public class GeometryTypeFilter implements Filter {
   private final OSHDBTag typeBoundary;
 
   private final GeometryType geometryType;
-  private final TagTranslator tagTranslator;
 
   /**
    * Returns a new geometry type filter object.
@@ -46,10 +45,16 @@ public class GeometryTypeFilter implements Filter {
    * @param tt Tag Translator object for converting OSM tags to OSHDB tag ids
    */
   public GeometryTypeFilter(GeometryType geometryType, TagTranslator tt) {
+    this.geometryType = geometryType;
     this.typeMultipolygon = tt.getOSHDBTagOf(tagTypeMultipolygon);
     this.typeBoundary = tt.getOSHDBTagOf(tagTypeBoundary);
-    this.tagTranslator = tt;
+  }
+
+  private GeometryTypeFilter(
+      GeometryType geometryType, OSHDBTag typeMultipolygon, OSHDBTag typeBoundary) {
     this.geometryType = geometryType;
+    this.typeMultipolygon = typeMultipolygon;
+    this.typeBoundary = typeBoundary;
   }
 
   /**
@@ -155,10 +160,10 @@ public class GeometryTypeFilter implements Filter {
         "the negation of one geometry type must equal exactly tree geometry types";
 
     return new OrOperator(
-        new GeometryTypeFilter(otherTypesList.get(0), this.tagTranslator),
+        new GeometryTypeFilter(otherTypesList.get(0), typeMultipolygon, typeBoundary),
         new OrOperator(
-            new GeometryTypeFilter(otherTypesList.get(1), this.tagTranslator),
-            new GeometryTypeFilter(otherTypesList.get(2), this.tagTranslator)
+            new GeometryTypeFilter(otherTypesList.get(1), typeMultipolygon, typeBoundary),
+            new GeometryTypeFilter(otherTypesList.get(2), typeMultipolygon, typeBoundary)
         )
     );
   }
