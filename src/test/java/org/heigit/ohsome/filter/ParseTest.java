@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.junit.Test;
 
 /**
@@ -18,6 +19,7 @@ public class ParseTest extends FilterTest {
     FilterExpression expression = parser.parse("highway=residential");
     assertTrue(expression instanceof TagFilterEquals);
     OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
+    assertEquals(tag, ((TagFilterEquals) expression).getTag());
     assertEquals("tag:" + tag.getKey() + "=" + tag.getValue(), expression.toString());
   }
 
@@ -36,8 +38,9 @@ public class ParseTest extends FilterTest {
   public void testTagFilterEqualsAny() {
     FilterExpression expression = parser.parse("highway=*");
     assertTrue(expression instanceof TagFilterEqualsAny);
-    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
-    assertEquals("tag:" + tag.getKey() + "=*", expression.toString());
+    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
+    assertEquals(tag, ((TagFilterEqualsAny) expression).getTag());
+    assertEquals("tag:" + tag.toInt() + "=*", expression.toString());
   }
 
   @Test
@@ -45,6 +48,7 @@ public class ParseTest extends FilterTest {
     FilterExpression expression = parser.parse("highway!=residential");
     assertTrue(expression instanceof TagFilterNotEquals);
     OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
+    assertEquals(tag, ((TagFilterNotEquals) expression).getTag());
     assertEquals("tag:" + tag.getKey() + "!=" + tag.getValue(), expression.toString());
   }
 
@@ -52,8 +56,9 @@ public class ParseTest extends FilterTest {
   public void testTagFilterNotEqualsAny() {
     FilterExpression expression = parser.parse("highway!=*");
     assertTrue(expression instanceof TagFilterNotEqualsAny);
-    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
-    assertEquals("tag:" + tag.getKey() + "!=*", expression.toString());
+    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
+    assertEquals(tag, ((TagFilterNotEqualsAny) expression).getTag());
+    assertEquals("tag:" + tag.toInt() + "!=*", expression.toString());
   }
 
   @Test

@@ -13,6 +13,15 @@ public class TagFilterNotEquals implements TagFilter {
     this.tag = tag;
   }
 
+  /**
+   * Returns the OSM tag of this filter.
+   *
+   * @return the OSM tag of this filter.
+   */
+  public OSHDBTag getTag() {
+    return this.tag;
+  }
+
   @Override
   public boolean applyOSM(OSMEntity entity) {
     return !entity.hasTagValue(tag.getKey(), tag.getValue());
