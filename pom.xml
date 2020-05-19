@@ -69,7 +69,7 @@
     <jparsec.version>3.1</jparsec.version>
     <junit.version>4.12</junit.version>
     <mavenpmd.version>3.11.0</mavenpmd.version>
-    <oshdb.version>[0.5,0.6)</oshdb.version>
+    <oshdb.version>[0.5.2,0.6)</oshdb.version>
     <pmd.version>6.11.0</pmd.version>
     <slf4j-log4j.version>1.7.25</slf4j-log4j.version>
   </properties>
