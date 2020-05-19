@@ -1,9 +1,16 @@
 package org.heigit.ohsome.filter;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * A boolean operator with two sub-expressions.
  */
 public abstract class BinaryOperator implements FilterExpression {
+  enum Type {
+    AND,
+    OR
+  }
+
   final FilterExpression op1;
   final FilterExpression op2;
 
@@ -38,20 +45,20 @@ public abstract class BinaryOperator implements FilterExpression {
    * @param operator The operator, such as "and" or "or".
    * @param rightOperand The right operand.
    * @return A new binary operator object fulfilling the given "operator" on two sub-expressions.
-   * @throws IllegalStateException if an unknown operator was given.
    */
   public static BinaryOperator fromOperator(
       FilterExpression leftOperand,
-      String operator,
+      @NotNull Type operator,
       FilterExpression rightOperand
   ) {
     switch (operator) {
-      case "and":
+      case AND:
         return new AndOperator(leftOperand, rightOperand);
-      case "or":
+      case OR:
         return new OrOperator(leftOperand, rightOperand);
       default:
-        throw new IllegalStateException("unknown operator: " + operator);
+        assert false : "invalid or null binary operator encountered";
+        throw new IllegalStateException("invalid or null binary operator encountered");
     }
   }
 }

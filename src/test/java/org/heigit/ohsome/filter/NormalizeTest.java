@@ -38,7 +38,7 @@ public class NormalizeTest {
   public void testAndOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
-    FilterExpression expression = BinaryOperator.fromOperator(sub1, "and", sub2);
+    FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.AND, sub2);
     List<List<Filter>> norm = expression.normalize();
     assertEquals(1, norm.size());
     assertEquals(2, norm.get(0).size());
@@ -48,7 +48,7 @@ public class NormalizeTest {
   public void testOrOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
-    FilterExpression expression = BinaryOperator.fromOperator(sub1, "or", sub2);
+    FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.OR, sub2);
     List<List<Filter>> norm = expression.normalize();
     assertEquals(2, norm.size());
     assertEquals(1, norm.get(0).size());

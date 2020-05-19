@@ -39,10 +39,12 @@ public class FilterParser {
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
 
-    final Parser<String> equals = Patterns.string("=").toScanner("EQUALS (=)")
-        .map(ignored -> "=");
-    final Parser<String> notEquals = Patterns.string("!=").toScanner("NOT_EQUALS (!=)")
-        .map(ignored -> "!=");
+    final Parser<TagFilter.Type> equals = Patterns.string("=")
+        .toScanner("EQUALS (=)")
+        .map(ignored -> TagFilter.Type.EQUALS);
+    final Parser<TagFilter.Type> notEquals = Patterns.string("!=")
+        .toScanner("NOT_EQUALS (!=)")
+        .map(ignored -> TagFilter.Type.NOT_EQUALS);
     final Parser<String> colon = Patterns.string(":").toScanner("COLON (:)")
         .map(ignored -> ":");
     final Parser<String> type = Patterns.string("type").toScanner("type")
@@ -113,8 +115,8 @@ public class FilterParser {
         .followedBy(whitespace)
         .map(ignored -> "not");
     final Parser<FilterExpression> parser = new OperatorTable<FilterExpression>()
-        .infixl(or.retn((a, b) -> BinaryOperator.fromOperator(a, "or", b)), 10)
-        .infixl(and.retn((a, b) -> BinaryOperator.fromOperator(a, "and", b)), 20)
+        .infixl(or.retn((a, b) -> BinaryOperator.fromOperator(a, BinaryOperator.Type.OR, b)), 10)
+        .infixl(and.retn((a, b) -> BinaryOperator.fromOperator(a, BinaryOperator.Type.AND, b)), 20)
         .prefix(not.retn(FilterExpression::negate), 50)
         .build(unit);
     ref.set(parser);

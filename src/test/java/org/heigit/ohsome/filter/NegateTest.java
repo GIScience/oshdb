@@ -1,6 +1,5 @@
 package org.heigit.ohsome.filter;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.DriverManager;
@@ -41,7 +40,11 @@ public class NegateTest {
 
   @Test
   public void testTagFilterEquals() {
-    FilterExpression expression = TagFilter.fromSelector("=", new OSMTag("highway", "residential"), tagTranslator);
+    FilterExpression expression = TagFilter.fromSelector(
+        TagFilter.Type.EQUALS,
+        new OSMTag("highway", "residential"),
+        tagTranslator
+    );
     assertTrue(expression instanceof TagFilterEquals);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterNotEquals);
@@ -49,7 +52,11 @@ public class NegateTest {
 
   @Test
   public void testTagFilterNotEquals() {
-    FilterExpression expression = TagFilter.fromSelector("!=", new OSMTag("highway", "residential"), tagTranslator);
+    FilterExpression expression = TagFilter.fromSelector(
+        TagFilter.Type.NOT_EQUALS,
+        new OSMTag("highway", "residential"),
+        tagTranslator
+    );
     assertTrue(expression instanceof TagFilterNotEquals);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterEquals);
@@ -57,7 +64,11 @@ public class NegateTest {
 
   @Test
   public void testTagFilterEqualsAny() {
-    FilterExpression expression = TagFilter.fromSelector("=", new OSMTagKey("highway"), tagTranslator);
+    FilterExpression expression = TagFilter.fromSelector(
+        TagFilter.Type.EQUALS,
+        new OSMTagKey("highway"),
+        tagTranslator
+    );
     assertTrue(expression instanceof TagFilterEqualsAny);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterNotEqualsAny);
@@ -65,7 +76,11 @@ public class NegateTest {
 
   @Test
   public void testTagFilterNotEqualsAny() {
-    FilterExpression expression = TagFilter.fromSelector("!=", new OSMTagKey("highway"), tagTranslator);
+    FilterExpression expression = TagFilter.fromSelector(
+        TagFilter.Type.NOT_EQUALS,
+        new OSMTagKey("highway"),
+        tagTranslator
+    );
     assertTrue(expression instanceof TagFilterNotEqualsAny);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterEqualsAny);
@@ -91,7 +106,7 @@ public class NegateTest {
   public void testAndOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
-    FilterExpression expression = BinaryOperator.fromOperator(sub1, "and", sub2);
+    FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.AND, sub2);
     assertTrue(expression instanceof AndOperator);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof OrOperator);
@@ -103,7 +118,7 @@ public class NegateTest {
   public void testOrOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
-    FilterExpression expression = BinaryOperator.fromOperator(sub1, "or", sub2);
+    FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.OR, sub2);
     assertTrue(expression instanceof OrOperator);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof AndOperator);
