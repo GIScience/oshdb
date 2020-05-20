@@ -70,6 +70,8 @@ public class ParseTest extends FilterTest {
     assertTrue(expression instanceof TypeFilter);
     assertEquals(OSMType.NODE, ((TypeFilter) expression).getType());
     assertEquals("type:node", expression.toString());
+    assertEquals(OSMType.WAY, ((TypeFilter) parser.parse("type:way")).getType());
+    assertEquals(OSMType.RELATION, ((TypeFilter) parser.parse("type:relation")).getType());
   }
 
   @Test
