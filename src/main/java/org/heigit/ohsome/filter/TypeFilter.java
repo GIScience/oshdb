@@ -6,6 +6,7 @@ import java.util.List;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.jetbrains.annotations.Contract;
 
 /**
  * A filter which selects OSM entities by their OSM type (i.e., node, way or relation).
@@ -22,6 +23,7 @@ public class TypeFilter implements Filter {
    *
    * @return the OSM type of this filter.
    */
+  @Contract(pure = true)
   public OSMType getType() {
     return this.type;
   }

@@ -13,11 +13,7 @@ public class TagFilterNotEquals implements TagFilter {
     this.tag = tag;
   }
 
-  /**
-   * Returns the OSM tag of this filter.
-   *
-   * @return the OSM tag of this filter.
-   */
+  @Override
   public OSHDBTag getTag() {
     return this.tag;
   }

@@ -1,6 +1,7 @@
 package org.heigit.ohsome.filter;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
+import org.jetbrains.annotations.Contract;
 
 /**
  * A boolean operator with two sub-expressions.
@@ -46,9 +47,10 @@ public abstract class BinaryOperator implements FilterExpression {
    * @param rightOperand The right operand.
    * @return A new binary operator object fulfilling the given "operator" on two sub-expressions.
    */
+  @Contract(pure = true)
   public static BinaryOperator fromOperator(
       FilterExpression leftOperand,
-      @NotNull Type operator,
+      @Nonnull Type operator,
       FilterExpression rightOperand
   ) {
     switch (operator) {

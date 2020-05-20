@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
@@ -12,6 +13,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
+import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Lineal;
@@ -45,7 +47,7 @@ public class GeometryTypeFilter implements Filter {
    * @param geometryType The type of tag filter, such as "point", "line", "polygon" or "other".
    * @param tt Tag Translator object for converting OSM tags to OSHDB tag ids
    */
-  public GeometryTypeFilter(GeometryType geometryType, TagTranslator tt) {
+  public GeometryTypeFilter(@Nonnull GeometryType geometryType, TagTranslator tt) {
     this.typeMultipolygon = tt.getOSHDBTagOf(tagTypeMultipolygon);
     this.typeBoundary = tt.getOSHDBTagOf(tagTypeBoundary);
     this.tagTranslator = tt;
@@ -57,6 +59,7 @@ public class GeometryTypeFilter implements Filter {
    *
    * @return the geometry type of this filter (POINT, LINE, POLYGON or OTHER).
    */
+  @Contract(pure = true)
   public GeometryType getGeometryType() {
     return this.geometryType;
   }
@@ -70,6 +73,7 @@ public class GeometryTypeFilter implements Filter {
    *
    * @return the OSM types associated with the geometry type filter.
    */
+  @Contract(pure = true)
   public Set<OSMType> getOSMTypes() {
     switch (geometryType) {
       case POINT:
@@ -84,6 +88,7 @@ public class GeometryTypeFilter implements Filter {
     }
   }
 
+  @Contract(pure = true)
   private boolean checkOSMType(OSMType osmType) {
     switch (geometryType) {
       case POINT:
@@ -98,6 +103,7 @@ public class GeometryTypeFilter implements Filter {
     }
   }
 
+  @Contract(pure = true)
   private boolean checkGeometryType(Geometry geometry) {
     switch (geometryType) {
       case POINT:

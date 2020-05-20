@@ -23,7 +23,7 @@ import org.jparsec.pattern.Patterns;
  * <p>Example: "type:way and highway=residential and not (lit=yes or lit=automatic)"</p>
  */
 public class FilterParser {
-  private Parser<FilterExpression> parser;
+  private final Parser<FilterExpression> parser;
 
   /**
    * Creates a new parser for OSM entity filters.

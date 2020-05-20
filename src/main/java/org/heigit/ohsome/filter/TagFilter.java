@@ -1,10 +1,11 @@
 package org.heigit.ohsome.filter;
 
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Contract;
 
 /**
  * A filter which selects OSM entities by their OSM tags (e.g., key=value, key=*, etc.).
@@ -14,6 +15,14 @@ public interface TagFilter extends Filter {
     EQUALS,
     NOT_EQUALS
   }
+
+  /**
+   * Returns the OSM tag or key of this filter.
+   *
+   * @return the OSM tag of this filter. Either an object of class OSHDBTag or OSHDBTagKey.
+   */
+  @Contract(pure = true)
+  Object getTag();
 
   /**
    * Returns a new tag filter object fulfilling the given "selector" and OSM tag.
@@ -26,7 +35,8 @@ public interface TagFilter extends Filter {
    * @param tt Tag Translator object for converting OSM tags to OSHDB tag ids
    * @return A new tag-filter object fulfilling the given parameters.
    */
-  static TagFilter fromSelector(@NotNull Type selector, OSMTagInterface tag, TagTranslator tt) {
+  @Contract(pure = true)
+  static TagFilter fromSelector(@Nonnull Type selector, OSMTagInterface tag, TagTranslator tt) {
     switch (selector) {
       case EQUALS:
         if (tag instanceof OSMTag) {
