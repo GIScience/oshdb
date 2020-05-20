@@ -46,6 +46,9 @@ public class ApplyOSMGeometryTest extends FilterTest {
     OSMEntity validRelation = createTestEntityRelation();
     assertTrue(expression.applyOSMGeometry(validRelation, gf.createGeometryCollection()));
     assertFalse(expression.applyOSMGeometry(validRelation, gf.createPolygon()));
+    assertFalse(expression.applyOSMGeometry(validRelation, gf.createMultiPoint()));
+    assertFalse(expression.applyOSMGeometry(validRelation, gf.createMultiLineString()));
+    assertFalse(expression.applyOSMGeometry(validRelation, gf.createMultiPolygon()));
   }
 
   @Test
