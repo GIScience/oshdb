@@ -51,6 +51,7 @@ public interface FilterExpression {
    * @param geometry the geometry of this OSM feature to check.
    * @return true if the OSM feature fulfills the specified filter, otherwise false.
    */
+  @Contract(pure = true)
   default boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
     return applyOSM(entity);
   }
@@ -70,6 +71,7 @@ public interface FilterExpression {
    *
    * @return a disjunction of conjunctions of filter expressions: A∧B∧… ∨ C∧D∧… ∨ …
    */
+  @Contract(pure = true)
   default List<List<Filter>> normalize() {
     if (this instanceof Filter) {
       return Collections.singletonList(Collections.singletonList((Filter) this));

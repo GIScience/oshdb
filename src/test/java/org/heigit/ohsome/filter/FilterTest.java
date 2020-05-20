@@ -10,6 +10,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.After;
@@ -49,19 +50,19 @@ abstract class FilterTest {
     return tags.stream().mapToInt(x -> x).toArray();
   }
 
-  protected OSMEntity createTestEntityNode(String ...keyValues) {
-    return new OSMNode(1, 1, null, 1, 1, createTestTags(keyValues), 0, 0);
+  protected OSMNode createTestEntityNode(String ...keyValues) {
+    return new OSMNode(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), 0, 0);
   }
 
-  protected OSMEntity createTestEntityWay(long[] nodeIds, String ...keyValues) {
+  protected OSMWay createTestEntityWay(long[] nodeIds, String ...keyValues) {
     OSMMember[] refs = new OSMMember[nodeIds.length];
     for (int i = 0; i < refs.length; i++) {
       refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
     }
-    return new OSMWay(1, 1, null, 1, 1, createTestTags(keyValues), refs);
+    return new OSMWay(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), refs);
   }
 
-  protected OSMEntity createTestEntityRelation(String ...keyValues) {
-    return new OSMRelation(1, 1, null, 1, 1, createTestTags(keyValues), new OSMMember[] {});
+  protected OSMRelation createTestEntityRelation(String ...keyValues) {
+    return new OSMRelation(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), new OSMMember[] {});
   }
 }

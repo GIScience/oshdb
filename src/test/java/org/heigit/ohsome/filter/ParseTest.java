@@ -3,8 +3,12 @@ package org.heigit.ohsome.filter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.EnumSet;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
+import org.heigit.ohsome.filter.GeometryTypeFilter.GeometryType;
 import org.junit.Test;
 
 /**
@@ -18,6 +22,7 @@ public class ParseTest extends FilterTest {
     FilterExpression expression = parser.parse("highway=residential");
     assertTrue(expression instanceof TagFilterEquals);
     OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
+    assertEquals(tag, ((TagFilterEquals) expression).getTag());
     assertEquals("tag:" + tag.getKey() + "=" + tag.getValue(), expression.toString());
   }
 
@@ -36,8 +41,9 @@ public class ParseTest extends FilterTest {
   public void testTagFilterEqualsAny() {
     FilterExpression expression = parser.parse("highway=*");
     assertTrue(expression instanceof TagFilterEqualsAny);
-    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
-    assertEquals("tag:" + tag.getKey() + "=*", expression.toString());
+    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
+    assertEquals(tag, ((TagFilterEqualsAny) expression).getTag());
+    assertEquals("tag:" + tag.toInt() + "=*", expression.toString());
   }
 
   @Test
@@ -45,6 +51,7 @@ public class ParseTest extends FilterTest {
     FilterExpression expression = parser.parse("highway!=residential");
     assertTrue(expression instanceof TagFilterNotEquals);
     OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
+    assertEquals(tag, ((TagFilterNotEquals) expression).getTag());
     assertEquals("tag:" + tag.getKey() + "!=" + tag.getValue(), expression.toString());
   }
 
@@ -52,8 +59,9 @@ public class ParseTest extends FilterTest {
   public void testTagFilterNotEqualsAny() {
     FilterExpression expression = parser.parse("highway!=*");
     assertTrue(expression instanceof TagFilterNotEqualsAny);
-    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
-    assertEquals("tag:" + tag.getKey() + "!=*", expression.toString());
+    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
+    assertEquals(tag, ((TagFilterNotEqualsAny) expression).getTag());
+    assertEquals("tag:" + tag.toInt() + "!=*", expression.toString());
   }
 
   @Test
@@ -62,6 +70,8 @@ public class ParseTest extends FilterTest {
     assertTrue(expression instanceof TypeFilter);
     assertEquals(OSMType.NODE, ((TypeFilter) expression).getType());
     assertEquals("type:node", expression.toString());
+    assertEquals(OSMType.WAY, ((TypeFilter) parser.parse("type:way")).getType());
+    assertEquals(OSMType.RELATION, ((TypeFilter) parser.parse("type:relation")).getType());
   }
 
   @Test
@@ -86,6 +96,11 @@ public class ParseTest extends FilterTest {
   public void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression instanceof GeometryTypeFilter);
+    assertEquals(GeometryType.POINT, ((GeometryTypeFilter) expression).getGeometryType());
+    assertEquals(
+        Collections.singleton(OSMType.NODE),
+        ((GeometryTypeFilter) expression).getOSMTypes()
+    );
     assertEquals("geometry:point", expression.toString());
   }
 
@@ -93,6 +108,11 @@ public class ParseTest extends FilterTest {
   public void testGeometryTypeFilterLine() {
     FilterExpression expression = parser.parse("geometry:line");
     assertTrue(expression instanceof GeometryTypeFilter);
+    assertEquals(GeometryType.LINE, ((GeometryTypeFilter) expression).getGeometryType());
+    assertEquals(
+        Collections.singleton(OSMType.WAY),
+        ((GeometryTypeFilter) expression).getOSMTypes()
+    );
     assertEquals("geometry:line", expression.toString());
   }
 
@@ -100,6 +120,11 @@ public class ParseTest extends FilterTest {
   public void testGeometryTypeFilterPolygon() {
     FilterExpression expression = parser.parse("geometry:polygon");
     assertTrue(expression instanceof GeometryTypeFilter);
+    assertEquals(GeometryType.POLYGON, ((GeometryTypeFilter) expression).getGeometryType());
+    assertEquals(
+        EnumSet.of(OSMType.WAY, OSMType.RELATION),
+        ((GeometryTypeFilter) expression).getOSMTypes()
+    );
     assertEquals("geometry:polygon", expression.toString());
   }
 
@@ -107,6 +132,11 @@ public class ParseTest extends FilterTest {
   public void testGeometryTypeFilterOther() {
     FilterExpression expression = parser.parse("geometry:other");
     assertTrue(expression instanceof GeometryTypeFilter);
+    assertEquals(GeometryType.OTHER, ((GeometryTypeFilter) expression).getGeometryType());
+    assertEquals(
+        Collections.singleton(OSMType.RELATION),
+        ((GeometryTypeFilter) expression).getOSMTypes()
+    );
     assertEquals("geometry:other", expression.toString());
   }
 }

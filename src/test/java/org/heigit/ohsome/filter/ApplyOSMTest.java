@@ -57,6 +57,10 @@ public class ApplyOSMTest extends FilterTest {
     assertFalse(expression.applyOSM(createTestEntityNode(
         "highway", "residential"
     )));
+    assertFalse(expression.applyOSM(createTestEntityNode(
+        "name", "FIXME"
+    )));
+    assertFalse(expression.applyOSM(createTestEntityNode()));
   }
 
   @Test
@@ -91,6 +95,7 @@ public class ApplyOSMTest extends FilterTest {
     assertFalse(expression.applyOSM(createTestEntityWay(new long[] {1,2,3,4})));
     assertFalse(expression.applyOSM(createTestEntityWay(new long[] {1,2,1})));
     assertTrue(expression.applyOSM(createTestEntityRelation("type", "multipolygon")));
+    assertTrue(expression.applyOSM(createTestEntityRelation("type", "boundary")));
     assertFalse(expression.applyOSM(createTestEntityRelation()));
     assertFalse(expression.applyOSM(createTestEntityNode()));
   }
