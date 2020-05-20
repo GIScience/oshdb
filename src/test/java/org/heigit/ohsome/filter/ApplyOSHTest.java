@@ -130,11 +130,28 @@ public class ApplyOSHTest extends FilterTest {
             "name", "FIXME"
         )
     )));
+    // no match, but OSH contains both tag keys because different versions have each one of them
+    assertTrue(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode(
+            "highway", "residential"
+        ),
+        createTestEntityNode(
+            "name", "FIXME"
+        )
+    )));
     // no match
     assertFalse(expression.applyOSH(createTestEntityNode(
         createTestEntityNode(
             "highway", "residential"
         )
+    )));
+    assertFalse(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode(
+            "name", ""
+        )
+    )));
+    assertFalse(expression.applyOSH(createTestEntityNode(
+        super.createTestEntityNode()
     )));
   }
 

@@ -57,6 +57,10 @@ public class ApplyOSMTest extends FilterTest {
     assertFalse(expression.applyOSM(createTestEntityNode(
         "highway", "residential"
     )));
+    assertFalse(expression.applyOSM(createTestEntityNode(
+        "name", "FIXME"
+    )));
+    assertFalse(expression.applyOSM(createTestEntityNode()));
   }
 
   @Test

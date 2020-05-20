@@ -59,6 +59,10 @@ public class ApplyOSMGeometryTest extends FilterTest {
         createTestEntityWay(new long[] {}, "name", "FIXME"),
         gf.createLineString()
     ));
+    assertFalse(expression.applyOSMGeometry(
+        createTestEntityNode(),
+        gf.createPoint()
+    ));
   }
 
   @Test
