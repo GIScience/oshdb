@@ -35,9 +35,12 @@ public class ApplyOSMGeometryTest extends FilterTest {
     OSMEntity validWay = createTestEntityWay(new long[]{1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(validWay, gf.createPolygon()));
     assertFalse(expression.applyOSMGeometry(validWay, gf.createLineString()));
-    OSMEntity validRelation = createTestEntityRelation("type", "multipolygon");
-    assertTrue(expression.applyOSMGeometry(validRelation, gf.createPolygon()));
-    assertFalse(expression.applyOSMGeometry(validRelation, gf.createGeometryCollection()));
+    OSMEntity validRelationA = createTestEntityRelation("type", "multipolygon");
+    assertTrue(expression.applyOSMGeometry(validRelationA, gf.createPolygon()));
+    assertFalse(expression.applyOSMGeometry(validRelationA, gf.createGeometryCollection()));
+    OSMEntity validRelationB = createTestEntityRelation("type", "boundary");
+    assertTrue(expression.applyOSMGeometry(validRelationB, gf.createPolygon()));
+    assertFalse(expression.applyOSMGeometry(validRelationB, gf.createGeometryCollection()));
   }
 
   @Test
