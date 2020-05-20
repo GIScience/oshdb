@@ -79,15 +79,16 @@ public class PbfBlob {
 		} else if (content.hasZlibData()) {
 			byte buf2[] = new byte[content.getRawSize()];
 			Inflater decompresser = new Inflater();
-			decompresser.setInput(content.getZlibData().toByteArray());
 			try {
+				decompresser.setInput(content.getZlibData().toByteArray());
 				decompresser.inflate(buf2);
+				assert (decompresser.finished());
 			} catch (DataFormatException e) {
 				e.printStackTrace();
 				throw new Error(e);
+			} finally {
+				decompresser.end();
 			}
-			assert (decompresser.finished());
-			decompresser.end();
 			data = ByteString.copyFrom(buf2);
 		}
 		return data;
