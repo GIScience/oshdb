@@ -1,3 +1,9 @@
+1.2.0-SNAPSHOT
+--------------
+
+* new filter: "tag key in value-list" operator (syntax: `tag in (list, of, values)`)
+* improve test coverage
+
 1.1.4
 -----
 
@@ -6,6 +12,7 @@
 
 1.1.3
 -----
+
 * switch to ohsome-parent module
 * replace local checkstyle config with ohsome group definitions
 * prepare for deployment to central

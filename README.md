@@ -61,6 +61,7 @@ Filters are defined in textual form. A filter expression can be composed out of 
 | `key=*` | matches all entites which have any tag with the given key | `addr:housenumber=*` |
 | `key!=value` | matches all entites which do not have this exact tag – the same as `not key=value` | `oneway!=yes` |
 | `key!=*` | matches all entites which do not have any tag with the given key – the same as `not key=*`  | `name!=*` |
+| `key in (valuelist)` | matches all entities with have a tag with the given key and one of the given comma separated values | `highway in (residential, living_street)` |
 | `type:osm-type` | matches all entites of the given osm type | `type:node` |
 | `geometry:geom-type` | matches anything which has a geometry of the given type (_point_, _line_, _polygon_, or _other_) | `geometry:polygon` |
 

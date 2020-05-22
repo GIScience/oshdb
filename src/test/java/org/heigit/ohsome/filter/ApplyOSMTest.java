@@ -42,6 +42,38 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
+  public void testTagFilterEqualsAnyOf() {
+    FilterExpression expression = parser.parse("highway in (residential, track)");
+    assertTrue(expression.applyOSM(createTestEntityNode("highway", "residential")));
+    assertTrue(expression.applyOSM(createTestEntityNode("highway", "track")));
+    assertFalse(expression.applyOSM(createTestEntityNode("building", "yes")));
+    assertFalse(expression.applyOSM(createTestEntityNode("name", "FIXME")));
+    assertFalse(expression.applyOSM(createTestEntityNode()));
+    assertFalse(expression.applyOSM(createTestEntityNode(
+        "building", "yes",
+        "highway", "primary",
+        "name", "FIXME"
+    )));
+    assertFalse(expression.applyOSM(createTestEntityNode("highway", "primary")));
+  }
+
+  @Test
+  public void testTagFilterNotEqualsAnyOf() {
+    FilterExpression expression = parser.parse("highway in (residential, track)").negate();
+    assertFalse(expression.applyOSM(createTestEntityNode("highway", "residential")));
+    assertFalse(expression.applyOSM(createTestEntityNode("highway", "track")));
+    assertTrue(expression.applyOSM(createTestEntityNode("building", "yes")));
+    assertTrue(expression.applyOSM(createTestEntityNode("name", "FIXME")));
+    assertTrue(expression.applyOSM(createTestEntityNode()));
+    assertTrue(expression.applyOSM(createTestEntityNode(
+        "building", "yes",
+        "highway", "primary",
+        "name", "FIXME"
+    )));
+    assertTrue(expression.applyOSM(createTestEntityNode("highway", "primary")));
+  }
+
+  @Test
   public void testTypeFilter() {
     assertTrue(parser.parse("type:node").applyOSM(createTestEntityNode()));
     assertFalse(parser.parse("type:way").applyOSM(createTestEntityNode()));

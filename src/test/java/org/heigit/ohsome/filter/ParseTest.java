@@ -3,6 +3,7 @@ package org.heigit.ohsome.filter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
@@ -62,6 +63,58 @@ public class ParseTest extends FilterTest {
     OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
     assertEquals(tag, ((TagFilterNotEqualsAny) expression).getTag());
     assertEquals("tag:" + tag.toInt() + "!=*", expression.toString());
+  }
+
+  @Test
+  public void testTagFilterEqualsAnyOf() {
+    FilterExpression expression = parser.parse("highway in (residential, track)");
+    assertTrue(expression instanceof TagFilterEqualsAnyOf);
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    //noinspection RegExpDuplicateAlternationBranch - false positive by intellij
+    assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "in("
+        + tag1.getValue() + "," + tag2.getValue() + "|"
+        + tag2.getValue() + "," + tag1.getValue() + ")"
+    ));
+  }
+
+  @Test
+  public void testTagFilterNotEqualsAnyOf() {
+    FilterExpression expression = parser.parse("highway in (residential, track)").negate();
+    assertTrue(expression instanceof TagFilterNotEqualsAnyOf);
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    //noinspection RegExpDuplicateAlternationBranch - false positive by intellij
+    assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "not-in("
+        + tag1.getValue() + "," + tag2.getValue() + "|"
+        + tag2.getValue() + "," + tag1.getValue() + ")"
+    ));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testTagFilterEqualsAnyOfCheckEmpty() {
+    new TagFilterEqualsAnyOf(Collections.emptyList());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testTagFilterNotEqualsAnyOfCheckEmpty() {
+    new TagFilterNotEqualsAnyOf(Collections.emptyList());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testTagFilterEqualsAnyOfCheckMixed() {
+    new TagFilterEqualsAnyOf(Arrays.asList(
+        tagTranslator.getOSHDBTagOf("highway", "residential"),
+        tagTranslator.getOSHDBTagOf("building", "yes")
+    ));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testTagFilterNotEqualsAnyOfCheckMixed() {
+    new TagFilterNotEqualsAnyOf(Arrays.asList(
+        tagTranslator.getOSHDBTagOf("highway", "residential"),
+        tagTranslator.getOSHDBTagOf("building", "yes")
+    ));
   }
 
   @Test

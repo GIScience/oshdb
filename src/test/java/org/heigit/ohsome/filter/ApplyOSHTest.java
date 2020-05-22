@@ -110,6 +110,33 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
+  public void testTagFilterEqualsAnyOf() throws IOException {
+    FilterExpression expression = parser.parse("highway in (residential, track)");
+    // matching tag
+    assertTrue(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("highway", "residential")
+    )));
+    // matching tag key only
+    assertTrue(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("highway", "primary")
+    )));
+    // no matching key
+    assertFalse(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("building", "yes")
+    )));
+    // one exact matching in versions
+    assertTrue(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("building", "yes"),
+        createTestEntityNode("highway", "track")
+    )));
+    // one partial matching in versions – should return true, even though no version actually matches
+    assertTrue(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("building", "yes"),
+        createTestEntityNode("highway", "primary")
+    )));
+  }
+
+  @Test
   public void testTypeFilter() throws IOException {
     assertTrue(parser.parse("type:node").applyOSH(createTestEntityNode(
         super.createTestEntityNode()
