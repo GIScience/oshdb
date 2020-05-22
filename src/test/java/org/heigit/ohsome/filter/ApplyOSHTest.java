@@ -6,8 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
 import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
@@ -94,10 +92,21 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEqualsAny() {
+  public void testTagFilterNotEqualsAny() throws IOException {
     FilterExpression expression = parser.parse("highway!=*");
-    assertFalse(expression.applyOSM(createTestEntityNode("highway", "track")));
-    assertTrue(expression.applyOSM(createTestEntityNode("building", "yes")));
+    // matching tag
+    assertFalse(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("highway", "residential"))
+    ));
+    // 2 versions where one matches
+    assertTrue(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("highway", "residential"),
+        createTestEntityNode("building", "yes"))
+    ));
+    // no match
+    assertTrue(expression.applyOSH(createTestEntityNode(
+        createTestEntityNode("building", "yes"))
+    ));
   }
 
   @Test
