@@ -137,6 +137,26 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
+  public void testIdEqualsFilter() throws IOException {
+    assertTrue(parser.parse("id:1").applyOSH(createTestEntityNode(
+        super.createTestEntityNode()
+    )));
+    assertFalse(parser.parse("id:2").applyOSH(createTestEntityNode(
+        super.createTestEntityNode()
+    )));
+  }
+
+  @Test
+  public void testIdNotEqualsFilter() throws IOException {
+    assertFalse(parser.parse("id:1").negate().applyOSH(createTestEntityNode(
+        super.createTestEntityNode()
+    )));
+    assertTrue(parser.parse("id:2").negate().applyOSH(createTestEntityNode(
+        super.createTestEntityNode()
+    )));
+  }
+
+  @Test
   public void testTypeFilter() throws IOException {
     assertTrue(parser.parse("type:node").applyOSH(createTestEntityNode(
         super.createTestEntityNode()

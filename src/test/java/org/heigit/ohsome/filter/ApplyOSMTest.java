@@ -1,5 +1,6 @@
 package org.heigit.ohsome.filter;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -71,6 +72,18 @@ public class ApplyOSMTest extends FilterTest {
         "name", "FIXME"
     )));
     assertTrue(expression.applyOSM(createTestEntityNode("highway", "primary")));
+  }
+
+  @Test
+  public void testIdEqualsFilter() {
+    assertTrue(parser.parse("id:1").applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:2").applyOSM(createTestEntityNode()));
+  }
+
+  @Test
+  public void testIdNotEqualsFilter() {
+    assertFalse(parser.parse("id:1").negate().applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:2").negate().applyOSM(createTestEntityNode()));
   }
 
   @Test

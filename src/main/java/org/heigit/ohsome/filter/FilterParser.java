@@ -14,7 +14,9 @@ import org.jparsec.OperatorTable;
 import org.jparsec.Parser;
 import org.jparsec.Parsers;
 import org.jparsec.Scanners;
+import org.jparsec.Terminals.IntegerLiteral;
 import org.jparsec.Terminals.StringLiteral;
+import org.jparsec.Tokens.Fragment;
 import org.jparsec.pattern.Patterns;
 
 /**
@@ -41,6 +43,7 @@ public class FilterParser {
         .toScanner("KEY_STRING (a-z, 0-9, : or -)")
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
+    final Parser<Long> number = IntegerLiteral.TOKENIZER.map(Fragment::text).map(Long::valueOf);
 
     final Parser<TagFilter.Type> equals = Patterns.string("=")
         .toScanner("EQUALS (=)")
@@ -49,6 +52,7 @@ public class FilterParser {
         .toScanner("NOT_EQUALS (!=)")
         .map(ignored -> TagFilter.Type.NOT_EQUALS);
     final Parser<Void> colon = Patterns.string(":").toScanner("COLON (:)");
+    final Parser<Void> id = Patterns.string("id").toScanner("id");
     final Parser<Void> type = Patterns.string("type").toScanner("type");
     final Parser<OSMType> node = Patterns.string("node").toScanner("node")
         .map(ignored -> OSMType.NODE);
@@ -98,6 +102,13 @@ public class FilterParser {
           values.forEach(value -> tags.add(tt.getOSHDBTagOf(key, value)));
           return new TagFilterEqualsAnyOf(tags);
         });
+    final Parser<FilterExpression> idFilter = Parsers.sequence(
+        id,
+        whitespace,
+        colon,
+        whitespace,
+        number)
+        .map(IdEqualsFilter::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
         whitespace,
@@ -116,6 +127,7 @@ public class FilterParser {
     final Parser<FilterExpression> filter = Parsers.or(
         tagFilter,
         multiTagFilter,
+        idFilter,
         typeFilter,
         geometryTypeFilter);
 
