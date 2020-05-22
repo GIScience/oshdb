@@ -17,15 +17,12 @@ public class TagFilterEqualsAnyOf extends TagFilterAnyOf {
 
   @Override
   public boolean applyOSM(OSMEntity e) {
-    if (!e.hasTagKey(this.keyId)) {
-      return false;
-    }
     for (OSHDBTag entityTag : e.getTags()) {
       int entityTagKey = entityTag.getKey();
-      if (entityTagKey == keyId && this.tags.contains(entityTag)) {
-        return true;
+      if (entityTagKey == keyId) {
+        return this.tags.contains(entityTag);
       } else if (entityTagKey > keyId) {
-        break;
+        return false;
       }
     }
     return false;
