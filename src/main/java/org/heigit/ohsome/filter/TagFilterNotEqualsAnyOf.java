@@ -11,7 +11,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 /**
  * A tag filter which executes a "key not in (value1, value2, …)" check.
  */
-public class TagFilterNotEqualsAnyOf implements TagFilter {
+public class TagFilterNotEqualsAnyOf implements Filter {
   private final Set<OSHDBTag> tags;
   private final int keyId;
 

@@ -12,7 +12,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 /**
  * A tag filter which executes a "key in (value1, value2, …)" check.
  */
-public class TagFilterEqualsAnyOf implements TagFilter {
+public class TagFilterEqualsAnyOf implements Filter {
   private final Set<OSHDBTag> tags;
   private final int keyId;
 

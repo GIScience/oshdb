@@ -4,16 +4,15 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.heigit.ohsome</groupId>
   <artifactId>ohsome-filter</artifactId>
   <version>1.2-SNAPSHOT</version>
   <description>A flexible filtering library for OSM entities.</description>
   <packaging>jar</packaging>
 
   <parent>
-    <groupId>org.heigit.bigspatialdata</groupId>
-    <artifactId>bigspatialdata-parent</artifactId>
-    <version>1.2</version>
+    <groupId>org.heigit.ohsome</groupId>
+    <artifactId>ohsome-parent</artifactId>
+    <version>2.2</version>
   </parent>
 
   <dependencies>
@@ -34,6 +33,7 @@
       <artifactId>oshdb-util</artifactId>
       <version>${oshdb.version}</version>
     </dependency>
+    <!-- jetbrains annotations (for method contracts) -->
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
@@ -46,7 +46,7 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- H2 database -->
+    <!-- H2 database (for tests) -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
@@ -63,36 +63,65 @@
   </dependencies>
 
   <properties>
-    <oshdb.version>[0.5,0.6)</oshdb.version>
-    <jparsec.version>3.1</jparsec.version>
-    <jetbrains-annotations.version>13.0</jetbrains-annotations.version>
-    <junit.version>4.12</junit.version>
     <h2.version>1.4.193</h2.version>
+    <jacoco.version>0.8.5</jacoco.version>
+    <jetbrains-annotations.version>13.0</jetbrains-annotations.version>
+    <jparsec.version>3.1</jparsec.version>
+    <junit.version>4.12</junit.version>
+    <mavenpmd.version>3.11.0</mavenpmd.version>
+    <oshdb.version>[0.5.2,0.6)</oshdb.version>
+    <pmd.version>6.11.0</pmd.version>
     <slf4j-log4j.version>1.7.25</slf4j-log4j.version>
-    <mavencheckstyle.version>3.1.0</mavencheckstyle.version>
-    <checkstyle.version>8.29</checkstyle.version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
-
 
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${mavencheckstyle.version}</version>
-        <configuration>
-          <configLocation>checkstyle-google-oshdb.xml</configLocation>
-        </configuration>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>${mavenpmd.version}</version>
         <dependencies>
           <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>${checkstyle.version}</version>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-core</artifactId>
+            <version>${pmd.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-java</artifactId>
+            <version>${pmd.version}</version>
           </dependency>
         </dependencies>
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+              <execution>
+                <id>default-prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>default-report</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

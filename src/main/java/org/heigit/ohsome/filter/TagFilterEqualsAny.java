@@ -14,11 +14,7 @@ public class TagFilterEqualsAny implements TagFilter {
     this.tag = tag;
   }
 
-  /**
-   * Returns the OSM tag of this filter.
-   *
-   * @return the OSM tag of this filter.
-   */
+  @Override
   public OSHDBTagKey getTag() {
     return this.tag;
   }
@@ -40,6 +36,6 @@ public class TagFilterEqualsAny implements TagFilter {
 
   @Override
   public String toString() {
-    return "tag:" + tag.toInt() + "!=*";
+    return "tag:" + tag.toInt() + "=*";
   }
 }

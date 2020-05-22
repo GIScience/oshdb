@@ -1,3 +1,25 @@
+1.1.4
+-----
+
+* fix a bug triggered when serializing a geometry-type filter
+* add license files (LGPL)
+
+1.1.3
+-----
+* switch to ohsome-parent module
+* replace local checkstyle config with ohsome group definitions
+* prepare for deployment to central
+
+1.1.2
+-----
+
+* Fix more spelling of keywords in error messages.
+
+1.1.1
+-----
+
+* Improve documentation by adding some examples to readme.
+
 1.1.0
 -----
 

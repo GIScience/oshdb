@@ -26,7 +26,7 @@ import org.jparsec.pattern.Patterns;
  * <p>Example: "type:way and highway=residential and not (lit=yes or lit=automatic)"</p>
  */
 public class FilterParser {
-  private Parser<FilterExpression> parser;
+  private final Parser<FilterExpression> parser;
 
   /**
    * Creates a new parser for OSM entity filters.
@@ -38,35 +38,34 @@ public class FilterParser {
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
     final Parser<String> keystr = Patterns.regex("[a-zA-Z_0-9:-]+")
-        .toScanner("KEY_STRING")
+        .toScanner("KEY_STRING (a-z, 0-9, : or -)")
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
 
-    final Parser<String> equals = Patterns.string("=").toScanner("EQUALS")
-        .map(ignored -> "=");
-    final Parser<String> notEquals = Patterns.string("!=").toScanner("NOT_EQUALS")
-        .map(ignored -> "!=");
-    final Parser<String> colon = Patterns.string(":").toScanner("COLON")
-        .map(ignored -> ":");
-    final Parser<String> type = Patterns.string("type").toScanner("TYPE")
-        .map(ignored -> "type");
-    final Parser<OSMType> node = Patterns.string("node").toScanner("NODE")
+    final Parser<TagFilter.Type> equals = Patterns.string("=")
+        .toScanner("EQUALS (=)")
+        .map(ignored -> TagFilter.Type.EQUALS);
+    final Parser<TagFilter.Type> notEquals = Patterns.string("!=")
+        .toScanner("NOT_EQUALS (!=)")
+        .map(ignored -> TagFilter.Type.NOT_EQUALS);
+    final Parser<Void> colon = Patterns.string(":").toScanner("COLON (:)");
+    final Parser<Void> type = Patterns.string("type").toScanner("type");
+    final Parser<OSMType> node = Patterns.string("node").toScanner("node")
         .map(ignored -> OSMType.NODE);
-    final Parser<OSMType> way = Patterns.string("way").toScanner("WAY")
+    final Parser<OSMType> way = Patterns.string("way").toScanner("way")
         .map(ignored -> OSMType.WAY);
-    final Parser<OSMType> relation = Patterns.string("relation").toScanner("RELATION")
+    final Parser<OSMType> relation = Patterns.string("relation").toScanner("relation")
         .map(ignored -> OSMType.RELATION);
-    final Parser<String> geometry = Patterns.string("geometry").toScanner("GEOMETRY")
-        .map(ignored -> "geometry");
-    final Parser<GeometryType> point = Patterns.string("point").toScanner("POINT")
+    final Parser<Void> geometry = Patterns.string("geometry").toScanner("geometry");
+    final Parser<GeometryType> point = Patterns.string("point").toScanner("point")
         .map(ignored -> GeometryType.POINT);
-    final Parser<GeometryType> line = Patterns.string("line").toScanner("LINE")
+    final Parser<GeometryType> line = Patterns.string("line").toScanner("line")
         .map(ignored -> GeometryType.LINE);
-    final Parser<GeometryType> polygon = Patterns.string("polygon").toScanner("POLYGON")
+    final Parser<GeometryType> polygon = Patterns.string("polygon").toScanner("polygon")
         .map(ignored -> GeometryType.POLYGON);
-    final Parser<GeometryType> other = Patterns.string("other").toScanner("OTHER")
+    final Parser<GeometryType> other = Patterns.string("other").toScanner("other")
         .map(ignored -> GeometryType.OTHER);
-    final Parser<String> star = Patterns.string("*").toScanner("STAR")
+    final Parser<String> star = Patterns.string("*").toScanner("STAR (*)")
         .map(ignored -> "*");
 
     final Parser<FilterExpression> tagFilter = Parsers.sequence(
@@ -125,21 +124,18 @@ public class FilterParser {
     final Parser.Reference<FilterExpression> ref = Parser.newReference();
     final Parser<FilterExpression> unit = ref.lazy().between(parensStart, parensEnd)
         .or(filter);
-    final Parser<String> and = whitespace
-        .followedBy(Patterns.string("and").toScanner("AND"))
-        .followedBy(whitespace)
-        .map(ignored -> "or");
-    final Parser<String> or = whitespace
-        .followedBy(Patterns.string("or").toScanner("OR"))
-        .followedBy(whitespace)
-        .map(ignored -> "or");
-    final Parser<String> not = whitespace
-        .followedBy(Patterns.string("not").toScanner("NOT"))
-        .followedBy(whitespace)
-        .map(ignored -> "not");
+    final Parser<Void> and = whitespace
+        .followedBy(Patterns.string("and").toScanner("and"))
+        .followedBy(whitespace);
+    final Parser<Void> or = whitespace
+        .followedBy(Patterns.string("or").toScanner("or"))
+        .followedBy(whitespace);
+    final Parser<Void> not = whitespace
+        .followedBy(Patterns.string("not").toScanner("not"))
+        .followedBy(whitespace);
     final Parser<FilterExpression> parser = new OperatorTable<FilterExpression>()
-        .infixl(or.retn((a, b) -> BinaryOperator.fromOperator(a, "or", b)), 10)
-        .infixl(and.retn((a, b) -> BinaryOperator.fromOperator(a, "and", b)), 20)
+        .infixl(or.retn((a, b) -> BinaryOperator.fromOperator(a, BinaryOperator.Type.OR, b)), 10)
+        .infixl(and.retn((a, b) -> BinaryOperator.fromOperator(a, BinaryOperator.Type.AND, b)), 20)
         .prefix(not.retn(FilterExpression::negate), 50)
         .build(unit);
     ref.set(parser);
