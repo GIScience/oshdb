@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 
@@ -15,13 +16,17 @@ public class TagFilterNotEqualsAnyOf implements Filter {
   private final Set<OSHDBTag> tags;
   private final int keyId;
 
-  TagFilterNotEqualsAnyOf(Collection<OSHDBTag> tags) {
+  TagFilterNotEqualsAnyOf(@Nonnull Collection<OSHDBTag> tags) {
     Optional<OSHDBTag> firstTag = tags.stream().findFirst();
     if (!firstTag.isPresent()) {
       throw new IllegalStateException("list of tags must not be empty in a key in (values) filter");
     } else {
       this.keyId = firstTag.get().getKey();
       this.tags = new HashSet<>(tags);
+    }
+    if (!tags.stream().allMatch(tag -> tag.getKey() == this.keyId)) {
+      throw new IllegalStateException(
+          "list of tags must all share the same tag key in a key in (values) filter");
     }
   }
 
@@ -48,7 +53,7 @@ public class TagFilterNotEqualsAnyOf implements Filter {
 
   @Override
   public String toString() {
-    return "tag:" + keyId + "in" + tags.stream().map(OSHDBTag::getValue).map(String::valueOf)
+    return "tag:" + keyId + "not-in" + tags.stream().map(OSHDBTag::getValue).map(String::valueOf)
         .collect(Collectors.joining(","));
   }
 }

@@ -2,8 +2,10 @@ package org.heigit.ohsome.filter;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.ohsome.filter.GeometryTypeFilter.GeometryType;
@@ -60,6 +62,24 @@ public class NegateTest extends FilterTest {
     assertTrue(expression instanceof TagFilterNotEqualsAny);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterEqualsAny);
+  }
+
+  @Test
+  public void testTagFilterEqualsAnyOf() {
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    FilterExpression expression = new TagFilterEqualsAnyOf(Arrays.asList(tag1, tag2));
+    FilterExpression negation = expression.negate();
+    assertTrue(negation instanceof TagFilterNotEqualsAnyOf);
+  }
+
+  @Test
+  public void testTagFilterNotEqualsAnyOf() {
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    FilterExpression expression = new TagFilterNotEqualsAnyOf(Arrays.asList(tag1, tag2));
+    FilterExpression negation = expression.negate();
+    assertTrue(negation instanceof TagFilterEqualsAnyOf);
   }
 
   private void testAllOSMTypes(FilterExpression expression, FilterExpression negation) {

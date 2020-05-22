@@ -68,6 +68,26 @@ public class ParseTest extends FilterTest {
   public void testTagFilterEqualsAnyOf() {
     FilterExpression expression = parser.parse("highway in (residential, track)");
     assertTrue(expression instanceof TagFilterEqualsAnyOf);
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    //noinspection RegExpDuplicateAlternationBranch - false positive by intellij
+    assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "in("
+        + tag1.getValue() + "," + tag2.getValue() + "|"
+        + tag2.getValue() + "," + tag1.getValue() + ")"
+    ));
+  }
+
+  @Test
+  public void testTagFilterNotEqualsAnyOf() {
+    FilterExpression expression = parser.parse("highway in (residential, track)").negate();
+    assertTrue(expression instanceof TagFilterNotEqualsAnyOf);
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    //noinspection RegExpDuplicateAlternationBranch - false positive by intellij
+    assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "not-in("
+        + tag1.getValue() + "," + tag2.getValue() + "|"
+        + tag2.getValue() + "," + tag1.getValue() + ")"
+    ));
   }
 
   @Test
