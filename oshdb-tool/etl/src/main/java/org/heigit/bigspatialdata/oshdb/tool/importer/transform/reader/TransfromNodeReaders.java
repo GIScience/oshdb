@@ -34,12 +34,16 @@ public class TransfromNodeReaders implements Closeable {
     next = new ArrayList<>(path.length);
     readers = new ArrayList<>(path.length);
     for(Path p : path){
-      try(TransformNodeReader reader = new TransformNodeReader(p)){
-        readers.add(reader);
+      TransformNodeReader reader = new TransformNodeReader(p);
+      readers.add(reader);
+      try {
         if(reader.hasNext()){
           reader.next();
           queue.add(reader);
         }
+      }catch(RuntimeException e){
+        reader.close();
+        throw e;
       }
     }
   }

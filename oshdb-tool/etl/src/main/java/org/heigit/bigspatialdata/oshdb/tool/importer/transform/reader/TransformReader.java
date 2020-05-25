@@ -76,6 +76,9 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
       readHeader();
       return this;
     } catch (IOException e) {
+      try {
+         raf.close();
+      }catch (Exception e2) { }
       throw new RuntimeException(e);
     }
    
