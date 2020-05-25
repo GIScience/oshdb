@@ -84,10 +84,9 @@ public class FilterParser {
               : new OSMTag(key, value);
           return TagFilter.fromSelector(selector, tag, tt);
         });
-    final Parser<String> in = whitespace
-        .followedBy(Patterns.string("in").toScanner("IN"))
-        .followedBy(whitespace)
-        .map(ignored -> "in");
+    final Parser<Void> in = whitespace
+        .followedBy(Patterns.string("in").toScanner("in"))
+        .followedBy(whitespace);
     final Parser<List<String>> stringSequence = Parsers.sequence(
         Scanners.isChar('('),
         string.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
@@ -109,6 +108,35 @@ public class FilterParser {
         whitespace,
         number)
         .map(IdFilterEquals::new);
+    final Parser<List<Long>> numberSequence = Parsers.sequence(
+        Scanners.isChar('('),
+        number.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
+        Scanners.isChar(')'),
+        (ignored, list, ignored2) -> list);
+    final Parser<FilterExpression> multiIdFilter = Parsers.sequence(
+        id,
+        whitespace,
+        colon,
+        whitespace,
+        numberSequence)
+        .map(IdFilterEqualsAnyOf::new);
+    final Parser<Void> dotdot = whitespace
+        .followedBy(Patterns.string("..").toScanner("DOT-DOT (..)"))
+        .followedBy(whitespace);
+    final Parser<FilterExpression> rangeIdFilter = Parsers.sequence(
+        id,
+        whitespace,
+        colon,
+        whitespace.followedBy(Scanners.isChar('(')).followedBy(whitespace),
+        Parsers.or(
+            Parsers.sequence(number, dotdot, number,
+                (min, ignored, max) -> new IdFilterRange.IdRange(min, max)),
+            Parsers.sequence(number, dotdot,
+                (min, ignored2) -> new IdFilterRange.IdRange(min, Long.MAX_VALUE)),
+            Parsers.sequence(dotdot, number,
+                (ignored, max) -> new IdFilterRange.IdRange(Long.MIN_VALUE, max))
+        ).followedBy(whitespace).followedBy(Scanners.isChar(')')))
+        .map(IdFilterRange::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
         whitespace,
@@ -128,6 +156,8 @@ public class FilterParser {
         tagFilter,
         multiTagFilter,
         idFilter,
+        multiIdFilter,
+        rangeIdFilter,
         typeFilter,
         geometryTypeFilter);
 
