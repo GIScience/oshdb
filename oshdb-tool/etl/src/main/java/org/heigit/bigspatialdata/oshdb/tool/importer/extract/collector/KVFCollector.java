@@ -157,12 +157,16 @@ public class KVFCollector implements Iterable<KVF> {
   public Iterator<KVF> iterator() {
     List<Iterator<KVF>> iters = new ArrayList<>(splits.size() + key2Frequency.size());
     splits.stream().map(file -> {
+      DataInputStream dataInput = null;
       try {
         InputStream input = inputStreamFunction.apply(new FileInputStream(file));
-        DataInputStream dataInput = new DataInputStream(new BufferedInputStream(input));
+        dataInput = new DataInputStream(new BufferedInputStream(input));
         return KVFFileReader.of(dataInput);
       } catch (IOException e) {
         e.printStackTrace();
+        if(dataInput != null) {
+          try { dataInput.close();}catch(Exception e2) {}
+        }
         throw new RuntimeException(e.getMessage());
       }
     }).forEach(iters::add);

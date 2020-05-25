@@ -185,12 +185,16 @@ public class RoleCollector implements Iterable<Role> {
   public Iterator<Role> iterator() {
     List<Iterator<Role>> iters = new ArrayList<>(tmpFiles.size() + role2Frequency.size());
     tmpFiles.stream().map(file -> {
+      DataInputStream dataInput = null;
       try {
         InputStream input = inputStreamFunction.apply(new FileInputStream(file));
-        DataInputStream dataInput = new DataInputStream(new BufferedInputStream(input));
+        dataInput = new DataInputStream(new BufferedInputStream(input));
         return RoleFileReader.of(dataInput);
       } catch (IOException e) {
         e.printStackTrace();
+        if(dataInput != null) {
+          try { dataInput.close();}catch(Exception e2) {}
+        }
         throw new RuntimeException(e.getMessage());
       }
     }).forEach(iters::add);
