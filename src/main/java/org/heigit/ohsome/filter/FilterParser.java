@@ -108,7 +108,7 @@ public class FilterParser {
         colon,
         whitespace,
         number)
-        .map(IdEqualsFilter::new);
+        .map(IdFilterEquals::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
         whitespace,

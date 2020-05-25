@@ -120,16 +120,16 @@ public class ParseTest extends FilterTest {
   @Test
   public void testIdEqualsFilter() {
     FilterExpression expression = parser.parse("id:123");
-    assertTrue(expression instanceof IdEqualsFilter);
-    assertEquals(123, ((IdEqualsFilter) expression).getId());
+    assertTrue(expression instanceof IdFilterEquals);
+    assertEquals(123, ((IdFilterEquals) expression).getId());
     assertEquals("id:123", expression.toString());
   }
 
   @Test
   public void testIdNotEqualsFilter() {
     FilterExpression expression = parser.parse("id:123").negate();
-    assertTrue(expression instanceof IdNotEqualsFilter);
-    assertEquals(123, ((IdNotEqualsFilter) expression).getId());
+    assertTrue(expression instanceof IdFilterNotEquals);
+    assertEquals(123, ((IdFilterNotEquals) expression).getId());
     assertEquals("not-id:123", expression.toString());
   }
 

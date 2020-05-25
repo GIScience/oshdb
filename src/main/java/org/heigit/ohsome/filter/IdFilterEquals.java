@@ -7,10 +7,10 @@ import org.jetbrains.annotations.Contract;
 /**
  * A filter which selects OSM entities by their id.
  */
-public class IdEqualsFilter implements Filter {
+public class IdFilterEquals implements Filter {
   private final long id;
 
-  IdEqualsFilter(long id) {
+  IdFilterEquals(long id) {
     this.id = id;
   }
 
@@ -36,7 +36,7 @@ public class IdEqualsFilter implements Filter {
 
   @Override
   public FilterExpression negate() {
-    return new IdNotEqualsFilter(this.id);
+    return new IdFilterNotEquals(this.id);
   }
 
   @Override
