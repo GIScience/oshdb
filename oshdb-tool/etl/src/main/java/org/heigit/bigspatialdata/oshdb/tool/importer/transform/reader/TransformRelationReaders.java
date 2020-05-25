@@ -32,11 +32,12 @@ public class TransformRelationReaders implements Closeable {
     next = new ArrayList<>(path.length);
     readers = new ArrayList<>(path.length);
     for(Path p : path){
-      TransformRelationReader reader = new TransformRelationReader(p);
-      readers.add(reader);
-      if(reader.hasNext()){
-        reader.next();
-        queue.add(reader);
+      try(TransformRelationReader reader = new TransformRelationReader(p)){
+        readers.add(reader);
+        if(reader.hasNext()){
+          reader.next();
+          queue.add(reader);
+        }
       }
     }
   }

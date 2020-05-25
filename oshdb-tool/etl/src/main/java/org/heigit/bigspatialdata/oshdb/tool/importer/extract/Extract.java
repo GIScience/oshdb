@@ -267,8 +267,9 @@ public class Extract {
     }
 
     try (
-        OutputStream os = output
-            .apply(new BufferedOutputStream(new FileOutputStream(workDirectory.resolve("extract_keys").toFile())));
+        FileOutputStream fs = new FileOutputStream(workDirectory.resolve("extract_keys").toFile());
+        BufferedOutputStream bs = new BufferedOutputStream(fs);
+        OutputStream os = output.apply(fs);
         DataOutputStream keyValuesDataOutput = new DataOutputStream(os)) {
       keyValuesDataOutput.writeInt(keys.size());
       final int keyCount = (int) Streams.stream(ExternalSort.of((a, b) -> {

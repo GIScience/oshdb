@@ -34,11 +34,12 @@ public class TransformWayReaders implements Closeable {
     next = new ArrayList<>(path.length);
     readers = new ArrayList<>(path.length);
     for(Path p : path){
-      TransformWayReader reader = new TransformWayReader(p);
-      readers.add(reader);
-      if(reader.hasNext()){
-        reader.next();
-        queue.add(reader);
+      try(TransformWayReader reader = new TransformWayReader(p)){
+        readers.add(reader);
+        if(reader.hasNext()){
+          reader.next();
+          queue.add(reader);
+        }
       }
     }
   }
