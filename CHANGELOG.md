@@ -5,6 +5,10 @@ Changelog
 
 * (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
 
+## 0.5.9
+
+* update Ignite to version 2.8.0
+
 ## 0.5.8
 
 * fix a regression in 0.5.7 when using oshdb on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. #235
@@ -34,7 +38,7 @@ Changelog
 
 ## 0.5.3
 
-* update ignite version to 2.7.5
+* update Ignite to version 2.7.5
 
 ## 0.5.2
 
