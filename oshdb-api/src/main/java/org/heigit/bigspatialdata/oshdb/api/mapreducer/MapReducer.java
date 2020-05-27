@@ -181,6 +181,17 @@ public abstract class MapReducer<X> implements
   @NotNull
   protected abstract MapReducer<X> copy();
 
+  private void close() {
+    if (this.tagTranslator != null) {
+      try {
+        this.tagTranslator.close();
+        this.tagTranslator = null;
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
   // -----------------------------------------------------------------------------------------------
   // "Setting" methods and associated internal helpers
   // -----------------------------------------------------------------------------------------------
@@ -467,7 +478,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
-    OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf(key);
+    OSHDBTagKey keyId = ret.getTagTranslator().getOSHDBTagKeyOf(key);
     if (!keyId.isPresentInKeytables()) {
       LOG.warn("Tag key {} not found. No data will match this filter.", key.toString());
       ret.preFilters.add(ignored -> false);
@@ -502,7 +513,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTag tag) {
     MapReducer<X> ret = this.copy();
-    OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(tag);
+    OSHDBTag keyValueId = ret.getTagTranslator().getOSHDBTagOf(tag);
     if (!keyValueId.isPresentInKeytables()) {
       LOG.warn("Tag {}={} not found. No data will match this filter.",
           tag.getKey(), tag.getValue());
@@ -527,7 +538,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
-    OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
+    OSHDBTagKey oshdbKey = ret.getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables() || values.size() == 0) {
       LOG.warn((values.size() > 0 ? "Tag key {} not found." : "Empty tag value list.")
@@ -538,7 +549,7 @@ public abstract class MapReducer<X> implements
     }
     Set<Integer> valueIds = new HashSet<>();
     for (String value : values) {
-      OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(key, value);
+      OSHDBTag keyValueId = ret.getTagTranslator().getOSHDBTagOf(key, value);
       if (!keyValueId.isPresentInKeytables()) {
         LOG.warn("Tag {}={} not found. No data will match this tag value.", key, value);
       } else {
@@ -572,7 +583,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Pattern valuePattern) {
     MapReducer<X> ret = this.copy();
-    OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
+    OSHDBTagKey oshdbKey = ret.getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables()) {
       LOG.warn("Tag key {} not found. No data will match this filter.", key);
@@ -588,7 +599,7 @@ public abstract class MapReducer<X> implements
           return false;
         }
         if (tags[i] == keyId) {
-          String value = this.getTagTranslator().getOSMTagOf(keyId, tags[i + 1]).getValue();
+          String value = ret.getTagTranslator().getOSMTagOf(keyId, tags[i + 1]).getValue();
           return valuePattern.matcher(value).matches();
         }
       }
@@ -622,7 +633,7 @@ public abstract class MapReducer<X> implements
     for (OSMTagInterface tag : tags) {
       if (tag instanceof OSMTag) {
         OSMTag keyValue = (OSMTag) tag;
-        OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(keyValue);
+        OSHDBTag keyValueId = ret.getTagTranslator().getOSHDBTagOf(keyValue);
         if (!keyValueId.isPresentInKeytables()) {
           LOG.warn("Tag {}={} not found. No data will match this tag value.",
               keyValue.getKey(), keyValue.getValue());
@@ -631,7 +642,7 @@ public abstract class MapReducer<X> implements
           keyValueIds.add(keyValueId);
         }
       } else {
-        OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf((OSMTagKey) tag);
+        OSHDBTagKey keyId = ret.getTagTranslator().getOSHDBTagKeyOf((OSMTagKey) tag);
         preKeyIds.add(keyId.toInt());
         keyIds.add(keyId.toInt());
       }
@@ -985,6 +996,7 @@ public abstract class MapReducer<X> implements
       SerializableBinaryOperator<S> combiner)
       throws Exception {
     checkTimeout();
+    final S result;
     switch (this.grouping) {
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
@@ -994,23 +1006,25 @@ public abstract class MapReducer<X> implements
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
-            return this.mapReduceCellsOSMContribution(
+            result = this.mapReduceCellsOSMContribution(
                 contributionMapper,
                 identitySupplier,
                 accumulator,
                 combiner
             );
+            break;
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
-            return this.mapReduceCellsOSMEntitySnapshot(
+            result = this.mapReduceCellsOSMEntitySnapshot(
                 snapshotMapper,
                 identitySupplier,
                 accumulator,
                 combiner
             );
+            break;
           } else {
             throw new UnsupportedOperationException(
                 "Unimplemented data view: " + this.forClass.toString());
@@ -1018,7 +1032,7 @@ public abstract class MapReducer<X> implements
         } else {
           final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
           if (this.forClass.equals(OSMContribution.class)) {
-            return this.flatMapReduceCellsOSMContributionGroupedById(
+            result = this.flatMapReduceCellsOSMContributionGroupedById(
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
@@ -1026,8 +1040,9 @@ public abstract class MapReducer<X> implements
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
+            break;
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
-            return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
+            result = this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
@@ -1035,6 +1050,7 @@ public abstract class MapReducer<X> implements
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
+            break;
           } else {
             throw new UnsupportedOperationException(
                 "Unimplemented data view: " + this.forClass.toString());
@@ -1055,23 +1071,25 @@ public abstract class MapReducer<X> implements
           // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
               data -> flatMapper.apply(data);
-          return this.flatMapReduceCellsOSMContributionGroupedById(
+          result = this.flatMapReduceCellsOSMContributionGroupedById(
               contributionFlatMapper,
               identitySupplier,
               accumulator,
               combiner
           );
+          break;
         } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
           @SuppressWarnings("Convert2MethodRef")
           // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
               data -> flatMapper.apply(data);
-          return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
+          result = this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
               snapshotFlatMapper,
               identitySupplier,
               accumulator,
               combiner
           );
+          break;
         } else {
           throw new UnsupportedOperationException(
               "Unimplemented data view: " + this.forClass.toString());
@@ -1080,6 +1098,8 @@ public abstract class MapReducer<X> implements
         throw new UnsupportedOperationException(
             "Unsupported grouping: " + this.grouping.toString());
     }
+    this.close();
+    return result;
   }
 
   /**
@@ -1470,7 +1490,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public Stream<X> stream() throws Exception {
     try {
-      return this.streamInternal();
+      return this.streamInternal().onClose(this::close);
     } catch (UnsupportedOperationException e) {
       LOG.info("stream not directly supported by chosen backend, falling back to "
           + ".collect().stream()"

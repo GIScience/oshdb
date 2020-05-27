@@ -3,7 +3,6 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -165,7 +164,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -217,7 +216,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
    */
   private Stream<X> stream(
       CellProcessor<Stream<X>> cellProcessor
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(

@@ -1,7 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.api.mapreducer.backend;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -19,7 +18,6 @@ import org.heigit.bigspatialdata.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
-
 
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
   public MapReducerJdbcMultithread(OSHDBDatabase oshdb,
@@ -47,7 +45,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
       CellProcessor<S> processor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -69,7 +67,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
 
   private Stream<X> stream(
       CellProcessor<Stream<X>> processor
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
