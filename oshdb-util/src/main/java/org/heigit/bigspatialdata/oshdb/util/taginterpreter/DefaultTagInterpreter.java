@@ -1,8 +1,15 @@
 package org.heigit.bigspatialdata.oshdb.util.taginterpreter;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.json.simple.JSONArray;
@@ -11,11 +18,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.*;
-import java.util.*;
 
 /**
  * Default TagInterpreter
@@ -30,21 +32,6 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
 
   private final static String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
   private final static String defaultUninterestingTagsDefinitionFile = "json/uninterestingTags.json";
-
-  /**
-   *
-   * @param conn
-   * @throws IOException
-   * @throws ParseException
-   */
-  public DefaultTagInterpreter(Connection conn)
-      throws IOException, ParseException, OSHDBKeytablesNotFoundException {
-    this(
-        new TagTranslator(conn),
-        defaultAreaTagsDefinitionFile,
-        defaultUninterestingTagsDefinitionFile
-    );
-  }
 
   /**
    *
