@@ -104,7 +104,7 @@ public class TagTranslator implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws SQLException {
     keyIdQuery.close();
     keyTxtQuery.close();
     valueIdQuery.close();
