@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -69,6 +70,34 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   @Override
   protected MapReducer<X> copy() {
     return new MapReducerIgniteLocalPeek<X>(this);
+  }
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMContribution(
+      SerializableFunction<OSMContribution, X> mapper
+  ) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
+  ) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+
+  @Override
+  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, X> mapper
+  ) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
+  }
+
+  @Override
+  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper
+  ) throws Exception {
+    throw new UnsupportedOperationException("Stream function not yet implemented");
   }
 
   private List<String> cacheNames(String prefix) {
