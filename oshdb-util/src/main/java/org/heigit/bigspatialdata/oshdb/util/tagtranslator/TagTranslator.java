@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TagTranslator implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TagTranslator.class);
+  private static final String UNABLE_TO_ACCESS_KEYTABLES = "Unable to access keytables";
 
   private final PreparedStatement keyIdQuery;
   private final PreparedStatement keyTxtQuery;
@@ -138,13 +139,17 @@ public class TagTranslator implements AutoCloseable {
       synchronized (keyIdQuery) {
         keyIdQuery.setString(1, key.toString());
         try (ResultSet keys = keyIdQuery.executeQuery()) {
-          keys.next();
-          keyInt = new OSHDBTagKey(keys.getInt("ID"));
+          if (!keys.next()) {
+            LOG.info("Unable to find tag key {} in keytables.", key);
+            keyInt = new OSHDBTagKey(getFakeId(key.toString()));
+          } else {
+            keyInt = new OSHDBTagKey(keys.getInt("ID"));
+          }
         }
       }
     } catch (SQLException ex) {
-      LOG.info("Unable to find tag key {} in keytables.", key);
-      keyInt = new OSHDBTagKey(getFakeId(key.toString()));
+      LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.keyToString.put(keyInt, key);
     this.keyToInt.put(key, keyInt);
@@ -178,15 +183,19 @@ public class TagTranslator implements AutoCloseable {
       synchronized (keyTxtQuery) {
         keyTxtQuery.setInt(1, key.toInt());
         try (ResultSet keys = keyTxtQuery.executeQuery()) {
-          keys.next();
-          keyString = new OSMTagKey(keys.getString("TXT"));
+          if (!keys.next()) {
+            throw new OSHDBTagOrRoleNotFoundException(String.format(
+                "Unable to find tag key id %d in keytables.", key.toInt()
+            ));
+          } else {
+            keyString = new OSMTagKey(keys.getString("TXT"));
+          }
         }
         this.keyToInt.put(keyString, key);
       }
     } catch (SQLException ex) {
-      throw new OSHDBTagOrRoleNotFoundException(String.format(
-          "Unable to find tag key id %d in keytables.", key.toInt()
-      ));
+      LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.keyToString.put(key, keyString);
     return keyString;
@@ -221,13 +230,17 @@ public class TagTranslator implements AutoCloseable {
         valueIdQuery.setString(1, tag.getKey());
         valueIdQuery.setString(2, tag.getValue());
         try (ResultSet values = valueIdQuery.executeQuery()) {
-          values.next();
-          tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
+          if (!values.next()) {
+            LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
+            tagInt = new OSHDBTag(this.getOSHDBTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
+          } else {
+            tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
+          }
         }
       }
     } catch (SQLException ex) {
-      LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
-      tagInt = new OSHDBTag(this.getOSHDBTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
+      LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.tagToString.put(tagInt, tag);
     this.tagToInt.put(tag, tagInt);
@@ -266,15 +279,19 @@ public class TagTranslator implements AutoCloseable {
         valueTxtQuery.setInt(1, tag.getKey());
         valueTxtQuery.setInt(2, tag.getValue());
         try (ResultSet values = valueTxtQuery.executeQuery()) {
-          values.next();
-          tagString = new OSMTag(values.getString("KEYTXT"), values.getString("VALUETXT"));
+          if (!values.next()) {
+            throw new OSHDBTagOrRoleNotFoundException(String.format(
+                "Unable to find tag id %d=%d in keytables.",
+                tag.getKey(), tag.getValue()
+            ));
+          } else {
+            tagString = new OSMTag(values.getString("KEYTXT"), values.getString("VALUETXT"));
+          }
         }
       }
     } catch (SQLException ex) {
-      throw new OSHDBTagOrRoleNotFoundException(String.format(
-          "Unable to find tag id %d=%d in keytables.",
-          tag.getKey(), tag.getValue()
-      ));
+      LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     // put it in caches
     this.tagToInt.put(tagString, tag);
@@ -307,13 +324,17 @@ public class TagTranslator implements AutoCloseable {
       synchronized (roleIdQuery) {
         roleIdQuery.setString(1, role.toString());
         try (ResultSet roles = roleIdQuery.executeQuery()) {
-          roles.next();
-          roleInt = new OSHDBRole(roles.getInt("ID"));
+          if (!roles.next()) {
+            LOG.info("Unable to find role {} in keytables.", role);
+            roleInt = new OSHDBRole(getFakeId(role.toString()));
+          } else {
+            roleInt = new OSHDBRole(roles.getInt("ID"));
+          }
         }
       }
     } catch (SQLException ex) {
-      LOG.info("Unable to find role {} in keytables.", role);
-      roleInt = new OSHDBRole(getFakeId(role.toString()));
+      LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.roleToString.put(roleInt, role);
     this.roleToInt.put(role, roleInt);
@@ -347,14 +368,18 @@ public class TagTranslator implements AutoCloseable {
       synchronized (roleTxtQuery) {
         roleTxtQuery.setInt(1, role.toInt());
         try (ResultSet roles = roleTxtQuery.executeQuery()) {
-          roles.next();
-          roleString = new OSMRole(roles.getString("TXT"));
+          if (!roles.next()) {
+            throw new OSHDBTagOrRoleNotFoundException(String.format(
+                "Unable to find role id %d in keytables.", role.toInt()
+            ));
+          } else {
+            roleString = new OSMRole(roles.getString("TXT"));
+          }
         }
       }
     } catch (SQLException ex) {
-      throw new OSHDBTagOrRoleNotFoundException(String.format(
-          "Unable to find role id %d in keytables.", role.toInt()
-      ));
+      LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.roleToInt.put(roleString, role);
     this.roleToString.put(role, roleString);
