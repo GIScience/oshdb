@@ -36,20 +36,34 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
   }
 
   /**
-   * Creates a copy of the current entity snapshot with an updated geometry.
+   * Creates a copy of the given contribution object with an updated before/after geometry.
    */
   public OSMContribution(
       OSMContribution other,
       Geometry reclippedGeometryBefore,
       Geometry reclippedGeometryAfter
   ) {
+    this(other,
+        new LazyEvaluatedObject<>(reclippedGeometryBefore),
+        new LazyEvaluatedObject<>(reclippedGeometryAfter)
+    );
+  }
+
+  /**
+   * Creates a copy of the given contribution object with an updated before/after geometry.
+   */
+  public OSMContribution(
+      OSMContribution other,
+      LazyEvaluatedObject<Geometry> reclippedGeometryBefore,
+      LazyEvaluatedObject<Geometry> reclippedGeometryAfter
+  ) {
     this.data = new IterateAllEntry(
         other.data.timestamp,
         other.data.osmEntity,
         other.data.previousOsmEntity,
         other.data.oshEntity,
-        new LazyEvaluatedObject<>(reclippedGeometryAfter),
-        new LazyEvaluatedObject<>(reclippedGeometryBefore),
+        reclippedGeometryAfter,
+        reclippedGeometryBefore,
         other.data.unclippedGeometry,
         other.data.unclippedPreviousGeometry,
         other.data.activities,

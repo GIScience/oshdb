@@ -16,6 +16,7 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.ContributionType;
+import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedObject;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
@@ -23,6 +24,7 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.TopologyException;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
@@ -109,14 +111,13 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
 
           FastPolygonOperations poop = poops.get(index);
           try {
-            Geometry intersection = poop.intersection(snapshotGeometry);
-            if (intersection == null || intersection.isEmpty()) {
+            boolean intersects = poop.intersects(snapshotGeometry);
+            if (!intersects) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new IndexData<>(
-                  index,
-                  new OSMEntitySnapshot(data, intersection)
-              ));
+              return Stream.of(new IndexData<>(index, new OSMEntitySnapshot(data,
+                  new LazyEvaluatedObject<>(() -> poop.intersection(snapshotGeometry))
+              )));
             }
           } catch (TopologyException ignored) {
             return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
@@ -185,15 +186,14 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
 
           FastPolygonOperations poop = poops.get(index);
           try {
-            Geometry intersectionBefore = poop.intersection(contributionGeometryBefore);
-            Geometry intersectionAfter = poop.intersection(contributionGeometryAfter);
-            if ((intersectionBefore == null || intersectionBefore.isEmpty())
-                && (intersectionAfter == null || intersectionAfter.isEmpty())) {
+            boolean intersectsBefore = poop.intersects(contributionGeometryBefore);
+            boolean intersectsAfter = poop.intersects(contributionGeometryAfter);
+            if ((!intersectsBefore) && (!intersectsAfter)) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
-              return Stream.of(new IndexData<>(
-                  index,
-                  new OSMContribution(data, intersectionBefore, intersectionAfter)
+              return Stream.of(new IndexData<>(index, new OSMContribution(data,
+                  new LazyEvaluatedObject<>(() -> poop.intersection(contributionGeometryBefore)),
+                  new LazyEvaluatedObject<>(() -> poop.intersection(contributionGeometryAfter)))
               ));
             }
           } catch (TopologyException ignored) {

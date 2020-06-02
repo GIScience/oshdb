@@ -15,13 +15,13 @@ import org.locationtech.jts.geom.Polygonal;
 public class FastPolygonOperations implements Serializable {
   private static final int AVERAGE_VERTICES_PER_BLOCK = 40; // todo: finetune this value
 
-  private int numBands;
+  private final int numBands;
 
-  private ArrayList<Geometry /*Polygonal or(??) empty*/> blocks;
+  private final ArrayList<Geometry /*Polygonal or(??) empty*/> blocks;
 
-  private Envelope env;
-  private double envWidth;
-  private double envHeight;
+  private final Envelope env;
+  private final double envWidth;
+  private final double envHeight;
 
   /**
    * Constructor using a given geometry {@code geom} and geometry type {@code P}.
@@ -140,17 +140,35 @@ public class FastPolygonOperations implements Serializable {
   }
 
   /**
-   * Calculate intersection with another {@link Geometry}.
+   * Calculates the intersection with another {@link Geometry}.
    *
-   * @param other {@link Geometry} to intersect with
-   * @return intersected {@link Geometry}
+   * @param other an arbitrary {@link Geometry} to intersect
+   * @return the intersection of this polygon with the other {@link Geometry}
    */
   public Geometry intersection(Geometry other) {
     if (other == null || other.isEmpty()) {
       return other;
     }
-    Envelope otherEnv = other.getEnvelopeInternal();
+    Geometry intersector = getIntersector(other.getEnvelopeInternal());
+    return other.intersection(intersector);
+  }
 
+  /**
+   * Returns the intersection of this polygon with the given other geometry.
+   *
+   * @param other an arbitrary geometry
+   * @return the intersection of this polygon with the other geometry
+   */
+  public boolean intersects(Geometry other) {
+    // todo: benchmark this against `PreparedGeometry.intersects()`
+    if (other == null || other.isEmpty()) {
+      return false;
+    }
+    Geometry intersector = getIntersector(other.getEnvelopeInternal());
+    return other.intersects(intersector);
+  }
+
+  private Geometry getIntersector(Envelope otherEnv) {
     int minBandX = Math.max(0, Math.min(numBands - 1,
         (int) Math.floor((otherEnv.getMinX() - env.getMinX()) / envWidth * numBands)));
     int maxBandX = Math.max(0, Math.min(numBands - 1,
@@ -174,10 +192,6 @@ public class FastPolygonOperations implements Serializable {
     }
 
     assert intersector != null;
-
-    return other.intersection(intersector);
+    return intersector;
   }
-
-
-
 }
