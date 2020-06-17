@@ -3,11 +3,12 @@ package org.heigit.bigspatialdata.oshdb.util.geometry;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -40,8 +41,11 @@ import org.slf4j.LoggerFactory;
  * Builds JTS geometries from OSM entities.
  */
 public class OSHDBGeometryBuilder {
-
   private static final Logger LOG = LoggerFactory.getLogger(OSHDBGeometryBuilder.class);
+
+  private OSHDBGeometryBuilder() {
+    throw new IllegalStateException("Utility class");
+  }
 
   /**
    * Gets the geometry of an OSM entity at a specific timestamp.
@@ -190,61 +194,30 @@ public class OSHDBGeometryBuilder {
       TagInterpreter areaDecider,
       GeometryFactory geometryFactory
   ) {
-    Stream<OSMWay> outerMembers =
-        relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember)
-            .map(osm -> (OSMWay) osm)
-            .filter(Objects::nonNull)
-            .filter(OSMEntity::isVisible);
+    Stream<Stream<OSMNode>> outerLines = waysToLines(
+        relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember),
+        timestamp
+    );
 
-    Stream<OSMWay> innerMembers =
-        relation.getMemberEntities(timestamp, areaDecider::isMultipolygonInnerMember)
-            .map(osm -> (OSMWay) osm)
-            .filter(Objects::nonNull)
-            .filter(OSMEntity::isVisible);
-
-    OSMNode[][] outerLines =
-        outerMembers
-            .map(way -> way.getRefEntities(timestamp)
-                .filter(Objects::nonNull)
-                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
-            .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
-    OSMNode[][] innerLines =
-        innerMembers
-            .map(way -> way.getRefEntities(timestamp)
-                .filter(Objects::nonNull)
-                .filter(OSMEntity::isVisible).toArray(OSMNode[]::new))
-            .filter(line -> line.length > 0).toArray(OSMNode[][]::new);
+    Stream<Stream<OSMNode>> innerLines = waysToLines(
+        relation.getMemberEntities(timestamp, areaDecider::isMultipolygonInnerMember),
+        timestamp
+    );
 
     // construct rings from polygons
-    List<LinearRing> outerRings = OSHDBGeometryBuilder.join(outerLines).stream()
+    List<LinearRing> outerRings = OSHDBGeometryBuilder.buildRings(outerLines).stream()
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
-    List<LinearRing> innerRings = OSHDBGeometryBuilder.join(innerLines).stream()
+    List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
+    // check if there are any touching inner/outer rings, merge any
+    mergeTouchingRings(innerRingsNodes);
+    List<LinearRing> innerRings = innerRingsNodes.stream()
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
-
-    // check if there are any touching inner/outer rings
-    Set<Integer> vertices = new HashSet<>();
-    boolean touchingRings = false;
-    List<LinearRing> allRings = new ArrayList<>(innerRings.size() + outerRings.size());
-    allRings.addAll(outerRings);
-    allRings.addAll(innerRings);
-    checkTouchingRings: for (LinearRing ring : allRings) {
-      int numPoints = ring.getNumPoints();
-      for (int i = 1; i < numPoints; i++) {
-        Coordinate thisPoint = ring.getCoordinateN(i);
-        int vertexHashCode = thisPoint.hashCode();
-        if (vertices.contains(vertexHashCode)) {
-          touchingRings = true;
-          break checkTouchingRings;
-        }
-        vertices.add(vertexHashCode);
-      }
-    }
 
     // construct multipolygon from rings
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the
@@ -285,12 +258,92 @@ public class OSHDBGeometryBuilder {
       // todo: what to do with unmatched inner rings??
       result = geometryFactory.createMultiPolygon(polys);
     }
-    if (touchingRings) {
-      // try to clean up geometry by calling buffer(0).
-      // see https://locationtech.github.io/jts/jts-faq.html#G1
-      result = result.buffer(0);
-    }
     return result;
+  }
+
+  private static Stream<Stream<OSMNode>> waysToLines(Stream<OSMEntity> members, OSHDBTimestamp timestamp) {
+    return members
+        .map(osm -> (OSMWay) osm)
+        .filter(Objects::nonNull)
+        .filter(OSMEntity::isVisible)
+        .map(way -> way.getRefEntities(timestamp)
+            .filter(Objects::nonNull)
+            .filter(OSMEntity::isVisible)
+        );
+  }
+
+  private static void mergeTouchingRings(List<LinkedList<OSMNode>> ringsNodes) {
+    Map<Segment, LinkedList<OSMNode>> ringSegments = new HashMap<>();
+    List<LinkedList<OSMNode>> mergedRings = new LinkedList<>();
+    for (LinkedList<OSMNode> ringNodes : ringsNodes) {
+      List<Segment> thisRingSegments = new ArrayList<>(ringNodes.size() - 1);
+      int numNodes = ringNodes.size();
+      long prevNodeId = ringNodes.get(0).getId();
+      for (int i = 1; i < numNodes; i++) {
+        long thisNodeId = ringNodes.get(i).getId();
+        Segment segment = new Segment(prevNodeId, thisNodeId);
+        if (!ringSegments.containsKey(segment)) {
+          thisRingSegments.add(segment);
+        } else {
+          // merge this ring with the previous one
+          LinkedList<OSMNode> targetNodes = ringSegments.get(segment);
+          ringSegments.values().remove(targetNodes);
+          cutAtSegment(targetNodes, segment);
+          cutAtSegment(ringNodes, segment);
+          mergeSegmentsToRing(targetNodes, ringNodes);
+          // clean up
+          // add merged segments to thisRingSements
+          thisRingSegments.clear();
+          for (int j = 1; j < targetNodes.size(); j++) {
+            thisRingSegments.add(
+                new Segment(targetNodes.get(j - 1).getId(), targetNodes.get(j).getId())
+            );
+          }
+          // mark merged ring as to be removed
+          mergedRings.add(ringNodes);
+          ringNodes = targetNodes;
+          break;
+        }
+        prevNodeId = thisNodeId;
+      }
+      for (Segment thisRingSegment : thisRingSegments) {
+        ringSegments.put(thisRingSegment, ringNodes);
+      }
+    }
+    ringsNodes.removeAll(mergedRings);
+  }
+
+  private static void cutAtSegment(LinkedList<OSMNode> ring, Segment segment) {
+    ring.remove(0);
+    while (true) {
+      if (ring.getFirst().getId() == segment.id1 && ring.getLast().getId() == segment.id2
+          || ring.getFirst().getId() == segment.id2 && ring.getLast().getId() == segment.id1) {
+        return;
+      }
+      ring.add(ring.removeFirst());
+    }
+  }
+
+  private static void mergeSegmentsToRing(LinkedList<OSMNode> target, LinkedList<OSMNode> source) {
+    if (target.getFirst().getId() == source.getFirst().getId()) {
+      Collections.reverse(source);
+    }
+    // clean shared segments
+    while (source.size() > 1 && target.size() > 1
+        && source.getFirst().getId() == target.getLast().getId()
+        && source.get(1).getId() == target.get(target.size() - 2).getId()) {
+      source.removeFirst();
+      target.removeLast();
+    }
+    while (source.size() > 1 && target.size() > 1
+        && source.getLast().getId() == target.getFirst().getId()
+        && source.get(source.size() - 2).getId() == target.get(1).getId()) {
+      source.removeLast();
+      target.removeFirst();
+    }
+    // merge partial rings to new complete one
+    source.removeFirst();
+    target.addAll(source);
   }
 
   private static Polygon constructMultipolygonPart(
@@ -308,50 +361,50 @@ public class OSHDBGeometryBuilder {
   }
 
   // helper that joins adjacent osm ways into linear rings
-  private static List<List<OSMNode>> join(OSMNode[][] lines) {
+  private static List<LinkedList<OSMNode>> buildRings(Stream<Stream<OSMNode>> lines) {
     // make a (mutable) copy of the polygons array
-    List<List<OSMNode>> ways = new LinkedList<>();
-    for (OSMNode[] line : lines) {
-      ways.add(new LinkedList<>(Arrays.asList(line)));
-    }
-    List<List<OSMNode>> joined = new LinkedList<>();
+    List<LinkedList<OSMNode>> ways = lines
+        .map(line -> line.collect(Collectors.toCollection(LinkedList::new)))
+        .filter(nodesList -> !nodesList.isEmpty())
+        .collect(Collectors.toCollection(LinkedList::new));
 
+    List<LinkedList<OSMNode>> joined = new LinkedList<>();
     while (!ways.isEmpty()) {
-      List<OSMNode> current = ways.remove(0);
+      LinkedList<OSMNode> current = ways.remove(0);
       joined.add(current);
       while (!ways.isEmpty()) {
-        long firstId = current.get(0).getId();
-        long lastId = current.get(current.size() - 1).getId();
+        long firstId = current.getFirst().getId();
+        long lastId = current.getLast().getId();
         if (firstId == lastId) {
           break; // ring is complete -> we're done
         }
         boolean joinable = false;
         for (int i = 0; i < ways.size(); i++) {
-          List<OSMNode> what = ways.get(i);
-          if (lastId == what.get(0).getId()) {
+          LinkedList<OSMNode> what = ways.get(i);
+          if (lastId == what.getFirst().getId()) {
             // end of partial ring matches to start of current line
-            what.remove(0);
+            what.removeFirst();
             current.addAll(what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(what.size() - 1).getId()) {
+          } else if (firstId == what.getLast().getId()) {
             // start of partial ring matches end of current line
-            what.remove(what.size() - 1);
+            what.removeLast();
             current.addAll(0, what);
             ways.remove(i);
             joinable = true;
             break;
-          } else if (lastId == what.get(what.size() - 1).getId()) {
+          } else if (lastId == what.getLast().getId()) {
             // end of partial ring matches end of current line
-            what.remove(what.size() - 1);
+            what.removeLast();
             current.addAll(Lists.reverse(what));
             ways.remove(i);
             joinable = true;
             break;
-          } else if (firstId == what.get(0).getId()) {
+          } else if (firstId == what.getFirst().getId()) {
             // start of partial ring matches start of current line
-            what.remove(0);
+            what.removeFirst();
             current.addAll(0, Lists.reverse(what));
             ways.remove(i);
             joinable = true;
@@ -392,7 +445,7 @@ public class OSHDBGeometryBuilder {
    * @param bbox The BoundingBox the polygon should be created for.
    * @return a rectangular Polygon
    */
-  public static Polygon getGeometry(OSHDBBoundingBox bbox) {
+  public static Polygon getGeometry(@Nonnull OSHDBBoundingBox bbox) {
     assert bbox != null : "a bounding box is not allowed to be null";
     
     GeometryFactory gf = new GeometryFactory();
@@ -411,4 +464,29 @@ public class OSHDBGeometryBuilder {
     return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
   }
 
+  private static class Segment {
+    long id1;
+    long id2;
+
+    Segment(long id1, long id2) {
+      this.id1 = id1;
+      this.id2 = id2;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (other instanceof Segment) {
+        Segment otherSegment = (Segment) other;
+        return otherSegment.id1 == this.id1 && otherSegment.id2 == this.id2
+            || otherSegment.id1 == this.id2 && otherSegment.id2 == this.id1;
+      } else {
+        return super.equals(other);
+      }
+    }
+
+    @Override
+    public int hashCode() {
+      return ((int) this.id1) + ((int) this.id2);
+    }
+  }
 }

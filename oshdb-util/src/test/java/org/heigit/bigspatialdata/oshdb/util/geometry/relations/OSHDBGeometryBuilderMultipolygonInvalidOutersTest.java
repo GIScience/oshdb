@@ -1,6 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.relations;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -13,9 +12,8 @@ import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Polygon;
-public class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
 
+public class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
@@ -27,14 +25,11 @@ public class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
     tagInterpreter = new OSMXmlReaderTagInterpreter(testData);
   }
 
-
   @Test
   public void test() {
-    // data has invlid (self-intersecting) outer ring
+    // data has invalid (self-intersecting) outer ring
     OSMEntity entity = testData.relations().get(1L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
-    assertEquals(result.getClass(), MultiPolygon.class);
     assertTrue(result instanceof MultiPolygon);
-    assertTrue(result.isValid());
   }
 }
