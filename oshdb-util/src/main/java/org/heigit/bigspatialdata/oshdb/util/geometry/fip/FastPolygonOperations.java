@@ -179,38 +179,4 @@ public class FastPolygonOperations implements Serializable {
       return intersector.intersection(other);
     }
   }
-
-  /**
-   * Returns the intersection of this polygon with the given other geometry.
-   *
-   * @param other an arbitrary geometry
-   * @return the intersection of this polygon with the other geometry
-   */
-  public boolean intersects(Geometry other) {
-    // todo: benchmark this against `PreparedGeometry.intersects()`
-    if (other == null || other.isEmpty()) {
-      return false;
-    }
-    Envelope otherEnv = other.getEnvelopeInternal();
-    int minBandX = Math.max(0, Math.min(numBands - 1,
-        (int) Math.floor((otherEnv.getMinX() - env.getMinX()) / envWidth * numBands)));
-    int maxBandX = Math.max(0, Math.min(numBands - 1,
-        (int) Math.floor((otherEnv.getMaxX() - env.getMinX()) / envWidth * numBands)));
-    int minBandY = Math.max(0, Math.min(numBands - 1,
-        (int) Math.floor((otherEnv.getMinY() - env.getMinY()) / envHeight * numBands)));
-    int maxBandY = Math.max(0, Math.min(numBands - 1,
-        (int) Math.floor((otherEnv.getMaxY() - env.getMinY()) / envHeight * numBands)));
-
-    for (int x = minBandX; x <= maxBandX; x++) {
-      for (int y = minBandY; y <= maxBandY; y++) {
-        Geometry block = blocks.get(y + x * numBands);
-        if (other.intersects(block)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
 }

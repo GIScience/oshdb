@@ -25,6 +25,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
@@ -42,15 +43,18 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
   private Map<U, FastBboxInPolygon> bips = new HashMap<>();
   private Map<U, FastBboxOutsidePolygon> bops = new HashMap<>();
   private Map<U, FastPolygonOperations> poops = new HashMap<>();
+  private Map<U, PreparedGeometry> pgs = new HashMap<>();
 
   private Map<U, ? extends Geometry> subregions;
 
   <P extends Geometry & Polygonal> GeometrySplitter(Map<U, P> subregions) {
+    PreparedGeometryFactory pgf = new PreparedGeometryFactory();
     subregions.forEach((index, geometry) -> {
       spatialIndex.insert(geometry.getEnvelopeInternal(), index);
       bips.put(index, new FastBboxInPolygon(geometry));
       bops.put(index, new FastBboxOutsidePolygon(geometry));
       poops.put(index, new FastPolygonOperations(geometry));
+      pgs.put(index, pgf.create(geometry));
     });
     this.subregions = subregions;
   }
@@ -110,8 +114,9 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           }
 
           FastPolygonOperations poop = poops.get(index);
+          PreparedGeometry pg = pgs.get(index);
           try {
-            boolean intersects = poop.intersects(snapshotGeometry);
+            boolean intersects = pg.intersects(snapshotGeometry);
             if (!intersects) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
@@ -185,9 +190,10 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           }
 
           FastPolygonOperations poop = poops.get(index);
+          PreparedGeometry pg = pgs.get(index);
           try {
-            boolean intersectsBefore = poop.intersects(contributionGeometryBefore);
-            boolean intersectsAfter = poop.intersects(contributionGeometryAfter);
+            boolean intersectsBefore = pg.intersects(contributionGeometryBefore);
+            boolean intersectsAfter = pg.intersects(contributionGeometryAfter);
             if ((!intersectsBefore) && (!intersectsAfter)) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
