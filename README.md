@@ -86,13 +86,13 @@ Whitespace such as spaces, tabs or newlines can be put freely between operators 
 Examples
 --------
 
-Here's some useful examples for querying some OSM features:
+Here's some useful examples for filtering some OSM features:
 
 | OSM Feature | filter | comment |
 |-------------|--------|---------|
 | forests/woods | `(landuse=forest or natural=wood) and geometry:polygon` | Using `geometry:polygon` will select closed ways as well as multipolygons (e.g. a forest with clearings). |
-| parks and park benches | `leisure=park and geometry:polygon or amenity=bench and (geometry:point or geometry:line)` | A query can also fetch features of different geometry types: this returns parks (polygons) as well as park benches (points or lines). |
-| buildings | `building=* and building!=no and geometry:polygon` | This query excludes the (rare) objects marked with `building=no`, which is a tag used to indicate that a feature might be expected to be a building (e.g. from an outdated aerial imagery source), but is in reality not one. |
+| parks and park benches | `leisure=park and geometry:polygon or amenity=bench and (geometry:point or geometry:line)` | A filter can also fetch features of different geometry types: this returns parks (polygons) as well as park benches (points or lines). |
+| buildings | `building=* and building!=no and geometry:polygon` | This filter excludes the (rare) objects marked with `building=no`, which is a tag used to indicate that a feature might be expected to be a building (e.g. from an outdated aerial imagery source), but is in reality not one. |
 | highways | `type:way and highway in (motorway, motorway_link, trunk, trunk_link, primary, primary_link, secondary, secondary_link, tertiary, tertiary_link, unclassified, residential, living_street, pedestrian) or (highway=service and service=alley))` | The list of used tags depends on the exact definition of a "highway". In a different context, it may also incude less or even more highway tags (like `footway`, `cycleway`, `track`, `path`, all `highway=service`, etc.). |
 | residential roads missing a name (for quality assurance) | `type:way and highway=residential and name!=* and noname!=yes` | Note that some roads might be actually unnamed in reality. Such features can be marked as unnamed with the [`noname`](https://wiki.openstreetmap.org/wiki/Key:noname) tag in OSM. |
 
