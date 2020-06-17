@@ -460,7 +460,13 @@ public class OSHDBGeometryBuilder {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipPoly);
   }
-  
+
+  /**
+   * Converts a JTS bounding box ("envelope") to an OSHDBBoundingBox object.
+   *
+   * @param envelope the bounding box object to convert
+   * @return the same bounding box as an OSHDBBoundingBox object
+   */
   public static OSHDBBoundingBox boundingBoxOf(Envelope envelope) {
     return new OSHDBBoundingBox(
         envelope.getMinX(),
