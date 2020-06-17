@@ -140,6 +140,33 @@ public class OSHDBGeometryBuilder {
       return getGeometryCollectionGeometry(relation, timestamp, areaDecider, geometryFactory);
     }
   }
+  
+  /**
+   * Converts a OSHDBBoundingBox to a rectangular polygon.
+   *
+   * <p>
+   * Will return a polygon with exactly 4 vertices even for point or line-like BoundingBox.
+   * Nevertheless, for degenerate bounding boxes (width and/or height of 0) the result might
+   * not pass the {@link Geometry#isRectangle() Geometry.isRectangle} test.
+   * </p>
+   *
+   * @param bbox The BoundingBox the polygon should be created for.
+   * @return a rectangular Polygon
+   */
+  public static Polygon getGeometry(@Nonnull OSHDBBoundingBox bbox) {
+    assert bbox != null : "a bounding box is not allowed to be null";
+
+    GeometryFactory gf = new GeometryFactory();
+
+    Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
+    Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
+    Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());
+    Coordinate ne = new Coordinate(bbox.getMinLon(), bbox.getMaxLat());
+
+    Coordinate[] cordAr = {sw, se, nw, ne, sw};
+
+    return gf.createPolygon(cordAr);
+  }
 
   private static Geometry getGeometryCollectionGeometry(
       OSMRelation relation,
@@ -261,7 +288,8 @@ public class OSHDBGeometryBuilder {
     return result;
   }
 
-  private static Stream<Stream<OSMNode>> waysToLines(Stream<OSMEntity> members, OSHDBTimestamp timestamp) {
+  private static Stream<Stream<OSMNode>> waysToLines(
+      Stream<OSMEntity> members, OSHDBTimestamp timestamp) {
     return members
         .map(osm -> (OSMWay) osm)
         .filter(Objects::nonNull)
@@ -421,8 +449,8 @@ public class OSHDBGeometryBuilder {
     return joined;
   }
 
-  public static <T extends OSMEntity> Geometry getGeometryClipped(T entity, OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider, OSHDBBoundingBox clipBbox) {
+  public static <T extends OSMEntity> Geometry getGeometryClipped(
+      T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, OSHDBBoundingBox clipBbox) {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipBbox);
   }
@@ -433,35 +461,13 @@ public class OSHDBGeometryBuilder {
     return Geo.clip(geom, clipPoly);
   }
   
-  /**
-   * Converts a OSHDBBoundingBox to a rectangular polygon.
-   *
-   * <p>
-   * Will return a polygon with exactly 4 vertices even for point or line-like BoundingBox.
-   * Nevertheless, for degenerate bounding boxes (width and/or height of 0) the result might
-   * not pass the {@link Geometry#isRectangle() Geometry.isRectangle} test.
-   * </p>
-   *
-   * @param bbox The BoundingBox the polygon should be created for.
-   * @return a rectangular Polygon
-   */
-  public static Polygon getGeometry(@Nonnull OSHDBBoundingBox bbox) {
-    assert bbox != null : "a bounding box is not allowed to be null";
-    
-    GeometryFactory gf = new GeometryFactory();
-        
-    Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
-    Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
-    Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());
-    Coordinate ne = new Coordinate(bbox.getMinLon(), bbox.getMaxLat());
-
-    Coordinate[] cordAr = {sw, se, nw, ne, sw};
-
-    return gf.createPolygon(cordAr);
-  }
-  
   public static OSHDBBoundingBox boundingBoxOf(Envelope envelope) {
-    return new OSHDBBoundingBox(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
+    return new OSHDBBoundingBox(
+        envelope.getMinX(),
+        envelope.getMinY(),
+        envelope.getMaxX(),
+        envelope.getMaxY()
+    );
   }
 
   private static class Segment {
