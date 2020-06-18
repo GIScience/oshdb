@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.api.object;
 
+import com.google.common.collect.ComparisonChain;
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
@@ -12,7 +14,7 @@ import org.locationtech.jts.geom.Geometry;
  *
  * <p>Alongside the entity and the timestamp, also the entity's geometry is provided.</p>
  */
-public class OSMEntitySnapshot implements OSHDBMapReducible {
+public class OSMEntitySnapshot implements OSHDBMapReducible, Comparable<OSMEntitySnapshot> {
   private final IterateByTimestampEntry data;
   
   public OSMEntitySnapshot(IterateByTimestampEntry data) {
@@ -80,5 +82,14 @@ public class OSMEntitySnapshot implements OSHDBMapReducible {
    */
   public OSHEntity getOSHEntity() {
     return data.oshEntity;
+  }
+
+  @Override
+  public int compareTo(@Nonnull OSMEntitySnapshot other) {
+    return ComparisonChain.start()
+        .compare(this.getOSHEntity().getType(), other.getOSHEntity().getType())
+        .compare(this.getOSHEntity().getId(), other.getOSHEntity().getId())
+        .compare(this.getTimestamp(), other.getTimestamp())
+        .result();
   }
 }

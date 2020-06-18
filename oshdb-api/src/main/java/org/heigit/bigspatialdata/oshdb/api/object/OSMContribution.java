@@ -1,7 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.api.object;
 
+import com.google.common.collect.ComparisonChain;
 import java.util.EnumSet;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
@@ -26,7 +28,7 @@ import org.locationtech.jts.geom.Geometry;
  *   modification of a geometry, altering of the tag list, etc.)</li>
  * </ul>
  */
-public class OSMContribution implements OSHDBMapReducible {
+public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContribution> {
   private final IterateAllEntry data;
 
   public OSMContribution(IterateAllEntry data) {
@@ -263,5 +265,14 @@ public class OSMContribution implements OSHDBMapReducible {
    */
   public long getChangesetId() {
     return data.changeset;
+  }
+
+  @Override
+  public int compareTo(@Nonnull OSMContribution other) {
+    return ComparisonChain.start()
+        .compare(this.getOSHEntity().getType(), other.getOSHEntity().getType())
+        .compare(this.getOSHEntity().getId(), other.getOSHEntity().getId())
+        .compare(this.getTimestamp(), other.getTimestamp())
+        .result();
   }
 }
