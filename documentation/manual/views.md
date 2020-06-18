@@ -54,7 +54,7 @@ Note that there exist [cases](https://github.com/GIScience/oshdb/issues/87) wher
 GroupByEntity
 -------------
 
-The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity--) method of a MapReducer slightly changes the way the MapReducers recieves and transforms values: Instead of iterating over each snapshot or contribution individually, in this mode all snapshots or all contributinos of an individual OSM entity are collected into a list of values first. This makes it possible to investigate the full edit history of individual OSM objects at once.
+The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity--) method of a MapReducer slightly changes the way the MapReducers recieves and transforms values: Instead of iterating over each snapshot or contribution individually, in this mode all snapshots or all contributions of an individual OSM entity are collected into a (by timestamp sorted) list first. This makes it possible to investigate the full edit history of individual OSM objects at once, which is for example needed when one is looking for contributions that got reverted at a later point in time.
 
 It is recommended to call this method immediately after creating the MapReducer from a view:
 

@@ -715,7 +715,11 @@ public abstract class MapReducer<X> implements
    * Groups the input data (osm entity snapshot or contributions) by their respective entity's ids
    * before feeding them into further transformation functions. This can be used to do more complex
    * analysis on the osm data, that requires one to know about the full editing history of
-   * individual osm entities.
+   * individual osm entities, e.g., when looking for contributions which got reverted at a later
+   * point in time.
+   *
+   * <p>The values in the returned lists of snapshot or contribution objects are returned in their
+   * natural order: i.e. sorted ascending by timestamp.</p>
    *
    * <p>This needs to be called before any `map` or `flatMap` transformation functions have been
    * set. Otherwise a runtime exception will be thrown.</p>
