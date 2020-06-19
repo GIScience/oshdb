@@ -30,10 +30,15 @@ public class LazyEvaluatedObject<T> implements Supplier<T> {
   @Override
   public boolean equals(Object o) {
     if (o instanceof LazyEvaluatedObject) {
-      LazyEvaluatedObject lazyO = (LazyEvaluatedObject)o;
+      LazyEvaluatedObject<?> lazyO = (LazyEvaluatedObject<?>)o;
       return this.get().equals(lazyO.get());
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return this.get().hashCode();
   }
 
   public boolean wasEvaluated() {

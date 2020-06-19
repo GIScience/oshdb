@@ -84,6 +84,11 @@ public class OSMEntitySnapshot implements OSHDBMapReducible, Comparable<OSMEntit
     return data.oshEntity;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * Note: this class has a natural ordering that is inconsistent with equals.
+   */
   @Override
   public int compareTo(@Nonnull OSMEntitySnapshot other) {
     return ComparisonChain.start()

@@ -267,6 +267,11 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
     return data.changeset;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * Note: this class has a natural ordering that is inconsistent with equals.
+   */
   @Override
   public int compareTo(@Nonnull OSMContribution other) {
     return ComparisonChain.start()
