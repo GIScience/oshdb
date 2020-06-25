@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * <tr>
  * <td></td><td></td><td colspan="3">-90 lat</td><td></td><td></td><td></td>
  * </tr>
- * </table></p>
+ * </table>
  *
  * <p>Longitude +180 will be wrapped around to -180. Coordinates lying on
  * grid-borders will be assigned to the north-eastern cell.</p>
