@@ -3,7 +3,8 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
-* reorganize maven packages: rename group parent to ohsome-parent (version bump to 2.2), rename local parent to oshdb-parent, and change groupId to org.heigit.ohsome
+* reorganize maven packages: rename group parent to ohsome-parent (version bump to 2.3), rename local parent to oshdb-parent, and change groupId to org.heigit.ohsome
+* compatibility fix to allow building of javadoc under Java 11 
 
 ## 0.5.8
 
