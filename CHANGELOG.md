@@ -3,6 +3,7 @@
 
 * new filter: "tag key in value-list" operator (syntax: `tag in (list, of, values)`)
 * improve test coverage
+* update ohsome parent to version 2.3 (for building javadoc with JDK 11)
 
 1.1.4
 -----
