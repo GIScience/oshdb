@@ -14,8 +14,9 @@ import org.slf4j.LoggerFactory;
 /**
  * XYGrid spans an equal degree grid over the world.
  * 
- * <p>How XYGrid sees the world. Example IDs for zoom = 2:
+ * <p>Example IDs for zoom = 2:
  * <table style="text-align:center; border-spacing: 4px">
+ * <caption>How XYGrid sees the world.</caption>
  * <tr>
  * <td></td><td></td><td colspan="3">+90 lat</td><td></td><td></td><td></td>
  * </tr>
