@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.heigit.bigspatialdata</groupId>
-    <artifactId>bigspatialdata-parent</artifactId>
-    <version>1.2</version>
+    <groupId>org.heigit.ohsome</groupId>
+    <artifactId>ohsome-parent</artifactId>
+    <version>2.3</version>
   </parent>
 
   <artifactId>oshdb-parent</artifactId>
@@ -35,15 +35,10 @@
     <jcommander.version>1.72</jcommander.version>
     <jetbrainsannotations.version>13.0</jetbrainsannotations.version>
     <jts.version>1.16.1</jts.version>
-    <kafka.version>0.11.0.0</kafka.version>
-    <lz4.version>1.4.0</lz4.version>
-    <mapdb.version>3.0.5</mapdb.version>
-    <mavencheckstyle.version>3.1.0</mavencheckstyle.version>
-    <mavengpg.version>1.6</mavengpg.version>
+    <junit.version>4.12</junit.version>
+    <mavenassembly.version>3.1.1</mavenassembly.version>
     <mavenpmd.version>3.11.0</mavenpmd.version>
-    <mavenprojectinfo.version>3.0.0</mavenprojectinfo.version>
     <mavensurefire.version>2.22.2</mavensurefire.version>
-    <nexusplugin.version>1.6.8</nexusplugin.version>
     <orgjson.version>20160810</orgjson.version>
     <osmosis.version>0.45</osmosis.version>
     <pmd.version>6.11.0</pmd.version>
@@ -52,8 +47,31 @@
     <roaringbitmap.version>0.6.59</roaringbitmap.version>
     <roaringbitmap.version>0.6.59</roaringbitmap.version>
     <rxjava2.version>2.1.9</rxjava2.version>
+    <slf4j.version>1.7.25</slf4j.version>
     <wololo.version>0.13.0</wololo.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <repositories>
     <repository>
@@ -185,59 +203,6 @@
                 <always>false</always>
                 <dirty>-dirty</dirty>
               </gitDescribe>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>sign</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>${mavengpg.version}</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <configuration>
-                  <gpgArguments>
-                    <arg>--pinentry-mode</arg>
-                    <arg>loopback</arg>
-                  </gpgArguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>deploy-central</id>
-      <distributionManagement>
-        <snapshotRepository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-      </distributionManagement>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>${nexusplugin.version}</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
             </configuration>
           </plugin>
         </plugins>
