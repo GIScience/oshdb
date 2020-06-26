@@ -116,8 +116,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   private <V extends Comparable<V> & Serializable> MapAggregator<V, X>
       copyTransformKey(MapReducer<IndexValuePair<V, X>> mapReducer) {
-    //noinspection unchecked – we do want to convert the mapAggregator to a different key type "V"
-    return new MapAggregator<V, X>((MapAggregator<V, ?>) this, mapReducer);
+    @SuppressWarnings("unchecked") // we convert the mapAggregator to a new key type "V"
+    MapAggregator<V, ?> transformedMapAggregator = (MapAggregator<V, ?>) this;
+    return new MapAggregator<V, X>(transformedMapAggregator, mapReducer);
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -229,8 +230,10 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
                 + this.mapReducer.forClass.toString()
         );
       }
-      //noinspection unchecked – no mapper functions have been applied, so the type is still X
-      return (MapAggregator<OSHDBCombinedIndex<U, V>, X>) ret;
+      @SuppressWarnings("unchecked") // no mapper functions have been applied -> the type is still X
+      MapAggregator<OSHDBCombinedIndex<U, V>, X> result =
+          (MapAggregator<OSHDBCombinedIndex<U, V>, X>) ret;
+      return result;
     }
   }
 
@@ -759,7 +762,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper) {
     return this.copyTransform(this.mapReducer.map(inData -> {
-      //noinspection unchecked – trick/hack to replace mapped values without copying pair objects
+      @SuppressWarnings("unchecked")
+      // trick/hack to replace mapped values without copying pair objects
       IndexValuePair<U,R> outData = (IndexValuePair<U,R>)inData;
       outData.setValue(mapper.apply(inData.getValue()));
       return outData;
@@ -877,7 +881,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
         }
     );
     // fill nodata entries with "0"
-    //noinspection unchecked – all zerofills must "add up" to <U>
+    @SuppressWarnings("unchecked") // all zerofills must "add up" to <U>
     Collection<U> zerofill = (Collection<U>) this.completeZerofill(
         result.keySet(),
         Lists.reverse(this.zerofill)
@@ -962,6 +966,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   }
 
   // calculate complete set of indices to use for zerofilling
+  @SuppressWarnings("rawtypes")
+  // called recursively: the exact types of the zerofills are not known at this point
   private Collection<? extends Comparable> completeZerofill(
       Set<? extends Comparable> keys,
       List<Collection<? extends Comparable>> zerofills
@@ -988,7 +994,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
           nextLevelKeys,
           zerofills.subList(1, zerofills.size())
       );
-      //noinspection unchecked – we don't know the exact types of u and v at this point
+      @SuppressWarnings("unchecked") // we don't know the exact types of u and v at this point
       Stream<OSHDBCombinedIndex> combinedZerofillIndices = nextLevel.stream().flatMap(u ->
           seen.stream().map(v -> new OSHDBCombinedIndex(u, v))
       );

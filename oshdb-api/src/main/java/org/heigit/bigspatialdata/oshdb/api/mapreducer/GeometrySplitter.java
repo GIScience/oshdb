@@ -79,7 +79,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    */
   public Map<U,OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
-    //noinspection unchecked – STRtree works with raw types unfortunately :-/
+    @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
     List<U> candidates = (List<U>) spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
@@ -140,7 +140,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    */
   public Map<U,OSMContribution> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
-    //noinspection unchecked – STRtree works with raw types unfortunately :-/
+    @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
     List<U> candidates = (List<U>) spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
@@ -228,15 +228,16 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     int numEntries = in.readInt();
     TreeMap<U, P> result = new TreeMap<>();
     for (int i = 0; i < numEntries; i++) {
-      //noinspection unchecked - we only write `U` data in these places in `writeObject`
+      @SuppressWarnings("unchecked") // we only write `U` data in these places in `writeObject`
       U key = (U) in.readObject();
       int dataLength = in.readInt();
       byte[] data = new byte[dataLength];
       int bytesRead = in.read(data);
       assert bytesRead == dataLength : "fewer bytes read than expected";
       try {
-        //noinspection unchecked - we only write `P` data in these places in `writeObject`
-        result.put(key, (P) reader.read(data));
+        @SuppressWarnings("unchecked") // we only write `P` data in these places in `writeObject`
+        P readData = (P) reader.read(data);
+        result.put(key, readData);
       } catch (ParseException e) {
         throw new RuntimeException(e);
       }
@@ -245,7 +246,8 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
   }
 
   protected <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
-    //noinspection unchecked - constructor checks that `subregions` only contain `P` entry values
-    return new GeometrySplitter<>((Map<U, P>) this.subregions);
+    @SuppressWarnings("unchecked") // constructor checks that `subregions` only contain `P` entries
+    Map<U, P> subregions = (Map<U, P>) this.subregions;
+    return new GeometrySplitter<>(subregions);
   }
 }

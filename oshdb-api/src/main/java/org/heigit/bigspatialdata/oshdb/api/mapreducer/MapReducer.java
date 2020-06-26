@@ -669,8 +669,9 @@ public abstract class MapReducer<X> implements
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
     MapReducer<?> ret = this.copy();
     ret.mappers.add(new MapFunction(mapper, false));
-    //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
-    return (MapReducer<R>) ret;
+    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
+    MapReducer<R> result = (MapReducer<R>) ret;
+    return result;
   }
 
   /**
@@ -687,8 +688,9 @@ public abstract class MapReducer<X> implements
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
     ret.mappers.add(new MapFunction(flatMapper, true));
-    //noinspection unchecked – after applying this mapper, we have a mapreducer of type R
-    return (MapReducer<R>) ret;
+    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
+    MapReducer<R> result = (MapReducer<R>) ret;
+    return result;
   }
 
   /**
@@ -738,8 +740,9 @@ public abstract class MapReducer<X> implements
     }
     MapReducer<X> ret = this.copy();
     ret.grouping = Grouping.BY_ID;
-    //noinspection unchecked – now in the reduce() step, the backend will return a list of items
-    return (MapReducer<List<X>>) ret;
+    @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of items
+    MapReducer<List<X>> result = (MapReducer<List<X>>) ret;
+    return result;
   }
 
   /**
@@ -829,15 +832,18 @@ public abstract class MapReducer<X> implements
           new MapAggregator<>(ret, indexer, this.getZerofillTimestamps());
       for (MapFunction action : mappers) {
         if (action.isFlatMapper()) {
-          //noinspection unchecked – applying untyped function (we don't know intermediate types)
-          mapAggregator = mapAggregator.flatMap(action);
+          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
+          MapAggregator<OSHDBTimestamp, ?> flatMappedMapAggregator = mapAggregator.flatMap(action);
+          mapAggregator = flatMappedMapAggregator;
         } else {
-          //noinspection unchecked – applying untyped function (we don't know intermediate types)
-          mapAggregator = mapAggregator.map(action);
+          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
+          MapAggregator<OSHDBTimestamp, ?> mappedMapAggregator = mapAggregator.map(action);
+          mapAggregator = mappedMapAggregator;
         }
       }
-      //noinspection unchecked – after applying all (flat)map functions, the final type is X
-      return (MapAggregator<OSHDBTimestamp, X>)mapAggregator;
+      @SuppressWarnings("unchecked") // after applying all (flat)map functions the final type is X
+      MapAggregator<OSHDBTimestamp, X> result = (MapAggregator<OSHDBTimestamp, X>) mapAggregator;
+      return result;
     } else {
       return new MapAggregator<>(this, indexer, this.getZerofillTimestamps());
     }
@@ -914,8 +920,9 @@ public abstract class MapReducer<X> implements
             "aggregateByGeometry not implemented for objects of type: " + this.forClass.toString()
         );
       }
-      //noinspection unchecked – no mapper functions have been applied, so the type is still X
-      return (MapAggregator<U, X>) ret;
+      @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
+      MapAggregator<U, X> result = (MapAggregator<U, X>) ret;
+      return result;
     }
   }
 
@@ -977,7 +984,8 @@ public abstract class MapReducer<X> implements
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this.getMapper();
           if (this.forClass.equals(OSMContribution.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+            @SuppressWarnings("Convert2MethodRef")
+            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMContribution(
@@ -987,7 +995,8 @@ public abstract class MapReducer<X> implements
                 combiner
             );
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+            @SuppressWarnings("Convert2MethodRef")
+            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMEntitySnapshot(
@@ -1036,7 +1045,8 @@ public abstract class MapReducer<X> implements
           flatMapper = this.getFlatMapper();
         }
         if (this.forClass.equals(OSMContribution.class)) {
-          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          @SuppressWarnings("Convert2MethodRef")
+          // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
               data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMContributionGroupedById(
@@ -1046,7 +1056,8 @@ public abstract class MapReducer<X> implements
               combiner
           );
         } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
-          //noinspection Convert2MethodRef having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          @SuppressWarnings("Convert2MethodRef")
+          // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
               data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
@@ -1419,8 +1430,8 @@ public abstract class MapReducer<X> implements
    * @deprecated only for testing purposes, use `.stream().forEach()` instead
    */
   @Deprecated
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   public void forEach(SerializableConsumer<X> action) throws Exception {
-    // noinspection ResultOfMethodCallIgnored
     this.map(data -> {
       action.accept(data);
       return null;
@@ -1470,12 +1481,14 @@ public abstract class MapReducer<X> implements
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this.getMapper();
           if (this.forClass.equals(OSMContribution.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+            @SuppressWarnings("Convert2MethodRef")
+            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMContribution(contributionMapper);
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
-            //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+            @SuppressWarnings("Convert2MethodRef")
+            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
@@ -1519,12 +1532,14 @@ public abstract class MapReducer<X> implements
           flatMapper = this.getFlatMapper();
         }
         if (this.forClass.equals(OSMContribution.class)) {
-          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          @SuppressWarnings("Convert2MethodRef")
+          // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
               data -> flatMapper.apply(data);
           return this.flatMapStreamCellsOSMContributionGroupedById(contributionFlatMapper);
         } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
-          //noinspection Convert2MethodRef having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+          @SuppressWarnings("Convert2MethodRef")
+          // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
               data -> flatMapper.apply(data);
           return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(snapshotFlatMapper);
@@ -1836,8 +1851,8 @@ public abstract class MapReducer<X> implements
 
   // hack, so that we can use a variable that is of both Geometry and implements Polygonal (i.e.
   // Polygon or MultiPolygon) as required in further processing steps
+  @SuppressWarnings("unchecked") // all setters only accept Polygonal geometries
   protected <P extends Geometry & Polygonal> P getPolyFilter() {
-    //noinspection unchecked – all setters only accept Polygonal geometries
     return (P) this.polyFilter;
   }
 
@@ -1846,18 +1861,20 @@ public abstract class MapReducer<X> implements
     // todo: maybe we can somehow optimize this?? at least for special cases like
     // this.mappers.size() == 1
     return (SerializableFunction<Object, X>) (data -> {
+      // working with raw Objects since we don't know the actual intermediate types ¯\_(ツ)_/¯
       Object result = data;
       for (MapFunction mapper : this.mappers) {
         if (mapper.isFlatMapper()) {
           assert false : "flatMap callback requested in getMapper";
           throw new UnsupportedOperationException("cannot flat map this");
         } else {
-          //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           result = mapper.apply(result);
         }
       }
-      //noinspection unchecked – after applying all mapper functions, the result type is X
-      return (X) result;
+      @SuppressWarnings("unchecked")
+      // after applying all mapper functions, the result type is X
+      X mappedResult = (X) result;
+      return mappedResult;
     });
   }
 
@@ -1866,23 +1883,24 @@ public abstract class MapReducer<X> implements
     // todo: maybe we can somehow optimize this?? at least for special cases like
     // this.mappers.size() == 1
     return (SerializableFunction<Object, Iterable<X>>) (data -> {
+      // working with raw objects since we don't know the actual intermediate types ¯\_(ツ)_/¯
       List<Object> results = new LinkedList<>();
       results.add(data);
       for (MapFunction mapper : this.mappers) {
         List<Object> newResults = new LinkedList<>();
         if (mapper.isFlatMapper()) {
-          //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           results.forEach(result ->
               Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result))
           );
         } else {
-          //noinspection unchecked – we don't know the actual intermediate types ¯\_(ツ)_/¯
           results.forEach(result -> newResults.add(mapper.apply(result)));
         }
         results = newResults;
       }
-      //noinspection unchecked – after applying all mapper functions, the result type is List<X>
-      return (Iterable<X>) results;
+      @SuppressWarnings("unchecked")
+      // after applying all mapper functions, the result type is List<X>
+      Iterable<X> mappedResults = (Iterable<X>) results;
+      return mappedResults;
     });
   }
 
