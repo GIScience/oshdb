@@ -3,9 +3,24 @@ Changelog
 
 ## 0.6.0 SNAPSHOT (current master)
 
+* reorganize maven packages: rename group parent to ohsome-parent (version bump to 2.3), rename local parent to oshdb-parent, and change groupId to org.heigit.ohsome
+* compatibility fix to allow building of javadoc under Java 11 
+
+## 0.5.9
+
+* update Ignite to version 2.8.0
+
+## 0.5.8
+
+* fix a regression in 0.5.7 when using oshdb on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. #235
+* fix a bug in the geometry builder utility causing exceptions to be thrown for certain invalid OSM multipolygons. #231
+
+## 0.5.7
+
 * fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (dafault) "LocalPeek" backend. #229
 * throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside of the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. #158
-* (minor) reorganize parent package: bigspatialdata-parent version bump to 1.2, rename bigspatialdata-core-parent to oshdb-parent
+* improve querying of tag from keytables. #224
+* minor bug fixes and coding clean up. #216, #198, #206
 
 ## 0.5.6
 
@@ -24,7 +39,7 @@ Changelog
 
 ## 0.5.3
 
-* update ignite version to 2.7.5
+* update Ignite to version 2.7.5
 
 ## 0.5.2
 

@@ -35,7 +35,7 @@ In a second step the desired dependency is declared. For most use cases this wou
   <dependency>
     <groupId>org.heigit.bigspatialdata</groupId>
     <artifactId>oshdb-api</artifactId>
-    <version>0.5.6</version>
+    <version>0.5.9</version>
   </dependency>
 </dependencies>
 ```

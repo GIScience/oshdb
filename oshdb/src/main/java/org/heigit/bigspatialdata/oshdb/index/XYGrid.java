@@ -13,10 +13,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * XYGrid spans an equal degree grid over the world.
- * <br>
- * <br>
- * IDs for zoom = 2:
- * <table summary="how XYGrid sees the world" style="text-align:center; border-spacing: 4px">
+ * 
+ * <p>Example IDs for zoom = 2:
+ * <table style="text-align:center; border-spacing: 4px">
+ * <caption>How XYGrid sees the world.</caption>
  * <tr>
  * <td></td><td></td><td colspan="3">+90 lat</td><td></td><td></td><td></td>
  * </tr>
@@ -33,11 +33,9 @@ import org.slf4j.LoggerFactory;
  * <td></td><td></td><td colspan="3">-90 lat</td><td></td><td></td><td></td>
  * </tr>
  * </table>
- * <br>
- * Longitude +180 will be wrapped around to -180. Coordinates lying on
- * grid-borders will be assigned to the north-eastern cell.
  *
- *
+ * <p>Longitude +180 will be wrapped around to -180. Coordinates lying on
+ * grid-borders will be assigned to the north-eastern cell.</p>
  */
 public class XYGrid implements Serializable {
 
