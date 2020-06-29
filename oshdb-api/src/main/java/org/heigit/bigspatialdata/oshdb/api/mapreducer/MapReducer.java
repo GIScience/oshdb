@@ -67,6 +67,7 @@ import org.heigit.ohsome.filter.AndOperator;
 import org.heigit.ohsome.filter.BinaryOperator;
 import org.heigit.ohsome.filter.Filter;
 import org.heigit.ohsome.filter.FilterExpression;
+import org.heigit.ohsome.filter.FilterParser;
 import org.heigit.ohsome.filter.GeometryTypeFilter;
 import org.heigit.ohsome.filter.TagFilterEquals;
 import org.heigit.ohsome.filter.TagFilterEqualsAny;
@@ -749,6 +750,20 @@ public abstract class MapReducer<X> implements
       ret.mappers.addAll(mappers);
     }
     return optimizeFilters(ret, f);
+  }
+
+  /**
+   * Apply a custom "ohsome" filter to this query.
+   *
+   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax
+   * for a description of the ohsome filter syntax.</p>
+   *
+   * @param f the ohsome filter string to apply to the mapReducer
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapReducer<X> filter(String f) {
+    return this.filter(new FilterParser(this.getTagTranslator()).parse(f));
   }
 
   // -----------------------------------------------------------------------------------------------

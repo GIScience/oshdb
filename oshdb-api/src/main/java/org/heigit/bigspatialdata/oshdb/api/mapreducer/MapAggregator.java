@@ -826,6 +826,20 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     return this.copyTransform(this.mapReducer.filter(f));
   }
 
+  /**
+   * Apply a custom "ohsome" filter to this query.
+   *
+   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax
+   * for a description of the ohsome filter syntax.</p>
+   *
+   * @param f the ohsome filter string to apply to the mapAggregator
+   * @return a modified copy of this object (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapAggregator<U, X> filter(String f) {
+    return this.copyTransform(this.mapReducer.filter(f));
+  }
+
   // -----------------------------------------------------------------------------------------------
   // Exposed generic reduce.
   // Can be used by experienced users of the api to implement complex queries.
