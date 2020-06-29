@@ -63,9 +63,14 @@ import org.heigit.bigspatialdata.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
+import org.heigit.ohsome.filter.AndOperator;
 import org.heigit.ohsome.filter.BinaryOperator;
+import org.heigit.ohsome.filter.Filter;
 import org.heigit.ohsome.filter.FilterExpression;
 import org.heigit.ohsome.filter.GeometryTypeFilter;
+import org.heigit.ohsome.filter.TagFilterEquals;
+import org.heigit.ohsome.filter.TagFilterEqualsAny;
+import org.heigit.ohsome.filter.TypeFilter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
@@ -743,7 +748,7 @@ public abstract class MapReducer<X> implements
       }
       ret.mappers.addAll(mappers);
     }
-    return ret;
+    return optimizeFilters(ret, f);
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -2044,5 +2049,83 @@ public abstract class MapReducer<X> implements
     } else {
       return f instanceof GeometryTypeFilter;
     }
+  }
+
+  /**
+   * Performs optimizations when filtering by an "ohsome filter" expression.
+   *
+   * <p>It is not always optimal to apply filter expressions directly "out of the box", because
+   * it is using the flexible `osmEntityFilter` in the general case. If a filter expression can
+   * be rewritten to use the more performant, but less flexible, OSHDB filters (i.e., `osmTag` or
+   * `osmType`) this can result in a large performance boost.</p>
+   *
+   * <p>Currently, the following two optimizations are performed (but more could be feasibly be
+   * added in the future:</p>
+   *
+   * <p><b>basic optimizations:</b> includes simple filter expressions witch can be directly
+   * transformed to an (and-chain) of OSHDB filters (like OSM Tags or Types</p>
+   *
+   * @param mapRed the mapReducer whis the given filter was already applied on.
+   * @param filter the filter to optimize.
+   * @param <O> the type of the mapReducer to optimize (can be anything).
+   * @return a mapReducer with the same semantics as the original one, after some optimizations
+   *         were applied.
+   */
+  private <O> MapReducer<O> optimizeFilters(MapReducer<O> mapRed, FilterExpression filter) {
+    // basic optimizations
+    mapRed = optimizeFilters0(mapRed, filter);
+    // more advanced optimizations that rely on analyzing the DNF of a filter expression
+    mapRed = optimizeFilters1(mapRed, filter);
+    return mapRed;
+  }
+
+  private <O> MapReducer<O> optimizeFilters0(MapReducer<O> mapRed, FilterExpression filter) {
+    // basic optimizations (“low hanging fruit”):
+    // single filters, and-combination of single filters, etc.
+    if (filter instanceof TagFilterEquals) {
+      OSMTag tag = this.getTagTranslator().getOSMTagOf(((TagFilterEquals) filter).getTag());
+      return mapRed.osmTag(tag);
+    }
+    if (filter instanceof TagFilterEqualsAny) {
+      OSMTagKey key = this.getTagTranslator().getOSMTagKeyOf(
+          ((TagFilterEqualsAny) filter).getTag());
+      return mapRed.osmTag(key);
+    }
+    if (filter instanceof TypeFilter) {
+      return mapRed.osmType(((TypeFilter) filter).getType());
+    }
+    if (filter instanceof AndOperator) {
+      return optimizeFilters0(optimizeFilters0(mapRed,
+          ((AndOperator) filter).getLeftOperand()),
+          ((AndOperator) filter).getRightOperand());
+    }
+    return mapRed;
+  }
+
+  private <O> MapReducer<O> optimizeFilters1(MapReducer<O> mapRed, FilterExpression filter) {
+    // more advanced optimizations that rely on analyzing the DNF of a filter expression
+    List<List<Filter>> filterNormalized = filter.normalize();
+    // collect all OSMTypes in all of the clauses
+    EnumSet<OSMType> allTypes = EnumSet.noneOf(OSMType.class);
+    for (List<Filter> andSubFilter : filterNormalized) {
+      EnumSet<OSMType> subTypes = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
+      for (Filter subFilter : andSubFilter) {
+        if (subFilter instanceof TypeFilter) {
+          subTypes.retainAll(EnumSet.of(((TypeFilter) subFilter).getType()));
+        } else if (subFilter instanceof GeometryTypeFilter) {
+          subTypes.retainAll(((GeometryTypeFilter) subFilter).getOSMTypes());
+        }
+      }
+      allTypes.addAll(subTypes);
+    }
+    mapRed = mapRed.osmType(allTypes);
+    // (todo) intelligently group queried tags
+    /*
+     * here, we could optimize a few situations further: when a specific tag or key is used in all
+     * branches of the filter: run mapRed.osmTag the set of tags which are present in any branches:
+     * run mapRed.osmTag(list) (note that for this all branches need to have at least one
+     * TagFilterEquals or TagFilterEqualsAny) related: https://github.com/GIScience/oshdb/pull/210
+     */
+    return mapRed;
   }
 }
