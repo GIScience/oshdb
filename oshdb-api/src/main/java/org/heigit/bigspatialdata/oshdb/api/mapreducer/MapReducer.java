@@ -723,7 +723,7 @@ public abstract class MapReducer<X> implements
    * and https://docs.ohsome.org/java/ohsome-filter/1.2-SNAPSHOT for further information about how
    * to create such a filter expression object.</p>
    *
-   * @param f the filter expression to apply to the mapreducer
+   * @param f the filter expression to apply to the mapReducer
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)

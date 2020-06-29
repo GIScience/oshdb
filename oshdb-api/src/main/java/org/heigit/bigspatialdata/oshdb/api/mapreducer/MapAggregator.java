@@ -41,6 +41,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
+import org.heigit.ohsome.filter.FilterExpression;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
@@ -808,6 +809,21 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     return this.copyTransform(this.mapReducer.filter(data ->
       f.test(data.getValue())
     ));
+  }
+
+  /**
+   * Apply a custom "ohsome" filter expression to this query.
+   *
+   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme
+   * and https://docs.ohsome.org/java/ohsome-filter/1.2-SNAPSHOT for further information about how
+   * to create such a filter expression object.</p>
+   *
+   * @param f the filter expression to apply to the mapAggregator
+   * @return a modified copy of this object (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  public MapAggregator<U, X> filter(FilterExpression f) {
+    return this.copyTransform(this.mapReducer.filter(f));
   }
 
   // -----------------------------------------------------------------------------------------------
