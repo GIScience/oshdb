@@ -2,6 +2,7 @@
 --------------
 
 * new filter: "tag key in value-list" operator (syntax: `tag in (list, of, values)`)
+* new filter: select features by their OSM id (syntax: `id: 1`, `id: (1,2,3)`, `id: (1..3)`)
 * improve test coverage
 
 1.1.4
