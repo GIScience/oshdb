@@ -1,6 +1,7 @@
 package org.heigit.ohsome.filter;
 
 import com.google.common.collect.Streams;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -16,7 +17,7 @@ import org.locationtech.jts.geom.Geometry;
  * <p>Such an expression might be a simple key=value tag filter, or a more complex combination
  * of boolean operators, parentheses, tag filters and/or other filters.</p>
  */
-public interface FilterExpression {
+public interface FilterExpression extends Serializable {
 
   /**
    * Apply the filter to an OSM entity.
