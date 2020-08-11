@@ -136,11 +136,19 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     } catch (IgniteFutureTimeoutException e) {
       throw new OSHDBTimeoutException();
     } catch (IgniteException e) {
-      if (e.getCause().getCause() instanceof OSHDBTimeoutException) {
-        throw (OSHDBTimeoutException) e.getCause().getCause();
-      } else {
-        throw e;
-      }
+      throw unwindIgniteExceptions(e);
+    }
+  }
+
+  private static RuntimeException unwindIgniteExceptions(IgniteException exception) {
+    if (exception.getCause() == exception) {
+      throw exception;
+    } else if (exception.getCause() instanceof OSHDBTimeoutException) {
+      return (OSHDBTimeoutException) exception.getCause();
+    } else if (exception.getCause() instanceof IgniteException) {
+      return unwindIgniteExceptions((IgniteException) exception.getCause());
+    } else {
+      throw exception;
     }
   }
 
