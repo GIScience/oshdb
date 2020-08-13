@@ -57,8 +57,8 @@ public class TestOhsomeFilter {
   @Test
   public void testAggregateFilter() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducer()
-        .filter("(geometry:polygon or geometry:other) and building=*")
         .aggregateBy(x -> x.getEntity().getType())
+        .filter("(geometry:polygon or geometry:other) and building=*")
         .count();
 
     assertEquals(2, result.entrySet().size());
