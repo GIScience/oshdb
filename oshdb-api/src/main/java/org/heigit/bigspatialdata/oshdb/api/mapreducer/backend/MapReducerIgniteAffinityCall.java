@@ -136,17 +136,21 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     } catch (IgniteFutureTimeoutException e) {
       throw new OSHDBTimeoutException();
     } catch (IgniteException e) {
-      throw unwindIgniteExceptions(e);
+      // When a timeout happens remotely, the exception might be burried in (few) layers of
+      // "ignite exceptions". This recursively unwinds these and throws the original exception.
+      throw searchRemoteTimeout(e);
     }
   }
 
-  private static RuntimeException unwindIgniteExceptions(IgniteException exception) {
+  /** This recursively unwinds nested ignite exceptions: if an OSHDBTimeoutException is found it is
+   * returned, otherwise the causing exception is thrown.*/
+  private static OSHDBTimeoutException searchRemoteTimeout(IgniteException exception) {
     if (exception.getCause() == exception) {
       throw exception;
     } else if (exception.getCause() instanceof OSHDBTimeoutException) {
       return (OSHDBTimeoutException) exception.getCause();
     } else if (exception.getCause() instanceof IgniteException) {
-      return unwindIgniteExceptions((IgniteException) exception.getCause());
+      return searchRemoteTimeout((IgniteException) exception.getCause());
     } else {
       throw exception;
     }
