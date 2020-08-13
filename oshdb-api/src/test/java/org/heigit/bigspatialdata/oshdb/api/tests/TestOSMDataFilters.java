@@ -25,24 +25,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
+ * Tests osm data filters.
  */
 public class TestOSMDataFilters {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
-  private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2015-01-01");
-  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
-
-  private final double DELTA = 1e-8;
 
   public TestOSMDataFilters() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
-  }
-
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb);
   }
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     return OSMEntitySnapshotView.on(oshdb);
