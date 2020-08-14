@@ -734,7 +734,8 @@ public abstract class MapReducer<X> implements
     ret.filters.add(f::applyOSM);
     // apply geometry filter (only) if needed
     if (hasGeometryTypeFilter(f)) {
-      List<MapFunction> mappers = ret.mappers;
+      List<MapFunction> mappers = List.copyOf(ret.mappers);
+      ret.mappers.clear();
       if (ret.forClass.equals(OSMContribution.class)) {
         ret = ret.filter(x -> {
           OSMContribution c = (OSMContribution) x;

@@ -47,9 +47,10 @@ public class TestOhsomeFilter {
 
   @Test
   public void testFilterString() throws Exception {
-    Integer result = createMapReducer()
-        .filter("type:way and building=*")
-        .count();
+    Number result = createMapReducer()
+        .map(x -> 1)
+        .filter("type:way and geometry:polygon and building=*")
+        .sum();
 
     assertEquals(42, result.intValue());
   }
