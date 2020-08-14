@@ -22,9 +22,7 @@ A [`flatMap`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bi
 filter
 ------
 
-It is possible to define [`filter`s](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate-) that can sort out values after they already have been transformed in a map step.
-
-Note that these filters are different from the OSM data filters described in the “[Filtering of OSM data](filters.md)” section of this manual, since those filters are always applied at the beginning of each query on the full OSM history data directly, while the filters described here are executed during the transformation of the data. Normally, it is best to use the less flexible, but more performant OSM data filters wherever possible, because they can reduce the amount of data to be iterated over right from the start of the query.
+Filters can even be applied in the map phase. Read more about this feature in the [filters](filters.md#lambda-filters) section of this manual.
 
 reduce
 ------
