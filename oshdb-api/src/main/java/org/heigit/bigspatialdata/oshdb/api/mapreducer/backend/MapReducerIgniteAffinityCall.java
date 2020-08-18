@@ -136,12 +136,24 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     } catch (IgniteFutureTimeoutException e) {
       throw new OSHDBTimeoutException();
     } catch (IgniteException e) {
-      if (e.getCause().getCause() instanceof OSHDBTimeoutException) {
-        throw (OSHDBTimeoutException) e.getCause().getCause();
+      // When a timeout happens remotely, the exception might be burried in (few) layers of
+      // "ignite exceptions". This recursively unwinds these and throws the original exception.
+      Throwable unwrapped = unwrapNestedIgniteException(e);
+      if (unwrapped instanceof OSHDBTimeoutException) {
+        throw (OSHDBTimeoutException) unwrapped;
       } else {
         throw e;
       }
     }
+  }
+
+  /** Recursively unwinds nested ignite exceptions. */
+  private static Throwable unwrapNestedIgniteException(IgniteException e) {
+    Throwable cause = e.getCause();
+    if (cause instanceof IgniteException && e != cause) {
+      return unwrapNestedIgniteException((IgniteException) cause);
+    }
+    return cause;
   }
 
   /**
