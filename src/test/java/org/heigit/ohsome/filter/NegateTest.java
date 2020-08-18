@@ -1,5 +1,6 @@
 package org.heigit.ohsome.filter;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -165,5 +166,15 @@ public class NegateTest extends FilterTest {
     GeometryTypeFilter expression = new GeometryTypeFilter(GeometryType.OTHER, tagTranslator);
     FilterExpression negation = expression.negate();
     testAllGeometryTypes(expression, negation);
+  }
+
+  @Test
+  public void testConstant() {
+    ConstantFilter expression = new ConstantFilter(true);
+    FilterExpression negation = expression.negate();
+    assertTrue(negation instanceof ConstantFilter);
+    assertNotEquals(expression.getState(), ((ConstantFilter) negation).getState());
+    OSMEntity node = createTestEntityNode();
+    assertNotEquals(expression.applyOSM(node), negation.applyOSM(node));
   }
 }

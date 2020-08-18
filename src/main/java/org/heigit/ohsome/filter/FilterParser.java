@@ -133,13 +133,16 @@ public class FilterParser {
     final Parser<Void> not = whitespace
         .followedBy(Patterns.string("not").toScanner("not"))
         .followedBy(whitespace);
+    final Parser<ConstantFilter> emptyFilter = whitespace
+        .followedBy(Patterns.EOF.toScanner("EOF"))
+        .map(ignored -> new ConstantFilter(true));
     final Parser<FilterExpression> parser = new OperatorTable<FilterExpression>()
         .infixl(or.retn((a, b) -> BinaryOperator.fromOperator(a, BinaryOperator.Type.OR, b)), 10)
         .infixl(and.retn((a, b) -> BinaryOperator.fromOperator(a, BinaryOperator.Type.AND, b)), 20)
         .prefix(not.retn(FilterExpression::negate), 50)
         .build(unit);
     ref.set(parser);
-    this.parser = parser;
+    this.parser = Parsers.or(emptyFilter, parser);
   }
 
   /**

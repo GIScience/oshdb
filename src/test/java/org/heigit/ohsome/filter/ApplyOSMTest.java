@@ -139,4 +139,10 @@ public class ApplyOSMTest extends FilterTest {
     assertFalse(expression.applyOSM(createTestEntityNode()));
     assertTrue(expression.applyOSM(createTestEntityRelation()));
   }
+
+  @Test
+  public void testConstant() {
+    FilterExpression expression = parser.parse("");
+    assertTrue(expression.applyOSM(createTestEntityNode()));
+  }
 }

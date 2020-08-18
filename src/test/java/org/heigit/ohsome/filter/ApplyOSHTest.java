@@ -269,4 +269,10 @@ public class ApplyOSHTest extends FilterTest {
         super.createTestEntityRelation()
     )));
   }
+
+  @Test
+  public void testConstant() throws IOException {
+    FilterExpression expression = parser.parse("");
+    assertTrue(expression.applyOSH(createTestEntityNode(super.createTestEntityNode())));
+  }
 }

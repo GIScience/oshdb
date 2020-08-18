@@ -192,4 +192,17 @@ public class ParseTest extends FilterTest {
     );
     assertEquals("geometry:other", expression.toString());
   }
+
+  @Test
+  public void testEmptyFilter() {
+    FilterExpression expression = parser.parse("");
+    assertTrue(expression instanceof ConstantFilter);
+    assertTrue(((ConstantFilter) expression).getState());
+    assertEquals("true", expression.toString());
+
+    expression = parser.parse(" ");
+    assertTrue(expression instanceof ConstantFilter);
+    assertTrue(((ConstantFilter) expression).getState());
+    assertEquals("true", expression.toString());
+  }
 }
