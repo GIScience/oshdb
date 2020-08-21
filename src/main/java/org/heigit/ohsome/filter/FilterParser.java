@@ -14,7 +14,9 @@ import org.jparsec.OperatorTable;
 import org.jparsec.Parser;
 import org.jparsec.Parsers;
 import org.jparsec.Scanners;
+import org.jparsec.Terminals.IntegerLiteral;
 import org.jparsec.Terminals.StringLiteral;
+import org.jparsec.Tokens.Fragment;
 import org.jparsec.pattern.Patterns;
 
 /**
@@ -41,6 +43,7 @@ public class FilterParser {
         .toScanner("KEY_STRING (a-z, 0-9, : or -)")
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
+    final Parser<Long> number = IntegerLiteral.TOKENIZER.map(Fragment::text).map(Long::valueOf);
 
     final Parser<TagFilter.Type> equals = Patterns.string("=")
         .toScanner("EQUALS (=)")
@@ -49,6 +52,7 @@ public class FilterParser {
         .toScanner("NOT_EQUALS (!=)")
         .map(ignored -> TagFilter.Type.NOT_EQUALS);
     final Parser<Void> colon = Patterns.string(":").toScanner("COLON (:)");
+    final Parser<Void> id = Patterns.string("id").toScanner("id");
     final Parser<Void> type = Patterns.string("type").toScanner("type");
     final Parser<OSMType> node = Patterns.string("node").toScanner("node")
         .map(ignored -> OSMType.NODE);
@@ -80,10 +84,9 @@ public class FilterParser {
               : new OSMTag(key, value);
           return TagFilter.fromSelector(selector, tag, tt);
         });
-    final Parser<String> in = whitespace
-        .followedBy(Patterns.string("in").toScanner("IN"))
-        .followedBy(whitespace)
-        .map(ignored -> "in");
+    final Parser<Void> in = whitespace
+        .followedBy(Patterns.string("in").toScanner("in"))
+        .followedBy(whitespace);
     final Parser<List<String>> stringSequence = Parsers.sequence(
         Scanners.isChar('('),
         string.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
@@ -98,6 +101,42 @@ public class FilterParser {
           values.forEach(value -> tags.add(tt.getOSHDBTagOf(key, value)));
           return new TagFilterEqualsAnyOf(tags);
         });
+    final Parser<FilterExpression> idFilter = Parsers.sequence(
+        id,
+        whitespace,
+        colon,
+        whitespace,
+        number)
+        .map(IdFilterEquals::new);
+    final Parser<List<Long>> numberSequence = Parsers.sequence(
+        Scanners.isChar('('),
+        number.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
+        Scanners.isChar(')'),
+        (ignored, list, ignored2) -> list);
+    final Parser<FilterExpression> multiIdFilter = Parsers.sequence(
+        id,
+        whitespace,
+        colon,
+        whitespace,
+        numberSequence)
+        .map(IdFilterEqualsAnyOf::new);
+    final Parser<Void> dotdot = whitespace
+        .followedBy(Patterns.string("..").toScanner("DOT-DOT (..)"))
+        .followedBy(whitespace);
+    final Parser<FilterExpression> rangeIdFilter = Parsers.sequence(
+        id,
+        whitespace,
+        colon,
+        whitespace.followedBy(Scanners.isChar('(')).followedBy(whitespace),
+        Parsers.or(
+            Parsers.sequence(number, dotdot, number,
+                (min, ignored, max) -> new IdFilterRange.IdRange(min, max)),
+            Parsers.sequence(number, dotdot,
+                (min, ignored2) -> new IdFilterRange.IdRange(min, Long.MAX_VALUE)),
+            Parsers.sequence(dotdot, number,
+                (ignored, max) -> new IdFilterRange.IdRange(Long.MIN_VALUE, max))
+        ).followedBy(whitespace).followedBy(Scanners.isChar(')')))
+        .map(IdFilterRange::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
         whitespace,
@@ -116,6 +155,9 @@ public class FilterParser {
     final Parser<FilterExpression> filter = Parsers.or(
         tagFilter,
         multiTagFilter,
+        idFilter,
+        multiIdFilter,
+        rangeIdFilter,
         typeFilter,
         geometryTypeFilter);
 

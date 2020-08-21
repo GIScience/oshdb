@@ -2,6 +2,7 @@
 --------------
 
 * new filter: "tag key in value-list" operator (syntax: `tag in (list, of, values)`)
+* new filter: select features by their OSM id (syntax: `id: 1`, `id: (1,2,3)`, `id: (1..3)`)
 * allow parsing of empty filters which end up not filtering anything
 * update ohsome parent to version 2.4 (upgrades build environment to JDK 11)
 * improve test coverage

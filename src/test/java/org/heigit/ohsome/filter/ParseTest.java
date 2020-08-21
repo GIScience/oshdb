@@ -118,6 +118,77 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testIdFilterEquals() {
+    FilterExpression expression = parser.parse("id:123");
+    assertTrue(expression instanceof IdFilterEquals);
+    assertEquals(123, ((IdFilterEquals) expression).getId());
+    assertEquals("id:123", expression.toString());
+  }
+
+  @Test
+  public void testIdFilterNotEquals() {
+    FilterExpression expression = parser.parse("id:123").negate();
+    assertTrue(expression instanceof IdFilterNotEquals);
+    assertEquals(123, ((IdFilterNotEquals) expression).getId());
+    assertEquals("not-id:123", expression.toString());
+  }
+
+  @Test
+  public void testIdFilterEqualsAnyOf() {
+    FilterExpression expression = parser.parse("id:(1,2,3)");
+    assertTrue(expression instanceof IdFilterEqualsAnyOf);
+    assertEquals("id:in1,2,3", expression.toString());
+  }
+
+  @Test
+  public void testIdFilterEqualsNotAnyOf() {
+    FilterExpression expression = parser.parse("id:(1,2,3)").negate();
+    assertTrue(expression instanceof IdFilterEqualsAnyOf);
+    assertEquals("id:not-in1,2,3", expression.toString());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testIdFilterEqualsAnyOfCheckEmpty() {
+    new IdFilterEqualsAnyOf(Collections.emptyList());
+  }
+
+  @Test
+  public void testIdFilterInRange() {
+    // complete range
+    FilterExpression expression = parser.parse("id:(1..3)");
+    assertTrue(expression instanceof IdFilterRange);
+    assertEquals("id:in-range1..3", expression.toString());
+    // no min value
+    expression = parser.parse("id:(..3)");
+    assertTrue(expression instanceof IdFilterRange);
+    assertEquals("id:in-range..3", expression.toString());
+    // no max value
+    expression = parser.parse("id:(1..)");
+    assertTrue(expression instanceof IdFilterRange);
+    assertEquals("id:in-range1..", expression.toString());
+    // reverse order
+    expression = parser.parse("id:(3..1)");
+    assertTrue(expression instanceof IdFilterRange);
+    assertEquals("id:in-range1..3", expression.toString());
+  }
+
+  @Test
+  public void testIdFilterNotInRange() {
+    // complete range
+    FilterExpression expression = parser.parse("id:(1..3)").negate();
+    assertTrue(expression instanceof IdFilterRange);
+    assertEquals("id:not-in-range1..3", expression.toString());
+    // no min value
+    expression = parser.parse("id:(..3)").negate();
+    assertTrue(expression instanceof IdFilterRange);
+    assertEquals("id:not-in-range..3", expression.toString());
+    // no max value
+    expression = parser.parse("id:(1..)").negate();
+    assertTrue(expression instanceof IdFilterRange);
+    assertEquals("id:not-in-range1..", expression.toString());
+  }
+
+  @Test
   public void testTypeFilter() {
     FilterExpression expression = parser.parse("type:node");
     assertTrue(expression instanceof TypeFilter);

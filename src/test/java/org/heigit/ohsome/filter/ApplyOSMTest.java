@@ -1,5 +1,6 @@
 package org.heigit.ohsome.filter;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -71,6 +72,50 @@ public class ApplyOSMTest extends FilterTest {
         "name", "FIXME"
     )));
     assertTrue(expression.applyOSM(createTestEntityNode("highway", "primary")));
+  }
+
+  @Test
+  public void testIdFilterEquals() {
+    assertTrue(parser.parse("id:1").applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:2").applyOSM(createTestEntityNode()));
+  }
+
+  @Test
+  public void testIdFilterNotEquals() {
+    assertFalse(parser.parse("id:1").negate().applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:2").negate().applyOSM(createTestEntityNode()));
+  }
+
+  @Test
+  public void testIdFilterEqualsAnyOf() {
+    assertTrue(parser.parse("id:(1,2,3)").applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:(2,3)").applyOSM(createTestEntityNode()));
+  }
+
+  @Test
+  public void testIdFilterNotEqualsAnyOf() {
+    assertFalse(parser.parse("id:(1,2,3)").negate().applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:(2,3)").negate().applyOSM(createTestEntityNode()));
+  }
+
+  @Test
+  public void testIdFilterInRange() {
+    assertTrue(parser.parse("id:(1..3)").applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:(2..3)").applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:(1..)").applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:(2..)").applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:(..3)").applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:(..0)").applyOSM(createTestEntityNode()));
+  }
+
+  @Test
+  public void testIdFilterNotInRange() {
+    assertFalse(parser.parse("id:(1..3)").negate().applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:(2..3)").negate().applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:(1..)").negate().applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:(2..)").negate().applyOSM(createTestEntityNode()));
+    assertFalse(parser.parse("id:(..3)").negate().applyOSM(createTestEntityNode()));
+    assertTrue(parser.parse("id:(..0)").negate().applyOSM(createTestEntityNode()));
   }
 
   @Test

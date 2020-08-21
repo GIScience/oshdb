@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 
 /**
- * A tag filter which executes a "key not in (value1, value2, …)" check.
+ * A tag filter which executes a "key [not] in (value1, value2, …)" check.
  */
 abstract class TagFilterAnyOf implements Filter {
   final int keyId;

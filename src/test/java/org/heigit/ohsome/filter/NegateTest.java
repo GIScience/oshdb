@@ -1,9 +1,11 @@
 package org.heigit.ohsome.filter;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
@@ -81,6 +83,42 @@ public class NegateTest extends FilterTest {
     FilterExpression expression = new TagFilterNotEqualsAnyOf(Arrays.asList(tag1, tag2));
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterEqualsAnyOf);
+  }
+
+  @Test
+  public void testIdEqualsFilter() {
+    FilterExpression expression = new IdFilterEquals(1);
+    FilterExpression negation = expression.negate();
+    assertTrue(negation instanceof IdFilterNotEquals);
+  }
+
+  @Test
+  public void testIdNotEqualsFilter() {
+    FilterExpression expression = new IdFilterNotEquals(1);
+    FilterExpression negation = expression.negate();
+    assertTrue(negation instanceof IdFilterEquals);
+  }
+
+  @Test
+  public void testIdEqualsAnyOfFilter() {
+    FilterExpression expression = new IdFilterEqualsAnyOf(Collections.singletonList(1L));
+    FilterExpression negation = expression.negate();
+    assertTrue(negation instanceof IdFilterEqualsAnyOf);
+    OSMEntity testEntity = createTestEntityNode();
+    assertNotEquals(expression.applyOSM(testEntity), negation.applyOSM(testEntity));
+    FilterExpression doubleNegation = negation.negate();
+    assertEquals(expression.applyOSM(testEntity), doubleNegation.applyOSM(testEntity));
+  }
+
+  @Test
+  public void testIdInRangeFilter() {
+    FilterExpression expression = new IdFilterRange(new IdFilterRange.IdRange(1, 3));
+    FilterExpression negation = expression.negate();
+    assertTrue(negation instanceof IdFilterRange);
+    OSMEntity testEntity = createTestEntityNode();
+    assertNotEquals(expression.applyOSM(testEntity), negation.applyOSM(testEntity));
+    FilterExpression doubleNegation = negation.negate();
+    assertEquals(expression.applyOSM(testEntity), doubleNegation.applyOSM(testEntity));
   }
 
   private void testAllOSMTypes(FilterExpression expression, FilterExpression negation) {
