@@ -1,5 +1,6 @@
 package org.heigit.ohsome.filter;
 
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -8,7 +9,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
  * A tag filter which executes a "id [not] in range" check.
  */
 public class IdFilterRange implements Filter {
-  static class IdRange {
+  static class IdRange implements Serializable {
     private final long fromId;
     private final long toId;
 
