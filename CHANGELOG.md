@@ -2,8 +2,9 @@
 --------------
 
 * new filter: "tag key in value-list" operator (syntax: `tag in (list, of, values)`)
+* allow parsing of empty filters which end up not filtering anything
+* update ohsome parent to version 2.4 (upgrades build environment to JDK 11)
 * improve test coverage
-* update ohsome parent to version 2.3 (for building javadoc with JDK 11)
 
 1.1.4
 -----
