@@ -7,7 +7,7 @@ A parser and interpreter for filters which can be applied on OSM entities. It al
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.ohsome/ohsome-filter/badge.svg)](https://search.maven.org/artifact/org.heigit.ohsome/ohsome-filter)
 [![LICENSE](https://img.shields.io/github/license/GIScience/ohsome-filter)](COPYING)
 [![JavaDocs](https://img.shields.io/badge/Java-docs-blue.svg)](https://docs.ohsome.org/java/ohsome-filter)
-[![status: active](https://img.shields.io/badge/status-active-blue)](https://github.com/GIScience/badges#active)
+[![status: active](https://github.com/GIScience/badges/raw/master/status/active.svg)](https://github.com/GIScience/badges#active)
 
 Usage
 -----
