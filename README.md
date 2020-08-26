@@ -4,7 +4,10 @@ ohsome filter
 A parser and interpreter for filters which can be applied on OSM entities. It allows, for example, to filter by various combinations of OSM tags.
 
 [![build status](https://jenkins.ohsome.org/buildStatus/icon?job=ohsome-filter/master)](https://jenkins.ohsome.org/blue/organizations/jenkins/ohsome-filter/activity/?branch=master)
-[![project status: active](https://github.com/GIScience/badges/raw/master/status/active.png)](https://github.com/GIScience/badges#active)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.ohsome/ohsome-filter/badge.svg)](https://search.maven.org/artifact/org.heigit.ohsome/ohsome-filter)
+[![LICENSE](https://img.shields.io/github/license/GIScience/ohsome-filter)](COPYING)
+[![JavaDocs](https://img.shields.io/badge/Java-docs-blue.svg)](https://docs.ohsome.org/java/ohsome-filter)
+[![status: active](https://img.shields.io/badge/status-active-blue)](https://github.com/GIScience/badges#active)
 
 Usage
 -----
