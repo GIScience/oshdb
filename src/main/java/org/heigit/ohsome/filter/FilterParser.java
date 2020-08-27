@@ -113,7 +113,7 @@ public class FilterParser {
     final Parser<FilterExpression> idTypeFilter = Parsers.sequence(
         Parsers.sequence(id, whitespace, colon, whitespace),
         osmTypes,
-        Parsers.sequence(whitespace, slash, whitespace),
+        slash,
         number,
         (ignored, osmType, ignored2, osmId) ->
             new AndOperator(new TypeFilter(osmType), new IdFilterEquals(osmId)));
