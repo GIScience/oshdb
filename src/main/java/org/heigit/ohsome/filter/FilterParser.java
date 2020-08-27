@@ -52,6 +52,7 @@ public class FilterParser {
         .toScanner("NOT_EQUALS (!=)")
         .map(ignored -> TagFilter.Type.NOT_EQUALS);
     final Parser<Void> colon = Patterns.string(":").toScanner("COLON (:)");
+    final Parser<Void> slash = Patterns.string("/").toScanner("SLASH (/)");
     final Parser<Void> id = Patterns.string("id").toScanner("id");
     final Parser<Void> type = Patterns.string("type").toScanner("type");
     final Parser<OSMType> node = Patterns.string("node").toScanner("node")
@@ -60,6 +61,7 @@ public class FilterParser {
         .map(ignored -> OSMType.WAY);
     final Parser<OSMType> relation = Patterns.string("relation").toScanner("relation")
         .map(ignored -> OSMType.RELATION);
+    final Parser<OSMType> osmTypes = Parsers.or(node, way, relation);
     final Parser<Void> geometry = Patterns.string("geometry").toScanner("geometry");
     final Parser<GeometryType> point = Patterns.string("point").toScanner("point")
         .map(ignored -> GeometryType.POINT);
@@ -108,6 +110,13 @@ public class FilterParser {
         whitespace,
         number)
         .map(IdFilterEquals::new);
+    final Parser<FilterExpression> idTypeFilter = Parsers.sequence(
+        Parsers.sequence(id, whitespace, colon, whitespace),
+        osmTypes,
+        Parsers.sequence(whitespace, slash, whitespace),
+        number,
+        (ignored, osmType, ignored2, osmId) ->
+            new AndOperator(new TypeFilter(osmType), new IdFilterEquals(osmId)));
     final Parser<List<Long>> numberSequence = Parsers.sequence(
         Scanners.isChar('('),
         number.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
@@ -142,7 +151,7 @@ public class FilterParser {
         whitespace,
         colon,
         whitespace,
-        Parsers.or(node, way, relation))
+        osmTypes)
         .map(TypeFilter::new);
     final Parser<FilterExpression> geometryTypeFilter = Parsers.sequence(
         geometry,
@@ -156,6 +165,7 @@ public class FilterParser {
         tagFilter,
         multiTagFilter,
         idFilter,
+        idTypeFilter,
         multiIdFilter,
         rangeIdFilter,
         typeFilter,

@@ -126,6 +126,16 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testIdTypeFilterEquals() {
+    FilterExpression expression = parser.parse("id:node/123");
+    assertTrue(expression instanceof AndOperator);
+    assertTrue(((AndOperator) expression).op1 instanceof TypeFilter
+        || ((AndOperator) expression).op2 instanceof TypeFilter);
+    assertTrue(((AndOperator) expression).op1 instanceof IdFilterEquals
+        || ((AndOperator) expression).op2 instanceof IdFilterEquals);
+  }
+
+  @Test
   public void testIdFilterNotEquals() {
     FilterExpression expression = parser.parse("id:123").negate();
     assertTrue(expression instanceof IdFilterNotEquals);
