@@ -33,56 +33,56 @@ public class ISODateTimeParser {
    * @return ZonedDateTime
    * @throws Exception if Date or Date-Time pattern is not supported
    */
-  public static ZonedDateTime parseISODateTime(String isoDateTimeString) throws Exception{
+  public static ZonedDateTime parseISODateTime(String isoDateTimeString) throws Exception {
     ZonedDateTime zdt = null;
 
     // always remove trailing Z, no other timezones are allowed anyways
-    if (isoDateTimeString.endsWith("Z")){
+    if (isoDateTimeString.endsWith("Z")) {
       isoDateTimeString = isoDateTimeString.substring(0,isoDateTimeString.length() - 1);
     }
 
     int length = isoDateTimeString.length();
 
     switch (length) {
-    case 4:
-      // pattern = "uuuu";
-      zdt = Year.parse(isoDateTimeString).atDay(1).atStartOfDay(ZoneId.of("Z"));
-      break;
-    case 6:
-      // pattern = "uuuuMM";
-      zdt = LocalDate.parse(isoDateTimeString+"01", DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay(ZoneId.of("Z"));
-      break;
-    case 7:
-      // pattern = "uuuu-MM";
-      zdt = YearMonth.parse(isoDateTimeString).atDay(1).atStartOfDay(ZoneId.of("Z"));
-      break;
-    case 8:
-      // pattern = "uuuuMMDD";
-      zdt = LocalDate.parse(isoDateTimeString, DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay(ZoneId.of("Z"));
-      break;
-    case 10:
-      // pattern = "uuuu-MM-DD";
-      zdt = LocalDate.parse(isoDateTimeString, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneId.of("Z"));
-      break;
-      //with time
-    case 13:
-      // pattern = "uuuu-MM-DDTHH";
-      zdt = LocalDateTime.parse(isoDateTimeString+":00:00Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
-      break;
-    case 16:
-      // pattern = "uuuu-MM-DDTHH:MM";
-      zdt = LocalDateTime.parse(isoDateTimeString+":00Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
-      break;
-    case 19:
-      // pattern = "uuuu-MM-DDTHH:MM:ss";
-      zdt = LocalDateTime.parse(isoDateTimeString+"Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
-      break;
-    case 23:
-      // pattern = "uuuu-MM-DDTHH:MM:ss.sss";
-      zdt = LocalDateTime.parse(isoDateTimeString+"Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
-      break;
-    default:
-      throw new Exception("Date or DateTime Format not supported: " + isoDateTimeString);
+      case 4:
+        // pattern = "uuuu";
+        zdt = Year.parse(isoDateTimeString).atDay(1).atStartOfDay(ZoneId.of("Z"));
+        break;
+      case 6:
+        // pattern = "uuuuMM";
+        zdt = LocalDate.parse(isoDateTimeString + "01", DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay(ZoneId.of("Z"));
+        break;
+      case 7:
+        // pattern = "uuuu-MM";
+        zdt = YearMonth.parse(isoDateTimeString).atDay(1).atStartOfDay(ZoneId.of("Z"));
+        break;
+      case 8:
+        // pattern = "uuuuMMDD";
+        zdt = LocalDate.parse(isoDateTimeString, DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay(ZoneId.of("Z"));
+        break;
+      case 10:
+        // pattern = "uuuu-MM-DD";
+        zdt = LocalDate.parse(isoDateTimeString, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneId.of("Z"));
+        break;
+        //with time
+      case 13:
+        // pattern = "uuuu-MM-DDTHH";
+        zdt = LocalDateTime.parse(isoDateTimeString + ":00:00Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
+        break;
+      case 16:
+        // pattern = "uuuu-MM-DDTHH:MM";
+        zdt = LocalDateTime.parse(isoDateTimeString + ":00Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
+        break;
+      case 19:
+        // pattern = "uuuu-MM-DDTHH:MM:ss";
+        zdt = LocalDateTime.parse(isoDateTimeString + "Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
+        break;
+      case 23:
+        // pattern = "uuuu-MM-DDTHH:MM:ss.sss";
+        zdt = LocalDateTime.parse(isoDateTimeString + "Z", DateTimeFormatter.ISO_DATE_TIME).atZone(ZoneId.of("Z"));
+        break;
+      default:
+        throw new Exception("Date or DateTime Format not supported: " + isoDateTimeString);
     }
     
     return zdt;
@@ -106,7 +106,7 @@ public class ISODateTimeParser {
      * @return HashMap with a Period object and a Duration object
      * @throws Exception
      */
-    public static Map<String, Object> parseISOPeriod(String isoPeriodString) throws Exception{
+    public static Map<String, Object> parseISOPeriod(String isoPeriodString) throws Exception {
       
       Period period = Period.ZERO;
       Duration duration = Duration.ZERO;
@@ -131,7 +131,7 @@ public class ISODateTimeParser {
       //    Short Time Duration:  PTnH or any combonation of hours, minutes and seconds (PT1H10S 1 hour and 10 seconds)
       
       // validate period
-      Pattern isValidPattern = Pattern.compile("^P(?!$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(?=\\d+[HMS])(\\d+H)?(\\d+M)?(\\d+S)?)?$", Pattern.MULTILINE );
+      Pattern isValidPattern = Pattern.compile("^P(?!$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(?=\\d+[HMS])(\\d+H)?(\\d+M)?(\\d+S)?)?$", Pattern.MULTILINE);
       Matcher matcher  = isValidPattern.matcher(isoPeriodString);
       boolean isValid = matcher.matches();
       
