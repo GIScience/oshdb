@@ -51,7 +51,8 @@ public class FilterParser {
     final Parser<TagFilter.Type> notEquals = Patterns.string("!=")
         .toScanner("NOT_EQUALS (!=)")
         .map(ignored -> TagFilter.Type.NOT_EQUALS);
-    final Parser<Void> colon = Patterns.string(":").toScanner("COLON (:)");
+    final Parser<Void> colon = whitespace.followedBy(
+        Patterns.string(":").toScanner("COLON (:)")).followedBy(whitespace);
     final Parser<Void> slash = Patterns.string("/").toScanner("SLASH (/)");
     final Parser<Void> id = Patterns.string("id").toScanner("id");
     final Parser<Void> type = Patterns.string("type").toScanner("type");
@@ -105,17 +106,16 @@ public class FilterParser {
         });
     final Parser<FilterExpression> idFilter = Parsers.sequence(
         id,
-        whitespace,
         colon,
-        whitespace,
         number)
         .map(IdFilterEquals::new);
     final Parser<FilterExpression> idTypeFilter = Parsers.sequence(
-        Parsers.sequence(id, whitespace, colon, whitespace),
+        id,
+        colon,
         osmTypes,
         slash,
         number,
-        (ignored, osmType, ignored2, osmId) ->
+        (ignored, ignored2, osmType, ignored3, osmId) ->
             new AndOperator(new TypeFilter(osmType), new IdFilterEquals(osmId)));
     final Parser<List<Long>> numberSequence = Parsers.sequence(
         Scanners.isChar('('),
@@ -124,9 +124,7 @@ public class FilterParser {
         (ignored, list, ignored2) -> list);
     final Parser<FilterExpression> multiIdFilter = Parsers.sequence(
         id,
-        whitespace,
         colon,
-        whitespace,
         numberSequence)
         .map(IdFilterEqualsAnyOf::new);
     final Parser<Void> dotdot = whitespace
@@ -134,9 +132,9 @@ public class FilterParser {
         .followedBy(whitespace);
     final Parser<FilterExpression> rangeIdFilter = Parsers.sequence(
         id,
-        whitespace,
         colon,
-        whitespace.followedBy(Scanners.isChar('(')).followedBy(whitespace),
+        Scanners.isChar('('),
+        whitespace,
         Parsers.or(
             Parsers.sequence(number, dotdot, number,
                 (min, ignored, max) -> new IdFilterRange.IdRange(min, max)),
@@ -148,16 +146,12 @@ public class FilterParser {
         .map(IdFilterRange::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
-        whitespace,
         colon,
-        whitespace,
         osmTypes)
         .map(TypeFilter::new);
     final Parser<FilterExpression> geometryTypeFilter = Parsers.sequence(
         geometry,
-        whitespace,
         colon,
-        whitespace,
         Parsers.or(point, line, polygon, other))
         .map(geometryType -> new GeometryTypeFilter(geometryType, tt));
 
