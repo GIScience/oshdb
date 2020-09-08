@@ -151,6 +151,15 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testIdTypeFilterEqualsAnyOf() {
+    FilterExpression expression = parser.parse("id:(node/1,way/2)");
+    assertTrue(expression instanceof OrOperator);
+    assertTrue(((OrOperator) expression).op1 instanceof AndOperator);
+    assertTrue(((OrOperator) expression).op2 instanceof AndOperator);
+    assertEquals("type:node and id:1 or type:way and id:2", expression.toString());
+  }
+
+  @Test
   public void testIdFilterEqualsNotAnyOf() {
     FilterExpression expression = parser.parse("id:(1,2,3)").negate();
     assertTrue(expression instanceof IdFilterEqualsAnyOf);

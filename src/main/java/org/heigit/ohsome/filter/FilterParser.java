@@ -109,17 +109,18 @@ public class FilterParser {
         colon,
         number)
         .map(IdFilterEquals::new);
+    final Parser<FilterExpression> osmTypeIdParser = Parsers.sequence(
+        osmTypes.followedBy(slash),
+        number,
+        (osmType, osmId) -> new AndOperator(new TypeFilter(osmType), new IdFilterEquals(osmId)));
     final Parser<FilterExpression> idTypeFilter = Parsers.sequence(
         id,
         colon,
-        osmTypes,
-        slash,
-        number,
-        (ignored, ignored2, osmType, ignored3, osmId) ->
-            new AndOperator(new TypeFilter(osmType), new IdFilterEquals(osmId)));
+        osmTypeIdParser);
+    final Parser<Void> comma = whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace);
     final Parser<List<Long>> numberSequence = Parsers.sequence(
         Scanners.isChar('('),
-        number.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
+        number.sepBy(comma),
         Scanners.isChar(')'),
         (ignored, list, ignored2) -> list);
     final Parser<FilterExpression> multiIdFilter = Parsers.sequence(
@@ -127,6 +128,18 @@ public class FilterParser {
         colon,
         numberSequence)
         .map(IdFilterEqualsAnyOf::new);
+    final Parser<List<FilterExpression>> idTypeSequence = Parsers.sequence(
+        Scanners.isChar('('),
+        osmTypeIdParser.sepBy(comma),
+        Scanners.isChar(')'),
+        (ignored, list, ignored2) -> list);
+    final Parser<FilterExpression> multiIdTypeFilter = Parsers.sequence(
+        id,
+        colon,
+        idTypeSequence)
+        .map(list -> list.stream()
+            .reduce(OrOperator::new)
+            .orElse(new ConstantFilter(false)));
     final Parser<Void> dotdot = whitespace
         .followedBy(Patterns.string("..").toScanner("DOT-DOT (..)"))
         .followedBy(whitespace);
@@ -161,6 +174,7 @@ public class FilterParser {
         idFilter,
         idTypeFilter,
         multiIdFilter,
+        multiIdTypeFilter,
         rangeIdFilter,
         typeFilter,
         geometryTypeFilter);
