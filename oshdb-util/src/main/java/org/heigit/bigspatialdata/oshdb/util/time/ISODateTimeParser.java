@@ -93,7 +93,8 @@ public class ISODateTimeParser {
   }
 
   /**
-   * Converts an ISO Period string into two parts, a period for the date part and a duration for the time part.
+   * Converts an ISO Period string into two parts,
+   * a period for the date part and a duration for the time part.
    * <pre>
    *
    * Examples:
