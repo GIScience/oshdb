@@ -18,6 +18,9 @@ public class ISODateTimeParser {
 
   /**
    * Converts an ISO 8601 Date or combined Date-Time String into a UTC based ZonedDateTime Object.
+   * No other time zones are supported, please provide your date-time in UTC
+   * with or without trailing "Z".
+   *
    * <pre>
    *
    *  Examples:
