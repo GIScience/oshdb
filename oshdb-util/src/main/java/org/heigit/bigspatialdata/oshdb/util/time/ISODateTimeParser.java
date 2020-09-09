@@ -18,7 +18,8 @@ public class ISODateTimeParser {
 
   /**
    * Converts an ISO 8601 Date or combined Date-Time String into a UTC based ZonedDateTime Object.
-   * 
+   * <pre>
+   *
    *  Examples:
    *  ISO Date: 2017
    *  ISO Date: 2016-03
@@ -28,7 +29,7 @@ public class ISODateTimeParser {
    *  combined: 2011-10-03T20:15[Z]
    *  combined: 2011-10-03T20:15:25[Z]
    *  combined: 2011-10-03T20:15:25.123[Z]
-   *  
+   * </pre>
    * @param isoDateTimeString ISO Date or ISO DateTime string
    * @return ZonedDateTime
    * @throws Exception if Date or Date-Time pattern is not supported
@@ -38,7 +39,7 @@ public class ISODateTimeParser {
 
     // always remove trailing Z, no other timezones are allowed anyways
     if (isoDateTimeString.endsWith("Z")) {
-      isoDateTimeString = isoDateTimeString.substring(0,isoDateTimeString.length() - 1);
+      isoDateTimeString = isoDateTimeString.substring(0, isoDateTimeString.length() - 1);
     }
 
     int length = isoDateTimeString.length();
@@ -84,83 +85,84 @@ public class ISODateTimeParser {
       default:
         throw new Exception("Date or DateTime Format not supported: " + isoDateTimeString);
     }
-    
+
     return zdt;
   }
 
-    /**
-     * Converts an ISO Period string into two parts, a period for the date part and a duration for the time part.
-     * 
-     * Examples:
-     *  ISO Date Period: P1Y (years)
-     *  ISO Date Period: P3M (months)
-     *  ISO Date Period: P1D (days)
-     *  mixed ISO Dates:  P1Y25D or 1M15D
-     *  ISO Date Period: P2W (weeks)
-     *  ISO Time Duration: PT1H (hours)
-     *  ISO Time Duration: PT30M (minutes)
-     *  ISO Time Duration: PT20S (seconds)
-     *  combined DateTime: P1Y3M5DT5H30M20S
-     *  
-     * @param isoPeriodString ISO Period string
-     * @return HashMap with a Period object and a Duration object
-     * @throws Exception
-     */
-    public static Map<String, Object> parseISOPeriod(String isoPeriodString) throws Exception {
-      
-      Period period = Period.ZERO;
-      Duration duration = Duration.ZERO;
-      
-      //  isoPeriod should follow the ISO 8601 period notation without startdate
-      // P ^= Period
-      // Y =  Years
-      // M =  Month
-      // W =  Weeks
-      // D =  Days
-      // T ^= Time part starts here
-      // H = Hours
-      // M = Minutes
-      // S = Seconds
+  /**
+   * Converts an ISO Period string into two parts, a period for the date part and a duration for the time part.
+   * <pre>
+   *
+   * Examples:
+   *  ISO Date Period: P1Y (years)
+   *  ISO Date Period: P3M (months)
+   *  ISO Date Period: P1D (days)
+   *  mixed ISO Dates:  P1Y25D or 1M15D
+   *  ISO Date Period: P2W (weeks)
+   *  ISO Time Duration: PT1H (hours)
+   *  ISO Time Duration: PT30M (minutes)
+   *  ISO Time Duration: PT20S (seconds)
+   *  combined DateTime: P1Y3M5DT5H30M20S
+   *</pre>
+   * @param isoPeriodString ISO Period string
+   * @return HashMap with a Period object and a Duration object
+   * @throws Exception if the ISOPeriod string is not valid
+   */
+  public static Map<String, Object> parseISOPeriod(String isoPeriodString) throws Exception {
 
-      // Examples:    
-      //    Full DateTime Period: PnYnMnDTnHnMnS, e.g P1Y3M10DT1H15M25S (1 year 3months 10 days 1 hour 15 minutes and 25 seconds)
-      //    Full Date Period:      PnYnMnD, e.g. P1Y3M10D (1 year 3 months and 10 days)
-      //    Short Date Period:    e.g PnY or PnMnD or any combination of years, months and days
-      //    Week Period:           PnW, e.g. P2W 2 weeks
-      //    Full Time Duration:   PTnHnMnS, e.g. PT1H3M25S (1 hour 3 minutes and 25 seconds)
-      //    Short Time Duration:  PTnH or any combonation of hours, minutes and seconds (PT1H10S 1 hour and 10 seconds)
-      
-      // validate period
-      Pattern isValidPattern = Pattern.compile("^P(?!$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(?=\\d+[HMS])(\\d+H)?(\\d+M)?(\\d+S)?)?$", Pattern.MULTILINE);
-      Matcher matcher  = isValidPattern.matcher(isoPeriodString);
-      boolean isValid = matcher.matches();
-      
-      if (!isValid) {
-        throw new Exception("isoPeriodString is not valid: " + isoPeriodString + " (Format: P[yY][mM][dD][T[hH][mM][sS]])");
-      }
-      
-      boolean hasDateAndTimeComponent = Pattern.matches("P.+T.+", isoPeriodString);
-      boolean hasOnlyTimeComponent = isoPeriodString.startsWith("PT");
-      
-      if (hasDateAndTimeComponent){
-        String[] periodParts = isoPeriodString.split("T");
-        period = Period.parse(periodParts[0]);
-        duration = Duration.parse("PT"+periodParts[1]);
-      } else if (hasOnlyTimeComponent) {
-        duration = Duration.parse(isoPeriodString);
-      } else { //hasOnlyDateComponent
-        period = Period.parse(isoPeriodString);
-      }
-      
-      // check against zero length period/duration
-      if (duration.equals(Duration.ZERO) && period.equals(Period.ZERO)){
-        throw new Exception("the specified period has a lenght of ZERO: " + isoPeriodString);
-      }
-      
-      Map<String, Object> result = new HashMap<>();
-      result.put("period", period);
-      result.put("duration", duration);
-      
-      return result;
+    Period period = Period.ZERO;
+    Duration duration = Duration.ZERO;
+
+    //  isoPeriod should follow the ISO 8601 period notation without startdate
+    // P ^= Period
+    // Y =  Years
+    // M =  Month
+    // W =  Weeks
+    // D =  Days
+    // T ^= Time part starts here
+    // H = Hours
+    // M = Minutes
+    // S = Seconds
+
+    // Examples:
+    //    Full DateTime Period: PnYnMnDTnHnMnS, e.g P1Y3M10DT1H15M25S (1 year 3months 10 days 1 hour 15 minutes and 25 seconds)
+    //    Full Date Period:      PnYnMnD, e.g. P1Y3M10D (1 year 3 months and 10 days)
+    //    Short Date Period:    e.g PnY or PnMnD or any combination of years, months and days
+    //    Week Period:           PnW, e.g. P2W 2 weeks
+    //    Full Time Duration:   PTnHnMnS, e.g. PT1H3M25S (1 hour 3 minutes and 25 seconds)
+    //    Short Time Duration:  PTnH or any combination of hours, minutes and seconds (PT1H10S 1 hour and 10 seconds)
+
+    // validate period
+    Pattern isValidPattern = Pattern.compile("^P(?!$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(?=\\d+[HMS])(\\d+H)?(\\d+M)?(\\d+S)?)?$", Pattern.MULTILINE);
+    Matcher matcher  = isValidPattern.matcher(isoPeriodString);
+    boolean isValid = matcher.matches();
+
+    if (!isValid) {
+      throw new Exception("isoPeriodString is not valid: " + isoPeriodString + " (Format: P[yY][mM][dD][T[hH][mM][sS]])");
     }
+
+    boolean hasDateAndTimeComponent = Pattern.matches("P.+T.+", isoPeriodString);
+    boolean hasOnlyTimeComponent = isoPeriodString.startsWith("PT");
+
+    if (hasDateAndTimeComponent) {
+      String[] periodParts = isoPeriodString.split("T");
+      period = Period.parse(periodParts[0]);
+      duration = Duration.parse("PT" + periodParts[1]);
+    } else if (hasOnlyTimeComponent) {
+      duration = Duration.parse(isoPeriodString);
+    } else { //hasOnlyDateComponent
+      period = Period.parse(isoPeriodString);
+    }
+
+    // check against zero length period/duration
+    if (duration.equals(Duration.ZERO) && period.equals(Period.ZERO)) {
+      throw new Exception("the specified period has a length of ZERO: " + isoPeriodString);
+    }
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("period", period);
+    result.put("duration", duration);
+
+    return result;
+  }
 }
