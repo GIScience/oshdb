@@ -18,8 +18,11 @@ public class ISODateTimeParser {
 
   /**
    * Converts an ISO 8601 Date or combined Date-Time String into a UTC based ZonedDateTime Object.
+   * <br>
    * No other time zones are supported, please provide your date-time in UTC
    * with or without trailing "Z".
+   * <br>
+   * Time zone designators in the form "+hh:mm" are not accepted.
    *
    * <pre>
    *
@@ -39,6 +42,16 @@ public class ISODateTimeParser {
    */
   public static ZonedDateTime parseISODateTime(String isoDateTimeString) throws Exception {
     ZonedDateTime zdt = null;
+
+    isoDateTimeString = isoDateTimeString.trim();
+
+    if (isoDateTimeString.startsWith("-")) {
+      throw new Exception("Negative Dates are not supported: " + isoDateTimeString);
+    }
+
+    if (isoDateTimeString.matches("^([0-9]|-)*T([0-9]|:|\\.)*(\\+|-)([0-9]|:)*$")) {
+      throw new Exception("No timezone designator other than 'Z' is allowed: " + isoDateTimeString);
+    }
 
     // always remove trailing Z, no other timezones are allowed anyways
     if (isoDateTimeString.endsWith("Z")) {
