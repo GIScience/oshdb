@@ -7,10 +7,10 @@ import java.time.Duration;
 import java.time.Period;
 import java.util.Map;
 
-import static org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser.parseISODateTime;
-import static org.heigit.bigspatialdata.oshdb.util.time.ISODateTimeParser.parseISOPeriod;
+import static org.heigit.bigspatialdata.oshdb.util.time.IsoDateTimeParser.parseIsoDateTime;
+import static org.heigit.bigspatialdata.oshdb.util.time.IsoDateTimeParser.parseIsoPeriod;
 
-public class ISODateTimeParserTest {
+public class IsoDateTimeParserTest {
 
     @Test
     public void testParseISODateTime() throws Exception {
@@ -21,16 +21,16 @@ public class ISODateTimeParserTest {
         String[] yyyymm = {"2020-02-01T00:00Z", "202002"};
         String[] yyyymmdd = {"2020-02-17T00:00Z", "20200217"};
 
-        Assert.assertEquals(yyyy[0], parseISODateTime(yyyy[1]).toString());
-        Assert.assertEquals(yyyymm[0], parseISODateTime(yyyymm[1]).toString());
-        Assert.assertEquals(yyyymmdd[0], parseISODateTime(yyyymmdd[1]).toString());
+        Assert.assertEquals(yyyy[0], parseIsoDateTime(yyyy[1]).toString());
+        Assert.assertEquals(yyyymm[0], parseIsoDateTime(yyyymm[1]).toString());
+        Assert.assertEquals(yyyymmdd[0], parseIsoDateTime(yyyymmdd[1]).toString());
 
         //Extended Dates
         String[] yyyy_mm = {"2020-02-01T00:00Z", "2020-02"};
         String[] yyyy_mm_dd = {"2020-02-17T00:00Z", "2020-02-17"};
 
-        Assert.assertEquals(yyyy_mm[0], parseISODateTime(yyyy_mm[1]).toString());
-        Assert.assertEquals(yyyy_mm_dd[0], parseISODateTime(yyyy_mm_dd[1]).toString());
+        Assert.assertEquals(yyyy_mm[0], parseIsoDateTime(yyyy_mm[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd[0], parseIsoDateTime(yyyy_mm_dd[1]).toString());
 
         //Extended Date-Time
         String[] yyyy_mm_dd_hh = {"2020-02-17T23:00Z", "2020-02-17T23"};
@@ -45,17 +45,17 @@ public class ISODateTimeParserTest {
         String[] yyyy_mm_dd_hh_mm_ss_sss = {"2020-02-17T23:55:12.999Z", "2020-02-17T23:55:12.999"};
         String[] yyyy_mm_dd_hh_mm_ss_sssz = {"2020-02-17T23:55:12.999Z", "2020-02-17T23:55:12.999Z"};
 
-        Assert.assertEquals(yyyy_mm_dd_hh[0], parseISODateTime(yyyy_mm_dd_hh[1]).toString());
-        Assert.assertEquals(yyyy_mm_dd_hhz[0], parseISODateTime(yyyy_mm_dd_hhz[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hh[0], parseIsoDateTime(yyyy_mm_dd_hh[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hhz[0], parseIsoDateTime(yyyy_mm_dd_hhz[1]).toString());
 
-        Assert.assertEquals(yyyy_mm_dd_hh_mm[0], parseISODateTime(yyyy_mm_dd_hh_mm[1]).toString());
-        Assert.assertEquals(yyyy_mm_dd_hh_mmz[0], parseISODateTime(yyyy_mm_dd_hh_mmz[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hh_mm[0], parseIsoDateTime(yyyy_mm_dd_hh_mm[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hh_mmz[0], parseIsoDateTime(yyyy_mm_dd_hh_mmz[1]).toString());
 
-        Assert.assertEquals(yyyy_mm_dd_hh_mm_ss[0], parseISODateTime(yyyy_mm_dd_hh_mm_ss[1]).toString());
-        Assert.assertEquals(yyyy_mm_dd_hh_mm_ssz[0], parseISODateTime(yyyy_mm_dd_hh_mm_ssz[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hh_mm_ss[0], parseIsoDateTime(yyyy_mm_dd_hh_mm_ss[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hh_mm_ssz[0], parseIsoDateTime(yyyy_mm_dd_hh_mm_ssz[1]).toString());
 
-        Assert.assertEquals(yyyy_mm_dd_hh_mm_ss_sss[0], parseISODateTime(yyyy_mm_dd_hh_mm_ss_sss[1]).toString());
-        Assert.assertEquals(yyyy_mm_dd_hh_mm_ss_sssz[0], parseISODateTime(yyyy_mm_dd_hh_mm_ss_sssz[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hh_mm_ss_sss[0], parseIsoDateTime(yyyy_mm_dd_hh_mm_ss_sss[1]).toString());
+        Assert.assertEquals(yyyy_mm_dd_hh_mm_ss_sssz[0], parseIsoDateTime(yyyy_mm_dd_hh_mm_ss_sssz[1]).toString());
 
     }
 
@@ -64,58 +64,58 @@ public class ISODateTimeParserTest {
     public void throwsNegativeDateParseISODateTime() throws Exception {
         //Negative Dates
         String nyyyy = "-0333";
-        parseISODateTime(nyyyy);
+        parseIsoDateTime(nyyyy);
     }
 
     @Test(expected = Exception.class)
     public void throwsShortYearParseISODateTime() throws Exception {
         //Short Year
         String yy = "12";
-        parseISODateTime(yy);
+        parseIsoDateTime(yy);
     }
 
     @Test(expected = Exception.class)
     public void throwsPosTimezoneHHParseISODateTime() throws Exception {
         String posTimezone_hh = "2020-02-17T23:55+02";
-        parseISODateTime(posTimezone_hh);
+        parseIsoDateTime(posTimezone_hh);
     }
 
     @Test(expected = Exception.class)
     public void throwsPosTimezoneHHMMParseISODateTime() throws Exception {
         String posTimezone_hhmm = "2020-02-17T23:55+0230";
-        parseISODateTime(posTimezone_hhmm);
+        parseIsoDateTime(posTimezone_hhmm);
     }
 
     @Test(expected = Exception.class)
     public void throwsPosTimezoneHH_MMParseISODateTime() throws Exception {
         String posTimezone_hh_mm = "2020-02-17T23:55+02:30";
-        parseISODateTime(posTimezone_hh_mm);
+        parseIsoDateTime(posTimezone_hh_mm);
     }
 
     //
     @Test(expected = Exception.class)
     public void throwsNegTimezoneHHParseISODateTime() throws Exception {
         String negTimezone_hh = "2020-02-17T23:55-02";
-        parseISODateTime(negTimezone_hh);
+        parseIsoDateTime(negTimezone_hh);
     }
 
     @Test(expected = Exception.class)
     public void throwsNegTimezoneHHMMParseISODateTime() throws Exception {
         String negTimezone_hhmm = "2020-02-17T23:55-0230";
-        parseISODateTime(negTimezone_hhmm);
+        parseIsoDateTime(negTimezone_hhmm);
     }
 
     @Test(expected = Exception.class)
     public void throwsNegTimezoneHH_MMParseISODateTime() throws Exception {
         String negTimezone_hh_mm = "2020-02-17T23:55-02:30";
-        parseISODateTime(negTimezone_hh_mm);
+        parseIsoDateTime(negTimezone_hh_mm);
     }
 
     @Test(expected = Exception.class)
     public void throwsWrongDateParseISODateTime() throws Exception {
         //Wrong Date
         String wrongDateTime = "2020-13-01T00:00";
-        parseISODateTime(wrongDateTime);
+        parseIsoDateTime(wrongDateTime);
     }
 
 
@@ -131,28 +131,28 @@ public class ISODateTimeParserTest {
         //    Short Time Duration:  PTnH or any combination of hours, minutes and seconds (PT1H10S 1 hour and 10 seconds)
 
         String[] fullDateTimePeriod = {"P1Y3M10DT1H15M25S", "P1Y3M10D", "PT1H15M25S"}; // input, output Period, output Duration
-        Map<String, Object> fullYearMonthDayTime = parseISOPeriod(fullDateTimePeriod[0]);
+        Map<String, Object> fullYearMonthDayTime = parseIsoPeriod(fullDateTimePeriod[0]);
         Period fullYearMonthDayTimePeriod = (Period) fullYearMonthDayTime.get("period");
         Duration fullYearMonthDayTimeDuration = (Duration) fullYearMonthDayTime.get("duration");
         Assert.assertEquals(fullDateTimePeriod[1], fullYearMonthDayTimePeriod.toString());
         Assert.assertEquals(fullDateTimePeriod[2], fullYearMonthDayTimeDuration.toString());
 
         String fullDatePeriod = "P1Y3M10D";  //Period output should be same as input, Duration should be ZERO;
-        Map<String, Object> fullYearMonthDay = parseISOPeriod(fullDatePeriod);
+        Map<String, Object> fullYearMonthDay = parseIsoPeriod(fullDatePeriod);
         Period fullYearMonthDayPeriod = (Period) fullYearMonthDay.get("period");
         Duration fullYearMonthDayDuration = (Duration) fullYearMonthDay.get("duration");
         Assert.assertEquals(fullDatePeriod, fullYearMonthDayPeriod.toString());
         Assert.assertTrue(fullYearMonthDayDuration.isZero());
 
         String shortDatePeriod = "P3M10D"; //Period output should be same as input, Duration should be ZERO;
-        Map<String, Object> shortMonthDay = parseISOPeriod(shortDatePeriod);
+        Map<String, Object> shortMonthDay = parseIsoPeriod(shortDatePeriod);
         Period shortMonthDayPeriod = (Period) shortMonthDay.get("period");
         Duration shortMonthDayDuration = (Duration) shortMonthDay.get("duration");
         Assert.assertEquals(shortDatePeriod, shortMonthDayPeriod.toString());
         Assert.assertTrue(shortMonthDayDuration.isZero());
 
         String weekPeriod = "P2W"; // Period should equal 14 days, Duration should be ZERO;
-        Map<String, Object> twoWeeks = parseISOPeriod(weekPeriod);
+        Map<String, Object> twoWeeks = parseIsoPeriod(weekPeriod);
         Period twoWeeksPeriod = (Period) twoWeeks.get("period");
         Duration twoWeeksDuration = (Duration) twoWeeks.get("duration");
         Assert.assertEquals(14, twoWeeksPeriod.getDays());
@@ -163,13 +163,13 @@ public class ISODateTimeParserTest {
     @Test(expected = Exception.class)
     public void throwsFormatParseISOPeriod() throws Exception {
         // test throw exeption for unsupported formats
-        parseISOPeriod("PT1Y2M");
+        parseIsoPeriod("PT1Y2M");
     }
 
     @Test(expected = Exception.class)
     public void throwsZeroLengthParseISOPeriod() throws Exception {
         //test for zero length ISOPeriod
-        parseISOPeriod("PT0S");
+        parseIsoPeriod("PT0S");
     }
 
 }

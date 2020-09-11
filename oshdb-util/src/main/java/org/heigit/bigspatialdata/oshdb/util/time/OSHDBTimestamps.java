@@ -138,9 +138,9 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
     } else {
       SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
       try {
-        timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(start).toEpochSecond()));
+        timestamps.add(new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(start).toEpochSecond()));
         if (start.equals(end)) return timestamps;
-        timestamps.add(new OSHDBTimestamp(ISODateTimeParser.parseISODateTime(end).toEpochSecond()));
+        timestamps.add(new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(end).toEpochSecond()));
       } catch (Exception e) {
         LOG.error("Unable to parse timestamp string, skipping: " + e.getMessage());
       }
@@ -150,9 +150,9 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
 
   private static List<Long> _getTimestampsAsEpochSeconds(String isoStringStart, String isoStringEnd, String isoStringPeriod, Boolean fromEnd) {
     try {
-      ZonedDateTime start = ISODateTimeParser.parseISODateTime(isoStringStart);
-      ZonedDateTime end = ISODateTimeParser.parseISODateTime(isoStringEnd);
-      Map<String, Object> steps = ISODateTimeParser.parseISOPeriod(isoStringPeriod);
+      ZonedDateTime start = IsoDateTimeParser.parseIsoDateTime(isoStringStart);
+      ZonedDateTime end = IsoDateTimeParser.parseIsoDateTime(isoStringEnd);
+      Map<String, Object> steps = IsoDateTimeParser.parseIsoPeriod(isoStringPeriod);
 
       Period period = (Period) steps.get("period");
       Duration duration = (Duration) steps.get("duration");
