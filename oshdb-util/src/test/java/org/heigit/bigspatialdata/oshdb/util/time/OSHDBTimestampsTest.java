@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
 
@@ -60,11 +61,11 @@ public class OSHDBTimestampsTest {
       OSHDBTimestamps timestamps = new OSHDBTimestamps(startList.get(i), endList.get(i),
           intervalList.get(i));
 
-      Iterator resultIt = timestamps.get().iterator();
-      Iterator expResultIt = expectedResultList.get(i).iterator();
+      var resultIt = timestamps.get().iterator();
+      var expResultIt = expectedResultList.get(i).iterator();
       // check if results are exactly the same
       while (resultIt.hasNext()) {
-        assertEquals(expResultIt.next().toString(), resultIt.next().toString());
+        assertEquals(expResultIt.next(), resultIt.next().toString());
       }
       // check if more results are expected
       assertFalse(expResultIt.hasNext());
@@ -73,6 +74,12 @@ public class OSHDBTimestampsTest {
 
     // check if all intervals in the enum are tested
     assertTrue(testedIntervals.containsAll(EnumSet.allOf(Interval.class)));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testInvalidTimestamp() {
+    @SuppressWarnings("unused") // creating this object should trigger the exception
+    OSHDBTimestamps invalid = new OSHDBTimestamps("test123");
   }
 
 }
