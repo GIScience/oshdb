@@ -24,16 +24,12 @@ public class IsoDateTimeParser {
   /**
    * Converts an ISO 8601 Date or combined Date-Time String into a UTC based ZonedDateTime Object.
    *
-   * <p>
-   * No other time zones are supported, please provide your date-time in UTC
+   * <p>No other time zones are supported, please provide your date-time in UTC
    * with or without trailing "Z".
-   * </p>
-   * <p>
-   * Time zone designators in the form "+hh:mm" are not accepted.
-   * </p>
    *
-   * <p>
-   * Examples:
+   * <p>Time zone designators in the form "+hh:mm" are not accepted.
+   *
+   * <p>Examples:
    * <pre>
    *  ISO Date: 2017
    *  ISO Date: 2016-03
@@ -43,7 +39,7 @@ public class IsoDateTimeParser {
    *  combined: 2011-10-03T20:15[Z]
    *  combined: 2011-10-03T20:15:25[Z]
    *  combined: 2011-10-03T20:15:25.123[Z]
-   * </pre></p>
+   * </pre>
    *
    * @param isoDateTime ISO Date or ISO DateTime string
    * @return ZonedDateTime
@@ -109,8 +105,7 @@ public class IsoDateTimeParser {
    * Converts an ISO Period string into two parts,
    * a period for the date part and a duration for the time part.
    *
-   * <p>
-   * Examples:
+   * <p>Examples:
    * <pre>
    *  ISO Date Period: P1Y (years)
    *  ISO Date Period: P3M (months)
@@ -121,7 +116,7 @@ public class IsoDateTimeParser {
    *  ISO Time Duration: PT30M (minutes)
    *  ISO Time Duration: PT20S (seconds)
    *  combined DateTime: P1Y3M5DT5H30M20S
-   * </pre></p>
+   * </pre>
    *
    * @param isoPeriodString ISO Period string
    * @return HashMap with a Period object and a Duration object
