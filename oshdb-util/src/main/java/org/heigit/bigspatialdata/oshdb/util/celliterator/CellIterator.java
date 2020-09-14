@@ -47,6 +47,13 @@ import org.locationtech.jts.geom.TopologyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Allows to iterate through the contents of OSH grid cells.
+ *
+ * <p>There are two modes of iterating through a cell: 1) iterate at specific timestamps
+ * (entity snapshots) {@link #iterateByTimestamps(GridOSHEntity)} or 2) iterate through
+ * all (minor) versions of each entity {@link #iterateByContribution(GridOSHEntity)}.
+ */
 public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
 
@@ -54,23 +61,24 @@ public class CellIterator implements Serializable {
 
   public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {}
 
-  private TreeSet<OSHDBTimestamp> timestamps;
-  private OSHDBBoundingBox boundingBox;
+  private final TreeSet<OSHDBTimestamp> timestamps;
+  private final OSHDBBoundingBox boundingBox;
   private boolean isBoundByPolygon;
   private FastBboxInPolygon bboxInPolygon;
   private FastBboxOutsidePolygon bboxOutsidePolygon;
   private FastPolygonOperations fastPolygonClipper;
-  private TagInterpreter tagInterpreter;
-  private OSHEntityFilter oshEntityPreFilter;
-  private OSMEntityFilter osmEntityFilter;
-  private boolean includeOldStyleMultipolygons;
+  private final TagInterpreter tagInterpreter;
+  private final OSHEntityFilter oshEntityPreFilter;
+  private final OSMEntityFilter osmEntityFilter;
+  private final boolean includeOldStyleMultipolygons;
 
   /**
-   * todo…
+   * Creates a cell iterator from a bounding box and a bounding polygon.
    *
    * @param timestamps a list of timestamps to return data for
    * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are
    *        clipped to this extent
+   * @param tagInterpreter helper object which is used to determine entitie's geometry types
    * @param boundingPolygon only entities inside or intersecting this polygon are returned,
    *        geometries are clipped to this extent. If present, the supplied boundingBox must be the
    *        boundingBox of this polygon
@@ -80,19 +88,21 @@ public class CellIterator implements Serializable {
    *        feature is included in the output
    * @param includeOldStyleMultipolygons if true, output contains also data for "old style
    *        multipolygons".
-   *
    *        Note, that if includeOldStyleMultipolygons is true, for each old style multipolygon only
    *        the geometry of the inner holes are returned (while the outer part is already present as
    *        the respective way's output)! This has to be interpreted separately and differently in
    *        the data analysis! The includeOldStyleMultipolygons is also quite a bit less efficient
    *        (both CPU and memory) as the default path.
+   * @param <P> either {@link org.locationtech.jts.geom.Polygon} or
+   *        {@link org.locationtech.jts.geom.MultiPolygon}
    */
   public <P extends Geometry & Polygonal> CellIterator(
       SortedSet<OSHDBTimestamp> timestamps,
       OSHDBBoundingBox boundingBox,
       P boundingPolygon,
       TagInterpreter tagInterpreter,
-      OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
+      OSHEntityFilter oshEntityPreFilter,
+      OSMEntityFilter osmEntityFilter,
       boolean includeOldStyleMultipolygons
   ) {
     this(
@@ -110,11 +120,34 @@ public class CellIterator implements Serializable {
       this.fastPolygonClipper = new FastPolygonOperations(boundingPolygon);
     }
   }
+
+  /**
+   * Creates a cell iterator from a bounding polygon.
+   *
+   * @param timestamps a list of timestamps to return data for
+   * @param tagInterpreter helper object which is used to determine entitie's geometry types
+   * @param boundingPolygon only entities inside or intersecting this polygon are returned,
+   *        geometries are clipped to this extent.
+   * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter
+   *        elements. only if it returns true, its osmEntity objects can be included in the output
+   * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular
+   *        feature is included in the output
+   * @param includeOldStyleMultipolygons if true, output contains also data for "old style
+   *        multipolygons".
+   *        Note, that if includeOldStyleMultipolygons is true, for each old style multipolygon only
+   *        the geometry of the inner holes are returned (while the outer part is already present as
+   *        the respective way's output)! This has to be interpreted separately and differently in
+   *        the data analysis! The includeOldStyleMultipolygons is also quite a bit less efficient
+   *        (both CPU and memory) as the default path.
+   * @param <P> either {@link org.locationtech.jts.geom.Polygon} or
+   *        {@link org.locationtech.jts.geom.MultiPolygon}
+   */
   public <P extends Geometry & Polygonal> CellIterator(
       SortedSet<OSHDBTimestamp> timestamps,
       @Nonnull P boundingPolygon,
       TagInterpreter tagInterpreter,
-      OSHEntityFilter oshEntityPreFilter, OSMEntityFilter osmEntityFilter,
+      OSHEntityFilter oshEntityPreFilter,
+      OSMEntityFilter osmEntityFilter,
       boolean includeOldStyleMultipolygons
   ) {
     this(
@@ -127,6 +160,26 @@ public class CellIterator implements Serializable {
         includeOldStyleMultipolygons
     );
   }
+
+  /**
+   * Creates a cell iterator from a bounding box.
+   *
+   * @param timestamps a list of timestamps to return data for
+   * @param tagInterpreter helper object which is used to determine entitie's geometry types
+   * @param boundingBox only entities inside or intersecting this bbox are returned, geometries are
+   *        clipped to this extent
+   * @param oshEntityPreFilter (optional) a lambda called for each osh entity to pre-filter
+   *        elements. only if it returns true, its osmEntity objects can be included in the output
+   * @param osmEntityFilter a lambda called for each entity. if it returns true, the particular
+   *        feature is included in the output
+   * @param includeOldStyleMultipolygons if true, output contains also data for "old style
+   *        multipolygons".
+   *        Note, that if includeOldStyleMultipolygons is true, for each old style multipolygon only
+   *        the geometry of the inner holes are returned (while the outer part is already present as
+   *        the respective way's output)! This has to be interpreted separately and differently in
+   *        the data analysis! The includeOldStyleMultipolygons is also quite a bit less efficient
+   *        (both CPU and memory) as the default path.
+   */
   public CellIterator(
       SortedSet<OSHDBTimestamp> timestamps,
       OSHDBBoundingBox boundingBox,
@@ -137,7 +190,7 @@ public class CellIterator implements Serializable {
   ) {
     this.timestamps = new TreeSet<>(timestamps);
     this.boundingBox = boundingBox;
-    this.isBoundByPolygon = false; // todo: is this flag even needed? -> replace by "dummy" polygonClipper?
+    this.isBoundByPolygon = false; // todo: maybe replace this with a "dummy" polygonClipper?
     this.bboxInPolygon = null;
     this.bboxOutsidePolygon = null;
     this.fastPolygonClipper = null;
@@ -147,6 +200,9 @@ public class CellIterator implements Serializable {
     this.includeOldStyleMultipolygons = includeOldStyleMultipolygons;
   }
 
+  /**
+   * Holds the result of a single item returned by {@link #iterateByTimestamps(GridOSHEntity)}.
+   */
   public static class IterateByTimestampEntry {
     public final OSHDBTimestamp timestamp;
     public final OSMEntity osmEntity;
@@ -154,6 +210,17 @@ public class CellIterator implements Serializable {
     public final LazyEvaluatedObject<Geometry> geometry;
     public final LazyEvaluatedObject<Geometry> unclippedGeometry;
 
+    /**
+     * Properties associated with each entity snapshot.
+     *
+     * @param timestamp timestamp of the snapshot
+     * @param osmEntity the exact version of the OSM object
+     * @param oshEntity the whole version history of the OSM object
+     * @param geom an object which holds the geometry of the OSM object, or a method to build it
+     *             on request, clipped to the query area of interest
+     * @param unclippedGeom holds the full unclipped geometry of the OSM object
+     *                     or a function to build it
+     */
     public IterateByTimestampEntry(
         OSHDBTimestamp timestamp, @Nonnull OSMEntity osmEntity, @Nonnull OSHEntity oshEntity,
         LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> unclippedGeom
@@ -196,11 +263,11 @@ public class CellIterator implements Serializable {
 
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
     return Streams.stream(cellData).flatMap(oshEntity -> {
-      if (!oshEntityPreFilter.test(oshEntity) ||
-          !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox) ||
-              (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
-      )) {
+      if (!oshEntityPreFilter.test(oshEntity)
+          || !allFullyInside && (
+              !oshEntity.getBoundingBox().intersects(boundingBox)
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+        )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         return Stream.empty();
@@ -210,19 +277,21 @@ public class CellIterator implements Serializable {
         return Stream.empty();
       }
       boolean fullyInside = allFullyInside || (
-          oshEntity.getBoundingBox().isInside(boundingBox) &&
-          (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+          oshEntity.getBoundingBox().isInside(boundingBox)
+          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
-        List<OSHDBTimestamp> modTs = OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter);
+        List<OSHDBTimestamp> modTs =
+            OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
-          while (j < modTs.size() && modTs.get(j).getRawUnixTimestamp() <= requestedT.getRawUnixTimestamp()) {
+          while (j < modTs.size()
+              && modTs.get(j).getRawUnixTimestamp() <= requestedT.getRawUnixTimestamp()) {
             needToRequest = true;
             j++;
           }
@@ -243,7 +312,8 @@ public class CellIterator implements Serializable {
           OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
 
       List<IterateByTimestampEntry> results = new LinkedList<>();
-      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+      osmEntityLoop:
+      for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
@@ -251,8 +321,9 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
-        if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0 ||
-            osmEntity instanceof OSMRelation && ((OSMRelation)osmEntity).getMembers().length == 0) {
+        if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0
+            || osmEntity instanceof OSMRelation
+                && ((OSMRelation)osmEntity).getMembers().length == 0) {
           // skip way/relation with zero nodes/members
           continue;
         }
@@ -390,6 +461,9 @@ public class CellIterator implements Serializable {
     }
   }
 
+  /**
+   * Holds the result of a single item returned by {@link #iterateByContribution(GridOSHEntity)}.
+   */
   public static class IterateAllEntry {
     public final OSHDBTimestamp timestamp;
     @Nonnull
@@ -401,8 +475,27 @@ public class CellIterator implements Serializable {
     public final LazyEvaluatedObject<Geometry> unclippedGeometry;
     public final LazyEvaluatedObject<Geometry> unclippedPreviousGeometry;
     public final LazyEvaluatedContributionTypes activities;
-    public long changeset;
+    public final long changeset;
 
+    /**
+     * Properties associated with each contribution object.
+     *
+     * @param timestamp the timestamp when the OSM object was modified
+     * @param osmEntity the version of the OSM object after the modification
+     * @param previousOsmEntity the version of the OSM object before the modification
+     * @param oshEntity the full version history of the OSM object
+     * @param geometry the geometry of the OSM object (or a function to build it) of the state
+     *                 of the OSM object after the modification, clipped to the query
+     *                 area of interest
+     * @param previousGeometry the geometry of the OSM object (or a function to build it) of
+     *                         the state of the OSM object before the modification, clipped to the
+     *                         the query area of interest
+     * @param unclippedGeometry same as {@link #geometry}, but not clipped to the query area
+     * @param previousUnclippedGeometry same as {@link #previousGeometry}, but not clipped to
+     *                                  the query area
+     * @param activities a set of contribution types this modification can be classified with
+     * @param changeset the changeset id this data modification is a part of
+     */
     public IterateAllEntry(
         OSHDBTimestamp timestamp,
         @Nonnull OSMEntity osmEntity, OSMEntity previousOsmEntity, @Nonnull OSHEntity oshEntity,
@@ -454,16 +547,16 @@ public class CellIterator implements Serializable {
 
     if (includeOldStyleMultipolygons) {
       //todo: remove this by finishing the functionality below
-      throw new Error("this is not yet properly implemented (probably)");
+      throw new UnsupportedOperationException("this is not yet properly implemented (probably)");
     }
 
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
 
     return Streams.stream(cellData).flatMap(oshEntity -> {
-      if (!oshEntityPreFilter.test(oshEntity) ||
-          !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox) ||
-                  (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+      if (!oshEntityPreFilter.test(oshEntity)
+          || !allFullyInside && (
+              !oshEntity.getBoundingBox().intersects(boundingBox)
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -475,15 +568,15 @@ public class CellIterator implements Serializable {
       }
 
       boolean fullyInside = allFullyInside || (
-          oshEntity.getBoundingBox().isInside(boundingBox) &&
-              (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+          oshEntity.getBoundingBox().isInside(boundingBox)
+          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
       List<OSHDBTimestamp> modTs =
           OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
 
-      if (modTs.size() == 0 || !timeInterval.intersects(
+      if (modTs.isEmpty() || !timeInterval.intersects(
           new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1))
       )) {
         // ignore osh entity because it's edit history is fully outside of the given time interval
@@ -600,12 +693,13 @@ public class CellIterator implements Serializable {
             geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
-            // used to "fix" the results obtained from calculating the geometry on the object's outer
-            // way which doesn't know about the inner members of the multipolygon relation
+            // used to "fix" the results obtained from calculating the geometry on the object's
+            // outer way which doesn't know about the inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = new LazyEvaluatedObject<>(() -> {
-              Geometry geometry = OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
+              Geometry geometry =
+                  OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter);
               Polygon poly = (Polygon) geometry;
               Polygon[] interiorRings = new Polygon[poly.getNumInteriorRing()];
               for (int i = 0; i < poly.getNumInteriorRing(); i++) {
@@ -638,8 +732,8 @@ public class CellIterator implements Serializable {
             continue osmEntityLoop;
           } else if (prev == null || prev.activities.contains(ContributionType.DELETION)) {
             activity = new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.CREATION));
-            // todo: special case when an object gets specific tag/condition again after having them
-            // removed?
+            // todo: special case when an object gets specific tag/condition again after having
+            // them removed?
           } else {
             OSMEntity prevEntity = prev.osmEntity;
             LazyEvaluatedObject<Geometry> prevGeometry = prev.geometry;
