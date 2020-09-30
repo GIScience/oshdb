@@ -161,8 +161,8 @@ public class FilterParser {
         typeFilter,
         geometryTypeFilter);
 
-    final Parser<Void> parensStart = Patterns.string("(").toScanner("(");
-    final Parser<Void> parensEnd = Patterns.string(")").toScanner(")");
+    final Parser<Void> parensStart = Patterns.string("(").toScanner("(").followedBy(whitespace);
+    final Parser<Void> parensEnd = whitespace.followedBy(Patterns.string(")").toScanner(")"));
     final Parser.Reference<FilterExpression> ref = Parser.newReference();
     final Parser<FilterExpression> unit = ref.lazy().between(parensStart, parensEnd)
         .or(filter);
@@ -172,11 +172,9 @@ public class FilterParser {
     final Parser<Void> or = whitespace
         .followedBy(Patterns.string("or").toScanner("or"))
         .followedBy(whitespace);
-    final Parser<Void> not = whitespace
-        .followedBy(Patterns.string("not").toScanner("not"))
+    final Parser<Void> not = Patterns.string("not").toScanner("not")
         .followedBy(whitespace);
-    final Parser<ConstantFilter> emptyFilter = whitespace
-        .followedBy(Patterns.EOF.toScanner("EOF"))
+    final Parser<ConstantFilter> emptyFilter = Patterns.EOF.toScanner("EOF")
         .map(ignored -> new ConstantFilter(true));
     final Parser<FilterExpression> parser = new OperatorTable<FilterExpression>()
         .infixl(or.retn((a, b) -> BinaryOperator.fromOperator(a, BinaryOperator.Type.OR, b)), 10)
@@ -195,6 +193,6 @@ public class FilterParser {
    */
   @Contract(pure = true)
   public FilterExpression parse(String str) {
-    return this.parser.parse(str);
+    return this.parser.parse(str.strip());
   }
 }

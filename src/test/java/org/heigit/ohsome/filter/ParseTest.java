@@ -265,13 +265,37 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testEmptyFilter() {
-    FilterExpression expression = parser.parse("");
-    assertTrue(expression instanceof ConstantFilter);
-    assertTrue(((ConstantFilter) expression).getState());
-    assertEquals("true", expression.toString());
+  public void testPaddingWhitespace() {
+    // allow extra whitespace at start/end of filter
+    FilterExpression expression = parser.parse(" type:node ");
+    assertTrue(expression instanceof TypeFilter);
+  }
 
-    expression = parser.parse(" ");
+  @Test
+  public void testParentheses() {
+    FilterExpression expression =
+        parser.parse("type:way and (highway=residential or highway=track)");
+    assertTrue(expression instanceof AndOperator);
+    assertTrue(((AndOperator) expression).getLeftOperand() instanceof TypeFilter);
+    assertTrue(((AndOperator) expression).getRightOperand() instanceof OrOperator);
+    String expressionString = expression.toString();
+    // extra whitespace within parens
+    assertEquals(expressionString,
+        parser.parse("type:way and ( highway=residential or highway=track )").toString()
+    );
+    // omitted whitespace outside of parens
+    assertEquals(expressionString,
+        parser.parse("(type:way)and(highway=residential or highway=track)").toString()
+    );
+  }
+
+  @Test
+  public void testEmptyFilter() {
+    forEmptyFilter("");
+    forEmptyFilter(" ");
+  }
+  private void forEmptyFilter(String emptyFilter) {
+    FilterExpression expression = parser.parse(emptyFilter);
     assertTrue(expression instanceof ConstantFilter);
     assertTrue(((ConstantFilter) expression).getState());
     assertEquals("true", expression.toString());

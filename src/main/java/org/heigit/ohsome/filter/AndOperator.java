@@ -34,6 +34,8 @@ public class AndOperator extends BinaryOperator {
 
   @Override
   public String toString() {
-    return op1.toString() + " and " + op2.toString();
+    String op1String = op1 instanceof OrOperator ? "(" + op1.toString() + ")" : op1.toString();
+    String op2String = op2 instanceof OrOperator ? "(" + op2.toString() + ")" : op2.toString();
+    return op1String + " and " + op2String;
   }
 }
