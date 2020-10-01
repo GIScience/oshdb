@@ -126,6 +126,16 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testIdTypeFilterEquals() {
+    FilterExpression expression = parser.parse("id:node/123");
+    assertTrue(expression instanceof AndOperator);
+    assertTrue(((AndOperator) expression).op1 instanceof TypeFilter
+        || ((AndOperator) expression).op2 instanceof TypeFilter);
+    assertTrue(((AndOperator) expression).op1 instanceof IdFilterEquals
+        || ((AndOperator) expression).op2 instanceof IdFilterEquals);
+  }
+
+  @Test
   public void testIdFilterNotEquals() {
     FilterExpression expression = parser.parse("id:123").negate();
     assertTrue(expression instanceof IdFilterNotEquals);
@@ -138,6 +148,15 @@ public class ParseTest extends FilterTest {
     FilterExpression expression = parser.parse("id:(1,2,3)");
     assertTrue(expression instanceof IdFilterEqualsAnyOf);
     assertEquals("id:in1,2,3", expression.toString());
+  }
+
+  @Test
+  public void testIdTypeFilterEqualsAnyOf() {
+    FilterExpression expression = parser.parse("id:(node/1,way/2)");
+    assertTrue(expression instanceof OrOperator);
+    assertTrue(((OrOperator) expression).op1 instanceof AndOperator);
+    assertTrue(((OrOperator) expression).op2 instanceof AndOperator);
+    assertEquals("type:node and id:1 or type:way and id:2", expression.toString());
   }
 
   @Test

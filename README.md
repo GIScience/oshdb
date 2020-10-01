@@ -67,7 +67,9 @@ Filters are defined in textual form. A filter expression can be composed out of 
 | `key in (list of values)` | matches all entities with have a tag with the given key and one of the given comma separated values | `highway in (residential, living_street)` |
 | `type:osm-type` | matches all entites of the given OSM type | `type:node` |
 | `id:osm-id` | matches all entities with the given OSM id | `id:1` |
+| `id:osm-type/osm-id` | matches all entities with the given OSM type and id | `id:node/1` |
 | `id:(list of ids)` | matches all entities whose OSM id is in the given comma separated list of ids | `id:(1,2,3)` |
+| `id:(list of type/ids)` | matches all entities whose OSM id is in the given comma separated list of ids | `id:(node/1,way/2)` |
 | `id:(range of ids)` | matches all entities whose OSM id is in the given range of ids. Ranges use `..` to define the start and end of an interval. The interval bounds are included in the result. Either the start or the end of a range can be omitted, to select all features up to or starting from the given id. | `id:(1..3)`, `id:(..3)`, `id:(1..)` |
 | `geometry:geom-type` | matches anything which has a geometry of the given type (_point_, _line_, _polygon_, or _other_) | `geometry:polygon` |
 

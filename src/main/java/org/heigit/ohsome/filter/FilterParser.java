@@ -51,7 +51,9 @@ public class FilterParser {
     final Parser<TagFilter.Type> notEquals = Patterns.string("!=")
         .toScanner("NOT_EQUALS (!=)")
         .map(ignored -> TagFilter.Type.NOT_EQUALS);
-    final Parser<Void> colon = Patterns.string(":").toScanner("COLON (:)");
+    final Parser<Void> colon = whitespace.followedBy(
+        Patterns.string(":").toScanner("COLON (:)")).followedBy(whitespace);
+    final Parser<Void> slash = Patterns.string("/").toScanner("SLASH (/)");
     final Parser<Void> id = Patterns.string("id").toScanner("id");
     final Parser<Void> type = Patterns.string("type").toScanner("type");
     final Parser<OSMType> node = Patterns.string("node").toScanner("node")
@@ -60,6 +62,7 @@ public class FilterParser {
         .map(ignored -> OSMType.WAY);
     final Parser<OSMType> relation = Patterns.string("relation").toScanner("relation")
         .map(ignored -> OSMType.RELATION);
+    final Parser<OSMType> osmTypes = Parsers.or(node, way, relation);
     final Parser<Void> geometry = Patterns.string("geometry").toScanner("geometry");
     final Parser<GeometryType> point = Patterns.string("point").toScanner("point")
         .map(ignored -> GeometryType.POINT);
@@ -103,31 +106,48 @@ public class FilterParser {
         });
     final Parser<FilterExpression> idFilter = Parsers.sequence(
         id,
-        whitespace,
         colon,
-        whitespace,
         number)
         .map(IdFilterEquals::new);
+    final Parser<FilterExpression> osmTypeIdParser = Parsers.sequence(
+        osmTypes.followedBy(slash),
+        number,
+        (osmType, osmId) -> new AndOperator(new TypeFilter(osmType), new IdFilterEquals(osmId)));
+    final Parser<FilterExpression> idTypeFilter = Parsers.sequence(
+        id,
+        colon,
+        osmTypeIdParser);
+    final Parser<Void> comma = whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace);
     final Parser<List<Long>> numberSequence = Parsers.sequence(
         Scanners.isChar('('),
-        number.sepBy(whitespace.followedBy(Scanners.isChar(',')).followedBy(whitespace)),
+        number.sepBy(comma),
         Scanners.isChar(')'),
         (ignored, list, ignored2) -> list);
     final Parser<FilterExpression> multiIdFilter = Parsers.sequence(
         id,
-        whitespace,
         colon,
-        whitespace,
         numberSequence)
         .map(IdFilterEqualsAnyOf::new);
+    final Parser<List<FilterExpression>> idTypeSequence = Parsers.sequence(
+        Scanners.isChar('('),
+        osmTypeIdParser.sepBy(comma),
+        Scanners.isChar(')'),
+        (ignored, list, ignored2) -> list);
+    final Parser<FilterExpression> multiIdTypeFilter = Parsers.sequence(
+        id,
+        colon,
+        idTypeSequence)
+        .map(list -> list.stream()
+            .reduce(OrOperator::new)
+            .orElse(new ConstantFilter(false)));
     final Parser<Void> dotdot = whitespace
         .followedBy(Patterns.string("..").toScanner("DOT-DOT (..)"))
         .followedBy(whitespace);
     final Parser<FilterExpression> rangeIdFilter = Parsers.sequence(
         id,
-        whitespace,
         colon,
-        whitespace.followedBy(Scanners.isChar('(')).followedBy(whitespace),
+        Scanners.isChar('('),
+        whitespace,
         Parsers.or(
             Parsers.sequence(number, dotdot, number,
                 (min, ignored, max) -> new IdFilterRange.IdRange(min, max)),
@@ -139,16 +159,12 @@ public class FilterParser {
         .map(IdFilterRange::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
-        whitespace,
         colon,
-        whitespace,
-        Parsers.or(node, way, relation))
+        osmTypes)
         .map(TypeFilter::new);
     final Parser<FilterExpression> geometryTypeFilter = Parsers.sequence(
         geometry,
-        whitespace,
         colon,
-        whitespace,
         Parsers.or(point, line, polygon, other))
         .map(geometryType -> new GeometryTypeFilter(geometryType, tt));
 
@@ -156,7 +172,9 @@ public class FilterParser {
         tagFilter,
         multiTagFilter,
         idFilter,
+        idTypeFilter,
         multiIdFilter,
+        multiIdTypeFilter,
         rangeIdFilter,
         typeFilter,
         geometryTypeFilter);
