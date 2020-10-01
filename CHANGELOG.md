@@ -1,3 +1,9 @@
+1.3.0-SNAPSHOT
+--------------
+
+* new filter: filter by type and id in one single expression (syntax: `id:node/42`)
+* be a bit more forgiving with extra or omitted whitespace around parentheses
+
 1.2.0
 -----
 
