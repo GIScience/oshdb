@@ -159,13 +159,6 @@ public class ParseTest extends FilterTest {
     assertEquals("type:node and id:1 or type:way and id:2", expression.toString());
   }
 
-  @Test
-  public void testIdFilterEqualsNotAnyOf() {
-    FilterExpression expression = parser.parse("id:(1,2,3)").negate();
-    assertTrue(expression instanceof IdFilterEqualsAnyOf);
-    assertEquals("id:not-in1,2,3", expression.toString());
-  }
-
   @Test(expected = IllegalStateException.class)
   public void testIdFilterEqualsAnyOfCheckEmpty() {
     new IdFilterEqualsAnyOf(Collections.emptyList());
@@ -189,22 +182,6 @@ public class ParseTest extends FilterTest {
     expression = parser.parse("id:(3..1)");
     assertTrue(expression instanceof IdFilterRange);
     assertEquals("id:in-range1..3", expression.toString());
-  }
-
-  @Test
-  public void testIdFilterNotInRange() {
-    // complete range
-    FilterExpression expression = parser.parse("id:(1..3)").negate();
-    assertTrue(expression instanceof IdFilterRange);
-    assertEquals("id:not-in-range1..3", expression.toString());
-    // no min value
-    expression = parser.parse("id:(..3)").negate();
-    assertTrue(expression instanceof IdFilterRange);
-    assertEquals("id:not-in-range..3", expression.toString());
-    // no max value
-    expression = parser.parse("id:(1..)").negate();
-    assertTrue(expression instanceof IdFilterRange);
-    assertEquals("id:not-in-range1..", expression.toString());
   }
 
   @Test

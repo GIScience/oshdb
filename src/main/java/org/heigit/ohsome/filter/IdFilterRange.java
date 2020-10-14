@@ -6,9 +6,9 @@ import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 
 /**
- * A tag filter which executes a "id [not] in range" check.
+ * A filter which executes a "id [not] in range" check.
  */
-public class IdFilterRange implements Filter {
+public class IdFilterRange extends NegatableFilter {
   static class IdRange implements Serializable {
     private final long fromId;
     private final long toId;
@@ -34,35 +34,22 @@ public class IdFilterRange implements Filter {
     }
   }
 
-  private final IdRange idRange;
-  private final boolean negated;
+  IdFilterRange(@Nonnull IdRange range) {
+    super(new Filter() {
+      @Override
+      public boolean applyOSH(OSHEntity entity) {
+        return range.test(entity.getId());
+      }
 
-  IdFilterRange(@Nonnull IdRange idRange) {
-    this(idRange, false);
-  }
+      @Override
+      public boolean applyOSM(OSMEntity entity) {
+        return range.test(entity.getId());
+      }
 
-  private IdFilterRange(@Nonnull IdRange idRange, boolean negated) {
-    this.idRange = idRange;
-    this.negated = negated;
-  }
-
-  @Override
-  public boolean applyOSM(OSMEntity entity) {
-    return this.idRange.test(entity.getId()) ^ this.negated;
-  }
-
-  @Override
-  public boolean applyOSH(OSHEntity entity) {
-    return this.idRange.test(entity.getId()) ^ this.negated;
-  }
-
-  @Override
-  public FilterExpression negate() {
-    return new IdFilterRange(this.idRange, !this.negated);
-  }
-
-  @Override
-  public String toString() {
-    return (this.negated ? "id:not-in-range" : "id:in-range") + idRange.toString();
+      @Override
+      public String toString() {
+        return "id:in-range" + range.toString();
+      }
+    });
   }
 }
