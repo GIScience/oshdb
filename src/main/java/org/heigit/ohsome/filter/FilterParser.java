@@ -149,10 +149,10 @@ public class FilterParser {
         Parsers.or(
             Parsers.sequence(number, dotdot, number,
                 (min, ignored, max) -> new IdFilterRange.IdRange(min, max)),
-            Parsers.sequence(number, dotdot,
-                (min, ignored2) -> new IdFilterRange.IdRange(min, Long.MAX_VALUE)),
-            Parsers.sequence(dotdot, number,
-                (ignored, max) -> new IdFilterRange.IdRange(Long.MIN_VALUE, max))
+            number.followedBy(dotdot).map(
+                min -> new IdFilterRange.IdRange(min, Long.MAX_VALUE)),
+            Parsers.sequence(dotdot, number).map(
+                max -> new IdFilterRange.IdRange(Long.MIN_VALUE, max))
         ).followedBy(whitespace).followedBy(Scanners.isChar(')')))
         .map(IdFilterRange::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
