@@ -1,8 +1,10 @@
 package org.heigit.ohsome.filter;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import org.junit.Test;
 
 /**
@@ -188,5 +190,17 @@ public class ApplyOSMTest extends FilterTest {
   public void testConstant() {
     FilterExpression expression = parser.parse("");
     assertTrue(expression.applyOSM(createTestEntityNode()));
+  }
+
+  @Test
+  public void testGeometryFilterArea() throws IOException {
+    FilterExpression expression = parser.parse("area:(1..2)");
+    assertTrue(expression.applyOSM(createTestEntityWay(new long[] {})));
+  }
+
+  @Test
+  public void testGeometryFilterLength() throws IOException {
+    FilterExpression expression = parser.parse("length:(1..2)");
+    assertTrue(expression.applyOSM(createTestEntityWay(new long[] {})));
   }
 }

@@ -8,6 +8,7 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
+import org.heigit.ohsome.filter.GeometryFilter.ValueRange;
 import org.heigit.ohsome.filter.GeometryTypeFilter.GeometryType;
 import org.jetbrains.annotations.Contract;
 import org.jparsec.OperatorTable;
@@ -15,6 +16,7 @@ import org.jparsec.Parser;
 import org.jparsec.Parsers;
 import org.jparsec.Scanners;
 import org.jparsec.Terminals.StringLiteral;
+import org.jparsec.pattern.CharPredicates;
 import org.jparsec.pattern.Patterns;
 
 /**
@@ -42,6 +44,14 @@ public class FilterParser {
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
     final Parser<Long> number = Scanners.INTEGER.map(Long::valueOf);
+    final Parser<Double> stricterDecimal = Patterns.many1(CharPredicates.IS_DIGIT)
+        .next(Patterns.isChar('.').next(Patterns.many1(CharPredicates.IS_DIGIT)).optional())
+        .toScanner("decimal").source()
+        .map(Double::valueOf);
+    final Parser<Double> floatingNumber = Parsers.or(
+        Scanners.SCIENTIFIC_NOTATION.map(Double::valueOf),
+        stricterDecimal
+    );
 
     final Parser<TagFilter.Type> equals = Patterns.string("=")
         .toScanner("EQUALS (=)")
@@ -72,6 +82,8 @@ public class FilterParser {
         .map(ignored -> GeometryType.OTHER);
     final Parser<String> star = Patterns.string("*").toScanner("STAR (*)")
         .map(ignored -> "*");
+    final Parser<Void> area = Patterns.string("area").toScanner("area");
+    final Parser<Void> length = Patterns.string("length").toScanner("length");
 
     final Parser<FilterExpression> tagFilter = Parsers.sequence(
         string,
@@ -166,6 +178,28 @@ public class FilterParser {
         Parsers.or(point, line, polygon, other))
         .map(geometryType -> new GeometryTypeFilter(geometryType, tt));
 
+    final Parser<ValueRange> floatingRange = Parsers.between(
+        Scanners.isChar('('),
+        Parsers.or(
+            Parsers.sequence(floatingNumber, dotdot, floatingNumber,
+                (min, ignored, max) -> new ValueRange(min, max)),
+            floatingNumber.followedBy(dotdot).map(
+                min -> new ValueRange(min, Double.POSITIVE_INFINITY)),
+            Parsers.sequence(dotdot, floatingNumber).map(
+                max -> new ValueRange(Double.NEGATIVE_INFINITY, max))
+        ),
+        Scanners.isChar(')')
+    );
+    final Parser<GeometryFilter> geometryFilterArea = Parsers.sequence(
+        area, colon, floatingRange
+    ).map(GeometryFilterArea::new);
+    final Parser<GeometryFilter> geometryFilterLength = Parsers.sequence(
+        length, colon, floatingRange
+    ).map(GeometryFilterLength::new);
+    final Parser<GeometryFilter> geometryFilter = Parsers.or(
+        geometryFilterArea,
+        geometryFilterLength);
+
     final Parser<FilterExpression> filter = Parsers.or(
         tagFilter,
         multiTagFilter,
@@ -175,7 +209,8 @@ public class FilterParser {
         multiIdTypeFilter,
         rangeIdFilter,
         typeFilter,
-        geometryTypeFilter);
+        geometryTypeFilter,
+        geometryFilter);
 
     final Parser<Void> parensStart = Patterns.string("(").toScanner("(").followedBy(whitespace);
     final Parser<Void> parensEnd = whitespace.followedBy(Patterns.string(")").toScanner(")"));

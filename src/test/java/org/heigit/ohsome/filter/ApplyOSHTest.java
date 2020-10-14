@@ -339,4 +339,16 @@ public class ApplyOSHTest extends FilterTest {
     FilterExpression expression = parser.parse("");
     assertTrue(expression.applyOSH(createTestEntityNode(super.createTestEntityNode())));
   }
+
+  @Test
+  public void testGeometryFilterArea() throws IOException {
+    FilterExpression expression = parser.parse("area:(1..2)");
+    assertTrue(expression.applyOSH(createTestEntityWay(super.createTestEntityWay(new long[] {}))));
+  }
+
+  @Test
+  public void testGeometryFilterLength() throws IOException {
+    FilterExpression expression = parser.parse("length:(1..2)");
+    assertTrue(expression.applyOSH(createTestEntityWay(super.createTestEntityWay(new long[] {}))));
+  }
 }

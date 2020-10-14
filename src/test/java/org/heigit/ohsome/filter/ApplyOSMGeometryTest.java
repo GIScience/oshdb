@@ -4,7 +4,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.junit.Test;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
 /**
@@ -85,6 +88,51 @@ public class ApplyOSMGeometryTest extends FilterTest {
     assertFalse(expression.applyOSMGeometry(
         createTestEntityWay(new long[] {1,2,3,4,1}),
         gf.createLineString()
+    ));
+  }
+
+  @Test
+  public void testGeometryFilterArea() {
+    FilterExpression expression = parser.parse("area:(1..2)");
+    OSMEntity entity = createTestEntityWay(new long[] {1, 2, 3, 4, 1});
+    assertFalse(expression.applyOSMGeometry(entity,
+        // approx 0.3m²
+        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0,0, 5E-6,5E-6))
+    ));
+    assertTrue(expression.applyOSMGeometry(entity,
+        // approx 1.2m²
+        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0,0, 1E-5,1E-5))
+    ));
+    assertFalse(expression.applyOSMGeometry(entity,
+        // approx 4.9m²
+        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0,0, 2E-5,2E-5))
+    ));
+  }
+
+  @Test
+  public void testGeometryFilterLength() {
+    FilterExpression expression = parser.parse("length:(1..2)");
+    OSMEntity entity = createTestEntityWay(new long[] {1, 2});
+    assertFalse(expression.applyOSMGeometry(entity,
+        // approx 0.6m
+        gf.createLineString(new Coordinate[] {
+            new Coordinate(0, 0),
+            new Coordinate(5E-6, 0)
+        })
+    ));
+    assertTrue(expression.applyOSMGeometry(entity,
+        // approx 1.1m
+        gf.createLineString(new Coordinate[] {
+            new Coordinate(0, 0),
+            new Coordinate(1E-5, 0)
+        })
+    ));
+    assertFalse(expression.applyOSMGeometry(entity,
+        // approx 2.2m
+        gf.createLineString(new Coordinate[] {
+            new Coordinate(0, 0),
+            new Coordinate(2E-5, 0)
+        })
     ));
   }
 }

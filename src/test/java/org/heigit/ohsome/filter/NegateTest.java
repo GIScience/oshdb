@@ -103,7 +103,6 @@ public class NegateTest extends FilterTest {
   public void testIdEqualsAnyOfFilter() {
     FilterExpression expression = new IdFilterEqualsAnyOf(Collections.singletonList(1L));
     FilterExpression negation = expression.negate();
-    assertTrue(negation instanceof IdFilterEqualsAnyOf);
     OSMEntity testEntity = createTestEntityNode();
     assertNotEquals(expression.applyOSM(testEntity), negation.applyOSM(testEntity));
     FilterExpression doubleNegation = negation.negate();
@@ -114,7 +113,6 @@ public class NegateTest extends FilterTest {
   public void testIdInRangeFilter() {
     FilterExpression expression = new IdFilterRange(new IdFilterRange.IdRange(1, 3));
     FilterExpression negation = expression.negate();
-    assertTrue(negation instanceof IdFilterRange);
     OSMEntity testEntity = createTestEntityNode();
     assertNotEquals(expression.applyOSM(testEntity), negation.applyOSM(testEntity));
     FilterExpression doubleNegation = negation.negate();

@@ -80,7 +80,7 @@ public class ParseTest extends FilterTest {
 
   @Test
   public void testTagFilterNotEqualsAnyOf() {
-    FilterExpression expression = parser.parse("highway in (residential, track)").negate();
+    FilterExpression expression = parser.parse("not highway in (residential, track)");
     assertTrue(expression instanceof TagFilterNotEqualsAnyOf);
     OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
     OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
@@ -137,7 +137,7 @@ public class ParseTest extends FilterTest {
 
   @Test
   public void testIdFilterNotEquals() {
-    FilterExpression expression = parser.parse("id:123").negate();
+    FilterExpression expression = parser.parse("not id:123");
     assertTrue(expression instanceof IdFilterNotEquals);
     assertEquals(123, ((IdFilterNotEquals) expression).getId());
     assertEquals("not-id:123", expression.toString());
@@ -295,5 +295,32 @@ public class ParseTest extends FilterTest {
     assertTrue(expression instanceof ConstantFilter);
     assertTrue(((ConstantFilter) expression).getState());
     assertEquals("true", expression.toString());
+  }
+
+  @Test
+  public void testGeometryFilterArea() {
+    FilterExpression expression = parser.parse("area:(1..10)");
+    assertTrue(expression instanceof GeometryFilterArea);
+    assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
+    assertEquals(10.0, ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
+    assertEquals("area:1.0..10.0", expression.toString());
+    expression = parser.parse("area:(1.1..10.0)");
+    assertTrue(expression instanceof GeometryFilterArea);
+    expression = parser.parse("area:(1.E-6..10.0)");
+    assertTrue(expression instanceof GeometryFilterArea);
+    expression = parser.parse("area:(1..)");
+    assertTrue(expression instanceof GeometryFilterArea);
+    assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
+    assertEquals(Double.POSITIVE_INFINITY, ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
+    expression = parser.parse("area:(..1)");
+    assertTrue(expression instanceof GeometryFilterArea);
+    assertEquals(Double.NEGATIVE_INFINITY, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
+    assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
+  }
+
+  @Test
+  public void testGeometryFilterLength() {
+    FilterExpression expression = parser.parse("length:(1..10)");
+    assertTrue(expression instanceof GeometryFilterLength);
   }
 }

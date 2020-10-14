@@ -1,7 +1,8 @@
 1.3.0-SNAPSHOT
 --------------
 
-* new filter: filter by type and id in one single expression (syntax: `id:node/42`)
+* new filter: geometry filters return only features with a certain range of length (in meters) or area (in m²)
+* new filter: id filter allows to select by type and id in a single expression (syntax: `id:node/42`)
 * be a bit more forgiving with extra or omitted whitespace around parentheses
 
 1.2.0
