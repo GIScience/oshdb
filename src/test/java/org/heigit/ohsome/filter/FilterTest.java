@@ -3,7 +3,6 @@ package org.heigit.ohsome.filter;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
