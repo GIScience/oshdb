@@ -14,9 +14,7 @@ import org.jparsec.OperatorTable;
 import org.jparsec.Parser;
 import org.jparsec.Parsers;
 import org.jparsec.Scanners;
-import org.jparsec.Terminals.IntegerLiteral;
 import org.jparsec.Terminals.StringLiteral;
-import org.jparsec.Tokens.Fragment;
 import org.jparsec.pattern.Patterns;
 
 /**
@@ -43,7 +41,7 @@ public class FilterParser {
         .toScanner("KEY_STRING (a-z, 0-9, : or -)")
         .source();
     final Parser<String> string = keystr.or(StringLiteral.DOUBLE_QUOTE_TOKENIZER);
-    final Parser<Long> number = IntegerLiteral.TOKENIZER.map(Fragment::text).map(Long::valueOf);
+    final Parser<Long> number = Scanners.INTEGER.map(Long::valueOf);
 
     final Parser<TagFilter.Type> equals = Patterns.string("=")
         .toScanner("EQUALS (=)")
