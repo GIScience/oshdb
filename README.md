@@ -20,12 +20,6 @@ Add the module to your maven dependencies (`pom.xml`):
   <artifactId>ohsome-filter</artifactId>
   <version>1.3.0</version>
 </dependency>
-…
-<repository>
-  <id>heigit</id>
-  <name>Heigit/GIScience repository</name>
-  <url>http://repo.heigit.org/artifactory/libs-release-local</url>
-</repository>
 ```
 
 Then parse filters like this:
