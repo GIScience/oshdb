@@ -9,7 +9,7 @@ import org.locationtech.jts.geom.Geometry;
  * A filter which implements the negate method using a boolean flag.
  */
 class NegatableFilter implements Filter {
-  interface Filter extends org.heigit.ohsome.filter.Filter {
+  interface FilterInternal extends Filter {
     @Override
     default FilterExpression negate() {
       throw new IllegalStateException("Invalid call of inner negate() on a negatable filter");
@@ -17,14 +17,14 @@ class NegatableFilter implements Filter {
   }
 
   private final boolean negated;
-  final Filter filter;
+  final FilterInternal filter;
 
-  private NegatableFilter(@Nonnull Filter filter, boolean negated) {
+  private NegatableFilter(@Nonnull FilterInternal filter, boolean negated) {
     this.filter = filter;
     this.negated = negated;
   }
 
-  protected NegatableFilter(@Nonnull Filter filter) {
+  protected NegatableFilter(@Nonnull FilterInternal filter) {
     this(filter, false);
   }
 

@@ -13,7 +13,7 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
  */
 public class IdFilterEqualsAnyOf extends NegatableFilter {
   IdFilterEqualsAnyOf(@Nonnull Collection<Long> idList) {
-    super(new Filter() {
+    super(new FilterInternal() {
       private final Set<Long> ids = new HashSet<>(idList);
 
       @Override

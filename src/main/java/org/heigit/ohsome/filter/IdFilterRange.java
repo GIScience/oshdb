@@ -35,7 +35,7 @@ public class IdFilterRange extends NegatableFilter {
   }
 
   IdFilterRange(@Nonnull IdRange range) {
-    super(new Filter() {
+    super(new FilterInternal() {
       @Override
       public boolean applyOSH(OSHEntity entity) {
         return range.test(entity.getId());
