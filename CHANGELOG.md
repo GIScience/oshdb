@@ -1,5 +1,5 @@
-1.3.0-SNAPSHOT
---------------
+1.3.0
+-----
 
 * new filter: geometry filters return only features with a certain range of length (in meters) or area (in m²)
 * new filter: id filter allows to select by type and id in a single expression (syntax: `id:node/42`)
