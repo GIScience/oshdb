@@ -39,11 +39,12 @@ OSMEntitySnapshotView.on(…)
     .timestamps(…)
     .osmEntityFilter(filter::applyOSM)
     .aggregateByTimestamp()
+    .filter(snapshot -> filter.applyOSMGeometry(snapshot.getEntity(), snapshot.getGeometry()))
     .count()
     .forEach((t, val) -> System.out.println(t + "\t" + val)); 
 ```
 
-If a filter should also test the geometry type of the results (by using the `geometry:…` selector, see below), one needs to apply the filter also to the respective geometries built for the OSM entities, e.g. by adding `.filter(snapshot -> filter.applyOSMGeometry(snapshot.getEntity(), snapshot.getGeometry()))` to the query above after the `aggregateByTimestamp` line.
+If a filter does not test the actual geometry of OSM features (i.e. when the filter does not contain a `geometry:…`, `area:…` or `length:…` selector), one can omit the `.filter()` statement above which applies the respective OSM entity geometries. This will improve query performance.
 
 Syntax
 ------
