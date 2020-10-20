@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -151,9 +152,9 @@ public class GeometryTypeFilter implements Filter {
   }
 
   @Override
-  public boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
+  public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
     return checkOSMType(entity.getType())
-        && checkGeometryType(geometry);
+        && checkGeometryType(geometrySupplier.get());
   }
 
   @Override

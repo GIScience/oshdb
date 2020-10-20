@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.jetbrains.annotations.Contract;
@@ -49,12 +50,27 @@ public interface FilterExpression extends Serializable {
    * override it to do so.</p>
    *
    * @param entity the OSM entity to check.
+   * @param geometrySupplier a function returning the geometry of this OSM feature to check.
+   * @return true if the OSM feature fulfills the specified filter, otherwise false.
+   */
+  @Contract(pure = true)
+  default boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+    return applyOSM(entity);
+  }
+
+  /**
+   * Apply the filter to an "OSM feature" (i.e. an entity with a geometry).
+   *
+   * <p>The default implementation doesn't perform a geometry type check, but any Filter can
+   * override it to do so.</p>
+   *
+   * @param entity the OSM entity to check.
    * @param geometry the geometry of this OSM feature to check.
    * @return true if the OSM feature fulfills the specified filter, otherwise false.
    */
   @Contract(pure = true)
   default boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
-    return applyOSM(entity);
+    return applyOSMGeometry(entity, () -> geometry);
   }
 
   /**

@@ -1,5 +1,6 @@
 package org.heigit.ohsome.filter;
 
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -39,8 +40,8 @@ class NegatableFilter implements Filter {
   }
 
   @Override
-  public boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
-    return this.filter.applyOSMGeometry(entity, geometry) ^ this.negated;
+  public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+    return this.filter.applyOSMGeometry(entity, geometrySupplier) ^ this.negated;
   }
 
   @Override
