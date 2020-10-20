@@ -1,6 +1,7 @@
 package org.heigit.ohsome.filter;
 
 import java.io.Serializable;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nonnull;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
@@ -77,8 +78,8 @@ public abstract class GeometryFilter extends NegatableFilter {
       }
 
       @Override
-      public boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
-        return valueRange.test(metricEvaluator.applyAsDouble(geometry));
+      public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+        return valueRange.test(metricEvaluator.applyAsDouble(geometrySupplier.get()));
       }
 
       @Override

@@ -1,5 +1,6 @@
 package org.heigit.ohsome.filter;
 
+import java.util.function.Supplier;
 import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.locationtech.jts.geom.Geometry;
@@ -23,8 +24,9 @@ public class AndOperator extends BinaryOperator {
   }
 
   @Override
-  public boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
-    return op1.applyOSMGeometry(entity, geometry) && op2.applyOSMGeometry(entity, geometry);
+  public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+    return op1.applyOSMGeometry(entity, geometrySupplier)
+        && op2.applyOSMGeometry(entity, geometrySupplier);
   }
 
   @Override
