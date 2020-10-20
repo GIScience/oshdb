@@ -64,7 +64,6 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
 import org.heigit.ohsome.filter.AndOperator;
-import org.heigit.ohsome.filter.BinaryOperator;
 import org.heigit.ohsome.filter.Filter;
 import org.heigit.ohsome.filter.FilterExpression;
 import org.heigit.ohsome.filter.FilterParser;
@@ -733,23 +732,21 @@ public abstract class MapReducer<X> implements
     ret.preFilters.add(f::applyOSH);
     ret.filters.add(f::applyOSM);
     // apply geometry filter (only) if needed
-    if (hasGeometryTypeFilter(f)) {
-      List<MapFunction> mappers = List.copyOf(ret.mappers);
-      ret.mappers.clear();
-      if (ret.forClass.equals(OSMContribution.class)) {
-        ret = ret.filter(x -> {
-          OSMContribution c = (OSMContribution) x;
-          return f.applyOSMGeometry(c.getEntityBefore(), c.getGeometryBefore())
-            || f.applyOSMGeometry(c.getEntityAfter(), c.getGeometryAfter());
-        });
-      } else if (ret.forClass.equals(OSMEntitySnapshot.class)) {
-        ret = ret.filter(x -> {
-          OSMEntitySnapshot s = (OSMEntitySnapshot) x;
-          return f.applyOSMGeometry(s.getEntity(), s.getGeometry());
-        });
-      }
-      ret.mappers.addAll(mappers);
+    List<MapFunction> mappers = List.copyOf(ret.mappers);
+    ret.mappers.clear();
+    if (ret.forClass.equals(OSMContribution.class)) {
+      ret = ret.filter(x -> {
+        OSMContribution c = (OSMContribution) x;
+        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+          || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+      });
+    } else if (ret.forClass.equals(OSMEntitySnapshot.class)) {
+      ret = ret.filter(x -> {
+        OSMEntitySnapshot s = (OSMEntitySnapshot) x;
+        return f.applyOSMGeometry(s.getEntity(), s::getGeometry);
+      });
     }
+    ret.mappers.addAll(mappers);
     return optimizeFilters(ret, f);
   }
 
@@ -2050,21 +2047,6 @@ public abstract class MapReducer<X> implements
     result.addAll(a);
     result.addAll(b);
     return result;
-  }
-
-  /**
-   * Determines wether a (complex) filter expression contains a geometry type filter or not.
-   *
-   * @param f the filter expression to check.
-   * @return true if this filter expression contains a geometry type filter, false otherwise
-   */
-  private boolean hasGeometryTypeFilter(FilterExpression f) {
-    if (f instanceof BinaryOperator) {
-      return hasGeometryTypeFilter(((BinaryOperator) f).getLeftOperand())
-          || hasGeometryTypeFilter(((BinaryOperator) f).getRightOperand());
-    } else {
-      return f instanceof GeometryTypeFilter;
-    }
   }
 
   /**
