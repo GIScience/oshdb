@@ -27,6 +27,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.openstreetmap.pbf</groupId>
+			<artifactId>osmpbf</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>io.reactivex.rxjava2</groupId>
 			<artifactId>rxjava</artifactId>
 			<version>${rxjava2.version}</version>
