@@ -449,14 +449,42 @@ public class OSHDBGeometryBuilder {
     return joined;
   }
 
-  public static <T extends OSMEntity> Geometry getGeometryClipped(
-      T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, OSHDBBoundingBox clipBbox) {
+  /**
+   * Builds the geometry of an OSM entity at the given timestamp, clipped to the given bounding box.
+   *
+   * @param entity the osm entity to generate the geometry of
+   * @param timestamp  the timestamp for which to create the entity's geometry
+   * @param areaDecider a TagInterpreter object which decides whether to generate a linear or a
+   *                    polygonal geometry for the respective entity (based on its tags)
+   * @param clipBbox the bounding box to clip the resulting geometry to
+   * @return a JTS geometry object (simple features compatible, i.e. a Point, LineString, Polygon
+   *         or MultiPolygon)
+   */
+  public static Geometry getGeometryClipped(
+      OSMEntity entity,
+      OSHDBTimestamp timestamp,
+      TagInterpreter areaDecider,
+      OSHDBBoundingBox clipBbox
+  ) {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipBbox);
   }
 
-  public static <P extends Geometry & Polygonal, T extends OSMEntity> Geometry getGeometryClipped(
-      T entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, P clipPoly) {
+  /**
+   * Builds the geometry of an OSM entity at the given timestamp, clipped to the given polygon.
+   *
+   * @param entity the osm entity to generate the geometry of
+   * @param timestamp  the timestamp for which to create the entity's geometry
+   * @param areaDecider a TagInterpreter object which decides whether to generate a linear or a
+   *                    polygonal geometry for the respective entity (based on its tags)
+   * @param clipPoly a polygon to clip the resulting geometry to
+   * @param <P> either {@link Polygon} or {@link org.locationtech.jts.geom.MultiPolygon}
+   * @return a JTS geometry object (simple features compatible, i.e. a Point, LineString, Polygon
+   *         or MultiPolygon)
+   */
+  public static <P extends Geometry & Polygonal> Geometry getGeometryClipped(
+      OSMEntity entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider, P clipPoly
+  ) {
     Geometry geom = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     return Geo.clip(geom, clipPoly);
   }
