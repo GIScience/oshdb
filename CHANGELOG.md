@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## 0.5.10
+
+* update Ignite to version 2.9.0
+
 ## 0.5.9
 
 * update Ignite to version 2.8.0
