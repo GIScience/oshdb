@@ -7,6 +7,10 @@ Changelog
 * compatibility fix to allow building of javadoc under Java 11
 * fix bug where in some cases, instead of an OSHDBTimeoutException an IniteException was thrown. #258
 
+## 0.5.10
+
+* update Ignite to version 2.9.0
+
 ## 0.5.9
 
 * update Ignite to version 2.8.0

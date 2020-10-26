@@ -70,7 +70,7 @@ Documentation
 
 * [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
-* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/0.5.9/aggregated/)
+* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/)
 
 Examples
 --------
