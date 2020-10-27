@@ -1,7 +1,5 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.util.lambda;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class ConsumerUtil {
