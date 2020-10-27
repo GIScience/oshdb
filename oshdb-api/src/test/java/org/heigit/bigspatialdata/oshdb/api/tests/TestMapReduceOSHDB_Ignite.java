@@ -1,28 +1,51 @@
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
-import java.io.File;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteDataStreamer;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.CacheMode;
+import org.apache.ignite.cluster.ClusterState;
+import org.apache.ignite.configuration.BinaryConfiguration;
 import org.apache.ignite.configuration.CacheConfiguration;
+import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.logger.slf4j.Slf4jLogger;
+import org.apache.ignite.marshaller.jdk.JdkMarshaller;
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
-import static org.junit.Assert.fail;
 
 abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
-  final static Ignite ignite =
-      Ignition.start(new File("./src/test/resources/ignite-config.xml").toString());
+  final static Ignite ignite;
+  static {
+    int rndPort = 47577 + (int) (Math.random() * 1000);
+    IgniteConfiguration cfg = new IgniteConfiguration();
+    cfg.setPeerClassLoadingEnabled(true);
+    cfg.setIgniteInstanceName("OSHDB-Unit-Tests_" + rndPort);
+    cfg.setBinaryConfiguration((new BinaryConfiguration()).setCompactFooter(false));
+    cfg.setMarshaller(new JdkMarshaller());
+    cfg.setGridLogger(new Slf4jLogger());
+    cfg.setWorkDirectory("/tmp");
+    cfg.setDiscoverySpi((new TcpDiscoverySpi())
+        .setLocalPort(rndPort)
+        .setLocalPortRange(0)
+        .setIpFinder((new TcpDiscoveryVmIpFinder()).setAddresses(List.of("127.0.0.1:" + rndPort)))
+    );
+    ignite = Ignition.start(cfg);
+  }
 
   public TestMapReduceOSHDB_Ignite(OSHDBIgnite oshdb) throws Exception {
     super(oshdb);
@@ -34,7 +57,7 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
     this.keytables = oshdb_h2;
 
     Ignite ignite = ((OSHDBIgnite) this.oshdb).getIgnite();
-    ignite.cluster().active(true);
+    ignite.cluster().state(ClusterState.ACTIVE);
 
     CacheConfiguration<Long, GridOSHNodes> cacheCfg =
         new CacheConfiguration<>(TableNames.T_NODES.toString(prefix));
