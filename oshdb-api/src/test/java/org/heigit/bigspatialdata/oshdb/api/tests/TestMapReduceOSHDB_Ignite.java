@@ -36,7 +36,6 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
     cfg.setPeerClassLoadingEnabled(true);
     cfg.setIgniteInstanceName("OSHDB-Unit-Tests_" + rndPort);
     cfg.setBinaryConfiguration((new BinaryConfiguration()).setCompactFooter(false));
-    cfg.setMarshaller(new JdkMarshaller());
     cfg.setGridLogger(new Slf4jLogger());
     cfg.setWorkDirectory("/tmp");
     cfg.setDiscoverySpi((new TcpDiscoverySpi())
