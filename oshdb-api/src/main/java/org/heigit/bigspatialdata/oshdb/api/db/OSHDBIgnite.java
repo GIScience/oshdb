@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
+import org.apache.ignite.cluster.ClusterState;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
@@ -39,7 +40,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
 
   public OSHDBIgnite(Ignite ignite) {
     this.ignite = ignite;
-    this.ignite.cluster().active(true);
+    this.ignite.cluster().state(ClusterState.ACTIVE_READ_ONLY);
   }
 
   public OSHDBIgnite(String igniteConfigFilePath) {
@@ -53,9 +54,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    */
   public OSHDBIgnite(File igniteConfig) {
     Ignition.setClientMode(true);
-
     this.ignite = Ignition.start(igniteConfig.toString());
-    this.ignite.cluster().active(true);
+    this.ignite.cluster().state(ClusterState.ACTIVE_READ_ONLY);
   }
 
   @Override
