@@ -44,7 +44,6 @@ public class TransformRelationReaders implements Closeable {
         reader.close();
         throw e;
       }
-      
     }
   }
   

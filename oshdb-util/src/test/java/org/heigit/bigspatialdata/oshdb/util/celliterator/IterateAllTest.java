@@ -18,6 +18,7 @@ import org.heigit.bigspatialdata.oshdb.util.TableNames;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.bigspatialdata.oshdb.util.taginterpreter.DefaultTagInterpreter;
+import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
 import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,32 +54,35 @@ public class IterateAllTest {
     int countTotal = 0;
     int countCreated = 0;
     int countOther = 0;
-    while (oshCellsRawData.next()) {
-      // get one cell from the raw data stream
-      GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(
-          oshCellsRawData.getBinaryStream(1))
-      ).readObject();
 
-      TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>();
-      timestamps.add(new OSHDBTimestamp(1325376000L));
-      timestamps.add(new OSHDBTimestamp(1516375698L));
+    try (TagTranslator tt = new TagTranslator(conn)) {
+      while (oshCellsRawData.next()) {
+        // get one cell from the raw data stream
+        GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(
+            oshCellsRawData.getBinaryStream(1))
+        ).readObject();
 
-      List<IterateAllEntry> result = (new CellIterator(
-          timestamps,
-          new OSHDBBoundingBox(8, 9, 49, 50),
-          new DefaultTagInterpreter(conn),
-          oshEntity -> oshEntity.getId() == 617308093,
-          osmEntity -> true,
-          false
-      )).iterateByContribution(
-          oshCellRawData
-      ).collect(Collectors.toList());
-      countTotal += result.size();
-      for (IterateAllEntry entry : result) {
-        if (entry.activities.contains(ContributionType.CREATION))
-          countCreated++;
-        else
-          countOther++;
+        TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>();
+        timestamps.add(new OSHDBTimestamp(1325376000L));
+        timestamps.add(new OSHDBTimestamp(1516375698L));
+
+        List<IterateAllEntry> result = (new CellIterator(
+            timestamps,
+            new OSHDBBoundingBox(8, 9, 49, 50),
+            new DefaultTagInterpreter(tt),
+            oshEntity -> oshEntity.getId() == 617308093,
+            osmEntity -> true,
+            false
+        )).iterateByContribution(
+            oshCellRawData
+        ).collect(Collectors.toList());
+        countTotal += result.size();
+        for (IterateAllEntry entry : result) {
+          if (entry.activities.contains(ContributionType.CREATION))
+            countCreated++;
+          else
+            countOther++;
+        }
       }
     }
 

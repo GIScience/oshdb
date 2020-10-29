@@ -1564,25 +1564,21 @@ public abstract class MapReducer<X> implements
   // These need to be implemented by the actual db/processing backend!
   // -----------------------------------------------------------------------------------------------
 
-  protected Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
-  }
+  protected abstract Stream<X> mapStreamCellsOSMContribution(
+      SerializableFunction<OSMContribution, X> mapper
+  ) throws Exception;
 
-  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
-  }
+  protected abstract Stream<X> flatMapStreamCellsOSMContributionGroupedById(
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
+  ) throws Exception;
 
-  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
-  }
+  protected abstract Stream<X> mapStreamCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, X> mapper
+  ) throws Exception;
 
-  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
-  }
+  protected abstract Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper
+  ) throws Exception;
 
   // -----------------------------------------------------------------------------------------------
   // Generic map-reduce functions (internal).
@@ -1627,11 +1623,12 @@ public abstract class MapReducer<X> implements
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
-  protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
-      SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
-    throw new UnsupportedOperationException("Reduce function not yet implemented");
-  }
+  protected abstract <R, S> S mapReduceCellsOSMContribution(
+      SerializableFunction<OSMContribution, R> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception;
 
   /**
    * Generic "flat" version of the map-reduce used by the `OSMContributionView`, with by-osm-id
@@ -1681,12 +1678,12 @@ public abstract class MapReducer<X> implements
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
-  protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
+  protected abstract <R, S> S flatMapReduceCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
-      SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
-    throw new UnsupportedOperationException("Reduce function not yet implemented");
-  }
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception;
 
   /**
    * Generic map-reduce used by the `OSMEntitySnapshotView`.
@@ -1726,12 +1723,12 @@ public abstract class MapReducer<X> implements
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
-  protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
-      throws Exception {
-    throw new UnsupportedOperationException("Reduce function not yet implemented");
-  }
+  protected abstract <R, S> S mapReduceCellsOSMEntitySnapshot(
+      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception;
 
   /**
    * Generic "flat" version of the map-reduce used by the `OSMEntitySnapshotView`, with by-osm-id
@@ -1781,12 +1778,12 @@ public abstract class MapReducer<X> implements
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
-  protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
+  protected abstract <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
-      SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
-    throw new UnsupportedOperationException("Reduce function not yet implemented");
-  }
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, R, S> accumulator,
+      SerializableBinaryOperator<S> combiner
+  ) throws Exception;
 
   // -----------------------------------------------------------------------------------------------
   // Some helper methods for internal use in the mapReduce functions
