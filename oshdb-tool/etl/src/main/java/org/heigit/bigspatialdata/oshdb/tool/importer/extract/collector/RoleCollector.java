@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -106,19 +105,11 @@ public class RoleCollector implements Iterable<Role> {
     newTempFile = File.createTempFile(tempPrefix, tempSuffix, tempDir);
     if (tempDeleteOnExit)
       newTempFile.deleteOnExit();
-    writeTemp(new FileOutputStream(newTempFile));
+    try(OutputStream out  = new FileOutputStream(newTempFile)){
+      writeTemp(out);
+    }
     tmpFiles.add(newTempFile);
   }
-
-  private static final Comparator<Role> comparator = (a, b) -> a.role.compareTo(b.role);
-  private static final Function<List<Role>, Role> combiner = (list) -> {
-    final String k = list.get(0).role;
-    int freq = 0;
-    for (Role role : list) {
-      freq += role.freq;
-    }
-    return new Role(k, freq);
-  };
 
   public static class RoleFileReader implements Iterator<Role> {
     private final DataInputStream input;
@@ -163,7 +154,6 @@ public class RoleCollector implements Iterable<Role> {
   public static class RoleMapReader implements Iterator<Role> {
 
     private final ObjectBidirectionalIterator<Entry<String>> roleIterator;
-    private final boolean remove;
 
     public static RoleMapReader of(Object2IntAVLTreeMap<String> role2Frequency, boolean remove) {
       final ObjectBidirectionalIterator<Entry<String>> roleIterator = role2Frequency.object2IntEntrySet().iterator();
@@ -172,7 +162,6 @@ public class RoleCollector implements Iterable<Role> {
 
     private RoleMapReader(ObjectBidirectionalIterator<Entry<String>> roleIterator, boolean remove) {
       this.roleIterator = roleIterator;
-      this.remove = remove;
     }
 
     @Override
@@ -196,12 +185,20 @@ public class RoleCollector implements Iterable<Role> {
   public Iterator<Role> iterator() {
     List<Iterator<Role>> iters = new ArrayList<>(tmpFiles.size() + role2Frequency.size());
     tmpFiles.stream().map(file -> {
+      DataInputStream dataInput = null;
       try {
         InputStream input = inputStreamFunction.apply(new FileInputStream(file));
-        DataInputStream dataInput = new DataInputStream(new BufferedInputStream(input));
+        dataInput = new DataInputStream(new BufferedInputStream(input));
         return RoleFileReader.of(dataInput);
       } catch (IOException e) {
         e.printStackTrace();
+        if (dataInput != null) {
+          try {
+            dataInput.close();
+          } catch (Exception e2) {
+            // Exceptions should be ignored
+          }
+        }
         throw new RuntimeException(e.getMessage());
       }
     }).forEach(iters::add);
@@ -210,7 +207,6 @@ public class RoleCollector implements Iterable<Role> {
     }
 
     return MergeIterator.of(iters, (a, b) -> a.role.compareTo(b.role), list -> {
-
       final String role = list.get(0).role;
       final int freq = list.stream().mapToInt(it -> {
         return it.freq;

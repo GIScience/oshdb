@@ -5,6 +5,7 @@ import static org.heigit.bigspatialdata.oshdb.tool.importer.util.lambda.Consumer
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -112,7 +113,9 @@ public class KVFCollector implements Iterable<KVF> {
     newTempFile = File.createTempFile(tempPrefix, tempSuffix, tempDir);
     if (tempDeleteOnExit)
       newTempFile.deleteOnExit();
-    writeTemp(new FileOutputStream(newTempFile));
+    try(OutputStream out = new FileOutputStream(newTempFile)){
+      writeTemp(out);
+    }
     splits.add(newTempFile);
   }
 
@@ -154,12 +157,20 @@ public class KVFCollector implements Iterable<KVF> {
   public Iterator<KVF> iterator() {
     List<Iterator<KVF>> iters = new ArrayList<>(splits.size() + key2Frequency.size());
     splits.stream().map(file -> {
+      DataInputStream dataInput = null;
       try {
         InputStream input = inputStreamFunction.apply(new FileInputStream(file));
-        DataInputStream dataInput = new DataInputStream(new BufferedInputStream(input));
+        dataInput = new DataInputStream(new BufferedInputStream(input));
         return KVFFileReader.of(dataInput);
       } catch (IOException e) {
         e.printStackTrace();
+        if (dataInput != null) {
+          try {
+            dataInput.close();
+          } catch (Exception e2) {
+            // Exceptions should be ignored
+          }
+        }
         throw new RuntimeException(e.getMessage());
       }
     }).forEach(iters::add);
@@ -321,7 +332,7 @@ public class KVFCollector implements Iterable<KVF> {
 
   }
 
-  public static class KVFFileReader implements Iterator<KVF> {
+  public static class KVFFileReader implements Closeable, Iterator<KVF> {
     private final DataInputStream input;
     private final int keys;
     private int index = 0;
@@ -337,6 +348,11 @@ public class KVFCollector implements Iterable<KVF> {
       this.keys = keys;
     }
 
+    @Override
+    public void close() throws IOException {
+      input.close();
+    }
+    
     @Override
     public boolean hasNext() {
       return index < keys;

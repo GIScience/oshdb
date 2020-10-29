@@ -199,10 +199,12 @@ public abstract class MapReducer<X> implements
       Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
       boolean oshdbContainsKeytables = true;
       try {
-        new TagTranslator(c);
+        (new TagTranslator(c)).close();
       } catch (OSHDBKeytablesNotFoundException e) {
         // this is the expected path -> the oshdb doesn't have the key tables
         oshdbContainsKeytables = false;
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
       }
       if (oshdbContainsKeytables) {
         LOG.warn("It looks like as if the current OSHDB comes with keytables included. "
@@ -1790,7 +1792,7 @@ public abstract class MapReducer<X> implements
   // Some helper methods for internal use in the mapReduce functions
   // -----------------------------------------------------------------------------------------------
 
-  protected TagInterpreter getTagInterpreter() throws ParseException, SQLException, IOException {
+  protected TagInterpreter getTagInterpreter() throws ParseException, IOException {
     if (this.tagInterpreter == null) {
       this.tagInterpreter = new DefaultTagInterpreter(this.getTagTranslator());
     }

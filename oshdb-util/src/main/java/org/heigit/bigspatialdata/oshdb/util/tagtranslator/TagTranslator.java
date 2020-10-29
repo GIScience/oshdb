@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBRole;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
@@ -44,12 +43,12 @@ public class TagTranslator implements AutoCloseable {
   private final PreparedStatement roleIdQuery;
   private final PreparedStatement roleTxtQuery;
 
-  private final Map<OSMTagKey, OSHDBTagKey> keyToInt;
-  private final Map<OSHDBTagKey, OSMTagKey> keyToString;
-  private final Map<OSMTag, OSHDBTag> tagToInt;
-  private final Map<OSHDBTag, OSMTag> tagToString;
-  private final Map<OSMRole, OSHDBRole> roleToInt;
-  private final Map<OSHDBRole, OSMRole> roleToString;
+  private final ConcurrentHashMap<OSMTagKey, OSHDBTagKey> keyToInt;
+  private final ConcurrentHashMap<OSHDBTagKey, OSMTagKey> keyToString;
+  private final ConcurrentHashMap<OSMTag, OSHDBTag> tagToInt;
+  private final ConcurrentHashMap<OSHDBTag, OSMTag> tagToString;
+  private final ConcurrentHashMap<OSMRole, OSHDBRole> roleToInt;
+  private final ConcurrentHashMap<OSHDBRole, OSMRole> roleToString;
 
   private final Connection conn;
 
@@ -105,7 +104,7 @@ public class TagTranslator implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws SQLException {
     keyIdQuery.close();
     keyTxtQuery.close();
     valueIdQuery.close();

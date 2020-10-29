@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -79,6 +77,11 @@ public class LoaderRelation extends Loader{
     wayLoader.addLoader(this);
     this.maxZoomLevel = Math.max(1, maxZoomLevel);
     
+  }
+  
+  @Override
+  public void close() throws IOException {
+    reader.close();
   }
   
   @Override
@@ -192,17 +195,16 @@ public class LoaderRelation extends Loader{
 
   @Override
   public void visitNode(TransformOSHNode osh) {
-    final long id = osh.getId();
-    final Long id2 = osh.getId();
-    if(nodesForCellSet.contains(id2)){
+    final Long id = osh.getId();
+    if(nodesForCellSet.contains(id)){
       nodesForGrid.add(osh);
-      nodesForCellSet.remove(id2);
+      nodesForCellSet.remove(id);
     }else {
       for(int i=lastZoom; i>=0; i--){
         final Grid g = zoomLevel.get(i);
-        if(g.nodesSet.contains(id2)){
+        if(g.nodesSet.contains(id)){
           g.nodeforGrid.add(osh);
-          g.nodesSet.remove(id2);;
+          g.nodesSet.remove(id);;
           break;
         }
       }
@@ -211,45 +213,20 @@ public class LoaderRelation extends Loader{
   
   @Override
   public void visitWay(TransformOSHWay osh) {
-    final long id = osh.getId();
-    final Long id2 = osh.getId();
-    if(waysForCellSet.contains(id2)){
+    final Long id = osh.getId();
+    if(waysForCellSet.contains(id)){
       waysForGrid.add(osh);
-      waysForCellSet.remove(id2);
+      waysForCellSet.remove(id);
     }else {
       for(int i=lastZoom; i>=0; i--){
         final Grid g = zoomLevel.get(i);
-        if(g.waysSet.contains(id2)){
+        if(g.waysSet.contains(id)){
           g.wayforGrid.add(osh);
-          g.waysSet.remove(id2);;
+          g.waysSet.remove(id);;
           break;
         }
       }
     }
-  }
-
-  public static void main(String[] args) throws IOException {
-    Path workDirectory = Paths.get("./temp/nepal");
-    Path[] files;
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDirectory, "transform_relation_*")) {
-      files = StreamSupport.stream(stream.spliterator(), false).collect(Collectors.toList()).toArray(new Path[0]);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    TransformRelationReaders reader = new TransformRelationReaders(files);
-    
-    while(reader.hasNext()){
-      long cellId = reader.getCellId();
-      Optional<TransfomRelation> opt = reader.next().stream().filter(r -> r.getId() == 3798196L).findAny();
-      if(opt.isPresent()){
-        System.out.printf("%d:%d (%d) %s%n",ZGrid.getZoom(cellId),ZGrid.getIdWithoutZoom(cellId),cellId,opt.get());
-        break;
-      }
-      
-      
-    }
-    
-    
   }
 
 }

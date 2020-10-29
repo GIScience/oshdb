@@ -243,9 +243,9 @@ public class Extract {
 
     final Function<OutputStream, OutputStream> output = Functions.identity();
     final List<KeyValuePointer> keys = new ArrayList<>();
-    try (
-        CountingOutputStream keyValuesPositionOutput = new CountingOutputStream(output.apply(
-            new BufferedOutputStream(new FileOutputStream(workDirectory.resolve("extract_keyvalues").toFile()))));
+    try (FileOutputStream fout = new FileOutputStream(workDirectory.resolve("extract_keyvalues").toFile());
+        BufferedOutputStream bout = new BufferedOutputStream(fout);
+        CountingOutputStream keyValuesPositionOutput = new CountingOutputStream(output.apply(bout));
         DataOutputStream keyValuesDataOutput = new DataOutputStream(keyValuesPositionOutput)) {
       kvFrequency.forEach(kvf -> {
         try {
@@ -267,8 +267,9 @@ public class Extract {
     }
 
     try (
-        OutputStream os = output
-            .apply(new BufferedOutputStream(new FileOutputStream(workDirectory.resolve("extract_keys").toFile())));
+        FileOutputStream fs = new FileOutputStream(workDirectory.resolve("extract_keys").toFile());
+        BufferedOutputStream bs = new BufferedOutputStream(fs);
+        OutputStream os = output.apply(fs);
         DataOutputStream keyValuesDataOutput = new DataOutputStream(os)) {
       keyValuesDataOutput.writeInt(keys.size());
       final int keyCount = (int) Streams.stream(ExternalSort.of((a, b) -> {
@@ -290,9 +291,9 @@ public class Extract {
   public void sortByFrequency(RoleCollector roleFrequency) throws FileNotFoundException, IOException {
     final long maxSize = maxMemory;
     final Function<OutputStream, OutputStream> output = Functions.identity();
-    try (
-        OutputStream os = output
-            .apply(new BufferedOutputStream(new FileOutputStream(workDirectory.resolve("extract_roles").toFile())));
+    try (FileOutputStream fout = new FileOutputStream(workDirectory.resolve("extract_roles").toFile());
+        BufferedOutputStream bout = new BufferedOutputStream(fout);
+        OutputStream os = output.apply(bout);
         DataOutputStream rolesDataOutput = new DataOutputStream(os)) {
       final int keyCount = (int) Streams.stream(ExternalSort.of((a, b) -> {
         final int c = Integer.compare(a.freq, b.freq);
@@ -348,8 +349,10 @@ public class Extract {
       }
       try {
         List<File> tmp;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDir, RoleCollector.tempPrefix + "_*")) {
-          tmp = StreamSupport.stream(stream.spliterator(), false).map(Path::toFile).collect(Collectors.toList());
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDir,
+            RoleCollector.tempPrefix + "_*")) {
+          tmp = StreamSupport.stream(stream.spliterator(), false).map(Path::toFile)
+              .collect(Collectors.toList());
         } catch (IOException e) {
           throw new RuntimeException(e);
         }

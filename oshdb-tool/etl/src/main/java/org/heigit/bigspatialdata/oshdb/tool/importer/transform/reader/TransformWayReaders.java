@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.tool.importer.transform.reader;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.TreeSet;
 import org.heigit.bigspatialdata.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.bigspatialdata.oshdb.tool.importer.util.ZGrid;
 
-public class TransformWayReaders {
+public class TransformWayReaders implements Closeable {
   private static class TransformWayReader extends TransformReader<TransformOSHWay> {
 
     public TransformWayReader(Path path) throws IOException {
@@ -24,19 +25,37 @@ public class TransformWayReaders {
     
   }
   
+  final List<TransformWayReader> readers;
   final PriorityQueue<TransformWayReader> queue;
   final List<TransformWayReader> next;
   
-  public TransformWayReaders(Path... path) throws IOException{
-    queue = new PriorityQueue<>(path.length, (a,b) -> ZGrid.ORDER_DFS_TOP_DOWN.compare(a.getCellId(), b.getCellId()));
+  public TransformWayReaders(Path... path) throws IOException {
+    queue = new PriorityQueue<>(path.length, (a,b)
+        -> ZGrid.ORDER_DFS_TOP_DOWN.compare(a.getCellId(), b.getCellId()));
     next = new ArrayList<>(path.length);
-    for(Path p : path){
+    readers = new ArrayList<>(path.length);
+    for (Path p : path) {
       TransformWayReader reader = new TransformWayReader(p);
-      if(reader.hasNext()){
-        reader.next();
-        queue.add(reader);
+      readers.add(reader);
+      try {
+        if (reader.hasNext()) {
+          reader.next();
+          queue.add(reader);
+        }
+      } catch (RuntimeException e) {
+        reader.close();
+        throw e;
       }
     }
+  }
+  
+  @Override
+  public void close() throws IOException {
+     readers.forEach(reader -> {
+       try {
+        reader.close();
+      } catch (IOException e) {}
+     });
   }
   
   public boolean hasNext(){

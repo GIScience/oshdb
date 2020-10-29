@@ -136,7 +136,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
 
     // list of uninteresting tags
     Set<Integer> uninterestingTagKeys = new HashSet<>();
-    JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(uninterestingTagsDefinitionFile)));
+    JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(
+            uninterestingTagsDefinitionFile)));
     // todo: check json schema for validity
 
     @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
@@ -183,8 +185,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] == typeKey)
         return tags[i + 1] == typeMultipolygonValue || tags[i + 1] == typeBoundaryValue;
-      else if (tags[i] > typeKey)
+      else if (tags[i] > typeKey) {
         return false;
+      }
     }
     return false;
   }

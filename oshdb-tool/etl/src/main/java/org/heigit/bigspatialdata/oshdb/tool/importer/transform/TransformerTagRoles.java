@@ -40,7 +40,6 @@ public class TransformerTagRoles {
 
   public static TagToIdMapper getTagToIdMapper(Path workDirectory) throws FileNotFoundException, IOException {
     final ToIntFunction<String> hashFunction = s -> s.hashCode();
-    final Function<OutputStream, OutputStream> output = Functions.identity();
 
     final Path tag2IdPath = workDirectory.resolve("transform_tag2Id");
     if (Files.exists(tag2IdPath)) {
@@ -93,8 +92,9 @@ public class TransformerTagRoles {
     }
     final StringToIdMappingImpl key2IdMapping = new StringToIdMappingImpl(uniqueKeys, notUniqueKeys, hashFunction, estimatedSize);
     final TagToIdMapperImpl tag2IdMapper = new TagToIdMapperImpl(key2IdMapping, value2IdMappings);
-    try (DataOutputStream out = new DataOutputStream(
-        new BufferedOutputStream(new FileOutputStream(workDirectory.resolve("transform_tag2Id").toFile())))) {
+    try (FileOutputStream fout = new FileOutputStream(workDirectory.resolve("transform_tag2Id").toFile());
+        BufferedOutputStream bout = new BufferedOutputStream(fout);
+        DataOutputStream out = new DataOutputStream(bout);) {
       tag2IdMapper.write(out);
     }
     return tag2IdMapper;
@@ -102,30 +102,31 @@ public class TransformerTagRoles {
 
   private static StringToIdMappingImpl value2IdMapping(KeyValuePointer kvp, FileChannel channel, ToIntFunction<String> hashFunction) throws IOException {
     final Int2IntAVLTreeMap valueHash2Cnt = new Int2IntAVLTreeMap();
-    DataInputStream valueStream;
 
     channel.position(kvp.valuesOffset);
-    valueStream = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel),1024*1024));
-    for (int j = 0; j < kvp.valuesNumber; j++) {
-      final VF vf = VF.read(valueStream);
-      final int hash = hashFunction.applyAsInt(vf.value);
-      valueHash2Cnt.addTo(hash, 1);
+    try(DataInputStream valueStream = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel),1024*1024));){
+      for (int j = 0; j < kvp.valuesNumber; j++) {
+        final VF vf = VF.read(valueStream);
+        final int hash = hashFunction.applyAsInt(vf.value);
+        valueHash2Cnt.addTo(hash, 1);
+      }
     }
 
     final Int2IntMap uniqueValues = new Int2IntAVLTreeMap();
     final Object2IntMap<String> notUniqueValues = new Object2IntAVLTreeMap<String>();
     long estimatedSize = 0;
     channel.position(kvp.valuesOffset);
-    valueStream = new DataInputStream(Channels.newInputStream(channel));
-    for (int j = 0; j < kvp.valuesNumber; j++) {
-      final VF vf = VF.read(valueStream);
-      final int hash = hashFunction.applyAsInt(vf.value);
-      if (valueHash2Cnt.get(hash) > 1) {
-        notUniqueValues.put(vf.value, j);
-        estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue(kvp.key)+4;
-      } else {
-        uniqueValues.put(hash, j);
-        estimatedSize += SizeEstimator.avlTreeEntry() + 8;
+    try(DataInputStream valueStream = new DataInputStream(Channels.newInputStream(channel));){
+      for (int j = 0; j < kvp.valuesNumber; j++) {
+        final VF vf = VF.read(valueStream);
+        final int hash = hashFunction.applyAsInt(vf.value);
+        if (valueHash2Cnt.get(hash) > 1) {
+          notUniqueValues.put(vf.value, j);
+          estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue(kvp.key)+4;
+        } else {
+          uniqueValues.put(hash, j);
+          estimatedSize += SizeEstimator.avlTreeEntry() + 8;
+        }
       }
     }
 
@@ -134,7 +135,6 @@ public class TransformerTagRoles {
 
   public static RoleToIdMapper getRoleToIdMapper(Path workDirectory) throws FileNotFoundException, IOException {
     final ToIntFunction<String> hashFunction = s -> s.hashCode();
-    final Function<OutputStream, OutputStream> output = Functions.identity();
 
     final Path role2IdPath = workDirectory.resolve("transform_role2Id");
     if (Files.exists(role2IdPath)) {
