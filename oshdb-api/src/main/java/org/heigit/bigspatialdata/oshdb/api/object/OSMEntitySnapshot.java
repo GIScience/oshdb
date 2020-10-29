@@ -87,7 +87,7 @@ public class OSMEntitySnapshot implements OSHDBMapReducible, Comparable<OSMEntit
   /**
    * {@inheritDoc}
    *
-   * Note: this class has a natural ordering that is inconsistent with equals.
+   * <p>Note: this class has a natural ordering that is inconsistent with equals.</p>
    */
   @Override
   public int compareTo(@Nonnull OSMEntitySnapshot other) {

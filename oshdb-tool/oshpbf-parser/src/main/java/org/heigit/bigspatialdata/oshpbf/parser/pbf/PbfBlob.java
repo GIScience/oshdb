@@ -31,7 +31,8 @@ public class PbfBlob {
   private Osmformat.PrimitiveBlock block = null;
 
 
-  public PbfBlob(final long pos, final Fileformat.BlobHeader header, final Fileformat.Blob blob,boolean isFirstBlob,boolean overSoftLimit) {
+  public PbfBlob(final long pos, final Fileformat.BlobHeader header, final Fileformat.Blob blob,
+      boolean isFirstBlob, boolean overSoftLimit) {
     this.pos = pos;
     this.header = header;
     this.content = blob;
@@ -39,7 +40,7 @@ public class PbfBlob {
     this.overSoftLimit = overSoftLimit;
   }
 
-  public long getBlobPos(){
+  public long getBlobPos() {
     return pos;
   }
 
@@ -61,8 +62,9 @@ public class PbfBlob {
 
   public Osmformat.PrimitiveBlock getPrimitivBlock() throws InvalidProtocolBufferException {
     if (isData()) {
-      if(block != null)
+      if (block != null) {
         return block;
+      }
 
       final ByteString data = getData();
       //block = Osmformat.PrimitiveBlock.parseFrom(data);
@@ -77,7 +79,7 @@ public class PbfBlob {
     if (content.hasRaw()) {
       data = content.getRaw();
     } else if (content.hasZlibData()) {
-      byte buf2[] = new byte[content.getRawSize()];
+      byte[] buf2 = new byte[content.getRawSize()];
       Inflater decompresser = new Inflater();
       try {
         decompresser.setInput(content.getZlibData().toByteArray());

@@ -270,7 +270,7 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
   /**
    * {@inheritDoc}
    *
-   * Note: this class has a natural ordering that is inconsistent with equals.
+   * <p>Note: this class has a natural ordering that is inconsistent with equals.</p>
    */
   @Override
   public int compareTo(@Nonnull OSMContribution other) {

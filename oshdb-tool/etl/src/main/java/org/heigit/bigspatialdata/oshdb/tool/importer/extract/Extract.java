@@ -349,8 +349,10 @@ public class Extract {
       }
       try {
         List<File> tmp;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDir, RoleCollector.tempPrefix + "_*")) {
-          tmp = StreamSupport.stream(stream.spliterator(), false).map(Path::toFile).collect(Collectors.toList());
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDir,
+            RoleCollector.tempPrefix + "_*")) {
+          tmp = StreamSupport.stream(stream.spliterator(), false).map(Path::toFile)
+              .collect(Collectors.toList());
         } catch (IOException e) {
           throw new RuntimeException(e);
         }

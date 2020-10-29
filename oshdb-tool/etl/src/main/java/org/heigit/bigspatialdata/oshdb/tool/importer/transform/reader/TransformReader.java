@@ -71,46 +71,49 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
   }
   
   @SuppressWarnings("rawtypes")
-  public TransformReader next(){
+  public TransformReader next() {
     try {
       readHeader();
       return this;
     } catch (IOException e) {
       try {
          raf.close();
-      }catch (Exception e2) { }
+      } catch (Exception e2) {
+        // Exceptions should be ignored
+      }
       throw new RuntimeException(e);
     }
    
   }
-  
-  public Set<T> entities(){
+
+  public Set<T> entities() {
     try {
-    final ByteBuffer data = ByteBuffer.allocateDirect(bytes);
-    channel.read(data, pos);
-    data.flip();
-    
-    final OSHDBBoundingBox bbox = ZGrid.getBoundingBox(cellId);
-    final long baseLongitude = bbox.getMinLonLong();
-    final long baseLatitude = bbox.getMinLatLong();
-    
-    final Set<T> ret = new TreeSet<>((a,b) -> Long.compare(a.getId(), b.getId()));
-    long id = 0;
-    while(data.hasRemaining()){
-      int length = data.getInt();
-      byte[] content = new byte[length];
-      data.get(content);
-      T node = getInstance(content, 0, length,id,0,baseLongitude,baseLatitude);
-      id = node.getId();
-      ret.add(node);
-    }
-    return ret;
-    }catch(IOException e){
+      final ByteBuffer data = ByteBuffer.allocateDirect(bytes);
+      channel.read(data, pos);
+      data.flip();
+
+      final OSHDBBoundingBox bbox = ZGrid.getBoundingBox(cellId);
+      final long baseLongitude = bbox.getMinLonLong();
+      final long baseLatitude = bbox.getMinLatLong();
+
+      final Set<T> ret = new TreeSet<>((a,b) -> Long.compare(a.getId(), b.getId()));
+      long id = 0;
+      while (data.hasRemaining()) {
+        int length = data.getInt();
+        byte[] content = new byte[length];
+        data.get(content);
+        T node = getInstance(content, 0, length,id,0,baseLongitude,baseLatitude);
+        id = node.getId();
+        ret.add(node);
+      }
+      return ret;
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
   
-  protected abstract T getInstance(byte[] data, int offset, int length, long baseId, long baseTimestamp, long baseLongitude, long baseLatitude) throws IOException;
+  protected abstract T getInstance(byte[] data, int offset, int length, long baseId,
+      long baseTimestamp, long baseLongitude, long baseLatitude) throws IOException;
 }
 
 

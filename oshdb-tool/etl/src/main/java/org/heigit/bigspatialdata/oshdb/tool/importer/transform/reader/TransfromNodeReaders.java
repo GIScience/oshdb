@@ -28,20 +28,21 @@ public class TransfromNodeReaders implements Closeable {
   final List<TransformNodeReader> readers;
   final PriorityQueue<TransformNodeReader> queue;
   final List<TransformNodeReader> next;
-  
-  public TransfromNodeReaders(Path... path) throws IOException{
-    queue = new PriorityQueue<>(path.length, (a,b) -> ZGrid.ORDER_DFS_TOP_DOWN.compare(a.getCellId(), b.getCellId()));
+
+  public TransfromNodeReaders(Path... path) throws IOException {
+    queue = new PriorityQueue<>(path.length, (a,b)
+        -> ZGrid.ORDER_DFS_TOP_DOWN.compare(a.getCellId(), b.getCellId()));
     next = new ArrayList<>(path.length);
     readers = new ArrayList<>(path.length);
-    for(Path p : path){
+    for (Path p : path) {
       TransformNodeReader reader = new TransformNodeReader(p);
       readers.add(reader);
       try {
-        if(reader.hasNext()){
+        if (reader.hasNext()) {
           reader.next();
           queue.add(reader);
         }
-      }catch(RuntimeException e){
+      } catch (RuntimeException e) {
         reader.close();
         throw e;
       }

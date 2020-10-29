@@ -192,8 +192,12 @@ public class RoleCollector implements Iterable<Role> {
         return RoleFileReader.of(dataInput);
       } catch (IOException e) {
         e.printStackTrace();
-        if(dataInput != null) {
-          try { dataInput.close();}catch(Exception e2) {}
+        if (dataInput != null) {
+          try {
+            dataInput.close();
+          } catch (Exception e2) {
+            // Exceptions should be ignored
+          }
         }
         throw new RuntimeException(e.getMessage());
       }
