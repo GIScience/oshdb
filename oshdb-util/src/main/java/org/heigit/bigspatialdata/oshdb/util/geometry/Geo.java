@@ -20,6 +20,9 @@ public class Geo {
   private static double earthRadiusEquator = 6378137.0; //meters
   private static final double earthInverseFlattening = 298.257223563;
   private static final double f_ = 1.0 - 1.0 / earthInverseFlattening;
+  // this partially accounts for the non-spherical shape of the earth
+  // see https://gis.stackexchange.com/a/63047/41632
+  private static final double sphereFact = Math.pow(f_, 1.5);
 
   // =====================
   // = line calculations =
@@ -42,9 +45,6 @@ public class Geo {
   public static double lengthOf(LineString line) {
     double dist = 0.0;
     Coordinate[] coords = line.getCoordinates();
-    // this partially accounts for the non-spherical shape of the earth
-    // see https://gis.stackexchange.com/a/63047/41632
-    double sphereFact = Math.pow(f_, 1.5);
 
     if (coords.length > 1) {
       double prevLon = Math.toRadians(coords[0].x);
