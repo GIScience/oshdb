@@ -962,7 +962,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   @Test
   public void test777() throws ParseException {
     /*
-    777 is not really a valid test case.
+    777 is not a valid test case.
 
     According to https://wiki.openstreetmap.org/wiki/Relation:multipolygon: “Generally, the
     multipolygon relation can be used to build multipolygons in compliance with the OGC Simple
@@ -990,7 +990,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   @Test
   public void test778() throws ParseException {
     /*
-    778 is not really a valid test case.
+    778 is not a valid test case.
 
     According to https://wiki.openstreetmap.org/wiki/Relation:multipolygon: “[inner ways make] up
     the optional inner ring(s) delimiting the excluded holes that must be fully inside the area
@@ -1114,7 +1114,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   @Test
   public void test785() throws ParseException {
     /*
-    785 is not really a valid test case.
+    785 is not a valid test case.
 
     According to https://wiki.openstreetmap.org/wiki/Relation:multipolygon: “An implementation of
     multipolygons should attempt to render [touching inner rings] as if the touching rings were
@@ -1210,4 +1210,3 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 }
-
