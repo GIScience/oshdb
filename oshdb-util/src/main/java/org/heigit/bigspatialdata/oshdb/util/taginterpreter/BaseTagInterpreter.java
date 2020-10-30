@@ -2,7 +2,6 @@ package org.heigit.bigspatialdata.oshdb.util.taginterpreter;
 
 import java.util.Map;
 import java.util.Set;
-
 import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;

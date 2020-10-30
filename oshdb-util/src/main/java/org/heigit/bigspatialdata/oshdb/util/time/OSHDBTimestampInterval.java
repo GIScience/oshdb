@@ -46,8 +46,8 @@ public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTim
 
   @Override
   public boolean equals(Object o) {
-    return o != null && o instanceof OSHDBTimestampInterval &&
-        this.fromTimestamp.equals(((OSHDBTimestampInterval) o).fromTimestamp) &&
-        this.toTimestamp.equals(((OSHDBTimestampInterval) o).toTimestamp);
+    return o != null && o instanceof OSHDBTimestampInterval
+        && this.fromTimestamp.equals(((OSHDBTimestampInterval) o).fromTimestamp)
+        && this.toTimestamp.equals(((OSHDBTimestampInterval) o).toTimestamp);
   }
 }

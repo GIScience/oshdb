@@ -1,8 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util;
 
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-
 import java.util.Optional;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 
 /**
  * Names for JDBC-Tables.
@@ -54,13 +53,14 @@ public enum TableNames {
   }
 
   public String toString(String prefix) {
-    if(prefix != null && !prefix.trim().isEmpty())
-      return prefix+"_"+this.toString();
+    if (prefix != null && !prefix.trim().isEmpty()) {
+      return prefix + "_" + this.toString();
+    }
     return this.toString();
   }
 
   public static Optional<TableNames> forOSMType(OSMType type) {
-    switch(type) {
+    switch (type) {
       case NODE: return Optional.of(T_NODES);
       case WAY: return Optional.of(T_WAYS);
       case RELATION: return Optional.of(T_RELATIONS);

@@ -18,7 +18,7 @@ public interface OSHDBTimestampList extends Serializable {
   SortedSet<OSHDBTimestamp> get();
 
   /**
-   * Convenience method that converts the timestamp list into raw unix timestamps (long values)
+   * Convenience method that converts the timestamp list into raw unix timestamps (long values).
    *
    * @return this list of timestamps as raw unix timestamps (measured in seconds)
    */

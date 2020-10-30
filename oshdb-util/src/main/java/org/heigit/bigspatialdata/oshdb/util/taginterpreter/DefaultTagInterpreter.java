@@ -30,8 +30,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   private int typeBoundaryValue = -1;
   private int typeRouteValue = -1;
 
-  private final static String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
-  private final static String defaultUninterestingTagsDefinitionFile = "json/uninterestingTags.json";
+  private static final String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
+  private static final String defaultUninterestingTagsDefinitionFile
+      = "json/uninterestingTags.json";
 
   /**
    *
@@ -64,7 +65,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     Map<Integer, Set<Integer>> wayAreaTags = new HashMap<>();
 
     JSONParser parser = new JSONParser();
-    JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)));
+    JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)
+    ));
     // todo: check json schema for validity
 
     @SuppressWarnings("unchecked") // we expect only JSON objects here in a valid definition file
@@ -168,11 +171,12 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   private boolean evaluateRelationForArea(OSMRelation entity) {
     int[] tags = entity.getRawTags();
     // skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
-    // the following is slightly faster than running `return entity.hasTagValue(k1,v1) || entity.hasTagValue(k2,v2);`
+    // the following is slightly faster than running
+    // `return entity.hasTagValue(k1,v1) || entity.hasTagValue(k2,v2);`
     for (int i = 0; i < tags.length; i += 2) {
-      if (tags[i] == typeKey)
+      if (tags[i] == typeKey) {
         return tags[i + 1] == typeMultipolygonValue || tags[i + 1] == typeBoundaryValue;
-      else if (tags[i] > typeKey) {
+      } else if (tags[i] > typeKey) {
         return false;
       }
     }

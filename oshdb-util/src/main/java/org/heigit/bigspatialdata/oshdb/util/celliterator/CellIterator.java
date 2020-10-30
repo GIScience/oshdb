@@ -267,7 +267,7 @@ public class CellIterator implements Serializable {
           || !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox)
               || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
-        )) {
+          )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         return Stream.empty();
@@ -312,8 +312,8 @@ public class CellIterator implements Serializable {
           OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
 
       List<IterateByTimestampEntry> results = new LinkedList<>();
-      osmEntityLoop:
-      for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity :
+          osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
@@ -321,9 +321,10 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
-        if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0
+        if (osmEntity instanceof OSMWay && (
+            (OSMWay)osmEntity).getRefs().length == 0
             || osmEntity instanceof OSMRelation
-                && ((OSMRelation)osmEntity).getMembers().length == 0) {
+            && ((OSMRelation)osmEntity).getMembers().length == 0) {
           // skip way/relation with zero nodes/members
           continue;
         }
@@ -556,7 +557,7 @@ public class CellIterator implements Serializable {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox)
-              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+                  || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -569,7 +570,7 @@ public class CellIterator implements Serializable {
 
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox)
-          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+              && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
