@@ -43,7 +43,7 @@ The OSHDB provides the following list of default reduce operations, that are oft
 * [`count`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#count--)
 * [`sum`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#sum--)
 * [`average`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#average--)
-* [`weighted`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#weightedAverage-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction-) average
+* [`weightedAverage`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#weightedAverage-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction-)
 * [`uniq`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#uniq--)
 * [`countUniq`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#countUniq--)
 * [`estimatedMedian`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#estimatedMedian--)
@@ -56,3 +56,13 @@ stream
 ------
 
 Instead of using a regular reduce operation at the end of an OSHDB query, one can also call [`stream`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--), which doesn't aggregate the values into a final result, but rather returns a (potentially long) stream of values. If possible, using a reduce operation instead of streaming all values and using post-processing results in better performance of a query, because there is less data to be transferred. The stream operation is however beneficiall over using `collect` if the result set is expected to be large, because it doesn't require all the data to be buffered into a result collection.
+
+geometry helpers
+----------------
+
+Often, one might be interested in analyzing properties of the geometries of the analyzed OSM features. For some often used metrics, the OSHDB comes with a few built in helper functions in its [`Geo`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/util/geometry/Geo.html) class:
+
+* [`areaOf`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/util/geometry/Geo.html#areaOf(org.locationtech.jts.geom.Geometry)) returns the area (in `m²`) of polygonal geometries.
+* [`lengthOf`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/util/geometry/Geo.html#lengthOf(org.locationtech.jts.geom.Geometry)) returns the length (in `m`) of linear geometries.
+
+> Note that both of these methods use approximation formulas to calculate the length or area of OSM geometries. For typical features present in OpenStreetMap data, however, the relative error introduced by these approximations are quite small (below 0.1% for lengths and < 0.001% for areas).
