@@ -3,8 +3,10 @@ package org.heigit.bigspatialdata.oshdb.util.geometry;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -300,63 +302,129 @@ public class OSHDBGeometryBuilder {
         );
   }
 
-  private static void mergeTouchingRings(List<LinkedList<OSMNode>> ringsNodes) {
+  /**
+   * Search and merge touching rings.
+   *
+   * <p>Attention: modifies the input data, such that there are no more rings that touch in
+   * one or more segments.</p>
+   *
+   * <p>
+   *   Touching rings are defined as rings which share at least one segment (a segment is formed by
+   *   two consecutive ring nodes, regardless of their order). An example is:
+   *   [r1 = (A,B,C,D,A); r2 = (X,Y,D,C,B,X)]. The result would be: [r1 = (A,B,X,Y,D,A)]
+   * </p>
+   *
+   * @param ringsNodes a collection of node-lists, each forming a ring closed linestring
+   */
+  private static void mergeTouchingRings(Collection<LinkedList<OSMNode>> ringsNodes) {
+    // ringSegments will hold a reference of which ring a particular segment is part of.
+    // Note that in the final result, each segment will be "used" by exactly one ring.
     Map<Segment, LinkedList<OSMNode>> ringSegments = new HashMap<>();
-    List<LinkedList<OSMNode>> mergedRings = new LinkedList<>();
-    for (LinkedList<OSMNode> ringNodes : ringsNodes) {
-      List<Segment> thisRingSegments = new ArrayList<>(ringNodes.size() - 1);
-      int numNodes = ringNodes.size();
-      long prevNodeId = ringNodes.get(0).getId();
-      for (int i = 1; i < numNodes; i++) {
-        long thisNodeId = ringNodes.get(i).getId();
+    for (Iterator<LinkedList<OSMNode>> ringsIter = ringsNodes.iterator(); ringsIter.hasNext();) {
+      LinkedList<OSMNode> ringNodes = ringsIter.next();
+      // will contain the list of segments of the current or merged ring.
+      // after the merging process, these are used to populate the ringSegments map.
+      List<Segment> mergedRingSegments = new ArrayList<>(ringNodes.size() - 1);
+      // pairwise iterate over nodes of current ring ->
+      Iterator<OSMNode> ringNodesIter = ringNodes.iterator();
+      long prevNodeId = ringNodesIter.next().getId();
+      while (ringNodesIter.hasNext()) {
+        long thisNodeId = ringNodesIter.next().getId();
         Segment segment = new Segment(prevNodeId, thisNodeId);
+        prevNodeId = thisNodeId;
         if (!ringSegments.containsKey(segment)) {
-          thisRingSegments.add(segment);
+          // we have not encountered this segment yet -> just remember it for later
+          mergedRingSegments.add(segment);
         } else {
-          // merge this ring with the previous one
+          // we have already seen this segment:
+          // merge this ring (ringNodes) into the previously encountered one (targetNodes)
           LinkedList<OSMNode> targetNodes = ringSegments.get(segment);
+          // remove all segments pointing to the target ring, as we will rebuild it from scratch
           ringSegments.values().remove(targetNodes);
+          // cut and rewind target and current rings to the matching segment we found
           cutAtSegment(targetNodes, segment);
           cutAtSegment(ringNodes, segment);
+          // cut back all other segments which are shared by current and target ring
           mergeSegmentsToRing(targetNodes, ringNodes);
           // clean up
-          // add merged segments to thisRingSements
-          thisRingSegments.clear();
-          for (int j = 1; j < targetNodes.size(); j++) {
-            thisRingSegments.add(
-                new Segment(targetNodes.get(j - 1).getId(), targetNodes.get(j).getId())
-            );
+          // add merged ring's segments to segments->ring map
+          mergedRingSegments.clear();
+          Iterator<OSMNode> targetNodesIter = targetNodes.iterator();
+          long segmentPrevNodeId = targetNodesIter.next().getId();
+          while (targetNodesIter.hasNext()) {
+            long segmentCurrNodeId = targetNodesIter.next().getId();
+            mergedRingSegments.add(new Segment(segmentPrevNodeId, segmentCurrNodeId));
+            segmentPrevNodeId = segmentCurrNodeId;
           }
-          // mark merged ring as to be removed
-          mergedRings.add(ringNodes);
+          // remove current ring from end result, as it was merged with another ring already.
+          ringsIter.remove();
+          // save target ring for global segments->ring map (ringSegments)
           ringNodes = targetNodes;
+          // abort current ring, continue with next one
           break;
         }
-        prevNodeId = thisNodeId;
       }
-      for (Segment thisRingSegment : thisRingSegments) {
-        ringSegments.put(thisRingSegment, ringNodes);
+      // add current ring's segments to map of all already processed segments
+      for (Segment mergedRingSegment : mergedRingSegments) {
+        ringSegments.put(mergedRingSegment, ringNodes);
       }
     }
-    ringsNodes.removeAll(mergedRings);
   }
 
-  private static void cutAtSegment(LinkedList<OSMNode> ring, Segment segment) {
-    ring.remove(0);
+  /**
+   * Cut a ring at the given segment.
+   *
+   * <p>The result is stored in the input variable (modified in-place).</p>
+   *
+   * <p>
+   *   After cutting of a ring, one gets an open line string with the ends corresponding exactly
+   *   to the cut-segments nodes.
+   *   Example: ring = (A,B,C,D,A); cut = (C,D); result = (D,A,B,C)
+   * </p>
+   *
+   * @param ring a ring of nodes
+   * @param cutSegment the segment where to cut at
+   */
+  private static void cutAtSegment(LinkedList<OSMNode> ring, Segment cutSegment) {
+    // split the ring open, by removing the "redundant" coordinate.
+    // example: (A,B,C,D,A) -> (B,C,D,A)
+    ring.removeFirst();
     while (true) {
-      if (ring.getFirst().getId() == segment.id1 && ring.getLast().getId() == segment.id2
-          || ring.getFirst().getId() == segment.id2 && ring.getLast().getId() == segment.id1) {
+      // do the open ends of the current ring match the cut segment?
+      Segment splitSegment = new Segment(ring.getFirst().getId(), ring.getLast().getId());
+      if (cutSegment.equals(splitSegment)) {
+        // yes -> we're done
         return;
+      } else {
+        // no -> wind the split location in the input ring one node forward
+        // example: (B,C,D,A) -> (C,D,A,B) -- split segment was (B,A) and is now (C,B)
+        ring.add(ring.removeFirst());
       }
-      ring.add(ring.removeFirst());
     }
   }
 
+  /**
+   * Take two open line strings (which share a common pair of start/end nodes) and merge them into
+   * a single ring without any degeneracies.
+   *
+   * <p>The result is stored in the target input variable (both inputs are modified in-place).</p>
+   *
+   * <p>
+   *   After joining of a ring, one gets a closed ring with no back-tracking segments.
+   *   Example: target = (B,A,D,C); source = (C,D,X,Y,B)
+   *            result (in target) = (B,A,D,X,Y,B) "or equivalent representation"
+   * </p>
+   *
+   * @param target a ring which has been cut open using {@link #cutAtSegment(LinkedList, Segment)}
+   * @param source a ring which has been cut open using {@link #cutAtSegment(LinkedList, Segment)}
+   */
   private static void mergeSegmentsToRing(LinkedList<OSMNode> target, LinkedList<OSMNode> source) {
+    // make sure source and target are pointing in opposite order:
+    // this facilitates merging them into a closed loop in the end of this method
     if (target.getFirst().getId() == source.getFirst().getId()) {
       Collections.reverse(source);
     }
-    // clean shared segments
+    // shave off shared segments between both rings
     while (source.size() > 1 && target.size() > 1
         && source.getFirst().getId() == target.getLast().getId()
         && source.get(1).getId() == target.get(target.size() - 2).getId()) {
@@ -369,7 +437,7 @@ public class OSHDBGeometryBuilder {
       source.removeLast();
       target.removeFirst();
     }
-    // merge partial rings to new complete one
+    // merge two halve rings to form a new complete one
     source.removeFirst();
     target.addAll(source);
   }
