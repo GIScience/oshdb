@@ -11,7 +11,6 @@ import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
-import org.heigit.ohsome.filter.GeometryFilter.ValueRange;
 import org.heigit.ohsome.filter.GeometryTypeFilter.GeometryType;
 import org.junit.Test;
 import org.locationtech.jts.geom.GeometryFactory;

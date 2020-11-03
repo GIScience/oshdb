@@ -65,26 +65,26 @@ public class ParseTest extends FilterTest {
     assertEquals("tag:" + tag.toInt() + "!=*", expression.toString());
   }
 
+  @SuppressWarnings("RegExpDuplicateAlternationBranch") // false positive by intellij
   @Test
   public void testTagFilterEqualsAnyOf() {
     FilterExpression expression = parser.parse("highway in (residential, track)");
     assertTrue(expression instanceof TagFilterEqualsAnyOf);
     OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
     OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
-    //noinspection RegExpDuplicateAlternationBranch - false positive by intellij
     assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "in("
         + tag1.getValue() + "," + tag2.getValue() + "|"
         + tag2.getValue() + "," + tag1.getValue() + ")"
     ));
   }
 
+  @SuppressWarnings("RegExpDuplicateAlternationBranch") // false positive by intellij
   @Test
   public void testTagFilterNotEqualsAnyOf() {
     FilterExpression expression = parser.parse("not highway in (residential, track)");
     assertTrue(expression instanceof TagFilterNotEqualsAnyOf);
     OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
     OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
-    //noinspection RegExpDuplicateAlternationBranch - false positive by intellij
     assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "not-in("
         + tag1.getValue() + "," + tag2.getValue() + "|"
         + tag2.getValue() + "," + tag1.getValue() + ")"
@@ -290,6 +290,7 @@ public class ParseTest extends FilterTest {
     forEmptyFilter("");
     forEmptyFilter(" ");
   }
+
   private void forEmptyFilter(String emptyFilter) {
     FilterExpression expression = parser.parse(emptyFilter);
     assertTrue(expression instanceof ConstantFilter);
@@ -311,10 +312,12 @@ public class ParseTest extends FilterTest {
     expression = parser.parse("area:(1..)");
     assertTrue(expression instanceof GeometryFilterArea);
     assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
-    assertEquals(Double.POSITIVE_INFINITY, ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
+    assertEquals(Double.POSITIVE_INFINITY,
+        ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
     expression = parser.parse("area:(..1)");
     assertTrue(expression instanceof GeometryFilterArea);
-    assertEquals(Double.NEGATIVE_INFINITY, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
+    assertEquals(Double.NEGATIVE_INFINITY,
+        ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
     assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
   }
 

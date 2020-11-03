@@ -39,7 +39,7 @@ abstract class FilterTest {
     this.tagTranslator.getConnection().close();
   }
 
-  protected int[] createTestTags(String ...keyValues) {
+  protected int[] createTestTags(String... keyValues) {
     ArrayList<Integer> tags = new ArrayList<>(keyValues.length);
     for (int i = 0; i < keyValues.length; i += 2) {
       OSHDBTag t = tagTranslator.getOSHDBTagOf(keyValues[i], keyValues[i + 1]);
@@ -49,11 +49,11 @@ abstract class FilterTest {
     return tags.stream().mapToInt(x -> x).toArray();
   }
 
-  protected OSMNode createTestEntityNode(String ...keyValues) {
+  protected OSMNode createTestEntityNode(String... keyValues) {
     return new OSMNode(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), 0, 0);
   }
 
-  protected OSMWay createTestEntityWay(long[] nodeIds, String ...keyValues) {
+  protected OSMWay createTestEntityWay(long[] nodeIds, String... keyValues) {
     OSMMember[] refs = new OSMMember[nodeIds.length];
     for (int i = 0; i < refs.length; i++) {
       refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
@@ -61,7 +61,8 @@ abstract class FilterTest {
     return new OSMWay(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), refs);
   }
 
-  protected OSMRelation createTestEntityRelation(String ...keyValues) {
-    return new OSMRelation(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), new OSMMember[] {});
+  protected OSMRelation createTestEntityRelation(String... keyValues) {
+    return new OSMRelation(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues),
+        new OSMMember[] {});
   }
 }

@@ -23,14 +23,17 @@ import org.junit.Test;
  * <p>Tests the parsing of filters and the application to OSM entities.</p>
  */
 public class ApplyOSHTest extends FilterTest {
-  private OSHNode createTestEntityNode(OSMNode ...versions) throws IOException {
+  private OSHNode createTestEntityNode(OSMNode... versions) throws IOException {
     return OSHNodeImpl.build(Arrays.asList(versions));
   }
+
   private OSHWay createTestEntityWay(OSMWay...versions) throws IOException {
     return OSHWayImpl.build(Arrays.asList(versions), Collections.emptyList());
   }
-  private OSHRelation createTestEntityRelation(OSMRelation ...versions) throws IOException {
-    return OSHRelationImpl.build(Arrays.asList(versions), Collections.emptyList(), Collections.emptyList());
+
+  private OSHRelation createTestEntityRelation(OSMRelation... versions) throws IOException {
+    return OSHRelationImpl.build(Arrays.asList(versions), Collections.emptyList(),
+        Collections.emptyList());
   }
 
   @Test
@@ -129,7 +132,7 @@ public class ApplyOSHTest extends FilterTest {
         createTestEntityNode("building", "yes"),
         createTestEntityNode("highway", "track")
     )));
-    // one partial matching in versions – should return true, even though no version actually matches
+    // one partial matching in versions: should return true, even though no version actually matches
     assertTrue(expression.applyOSH(createTestEntityNode(
         createTestEntityNode("building", "yes"),
         createTestEntityNode("highway", "primary")
