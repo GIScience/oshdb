@@ -311,8 +311,17 @@ public class OSHDBGeometryBuilder {
    * <p>
    *   Touching rings are defined as rings which share at least one segment (a segment is formed by
    *   two consecutive ring nodes, regardless of their order). An example is:
-   *   [r1 = (A,B,C,D,A); r2 = (X,Y,D,C,B,X)]. The result would be: [r1 = (A,B,X,Y,D,A)]
+   *   [r1 = (A,B,C,D,E,F,A); r2 = (X,Y,B,C,D,E,X)].
+   *   The result would be: [r1 = (B,A,F,E,X,Y,B)] "or any equivalent representation of this ring
    * </p>
+   *
+   * <pre>
+   * F--E----X       F--E----X
+   * |  |    |       |       |
+   * |  D-C  |  -->  |       |
+   * |    |  |       |       |
+   * A----B--Y       A----B--Y
+   * </pre>
    *
    * @param ringsNodes a collection of node-lists, each forming a ring closed linestring
    */
@@ -379,15 +388,23 @@ public class OSHDBGeometryBuilder {
    * <p>
    *   After cutting of a ring, one gets an open line string with the ends corresponding exactly
    *   to the cut-segments nodes.
-   *   Example: ring = (A,B,C,D,A); cut = (C,D); result = (D,A,B,C)
+   *   Example: ring = (A,B,C,D,E,F,A); cut = (B,C); result = (C,D,E,F,A,B)
    * </p>
+   *
+   * <pre>
+   * F--E         F--E
+   * |  |         |  |
+   * |  D-C  -->  |  D-C
+   * |    |       |
+   * A----B       A----B
+   * </pre>
    *
    * @param ring a ring of nodes
    * @param cutSegment the segment where to cut at
    */
   private static void cutAtSegment(LinkedList<OSMNode> ring, Segment cutSegment) {
     // split the ring open, by removing the "redundant" coordinate.
-    // example: (A,B,C,D,A) -> (B,C,D,A)
+    // example: (A,B,C,D,E,F,A) -> (B,C,D,E,F,A)
     ring.removeFirst();
     while (true) {
       // do the open ends of the current ring match the cut segment?
@@ -397,7 +414,7 @@ public class OSHDBGeometryBuilder {
         return;
       } else {
         // no -> wind the split location in the input ring one node forward
-        // example: (B,C,D,A) -> (C,D,A,B) -- split segment was (B,A) and is now (C,B)
+        // example: (B,C,D,E,F,A) -> (C,D,E,F,A,B) -- split segment was (B,A) and is now (C,B)
         ring.add(ring.removeFirst());
       }
     }
@@ -411,9 +428,17 @@ public class OSHDBGeometryBuilder {
    *
    * <p>
    *   After joining of a ring, one gets a closed ring with no back-tracking segments.
-   *   Example: target = (B,A,D,C); source = (C,D,X,Y,B)
-   *            result (in target) = (B,A,D,X,Y,B) "or equivalent representation"
+   *   Example: target = (B,C,D,E,F,A); source = (C,D,E,X,Y,B)
+   *            result (in target) = (B,A,F,E,X,Y,B) or any equivalent representation of this ring
    * </p>
+   *
+   * <pre>
+   * F--E       E----X       F--E----X
+   * |  |       |    |       |       |
+   * |  D-C  +  D-C  |  -->  |       |
+   * |               |       |       |
+   * A----B       B--Y       A----B--Y
+   * </pre>
    *
    * @param target a ring which has been cut open using {@link #cutAtSegment(LinkedList, Segment)}
    * @param source a ring which has been cut open using {@link #cutAtSegment(LinkedList, Segment)}
