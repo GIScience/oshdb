@@ -13,7 +13,7 @@ import static org.heigit.bigspatialdata.oshdb.util.time.IsoDateTimeParser.parseI
 public class IsoDateTimeParserTest {
 
     @Test
-    public void testParseISODateTime() throws Exception {
+    public void testParseIsoDateTime() throws Exception {
         // test allowed variants
 
         //Basic Dates
@@ -61,58 +61,58 @@ public class IsoDateTimeParserTest {
 
 
     @Test(expected = Exception.class)
-    public void throwsNegativeDateParseISODateTime() throws Exception {
+    public void throwsNegativeDateParseIsoDateTime() throws Exception {
         //Negative Dates
         String nyyyy = "-0333";
         parseIsoDateTime(nyyyy);
     }
 
     @Test(expected = Exception.class)
-    public void throwsShortYearParseISODateTime() throws Exception {
+    public void throwsShortYearParseIsoDateTime() throws Exception {
         //Short Year
         String yy = "12";
         parseIsoDateTime(yy);
     }
 
     @Test(expected = Exception.class)
-    public void throwsPosTimezoneHHParseISODateTime() throws Exception {
+    public void throwsPosTimezoneHHParseIsoDateTime() throws Exception {
         String posTimezone_hh = "2020-02-17T23:55+02";
         parseIsoDateTime(posTimezone_hh);
     }
 
     @Test(expected = Exception.class)
-    public void throwsPosTimezoneHHMMParseISODateTime() throws Exception {
+    public void throwsPosTimezoneHHMMParseIsoDateTime() throws Exception {
         String posTimezone_hhmm = "2020-02-17T23:55+0230";
         parseIsoDateTime(posTimezone_hhmm);
     }
 
     @Test(expected = Exception.class)
-    public void throwsPosTimezoneHH_MMParseISODateTime() throws Exception {
+    public void throwsPosTimezoneHH_MMParseIsoDateTime() throws Exception {
         String posTimezone_hh_mm = "2020-02-17T23:55+02:30";
         parseIsoDateTime(posTimezone_hh_mm);
     }
 
     //
     @Test(expected = Exception.class)
-    public void throwsNegTimezoneHHParseISODateTime() throws Exception {
+    public void throwsNegTimezoneHHParseIsoDateTime() throws Exception {
         String negTimezone_hh = "2020-02-17T23:55-02";
         parseIsoDateTime(negTimezone_hh);
     }
 
     @Test(expected = Exception.class)
-    public void throwsNegTimezoneHHMMParseISODateTime() throws Exception {
+    public void throwsNegTimezoneHHMMParseIsoDateTime() throws Exception {
         String negTimezone_hhmm = "2020-02-17T23:55-0230";
         parseIsoDateTime(negTimezone_hhmm);
     }
 
     @Test(expected = Exception.class)
-    public void throwsNegTimezoneHH_MMParseISODateTime() throws Exception {
+    public void throwsNegTimezoneHH_MMParseIsoDateTime() throws Exception {
         String negTimezone_hh_mm = "2020-02-17T23:55-02:30";
         parseIsoDateTime(negTimezone_hh_mm);
     }
 
     @Test(expected = Exception.class)
-    public void throwsWrongDateParseISODateTime() throws Exception {
+    public void throwsWrongDateParseIsoDateTime() throws Exception {
         //Wrong Date
         String wrongDateTime = "2020-13-01T00:00";
         parseIsoDateTime(wrongDateTime);
@@ -120,7 +120,7 @@ public class IsoDateTimeParserTest {
 
 
     @Test
-    public void testParseISOPeriod() throws Exception {
+    public void testParseIsoPeriod() throws Exception {
         // test allowed variants
 
         //    Full DateTime Period: PnYnMnDTnHnMnS, e.g P1Y3M10DT1H15M25S (1 year 3months 10 days 1 hour 15 minutes and 25 seconds)
@@ -161,13 +161,13 @@ public class IsoDateTimeParserTest {
     }
 
     @Test(expected = Exception.class)
-    public void throwsFormatParseISOPeriod() throws Exception {
+    public void throwsFormatParseIsoPeriod() throws Exception {
         // test throw exeption for unsupported formats
         parseIsoPeriod("PT1Y2M");
     }
 
     @Test(expected = Exception.class)
-    public void throwsZeroLengthParseISOPeriod() throws Exception {
+    public void throwsZeroLengthParseIsoPeriod() throws Exception {
         //test for zero length ISOPeriod
         parseIsoPeriod("PT0S");
     }

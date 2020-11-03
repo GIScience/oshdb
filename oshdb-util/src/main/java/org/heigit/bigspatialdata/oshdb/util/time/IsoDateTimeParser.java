@@ -120,7 +120,7 @@ public class IsoDateTimeParser {
    *
    * @param isoPeriodString ISO Period string
    * @return HashMap with a Period object and a Duration object
-   * @throws OSHDBTimeoutException if the ISOPeriod string is not valid
+   * @throws OSHDBTimeoutException if the isoPeriodString is not valid
    */
   public static Map<String, Object> parseIsoPeriod(String isoPeriodString) {
     Period period = Period.ZERO;
