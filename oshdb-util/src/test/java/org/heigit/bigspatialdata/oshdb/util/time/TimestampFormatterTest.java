@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package org.heigit.bigspatialdata.oshdb.util.time;
 
-import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
-import java.util.Date;
 import static org.junit.Assert.assertEquals;
+
+import java.util.Date;
 import org.junit.Test;
 
 public class TimestampFormatterTest {

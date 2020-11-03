@@ -27,7 +27,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private final double DELTA = 1E-8;
+  private static final double DELTA = 1E-8;
 
   public OSHDBGeometryBuilderTestOsmTestData7xxTest() {
     testData.add("./src/test/resources/osm-testdata/all.osm");
@@ -89,7 +89,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.24 1.01,7.21 1.01,7.21 1.02,7.23 1.03,7.23 1.04,7.21 1.04,7.21 1.05,7.24 1.05,7.24 1.01)))"
+        "MULTIPOLYGON(((7.24 1.01,7.21 1.01,7.21 1.02,7.23 1.03,7.23 1.04,7.21 1.04,7.21 1.05,"
+            + "7.24 1.05,7.24 1.01)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -107,8 +108,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.34 1.01,7.31 1.01,7.31 1.02,7.33 1.03,7.33 1.04,7.32 1.04,"
-            + "7.32 1.05,7.34 1.05,7.34 1.01)))"
+        "MULTIPOLYGON(((7.34 1.01,7.31 1.01,7.31 1.02,7.33 1.03,7.33 1.04,7.32 1.04,7.32 1.05,"
+            + "7.34 1.05,7.34 1.01)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -135,7 +136,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test705() throws ParseException {
-    // Valid multipolygon relation with three ways making up an outer ring. Contains concave and convex parts.
+    // Valid multipolygon relation with three ways making up an outer ring. Contains concave and
+    // convex parts.
     OSMEntity entity = testData.relations().get(705900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
@@ -154,7 +156,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test706() throws ParseException {
-    // Valid multipolygon relation with three ways making up two outer rings that touch in one point.
+    // Valid multipolygon relation with three ways making up two outer rings that touch in one
+    // point.
     OSMEntity entity = testData.relations().get(706900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
@@ -212,7 +215,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test709() throws ParseException {
-    // Valid multipolygon relation with four ways making up three outer rings touching in three points.
+    // Valid multipolygon relation with four ways making up three outer rings touching in three
+    // points.
     OSMEntity entity = testData.relations().get(709900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
@@ -232,14 +236,14 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test710() {
-    // Invalid multipolygon relation: Three ways make up two outer rings, but the outer rings overlap.
+    // Invalid multipolygon relation: Three ways make up two outer rings, but the outer rings
+    // overlap.
     OSMEntity entity1 = testData.relations().get(710900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertEquals(2, result.getNumGeometries());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -253,8 +257,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertEquals(2, result.getNumGeometries());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -268,8 +271,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertEquals(1, result.getNumGeometries());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -283,8 +285,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertEquals(2, result.getNumGeometries());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -294,7 +295,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test720() throws ParseException {
-    // "Multipolygon with one outer and one inner ring. They are both oriented clockwise and have the correct role.
+    // "Multipolygon with one outer and one inner ring. They are both oriented clockwise and have
+    // the correct role.
     OSMEntity entity = testData.relations().get(720900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
@@ -314,25 +316,29 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test721() throws ParseException {
-    // "Multipolygon with one outer and one inner ring. They are both oriented anti-clockwise and have the correct role.
+    // "Multipolygon with one outer and one inner ring. They are both oriented anti-clockwise and
+    // have the correct role.
     // the same as test(720) apart from anti-clockwise
   }
 
   @Test
   public void test722() throws ParseException {
-    // Multipolygon with one outer and one inner ring. The outer ring is oriented clockwise, the inner anti-clockwise. They have both the correct role.
+    // Multipolygon with one outer and one inner ring. The outer ring is oriented clockwise, the
+    // inner anti-clockwise. They have both the correct role.
     // the same as test(720) apart from anti-clockwise
   }
 
   @Test
   public void test723() throws ParseException {
-    // Multipolygon with one outer and one inner ring. The outer ring is oriented anti-clockwise, the inner clockwise. They have both the correct role
+    // Multipolygon with one outer and one inner ring. The outer ring is oriented anti-clockwise,
+    // the inner clockwise. They have both the correct role.
     // the same as test(722) apart from anti-clockwise
   }
 
   @Test
   public void test724() throws ParseException {
-    // Multipolygon with one outer and one inner ring and a bit more complex geometry and nodes not in order
+    // Multipolygon with one outer and one inner ring and a bit more complex geometry and nodes not
+    // in order
     OSMEntity entity = testData.relations().get(724900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
@@ -342,8 +348,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(14, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.44 1.22,7.47 1.21,7.41 1.21,7.42 1.22,7.41 1.24,7.43 1.26,7.46 1.26,7.45 1.23,7.44 1.22),"
-            + "(7.43 1.22,7.42 1.24,7.44 1.25,7.45 1.24,7.43 1.22)))"
+        "MULTIPOLYGON(((7.44 1.22,7.47 1.21,7.41 1.21,7.42 1.22,7.41 1.24,7.43 1.26,7.46 1.26,"
+            + "7.45 1.23,7.44 1.22),(7.43 1.22,7.42 1.24,7.44 1.25,7.45 1.24,7.43 1.22)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -366,11 +372,13 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
+
   @Test
   public void test726() throws ParseException {
     // Valid multipolygon with one inner and one outer
     // the same as test(724) apart from anti-clockwise
   }
+
   @Test
   public void test727() throws ParseException {
     // Valid multipolygon with one inner and one outer
@@ -389,7 +397,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(9, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.85 1.23,7.86 1.22,7.87 1.22,7.87 1.24,7.86 1.25,7.83 1.25,7.82 1.26,7.84 1.23,7.85 1.23)))"
+        "MULTIPOLYGON(((7.85 1.23,7.86 1.22,7.87 1.22,7.87 1.24,7.86 1.25,7.83 1.25,7.82 1.26,"
+            + "7.84 1.23,7.85 1.23)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -440,7 +449,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test731() throws ParseException {
-    // "Valid complex multipolygon with one outer and two inner rings made up of several ways. Roles are tagged correctly
+    // "Valid complex multipolygon with one outer and two inner rings made up of several ways. Roles
+    // are tagged correctly
     OSMEntity entity = testData.relations().get(731900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
@@ -451,8 +461,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.18 1.33,7.17 1.31,7.12 1.31,7.11 1.33,7.11 1.38,7.18 1.38,7.18 1.33),"
-            + "(7.17 1.32,7.12 1.32,7.12 1.36,7.13 1.36,7.13 1.33,7.16 1.33,7.16 1.34,7.17 1.35,7.17 1.32),"
-            + "(7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
+            + "(7.17 1.32,7.12 1.32,7.12 1.36,7.13 1.36,7.13 1.33,7.16 1.33,7.16 1.34,7.17 1.35,"
+            + "7.17 1.32),(7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.15 1.36,7.15 1.37,"
+            + "7.16 1.37,7.16 1.36)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -460,7 +471,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test732() throws ParseException {
-    // Valid multipolygon with two outer rings, one containing an inner. One ring contains a node twice in succession in data.osm
+    // Valid multipolygon with two outer rings, one containing an inner. One ring contains a node
+    // twice in succession in data.osm
     OSMEntity entity = testData.relations().get(732900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
@@ -499,8 +511,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -513,8 +524,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -527,8 +537,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -548,8 +557,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertTrue(result.getNumGeometries() == 2);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -563,8 +571,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertTrue(result.getNumGeometries() == 1);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -578,8 +585,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertTrue(result.getNumGeometries() == 2);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -592,8 +598,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -606,8 +611,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof LineString);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -620,8 +624,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof LineString);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -635,8 +638,9 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon)result).getNumInteriorRing());
-    // In the result are 12 points, but it does not matter that we get 19, because the intersection is correct
-        // compare if coordinates of created points equals the coordinates of polygon
+    // In the result are 12 points, but it does not matter that we get 19, because the intersection
+    // is correct.
+    // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.01 1.51,7.01 1.57,7.06 1.57,7.06 1.51,7.01 1.51),"
             + "(7.02 1.52,7.02 1.55,7.04 1.55,7.05 1.55,7.05 1.52,7.03 1.52,7.02 1.52)))"
@@ -653,7 +657,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
     assertEquals(1, ((Polygon)result).getNumInteriorRing());
-    // In the result are 11 points, but it does not matter that we get 16, because the intersection is correct
+    // In the result are 11 points, but it does not matter that we get 16, because the intersection
+    // is correct.
     //assertEquals(16, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -671,8 +676,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -685,8 +689,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -699,8 +702,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -732,8 +734,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -746,8 +747,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -863,8 +863,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -884,8 +883,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
       assertTrue(result.getNumGeometries() == 2);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -918,8 +916,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -939,7 +936,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.42 1.73,7.42 1.75,7.44 1.75,7.44 1.73,7.42 1.73)),"
-            + "((7.44 1.75,7.44 1.76,7.47 1.76,7.47 1.72,7.44 1.72,7.44 1.73,7.45 1.73,7.45 1.75,7.44 1.75)))"
+          + "((7.44 1.75,7.44 1.76,7.47 1.76,7.47 1.72,7.44 1.72,7.44 1.73,7.45 1.73,7.45 1.75,"
+            + "7.44 1.75)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -980,8 +978,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.71 1.71,7.78 1.71,7.78 1.77,7.71 1.77,7.71 1.71),"
-            + "(7.72 1.73,7.72 1.75,7.74 1.75,7.74 1.76,7.77 1.76,7.77 1.72,7.74 1.72,7.74 1.73,7.72 1.73)),"
-            + "((7.74 1.73,7.75 1.73,7.75 1.75,7.74 1.75,7.74 1.73)))"
+            + "(7.72 1.73,7.72 1.75,7.74 1.75,7.74 1.76,7.77 1.76,7.77 1.72,7.74 1.72,7.74 1.73,"
+            + "7.72 1.73)),((7.74 1.73,7.75 1.73,7.75 1.75,7.74 1.75,7.74 1.73)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -1022,8 +1020,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.91 1.71,7.98 1.71,7.98 1.77,7.91 1.77,7.91 1.71),"
-            + "(7.92 1.73,7.92 1.75,7.94 1.75,7.94 1.76,7.97 1.76,7.97 1.72,7.94 1.72,7.94 1.73,7.92 1.73)),"
-            + "((7.94 1.73,7.95 1.73,7.95 1.75,7.94 1.75,7.94 1.73)))"
+            + "(7.92 1.73,7.92 1.75,7.94 1.75,7.94 1.76,7.97 1.76,7.97 1.72,7.94 1.72,7.94 1.73,"
+            + "7.92 1.73)),((7.94 1.73,7.95 1.73,7.95 1.75,7.94 1.75,7.94 1.73)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
@@ -1036,8 +1034,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof LineString);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -1045,13 +1042,13 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test781() {
-    // Multipolygon with one outer ring from single way that has different end-nodes, but they have same location
+    // Multipolygon with one outer ring from single way that has different end-nodes, but they have
+    // same location
     OSMEntity entity1 = testData.relations().get(781900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -1059,13 +1056,13 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test782() {
-    // Multipolygon with correct outer ring, but inner ring made up out of two ways where locations match but not node ids
+    // Multipolygon with correct outer ring, but inner ring made up out of two ways where locations
+    // match but not node ids
     OSMEntity entity1 = testData.relations().get(782900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -1144,8 +1141,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -1158,8 +1154,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -1171,8 +1166,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity1 = testData.relations().get(792900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -1184,8 +1178,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity1 = testData.relations().get(793900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -1203,8 +1196,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     OSMEntity entity1 = testData.relations().get(795900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }

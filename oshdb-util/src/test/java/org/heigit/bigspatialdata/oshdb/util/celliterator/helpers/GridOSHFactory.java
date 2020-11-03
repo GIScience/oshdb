@@ -37,15 +37,8 @@ public class GridOSHFactory {
     return getGridOSHNodes(osmXmlReader, -1, -1);
   }
 
-  public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader) throws IOException {
-    return getGridOSHWays(osmXmlReader, -1, -1);
-  }
-
-  public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader) throws IOException {
-    return getGridOSHRelations(osmXmlReader, -1, -1);
-  }
-
-  public static GridOSHNodes getGridOSHNodes(OSMXmlReader osmXmlReader, int cellZoom, long cellId) throws IOException {
+  public static GridOSHNodes getGridOSHNodes(OSMXmlReader osmXmlReader, int cellZoom, long cellId)
+      throws IOException {
     GridOSHNodes oshdbDataGridCellNodes;
     List<OSHNode> oshNodes = new ArrayList<>();
     for (Entry<Long, Collection<OSMNode>> entry : osmXmlReader.nodes().asMap().entrySet()) {
@@ -57,7 +50,12 @@ public class GridOSHFactory {
     return oshdbDataGridCellNodes;
   }
 
-  public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader, int cellZoom, long cellId) throws IOException {
+  public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader) throws IOException {
+    return getGridOSHWays(osmXmlReader, -1, -1);
+  }
+
+  public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader, int cellZoom, long cellId)
+      throws IOException {
     GridOSHWays oshdbDataGridCellWays;
     Map<Long, OSHNode> oshNodes = getOSHNodes(osmXmlReader);
     List<OSHWay> oshWays = new ArrayList<>();
@@ -73,7 +71,12 @@ public class GridOSHFactory {
     return oshdbDataGridCellWays;
   }
 
-  public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader, int cellZoom, long cellId) throws IOException {
+  public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader) throws IOException {
+    return getGridOSHRelations(osmXmlReader, -1, -1);
+  }
+
+  public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader, int cellZoom,
+      long cellId) throws IOException {
     Map<Long, OSHNode> oshNodes = getOSHNodes(osmXmlReader);
     Map<Long, OSHWay> oshWays = getOSHWays(osmXmlReader);
 

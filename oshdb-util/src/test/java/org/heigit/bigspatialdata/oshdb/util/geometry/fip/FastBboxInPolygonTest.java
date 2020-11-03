@@ -1,11 +1,13 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
-import org.locationtech.jts.geom.*;
+import static org.junit.Assert.assertEquals;
+
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 
 
 public class FastBboxInPolygonTest {

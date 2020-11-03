@@ -1,5 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.osmhistorytestdata;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -11,13 +14,10 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
-  private final double DELTA = 1E-6;
+  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest() {
     testData.add("./src/test/resources/different-timestamps/node.osm");
@@ -50,11 +50,11 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
     assertEquals(1.425, ((Point) result3).getX(), DELTA);
     assertEquals(1.23, ((Point) result3).getY(), DELTA);
     // timestamp after newest timestamp
-    OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2012-01-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity3, timestamp_after, areaDecider);
-    assertTrue(result_after instanceof Point);
-    assertEquals(1.425, ((Point) result_after).getX(), DELTA);
-    assertEquals(1.23, ((Point) result_after).getY(), DELTA);
+    OSHDBTimestamp timestampAfter =  TimestampParser.toOSHDBTimestamp("2012-01-01T00:00:00Z");
+    Geometry resultAfter = OSHDBGeometryBuilder.getGeometry(entity3, timestampAfter, areaDecider);
+    assertTrue(resultAfter instanceof Point);
+    assertEquals(1.425, ((Point) resultAfter).getX(), DELTA);
+    assertEquals(1.23, ((Point) resultAfter).getY(), DELTA);
   }
 
   @Test(expected = AssertionError.class)
@@ -62,8 +62,8 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
     // A single node, lat lon changed over time
     OSMEntity entity = testData.nodes().get(1L).get(0);
     // timestamp before oldest timestamp
-    OSHDBTimestamp timestamp_before =  TimestampParser.toOSHDBTimestamp("2007-01-01T00:00:00Z");
-    Geometry result_before = OSHDBGeometryBuilder.getGeometry(entity, timestamp_before, areaDecider);
+    OSHDBTimestamp timestampBefore =  TimestampParser.toOSHDBTimestamp("2007-01-01T00:00:00Z");
+    Geometry resultBefore = OSHDBGeometryBuilder.getGeometry(entity, timestampBefore, areaDecider);
   }
 
   @Test

@@ -1,5 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
@@ -19,10 +23,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 public class IterateByContributionNodesTest {
   private GridOSHNodes oshdbDataGridCell;
@@ -412,13 +412,13 @@ public class IterateByContributionNodesTest {
   @Test
   public void testPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -440,13 +440,14 @@ public class IterateByContributionNodesTest {
   @Test
   public void testTagFilterAndPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
-    GeometryFactory geometryFactory = new GeometryFactory(); // create clipping polygon for area of interest
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    // create clipping polygon for area of interest
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -457,24 +458,25 @@ public class IterateByContributionNodesTest {
         polygonFromCoordinates,// clipping polygon
         areaDecider,
         oshEntity -> oshEntity.getId() == 6,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),// filter entity for tag = shop
+        // filter entity for tag = shop
+        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
     // result size =2 becuase if tag filtered for disappears it's a deletion
-    assertEquals(2,result.size());// one version with tag shop
+    assertEquals(2,result.size()); // one version with tag shop
   }
 
   @Test
   public void testCoordinatesRelativeToPolygon() throws IOException {
-    //different cases of relative position between node coordinate(s) and cell bbox / query polygon
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[4];
-    coords[0]=new Coordinate(0.0,0.0);
-    coords[1]=new Coordinate(1.5,0.0);
-    coords[2]=new Coordinate(0.0,1.5);
-    coords[3]=new Coordinate(0.0,0.0);
+    // different cases of relative position between node coordinate(s) and cell bbox / query polygon
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[4];
+    coords[0] = new Coordinate(0.0,0.0);
+    coords[1] = new Coordinate(1.5,0.0);
+    coords[2] = new Coordinate(0.0,1.5);
+    coords[3] = new Coordinate(0.0,0.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -487,9 +489,8 @@ public class IterateByContributionNodesTest {
         oshEntity -> oshEntity.getId() >= 10 && oshEntity.getId() < 20,
         osmEntity -> true,
         false
-    )).iterateByContribution(
-        GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6)).getId(1.0, 1.0)/* approx. 0,0,5.6,5.6*/)
-    ).collect(Collectors.toList());
+    )).iterateByContribution(GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
+            .getId(1.0, 1.0)/* approx. 0,0,5.6,5.6*/)).collect(Collectors.toList());
 
     assertEquals(2, result.size());
     assertTrue(result.get(0).osmEntity.getId() == 13);

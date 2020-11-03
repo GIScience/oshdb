@@ -1,5 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.util.xmlreader;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.io.Files;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,11 +39,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.io.Files;
 
 public class OSMXmlReader {
 
@@ -133,8 +133,9 @@ public class OSMXmlReader {
 
         osm.setExtension(longitude, latitude);
 
-        OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1), osm.getTimestamp(),
-            osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(), osm.getLat());
+        OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
+            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
+            osm.getLat());
         nodes.put(Long.valueOf(id), oldOSM);
       }
       lastId = id;
@@ -165,8 +166,8 @@ public class OSMXmlReader {
           members[idx++] = new OSMMember(memId, OSMType.NODE, 0, data);
         }
         // osm.setExtension(members);
-        OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1), osm.getTimestamp(),
-            osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
+        OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
+            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         ways.put(Long.valueOf(id), oldOSM);
       }
       lastId = id;
@@ -199,9 +200,9 @@ public class OSMXmlReader {
           }
 
           OSMType t;
-          if ("node".equalsIgnoreCase(type))
+          if ("node".equalsIgnoreCase(type)) {
             t = OSMType.NODE;
-          else if ("way".equalsIgnoreCase(type)) {
+          } else if ("way".equalsIgnoreCase(type)) {
             t = OSMType.WAY;
           } else if ("relation".equalsIgnoreCase(type)) {
             t = OSMType.RELATION;
@@ -211,6 +212,8 @@ public class OSMXmlReader {
 
           // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
           OSHEntity data = null;
+          // todo write default case
+          // todo add case for relation
           switch (t) {
             case NODE:
               if (this.nodes.containsKey(memId)) {
@@ -235,7 +238,8 @@ public class OSMXmlReader {
           members[idx++] = new OSMMember(memId, t, r.intValue(), data);
         }
         // osm.setExtension(members);
-        OSMRelation oldOSM = new OSMRelation(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
+        OSMRelation oldOSM = new OSMRelation(osm.getId(),
+            osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         relations.put(Long.valueOf(id), oldOSM);
       }
@@ -246,10 +250,10 @@ public class OSMXmlReader {
   public void add(String... xmlFileUrl) {
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+      DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
 
       for (String p : xmlFileUrl) {
-        Document doc = dBuilder.parse(p);
+        Document doc = docBuilder.parse(p);
         read(doc);
       }
     } catch (ParserConfigurationException | SAXException | IOException e) {
@@ -260,7 +264,7 @@ public class OSMXmlReader {
   public void add(Path... xmlFilePath) {
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+      DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
 
       for (Path p : xmlFilePath) {
         String extension = Files.getFileExtension(p.toString());
@@ -271,7 +275,7 @@ public class OSMXmlReader {
             is = new GZIPInputStream(fileStream);
           }
 
-          Document doc = dBuilder.parse(is);
+          Document doc = docBuilder.parse(is);
           read(doc);
         }
       }

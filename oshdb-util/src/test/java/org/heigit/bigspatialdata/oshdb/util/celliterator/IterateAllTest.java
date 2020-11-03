@@ -45,11 +45,14 @@ public class IterateAllTest {
     IterateAllTest.conn.close();
   }
 
-  public IterateAllTest() {}
+  public IterateAllTest() {
+  }
 
   @Test
-  public void testIssue108() throws SQLException, IOException, ClassNotFoundException, ParseException, OSHDBKeytablesNotFoundException {
-    ResultSet oshCellsRawData = conn.prepareStatement("select data from " + TableNames.T_NODES).executeQuery();
+  public void testIssue108() throws SQLException, IOException, ClassNotFoundException,
+      ParseException, OSHDBKeytablesNotFoundException {
+    ResultSet oshCellsRawData = conn.prepareStatement(
+        "select data from " + TableNames.T_NODES).executeQuery();
 
     int countTotal = 0;
     int countCreated = 0;
@@ -78,10 +81,11 @@ public class IterateAllTest {
         ).collect(Collectors.toList());
         countTotal += result.size();
         for (IterateAllEntry entry : result) {
-          if (entry.activities.contains(ContributionType.CREATION))
+          if (entry.activities.contains(ContributionType.CREATION)) {
             countCreated++;
-          else
+          } else {
             countOther++;
+          }
         }
       }
     }

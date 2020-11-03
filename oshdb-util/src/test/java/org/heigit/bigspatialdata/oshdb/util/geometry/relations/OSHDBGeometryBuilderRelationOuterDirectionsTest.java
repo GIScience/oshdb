@@ -1,5 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.relations;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -13,16 +16,13 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
 
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private final double DELTA = 1E-6;
+  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderRelationOuterDirectionsTest() {
     testData.add("./src/test/resources/relations/outer-directions.osm");
@@ -42,7 +42,8 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
+        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 "
+        + "1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
@@ -60,7 +61,8 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
+        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 "
+        + "1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
@@ -78,7 +80,8 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
+        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 "
+        + "1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
@@ -96,7 +99,8 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
+        "MULTIPOLYGON(((7.16 1.36,7.16 1.35,7.15 1.34,7.14 1.34,7.14 1.35,7.14 "
+        + "1.36,7.15 1.36,7.15 1.37,7.16 1.37,7.16 1.36)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);

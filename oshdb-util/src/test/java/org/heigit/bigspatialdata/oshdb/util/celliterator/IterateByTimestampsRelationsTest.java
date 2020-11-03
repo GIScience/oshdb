@@ -1,5 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,11 +23,6 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
-
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 public class IterateByTimestampsRelationsTest {
   private GridOSHRelations oshdbDataGridCell;
@@ -106,8 +106,7 @@ public class IterateByTimestampsRelationsTest {
       )).iterateByTimestamps(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -269,8 +268,7 @@ public class IterateByTimestampsRelationsTest {
       )).iterateByTimestamps(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -470,13 +468,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testPolygonIntersectingDataPartly() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -500,13 +498,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testPolygonIntersectingDataOnlyAtBorderLine() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.7,10.4);
-    coords[1]=new Coordinate(10.94,10.4);
-    coords[2]=new Coordinate(10.94,10.9);
-    coords[3]=new Coordinate(10.7,10.9);
-    coords[4]=new Coordinate(10.7,10.4);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.7,10.4);
+    coords[1] = new Coordinate(10.94,10.4);
+    coords[2] = new Coordinate(10.94,10.9);
+    coords[3] = new Coordinate(10.7,10.9);
+    coords[4] = new Coordinate(10.7,10.4);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -529,13 +527,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testPolygonIntersectingDataCompletely() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,52.7);
-    coords[2]=new Coordinate(52.7,52.7);
-    coords[3]=new Coordinate(52.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,52.7);
+    coords[2] = new Coordinate(52.7,52.7);
+    coords[3] = new Coordinate(52.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -559,13 +557,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testPolygonNotIntersectingData() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(48,49);
-    coords[1]=new Coordinate(48 ,50);
-    coords[2]=new Coordinate(49,50);
-    coords[3]=new Coordinate(49,49);
-    coords[4]=new Coordinate(48,49);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(48,49);
+    coords[1] = new Coordinate(48,50);
+    coords[2] = new Coordinate(49,50);
+    coords[3] = new Coordinate(49,49);
+    coords[4] = new Coordinate(48,49);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> resultPoly = (new CellIterator(
@@ -612,13 +610,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testPolygonIntersectingDataCompletelyTimeIntervalAfterChanges() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,52.7);
-    coords[2]=new Coordinate(52.7,52.7);
-    coords[3]=new Coordinate(52.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,52.7);
+    coords[2] = new Coordinate(52.7,52.7);
+    coords[3] = new Coordinate(52.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -715,13 +713,13 @@ public class IterateByTimestampsRelationsTest {
     // Polygon with self crossing way
     // partly intersected by bbox polygon
     // happy if it works without crashing
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(7.31,1.0);
-    coords[1]=new Coordinate(7.335,1.0);
-    coords[2]=new Coordinate(7.335,2.0);
-    coords[3]=new Coordinate(7.31,2.0);
-    coords[4]=new Coordinate(7.31,1.0);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(7.31,1.0);
+    coords[1] = new Coordinate(7.335,1.0);
+    coords[2] = new Coordinate(7.335,2.0);
+    coords[3] = new Coordinate(7.31,2.0);
+    coords[4] = new Coordinate(7.31,1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -743,7 +741,8 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testMembersDisappear() {
-    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member is deleted
+    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member
+    // is deleted
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -805,14 +804,15 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testMembersDisappearClipped() {
-    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member is deleted
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member
+    // is deleted
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -836,13 +836,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testTimeIntervalAfterDeletionInVersion2Clipped() {
     // relation in second version visible = false, timeinterval includes version 3
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -866,13 +866,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
     // relation in first and third version visible = false, timeinterval includes version 3
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -896,13 +896,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testExcludingVersion2Clipped() {
     // relation in second version visible = false, timeinterval includes version 3
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(7.31,1.0);
-    coords[1]=new Coordinate(7.335,1.0);
-    coords[2]=new Coordinate(7.335,2.0);
-    coords[3]=new Coordinate(7.31,2.0);
-    coords[4]=new Coordinate(7.31,1.0);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(7.31,1.0);
+    coords[1] = new Coordinate(7.335,1.0);
+    coords[2] = new Coordinate(7.335,2.0);
+    coords[3] = new Coordinate(7.31,2.0);
+    coords[4] = new Coordinate(7.31,1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -914,7 +914,7 @@ public class IterateByTimestampsRelationsTest {
         polygonFromCoordinates,
         areaDecider,
         oshEntity -> oshEntity.getId() == 500,
-        osmEntity -> !(osmEntity.getVersion()==2),
+        osmEntity -> !(osmEntity.getVersion() == 2),
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
@@ -926,13 +926,13 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testClippingPolygonIsVeryBig() {
     // relation with two way members(nodes of ways have changes in 2009 and 2011)
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(-180,-90);
-    coords[1]=new Coordinate(180 ,-90);
-    coords[2]=new Coordinate(180,90);
-    coords[3]=new Coordinate(-180,90);
-    coords[4]=new Coordinate(-180,-90);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(-180,-90);
+    coords[1] = new Coordinate(180,-90);
+    coords[2] = new Coordinate(180,90);
+    coords[3] = new Coordinate(-180,90);
+    coords[4] = new Coordinate(-180,-90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(

@@ -1,5 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
@@ -18,11 +23,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
-
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 public class IterateByContributionTypeNotMultipolygonTest {
   private GridOSHRelations oshdbDataGridCell;
@@ -126,8 +126,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
       )).iterateByContribution(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -336,8 +335,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
       )).iterateByContribution(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -598,13 +596,13 @@ public class IterateByContributionTypeNotMultipolygonTest {
   @Test
   public void testPolygonIntersectingDataPartly() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -626,13 +624,13 @@ public class IterateByContributionTypeNotMultipolygonTest {
   @Test
   public void testPolygonIntersectingDataCompletely() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,52.7);
-    coords[2]=new Coordinate(52.7,52.7);
-    coords[3]=new Coordinate(52.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,52.7);
+    coords[2] = new Coordinate(52.7,52.7);
+    coords[3] = new Coordinate(52.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -654,13 +652,13 @@ public class IterateByContributionTypeNotMultipolygonTest {
   @Test
   public void testPolygonNotIntersectingData() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(48,49);
-    coords[1]=new Coordinate(48 ,50);
-    coords[2]=new Coordinate(49,50);
-    coords[3]=new Coordinate(49,49);
-    coords[4]=new Coordinate(48,49);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(48,49);
+    coords[1] = new Coordinate(48,50);
+    coords[2] = new Coordinate(49,50);
+    coords[3] = new Coordinate(49,49);
+    coords[4] = new Coordinate(48,49);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -713,13 +711,13 @@ public class IterateByContributionTypeNotMultipolygonTest {
   @Test
   public void testPolygonIntersectingDataCompletelyTimeIntervalAfterChanges() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,52.7);
-    coords[2]=new Coordinate(52.7,52.7);
-    coords[3]=new Coordinate(52.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,52.7);
+    coords[2] = new Coordinate(52.7,52.7);
+    coords[3] = new Coordinate(52.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -781,13 +779,13 @@ public class IterateByContributionTypeNotMultipolygonTest {
   @Test
   public void testSelfIntersectingPolygonClipped() {
     // Polygon with self crossing way
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(7.31,1.0);
-    coords[1]=new Coordinate(7.335,1.0);
-    coords[2]=new Coordinate(7.335,2.0);
-    coords[3]=new Coordinate(7.31,2.0);
-    coords[4]=new Coordinate(7.31,1.0);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(7.31,1.0);
+    coords[1] = new Coordinate(7.335,1.0);
+    coords[2] = new Coordinate(7.335,2.0);
+    coords[3] = new Coordinate(7.31,2.0);
+    coords[4] = new Coordinate(7.31,1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -810,7 +808,8 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
   @Test
   public void testMembersDisappear() {
-    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member is deleted
+    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member
+    // is deleted
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -835,7 +834,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
   @Test
   public void testMembersDisappearAndPreviousIsNull() {
     // relation in last version without members, previous version visible=false
-    // timeinterval includes only last version
+    // time interval includes only last version
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2012-01-01T00:00:00Z",
@@ -854,14 +853,14 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
-    // relation in first and third version visible = false, timeinterval includes version 3
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    // relation in first and third version visible = false, time interval includes version 3
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(

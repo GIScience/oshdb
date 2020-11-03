@@ -8,7 +8,7 @@ public class MutableOSMNode extends MutableOSMEntity  {
     return longitude;
   }
   
-  public void setLon(long longitude){
+  public void setLon(long longitude) {
     this.longitude = longitude;
   }
   
@@ -17,7 +17,7 @@ public class MutableOSMNode extends MutableOSMEntity  {
     return latitude;
   }
   
-  public void setLat(long latitude){
+  public void setLat(long latitude) {
     this.latitude = latitude;
   }
 

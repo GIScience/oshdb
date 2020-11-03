@@ -1,5 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.incomplete;
 
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertTrue;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -11,15 +14,12 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertTrue;
-
 public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private final double DELTA = 1E-6;
+  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestWayIncompleteDataTest() {
     testData.add("./src/test/resources/incomplete-osm/way.osm");
@@ -34,8 +34,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
     Geometry result1 = null;
     try {
       result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -51,8 +50,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
     Geometry result1 = null;
     try {
       result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -69,8 +67,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
     try {
       result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
       assertTrue(result1.getCoordinates().length == 0);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }

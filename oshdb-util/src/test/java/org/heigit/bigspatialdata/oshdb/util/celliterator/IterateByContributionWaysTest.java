@@ -1,5 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
@@ -16,10 +20,6 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 public class IterateByContributionWaysTest {
   private GridOSHWays oshdbDataGridCell;
@@ -548,7 +548,8 @@ public class IterateByContributionWaysTest {
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
         result.get(0).activities.get()
-    );assertEquals(
+    );
+    assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
     );

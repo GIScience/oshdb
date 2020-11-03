@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -12,12 +14,10 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-import static org.junit.Assert.assertEquals;
-
 public class GeoTest {
   private final GeometryFactory gf = new GeometryFactory();
 
-  private Coordinate[] constructCoordinates(double ...coordValues) {
+  private Coordinate[] constructCoordinates(double...coordValues) {
     Coordinate[] coords = new Coordinate[coordValues.length / 2];
     for (int i = 0;  i < coordValues.length / 2; i++) {
       coords[i] = new Coordinate(coordValues[i * 2], coordValues[i * 2 + 1]);
@@ -25,7 +25,7 @@ public class GeoTest {
     return coords;
   }
 
-  private LinearRing constructRing(double ...coordValues) {
+  private LinearRing constructRing(double...coordValues) {
     return gf.createLinearRing(constructCoordinates(coordValues));
   }
 
