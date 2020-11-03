@@ -1,5 +1,10 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.osmtestdata;
 
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -16,12 +21,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.locationtech.jts.operation.valid.IsValidOp;
-
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   private final OSMXmlReader testData = new OSMXmlReader();
@@ -962,15 +961,21 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test777() throws ParseException {
-    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/137
+    /*
+    777 is not a valid test case.
+
+    According to https://wiki.openstreetmap.org/wiki/Relation:multipolygon: “Generally, the
+    multipolygon relation can be used to build multipolygons in compliance with the OGC Simple
+    Feature standard. Anything that is not a valid multipolygon according to this standard
+    should also be considered an invalid multipolygon relation.”
+
+    Here, the inners form a ring around a portion of the interior.
+    */
+    // https://github.com/GIScience/oshdb/issues/123
     // Multipolygon with two outer rings and two inner rings touching in two nodes
     OSMEntity entity = testData.relations().get(777900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
-    assertTrue(result instanceof MultiPolygon);
-    assertTrue(result.isValid());
-    assertEquals(2, result.getNumGeometries());
-    assertEquals(1, ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
-        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
+    assertTrue(result instanceof Polygonal);
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -985,7 +990,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   @Test
   public void test778() throws ParseException {
     /*
-    I believe 778 is not really a valid test case.
+    778 is not a valid test case.
 
     According to https://wiki.openstreetmap.org/wiki/Relation:multipolygon: “[inner ways make] up
     the optional inner ring(s) delimiting the excluded holes that must be fully inside the area
@@ -995,12 +1000,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     geometry building algorithm should use the even-odd rule, the non-zero-winding rule, a
     subtractive algorithm or something else.
     */
-    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/137
+    // https://github.com/GIScience/oshdb/issues/123
     // Multipolygon with two outer rings and two inner rings touching in two nodes
     OSMEntity entity = testData.relations().get(778900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygonal);
-    assertTrue(result.isValid());
   }
 
   @Test
@@ -1089,7 +1093,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test784() throws ParseException {
-    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/131
+    // https://github.com/GIScience/oshdb/issues/129
     // Valid OSM multipolygon with multiple touching inner rings
     OSMEntity entity = testData.relations().get(784900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
@@ -1109,17 +1113,20 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test785() throws ParseException {
-    // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/131
+    /*
+    785 is not a valid test case.
+
+    According to https://wiki.openstreetmap.org/wiki/Relation:multipolygon: “An implementation of
+    multipolygons should attempt to render [touching inner rings] as if the touching rings were
+    indeed one ring.”
+
+    Here, the inners form more than one ring: one inner ring and one additional outer ring.
+    */
+    // https://github.com/GIScience/oshdb/issues/129
     // Valid OSM multipolygon with two touching inner rings leaving an empty area.
     OSMEntity entity = testData.relations().get(785900L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
-    assertTrue(result instanceof MultiPolygon);
-    assertTrue(result.isValid());
-    assertEquals(2, result.getNumGeometries());
-    assertEquals(1,
-        ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
-        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing()
-    );
+    assertTrue(result instanceof Polygonal);
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
         "MULTIPOLYGON(((7.51 1.81,7.56 1.81,7.56 1.86,7.51 1.86,7.51 1.81),"
@@ -1203,4 +1210,3 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 }
-

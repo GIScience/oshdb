@@ -7,6 +7,7 @@ Changelog
 * compatibility fix to allow building of javadoc under Java 11
 * fix bug where in some cases, instead of an OSHDBTimeoutException an IniteException was thrown. #258
 * improve accuracy of built-in geometry helper functions which calculate the geodesic lengths and areas of OSM geometries. #193
+* better handling of OSM multipolygons with touching inner rings. This improves performance considerably in some cases (especially large complex multipolygons). #249
 
 ## 0.5.10
 
