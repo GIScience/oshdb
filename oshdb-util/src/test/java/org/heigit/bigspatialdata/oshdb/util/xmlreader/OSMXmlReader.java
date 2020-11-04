@@ -212,8 +212,7 @@ public class OSMXmlReader {
 
           // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
           OSHEntity data = null;
-          // todo write default case
-          // todo add case for relation
+          // relation-relation-members do not get data, because they are unsupported
           switch (t) {
             case NODE:
               if (this.nodes.containsKey(memId)) {
@@ -233,6 +232,8 @@ public class OSMXmlReader {
                     wayNodes.values().stream().filter(Objects::nonNull).collect(Collectors.toList())
                 );
               }
+              break;
+            default:
               break;
           }
           members[idx++] = new OSMMember(memId, t, r.intValue(), data);
