@@ -1,5 +1,5 @@
-1.4.0-SNAPSHOT
---------------
+1.4.0
+-----
 
 * allow using applyOSMGeometry with a supplier method
 * added convenience methods to create simple custom filters from predicates/lambdas: `Filter.by`, `Filter.byOSMEntity`, `Filter.byOSHEntity`
