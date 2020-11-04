@@ -27,6 +27,9 @@ import org.junit.Test;
 public class IterateAllTest {
   private static Connection conn;
 
+  /**
+   * Set up of test framework, loading H2 driver and connection via jdbc.
+   */
   @BeforeClass
   public static void setUpClass() throws ClassNotFoundException, SQLException {
     // load H2-support

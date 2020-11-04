@@ -29,6 +29,10 @@ public class IterateByContributionNodesTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * {@link GridOSHNodes}.
+   */
   public IterateByContributionNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);

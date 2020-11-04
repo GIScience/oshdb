@@ -17,6 +17,9 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
   private int outer;
   private int inner;
 
+  /**
+   * Constructor reading all required values from a given {@link OSMXmlReader}.
+   */
   public OSMXmlReaderTagInterpreter(OSMXmlReader osmXmlReader) {
     area = osmXmlReader.keys().getOrDefault("area", -1);
     areaYes = area == -1 ? -1 : osmXmlReader.keyValues().get(area).getOrDefault("yes", -1);

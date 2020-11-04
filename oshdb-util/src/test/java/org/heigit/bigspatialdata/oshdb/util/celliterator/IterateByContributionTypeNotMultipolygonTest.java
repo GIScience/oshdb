@@ -29,6 +29,10 @@ public class IterateByContributionTypeNotMultipolygonTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * {@link GridOSHRelations}.
+   */
   public IterateByContributionTypeNotMultipolygonTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/type-not-multipolygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);

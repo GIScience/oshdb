@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default TagInterpreter
+ * Default {@link TagInterpreter} implementation.
  */
 public class DefaultTagInterpreter extends BaseTagInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultTagInterpreter.class);
@@ -35,10 +35,13 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
       = "json/uninterestingTags.json";
 
   /**
+   * Constructor using given {@link TagTranslator} and default values as areaTagsDefinitonFile and
+   * uninterestingTagsDefinitionFile.
    *
-   * @param tagTranslator
-   * @throws IOException
-   * @throws ParseException
+   * <p>
+   *   Details see
+   *   {@link DefaultTagInterpreter#DefaultTagInterpreter(TagTranslator, String, String)}.
+   * </p>
    */
   public DefaultTagInterpreter(TagTranslator tagTranslator) throws IOException, ParseException {
     this(
@@ -49,12 +52,15 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   }
 
   /**
+   * Constructor using given {@link TagTranslator}, areaTagsDefinitonFile, and
+   * uninterestingTagsDefinitionFile.
    *
-   * @param tagTranslator
-   * @param areaTagsDefinitionFile
-   * @param uninterestingTagsDefinitionFile
-   * @throws IOException
-   * @throws ParseException
+   * @param tagTranslator {@link TagTranslator} used by {@link TagInterpreter}
+   * @param areaTagsDefinitionFile filename of a JSON file containing tags that are supposed to be
+   *                               areas
+   * @param uninterestingTagsDefinitionFile filename of a JSON file containing tags to be ignored
+   * @throws IOException thrown for all IO read/write errors
+   * @throws ParseException for parsing errors
    */
   public DefaultTagInterpreter(
       TagTranslator tagTranslator,

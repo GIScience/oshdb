@@ -24,6 +24,12 @@ public class FastBboxInPolygon extends FastInPolygon implements Predicate<OSHDBB
     Serializable {
   private Collection<Envelope> innerBboxes = new ArrayList<>();
 
+  /**
+   * Constructor using a given geometry {@code geom} and geometry type {@code P}.
+   *
+   * @param geom geometry object
+   * @param <P> geometry type
+   */
   public <P extends Geometry & Polygonal> FastBboxInPolygon(P geom) {
     super(geom);
 
@@ -44,7 +50,7 @@ public class FastBboxInPolygon extends FastInPolygon implements Predicate<OSHDBB
   }
 
   /**
-   * Tests if the given bounding box is fully inside of the polygon
+   * Tests if the given bounding box is fully inside of the polygon.
    */
   @Override
   public boolean test(OSHDBBoundingBox boundingBox) {
@@ -67,7 +73,8 @@ public class FastBboxInPolygon extends FastInPolygon implements Predicate<OSHDBB
           && boundingBox.getMaxLat() >= innerBBox.getMaxY()
           && boundingBox.getMinLon() <= innerBBox.getMinX()
           && boundingBox.getMaxLon() >= innerBBox.getMaxX()) {
-        return false; // the bounding box fully covers at least one of the polygon's inner rings
+        // the bounding box fully covers at least one of the (multi)polygon's inner rings
+        return false;
       }
     }
     return true;

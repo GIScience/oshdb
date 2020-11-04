@@ -12,7 +12,7 @@ import org.locationtech.jts.geom.Polygon;
 
 public class FastPointInPolygonTest {
   /**
-   * @return a reversed "Σ"-shaped concave polygon
+   * Returns a reversed "Σ"-shaped concave polygon.
    */
   public static Polygon createPolygon() {
     final GeometryFactory gf = new GeometryFactory();
@@ -31,7 +31,7 @@ public class FastPointInPolygonTest {
   }
 
   /**
-   * @return a square with a central square hole
+   * Returns a square with a central square hole.
    */
   public static Polygon createPolygonWithHole() {
     final GeometryFactory gf = new GeometryFactory();
@@ -53,7 +53,7 @@ public class FastPointInPolygonTest {
   }
 
   /**
-   * @return a reversed "Σ"-shaped concave polygon next to a square with a central square hole
+   * Returns a reversed "Σ"-shaped concave polygon next to a square with a central square hole.
    */
   public static MultiPolygon createMultiPolygon() {
     GeometryFactory gf = new GeometryFactory();

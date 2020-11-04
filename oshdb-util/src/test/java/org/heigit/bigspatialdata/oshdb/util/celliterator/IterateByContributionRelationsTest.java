@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -31,6 +32,10 @@ public class IterateByContributionRelationsTest {
   TagInterpreter areaDecider;
   private static final double DELTA = 1E-6;
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * {@link GridOSHRelations}.
+   */
   public IterateByContributionRelationsTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");// read osm xml data
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);// Used to provided information

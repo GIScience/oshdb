@@ -29,6 +29,10 @@ public class IterateByTimestampsRelationsTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * {@link GridOSHRelations}.
+   */
   public IterateByTimestampsRelationsTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);

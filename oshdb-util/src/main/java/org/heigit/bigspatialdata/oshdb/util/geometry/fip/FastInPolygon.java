@@ -110,7 +110,7 @@ abstract class FastInPolygon implements Serializable {
    * ported from http://geomalgorithms.com/a03-_inclusion.html
    * which is derived from https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
    *
-   * @param point
+   * @param point {@link Point} to be processed
    * @param dir   boolean: true -&gt; horizontal test, false -&gt; vertical test
    * @return crossing number of this point in the chosen direction,
    *         if the value is even the point is outside of the polygon, otherwise it is inside

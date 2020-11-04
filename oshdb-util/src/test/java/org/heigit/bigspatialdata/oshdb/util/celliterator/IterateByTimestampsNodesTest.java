@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
@@ -27,6 +28,10 @@ public class IterateByTimestampsNodesTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * {@link GridOSHNodes}.
+   */
   public IterateByTimestampsNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);

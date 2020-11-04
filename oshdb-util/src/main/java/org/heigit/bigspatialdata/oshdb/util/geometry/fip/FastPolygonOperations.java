@@ -23,6 +23,12 @@ public class FastPolygonOperations implements Serializable {
   private double envWidth;
   private double envHeight;
 
+  /**
+   * Constructor using a given geometry {@code geom} and geometry type {@code P}.
+   *
+   * @param geom geometry object
+   * @param <P> geometry type
+   */
   public <P extends Geometry & Polygonal> FastPolygonOperations(P geom) {
     double optNumBands = Math.max(1.0,
         Math.sqrt(1.0 * geom.getNumPoints() / AVERAGE_VERTICES_PER_BLOCK));
@@ -133,6 +139,12 @@ public class FastPolygonOperations implements Serializable {
     }
   }
 
+  /**
+   * Calculate intersection with another {@link Geometry}.
+   *
+   * @param other {@link Geometry} to intersect with
+   * @return intersected {@link Geometry}
+   */
   public Geometry intersection(Geometry other) {
     if (other == null || other.isEmpty()) {
       return other;

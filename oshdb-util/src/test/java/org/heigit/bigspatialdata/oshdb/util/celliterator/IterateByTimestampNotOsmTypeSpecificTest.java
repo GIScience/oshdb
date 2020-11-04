@@ -37,6 +37,10 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations = new ArrayList<>();
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * a list of {@link OSHRelation OSHRelations}.
+   */
   public IterateByTimestampNotOsmTypeSpecificTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/not-osm-type-specific.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);

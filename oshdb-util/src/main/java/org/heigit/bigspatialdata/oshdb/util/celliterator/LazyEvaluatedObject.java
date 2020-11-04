@@ -11,6 +11,10 @@ public class LazyEvaluatedObject<T> implements Supplier<T> {
     this.evaluator = evaluator;
   }
 
+  /**
+   * Generic constructor for a {@link LazyEvaluatedObject} using a {@code value} of generic type
+   * {@code T}.
+   */
   public LazyEvaluatedObject(T value) {
     this.value = value;
     this.evaluated = true;

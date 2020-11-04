@@ -32,6 +32,7 @@ public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTim
         && timestamp.getRawUnixTimestamp() < this.toTimestamp.getRawUnixTimestamp();
   }
 
+  @SuppressWarnings("MissingJavadocMethod")
   public int compareTo(@Nonnull OSHDBTimestamp timestamp) {
     if (this.includes(timestamp)) {
       return 0;

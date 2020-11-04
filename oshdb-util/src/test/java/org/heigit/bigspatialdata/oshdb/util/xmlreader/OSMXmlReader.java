@@ -248,6 +248,11 @@ public class OSMXmlReader {
     }
   }
 
+  /**
+   * Add and read XML files to the database using their URLs.
+   *
+   * @param xmlFileUrl URL(s) to use
+   */
   public void add(String... xmlFileUrl) {
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -262,6 +267,11 @@ public class OSMXmlReader {
     }
   }
 
+  /**
+   * Add and read XML files to the database using their file paths.
+   *
+   * @param xmlFilePath file path(s) to use
+   */
   public void add(Path... xmlFilePath) {
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -353,6 +363,9 @@ public class OSMXmlReader {
     return tags;
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as {@code long}.
+   */
   public static long attrAsLong(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
@@ -361,6 +374,9 @@ public class OSMXmlReader {
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as {@code double}.
+   */
   public static double attrAsDouble(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
@@ -369,6 +385,9 @@ public class OSMXmlReader {
     throw new NoSuchElementException(e.getTextContent() + " doesn't have a attribute " + name);
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as {@code int}.
+   */
   public static int attrAsInt(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
@@ -377,6 +396,10 @@ public class OSMXmlReader {
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as {@code int} with a default value
+   * instead of a {@link NoSuchElementException}.
+   */
   public static int attrAsInt(Element e, String name, int defaultValue) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
@@ -385,6 +408,9 @@ public class OSMXmlReader {
     return defaultValue;
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as {@code boolean}.
+   */
   public static boolean attrAsBoolean(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
@@ -393,6 +419,10 @@ public class OSMXmlReader {
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as {@code boolean} with a default
+   * value instead of a {@link NoSuchElementException}.
+   */
   public static boolean attrAsBoolean(Element e, String name, boolean defaultValue) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
@@ -401,6 +431,9 @@ public class OSMXmlReader {
     return defaultValue;
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as parsed timestamp ({@code long}).
+   */
   public static long attrAsTimestampInSeconds(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
@@ -409,6 +442,9 @@ public class OSMXmlReader {
     throw new NoSuchElementException(e.getLocalName() + " doesn't have a attribute " + name);
   }
 
+  /**
+   * Get attribute {@code name} from {@link Element} {@code e} as {@link String}.
+   */
   public static String attrAsString(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {

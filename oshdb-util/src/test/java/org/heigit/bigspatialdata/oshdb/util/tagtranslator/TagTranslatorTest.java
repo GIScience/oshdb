@@ -16,6 +16,12 @@ import org.junit.Test;
 public class TagTranslatorTest {
   private static Connection conn;
 
+  /**
+   * Initialize tests by loading the H2 driver and open a connection via jdbc.
+   *
+   * @throws ClassNotFoundException gets thrown if H2 driver class cannot be found
+   * @throws SQLException is thrown if the connection fails
+   */
   @BeforeClass
   public static void setUpClass() throws ClassNotFoundException, SQLException {
     // load H2-support

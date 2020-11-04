@@ -27,16 +27,28 @@ import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 
 
 /**
- * Helper class to get GridOSH's (Holds the basic information, every OSM-Object has at a
- * specific level) out of osm-xml file
+ * Helper class to get GridOSHs (Holds the basic information, every OSM-Object has at a
+ * specific level) out of osm-xml file.
  */
 
 public class GridOSHFactory {
 
+  /**
+   * See {@link GridOSHFactory#getGridOSHNodes(OSMXmlReader, int, long)} for details.
+   */
   public static GridOSHNodes getGridOSHNodes(OSMXmlReader osmXmlReader) throws IOException {
     return getGridOSHNodes(osmXmlReader, -1, -1);
   }
 
+  /**
+   * Get GridOSHs nodes from a OSM XML with a given zoom level and cell id.
+   *
+   * @param osmXmlReader {@link OSMXmlReader} with the input data
+   * @param cellZoom zoom level to use
+   * @param cellId cell id to use
+   * @return {@link GridOSHNodes} object
+   * @throws IOException thrown for XML file read errors
+   */
   public static GridOSHNodes getGridOSHNodes(OSMXmlReader osmXmlReader, int cellZoom, long cellId)
       throws IOException {
     GridOSHNodes oshdbDataGridCellNodes;
@@ -50,10 +62,22 @@ public class GridOSHFactory {
     return oshdbDataGridCellNodes;
   }
 
+  /**
+   * See {@link GridOSHFactory#getGridOSHWays(OSMXmlReader, int, long)} for details.
+   */
   public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader) throws IOException {
     return getGridOSHWays(osmXmlReader, -1, -1);
   }
 
+  /**
+   * Get GridOSHs ways from a OSM XML with a given zoom level and cell id.
+   *
+   * @param osmXmlReader {@link OSMXmlReader} with the input data
+   * @param cellZoom zoom level to use
+   * @param cellId cell id to use
+   * @return {@link GridOSHWays} object
+   * @throws IOException thrown for XML file read errors
+   */
   public static GridOSHWays getGridOSHWays(OSMXmlReader osmXmlReader, int cellZoom, long cellId)
       throws IOException {
     GridOSHWays oshdbDataGridCellWays;
@@ -71,10 +95,22 @@ public class GridOSHFactory {
     return oshdbDataGridCellWays;
   }
 
+  /**
+   * See {@link GridOSHFactory#getGridOSHRelations(OSMXmlReader, int, long)} for details.
+   */
   public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader) throws IOException {
     return getGridOSHRelations(osmXmlReader, -1, -1);
   }
 
+  /**
+   * Get GridOSHs relations from a OSM XML with a given zoom level and cell id.
+   *
+   * @param osmXmlReader {@link OSMXmlReader} with the input data
+   * @param cellZoom zoom level to use
+   * @param cellId cell id to use
+   * @return {@link GridOSHRelations} object
+   * @throws IOException thrown for XML file read errors
+   */
   public static GridOSHRelations getGridOSHRelations(OSMXmlReader osmXmlReader, int cellZoom,
       long cellId) throws IOException {
     Map<Long, OSHNode> oshNodes = getOSHNodes(osmXmlReader);

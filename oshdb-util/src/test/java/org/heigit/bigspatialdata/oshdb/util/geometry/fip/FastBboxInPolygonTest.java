@@ -12,7 +12,7 @@ import org.locationtech.jts.geom.Polygon;
 
 public class FastBboxInPolygonTest {
   /**
-   * @return a multipolygon of four small squares arranged in a square
+   * Returns a {@link MultiPolygon} of four small squares arranged in a square.
    */
   public static MultiPolygon createSquareSquareMultiPolygon() {
     GeometryFactory gf = new GeometryFactory();

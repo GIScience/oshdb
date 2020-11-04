@@ -24,6 +24,13 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
     Serializable {
   private Collection<Envelope> outerBboxes = new ArrayList<>();
 
+
+  /**
+   * Constructor using a given geometry {@code geom} and geometry type {@code P}.
+   *
+   * @param geom geometry object
+   * @param <P> geometry type
+   */
   public <P extends Geometry & Polygonal> FastBboxOutsidePolygon(P geom) {
     super(geom);
 
@@ -42,7 +49,7 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
   }
 
   /**
-   * Tests if the given bounding box is fully inside of the polygon
+   * Tests if the given bounding box is fully outside of the polygon.
    */
   @Override
   public boolean test(OSHDBBoundingBox boundingBox) {
