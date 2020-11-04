@@ -14,6 +14,11 @@
   <name>OSHDB API</name>
   <description>API to query the OpenStreetMap History Database. Includes MapReduce functionality to filter, analyze and aggregate data.</description>
 
+  <properties>
+    <ohsomefilter.version>1.4.0</ohsomefilter.version>
+    <tdigest.version>3.2</tdigest.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -83,13 +88,13 @@
     <dependency>
       <groupId>com.tdunning</groupId>
       <artifactId>t-digest</artifactId>
-      <version>3.2</version>
+      <version>${tdigest.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.heigit.ohsome</groupId>
       <artifactId>ohsome-filter</artifactId>
-      <version>1.4-SNAPSHOT</version>
+      <version>${ohsomefilter.version}</version>
     </dependency>
     
     <!-- TEST dependencies -->
