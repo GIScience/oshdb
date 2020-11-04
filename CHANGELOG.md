@@ -1,6 +1,7 @@
 1.4.0-SNAPSHOT
 --------------
 
+* allow using applyOSMGeometry with a supplier method
 
 1.3.0
 -----
