@@ -16,18 +16,18 @@ import org.locationtech.jts.geom.GeometryFactory;
  * <p>Tests the parsing of filters and the application to OSM entities.</p>
  */
 public class ApplyOSMGeometryTest extends FilterTest {
-  GeometryFactory gf = new GeometryFactory();
+  private final GeometryFactory gf = new GeometryFactory();
 
   @Test
   public void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
-    assertTrue(expression.applyOSMGeometry(createTestEntityNode(), gf.createPoint()));
+    assertTrue(expression.applyOSMGeometry(createTestOSMEntityNode(), gf.createPoint()));
   }
 
   @Test
   public void testGeometryTypeFilterLine() {
     FilterExpression expression = parser.parse("geometry:line");
-    OSMEntity validWay = createTestEntityWay(new long[]{1, 2, 3, 4, 1});
+    OSMEntity validWay = createTestOSMEntityWay(new long[]{1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(validWay, gf.createLineString()));
     assertFalse(expression.applyOSMGeometry(validWay, gf.createPolygon()));
   }
@@ -35,13 +35,13 @@ public class ApplyOSMGeometryTest extends FilterTest {
   @Test
   public void testGeometryTypeFilterPolygon() {
     FilterExpression expression = parser.parse("geometry:polygon");
-    OSMEntity validWay = createTestEntityWay(new long[]{1, 2, 3, 4, 1});
+    OSMEntity validWay = createTestOSMEntityWay(new long[]{1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(validWay, gf.createPolygon()));
     assertFalse(expression.applyOSMGeometry(validWay, gf.createLineString()));
-    OSMEntity validRelationA = createTestEntityRelation("type", "multipolygon");
+    OSMEntity validRelationA = createTestOSMEntityRelation("type", "multipolygon");
     assertTrue(expression.applyOSMGeometry(validRelationA, gf.createPolygon()));
     assertFalse(expression.applyOSMGeometry(validRelationA, gf.createGeometryCollection()));
-    OSMEntity validRelationB = createTestEntityRelation("type", "boundary");
+    OSMEntity validRelationB = createTestOSMEntityRelation("type", "boundary");
     assertTrue(expression.applyOSMGeometry(validRelationB, gf.createPolygon()));
     assertFalse(expression.applyOSMGeometry(validRelationB, gf.createGeometryCollection()));
   }
@@ -49,7 +49,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   @Test
   public void testGeometryTypeFilterOther() {
     FilterExpression expression = parser.parse("geometry:other");
-    OSMEntity validRelation = createTestEntityRelation();
+    OSMEntity validRelation = createTestOSMEntityRelation();
     assertTrue(expression.applyOSMGeometry(validRelation, gf.createGeometryCollection()));
     assertFalse(expression.applyOSMGeometry(validRelation, gf.createPolygon()));
     assertFalse(expression.applyOSMGeometry(validRelation, gf.createMultiPoint()));
@@ -61,15 +61,15 @@ public class ApplyOSMGeometryTest extends FilterTest {
   public void testAndOperator() {
     FilterExpression expression = parser.parse("geometry:point and name=*");
     assertTrue(expression.applyOSMGeometry(
-        createTestEntityNode("name", "FIXME"),
+        createTestOSMEntityNode("name", "FIXME"),
         gf.createPoint()
     ));
     assertFalse(expression.applyOSMGeometry(
-        createTestEntityWay(new long[] {}, "name", "FIXME"),
+        createTestOSMEntityWay(new long[] {}, "name", "FIXME"),
         gf.createLineString()
     ));
     assertFalse(expression.applyOSMGeometry(
-        createTestEntityNode(),
+        createTestOSMEntityNode(),
         gf.createPoint()
     ));
   }
@@ -78,15 +78,15 @@ public class ApplyOSMGeometryTest extends FilterTest {
   public void testOrOperator() {
     FilterExpression expression = parser.parse("geometry:point or geometry:polygon");
     assertTrue(expression.applyOSMGeometry(
-        createTestEntityNode(),
+        createTestOSMEntityNode(),
         gf.createPoint()
     ));
     assertTrue(expression.applyOSMGeometry(
-        createTestEntityWay(new long[] {1,2,3,4,1}),
+        createTestOSMEntityWay(new long[] {1,2,3,4,1}),
         gf.createPolygon()
     ));
     assertFalse(expression.applyOSMGeometry(
-        createTestEntityWay(new long[] {1,2,3,4,1}),
+        createTestOSMEntityWay(new long[] {1,2,3,4,1}),
         gf.createLineString()
     ));
   }
@@ -94,7 +94,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   @Test
   public void testGeometryFilterArea() {
     FilterExpression expression = parser.parse("area:(1..2)");
-    OSMEntity entity = createTestEntityWay(new long[] {1, 2, 3, 4, 1});
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
         // approx 0.3m²
         OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0,0, 5E-6,5E-6))
@@ -112,7 +112,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   @Test
   public void testGeometryFilterLength() {
     FilterExpression expression = parser.parse("length:(1..2)");
-    OSMEntity entity = createTestEntityWay(new long[] {1, 2});
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2});
     assertFalse(expression.applyOSMGeometry(entity,
         // approx 0.6m
         gf.createLineString(new Coordinate[] {

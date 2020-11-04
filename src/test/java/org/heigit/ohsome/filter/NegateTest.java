@@ -103,7 +103,7 @@ public class NegateTest extends FilterTest {
   public void testIdEqualsAnyOfFilter() {
     FilterExpression expression = new IdFilterEqualsAnyOf(Collections.singletonList(1L));
     FilterExpression negation = expression.negate();
-    OSMEntity testEntity = createTestEntityNode();
+    OSMEntity testEntity = createTestOSMEntityNode();
     assertNotEquals(expression.applyOSM(testEntity), negation.applyOSM(testEntity));
     FilterExpression doubleNegation = negation.negate();
     assertEquals(expression.applyOSM(testEntity), doubleNegation.applyOSM(testEntity));
@@ -113,18 +113,18 @@ public class NegateTest extends FilterTest {
   public void testIdInRangeFilter() {
     FilterExpression expression = new IdFilterRange(new IdFilterRange.IdRange(1, 3));
     FilterExpression negation = expression.negate();
-    OSMEntity testEntity = createTestEntityNode();
+    OSMEntity testEntity = createTestOSMEntityNode();
     assertNotEquals(expression.applyOSM(testEntity), negation.applyOSM(testEntity));
     FilterExpression doubleNegation = negation.negate();
     assertEquals(expression.applyOSM(testEntity), doubleNegation.applyOSM(testEntity));
   }
 
   private void testAllOSMTypes(FilterExpression expression, FilterExpression negation) {
-    OSMEntity node = createTestEntityNode();
+    OSMEntity node = createTestOSMEntityNode();
     assertTrue(expression.applyOSM(node) != negation.applyOSM(node));
-    OSMEntity way = createTestEntityWay(new long[] {});
+    OSMEntity way = createTestOSMEntityWay(new long[] {});
     assertTrue(expression.applyOSM(way) != negation.applyOSM(way));
-    OSMEntity relation = createTestEntityRelation();
+    OSMEntity relation = createTestOSMEntityRelation();
     assertTrue(expression.applyOSM(relation) != negation.applyOSM(relation));
   }
 
@@ -161,15 +161,15 @@ public class NegateTest extends FilterTest {
 
   private void testAllGeometryTypes(FilterExpression expression, FilterExpression negation) {
     GeometryFactory gf = new GeometryFactory();
-    OSMEntity node = createTestEntityNode();
+    OSMEntity node = createTestOSMEntityNode();
     assertTrue(expression.applyOSMGeometry(node, gf.createPoint())
         != negation.applyOSMGeometry(node, gf.createPoint()));
-    OSMEntity way = createTestEntityWay(new long[] {1,2,3,4,1});
+    OSMEntity way = createTestOSMEntityWay(new long[] {1,2,3,4,1});
     assertTrue(expression.applyOSMGeometry(way, gf.createLineString())
         != negation.applyOSMGeometry(way, gf.createLineString()));
     assertTrue(expression.applyOSMGeometry(way, gf.createPolygon())
         != negation.applyOSMGeometry(way, gf.createPolygon()));
-    OSMEntity relation = createTestEntityRelation("type", "multipolygon");
+    OSMEntity relation = createTestOSMEntityRelation("type", "multipolygon");
     assertTrue(expression.applyOSMGeometry(relation, gf.createPolygon())
         != negation.applyOSMGeometry(relation, gf.createPolygon()));
     assertTrue(expression.applyOSMGeometry(relation, gf.createGeometryCollection())
@@ -210,7 +210,7 @@ public class NegateTest extends FilterTest {
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof ConstantFilter);
     assertNotEquals(expression.getState(), ((ConstantFilter) negation).getState());
-    OSMEntity node = createTestEntityNode();
+    OSMEntity node = createTestOSMEntityNode();
     assertNotEquals(expression.applyOSM(node), negation.applyOSM(node));
   }
 }

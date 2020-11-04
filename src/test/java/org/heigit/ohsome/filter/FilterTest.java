@@ -1,8 +1,17 @@
 package org.heigit.ohsome.filter;
 
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
+import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
+import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
+import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
+import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
 import org.heigit.bigspatialdata.oshdb.osm.OSMMember;
 import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
 import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
@@ -49,11 +58,11 @@ abstract class FilterTest {
     return tags.stream().mapToInt(x -> x).toArray();
   }
 
-  protected OSMNode createTestEntityNode(String... keyValues) {
+  protected OSMNode createTestOSMEntityNode(String... keyValues) {
     return new OSMNode(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), 0, 0);
   }
 
-  protected OSMWay createTestEntityWay(long[] nodeIds, String... keyValues) {
+  protected OSMWay createTestOSMEntityWay(long[] nodeIds, String... keyValues) {
     OSMMember[] refs = new OSMMember[nodeIds.length];
     for (int i = 0; i < refs.length; i++) {
       refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
@@ -61,8 +70,21 @@ abstract class FilterTest {
     return new OSMWay(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), refs);
   }
 
-  protected OSMRelation createTestEntityRelation(String... keyValues) {
+  protected OSMRelation createTestOSMEntityRelation(String... keyValues) {
     return new OSMRelation(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues),
         new OSMMember[] {});
+  }
+
+  protected OSHNode createTestOSHEntityNode(OSMNode... versions) throws IOException {
+    return OSHNodeImpl.build(Arrays.asList(versions));
+  }
+
+  protected OSHWay createTestOSHEntityWay(OSMWay...versions) throws IOException {
+    return OSHWayImpl.build(Arrays.asList(versions), Collections.emptyList());
+  }
+
+  protected OSHRelation createTestOSHEntityRelation(OSMRelation... versions) throws IOException {
+    return OSHRelationImpl.build(Arrays.asList(versions), Collections.emptyList(),
+        Collections.emptyList());
   }
 }

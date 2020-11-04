@@ -4,17 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import org.heigit.bigspatialdata.oshdb.impl.osh.OSHNodeImpl;
-import org.heigit.bigspatialdata.oshdb.impl.osh.OSHRelationImpl;
-import org.heigit.bigspatialdata.oshdb.impl.osh.OSHWayImpl;
-import org.heigit.bigspatialdata.oshdb.osh.OSHNode;
-import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
-import org.heigit.bigspatialdata.oshdb.osh.OSHWay;
-import org.heigit.bigspatialdata.oshdb.osm.OSMNode;
-import org.heigit.bigspatialdata.oshdb.osm.OSMRelation;
-import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
+import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
 import org.junit.Test;
 
 /**
@@ -23,38 +13,26 @@ import org.junit.Test;
  * <p>Tests the parsing of filters and the application to OSM entities.</p>
  */
 public class ApplyOSHTest extends FilterTest {
-  private OSHNode createTestEntityNode(OSMNode... versions) throws IOException {
-    return OSHNodeImpl.build(Arrays.asList(versions));
-  }
-
-  private OSHWay createTestEntityWay(OSMWay...versions) throws IOException {
-    return OSHWayImpl.build(Arrays.asList(versions), Collections.emptyList());
-  }
-
-  private OSHRelation createTestEntityRelation(OSMRelation... versions) throws IOException {
-    return OSHRelationImpl.build(Arrays.asList(versions), Collections.emptyList(),
-        Collections.emptyList());
-  }
 
   @Test
   public void testTagFilterEquals() throws IOException {
     FilterExpression expression = parser.parse("highway=residential");
     // matching tag (exact match)
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential"))
     ));
     // matching tag (partial match)
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "track"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "track"))
     ));
     // 2 versions where one matches
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "track"),
-        createTestEntityNode("building", "yes"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "track"),
+        createTestOSMEntityNode("building", "yes"))
     ));
     // no match
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("building", "yes"))
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("building", "yes"))
     ));
   }
 
@@ -62,17 +40,17 @@ public class ApplyOSHTest extends FilterTest {
   public void testTagFilterEqualsAny() throws IOException {
     FilterExpression expression = parser.parse("highway=*");
     // matching tag
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential"))
     ));
     // 2 versions where one matches
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "track"),
-        createTestEntityNode("building", "yes"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "track"),
+        createTestOSMEntityNode("building", "yes"))
     ));
     // no match
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("building", "yes"))
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("building", "yes"))
     ));
   }
 
@@ -80,17 +58,17 @@ public class ApplyOSHTest extends FilterTest {
   public void testTagFilterNotEquals() throws IOException {
     FilterExpression expression = parser.parse("highway!=residential");
     // matching tag
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential"))
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential"))
     ));
     // 2 versions where one matches
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential"),
-        createTestEntityNode("building", "yes"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential"),
+        createTestOSMEntityNode("building", "yes"))
     ));
     // no match
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("building", "yes"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("building", "yes"))
     ));
   }
 
@@ -98,17 +76,17 @@ public class ApplyOSHTest extends FilterTest {
   public void testTagFilterNotEqualsAny() throws IOException {
     FilterExpression expression = parser.parse("highway!=*");
     // matching tag
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential"))
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential"))
     ));
     // 2 versions where one matches
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential"),
-        createTestEntityNode("building", "yes"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential"),
+        createTestOSMEntityNode("building", "yes"))
     ));
     // no match
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("building", "yes"))
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("building", "yes"))
     ));
   }
 
@@ -116,100 +94,100 @@ public class ApplyOSHTest extends FilterTest {
   public void testTagFilterEqualsAnyOf() throws IOException {
     FilterExpression expression = parser.parse("highway in (residential, track)");
     // matching tag
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential")
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential")
     )));
     // matching tag key only
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "primary")
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "primary")
     )));
     // no matching key
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("building", "yes")
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("building", "yes")
     )));
     // one exact matching in versions
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("building", "yes"),
-        createTestEntityNode("highway", "track")
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("building", "yes"),
+        createTestOSMEntityNode("highway", "track")
     )));
     // one partial matching in versions: should return true, even though no version actually matches
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("building", "yes"),
-        createTestEntityNode("highway", "primary")
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("building", "yes"),
+        createTestOSMEntityNode("highway", "primary")
     )));
   }
 
   @Test
   public void testIdFilterEquals() throws IOException {
-    assertTrue(parser.parse("id:1").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertFalse(parser.parse("id:2").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
+    assertTrue(parser.parse("id:1").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertFalse(parser.parse("id:2").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
   }
 
   @Test
   public void testIdFilterNotEquals() throws IOException {
-    assertFalse(parser.parse("id:1").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertTrue(parser.parse("id:2").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
+    assertFalse(parser.parse("id:1").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertTrue(parser.parse("id:2").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
   }
 
   @Test
   public void testIdFilterEqualsAnyOf() throws IOException {
-    assertTrue(parser.parse("id:(1,2,3)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertFalse(parser.parse("id:(2,3)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
+    assertTrue(parser.parse("id:(1,2,3)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertFalse(parser.parse("id:(2,3)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
   }
 
   @Test
   public void testIdFilterNotEqualsAnyOf() throws IOException {
-    assertFalse(parser.parse("id:(1,2,3)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertTrue(parser.parse("id:(2,3)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
+    assertFalse(parser.parse("id:(1,2,3)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertTrue(parser.parse("id:(2,3)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
   }
 
   @Test
   public void testIdFilterInRange() throws IOException {
-    assertTrue(parser.parse("id:(1..3)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertFalse(parser.parse("id:(2..3)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertTrue(parser.parse("id:(1..)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertFalse(parser.parse("id:(2..)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertTrue(parser.parse("id:(..3)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertFalse(parser.parse("id:(..0)").applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
+    assertTrue(parser.parse("id:(1..3)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertFalse(parser.parse("id:(2..3)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertTrue(parser.parse("id:(1..)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertFalse(parser.parse("id:(2..)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertTrue(parser.parse("id:(..3)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertFalse(parser.parse("id:(..0)").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
   }
 
   @Test
   public void testIdFilterNotInRange() throws IOException {
-    assertFalse(parser.parse("id:(1..3)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertTrue(parser.parse("id:(2..3)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertFalse(parser.parse("id:(1..)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertTrue(parser.parse("id:(2..)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertFalse(parser.parse("id:(..3)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
-    assertTrue(parser.parse("id:(..0)").negate().applyOSH(createTestEntityNode(
-        super.createTestEntityNode())));
+    assertFalse(parser.parse("id:(1..3)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertTrue(parser.parse("id:(2..3)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertFalse(parser.parse("id:(1..)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertTrue(parser.parse("id:(2..)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertFalse(parser.parse("id:(..3)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
+    assertTrue(parser.parse("id:(..0)").negate().applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode())));
   }
 
   @Test
   public void testTypeFilter() throws IOException {
-    assertTrue(parser.parse("type:node").applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertTrue(parser.parse("type:node").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
-    assertFalse(parser.parse("type:way").applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertFalse(parser.parse("type:way").applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
   }
 
@@ -217,44 +195,44 @@ public class ApplyOSHTest extends FilterTest {
   public void testAndOperator() throws IOException {
     FilterExpression expression = parser.parse("highway=* and name=*");
     // exact match
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode(
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(
             "highway", "residential",
             "name", "FIXME"
         )
     )));
     // one version matches
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode(
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(
             "highway", "residential"
         ),
-        createTestEntityNode(
+        createTestOSMEntityNode(
             "highway", "residential",
             "name", "FIXME"
         )
     )));
     // no match, but OSH contains both tag keys because different versions have each one of them
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode(
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(
             "highway", "residential"
         ),
-        createTestEntityNode(
+        createTestOSMEntityNode(
             "name", "FIXME"
         )
     )));
     // no match
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode(
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(
             "highway", "residential"
         )
     )));
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode(
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(
             "name", ""
         )
     )));
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
   }
 
@@ -262,96 +240,96 @@ public class ApplyOSHTest extends FilterTest {
   public void testOrOperator() throws IOException {
     FilterExpression expression = parser.parse("highway=* or name=*");
     // exact match
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        createTestEntityNode("highway", "residential")
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode("highway", "residential")
     )));
     // one version matches
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        super.createTestEntityNode(),
-        createTestEntityNode(
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(),
+        createTestOSMEntityNode(
             "name", "FIXME"
         )
     )));
     // no match
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
   }
 
   @Test
   public void testGeometryTypeFilterPoint() throws IOException {
     FilterExpression expression = parser.parse("geometry:point");
-    assertTrue(expression.applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
-    assertFalse(expression.applyOSH(createTestEntityWay(
-        createTestEntityWay(new long[] {})
+    assertFalse(expression.applyOSH(createTestOSHEntityWay(
+        createTestOSMEntityWay(new long[] {})
     )));
-    assertFalse(expression.applyOSH(createTestEntityRelation(
-        super.createTestEntityRelation()
+    assertFalse(expression.applyOSH(createTestOSHEntityRelation(
+        createTestOSMEntityRelation()
     )));
   }
 
   @Test
   public void testGeometryTypeFilterLine() throws IOException {
     FilterExpression expression = parser.parse("geometry:line");
-    assertTrue(expression.applyOSH(createTestEntityWay(
-        createTestEntityWay(new long[] {})
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(
+        createTestOSMEntityWay(new long[] {})
     )));
-    assertTrue(expression.applyOSH(createTestEntityWay(
-        createTestEntityWay(new long[] {1,2,3,4,1})
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(
+        createTestOSMEntityWay(new long[] {1,2,3,4,1})
     )));
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
-    assertFalse(expression.applyOSH(createTestEntityRelation(
-        super.createTestEntityRelation()
+    assertFalse(expression.applyOSH(createTestOSHEntityRelation(
+        createTestOSMEntityRelation()
     )));
   }
 
   @Test
   public void testGeometryTypeFilterPolygon() throws IOException {
     FilterExpression expression = parser.parse("geometry:polygon");
-    assertTrue(expression.applyOSH(createTestEntityWay(
-        createTestEntityWay(new long[] {1,2,3,4,1})
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(
+        createTestOSMEntityWay(new long[] {1,2,3,4,1})
     )));
-    assertTrue(expression.applyOSH(createTestEntityRelation(
-        createTestEntityRelation("type", "multipolygon")
+    assertTrue(expression.applyOSH(createTestOSHEntityRelation(
+        createTestOSMEntityRelation("type", "multipolygon")
     )));
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
   }
 
   @Test
   public void testGeometryTypeFilterOther() throws IOException {
     FilterExpression expression = parser.parse("geometry:other");
-    assertFalse(expression.applyOSH(createTestEntityWay(
-        createTestEntityWay(new long[] {})
+    assertFalse(expression.applyOSH(createTestOSHEntityWay(
+        createTestOSMEntityWay(new long[] {})
     )));
-    assertFalse(expression.applyOSH(createTestEntityNode(
-        super.createTestEntityNode()
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode()
     )));
-    assertTrue(expression.applyOSH(createTestEntityRelation(
-        super.createTestEntityRelation()
+    assertTrue(expression.applyOSH(createTestOSHEntityRelation(
+        createTestOSMEntityRelation()
     )));
   }
 
   @Test
   public void testConstant() throws IOException {
     FilterExpression expression = parser.parse("");
-    assertTrue(expression.applyOSH(createTestEntityNode(super.createTestEntityNode())));
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(createTestOSMEntityNode())));
   }
 
   @Test
   public void testGeometryFilterArea() throws IOException {
     FilterExpression expression = parser.parse("area:(1..2)");
-    assertTrue(expression.applyOSH(createTestEntityWay(super.createTestEntityWay(new long[] {}))));
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(createTestOSMEntityWay(new long[] {}))));
   }
 
   @Test
   public void testGeometryFilterLength() throws IOException {
     FilterExpression expression = parser.parse("length:(1..2)");
-    assertTrue(expression.applyOSH(createTestEntityWay(super.createTestEntityWay(new long[] {}))));
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(createTestOSMEntityWay(new long[] {}))));
   }
 }
