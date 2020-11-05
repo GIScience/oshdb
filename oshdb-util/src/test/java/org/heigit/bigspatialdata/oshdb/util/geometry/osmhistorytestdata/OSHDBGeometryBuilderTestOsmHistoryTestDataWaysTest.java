@@ -1,5 +1,8 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.osmhistorytestdata;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.osm.OSMWay;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
@@ -14,13 +17,10 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
-  private final double DELTA = 1E-6;
+  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest() {
     testData.add("./src/test/resources/different-timestamps/way.osm");
@@ -91,10 +91,11 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
     assertEquals(1.43, (((LineString) result3).getCoordinateN(8)).x, DELTA);
     assertEquals(1.31, (((LineString) result3).getCoordinateN(8)).y, DELTA);
     // timestamp after last one
-    OSMEntity entity_after = testData.ways().get(100L).get(2);
-    OSHDBTimestamp timestamp_after =  TimestampParser.toOSHDBTimestamp("2012-01-01T00:00:00Z");
-    Geometry result_after = OSHDBGeometryBuilder.getGeometry(entity_after, timestamp_after, areaDecider);
-    assertTrue(result_after instanceof LineString);
+    OSMEntity entityAfter = testData.ways().get(100L).get(2);
+    OSHDBTimestamp timestampAfter =  TimestampParser.toOSHDBTimestamp("2012-01-01T00:00:00Z");
+    Geometry resultAfter = OSHDBGeometryBuilder.getGeometry(entityAfter, timestampAfter,
+        areaDecider);
+    assertTrue(resultAfter instanceof LineString);
     assertEquals(1.42, (((LineString) result3).getCoordinateN(0)).x, DELTA);
     assertEquals(1.22, (((LineString) result3).getCoordinateN(0)).y, DELTA);
     assertEquals(1.42, (((LineString) result3).getCoordinateN(1)).x, DELTA);
@@ -141,15 +142,16 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
     assertEquals(1.43, (((LineString) result2).getCoordinateN(2)).x, DELTA);
     assertEquals(1.30, (((LineString) result2).getCoordinateN(2)).y, DELTA);
     // timestamp in between
-    OSHDBTimestamp timestamp_between =  TimestampParser.toOSHDBTimestamp("2009-02-01T00:00:00Z");
-    OSMEntity entity_between = testData.ways().get(101L).get(0);
-    Geometry result_between = OSHDBGeometryBuilder.getGeometry(entity_between, timestamp_between, areaDecider);
-    assertTrue(result_between instanceof LineString);
-    assertEquals(2,result_between.getNumPoints());
-    assertEquals(1.42, (((LineString) result_between).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.225, (((LineString) result_between).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.445, (((LineString) result_between).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.225, (((LineString) result_between).getCoordinateN(1)).y, DELTA);
+    OSHDBTimestamp timestampBetween =  TimestampParser.toOSHDBTimestamp("2009-02-01T00:00:00Z");
+    OSMEntity entityBetween = testData.ways().get(101L).get(0);
+    Geometry resultBetween = OSHDBGeometryBuilder.getGeometry(entityBetween, timestampBetween,
+        areaDecider);
+    assertTrue(resultBetween instanceof LineString);
+    assertEquals(2,resultBetween.getNumPoints());
+    assertEquals(1.42, (((LineString) resultBetween).getCoordinateN(0)).x, DELTA);
+    assertEquals(1.225, (((LineString) resultBetween).getCoordinateN(0)).y, DELTA);
+    assertEquals(1.445, (((LineString) resultBetween).getCoordinateN(1)).x, DELTA);
+    assertEquals(1.225, (((LineString) resultBetween).getCoordinateN(1)).y, DELTA);
   }
 
   @Test
@@ -239,6 +241,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
     assertEquals(4, result4.getNumPoints());
 
   }
+
   // MULTIPOLYGON(((1.45 1.45,1.46 1.45,1.46 1.44,1.45 1.44)))
   @Test
   public void testPolygonAreaYesTagDisappears() throws ParseException {

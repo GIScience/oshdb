@@ -232,7 +232,8 @@ public class TagTranslator implements AutoCloseable {
         try (ResultSet values = valueIdQuery.executeQuery()) {
           if (!values.next()) {
             LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
-            tagInt = new OSHDBTag(this.getOSHDBTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
+            tagInt = new OSHDBTag(
+                this.getOSHDBTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
           } else {
             tagInt = new OSHDBTag(values.getInt("KEYID"), values.getInt("VALUEID"));
           }

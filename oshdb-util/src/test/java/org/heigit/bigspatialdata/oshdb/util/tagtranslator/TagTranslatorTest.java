@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.tagtranslator;
 
+import static org.junit.Assert.assertEquals;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -8,13 +10,18 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TagTranslatorTest {
   private static Connection conn;
 
+  /**
+   * Initialize tests by loading the H2 driver and open a connection via jdbc.
+   *
+   * @throws ClassNotFoundException gets thrown if H2 driver class cannot be found
+   * @throws SQLException is thrown if the connection fails
+   */
   @BeforeClass
   public static void setUpClass() throws ClassNotFoundException, SQLException {
     // load H2-support
@@ -22,7 +29,8 @@ public class TagTranslatorTest {
 
     // connect to the "Big"DB
     TagTranslatorTest.conn =
-        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r", "sa", "");
+        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
+            "sa", "");
 
   }
 
@@ -31,7 +39,8 @@ public class TagTranslatorTest {
     TagTranslatorTest.conn.close();
   }
 
-  public TagTranslatorTest() {}
+  public TagTranslatorTest() {
+  }
 
   @Test
   public void testTag2Int() throws OSHDBKeytablesNotFoundException {

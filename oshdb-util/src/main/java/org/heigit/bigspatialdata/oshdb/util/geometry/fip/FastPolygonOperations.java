@@ -1,19 +1,19 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
-import java.io.Serializable;
-import java.util.ArrayList;
 
 public class FastPolygonOperations implements Serializable {
-  private final int AVERAGE_VERTICES_PER_BLOCK = 40; // todo: finetune this value
+  private static final int AVERAGE_VERTICES_PER_BLOCK = 40; // todo: finetune this value
 
   private int numBands;
 
@@ -23,8 +23,15 @@ public class FastPolygonOperations implements Serializable {
   private double envWidth;
   private double envHeight;
 
+  /**
+   * Constructor using a given geometry {@code geom} and geometry type {@code P}.
+   *
+   * @param geom geometry object
+   * @param <P> geometry type
+   */
   public <P extends Geometry & Polygonal> FastPolygonOperations(P geom) {
-    double optNumBands = Math.max(1.0, Math.sqrt(1.0 * geom.getNumPoints() / AVERAGE_VERTICES_PER_BLOCK));
+    double optNumBands = Math.max(1.0,
+        Math.sqrt(1.0 * geom.getNumPoints() / AVERAGE_VERTICES_PER_BLOCK));
     final int bandIterations = (int) Math.ceil(Math.log(optNumBands) / Math.log(2));
     numBands = (int) Math.pow(2, bandIterations);
 
@@ -34,7 +41,7 @@ public class FastPolygonOperations implements Serializable {
 
     GeometryFactory gf = new GeometryFactory();
 
-    Geometry[] result = new Geometry[numBands*numBands];
+    Geometry[] result = new Geometry[numBands * numBands];
     traverseQuads(bandIterations, 0,0, env, geom, gf, result);
 
     blocks = new ArrayList<>(Arrays.asList(result));
@@ -77,25 +84,25 @@ public class FastPolygonOperations implements Serializable {
       int index = y + x * numBands;
       resultBuffer[index] = theGeom;
     } else {
-      Envelope bottomLeftPart = new Envelope(
+      final Envelope bottomLeftPart = new Envelope(
           quadEnv.getMinX(),
           (quadEnv.getMinX() + quadEnv.getMaxX()) / 2,
           quadEnv.getMinY(),
           (quadEnv.getMinY() + quadEnv.getMaxY()) / 2
       );
-      Envelope topLeftPart = new Envelope(
+      final Envelope topLeftPart = new Envelope(
           quadEnv.getMinX(),
           (quadEnv.getMinX() + quadEnv.getMaxX()) / 2,
           (quadEnv.getMinY() + quadEnv.getMaxY()) / 2,
           quadEnv.getMaxY()
       );
-      Envelope bottomRightPart = new Envelope(
+      final Envelope bottomRightPart = new Envelope(
           (quadEnv.getMinX() + quadEnv.getMaxX()) / 2,
           quadEnv.getMaxX(),
           quadEnv.getMinY(),
           (quadEnv.getMinY() + quadEnv.getMaxY()) / 2
       );
-      Envelope topRightPart = new Envelope(
+      final Envelope topRightPart = new Envelope(
           (quadEnv.getMinX() + quadEnv.getMaxX()) / 2,
           quadEnv.getMaxX(),
           (quadEnv.getMinY() + quadEnv.getMaxY()) / 2,
@@ -132,20 +139,32 @@ public class FastPolygonOperations implements Serializable {
     }
   }
 
+  /**
+   * Calculate intersection with another {@link Geometry}.
+   *
+   * @param other {@link Geometry} to intersect with
+   * @return intersected {@link Geometry}
+   */
   public Geometry intersection(Geometry other) {
-    if (other == null || other.isEmpty()) return other;
+    if (other == null || other.isEmpty()) {
+      return other;
+    }
     Envelope otherEnv = other.getEnvelopeInternal();
 
-    int minBandX = Math.max(0, Math.min(numBands - 1, (int)Math.floor((otherEnv.getMinX() - env.getMinX())/envWidth * numBands)));
-    int maxBandX = Math.max(0, Math.min(numBands - 1, (int)Math.floor((otherEnv.getMaxX() - env.getMinX())/envWidth * numBands)));
-    int minBandY = Math.max(0, Math.min(numBands - 1, (int)Math.floor((otherEnv.getMinY() - env.getMinY())/envHeight * numBands)));
-    int maxBandY = Math.max(0, Math.min(numBands - 1, (int)Math.floor((otherEnv.getMaxY() - env.getMinY())/envHeight * numBands)));
+    int minBandX = Math.max(0, Math.min(numBands - 1,
+        (int) Math.floor((otherEnv.getMinX() - env.getMinX()) / envWidth * numBands)));
+    int maxBandX = Math.max(0, Math.min(numBands - 1,
+        (int) Math.floor((otherEnv.getMaxX() - env.getMinX()) / envWidth * numBands)));
+    int minBandY = Math.max(0, Math.min(numBands - 1,
+        (int) Math.floor((otherEnv.getMinY() - env.getMinY()) / envHeight * numBands)));
+    int maxBandY = Math.max(0, Math.min(numBands - 1,
+        (int) Math.floor((otherEnv.getMaxY() - env.getMinY()) / envHeight * numBands)));
 
     Geometry intersector = null;
 
     for (int x = minBandX; x <= maxBandX; x++) {
       for (int y = minBandY; y <= maxBandY; y++) {
-        Geometry block = blocks.get(y + x*numBands);
+        Geometry block = blocks.get(y + x * numBands);
         if (intersector == null) {
           intersector = block;
         } else {

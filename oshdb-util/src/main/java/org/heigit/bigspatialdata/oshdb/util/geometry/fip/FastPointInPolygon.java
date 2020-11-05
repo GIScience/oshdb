@@ -15,7 +15,7 @@ public class FastPointInPolygon extends FastInPolygon implements Predicate<Point
   }
 
   /**
-   * Tests if the given bounding box is fully inside of the polygon
+   * Tests if the given bounding box is fully inside of the polygon.
    */
   @Override
   public boolean test(Point point) {

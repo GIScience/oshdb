@@ -1,5 +1,9 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.incomplete;
 
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -13,16 +17,12 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private final double DELTA = 1E-6;
+  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestPolygonIncompleteDataTest() {
     testData.add("./src/test/resources/incomplete-osm/polygon.osm");
@@ -62,7 +62,8 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
-        "MULTIPOLYGON(((7.31 1.04, 7.33 1.05, 7.33 1.04, 7.32 1.04, 7.31 1.01,7.31 1.01,7.31 1.04)))"
+        "MULTIPOLYGON(((7.31 1.04, 7.33 1.05, 7.33 1.04, 7.32 1.04, 7.31 1.01,7.31 1.01,"
+            + "7.31 1.04)))"
     );
     Geometry intersection = result.intersection(expectedPolygon);
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
@@ -75,8 +76,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
     Geometry result1 = null;
     try {
       result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }

@@ -1,9 +1,15 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
@@ -17,16 +23,15 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
 public class IterateByTimestampsNodesTest {
   private GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * {@link GridOSHNodes}.
+   */
   public IterateByTimestampsNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
@@ -54,8 +59,10 @@ public class IterateByTimestampsNodesTest {
     ).collect(Collectors.toList());
 
     assertEquals(11, result.size());
-    assertNotEquals(result.get(1).geometry.get().getCoordinates(), result.get(0).geometry.get().getCoordinates());
-    assertNotEquals(result.get(2).geometry.get().getCoordinates(), result.get(1).geometry.get().getCoordinates());
+    assertNotEquals(result.get(1).geometry.get().getCoordinates(),
+        result.get(0).geometry.get().getCoordinates());
+    assertNotEquals(result.get(2).geometry.get().getCoordinates(),
+        result.get(1).geometry.get().getCoordinates());
   }
 
   @Test
@@ -136,17 +143,28 @@ public class IterateByTimestampsNodesTest {
     ).collect(Collectors.toList());
 
     assertEquals(11, result.size());
-    assertNotEquals(result.get(1).geometry.get().getCoordinates(), result.get(0).geometry.get().getCoordinates());
-    assertArrayEquals(result.get(2).geometry.get().getCoordinates(), result.get(1).geometry.get().getCoordinates());
-    assertNotEquals(result.get(3).geometry.get().getCoordinates(), result.get(2).geometry.get().getCoordinates());
-    assertArrayEquals(result.get(5).geometry.get().getCoordinates(), result.get(3).geometry.get().getCoordinates());
-    assertNotEquals(result.get(6).geometry.get().getCoordinates(), result.get(3).geometry.get().getCoordinates());
-    assertArrayEquals(result.get(9).geometry.get().getCoordinates(), result.get(6).geometry.get().getCoordinates());
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
-    assertNotEquals(result.get(3).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
-    assertEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
-    assertNotEquals(result.get(9).osmEntity.getRawTags(), result.get(6).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).geometry.get().getCoordinates(),
+        result.get(0).geometry.get().getCoordinates());
+    assertArrayEquals(result.get(2).geometry.get().getCoordinates(),
+        result.get(1).geometry.get().getCoordinates());
+    assertNotEquals(result.get(3).geometry.get().getCoordinates(),
+        result.get(2).geometry.get().getCoordinates());
+    assertArrayEquals(result.get(5).geometry.get().getCoordinates(),
+        result.get(3).geometry.get().getCoordinates());
+    assertNotEquals(result.get(6).geometry.get().getCoordinates(),
+        result.get(3).geometry.get().getCoordinates());
+    assertArrayEquals(result.get(9).geometry.get().getCoordinates(),
+        result.get(6).geometry.get().getCoordinates());
+    assertNotEquals(result.get(1).osmEntity.getRawTags(),
+        result.get(0).osmEntity.getRawTags());
+    assertEquals(result.get(2).osmEntity.getRawTags(),
+        result.get(1).osmEntity.getRawTags());
+    assertNotEquals(result.get(3).osmEntity.getRawTags(),
+        result.get(2).osmEntity.getRawTags());
+    assertEquals(result.get(5).osmEntity.getRawTags(),
+        result.get(4).osmEntity.getRawTags());
+    assertNotEquals(result.get(9).osmEntity.getRawTags(),
+        result.get(6).osmEntity.getRawTags());
   }
 
   @Test
@@ -192,13 +210,13 @@ public class IterateByTimestampsNodesTest {
   @Test
   public void testTagFilterAndPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -221,12 +239,12 @@ public class IterateByTimestampsNodesTest {
   @Test
   public void testCoordinatesRelativeToPolygon() throws IOException {
     //different cases of relative position between node coordinate(s) and cell bbox / query polygon
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[4];
-    coords[0]=new Coordinate(0.0,0.0);
-    coords[1]=new Coordinate(1.5,0.0);
-    coords[2]=new Coordinate(0.0,1.5);
-    coords[3]=new Coordinate(0.0,0.0);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[4];
+    coords[0] = new Coordinate(0.0,0.0);
+    coords[1] = new Coordinate(1.5,0.0);
+    coords[2] = new Coordinate(0.0,1.5);
+    coords[3] = new Coordinate(0.0,0.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -241,7 +259,8 @@ public class IterateByTimestampsNodesTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6)).getId(1.0, 1.0)/* approx. 0,0,5.6,5.6*/)
+        GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
+            .getId(1.0, 1.0)/* approx. 0,0,5.6,5.6*/)
     ).collect(Collectors.toList());
 
     assertEquals(3, result.size());

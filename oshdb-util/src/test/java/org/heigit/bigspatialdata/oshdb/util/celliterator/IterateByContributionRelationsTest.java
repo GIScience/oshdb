@@ -1,9 +1,15 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -20,17 +26,16 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
 public class IterateByContributionRelationsTest {
   private GridOSHRelations oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
-  private final double DELTA = 1E-6;
+  private static final double DELTA = 1E-6;
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * {@link GridOSHRelations}.
+   */
   public IterateByContributionRelationsTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");// read osm xml data
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);// Used to provided information
@@ -44,19 +49,23 @@ public class IterateByContributionRelationsTest {
     // relation: creation and two geometry changes, but no tag changes
     // relation getting more ways, one disappears
     List<IterateAllEntry> result = (new CellIterator(
+        // get in this time interval every contribution
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
-        ).get(),// get in this timeinterval every contribution
-        new OSHDBBoundingBox(-180,-90, 180, 90),// look at dat in this bbox
-        areaDecider,// needed to create actual geometries from OSM data
-        oshEntity -> oshEntity.getId() == 500,// oshEntityPreFilter: get data of relation with id 500
+        ).get(),
+        // look at dat in this bbox
+        new OSHDBBoundingBox(-180,-90, 180, 90),
+        // needed to create actual geometries from OSM data
+        areaDecider,
+        // oshEntityPreFilter: get data of relation with id 500
+        oshEntity -> oshEntity.getId() == 500,
         osmEntity -> true,// osmEntityFilter: true -> get all
         false
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    // one creation and two gemotry changes should give a result with 3 elements
+    // one creation and two geometry changes should give a result with 3 elements
     assertEquals(3, result.size());
     // check if the contribution types are correct
     assertEquals(
@@ -133,8 +142,7 @@ public class IterateByContributionRelationsTest {
       )).iterateByContribution(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -342,8 +350,7 @@ public class IterateByContributionRelationsTest {
       )).iterateByContribution(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
@@ -613,13 +620,13 @@ public class IterateByContributionRelationsTest {
   @Test
   public void testPolygonIntersectingDataPartly() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -641,13 +648,13 @@ public class IterateByContributionRelationsTest {
   @Test
   public void testPolygonIntersectingDataOnlyAtBorderLine() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.7,10.4);
-    coords[1]=new Coordinate(10.94,10.4);
-    coords[2]=new Coordinate(10.94,10.9);
-    coords[3]=new Coordinate(10.7,10.9);
-    coords[4]=new Coordinate(10.7,10.4);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.7,10.4);
+    coords[1] = new Coordinate(10.94,10.4);
+    coords[2] = new Coordinate(10.94,10.9);
+    coords[3] = new Coordinate(10.7,10.9);
+    coords[4] = new Coordinate(10.7,10.4);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -669,13 +676,13 @@ public class IterateByContributionRelationsTest {
   @Test
   public void testPolygonIntersectingDataCompletely() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,52.7);
-    coords[2]=new Coordinate(52.7,52.7);
-    coords[3]=new Coordinate(52.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,52.7);
+    coords[2] = new Coordinate(52.7,52.7);
+    coords[3] = new Coordinate(52.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -697,13 +704,13 @@ public class IterateByContributionRelationsTest {
   @Test
   public void testPolygonNotIntersectingData() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(48,49);
-    coords[1]=new Coordinate(48 ,50);
-    coords[2]=new Coordinate(49,50);
-    coords[3]=new Coordinate(49,49);
-    coords[4]=new Coordinate(48,49);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(48,49);
+    coords[1] = new Coordinate(48,50);
+    coords[2] = new Coordinate(49,50);
+    coords[3] = new Coordinate(49,49);
+    coords[4] = new Coordinate(48,49);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -755,13 +762,13 @@ public class IterateByContributionRelationsTest {
   @Test
   public void testPolygonIntersectingDataCompletelyTimeIntervalAfterChanges() {
 
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,52.7);
-    coords[2]=new Coordinate(52.7,52.7);
-    coords[3]=new Coordinate(52.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,52.7);
+    coords[2] = new Coordinate(52.7,52.7);
+    coords[3] = new Coordinate(52.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -860,13 +867,13 @@ public class IterateByContributionRelationsTest {
     // Polygon with self crossing way
     // partly intersected by bbox polygon
     // happy if it works without crashing
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(7.31,1.0);
-    coords[1]=new Coordinate(7.335,1.0);
-    coords[2]=new Coordinate(7.335,2.0);
-    coords[3]=new Coordinate(7.31,2.0);
-    coords[4]=new Coordinate(7.31,1.0);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(7.31,1.0);
+    coords[1] = new Coordinate(7.335,1.0);
+    coords[2] = new Coordinate(7.335,2.0);
+    coords[3] = new Coordinate(7.31,2.0);
+    coords[4] = new Coordinate(7.31,1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -887,7 +894,8 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testMembersDisappear() {
-    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member is deleted
+    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member
+    // is deleted
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -912,7 +920,7 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInVersion2() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2016-01-01T00:00:00Z",
@@ -936,7 +944,7 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersion() {
-    // relation in first and third version visible = false, timeinterval includes version 3
+    // relation in first and third version visible = false, time interval includes version 3
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2016-01-01T00:00:00Z",
@@ -960,7 +968,7 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testExcludingVersion2() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2012-01-01T00:00:00Z",
@@ -969,7 +977,7 @@ public class IterateByContributionRelationsTest {
         new OSHDBBoundingBox(-180,-90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 500,
-        osmEntity -> !(osmEntity.getVersion()==2),
+        osmEntity -> !(osmEntity.getVersion() == 2),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -985,14 +993,15 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testMembersDisappearClipped() {
-    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member is deleted
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member
+    // is deleted
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1023,14 +1032,14 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInVersion2Clipped() {
-    // relation in second version visible = false, timeinterval includes version 3
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    // relation in second version visible = false, time interval includes version 3
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1057,14 +1066,14 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
-    // relation in first and third version visible = false, timeinterval includes version 3
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,22.7);
-    coords[2]=new Coordinate(22.7,22.7);
-    coords[3]=new Coordinate(22.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    // relation in first and third version visible = false, time interval includes version 3
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,22.7);
+    coords[2] = new Coordinate(22.7,22.7);
+    coords[3] = new Coordinate(22.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1090,14 +1099,14 @@ public class IterateByContributionRelationsTest {
 
   @Test
   public void testExcludingVersion2Clipped() {
-    // relation in second version visible = false, timeinterval includes version 3
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(7.31,1.0);
-    coords[1]=new Coordinate(7.335,1.0);
-    coords[2]=new Coordinate(7.335,2.0);
-    coords[3]=new Coordinate(7.31,2.0);
-    coords[4]=new Coordinate(7.31,1.0);
+    // relation in second version visible = false, time interval includes version 3
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(7.31,1.0);
+    coords[1] = new Coordinate(7.335,1.0);
+    coords[2] = new Coordinate(7.335,2.0);
+    coords[3] = new Coordinate(7.31,2.0);
+    coords[4] = new Coordinate(7.31,1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1108,7 +1117,7 @@ public class IterateByContributionRelationsTest {
         polygonFromCoordinates,
         areaDecider,
         oshEntity -> oshEntity.getId() == 500,
-        osmEntity -> !(osmEntity.getVersion()==2),
+        osmEntity -> !(osmEntity.getVersion() == 2),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -1125,13 +1134,13 @@ public class IterateByContributionRelationsTest {
   @Test
   public void testClippingPolygonIsVeryBig() {
     // relation with two way members(nodes of ways have changes in 2009 and 2011)
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(-180,-90);
-    coords[1]=new Coordinate(180 ,-90);
-    coords[2]=new Coordinate(180,90);
-    coords[3]=new Coordinate(-180,90);
-    coords[4]=new Coordinate(-180,-90);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(-180,-90);
+    coords[1] = new Coordinate(180,-90);
+    coords[2] = new Coordinate(180,90);
+    coords[3] = new Coordinate(-180,90);
+    coords[4] = new Coordinate(-180,-90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1150,7 +1159,4 @@ public class IterateByContributionRelationsTest {
 
     assertEquals(3, result.size());
   }
-
-
-
 }

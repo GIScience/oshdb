@@ -1,16 +1,18 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
-import org.locationtech.jts.geom.*;
+import static org.junit.Assert.assertEquals;
+
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 
 
 public class FastBboxInPolygonTest {
   /**
-   * @return a multipolygon of four small squares arranged in a square
+   * Returns a {@link MultiPolygon} of four small squares arranged in a square.
    */
   public static MultiPolygon createSquareSquareMultiPolygon() {
     GeometryFactory gf = new GeometryFactory();

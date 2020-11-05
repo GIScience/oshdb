@@ -1,5 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,13 +32,15 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
-import static org.junit.Assert.assertTrue;
-
 public class IterateByTimestampNotOsmTypeSpecificTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations = new ArrayList<>();
 
+  /**
+   * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
+   * a list of {@link OSHRelation OSHRelations}.
+   */
   public IterateByTimestampNotOsmTypeSpecificTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/not-osm-type-specific.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
@@ -54,7 +58,8 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
       ));
     }
 
-    for (Entry<Long, Collection<OSMRelation>> entry : osmXmlTestData.relations().asMap().entrySet()) {
+    for (Entry<Long, Collection<OSMRelation>> entry :
+        osmXmlTestData.relations().asMap().entrySet()) {
       Collection<OSMRelation> relationVersions = entry.getValue();
       oshRelations.add(OSHRelationImpl.build(new ArrayList<>(relationVersions),
           relationVersions.stream().flatMap(osmRelation ->
@@ -74,14 +79,15 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
   @Test
   public void testCellOutsidePolygon() throws IOException {
     // GridOSHRelations cell-bbox is not covering query polygon
-    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(10.8 ,12.7);
-    coords[2]=new Coordinate(12.7,12.7);
-    coords[3]=new Coordinate(12.7,10.3);
-    coords[4]=new Coordinate(10.8,10.3);
+    final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0,
+        oshRelations);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(10.8,12.7);
+    coords[2] = new Coordinate(12.7,12.7);
+    coords[3] = new Coordinate(12.7,10.3);
+    coords[4] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -104,13 +110,14 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
   @Test
   public void testCellCoveringPolygon() throws IOException {
     // GridOSHRelations cell-bbox is completely covering query polygon
-    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[4];
-    coords[0]=new Coordinate(10.8,10.3);
-    coords[1]=new Coordinate(12.7,12.7);
-    coords[2]=new Coordinate(12.7,10.3);
-    coords[3]=new Coordinate(10.8,10.3);
+    final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0,
+        oshRelations);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[4];
+    coords[0] = new Coordinate(10.8,10.3);
+    coords[1] = new Coordinate(12.7,12.7);
+    coords[2] = new Coordinate(12.7,10.3);
+    coords[3] = new Coordinate(10.8,10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -133,14 +140,15 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
   @Test
   public void testCellFullyInsidePolygon() throws IOException {
     // GridOSHRelations cell-bbox is inside query polygon
-    GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0, oshRelations);
-    GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] coords=new Coordinate[5];
-    coords[0]=new Coordinate(-180,-90);
-    coords[1]=new Coordinate(180 ,-90);
-    coords[2]=new Coordinate(180,90);
-    coords[3]=new Coordinate(-180,90);
-    coords[4]=new Coordinate(-180,-90);
+    final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0,
+        oshRelations);
+    final GeometryFactory geometryFactory = new GeometryFactory();
+    Coordinate[] coords = new Coordinate[5];
+    coords[0] = new Coordinate(-180,-90);
+    coords[1] = new Coordinate(180,-90);
+    coords[2] = new Coordinate(180,90);
+    coords[3] = new Coordinate(-180,90);
+    coords[4] = new Coordinate(-180,-90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(

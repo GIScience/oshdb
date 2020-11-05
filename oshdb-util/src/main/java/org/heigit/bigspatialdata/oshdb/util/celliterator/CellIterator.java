@@ -267,7 +267,7 @@ public class CellIterator implements Serializable {
           || !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox)
               || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
-        )) {
+          )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
         return Stream.empty();
@@ -312,8 +312,8 @@ public class CellIterator implements Serializable {
           OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
 
       List<IterateByTimestampEntry> results = new LinkedList<>();
-      osmEntityLoop:
-      for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
+      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity :
+          osmEntityByTimestamps.entrySet()) {
         OSHDBTimestamp timestamp = entity.getKey();
         OSMEntity osmEntity = entity.getValue();
 
@@ -362,10 +362,8 @@ public class CellIterator implements Serializable {
             geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
-            // used to "fix" the
-            // results obtained from calculating the geometry on the object's outer way which
-            // doesn't know about the
-            // inner members of the multipolygon relation
+            // used to "fix" the results obtained from calculating the geometry on the object's
+            // outer way which doesn't know about the inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = new LazyEvaluatedObject<>(() -> {

@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default TagInterpreter
+ * Default {@link TagInterpreter} implementation.
  */
 public class DefaultTagInterpreter extends BaseTagInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultTagInterpreter.class);
@@ -30,14 +30,18 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   private int typeBoundaryValue = -1;
   private int typeRouteValue = -1;
 
-  private final static String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
-  private final static String defaultUninterestingTagsDefinitionFile = "json/uninterestingTags.json";
+  private static final String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
+  private static final String defaultUninterestingTagsDefinitionFile
+      = "json/uninterestingTags.json";
 
   /**
+   * Constructor using given {@link TagTranslator} and default values as areaTagsDefinitonFile and
+   * uninterestingTagsDefinitionFile.
    *
-   * @param tagTranslator
-   * @throws IOException
-   * @throws ParseException
+   * <p>
+   *   Details see
+   *   {@link DefaultTagInterpreter#DefaultTagInterpreter(TagTranslator, String, String)}.
+   * </p>
    */
   public DefaultTagInterpreter(TagTranslator tagTranslator) throws IOException, ParseException {
     this(
@@ -48,12 +52,15 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   }
 
   /**
+   * Constructor using given {@link TagTranslator}, areaTagsDefinitonFile, and
+   * uninterestingTagsDefinitionFile.
    *
-   * @param tagTranslator
-   * @param areaTagsDefinitionFile
-   * @param uninterestingTagsDefinitionFile
-   * @throws IOException
-   * @throws ParseException
+   * @param tagTranslator {@link TagTranslator} used by {@link TagInterpreter}
+   * @param areaTagsDefinitionFile filename of a JSON file containing tags that are supposed to be
+   *                               areas
+   * @param uninterestingTagsDefinitionFile filename of a JSON file containing tags to be ignored
+   * @throws IOException thrown for all IO read/write errors
+   * @throws ParseException for parsing errors
    */
   public DefaultTagInterpreter(
       TagTranslator tagTranslator,
@@ -64,7 +71,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     Map<Integer, Set<Integer>> wayAreaTags = new HashMap<>();
 
     JSONParser parser = new JSONParser();
-    JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)));
+    JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)
+    ));
     // todo: check json schema for validity
 
     @SuppressWarnings("unchecked") // we expect only JSON objects here in a valid definition file
@@ -168,11 +177,12 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   private boolean evaluateRelationForArea(OSMRelation entity) {
     int[] tags = entity.getRawTags();
     // skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
-    // the following is slightly faster than running `return entity.hasTagValue(k1,v1) || entity.hasTagValue(k2,v2);`
+    // the following is slightly faster than running
+    // `return entity.hasTagValue(k1,v1) || entity.hasTagValue(k2,v2);`
     for (int i = 0; i < tags.length; i += 2) {
-      if (tags[i] == typeKey)
+      if (tags[i] == typeKey) {
         return tags[i + 1] == typeMultipolygonValue || tags[i + 1] == typeBoundaryValue;
-      else if (tags[i] > typeKey) {
+      } else if (tags[i] > typeKey) {
         return false;
       }
     }

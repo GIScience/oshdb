@@ -19,8 +19,8 @@ public class OSMTag implements OSMTagInterface {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof OSMTag &&
-        ((OSMTag)o).key.equals(this.key) && ((OSMTag)o).value.equals(this.value);
+    return o instanceof OSMTag
+        && ((OSMTag) o).key.equals(this.key) && ((OSMTag) o).value.equals(this.value);
   }
 
   @Override

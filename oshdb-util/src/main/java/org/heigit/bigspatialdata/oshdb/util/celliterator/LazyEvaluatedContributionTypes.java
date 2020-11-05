@@ -18,6 +18,10 @@ public class LazyEvaluatedContributionTypes implements Supplier<EnumSet<Contribu
     this.evaluated = EnumSet.allOf(ContributionType.class);
   }
 
+  /**
+   * Check if the given {@link ContributionType} {@code t} is contained in the
+   * {@link ContributionType} set.
+   */
   public boolean contains(ContributionType t) {
     if (!this.evaluated.contains(t)) {
       boolean value = this.evaluator.test(t);
