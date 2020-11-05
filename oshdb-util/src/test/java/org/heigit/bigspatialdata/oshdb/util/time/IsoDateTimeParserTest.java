@@ -92,7 +92,6 @@ public class IsoDateTimeParserTest {
     parseIsoDateTime(posTimezoneHhMm);
   }
 
-  //
   @Test(expected = OSHDBTimestampException.class)
   public void throwsNegTimezoneHhParseIsoDateTime() {
     String negTimezoneHh = "2020-02-17T23:55-02";
