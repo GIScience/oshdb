@@ -65,7 +65,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    // one creation and two geomotry changes should give a result with 3 elements
+    // one creation and two geometry changes should give a result with 3 elements
     assertEquals(3, result.size());
     // check if the contribution types are correct
     assertEquals(
