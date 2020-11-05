@@ -321,10 +321,9 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
-        if (osmEntity instanceof OSMWay && (
-            (OSMWay)osmEntity).getRefs().length == 0
+        if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0
             || osmEntity instanceof OSMRelation
-            && ((OSMRelation)osmEntity).getMembers().length == 0) {
+                && ((OSMRelation)osmEntity).getMembers().length == 0) {
           // skip way/relation with zero nodes/members
           continue;
         }
@@ -363,10 +362,8 @@ public class CellIterator implements Serializable {
             geom = constructClippedGeometry(osmEntity, timestamp, fullyInside);
           } else {
             // old style multipolygons: return only the inner holes of the geometry -> this is then
-            // used to "fix" the
-            // results obtained from calculating the geometry on the object's outer way which
-            // doesn't know about the
-            // inner members of the multipolygon relation
+            // used to "fix" the results obtained from calculating the geometry on the object's
+            // outer way which doesn't know about the inner members of the multipolygon relation
             // todo: check if this is all valid?
             GeometryFactory gf = new GeometryFactory();
             geom = new LazyEvaluatedObject<>(() -> {
@@ -557,7 +554,7 @@ public class CellIterator implements Serializable {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
               !oshEntity.getBoundingBox().intersects(boundingBox)
-                  || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -570,7 +567,7 @@ public class CellIterator implements Serializable {
 
       boolean fullyInside = allFullyInside || (
           oshEntity.getBoundingBox().isInside(boundingBox)
-              && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
