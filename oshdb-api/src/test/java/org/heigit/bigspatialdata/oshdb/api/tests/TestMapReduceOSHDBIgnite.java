@@ -28,8 +28,9 @@ import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.util.CellId;
 import org.heigit.bigspatialdata.oshdb.util.TableNames;
 
-abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
-  final static Ignite ignite;
+abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
+  static final Ignite ignite;
+
   static {
     int rndPort = 47577 + (int) (Math.random() * 1000);
     IgniteConfiguration cfg = new IgniteConfiguration();
@@ -46,14 +47,14 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
     ignite = Ignition.start(cfg);
   }
 
-  public TestMapReduceOSHDB_Ignite(OSHDBIgnite oshdb) throws Exception {
+  public TestMapReduceOSHDBIgnite(OSHDBIgnite oshdb) throws Exception {
     super(oshdb);
 
     final String prefix = "tests";
     oshdb.prefix(prefix);
 
-    OSHDBH2 oshdb_h2 = new OSHDBH2("./src/test/resources/test-data");
-    this.keytables = oshdb_h2;
+    OSHDBH2 oshdbH2 = new OSHDBH2("./src/test/resources/test-data");
+    this.keytables = oshdbH2;
 
     Ignite ignite = ((OSHDBIgnite) this.oshdb).getIgnite();
     ignite.cluster().state(ClusterState.ACTIVE);
@@ -71,7 +72,7 @@ abstract class TestMapReduceOSHDB_Ignite extends TestMapReduce {
 
     // load test data into ignite cache
     try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache.getName())) {
-      Connection h2Conn = oshdb_h2.getConnection();
+      Connection h2Conn = oshdbH2.getConnection();
       Statement h2Stmt = h2Conn.createStatement();
 
       streamer.allowOverwrite(true);

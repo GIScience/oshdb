@@ -3,26 +3,28 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
-import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
-import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.junit.Test;
-
-import java.util.*;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -33,19 +35,29 @@ public class TestMapAggregateByTimestamp {
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2014-12-30");
-  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
+  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
+      OSHDBTimestamps.Interval.MONTHLY);
 
-  private final double DELTA = 1e-8;
+  private static final double DELTA = 1e-8;
 
   public TestMapAggregateByTimestamp() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmType(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView
+        .on(oshdb)
+        .osmType(OSMType.WAY)
+        .osmTag("building", "yes")
+        .areaOfInterest(bbox);
   }
+
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmType(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
+    return OSMEntitySnapshotView
+        .on(oshdb)
+        .osmType(OSMType.WAY)
+        .osmTag("building", "yes")
+        .areaOfInterest(bbox);
   }
 
   @Test
@@ -68,7 +80,11 @@ public class TestMapAggregateByTimestamp {
     assertEquals(71, result2.entrySet().size());
     assertEquals(0, result2.get(result2.firstKey()).intValue());
     assertEquals(0, result2.get(result2.lastKey()).intValue());
-    assertEquals(39, result2.entrySet().stream().map(Map.Entry::getValue).reduce(-1, Math::max).intValue());
+    assertEquals(39, result2
+        .entrySet()
+        .stream()
+        .map(Map.Entry::getValue)
+        .reduce(-1, Math::max).intValue());
   }
 
   @Test
@@ -167,10 +183,10 @@ public class TestMapAggregateByTimestamp {
     assertEquals(1, resultCustom.entrySet().stream().filter(entry -> entry.getValue() > 0).count());
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored") // we test for a thrown exception here
   @Test(expected = OSHDBInvalidTimestampException.class)
   public void testInvalidUsage() throws Exception {
     // indexing function returns a timestamp outside the requested time range -> should throw
-    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
     createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .groupByEntity()
@@ -178,9 +194,9 @@ public class TestMapAggregateByTimestamp {
         .collect();
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored") // we test for a thrown exception here
   @Test(expected = UnsupportedOperationException.class)
   public void testUnsupportedUsage() throws Exception {
-    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
     createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .groupByEntity()
@@ -226,7 +242,8 @@ public class TestMapAggregateByTimestamp {
     assertEquals(OSMType.WAY, result.firstKey().getSecondIndex());
     assertEquals(42, (int)result.values().toArray(new Integer[] {})[0]);
 
-    SortedMap<OSHDBTimestamp, SortedMap<OSMType, Integer>> nestedResult1 = OSHDBCombinedIndex.nest(result);
+    SortedMap<OSHDBTimestamp, SortedMap<OSMType, Integer>> nestedResult1 = OSHDBCombinedIndex
+        .nest(result);
     assertEquals(42, (int)nestedResult1.get(timestamps1.get().first()).get(OSMType.WAY));
   }
 

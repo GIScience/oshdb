@@ -4,8 +4,8 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.junit.Test;
 
-public class TestMapReduceOSHDB_IgniteMissingCache extends TestMapReduceOSHDB_Ignite {
-  public TestMapReduceOSHDB_IgniteMissingCache() throws Exception {
+public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
+  public TestMapReduceOSHDBIgniteMissingCache() throws Exception {
     super(new OSHDBIgnite(ignite));
     this.oshdb.prefix("<test caches not present>");
   }

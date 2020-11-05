@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import static org.junit.Assert.assertEquals;
@@ -34,7 +35,7 @@ public class TestQuantiles {
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-01-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2015-01-01");
 
-  private final double REQUIRED_ACCURACY = 1E-4;
+  private static final double REQUIRED_ACCURACY = 1E-4;
 
   public TestQuantiles() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
@@ -49,8 +50,8 @@ public class TestQuantiles {
     int quantileBoundUpper = (int) Math.ceil(quantileIndex);
     double quantileAmountLower = 1 - quantileAmountUpper;
     double expectedResult = (
-        quantileAmountLower * values.get(quantileBoundLower).doubleValue() +
-        quantileAmountUpper * values.get(quantileBoundUpper).doubleValue()
+        quantileAmountLower * values.get(quantileBoundLower).doubleValue()
+        + quantileAmountUpper * values.get(quantileBoundUpper).doubleValue()
     );
 
     assertEquals(expectedResult, result, expectedResult * REQUIRED_ACCURACY);

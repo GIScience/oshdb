@@ -3,24 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package org.heigit.bigspatialdata.oshdb.api.tests;
-
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
-import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.junit.Test;
-
-import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Set;
+import java.util.SortedMap;
+import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
+import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
+import org.junit.Test;
 
 /**
  *
@@ -30,16 +30,21 @@ public class TestHelpersOSMEntitySnapshotView {
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
-  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
+  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
+      OSHDBTimestamps.Interval.MONTHLY);
 
-  private final double DELTA = 1e-8;
+  private static final double DELTA = 1e-8;
 
   public TestHelpersOSMEntitySnapshotView() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducer() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmType(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
+    return OSMEntitySnapshotView
+        .on(oshdb)
+        .osmType(OSMType.WAY)
+        .osmTag("building", "yes")
+        .areaOfInterest(bbox);
   }
 
   @Test
@@ -176,7 +181,10 @@ public class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .osmType(OSMType.WAY)
         .osmTag("building", "yes")
-        .weightedAverage(snapshot -> new WeightedValue(snapshot.getEntity().getId() % 2,1 * (snapshot.getEntity().getId() % 2)));
+        .weightedAverage(snapshot -> new WeightedValue(
+            snapshot.getEntity().getId() % 2,
+            1 * (snapshot.getEntity().getId() % 2)
+        ));
 
     assertEquals(1.0, result1.doubleValue(), DELTA);
 
@@ -186,7 +194,10 @@ public class TestHelpersOSMEntitySnapshotView {
         .osmType(OSMType.WAY)
         .osmTag("building", "yes")
         .aggregateByTimestamp()
-        .weightedAverage(snapshot -> new WeightedValue(snapshot.getEntity().getId() % 2,2 * (snapshot.getEntity().getId() % 2)));
+        .weightedAverage(snapshot -> new WeightedValue(
+            snapshot.getEntity().getId() % 2,
+            2 * (snapshot.getEntity().getId() % 2)
+        ));
 
     assertEquals(72, result2.entrySet().size());
     assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
@@ -198,7 +209,10 @@ public class TestHelpersOSMEntitySnapshotView {
         .osmType(OSMType.WAY)
         .osmTag("building", "yes")
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
-        .weightedAverage(snapshot -> new WeightedValue(snapshot.getEntity().getId() % 2, 2 * (snapshot.getEntity().getId() % 2)));
+        .weightedAverage(snapshot -> new WeightedValue(
+            snapshot.getEntity().getId() % 2,
+            2 * (snapshot.getEntity().getId() % 2)
+        ));
 
     assertEquals(Double.NaN, result4.get(true).doubleValue(), DELTA);
     assertEquals(1.0, result4.get(false).doubleValue(), DELTA);

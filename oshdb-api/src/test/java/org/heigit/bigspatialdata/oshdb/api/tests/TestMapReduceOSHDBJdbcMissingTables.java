@@ -5,8 +5,8 @@ import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundExcepti
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.junit.Test;
 
-public class TestMapReduceOSHDB_JdbcMissingTables extends TestMapReduce {
-  public TestMapReduceOSHDB_JdbcMissingTables() throws Exception {
+public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
+  public TestMapReduceOSHDBJdbcMissingTables() throws Exception {
     super((new OSHDBH2("./src/test/resources/test-data"))
         .prefix("<test tables not present>")
     );

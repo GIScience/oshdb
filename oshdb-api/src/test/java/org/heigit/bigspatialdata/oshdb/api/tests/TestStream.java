@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import static org.junit.Assert.assertEquals;
@@ -25,14 +26,19 @@ public class TestStream {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
-  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01", OSHDBTimestamps.Interval.MONTHLY);
+  private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
+      OSHDBTimestamps.Interval.MONTHLY);
 
   public TestStream() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(false);
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmType(OSMType.WAY).osmTag("building", "yes").areaOfInterest(bbox);
+    return OSMContributionView
+        .on(oshdb)
+        .osmType(OSMType.WAY)
+        .osmTag("building", "yes")
+        .areaOfInterest(bbox);
   }
 
   @Test

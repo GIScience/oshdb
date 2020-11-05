@@ -8,8 +8,8 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
-public class TestMapReduceOSHDB_Ignite_AffinityCall extends TestMapReduceOSHDB_Ignite {
-  public TestMapReduceOSHDB_Ignite_AffinityCall() throws Exception {
+public class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgnite {
+  public TestMapReduceOSHDBIgniteAffinityCall() throws Exception {
     super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.AffinityCall));
   }
 

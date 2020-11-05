@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import static org.junit.Assert.assertEquals;
@@ -41,25 +42,35 @@ public class TestMapAggregateByGeometry {
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-12-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2010-01-01", "2015-12-01");
 
-  private final double DELTA = 1e-4;
+  private static final double DELTA = 1e-4;
 
   public TestMapAggregateByGeometry() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb).osmType(OSMType.WAY).osmTag("highway").areaOfInterest(bbox);
+    return OSMContributionView
+        .on(oshdb)
+        .osmType(OSMType.WAY)
+        .osmTag("highway")
+        .areaOfInterest(bbox);
   }
+
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb).osmType(OSMType.WAY).osmTag("highway").areaOfInterest(bbox);
+    return OSMEntitySnapshotView
+        .on(oshdb)
+        .osmType(OSMType.WAY)
+        .osmTag("highway")
+        .areaOfInterest(bbox);
   }
+
   private Map<String, Polygon> getSubRegions() {
     Map<String, Polygon> res = new TreeMap<>();
     res.put("left", OSHDBGeometryBuilder.getGeometry(
         new OSHDBBoundingBox(8, 49, 8.66128, 50)
     ));
     res.put("right", OSHDBGeometryBuilder.getGeometry(
-        new OSHDBBoundingBox(8.66128+1E-8, 49, 9, 50)
+        new OSHDBBoundingBox(8.66128 + 1E-8, 49, 9, 50)
     ));
     res.put("total", OSHDBGeometryBuilder.getGeometry(
         bbox
@@ -75,7 +86,7 @@ public class TestMapAggregateByGeometry {
     SortedMap<String, Integer> resultCount = createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .aggregateByGeometry(getSubRegions())
-        .reduce(() -> 0, (x,ignored) -> x+1, (x,y) -> x+y);
+        .reduce(() -> 0, (x,ignored) -> x + 1, (x,y) -> x + y);
 
     assertEquals(4, resultCount.entrySet().size());
     assertTrue(resultCount.get("total") <= resultCount.get("left") + resultCount.get("right"));
@@ -85,7 +96,7 @@ public class TestMapAggregateByGeometry {
         .aggregateByGeometry(getSubRegions())
         .map(OSMContribution::getGeometryAfter)
         .map(Geo::lengthOf)
-        .reduce(() -> 0.0, (x,y) -> x+y);
+        .reduce(() -> 0.0, (x,y) -> x + y);
 
     assertEquals(4, resultSumLength.entrySet().size());
     assertEquals(
@@ -100,7 +111,7 @@ public class TestMapAggregateByGeometry {
     SortedMap<String, Integer> resultCount = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .aggregateByGeometry(getSubRegions())
-        .reduce(() -> 0, (x,ignored) -> x+1, (x,y) -> x+y);
+        .reduce(() -> 0, (x,ignored) -> x + 1, (x,y) -> x + y);
 
     assertEquals(4, resultCount.entrySet().size());
     assertTrue(resultCount.get("total") <= resultCount.get("left") + resultCount.get("right"));
@@ -110,7 +121,7 @@ public class TestMapAggregateByGeometry {
         .aggregateByGeometry(getSubRegions())
         .map(OSMEntitySnapshot::getGeometry)
         .map(Geo::lengthOf)
-        .reduce(() -> 0.0, (x,y) -> x+y);
+        .reduce(() -> 0.0, (x,y) -> x + y);
 
     assertEquals(4, resultSumLength.entrySet().size());
     assertEquals(
@@ -132,11 +143,12 @@ public class TestMapAggregateByGeometry {
 
   @Test
   public void testCombinedWithAggregateByTimestamp() throws Exception {
-    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result = createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps1)
-        .aggregateByTimestamp()
-        .aggregateByGeometry(getSubRegions())
-        .reduce(() -> 0, (x,ignored) -> x+1, (x,y) -> x+y);
+    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps1)
+            .aggregateByTimestamp()
+            .aggregateByGeometry(getSubRegions())
+            .reduce(() -> 0, (x,ignored) -> x + 1, (x,y) -> x + y);
 
     assertEquals(4, result.entrySet().size());
     Set<String> keys = result.keySet().stream()
@@ -173,9 +185,9 @@ public class TestMapAggregateByGeometry {
     }
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
   @Test(expected = UnsupportedOperationException.class)
   public void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
-    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
     createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .map(ignored -> null)
@@ -184,9 +196,9 @@ public class TestMapAggregateByGeometry {
         .collect();
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
   @Test(expected = UnsupportedOperationException.class)
   public void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
-    //noinspection ResultOfMethodCallIgnored – we test for a thrown exception here
     createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .groupByEntity()
