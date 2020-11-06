@@ -7,9 +7,10 @@ High-performance spatio-temporal data analysis platform for OpenStreetMap full-h
 
 [![Build Status](https://jenkins.ohsome.org/buildStatus/icon?job=oshdb/master)](https://jenkins.ohsome.org/blue/organizations/jenkins/oshdb/activity/?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.bigspatialdata/oshdb/badge.svg)](https://search.maven.org/artifact/org.heigit.bigspatialdata/oshdb)
-[![LICENSE](https://img.shields.io/github/license/GIScience/oshdb)](COPYING)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4146990.svg)](https://doi.org/10.5281/zenodo.4146990)
 [![JavaDocs](https://img.shields.io/badge/Java-docs-blue.svg)](https://docs.ohsome.org/java/oshdb)
 [![status: active](https://github.com/GIScience/badges/raw/master/status/active.svg)](https://github.com/GIScience/badges#active)
+[![LICENSE](https://img.shields.io/github/license/GIScience/oshdb)](COPYING)
 
 The OSHDB allows to investigate the evolution of the amount of data and the contributions to the OpenStreetMap project. It combines easy access to the historical OSM data with high querying performance. Use cases of the OSHDB include data quality analysis, computing of aggregated data statistics and OSM data extraction.
 
