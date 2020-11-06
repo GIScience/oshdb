@@ -78,6 +78,11 @@ Examples
 
 A few usage examples can be found in our [oshdb-examples](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples) repository.
 
+How to Cite
+-----------
+
+The direct or indirect (e.g. using the [ohsome API](https://api.ohsome.org)) usage of OSHDB can be referenced with a DOI. There are two DOIs, one generic and a version specific that references a single version of the oshdb. It is recommended to use the version specific DOI. The generic DOI  ([10.5281/zenodo.4146990](https://doi.org/10.5281/zenodo.4146990)) redirects to the most recent version specific DOI.
+
 Publications and Presentations
 ------------------------------
 
