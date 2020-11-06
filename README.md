@@ -81,7 +81,9 @@ A few usage examples can be found in our [oshdb-examples](https://gitlab.gistool
 How to Cite
 -----------
 
-The direct or indirect (e.g. using the [ohsome API](https://api.ohsome.org)) usage of OSHDB can be referenced with a DOI. There are two DOIs, one generic and a version specific that references a single version of the oshdb. It is recommended to use the version specific DOI. The generic DOI  ([10.5281/zenodo.4146990](https://doi.org/10.5281/zenodo.4146990)) redirects to the most recent version specific DOI.
+When using the OSHDB directly or indirectly (e.g. through the [ohsome API](https://api.ohsome.org)) for a publication, please cite it using the [`doi:10.5281/zenodo.4146990`](https://doi.org/10.5281/zenodo.4146990) or a corresponding version-specific DOI found on [zenodo](https://zenodo.org/record/4146990).
+
+For scientific papers or similar publications around the analyis of OSM history data, please consider to additionally also cite the technical paper describing the OSHDB: [`doi:10.1186/s40965-019-0061-3`](https://doi.org/10.1186/s40965-019-0061-3).
 
 Publications and Presentations
 ------------------------------
