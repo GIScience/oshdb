@@ -47,11 +47,11 @@ It is possible to [define custom filtering functions](https://docs.ohsome.org/ja
 _ohsome_ filter
 ---------------
 
-An easy way to provide complex [`filter`s](https://docs.ohsome.org/java/oshdb/0.6.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter-org.heigit.bigspatialdata.oshdb.api.generic.function.String-) (available in the upcoming version 0.6 of the OSHDB) is through the functionality of [ohsome filters](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme), which allow one to define osm data filter in a human readable syntax. With these one can combine several tag, type and geoemtry filters with arbitrary boolean operators.
+An easy way to provide complex [`filter`s](https://docs.ohsome.org/java/oshdb/0.6.0-SNAPSHOT/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter-org.heigit.bigspatialdata.oshdb.api.generic.function.String-) (available in the upcoming version 0.6 of the OSHDB) is through the functionality of [ohsome filters](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme), which allow one to define osm data filter in a human readable syntax. With these one can combine several tag, type and geometry filters with arbitrary boolean operators.
 
 _lambda_ filter
 ---------------
 
-It is possible to define [`filter` functions](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate-) that can sort out values after they already have been transformed in a [map](map.md#map) step.
+It is possible to define [`filter` functions](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter-org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate-) that can sort out values after they already have been transformed in a [map](map-reduce.md#map) step.
 
-Note that it is ususally best to use the less flexible, but more performant OSM data filters described above wherever possible, as they can reduce the amount of data to be iterated over right from the start of the query. This is because while the basic filters are applied at the beginning of each query on the full OSM history data directly, the filter lambda functions are only executed after the data has already been computed and transformed.
+Note that it is usually best to use the less flexible, but more performant OSM data filters described above wherever possible, as they can reduce the amount of data to be iterated over right from the start of the query. This is because while the basic filters are applied at the beginning of each query on the full OSM history data directly, the filter lambda functions are only executed after the data has already been computed and transformed.

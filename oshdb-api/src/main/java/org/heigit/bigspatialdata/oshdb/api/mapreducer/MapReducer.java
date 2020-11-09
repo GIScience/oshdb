@@ -719,8 +719,8 @@ public abstract class MapReducer<X> implements
   /**
    * Apply a custom "ohsome" filter expression to this query.
    *
-   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme
-   * and https://docs.ohsome.org/java/ohsome-filter/1.3.0 for further information about how
+   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#ohsome-filter
+   * and https://docs.ohsome.org/java/ohsome-filter for further information about how
    * to create such a filter expression object.</p>
    *
    * @param f the filter expression to apply to the mapReducer
