@@ -8,30 +8,30 @@ import org.heigit.bigspatialdata.oshdb.api.generic.WeightedValue;
  *
  * <p>For internal use to do faster aggregation during reduce operations.</p>
  */
-class PayloadWithWeight implements Serializable {
+class MutableWeightedDouble implements Serializable {
   double num;
   double weight;
 
-  private PayloadWithWeight(double num, double weight) {
+  private MutableWeightedDouble(double num, double weight) {
     this.num = num;
     this.weight = weight;
   }
 
-  static PayloadWithWeight identitySupplier() {
-    return new PayloadWithWeight(0.0, 0.0);
+  static MutableWeightedDouble identitySupplier() {
+    return new MutableWeightedDouble(0.0, 0.0);
   }
 
-  static PayloadWithWeight accumulator(
-      PayloadWithWeight acc,
+  static MutableWeightedDouble accumulator(
+      MutableWeightedDouble acc,
       WeightedValue cur) {
     acc.num = acc.num + cur.getValue().doubleValue() * cur.getWeight();
     acc.weight += cur.getWeight();
     return acc;
   }
 
-  static PayloadWithWeight combiner(
-      PayloadWithWeight a,
-      PayloadWithWeight b) {
-    return new PayloadWithWeight(a.num + b.num, a.weight + b.weight);
+  static MutableWeightedDouble combiner(
+      MutableWeightedDouble a,
+      MutableWeightedDouble b) {
+    return new MutableWeightedDouble(a.num + b.num, a.weight + b.weight);
   }
 }
