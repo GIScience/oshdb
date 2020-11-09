@@ -719,9 +719,9 @@ public abstract class MapReducer<X> implements
   /**
    * Apply a custom "ohsome" filter expression to this query.
    *
-   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#ohsome-filter
-   * and https://docs.ohsome.org/java/ohsome-filter for further information about how
-   * to create such a filter expression object.</p>
+   * <p>See <a href="https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#ohsome-filter">https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#ohsome-filter</a>
+   * and <a href="https://docs.ohsome.org/java/ohsome-filter">https://docs.ohsome.org/java/ohsome-filter</a>
+   * for further information about how to create such a filter expression object.</p>
    *
    * @param f the filter expression to apply to the mapReducer
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
@@ -753,7 +753,7 @@ public abstract class MapReducer<X> implements
   /**
    * Apply a custom "ohsome" filter to this query.
    *
-   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax
+   * <p>See <a href="https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax">https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax</a>
    * for a description of the ohsome filter syntax.</p>
    *
    * @param f the ohsome filter string to apply to the mapReducer
