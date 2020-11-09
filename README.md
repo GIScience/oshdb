@@ -7,9 +7,10 @@ High-performance spatio-temporal data analysis platform for OpenStreetMap full-h
 
 [![Build Status](https://jenkins.ohsome.org/buildStatus/icon?job=oshdb/master)](https://jenkins.ohsome.org/blue/organizations/jenkins/oshdb/activity/?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.bigspatialdata/oshdb/badge.svg)](https://search.maven.org/artifact/org.heigit.bigspatialdata/oshdb)
-[![LICENSE](https://img.shields.io/github/license/GIScience/oshdb)](COPYING)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4146990.svg)](https://doi.org/10.5281/zenodo.4146990)
 [![JavaDocs](https://img.shields.io/badge/Java-docs-blue.svg)](https://docs.ohsome.org/java/oshdb)
 [![status: active](https://github.com/GIScience/badges/raw/master/status/active.svg)](https://github.com/GIScience/badges#active)
+[![LICENSE](https://img.shields.io/github/license/GIScience/oshdb)](COPYING)
 
 The OSHDB allows to investigate the evolution of the amount of data and the contributions to the OpenStreetMap project. It combines easy access to the historical OSM data with high querying performance. Use cases of the OSHDB include data quality analysis, computing of aggregated data statistics and OSM data extraction.
 
@@ -76,6 +77,13 @@ Examples
 --------
 
 A few usage examples can be found in our [oshdb-examples](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples) repository.
+
+How to Cite
+-----------
+
+When using the OSHDB directly or indirectly (e.g. through the [ohsome API](https://api.ohsome.org)) for a publication, please cite it using the [`doi:10.5281/zenodo.4146990`](https://doi.org/10.5281/zenodo.4146990) or a corresponding version-specific DOI found on [zenodo](https://zenodo.org/record/4146990).
+
+For scientific papers or similar publications around the analyis of OSM history data, please consider to additionally also cite the technical paper describing the OSHDB: [`doi:10.1186/s40965-019-0061-3`](https://doi.org/10.1186/s40965-019-0061-3).
 
 Publications and Presentations
 ------------------------------
