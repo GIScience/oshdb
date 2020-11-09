@@ -731,8 +731,8 @@ public abstract class MapReducer<X> implements
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(f::applyOSH);
     ret.filters.add(f::applyOSM);
-    // apply geometry filter (only) if needed
-    List<MapFunction> mappers = List.copyOf(ret.mappers);
+    // apply geometry filter as first map function
+    final List<MapFunction> remainingMappers = List.copyOf(ret.mappers);
     ret.mappers.clear();
     if (ret.forClass.equals(OSMContribution.class)) {
       ret = ret.filter(x -> {
@@ -746,7 +746,7 @@ public abstract class MapReducer<X> implements
         return f.applyOSMGeometry(s.getEntity(), s::getGeometry);
       });
     }
-    ret.mappers.addAll(mappers);
+    ret.mappers.addAll(remainingMappers);
     return optimizeFilters(ret, f);
   }
 
