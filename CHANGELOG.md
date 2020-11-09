@@ -9,6 +9,7 @@ Changelog
 * improve accuracy of built-in geometry helper functions which calculate the geodesic lengths and areas of OSM geometries. #193
 * better handling of OSM multipolygons with touching inner rings. This improves performance considerably in some cases (especially large complex multipolygons). #249
 * (breaking) Timestamp parser class renamed to `IsoDateTimeParser` from `ISODateTimeParser` and adjust how input timestamps (e.g. in `MapReducer.timestamps()`) are handled: only the UTC time zone identifier `Z` is supported. #265
+* integrate [ohsome filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) functionality. #253
 
 ## 0.5.10
 

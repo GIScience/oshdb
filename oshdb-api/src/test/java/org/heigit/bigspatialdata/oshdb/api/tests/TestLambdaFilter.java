@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.heigit.bigspatialdata.oshdb.api.tests;
 
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
@@ -22,9 +17,9 @@ import java.util.SortedMap;
 import static org.junit.Assert.assertEquals;
 
 /**
- *
+ * Tests lambda functions as filters.
  */
-public class TestFilter {
+public class TestLambdaFilter {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8, 49, 9, 50);
@@ -32,7 +27,7 @@ public class TestFilter {
 
   private final double DELTA = 1e-8;
 
-  public TestFilter() throws Exception {
+  public TestLambdaFilter() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
