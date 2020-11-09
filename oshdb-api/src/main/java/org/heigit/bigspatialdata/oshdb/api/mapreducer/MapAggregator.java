@@ -498,7 +498,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper)
       throws Exception {
-    return this.weightedAverage(data -> new WeightedValue<>(mapper.apply(data), 1.0));
+    return this.weightedAverage(data -> new WeightedValue(mapper.apply(data), 1.0));
   }
 
   /**
@@ -516,9 +516,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       throws Exception {
     return transformSortedMap(
         this.map(mapper).reduce(
-            PayloadWithWeight::identitySupplier,
-            PayloadWithWeight::accumulator,
-            PayloadWithWeight::combiner
+            MutableWeightedDouble::identitySupplier,
+            MutableWeightedDouble::accumulator,
+            MutableWeightedDouble::combiner
         ),
         x -> x.num / x.weight
     );
