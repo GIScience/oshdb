@@ -176,7 +176,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .osmType(OSMType.WAY)
         .osmTag("building", "yes")
-        .weightedAverage(snapshot -> new WeightedValue<>(snapshot.getEntity().getId() % 2,1 * (snapshot.getEntity().getId() % 2)));
+        .weightedAverage(snapshot -> new WeightedValue(snapshot.getEntity().getId() % 2,1 * (snapshot.getEntity().getId() % 2)));
 
     assertEquals(1.0, result1.doubleValue(), DELTA);
 
@@ -186,7 +186,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .osmType(OSMType.WAY)
         .osmTag("building", "yes")
         .aggregateByTimestamp()
-        .weightedAverage(snapshot -> new WeightedValue<>(snapshot.getEntity().getId() % 2,2 * (snapshot.getEntity().getId() % 2)));
+        .weightedAverage(snapshot -> new WeightedValue(snapshot.getEntity().getId() % 2,2 * (snapshot.getEntity().getId() % 2)));
 
     assertEquals(72, result2.entrySet().size());
     assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
@@ -198,7 +198,7 @@ public class TestHelpersOSMEntitySnapshotView {
         .osmType(OSMType.WAY)
         .osmTag("building", "yes")
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
-        .weightedAverage(snapshot -> new WeightedValue<>(snapshot.getEntity().getId() % 2, 2 * (snapshot.getEntity().getId() % 2)));
+        .weightedAverage(snapshot -> new WeightedValue(snapshot.getEntity().getId() % 2, 2 * (snapshot.getEntity().getId() % 2)));
 
     assertEquals(Double.NaN, result4.get(true).doubleValue(), DELTA);
     assertEquals(1.0, result4.get(false).doubleValue(), DELTA);
