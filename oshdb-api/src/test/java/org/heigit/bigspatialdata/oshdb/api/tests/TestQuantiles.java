@@ -26,7 +26,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 /**
- *
+ * Tests the quantiles reducer of the OSHDB API.
  */
 public class TestQuantiles {
   private final OSHDBDatabase oshdb;

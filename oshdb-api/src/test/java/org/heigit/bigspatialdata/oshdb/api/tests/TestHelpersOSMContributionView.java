@@ -20,7 +20,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 /**
- *
+ * Test special reducers of the OSHDB API when using the contribution view.
  */
 public class TestHelpersOSMContributionView {
   private final OSHDBDatabase oshdb;

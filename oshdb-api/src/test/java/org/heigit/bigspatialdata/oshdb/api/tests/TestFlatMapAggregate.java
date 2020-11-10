@@ -20,7 +20,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 /**
- *
+ * Test flat map method of the MapAggregator class of the OSHDB API.
  */
 public class TestFlatMapAggregate {
   private final OSHDBDatabase oshdb;

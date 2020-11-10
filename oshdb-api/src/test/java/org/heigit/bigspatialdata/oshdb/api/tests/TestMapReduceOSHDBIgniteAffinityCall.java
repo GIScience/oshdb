@@ -9,6 +9,10 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 public class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgnite {
+  /**
+   * Creates the test runner using the ignite affinitycall backend.
+   * @throws Exception if something goes wrong
+   */
   public TestMapReduceOSHDBIgniteAffinityCall() throws Exception {
     super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.AffinityCall));
   }

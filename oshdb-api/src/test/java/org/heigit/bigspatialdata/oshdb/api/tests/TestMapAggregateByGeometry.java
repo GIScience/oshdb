@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- *
+ * Test aggregate by geometry method of the OSHDB API.
  */
 public class TestMapAggregateByGeometry {
   private final OSHDBDatabase oshdb;

@@ -4,6 +4,9 @@ import org.heigit.bigspatialdata.oshdb.api.db.OSHDBIgnite;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.junit.Test;
 
+/**
+ * Tests for proper error messages is caches are not pnt on ignite.
+ */
 public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
   public TestMapReduceOSHDBIgniteMissingCache() throws Exception {
     super(new OSHDBIgnite(ignite));

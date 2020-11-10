@@ -23,7 +23,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 /**
- *
+ * Test flat map method with groupByEntity of the MapReducer class of the OSHDB API.
  */
 abstract class TestFlatMapReduceGroupedByEntity {
   private final OSHDBDatabase oshdb;

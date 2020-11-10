@@ -28,7 +28,7 @@ import org.heigit.bigspatialdata.oshdb.util.celliterator.LazyEvaluatedContributi
 import org.junit.Test;
 
 /**
- *
+ * Tests the get contributor user id method of the OSHDB API.
  */
 public class TestOSMContributionGetContributorUserId {
   public TestOSMContributionGetContributorUserId() throws Exception {

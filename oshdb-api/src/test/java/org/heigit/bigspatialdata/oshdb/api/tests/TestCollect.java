@@ -25,7 +25,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 /**
- *
+ * Tests the collect method of the OSHDB API.
  */
 public class TestCollect {
   private final OSHDBDatabase oshdb;

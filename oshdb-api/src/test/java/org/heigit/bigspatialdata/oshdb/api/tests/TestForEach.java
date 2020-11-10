@@ -20,7 +20,7 @@ import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 /**
- *
+ * Test for each method of the OSHDB API.
  */
 public class TestForEach {
   private final OSHDBDatabase oshdb;
