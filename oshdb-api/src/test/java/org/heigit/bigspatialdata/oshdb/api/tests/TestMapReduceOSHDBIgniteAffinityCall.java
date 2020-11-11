@@ -21,7 +21,8 @@ public class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgni
   public void testOSMEntitySnapshotViewStreamNullValues() throws Exception {
     // simple stream query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
-        .timestamps(new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY))
+        .timestamps(
+            new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY))
         .osmEntityFilter(entity -> entity.getId() == 617308093)
         .map(snapshot -> snapshot.getEntity().getUserId())
         .map(x -> (Integer) null)

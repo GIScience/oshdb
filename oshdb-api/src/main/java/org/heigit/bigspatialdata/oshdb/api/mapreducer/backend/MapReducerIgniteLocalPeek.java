@@ -289,8 +289,8 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
         CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
         SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
-      super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
-          identitySupplier, accumulator, combiner);
+      super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter,
+          mapper, identitySupplier, accumulator, combiner);
     }
 
     @Override
@@ -314,8 +314,8 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
         SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
-      super(tagInterpreter, cacheNames, cellIdRanges,tstamps, bbox, poly, preFilter, filter, mapper,
-          identitySupplier, accumulator, combiner);
+      super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter,
+          mapper, identitySupplier, accumulator, combiner);
     }
 
     @Override

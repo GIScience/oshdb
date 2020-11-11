@@ -80,7 +80,7 @@ public class TestMapAggregateByGeometry {
     SortedMap<String, Integer> resultCount = createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .aggregateByGeometry(getSubRegions())
-        .reduce(() -> 0, (x,ignored) -> x + 1, (x,y) -> x + y);
+        .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
     assertEquals(4, resultCount.entrySet().size());
     assertTrue(resultCount.get("total") <= resultCount.get("left") + resultCount.get("right"));
@@ -90,7 +90,7 @@ public class TestMapAggregateByGeometry {
         .aggregateByGeometry(getSubRegions())
         .map(OSMContribution::getGeometryAfter)
         .map(Geo::lengthOf)
-        .reduce(() -> 0.0, (x,y) -> x + y);
+        .reduce(() -> 0.0, Double::sum);
 
     assertEquals(4, resultSumLength.entrySet().size());
     assertEquals(
@@ -105,7 +105,7 @@ public class TestMapAggregateByGeometry {
     SortedMap<String, Integer> resultCount = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .aggregateByGeometry(getSubRegions())
-        .reduce(() -> 0, (x,ignored) -> x + 1, (x,y) -> x + y);
+        .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
     assertEquals(4, resultCount.entrySet().size());
     assertTrue(resultCount.get("total") <= resultCount.get("left") + resultCount.get("right"));
@@ -115,7 +115,7 @@ public class TestMapAggregateByGeometry {
         .aggregateByGeometry(getSubRegions())
         .map(OSMEntitySnapshot::getGeometry)
         .map(Geo::lengthOf)
-        .reduce(() -> 0.0, (x,y) -> x + y);
+        .reduce(() -> 0.0, Double::sum);
 
     assertEquals(4, resultSumLength.entrySet().size());
     assertEquals(
@@ -142,7 +142,7 @@ public class TestMapAggregateByGeometry {
             .timestamps(timestamps1)
             .aggregateByTimestamp()
             .aggregateByGeometry(getSubRegions())
-            .reduce(() -> 0, (x,ignored) -> x + 1, (x,y) -> x + y);
+            .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
     assertEquals(4, result.entrySet().size());
     Set<String> keys = result.keySet().stream()

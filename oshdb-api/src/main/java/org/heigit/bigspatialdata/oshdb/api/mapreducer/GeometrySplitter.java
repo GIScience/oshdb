@@ -53,7 +53,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
     this.subregions = subregions;
   }
 
-  private static class IndexData<I,D> {
+  private static class IndexData<I, D> {
     private final I index;
     private final D data;
 
@@ -77,7 +77,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
    */
-  public Map<U,OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
+  public Map<U, OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
     List<U> candidates = (List<U>) spatialIndex.query(
@@ -138,7 +138,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
    */
-  public Map<U,OSMContribution> splitOSMContribution(OSMContribution data) {
+  public Map<U, OSMContribution> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
     List<U> candidates = (List<U>) spatialIndex.query(

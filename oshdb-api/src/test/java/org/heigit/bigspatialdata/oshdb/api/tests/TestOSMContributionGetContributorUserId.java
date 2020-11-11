@@ -56,8 +56,8 @@ public class TestOSMContributionGetContributorUserId {
     assertEquals(7, c.getContributorUserId());
     c = new OSMContribution(new IterateAllEntry(
         new OSHDBTimestamp(123),
-        new OSMNode(1L, 2, new OSHDBTimestamp(122L), 2L, 7, new int[] {3,4}, 0, 0),
-        new OSMNode(1L, 1, new OSHDBTimestamp(121L), 1L, 6, new int[] {1,2}, 0, 0),
+        new OSMNode(1L, 2, new OSHDBTimestamp(122L), 2L, 7, new int[] { 3, 4 }, 0, 0),
+        new OSMNode(1L, 1, new OSHDBTimestamp(121L), 1L, 6, new int[] { 1, 2 }, 0, 0),
         dummyOshEntity,
         null, null, null, null,
         new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.TAG_CHANGE)),

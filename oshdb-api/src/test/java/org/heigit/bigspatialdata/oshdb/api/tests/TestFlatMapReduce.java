@@ -58,11 +58,11 @@ public class TestFlatMapReduce {
         })
         .reduce(
             HashSet::new,
-            (x,y) -> {
+            (x, y) -> {
               x.add(y);
               return x;
             },
-            (x,y) -> {
+            (x, y) -> {
               HashSet<Entry<Integer, Integer>> ret = new HashSet<>(x);
               ret.addAll(y);
               return ret;

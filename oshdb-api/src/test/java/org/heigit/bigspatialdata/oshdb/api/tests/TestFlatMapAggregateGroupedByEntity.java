@@ -69,8 +69,8 @@ public class TestFlatMapAggregateGroupedByEntity {
         .map(Entry::getValue)
         .reduce(
             () -> 0,
-            (x,y) -> x + y,
-            (x,y) -> x + y
+            Integer::sum,
+            Integer::sum
         );
 
     assertEquals(1, result.entrySet().size());

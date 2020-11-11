@@ -225,7 +225,7 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
     int userId = -1;
     // search children for actual contributor's userId
     if (entity instanceof OSMWay) {
-      userId = ((OSMWay)entity).getRefEntities(contributionTimestamp)
+      userId = ((OSMWay) entity).getRefEntities(contributionTimestamp)
           .filter(Objects::nonNull)
           .filter(n -> n.getTimestamp().equals(contributionTimestamp))
           .findFirst()
@@ -244,7 +244,7 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
                   .filter(Objects::nonNull)
                   // todo: what to do with rel->node member changes or rel->rel[->*] changes?
                   .filter(e -> e instanceof OSMWay)
-                  .map(e -> (OSMWay)e)
+                  .map(e -> (OSMWay) e)
                   .flatMap(w -> w.getRefEntities(contributionTimestamp))
                   .filter(Objects::nonNull)
                   .filter(n -> n.getTimestamp().equals(contributionTimestamp))

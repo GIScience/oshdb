@@ -9,6 +9,10 @@ import org.junit.Test;
  * Tests for proper error messages if tables are not present on H2.
  */
 public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
+  /**
+   * Creates the test runner using an H2 backend.
+   * @throws Exception if something goes wrong
+   */
   public TestMapReduceOSHDBJdbcMissingTables() throws Exception {
     super((new OSHDBH2("./src/test/resources/test-data"))
         .prefix("<test tables not present>")

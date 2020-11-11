@@ -68,8 +68,8 @@ abstract class TestFlatMapReduceGroupedByEntity {
         })
         .reduce(
             () -> 0,
-            (x,y) -> x + y,
-            (x,y) -> x + y
+            Integer::sum,
+            Integer::sum
         );
 
     assertEquals(5 + 2, result.intValue());

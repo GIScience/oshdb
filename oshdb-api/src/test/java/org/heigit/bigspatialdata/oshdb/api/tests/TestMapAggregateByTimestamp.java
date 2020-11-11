@@ -26,7 +26,8 @@ import org.junit.Test;
 public class TestMapAggregateByTimestamp {
   private final OSHDBDatabase oshdb;
 
-  private final OSHDBBoundingBox bbox = new OSHDBBoundingBox(8.651133,49.387611,8.6561,49.390513);
+  private final OSHDBBoundingBox bbox =
+      new OSHDBBoundingBox(8.651133, 49.387611, 8.6561, 49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2014-12-30");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
@@ -234,11 +235,11 @@ public class TestMapAggregateByTimestamp {
     assertEquals(1, result.entrySet().size());
     assertEquals(timestamps1.get().first(), result.firstKey().getFirstIndex());
     assertEquals(OSMType.WAY, result.firstKey().getSecondIndex());
-    assertEquals(42, (int)result.values().toArray(new Integer[] {})[0]);
+    assertEquals(42, (int) result.values().toArray(new Integer[] {})[0]);
 
     SortedMap<OSHDBTimestamp, SortedMap<OSMType, Integer>> nestedResult1 = OSHDBCombinedIndex
         .nest(result);
-    assertEquals(42, (int)nestedResult1.get(timestamps1.get().first()).get(OSMType.WAY));
+    assertEquals(42, (int) nestedResult1.get(timestamps1.get().first()).get(OSMType.WAY));
   }
 
   @Test

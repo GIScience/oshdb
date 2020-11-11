@@ -153,7 +153,7 @@ abstract class TestMapReduce {
         .map(List::size)
         .stream()
         .mapToInt(x -> x)
-        .reduce(0, (a,b) -> a + b)
+        .reduce(0, Integer::sum)
     );
   }
 
@@ -188,7 +188,7 @@ abstract class TestMapReduce {
         .map(List::size)
         .stream()
         .mapToInt(x -> x)
-        .reduce(0, (a,b) -> a + b)
+        .reduce(0, Integer::sum)
     );
   }
 

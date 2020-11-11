@@ -149,7 +149,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
 
   @Override
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>,Iterable<R>> mapper,
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner

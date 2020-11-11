@@ -8,6 +8,10 @@ import org.junit.Test;
  * Tests for proper error messages is caches are not pnt on ignite.
  */
 public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
+  /**
+   * Creates the test runner using an Ignite backend.
+   * @throws Exception if something goes wrong
+   */
   public TestMapReduceOSHDBIgniteMissingCache() throws Exception {
     super(new OSHDBIgnite(ignite));
     this.oshdb.prefix("<test caches not present>");

@@ -765,7 +765,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     return this.copyTransform(this.mapReducer.map(inData -> {
       @SuppressWarnings("unchecked")
       // trick/hack to replace mapped values without copying pair objects
-      IndexValuePair<U,R> outData = (IndexValuePair<U,R>)inData;
+      IndexValuePair<U, R> outData = (IndexValuePair<U, R>) inData;
       outData.setValue(mapper.apply(inData.getValue()));
       return outData;
     }));
@@ -902,7 +902,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
           ));
           return m;
         },
-        (a,b) -> {
+        (a, b) -> {
           TreeMap<U, S> combined = new TreeMap<U, S>(a);
           for (SortedMap.Entry<U, S> entry: b.entrySet()) {
             combined.merge(entry.getKey(), entry.getValue(), combiner);

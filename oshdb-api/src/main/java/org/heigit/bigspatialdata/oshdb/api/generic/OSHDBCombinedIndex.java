@@ -28,7 +28,7 @@ public class OSHDBCombinedIndex<
   }
 
   @Override
-  public int compareTo(@NotNull OSHDBCombinedIndex<U,V> other) {
+  public int compareTo(@NotNull OSHDBCombinedIndex<U, V> other) {
     int c = this.index1.compareTo(other.index1);
     if (c == 0) {
       c = this.index2.compareTo(other.index2);

@@ -50,8 +50,8 @@ public class TestFlatMapAggregate {
         .flatMap(
             contribution -> {
               if (contribution.getEntityAfter().getId() != 617308093) {
-                return new ArrayList<>();
-              }
+                  return new ArrayList<>();
+                }
               List<Entry<Long, Entry<Integer, Integer>>> ret = new ArrayList<>();
               int[] tags = contribution.getEntityAfter().getRawTags();
               for (int i = 0; i < tags.length; i += 2) {
@@ -67,11 +67,11 @@ public class TestFlatMapAggregate {
         .map(Entry::getValue)
         .reduce(
             HashSet::new,
-            (x,y) -> {
+            (x, y) -> {
               x.add(y);
               return x;
             },
-            (x,y) -> {
+            (x, y) -> {
               Set<Entry<Integer, Integer>> ret = new HashSet<>(x);
               ret.addAll(y);
               return ret;

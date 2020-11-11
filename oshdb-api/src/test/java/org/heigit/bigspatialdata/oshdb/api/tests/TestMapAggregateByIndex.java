@@ -62,11 +62,11 @@ public class TestMapAggregateByIndex {
         .map(OSMContribution::getContributorUserId)
         .reduce(
             HashSet::new,
-            (x,y) -> {
+            (x, y) -> {
               x.add(y);
               return x;
             },
-            (x,y) -> {
+            (x, y) -> {
               Set<Integer> ret = new HashSet<>(x);
               ret.addAll(y);
               return ret;
@@ -88,11 +88,11 @@ public class TestMapAggregateByIndex {
         .map(snapshot -> snapshot.getEntity().getUserId())
         .reduce(
             HashSet::new,
-            (x,y) -> {
+            (x, y) -> {
               x.add(y);
               return x;
             },
-            (x,y) -> {
+            (x, y) -> {
               Set<Integer> ret = new HashSet<>(x);
               ret.addAll(y);
               return ret;
@@ -119,8 +119,8 @@ public class TestMapAggregateByIndex {
 
     assertEquals(2, result.entrySet().size());
     assertEquals(true, result.containsKey(-1L));
-    assertEquals(0, (int)result.get(-1L));
-    assertEquals(7, (int)result.get(617308093L));
+    assertEquals(0, (int) result.get(-1L));
+    assertEquals(7, (int) result.get(617308093L));
 
     // totally empty result
     result = createMapReducerOSMContribution()
@@ -134,7 +134,7 @@ public class TestMapAggregateByIndex {
 
     assertEquals(1, result.entrySet().size());
     assertEquals(true, result.containsKey(-1L));
-    assertEquals(0, (int)result.get(-1L));
+    assertEquals(0, (int) result.get(-1L));
   }
 
   @Test
@@ -148,9 +148,9 @@ public class TestMapAggregateByIndex {
             .count();
 
     assertEquals(1, result.entrySet().size());
-    assertEquals(1, (int)result.get(new OSHDBCombinedIndex<>(617308093L, OSMType.NODE)));
+    assertEquals(1, (int) result.get(new OSHDBCombinedIndex<>(617308093L, OSMType.NODE)));
     SortedMap<Long, SortedMap<OSMType, Integer>> nestedResult = OSHDBCombinedIndex.nest(result);
-    assertEquals(1, (int)nestedResult.get(617308093L).get(OSMType.NODE));
+    assertEquals(1, (int) nestedResult.get(617308093L).get(OSMType.NODE));
   }
 
   @Test
@@ -167,6 +167,6 @@ public class TestMapAggregateByIndex {
     assertEquals(1, result.entrySet().size());
     SortedMap<Long, SortedMap<OSMType, SortedMap<Integer, Integer>>> nestedResult =
         OSHDBCombinedIndex.nest(OSHDBCombinedIndex.nest(result));
-    assertEquals(1, (int)nestedResult.get(617308093L).get(OSMType.NODE).get(165061));
+    assertEquals(1, (int) nestedResult.get(617308093L).get(OSMType.NODE).get(165061));
   }
 }
