@@ -263,25 +263,25 @@ public class TestMapAggregateByTimestamp {
 
   @Test
   public void testCombinedWithAggregateByIndexOrder() throws Exception {
-    SortedMap<OSHDBCombinedIndex<OSMType, OSHDBTimestamp>, List<Long>> resultIT =
+    SortedMap<OSHDBCombinedIndex<OSMType, OSHDBTimestamp>, List<Long>> resultIndexTime =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
             .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
-    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, List<Long>> resultTI =
+    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, List<Long>> resultTimeIndex =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
-    assertEquals(resultIT.entrySet().size(), resultTI.entrySet().size());
-    for (OSHDBCombinedIndex<OSMType, OSHDBTimestamp> idx : resultIT.keySet()) {
+    assertEquals(resultIndexTime.entrySet().size(), resultTimeIndex.entrySet().size());
+    for (OSHDBCombinedIndex<OSMType, OSHDBTimestamp> idx : resultIndexTime.keySet()) {
       assertEquals(
-          resultIT.get(idx),
-          resultTI.get(new OSHDBCombinedIndex<>(idx.getSecondIndex(), idx.getFirstIndex()))
+          resultIndexTime.get(idx),
+          resultTimeIndex.get(new OSHDBCombinedIndex<>(idx.getSecondIndex(), idx.getFirstIndex()))
       );
     }
   }

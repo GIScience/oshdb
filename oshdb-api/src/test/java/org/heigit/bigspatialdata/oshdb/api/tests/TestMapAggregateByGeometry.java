@@ -156,25 +156,25 @@ public class TestMapAggregateByGeometry {
 
   @Test
   public void testCombinedWithAggregateByTimestampOrder() throws Exception {
-    SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, List<Long>> resultGT =
+    SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, List<Long>> resultGeomTime =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
             .aggregateByGeometry(getSubRegions())
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
-    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, List<Long>> resultTG =
+    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, List<Long>> resultTimeGeom =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .aggregateByGeometry(getSubRegions())
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
-    assertEquals(resultGT.entrySet().size(), resultTG.entrySet().size());
-    for (OSHDBCombinedIndex<String, OSHDBTimestamp> idx : resultGT.keySet()) {
+    assertEquals(resultGeomTime.entrySet().size(), resultTimeGeom.entrySet().size());
+    for (OSHDBCombinedIndex<String, OSHDBTimestamp> idx : resultGeomTime.keySet()) {
       assertEquals(
-          resultGT.get(idx),
-          resultTG.get(new OSHDBCombinedIndex<>(idx.getSecondIndex(), idx.getFirstIndex()))
+          resultGeomTime.get(idx),
+          resultTimeGeom.get(new OSHDBCombinedIndex<>(idx.getSecondIndex(), idx.getFirstIndex()))
       );
     }
   }

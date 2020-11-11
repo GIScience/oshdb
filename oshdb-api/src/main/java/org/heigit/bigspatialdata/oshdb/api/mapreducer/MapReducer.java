@@ -1468,9 +1468,9 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   private <R extends Number> TDigest digest(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).reduce(
-        TDigestReducer::identitySupplier,
-        TDigestReducer::accumulator,
-        TDigestReducer::combiner
+        TdigestReducer::identitySupplier,
+        TdigestReducer::accumulator,
+        TdigestReducer::combiner
     );
   }
 

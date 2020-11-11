@@ -4,7 +4,7 @@ import com.tdunning.math.stats.MergingDigest;
 import com.tdunning.math.stats.TDigest;
 import java.util.Arrays;
 
-class TDigestReducer {
+class TdigestReducer {
 
   /**
    * A COMPRESSION parameter of 1000 should provide relatively precise results, while not being

@@ -681,9 +681,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   private <R extends Number> SortedMap<U, TDigest> digest(SerializableFunction<X, R> mapper)
       throws Exception {
     return this.map(mapper).reduce(
-        TDigestReducer::identitySupplier,
-        TDigestReducer::accumulator,
-        TDigestReducer::combiner
+        TdigestReducer::identitySupplier,
+        TdigestReducer::accumulator,
+        TdigestReducer::combiner
     );
   }
 
