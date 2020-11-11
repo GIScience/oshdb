@@ -904,7 +904,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
         },
         (a, b) -> {
           TreeMap<U, S> combined = new TreeMap<U, S>(a);
-          for (SortedMap.Entry<U, S> entry: b.entrySet()) {
+          for (SortedMap.Entry<U, S> entry : b.entrySet()) {
             combined.merge(entry.getKey(), entry.getValue(), combiner);
           }
           return combined;
