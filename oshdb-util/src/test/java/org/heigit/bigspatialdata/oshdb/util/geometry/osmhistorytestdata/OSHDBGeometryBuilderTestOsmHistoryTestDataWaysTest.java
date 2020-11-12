@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
 
 public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
   private final OSMXmlReader testData = new OSMXmlReader();
@@ -27,136 +26,76 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
     areaDecider = new OSMXmlReaderTagInterpreter(testData);
   }
 
+  private static void checkLineString(double[][] expectedCoordinates, Geometry result,
+      int numCoordinates) {
+    assertTrue(result instanceof LineString);
+    assertEquals(numCoordinates, result.getNumPoints());
+    for (int i = 0; i < numCoordinates; i++) {
+      assertEquals(expectedCoordinates[i][0], (((LineString) result).getCoordinateN(i)).x, DELTA);
+      assertEquals(expectedCoordinates[i][1], (((LineString) result).getCoordinateN(i)).y, DELTA);
+    }
+  }
+
   @Test
-  public void testGeometryChange() throws ParseException {
+  public void testGeometryChange() {
     // Way getting more nodes, one disappears
     // first appearance
     OSMEntity entity1 = testData.ways().get(100L).get(0);
     OSHDBTimestamp timestamp = entity1.getTimestamp();
     Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(4, result1.getNumPoints());
-    assertEquals(1.42, (((LineString) result1).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.22, (((LineString) result1).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.42, (((LineString) result1).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.23, (((LineString) result1).getCoordinateN(1)).y, DELTA);
-    assertEquals(1.42, (((LineString) result1).getCoordinateN(2)).x, DELTA);
-    assertEquals(1.24, (((LineString) result1).getCoordinateN(2)).y, DELTA);
-    assertEquals(1.42, (((LineString) result1).getCoordinateN(3)).x, DELTA);
-    assertEquals(1.25, (((LineString) result1).getCoordinateN(3)).y, DELTA);
+    double[][] expectedCoordinates1 = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25}};
+    checkLineString(expectedCoordinates1, result1, 4);
     // second appearance
     OSMEntity entity2 = testData.ways().get(100L).get(1);
     OSHDBTimestamp timestamp2 = entity2.getTimestamp();
     Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof LineString);
-    assertEquals(8, result2.getNumPoints());
-    assertEquals(1.42, (((LineString) result2).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.22, (((LineString) result2).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.42, (((LineString) result2).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.23, (((LineString) result2).getCoordinateN(1)).y, DELTA);
-    assertEquals(1.42, (((LineString) result2).getCoordinateN(2)).x, DELTA);
-    assertEquals(1.24, (((LineString) result2).getCoordinateN(2)).y, DELTA);
-    assertEquals(1.42, (((LineString) result2).getCoordinateN(3)).x, DELTA);
-    assertEquals(1.25, (((LineString) result2).getCoordinateN(3)).y, DELTA);
-    assertEquals(1.42, (((LineString) result2).getCoordinateN(4)).x, DELTA);
-    assertEquals(1.26, (((LineString) result2).getCoordinateN(4)).y, DELTA);
-    assertEquals(1.42, (((LineString) result2).getCoordinateN(5)).x, DELTA);
-    assertEquals(1.27, (((LineString) result2).getCoordinateN(5)).y, DELTA);
-    assertEquals(1.42, (((LineString) result2).getCoordinateN(6)).x, DELTA);
-    assertEquals(1.28, (((LineString) result2).getCoordinateN(6)).y, DELTA);
-    assertEquals(1.43, (((LineString) result2).getCoordinateN(7)).x, DELTA);
-    assertEquals(1.29, (((LineString) result2).getCoordinateN(7)).y, DELTA);
+    double[][] expectedCoordinates2 = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
+        {1.42, 1.26}, {1.42, 1.27}, {1.42, 1.28}, {1.43, 1.29}};
+    checkLineString(expectedCoordinates2, result2, 8);
     // last appearance
     OSMEntity entity3 = testData.ways().get(100L).get(2);
     OSHDBTimestamp timestamp3 = entity3.getTimestamp();
     Geometry result3 = OSHDBGeometryBuilder.getGeometry(entity3, timestamp3, areaDecider);
-    assertTrue(result3 instanceof LineString);
-    assertEquals(9, result3.getNumPoints());
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.22, (((LineString) result3).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.23, (((LineString) result3).getCoordinateN(1)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(2)).x, DELTA);
-    assertEquals(1.24, (((LineString) result3).getCoordinateN(2)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(3)).x, DELTA);
-    assertEquals(1.25, (((LineString) result3).getCoordinateN(3)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(4)).x, DELTA);
-    assertEquals(1.26, (((LineString) result3).getCoordinateN(4)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(5)).x, DELTA);
-    assertEquals(1.28, (((LineString) result3).getCoordinateN(5)).y, DELTA);
-    assertEquals(1.43, (((LineString) result3).getCoordinateN(6)).x, DELTA);
-    assertEquals(1.29, (((LineString) result3).getCoordinateN(6)).y, DELTA);
-    assertEquals(1.43, (((LineString) result3).getCoordinateN(7)).x, DELTA);
-    assertEquals(1.30, (((LineString) result3).getCoordinateN(7)).y, DELTA);
-    assertEquals(1.43, (((LineString) result3).getCoordinateN(8)).x, DELTA);
-    assertEquals(1.31, (((LineString) result3).getCoordinateN(8)).y, DELTA);
+    double[][] expectedCoordinates3 = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
+        {1.42, 1.26}, {1.42, 1.28}, {1.43, 1.29}, {1.43, 1.30}, {1.43, 1.31}};
+    checkLineString(expectedCoordinates3, result3, 9);
     // timestamp after last one
     OSMEntity entityAfter = testData.ways().get(100L).get(2);
     OSHDBTimestamp timestampAfter =  TimestampParser.toOSHDBTimestamp("2012-01-01T00:00:00Z");
     Geometry resultAfter = OSHDBGeometryBuilder.getGeometry(entityAfter, timestampAfter,
         areaDecider);
-    assertTrue(resultAfter instanceof LineString);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.22, (((LineString) result3).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.23, (((LineString) result3).getCoordinateN(1)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(2)).x, DELTA);
-    assertEquals(1.24, (((LineString) result3).getCoordinateN(2)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(3)).x, DELTA);
-    assertEquals(1.25, (((LineString) result3).getCoordinateN(3)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(4)).x, DELTA);
-    assertEquals(1.26, (((LineString) result3).getCoordinateN(4)).y, DELTA);
-    assertEquals(1.42, (((LineString) result3).getCoordinateN(5)).x, DELTA);
-    assertEquals(1.28, (((LineString) result3).getCoordinateN(5)).y, DELTA);
-    assertEquals(1.43, (((LineString) result3).getCoordinateN(6)).x, DELTA);
-    assertEquals(1.29, (((LineString) result3).getCoordinateN(6)).y, DELTA);
-    assertEquals(1.43, (((LineString) result3).getCoordinateN(7)).x, DELTA);
-    assertEquals(1.30, (((LineString) result3).getCoordinateN(7)).y, DELTA);
-    assertEquals(1.43, (((LineString) result3).getCoordinateN(8)).x, DELTA);
-    assertEquals(1.31, (((LineString) result3).getCoordinateN(8)).y, DELTA);
+    double[][] expectedCoordinatesAfter = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
+        {1.42, 1.26}, {1.42, 1.28}, {1.43, 1.29}, {1.43, 1.30}, {1.43, 1.31}};
+    checkLineString(expectedCoordinatesAfter, resultAfter, 9);
   }
 
   @Test
-  public void testGeometryChangeOfNodeInWay() throws ParseException {
+  public void testGeometryChangeOfNodeInWay() {
     // Way with two then three nodes, changing lat lon
     // first appearance
     OSMEntity entity1 = testData.ways().get(101L).get(0);
     OSHDBTimestamp timestamp = entity1.getTimestamp();
     Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(2, result1.getNumPoints());
-    assertEquals(1.42, (((LineString) result1).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.22, (((LineString) result1).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.44, (((LineString) result1).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.22, (((LineString) result1).getCoordinateN(1)).y, DELTA);
+    double[][] expectedCoordinates1 = {{1.42, 1.22}, {1.44, 1.22}};
+    checkLineString(expectedCoordinates1, result1, 2);
     // last appearance
     OSMEntity entity2 = testData.ways().get(101L).get(1);
     OSHDBTimestamp timestamp2 = entity2.getTimestamp();
     Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof LineString);
-    assertEquals(3, result2.getNumPoints());
-    assertEquals(1.425, (((LineString) result2).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.23, (((LineString) result2).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.44, (((LineString) result2).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.23, (((LineString) result2).getCoordinateN(1)).y, DELTA);
-    assertEquals(1.43, (((LineString) result2).getCoordinateN(2)).x, DELTA);
-    assertEquals(1.30, (((LineString) result2).getCoordinateN(2)).y, DELTA);
+    double[][] expectedCoordinates2 = {{1.425, 1.23}, {1.44, 1.23}, {1.43, 1.30}};
+    checkLineString(expectedCoordinates2, result2, 3);
     // timestamp in between
     OSHDBTimestamp timestampBetween =  TimestampParser.toOSHDBTimestamp("2009-02-01T00:00:00Z");
     OSMEntity entityBetween = testData.ways().get(101L).get(0);
     Geometry resultBetween = OSHDBGeometryBuilder.getGeometry(entityBetween, timestampBetween,
         areaDecider);
-    assertTrue(resultBetween instanceof LineString);
-    assertEquals(2, resultBetween.getNumPoints());
-    assertEquals(1.42, (((LineString) resultBetween).getCoordinateN(0)).x, DELTA);
-    assertEquals(1.225, (((LineString) resultBetween).getCoordinateN(0)).y, DELTA);
-    assertEquals(1.445, (((LineString) resultBetween).getCoordinateN(1)).x, DELTA);
-    assertEquals(1.225, (((LineString) resultBetween).getCoordinateN(1)).y, DELTA);
+    double[][] expectedCoordinatesBetween = {{1.42, 1.225}, {1.445, 1.225}};
+    checkLineString(expectedCoordinatesBetween, resultBetween, 2);
   }
 
   @Test
-  public void testVisibleChange() throws ParseException {
-    // Way visible schanged
+  public void testVisibleChange() {
+    // Way visible changed
     // first appearance
     OSMEntity entity1 = testData.ways().get(102L).get(0);
     OSHDBTimestamp timestamp = entity1.getTimestamp();
@@ -172,8 +111,8 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
   }
 
   @Test
-  public void testTagChange() throws ParseException {
-    // Way tags schanged
+  public void testTagChange() {
+    // Way tags changed
     // first appearance
     OSMEntity entity1 = testData.ways().get(103L).get(0);
     OSHDBTimestamp timestamp = entity1.getTimestamp();
@@ -196,8 +135,8 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
   }
 
   @Test
-  public void testMultipleChangesOnNodesOfWay() throws ParseException {
-    // Way various things schanged
+  public void testMultipleChangesOnNodesOfWay() {
+    // Way various things changed
     // first appearance
     OSMEntity entity1 = testData.ways().get(104L).get(0);
     OSHDBTimestamp timestamp = entity1.getTimestamp();
@@ -214,7 +153,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
   }
 
   @Test
-  public void testMultipleChangesOnNodesAndWays() throws ParseException {
+  public void testMultipleChangesOnNodesAndWays() {
     // way and nodes have different changes
     // first appearance
     OSMEntity entity1 = testData.ways().get(105L).get(0);
@@ -244,7 +183,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
 
   // MULTIPOLYGON(((1.45 1.45, 1.46 1.45, 1.46 1.44, 1.45 1.44)))
   @Test
-  public void testPolygonAreaYesTagDisappears() throws ParseException {
+  public void testPolygonAreaYesTagDisappears() {
     // way seems to be polygon with area=yes, later linestring because area=yes deleted
     // first appearance
     OSMEntity entity1 = testData.ways().get(106L).get(0);
@@ -263,7 +202,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
 
 
   @Test
-  public void testPolygonAreaYesNodeDisappears() throws ParseException {
+  public void testPolygonAreaYesNodeDisappears() {
     // way seems to be polygon with area=yes, later linestring because area=yes deleted
     // first appearance
     OSMEntity entity1 = testData.ways().get(107L).get(0);
