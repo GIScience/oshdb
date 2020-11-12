@@ -412,8 +412,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertFalse((result.getGeometryN(1)).intersects((result.getGeometryN(0))));
-    assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
-    assertEquals(1, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
+    assertEquals(0, ((Polygon) result.getGeometryN(0)).getNumInteriorRing());
+    assertEquals(1, ((Polygon) result.getGeometryN(1)).getNumInteriorRing());
     assertEquals(2, result.getNumGeometries());
     assertEquals(15, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
@@ -433,7 +433,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(3, ((Polygon)result).getNumInteriorRing());
+    assertEquals(3, ((Polygon) result).getNumInteriorRing());
     assertEquals(1, result.getNumGeometries());
     assertEquals(21, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
@@ -455,7 +455,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(2, ((Polygon)result).getNumInteriorRing());
+    assertEquals(2, ((Polygon) result).getNumInteriorRing());
     assertEquals(1, result.getNumGeometries());
     assertEquals(25, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
@@ -479,8 +479,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result.isValid());
     assertEquals(2, result.getNumGeometries());
     assertEquals(1,
-        ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
-        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing()
+        ((Polygon) result.getGeometryN(0)).getNumInteriorRing()
+        + ((Polygon) result.getGeometryN(1)).getNumInteriorRing()
     );
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -637,7 +637,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(1, ((Polygon)result).getNumInteriorRing());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
     // In the result are 12 points, but it does not matter that we get 19, because the intersection
     // is correct.
     // compare if coordinates of created points equals the coordinates of polygon
@@ -656,7 +656,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(1, ((Polygon)result).getNumInteriorRing());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
     // In the result are 11 points, but it does not matter that we get 16, because the intersection
     // is correct.
     //assertEquals(16, result.getCoordinates().length);
@@ -794,10 +794,10 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
-    assertEquals(0, ((Polygon)result.getGeometryN(0)).getNumInteriorRing());
-    assertEquals(0, ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
-    assertEquals(0, ((Polygon)result.getGeometryN(2)).getNumInteriorRing());
-    assertEquals(0, ((Polygon)result.getGeometryN(3)).getNumInteriorRing());
+    assertEquals(0, ((Polygon) result.getGeometryN(0)).getNumInteriorRing());
+    assertEquals(0, ((Polygon) result.getGeometryN(1)).getNumInteriorRing());
+    assertEquals(0, ((Polygon) result.getGeometryN(2)).getNumInteriorRing());
+    assertEquals(0, ((Polygon) result.getGeometryN(3)).getNumInteriorRing());
     assertEquals(4, result.getNumGeometries());
     //assertEquals(28, result.getCoordinates().length);
 
@@ -896,7 +896,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(2, ((Polygon)result).getNumInteriorRing());
+    assertEquals(2, ((Polygon) result).getNumInteriorRing());
     assertEquals(1, result.getNumGeometries());
     //assertEquals(16, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
@@ -1014,8 +1014,8 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertTrue(result instanceof MultiPolygon);
     assertTrue(result.isValid());
     assertEquals(2, result.getNumGeometries());
-    assertEquals(1, ((Polygon)result.getGeometryN(0)).getNumInteriorRing()
-        + ((Polygon)result.getGeometryN(1)).getNumInteriorRing());
+    assertEquals(1, ((Polygon) result.getGeometryN(0)).getNumInteriorRing()
+        + ((Polygon) result.getGeometryN(1)).getNumInteriorRing());
 
     // compare if coordinates of created points equals the coordinates of polygon
     Geometry expectedPolygon = (new WKTReader()).read(
@@ -1076,7 +1076,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(1, ((Polygon)result).getNumInteriorRing());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1, result.getNumGeometries());
     //assertEquals(11, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon
@@ -1096,7 +1096,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
     assertTrue(result.isValid());
-    assertEquals(1, ((Polygon)result).getNumInteriorRing());
+    assertEquals(1, ((Polygon) result).getNumInteriorRing());
     assertEquals(1, result.getNumGeometries());
     //assertEquals(11, result.getCoordinates().length);
     // compare if coordinates of created points equals the coordinates of polygon

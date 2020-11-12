@@ -17,15 +17,15 @@ public class FastPointInPolygonTest {
   public static Polygon createPolygon() {
     final GeometryFactory gf = new GeometryFactory();
     Coordinate[] coordinates = new Coordinate[100];
-    coordinates[0] = new Coordinate(0,0);
-    coordinates[1] = new Coordinate(1,1);
-    coordinates[2] = new Coordinate(-1,1);
+    coordinates[0] = new Coordinate(0, 0);
+    coordinates[1] = new Coordinate(1, 1);
+    coordinates[2] = new Coordinate(-1, 1);
     for (int i = 3; i <= 96; i++) {
       coordinates[i] = new Coordinate(-1.0, 1.0 - 2.0 * (i - 2) / 95);
     }
-    coordinates[97] = new Coordinate(-1,-1);
-    coordinates[98] = new Coordinate(1,-1);
-    coordinates[99] = new Coordinate(0,0);
+    coordinates[97] = new Coordinate(-1, -1);
+    coordinates[98] = new Coordinate(1, -1);
+    coordinates[99] = new Coordinate(0, 0);
     LinearRing linear = gf.createLinearRing(coordinates);
     return new Polygon(linear, null, gf);
   }
@@ -36,18 +36,18 @@ public class FastPointInPolygonTest {
   public static Polygon createPolygonWithHole() {
     final GeometryFactory gf = new GeometryFactory();
     Coordinate[] coordinates1 = new Coordinate[5];
-    coordinates1[0] = new Coordinate(4,-1);
-    coordinates1[1] = new Coordinate(4,1);
-    coordinates1[2] = new Coordinate(2,1);
-    coordinates1[3] = new Coordinate(2,-1);
-    coordinates1[4] = new Coordinate(4,-1);
+    coordinates1[0] = new Coordinate(4, -1);
+    coordinates1[1] = new Coordinate(4, 1);
+    coordinates1[2] = new Coordinate(2, 1);
+    coordinates1[3] = new Coordinate(2, -1);
+    coordinates1[4] = new Coordinate(4, -1);
     final LinearRing linear1 = gf.createLinearRing(coordinates1);
     Coordinate[] coordinates2 = new Coordinate[5];
-    coordinates2[0] = new Coordinate(3.5,-0.5);
-    coordinates2[1] = new Coordinate(3.5,0.5);
-    coordinates2[2] = new Coordinate(2.5,0.5);
-    coordinates2[3] = new Coordinate(2.5,-0.5);
-    coordinates2[4] = new Coordinate(3.5,-0.5);
+    coordinates2[0] = new Coordinate(3.5, -0.5);
+    coordinates2[1] = new Coordinate(3.5, 0.5);
+    coordinates2[2] = new Coordinate(2.5, 0.5);
+    coordinates2[3] = new Coordinate(2.5, -0.5);
+    coordinates2[4] = new Coordinate(3.5, -0.5);
     final LinearRing linear2 = gf.createLinearRing(coordinates2);
     return new Polygon(linear1, new LinearRing[] { linear2 }, gf);
   }
@@ -70,11 +70,11 @@ public class FastPointInPolygonTest {
     GeometryFactory gf = new GeometryFactory();
 
     // inside
-    assertEquals(pip.test(gf.createPoint(new Coordinate(-0.5,0))), true);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(-0.5, 0))), true);
     // in concave part
-    assertEquals(pip.test(gf.createPoint(new Coordinate(0.5,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(0.5, 0))), false);
     // outside poly's bbox
-    assertEquals(pip.test(gf.createPoint(new Coordinate(1.5,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(1.5, 0))), false);
   }
 
   @Test
@@ -85,11 +85,11 @@ public class FastPointInPolygonTest {
     GeometryFactory gf = new GeometryFactory();
 
     // inside
-    assertEquals(pip.test(gf.createPoint(new Coordinate(2.25,0))), true);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(2.25, 0))), true);
     // in hole
-    assertEquals(pip.test(gf.createPoint(new Coordinate(3,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(3, 0))), false);
     // outside poly's bbox
-    assertEquals(pip.test(gf.createPoint(new Coordinate(4.5,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(4.5, 0))), false);
   }
 
   @Test
@@ -100,16 +100,16 @@ public class FastPointInPolygonTest {
     GeometryFactory gf = new GeometryFactory();
 
     // inside left polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(-0.5,0))), true);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(-0.5, 0))), true);
     // in concave part of left polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(0.5,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(0.5, 0))), false);
     // outside left polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(1.5,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(1.5, 0))), false);
     // inside right polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(2.25,0))), true);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(2.25, 0))), true);
     // in hole of right polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(3,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(3, 0))), false);
     // outside right polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(4.5,0))), false);
+    assertEquals(pip.test(gf.createPoint(new Coordinate(4.5, 0))), false);
   }
 }

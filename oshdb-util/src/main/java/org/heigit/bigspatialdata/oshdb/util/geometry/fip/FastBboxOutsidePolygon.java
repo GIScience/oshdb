@@ -36,9 +36,9 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
 
     List<Polygon> polys = new LinkedList<>();
     if (geom instanceof Polygon) {
-      polys.add((Polygon)geom);
+      polys.add((Polygon) geom);
     } else if (geom instanceof MultiPolygon) {
-      MultiPolygon mp = (MultiPolygon)geom;
+      MultiPolygon mp = (MultiPolygon) geom;
       for (int i = 0; i < mp.getNumGeometries(); i++) {
         polys.add((Polygon) mp.getGeometryN(i));
       }
@@ -67,11 +67,11 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
         || crossingNumber(p4, false) != crossingNumber(p1, false)) {
       return false; // at least one of the bbox'es edges crosses the polygon
     }
-    for (Envelope innerBBox : outerBboxes) {
-      if (boundingBox.getMinLat() <= innerBBox.getMinY()
-          && boundingBox.getMaxLat() >= innerBBox.getMaxY()
-          && boundingBox.getMinLon() <= innerBBox.getMinX()
-          && boundingBox.getMaxLon() >= innerBBox.getMaxX()) {
+    for (Envelope innerBbox : outerBboxes) {
+      if (boundingBox.getMinLat() <= innerBbox.getMinY()
+          && boundingBox.getMaxLat() >= innerBbox.getMaxY()
+          && boundingBox.getMinLon() <= innerBbox.getMinX()
+          && boundingBox.getMaxLon() >= innerBbox.getMaxX()) {
         // the bounding box fully covers at least one of the (multi)polygon's outer rings
         return false;
       }

@@ -46,11 +46,11 @@ public class IterateByContributionNotOsmTypeSpecificTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,12.7);
-    coords[2] = new Coordinate(12.7,12.7);
-    coords[3] = new Coordinate(12.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 12.7);
+    coords[2] = new Coordinate(12.7, 12.7);
+    coords[3] = new Coordinate(12.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> resultPoly = (new CellIterator(
@@ -77,10 +77,10 @@ public class IterateByContributionNotOsmTypeSpecificTest {
     final GeometryFactory geometryFactory = new GeometryFactory();
 
     Coordinate[] coords = new Coordinate[4];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(12.7,12.7);
-    coords[2] = new Coordinate(12.7,10.3);
-    coords[3] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(12.7, 12.7);
+    coords[2] = new Coordinate(12.7, 10.3);
+    coords[3] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> resultPoly = (new CellIterator(
@@ -107,11 +107,11 @@ public class IterateByContributionNotOsmTypeSpecificTest {
     final GeometryFactory geometryFactory = new GeometryFactory();
 
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(-180,-90);
-    coords[1] = new Coordinate(180,-90);
-    coords[2] = new Coordinate(180,90);
-    coords[3] = new Coordinate(-180,90);
-    coords[4] = new Coordinate(-180,-90);
+    coords[0] = new Coordinate(-180, -90);
+    coords[1] = new Coordinate(180, -90);
+    coords[2] = new Coordinate(180, 90);
+    coords[3] = new Coordinate(-180, 90);
+    coords[4] = new Coordinate(-180, -90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> resultPoly = (new CellIterator(

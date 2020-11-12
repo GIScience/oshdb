@@ -233,8 +233,8 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.crosses(result2));
-    for (int j = 0; j < result1.getLength();j++) {
-      for (int i = 0; i < result2.getLength();i++) {
+    for (int j = 0; j < result1.getLength(); j++) {
+      for (int i = 0; i < result2.getLength(); i++) {
         assertNotEquals(((LineString) result1).getCoordinateN(j),
             ((LineString) result2).getCoordinateN(i));
       }
@@ -251,8 +251,8 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.intersects(result2));
-    for (int j = 0; j < result1.getLength();j++) {
-      for (int i = 0; i < result2.getLength();i++) {
+    for (int j = 0; j < result1.getLength(); j++) {
+      for (int i = 0; i < result2.getLength(); i++) {
         try {
           ((LineString) result1).getCoordinateN(j).equals(((LineString) result2).getCoordinateN(i));
         } catch (Exception e) {
@@ -274,8 +274,8 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.crosses(result2));
     assertTrue(result1.intersects(result2));
-    for (int j = 0; j < result1.getLength();j++) {
-      for (int i = 0; i < result2.getLength();i++) {
+    for (int j = 0; j < result1.getLength(); j++) {
+      for (int i = 0; i < result2.getLength(); i++) {
         try {
           ((LineString) result1).getCoordinateN(j).equals(
               ((LineString) result2).getCoordinateN(i));

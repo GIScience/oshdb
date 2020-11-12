@@ -223,7 +223,7 @@ public class OSMXmlReader {
               Map<Long, OSHNode> wayNodes = new TreeMap<>();
               for (OSMWay way : this.ways().get(memId)) {
                 for (OSMMember wayNode : way.getRefs()) {
-                  wayNodes.putIfAbsent(wayNode.getId(), (OSHNode)wayNode.getEntity());
+                  wayNodes.putIfAbsent(wayNode.getId(), (OSHNode) wayNode.getEntity());
                 }
               }
               if (this.ways().containsKey(memId)) {

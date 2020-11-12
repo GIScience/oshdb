@@ -81,9 +81,9 @@ class BaseTagInterpreter implements TagInterpreter {
       if (nds.length < 4 || nds[0].getId() != nds[nds.length - 1].getId()) {
         return false;
       }
-      return this.evaluateWayForArea((OSMWay)entity);
+      return this.evaluateWayForArea((OSMWay) entity);
     } else /*if (entity instanceof OSMRelation)*/ {
-      return this.evaluateRelationForArea((OSMRelation)entity);
+      return this.evaluateRelationForArea((OSMRelation) entity);
     }
   }
 

@@ -85,7 +85,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 101,
         osmEntity -> true,
@@ -116,7 +116,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 102,
         osmEntity -> true,
@@ -140,7 +140,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 103,
         osmEntity -> true,
@@ -178,7 +178,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 104,
         osmEntity -> true,
@@ -206,7 +206,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 105,
         osmEntity -> true,
@@ -232,7 +232,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 106,
         osmEntity -> true,
@@ -262,7 +262,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 107,
         osmEntity -> true,
@@ -292,7 +292,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 108,
         osmEntity -> true,
@@ -313,7 +313,7 @@ public class IterateByTimestampsWaysTest {
             "2010-02-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
@@ -338,7 +338,7 @@ public class IterateByTimestampsWaysTest {
             "2012-08-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
@@ -347,7 +347,7 @@ public class IterateByTimestampsWaysTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
 
-    assertNotEquals(result.get(0).geometry.get(),result.get(3).geometry.get());
+    assertNotEquals(result.get(0).geometry.get(), result.get(3).geometry.get());
     assertEquals(4, result.size());
     assertEquals(3, result.get(1).geometry.get().getNumPoints());
     assertEquals(4, result.get(0).unclippedGeometry.get().getNumPoints());
