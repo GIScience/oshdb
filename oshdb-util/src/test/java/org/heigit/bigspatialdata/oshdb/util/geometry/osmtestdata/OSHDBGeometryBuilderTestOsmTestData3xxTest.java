@@ -19,7 +19,6 @@ public class OSHDBGeometryBuilderTestOsmTestData3xxTest {
   TagInterpreter areaDecider;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestOsmTestData3xxTest() {
     testData.add("./src/test/resources/osm-testdata/all.osm");
@@ -48,17 +47,17 @@ public class OSHDBGeometryBuilderTestOsmTestData3xxTest {
     }
   }
 
-  @Test
+  /* @Test
   public void test302() {
     // No uid and no user name means user is anonymous
     // user name is not priority
-  }
+  } */
 
-  @Test
+  /* @Test
   public void test303() {
     // No uid and no user name means user is anonymous
     // user name is not priority
-  }
+  } */
 
   @Test
   public void test304() {
@@ -84,11 +83,11 @@ public class OSHDBGeometryBuilderTestOsmTestData3xxTest {
     }
   }
 
-  @Test
+  /* @Test
   public void test306() {
     // 250 characters in username is okay
     // user name is not priority
-  }
+  } */
 
   @Test
   public void test307() {

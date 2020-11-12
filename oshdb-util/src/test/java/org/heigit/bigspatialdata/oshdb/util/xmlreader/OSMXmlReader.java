@@ -53,21 +53,17 @@ public class OSMXmlReader {
 
       db.relations().asMap().forEach((id, versions) -> {
         System.out.println("id:" + id);
-        versions.forEach(osm -> {
-          System.out.println("\t" + osm);
-        });
+        versions.forEach(osm -> System.out.println("\t" + osm));
       });
 
       System.out.println("\n\n");
-      db.ways.get(27913435L).forEach(osm -> {
-        System.out.println("\t" + osm);
-      });
+      db.ways.get(27913435L).forEach(osm -> System.out.println("\t" + osm));
 
       int key = 6;
-      System.out.println(db.keys.inverse().get(Integer.valueOf(key)));
+      System.out.println(db.keys.inverse().get(key));
       System.out.println(db.keys.get("place"));
 
-      System.out.println(db.keyValues.get(key).inverse().get(Integer.valueOf(2)));
+      System.out.println(db.keyValues.get(key).inverse().get(2));
 
     }
   }
@@ -136,7 +132,7 @@ public class OSMXmlReader {
         OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
             osm.getLat());
-        nodes.put(Long.valueOf(id), oldOSM);
+        nodes.put(id, oldOSM);
       }
       lastId = id;
     }
@@ -168,7 +164,7 @@ public class OSMXmlReader {
         // osm.setExtension(members);
         OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
-        ways.put(Long.valueOf(id), oldOSM);
+        ways.put(id, oldOSM);
       }
       lastId = id;
     }
@@ -195,7 +191,7 @@ public class OSMXmlReader {
 
           Integer r = roles.get(role);
           if (r == null) {
-            r = Integer.valueOf(roles.size());
+            r = roles.size();
             roles.put(role, r);
           }
 
@@ -236,13 +232,13 @@ public class OSMXmlReader {
             default:
               break;
           }
-          members[idx++] = new OSMMember(memId, t, r.intValue(), data);
+          members[idx++] = new OSMMember(memId, t, r, data);
         }
         // osm.setExtension(members);
         OSMRelation oldOSM = new OSMRelation(osm.getId(),
             osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
-        relations.put(Long.valueOf(id), oldOSM);
+        relations.put(id, oldOSM);
       }
       lastId = id;
     }
@@ -345,20 +341,20 @@ public class OSMXmlReader {
 
       Integer k = keys.get(key);
       if (k == null) {
-        k = Integer.valueOf(keyValues.size());
+        k = keyValues.size();
         keys.put(key, k);
         keyValues.add(HashBiMap.create());
       }
 
-      BiMap<String, Integer> values = keyValues.get(k.intValue());
+      BiMap<String, Integer> values = keyValues.get(k);
       Integer v = values.get(value);
       if (v == null) {
-        v = Integer.valueOf(values.size());
+        v = values.size();
         values.put(value, v);
       }
 
-      tags[idx++] = k.intValue();
-      tags[idx++] = v.intValue();
+      tags[idx++] = k;
+      tags[idx++] = v;
     }
     return tags;
   }

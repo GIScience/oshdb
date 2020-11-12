@@ -44,11 +44,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertEquals(1.02, ((Point) result).getY(), DELTA);
   }
 
-  @Test
+  /* @Test
   public void test101() {
     // 101: 4 single nodes
     // the same like test100() just with 4 nodes
-  }
+  } */
 
   @Test
   public void test102() {
@@ -72,11 +72,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertEquals(2, result1.getCoordinates().length);
   }
 
-  @Test
+  /* @Test
   public void test111() {
     // 111 : Way with 4 nodes
     // the same like test110() just with 4 nodes
-  }
+  } */
 
   @Test
   public void test112() {
@@ -241,6 +241,7 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     }
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void test131() {
     // Crossing ways with common node
@@ -263,6 +264,7 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     }
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void test132() {
     // Crossing ways without common node, but crossing node at same position

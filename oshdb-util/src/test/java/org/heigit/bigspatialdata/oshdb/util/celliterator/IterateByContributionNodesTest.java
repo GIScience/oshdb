@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 public class IterateByContributionNodesTest {
-  private GridOSHNodes oshdbDataGridCell;
+  private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
@@ -71,7 +72,7 @@ public class IterateByContributionNodesTest {
         result.get(2).activities.get()
     );
     assertEquals(1, result.get(0).changeset);
-    assertEquals(null, result.get(0).previousGeometry.get());
+    assertNull(result.get(0).previousGeometry.get());
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof Point);
     assertEquals(result.get(0).geometry.get(), result.get(1).previousGeometry.get());
@@ -468,7 +469,7 @@ public class IterateByContributionNodesTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    // result size =2 becuase if tag filtered for disappears it's a deletion
+    // result size =2 because if tag filtered for disappears it's a deletion
     assertEquals(2, result.size()); // one version with tag shop
   }
 
@@ -497,7 +498,7 @@ public class IterateByContributionNodesTest {
             .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)).collect(Collectors.toList());
 
     assertEquals(2, result.size());
-    assertTrue(result.get(0).osmEntity.getId() == 13);
-    assertTrue(result.get(1).osmEntity.getId() == 14);
+    assertEquals(13, result.get(0).osmEntity.getId());
+    assertEquals(14, result.get(1).osmEntity.getId());
   }
 }

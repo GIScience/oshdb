@@ -68,7 +68,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     try {
       Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp2, areaDecider);
       assertTrue(result2 instanceof GeometryCollection || result2 instanceof Polygonal);
-      assertTrue(result2.getNumGeometries() == 3);
+      assertEquals(3, result2.getNumGeometries());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
@@ -110,6 +110,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     assertEquals(expectedPolygon2.getArea(), intersection2.getArea(), DELTA);
   }
 
+  @SuppressWarnings({"unused", "UnusedAssignment"})
   @Test
   public void testWaysNotExistent() {
     // relation with two ways, both missing
@@ -275,7 +276,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
       OSHDBTimestamp timestamp = entity.getTimestamp();
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
-      assertTrue(result.getNumGeometries() == 6);
+      assertEquals(6, result.getNumGeometries());
       assertFalse(result instanceof MultiPolygon);
     } catch (Exception e) {
       e.printStackTrace();
@@ -283,6 +284,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     }
   }
 
+  @SuppressWarnings({"unused", "UnusedAssignment"})
   @Test
   public void testNodesOfWaysNotExistent() {
     // relation with two ways, all nodes not existing
@@ -399,7 +401,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     Geometry resultAfter = OSHDBGeometryBuilder.getGeometry(entityAfter, timestampAfter,
         areaDecider);
     assertTrue(resultAfter instanceof GeometryCollection);
-    assertTrue(resultAfter.getNumGeometries() == 2);
+    assertEquals(2, resultAfter.getNumGeometries());
   }
 
   @Test

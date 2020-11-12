@@ -57,6 +57,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
     assertEquals(1.23, ((Point) resultAfter).getY(), DELTA);
   }
 
+  @SuppressWarnings("unused")
   @Test(expected = AssertionError.class)
   public void testInvalidAccess() {
     // A single node, lat lon changed over time

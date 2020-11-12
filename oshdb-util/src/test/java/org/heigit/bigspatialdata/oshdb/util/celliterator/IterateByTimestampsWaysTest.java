@@ -7,8 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
@@ -24,9 +22,7 @@ import org.locationtech.jts.geom.Polygon;
 
 public class IterateByTimestampsWaysTest {
 
-  private GridOSHWays oshdbDataGridCell;
-  private GridOSHNodes oshdbDataGridCellNodes;
-  private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
+  private final GridOSHWays oshdbDataGridCell;
   TagInterpreter areaDecider;
 
   /**
@@ -34,6 +30,7 @@ public class IterateByTimestampsWaysTest {
    * {@link GridOSHWays}.
    */
   public IterateByTimestampsWaysTest() throws IOException {
+    OSMXmlReader osmXmlTestData = new OSMXmlReader();
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHWays(osmXmlTestData);

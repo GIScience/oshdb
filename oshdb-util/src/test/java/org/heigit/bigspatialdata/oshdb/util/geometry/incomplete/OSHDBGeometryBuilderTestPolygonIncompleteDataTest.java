@@ -69,6 +69,7 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
 
+  @SuppressWarnings({"UnusedAssignment", "unused"})
   @Test
   public void testAllNodesOfWayNotExistent() {
     // relation with one way with two nodes, both missing

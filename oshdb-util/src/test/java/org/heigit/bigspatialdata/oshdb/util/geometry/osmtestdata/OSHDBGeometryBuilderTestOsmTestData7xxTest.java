@@ -314,26 +314,26 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
-  @Test
+  /* @Test
   public void test721() throws ParseException {
     // "Multipolygon with one outer and one inner ring. They are both oriented anti-clockwise and
     // have the correct role.
     // the same as test(720) apart from anti-clockwise
-  }
+  } */
 
-  @Test
+  /* @Test
   public void test722() throws ParseException {
     // Multipolygon with one outer and one inner ring. The outer ring is oriented clockwise, the
     // inner anti-clockwise. They have both the correct role.
     // the same as test(720) apart from anti-clockwise
-  }
+  } */
 
-  @Test
+  /* @Test
   public void test723() throws ParseException {
     // Multipolygon with one outer and one inner ring. The outer ring is oriented anti-clockwise,
     // the inner clockwise. They have both the correct role.
     // the same as test(722) apart from anti-clockwise
-  }
+  } */
 
   @Test
   public void test724() throws ParseException {
@@ -373,17 +373,17 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
-  @Test
+  /* @Test
   public void test726() throws ParseException {
     // Valid multipolygon with one inner and one outer
     // the same as test(724) apart from anti-clockwise
-  }
+  } */
 
-  @Test
+  /* @Test
   public void test727() throws ParseException {
     // Valid multipolygon with one inner and one outer
     // the same as test(724) apart from anti-clockwise
-  }
+  } */
 
   @Test
   public void test728() throws ParseException {
@@ -492,17 +492,17 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
-  @Test
+  /* @Test
   public void test733() throws ParseException {
     // Valid multipolygon with two outer rings
     // The same as test 706
-  }
+  } */
 
-  @Test
+  /* @Test
   public void test734() throws ParseException {
     // Valid multipolygon with three outer rings
     // the same as test 709
-  }
+  } */
 
   @Test
   public void test740() {
@@ -543,11 +543,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 
-  @Test
+  /* @Test
   public void test743() {
     // Invalid multipolygon because of a 'spike'
     // the same like test 742
-  }
+  } */
 
   @Test
   public void test744() {
@@ -556,7 +556,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 2);
+      assertEquals(2, result.getNumGeometries());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
@@ -570,7 +570,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 1);
+      assertEquals(1, result.getNumGeometries());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
@@ -584,7 +584,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 2);
+      assertEquals(2, result.getNumGeometries());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
@@ -753,39 +753,39 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 
-  @Test
+  /* @Test
   public void test758() throws ParseException {
     // Inner ring touching outer in node.
     // the same as test 755
-  }
+  } */
 
-  @Test
+  /* @Test
   public void test759() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/128
     // Outer going back on itself in single node.
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
-  @Test
+  /* @Test
   public void test760() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/128
     // Faking inner ring with outer going back on itself (with relation).
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
-  @Test
+  /* @Test
   public void test761() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/128
     // Faking inner ring with outer going back on itself (with relation).
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
-  @Test
+  /* @Test
   public void test762() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/127
     // Touching outer rings.
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
   @Test
   public void test763() throws ParseException {
@@ -835,26 +835,26 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
-  @Test
+  /* @Test
   public void test765() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/126
     // Multipolygon with one outer ring that should be split into two components.
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
-  @Test
+  /* @Test
   public void test766() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/126
     // Multipolygon with one outer and inner ring that should be split into two components.
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
-  @Test
+  /* @Test
   public void test767() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/125
     // Single way going back on itself.
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
   @Test
   public void test768() {
@@ -869,11 +869,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 
-  @Test
+  /* @Test
   public void test770() throws ParseException {
     // Multipolygon with two outer rings touching in single node.
     // the same as 706
-  }
+  } */
 
   @Test
   public void test771() {
@@ -882,7 +882,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertTrue(result.getNumGeometries() == 2);
+      assertEquals(2, result.getNumGeometries());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
@@ -943,19 +943,19 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     assertEquals(1.0, expectedPolygon.getArea() / intersection.getArea(), DELTA);
   }
 
-  @Test
+  /* @Test
   public void test775() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/124
     // Multipolygon with two outer rings touching in two nodes.
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
-  @Test
+  /* @Test
   public void test776() throws ParseException {
     // https://github.com/GIScience/oshdb/issues/124
     // Multipolygon with two outer rings touching in two nodes.
-    // -- no assertation, because the test data itself is not valid --
-  }
+    // -- no assertion, because the test data itself is not valid --
+  } */
 
   @Test
   public void test777() throws ParseException {
@@ -986,7 +986,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   }
 
   @Test
-  public void test778() throws ParseException {
+  public void test778() {
     /*
     778 is not a valid test case.
 
@@ -1160,6 +1160,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 
+  @SuppressWarnings("unused")
   @Test
   public void test792() {
     // Multipolygon relation containing two ways using the same nodes in different order
@@ -1172,6 +1173,7 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 
+  @SuppressWarnings("unused")
   @Test
   public void test793() {
     // Multipolygon relation containing the two ways using nearly the same nodes
@@ -1184,12 +1186,13 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 
-  @Test
+  /* @Test
   public void test794() {
     // Multipolygon relation containing three ways using the same nodes in the same order.
     // the same like test 791
-  }
+  } */
 
+  @SuppressWarnings("unused")
   @Test
   public void test795() {
     // Multipolygon with one outer and one duplicated inner ring

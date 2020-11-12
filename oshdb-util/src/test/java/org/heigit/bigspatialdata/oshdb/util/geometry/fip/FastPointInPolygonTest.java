@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -70,11 +71,11 @@ public class FastPointInPolygonTest {
     GeometryFactory gf = new GeometryFactory();
 
     // inside
-    assertEquals(pip.test(gf.createPoint(new Coordinate(-0.5, 0))), true);
+    assertTrue(pip.test(gf.createPoint(new Coordinate(-0.5, 0))));
     // in concave part
-    assertEquals(pip.test(gf.createPoint(new Coordinate(0.5, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(0.5, 0))));
     // outside poly's bbox
-    assertEquals(pip.test(gf.createPoint(new Coordinate(1.5, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(1.5, 0))));
   }
 
   @Test
@@ -85,11 +86,11 @@ public class FastPointInPolygonTest {
     GeometryFactory gf = new GeometryFactory();
 
     // inside
-    assertEquals(pip.test(gf.createPoint(new Coordinate(2.25, 0))), true);
+    assertTrue(pip.test(gf.createPoint(new Coordinate(2.25, 0))));
     // in hole
-    assertEquals(pip.test(gf.createPoint(new Coordinate(3, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(3, 0))));
     // outside poly's bbox
-    assertEquals(pip.test(gf.createPoint(new Coordinate(4.5, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(4.5, 0))));
   }
 
   @Test
@@ -100,16 +101,16 @@ public class FastPointInPolygonTest {
     GeometryFactory gf = new GeometryFactory();
 
     // inside left polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(-0.5, 0))), true);
+    assertTrue(pip.test(gf.createPoint(new Coordinate(-0.5, 0))));
     // in concave part of left polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(0.5, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(0.5, 0))));
     // outside left polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(1.5, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(1.5, 0))));
     // inside right polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(2.25, 0))), true);
+    assertTrue(pip.test(gf.createPoint(new Coordinate(2.25, 0))));
     // in hole of right polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(3, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(3, 0))));
     // outside right polygon
-    assertEquals(pip.test(gf.createPoint(new Coordinate(4.5, 0))), false);
+    assertFalse(pip.test(gf.createPoint(new Coordinate(4.5, 0))));
   }
 }

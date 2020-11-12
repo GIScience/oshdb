@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.index.XYGrid;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
@@ -24,7 +23,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
 public class IterateByTimestampsNodesTest {
-  private GridOSHNodes oshdbDataGridCell;
+  private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
@@ -264,8 +263,8 @@ public class IterateByTimestampsNodesTest {
     ).collect(Collectors.toList());
 
     assertEquals(3, result.size());
-    assertTrue(result.get(0).osmEntity.getId() == 13);
-    assertTrue(result.get(1).osmEntity.getId() == 13);
-    assertTrue(result.get(2).osmEntity.getId() == 14);
+    assertEquals(13, result.get(0).osmEntity.getId());
+    assertEquals(13, result.get(1).osmEntity.getId());
+    assertEquals(14, result.get(2).osmEntity.getId());
   }
 }

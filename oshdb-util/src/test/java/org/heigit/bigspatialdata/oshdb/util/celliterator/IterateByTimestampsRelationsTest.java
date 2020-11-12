@@ -25,8 +25,7 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
 public class IterateByTimestampsRelationsTest {
-  private GridOSHRelations oshdbDataGridCell;
-  private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
+  private final GridOSHRelations oshdbDataGridCell;
   TagInterpreter areaDecider;
 
   /**
@@ -34,6 +33,7 @@ public class IterateByTimestampsRelationsTest {
    * {@link GridOSHRelations}.
    */
   public IterateByTimestampsRelationsTest() throws IOException {
+    OSMXmlReader osmXmlTestData = new OSMXmlReader();
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
@@ -92,6 +92,7 @@ public class IterateByTimestampsRelationsTest {
     assertEquals(303, result.get(0).osmEntity.getChangesetId());
   }
 
+  @SuppressWarnings("unused")
   @Test
   public void testWaysNotExistent() {
     // relation with two ways, both missing
@@ -254,6 +255,7 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom2 instanceof GeometryCollection);
   }
 
+  @SuppressWarnings("unused")
   @Test
   public void testNodesOfWaysNotExistent() {
     // relation 2 way members nodes do not exist
@@ -767,7 +769,7 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInVersion2() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2016-01-01T00:00:00Z",
@@ -788,7 +790,7 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersion() {
-    // relation in first and third version visible = false, timeinterval includes version 3
+    // relation in first and third version visible = false, time interval includes version 3
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2016-01-01T00:00:00Z",
@@ -839,7 +841,7 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInVersion2Clipped() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
     coords[0] = new Coordinate(10.8, 10.3);
@@ -869,7 +871,7 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
-    // relation in first and third version visible = false, timeinterval includes version 3
+    // relation in first and third version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
     coords[0] = new Coordinate(10.8, 10.3);
@@ -899,7 +901,7 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testExcludingVersion2Clipped() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
     coords[0] = new Coordinate(7.31, 1.0);
