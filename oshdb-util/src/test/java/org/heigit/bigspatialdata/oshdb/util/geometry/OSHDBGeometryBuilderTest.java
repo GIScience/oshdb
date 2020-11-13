@@ -206,24 +206,4 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
   }
-
-  abstract class FakeTagInterpreter implements TagInterpreter {
-
-    @Override
-    public boolean isArea(OSMEntity entity) {
-      return false;
-    }
-
-    @Override
-    public boolean isLine(OSMEntity entity) {
-      return false;
-    }
-
-    @Override
-    public boolean hasInterestingTagKey(OSMEntity osm) {
-      return false;
-    }
-
-  }
-
 }
