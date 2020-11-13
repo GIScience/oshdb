@@ -13,21 +13,6 @@ public class MutableOSMEntity {
   private int userId;
   private int[] tags;
 
-  /**
-   * Set properties of {@link MutableOSMEntity} with given parameters.
-   */
-  public void setEntity(long id, int version, boolean visible, long timestamp,
-      long changeset, int userId, int[] tags) {
-    this.id = id;
-    this.version = version;
-    this.visible = visible;
-    this.timestamp.setTimestamp(timestamp);
-    this.changeset = changeset;
-    this.userId = userId;
-    this.tags = tags;
-  }
-  
-  
   public long getId() {
     return id;
   }
