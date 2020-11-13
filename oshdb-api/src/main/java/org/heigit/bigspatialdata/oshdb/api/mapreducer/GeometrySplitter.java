@@ -192,8 +192,10 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           FastPolygonOperations poop = poops.get(index);
           PreparedGeometry pg = pgs.get(index);
           try {
-            boolean intersectsBefore = pg.intersects(contributionGeometryBefore);
-            boolean intersectsAfter = pg.intersects(contributionGeometryAfter);
+            boolean intersectsBefore = contributionGeometryBefore != null
+                && pg.intersects(contributionGeometryBefore);
+            boolean intersectsAfter = contributionGeometryAfter != null
+                && pg.intersects(contributionGeometryAfter);
             if ((!intersectsBefore) && (!intersectsAfter)) {
               return Stream.empty(); // not actually intersecting -> skip
             } else {
