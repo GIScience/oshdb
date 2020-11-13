@@ -69,14 +69,12 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
     assertEquals(expectedPolygon.getArea(), intersection.getArea(), DELTA);
   }
 
-  @SuppressWarnings({"UnusedAssignment", "unused"})
   @Test
   public void testAllNodesOfWayNotExistent() {
     // relation with one way with two nodes, both missing
     OSMEntity entity1 = testData.relations().get(502L).get(0);
-    Geometry result1 = null;
     try {
-      result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");

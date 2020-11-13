@@ -110,15 +110,13 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     assertEquals(expectedPolygon2.getArea(), intersection2.getArea(), DELTA);
   }
 
-  @SuppressWarnings({"unused", "UnusedAssignment"})
   @Test
   public void testWaysNotExistent() {
     // relation with two ways, both missing
     OSMEntity entity = testData.relations().get(502L).get(0);
-    Geometry result = null;
     try {
       OSHDBTimestamp timestamp = entity.getTimestamp();
-      result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
@@ -284,15 +282,13 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     }
   }
 
-  @SuppressWarnings({"unused", "UnusedAssignment"})
   @Test
   public void testNodesOfWaysNotExistent() {
     // relation with two ways, all nodes not existing
     OSMEntity entity = testData.relations().get(508L).get(0);
-    Geometry result = null;
     try {
       OSHDBTimestamp timestamp = entity.getTimestamp();
-      result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+      OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");

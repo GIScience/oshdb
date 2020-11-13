@@ -57,14 +57,13 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
     assertEquals(1.23, ((Point) resultAfter).getY(), DELTA);
   }
 
-  @SuppressWarnings("unused")
   @Test(expected = AssertionError.class)
   public void testInvalidAccess() {
     // A single node, lat lon changed over time
     OSMEntity entity = testData.nodes().get(1L).get(0);
     // timestamp before oldest timestamp
     OSHDBTimestamp timestampBefore =  TimestampParser.toOSHDBTimestamp("2007-01-01T00:00:00Z");
-    Geometry resultBefore = OSHDBGeometryBuilder.getGeometry(entity, timestampBefore, areaDecider);
+    OSHDBGeometryBuilder.getGeometry(entity, timestampBefore, areaDecider);
   }
 
   @Test

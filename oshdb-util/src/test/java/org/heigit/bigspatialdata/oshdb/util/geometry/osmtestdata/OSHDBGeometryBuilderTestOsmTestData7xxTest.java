@@ -1160,26 +1160,24 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     }
   }
 
-  @SuppressWarnings("unused")
   @Test
   public void test792() {
     // Multipolygon relation containing two ways using the same nodes in different order
     OSMEntity entity1 = testData.relations().get(792900L).get(0);
     try {
-      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
     }
   }
 
-  @SuppressWarnings("unused")
   @Test
   public void test793() {
     // Multipolygon relation containing the two ways using nearly the same nodes
     OSMEntity entity1 = testData.relations().get(793900L).get(0);
     try {
-      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
@@ -1192,13 +1190,12 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
     // the same like test 791
   } */
 
-  @SuppressWarnings("unused")
   @Test
   public void test795() {
     // Multipolygon with one outer and one duplicated inner ring
     OSMEntity entity1 = testData.relations().get(795900L).get(0);
     try {
-      Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
+      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
