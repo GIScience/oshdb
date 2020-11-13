@@ -49,6 +49,7 @@ public class FastBboxInPolygonTest {
   }
 
   @Test
+  @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
   public void testBboxInPolygonWithHole() {
     Polygon p = FastPointInPolygonTest.createPolygonWithHole();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
@@ -82,6 +83,7 @@ public class FastBboxInPolygonTest {
   }
 
   @Test
+  @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
   public void testBboxInMultiPolygon() {
     MultiPolygon p = FastPointInPolygonTest.createMultiPolygon();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
