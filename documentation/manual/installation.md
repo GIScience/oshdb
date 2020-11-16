@@ -24,7 +24,7 @@ First the HeiGIT reopsitory needs to be defined to enable Maven to fetch the nec
 <repository>
   <id>oshdb-releases</id>
   <name>Heigit/GIScience repository</name>
-  <url>http://repo.heigit.org/artifactory/libs-release-local</url>
+  <url>https://repo.heigit.org/artifactory/libs-release-local</url>
 </repository>
 ```
 
@@ -40,7 +40,7 @@ In a second step the desired dependency is declared. For most use cases this wou
 </dependencies>
 ```
 
-Advaced users may also be interested in other packages like the `oshdb` package for raw data access. A complete list of OSHDB artifacts can be found in our [artifactory repository](http://repo.heigit.org/artifactory/webapp/#/artifacts/browse/tree/General/libs-release-local/org/heigit/bigspatialdata).
+Advaced users may also be interested in other packages like the `oshdb` package for raw data access. A complete list of OSHDB artifacts can be found in our [artifactory repository](https://repo.heigit.org/artifactory/webapp/#/artifacts/browse/tree/General/libs-release-local/org/heigit/bigspatialdata).
 
 
 ## Option 2: Building from Source
