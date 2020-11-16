@@ -20,7 +20,7 @@
       </snapshots>
       <id>oshdb-releases</id>
       <name>Heigit/GIScience repository (releases)</name>
-      <url>http://repo.heigit.org/artifactory/libs-release-local</url>
+      <url>https://repo.heigit.org/artifactory/libs-release-local</url>
     </repository>
   </repositories>
 
