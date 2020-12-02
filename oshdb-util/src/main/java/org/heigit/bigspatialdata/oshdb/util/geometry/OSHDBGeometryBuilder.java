@@ -500,34 +500,35 @@ public class OSHDBGeometryBuilder {
           break; // ring is complete -> we're done
         }
         boolean joinable = false;
-        for (int i = 0; i < ways.size(); i++) {
-          LinkedList<OSMNode> what = ways.get(i);
+        var waysIterator = ways.iterator();
+        while (waysIterator.hasNext()) {
+          LinkedList<OSMNode> what = waysIterator.next();
           if (lastId == what.getFirst().getId()) {
             // end of partial ring matches to start of current line
             what.removeFirst();
             current.addAll(what);
-            ways.remove(i);
+            waysIterator.remove();
             joinable = true;
             break;
           } else if (firstId == what.getLast().getId()) {
             // start of partial ring matches end of current line
             what.removeLast();
             current.addAll(0, what);
-            ways.remove(i);
+            waysIterator.remove();
             joinable = true;
             break;
           } else if (lastId == what.getLast().getId()) {
             // end of partial ring matches end of current line
             what.removeLast();
             current.addAll(Lists.reverse(what));
-            ways.remove(i);
+            waysIterator.remove();
             joinable = true;
             break;
           } else if (firstId == what.getFirst().getId()) {
             // start of partial ring matches start of current line
             what.removeFirst();
             current.addAll(0, Lists.reverse(what));
-            ways.remove(i);
+            waysIterator.remove();
             joinable = true;
             break;
           }
