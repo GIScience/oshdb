@@ -13,17 +13,6 @@
     </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>oshdb-releases</id>
-      <name>Heigit/GIScience repository (releases)</name>
-      <url>https://repo.heigit.org/artifactory/libs-release-local</url>
-    </repository>
-  </repositories>
-
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

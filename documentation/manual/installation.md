@@ -16,19 +16,7 @@ compiler version to the properties section of your pom.xml file:
 
 ## Option 1: Adding the OSHDB as a maven dependency 
 
-Two entries need to be added to the pom.xml to set up the OSHDB as a dependency.
-
-First the HeiGIT reopsitory needs to be defined to enable Maven to fetch the necessary `.jar` files:
-
-```xml
-<repository>
-  <id>oshdb-releases</id>
-  <name>Heigit/GIScience repository</name>
-  <url>https://repo.heigit.org/artifactory/libs-release-local</url>
-</repository>
-```
-
-In a second step the desired dependency is declared. For most use cases this would be the [`oshdb-api`](api.md):
+Simply add the OSHDB as a dependency to your `pom.xml` file. For most use cases this would be the [`oshdb-api`](api.md):
 
 ```xml
 <dependencies>
@@ -40,8 +28,7 @@ In a second step the desired dependency is declared. For most use cases this wou
 </dependencies>
 ```
 
-Advaced users may also be interested in other packages like the `oshdb` package for raw data access. A complete list of OSHDB artifacts can be found in our [artifactory repository](https://repo.heigit.org/artifactory/webapp/#/artifacts/browse/tree/General/libs-release-local/org/heigit/bigspatialdata).
-
+Advaced users may also be interested in other packages like the `oshdb` package for raw data access.
 
 ## Option 2: Building from Source
 

@@ -29,14 +29,6 @@ If you already have an existing Java maven project, the OSHDB-API can be added t
 </dependency>
 ```
 
-```xml
-<repository>
-  <id>oshdb-releases</id>
-  <name>Heigit/GIScience repository</name>
-  <url>https://repo.heigit.org/artifactory/libs-release-local</url>
-</repository>
-```
-
 Note that the OSHDB requires Java 8, so it could sometimes be necessary to specify this additional restriction in the `pom.xml` as well. Take a look at this [example `pom.xml`](./example-pom.xml) file that shows how all these settings should be put together.
 
 If you're starting a new OSHDB project from scratch, it's typically a good idea to create a new maven project using the "create new project" wizard of your IDE of choice. After that you can use the steps described above to add OSHDB as a dependency to the new project.
