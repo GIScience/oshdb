@@ -1,16 +1,42 @@
 Changelog
 =========
 
-## 0.6.0 SNAPSHOT (current master)
+## 0.6.0-RC1
 
-* reorganize maven packages: rename group parent to ohsome-parent (version bump to 2.3), rename local parent to oshdb-parent, and change groupId to org.heigit.ohsome
+### breaking changes
+
+* reorganize maven packages: rename group parent to ohsome-parent, rename local parent to oshdb-parent, and change groupId to `org.heigit.ohsome`. #234 #257
+
+When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the new groupId, e.g.:
+```xml
+<dependency>
+  <groupId>org.heigit.ohsome</groupId>
+  <artifactId>oshdb-api</artifactId>
+  <version>0.6.0</version>
+</dependency>
+```
+
+* Timestamp parser class renamed to `IsoDateTimeParser` from `ISODateTimeParser` and adjust how input timestamps (e.g. in `MapReducer.timestamps()`) are handled: only the UTC time zone identifier `Z` is supported. #265
+* Removed `UNKOWN` from the `OSMType` enumeration class. #239
+
+### new features
+
+* improve accuracy of built-in geometry helper functions which calculate the geodesic lengths and areas of OSM geometries. #193
+* integrate [ohsome filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) functionality. #253
+
+### performance improvements
+
+* better handling of OSM multipolygons with touching inner rings. This improves performance considerably in some cases (especially large complex multipolygons). #249
+* improve performance of `aggregateByGeometry` queries. #272
+* improve performance of geometry-building of relations with a huge number members. #287
+
+### bugfixes and other changes
+
 * compatibility fix to allow building of javadoc under Java 11
 * fix bug where in some cases, instead of an OSHDBTimeoutException an IniteException was thrown. #258
-* improve accuracy of built-in geometry helper functions which calculate the geodesic lengths and areas of OSM geometries. #193
-* better handling of OSM multipolygons with touching inner rings. This improves performance considerably in some cases (especially large complex multipolygons). #249
-* (breaking) Timestamp parser class renamed to `IsoDateTimeParser` from `ISODateTimeParser` and adjust how input timestamps (e.g. in `MapReducer.timestamps()`) are handled: only the UTC time zone identifier `Z` is supported. #265
-* integrate [ohsome filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) functionality. #253
-* improve performance of `aggregateByGeometry` queries. #272
+* various code style and code quality improvements
+* the OSHDB is now published on Zenodo for easier citation using the DOI `10.5281/zenodo.4146991`
+
 
 ## 0.5.10
 
