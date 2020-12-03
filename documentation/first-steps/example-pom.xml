@@ -9,7 +9,6 @@
       <groupId>org.heigit.bigspatialdata</groupId>
       <artifactId>oshdb-api</artifactId>
       <version>0.5.10</version>
-      <type>jar</type>
     </dependency>
   </dependencies>
 
