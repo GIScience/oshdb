@@ -6,6 +6,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -241,7 +244,6 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     }
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void test131() {
     // Crossing ways with common node
@@ -252,19 +254,14 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.intersects(result2));
-    for (int j = 0; j < result1.getLength(); j++) {
-      for (int i = 0; i < result2.getLength(); i++) {
-        try {
-          ((LineString) result1).getCoordinateN(j).equals(((LineString) result2).getCoordinateN(i));
-        } catch (Exception e) {
-          e.printStackTrace();
-          fail("No common node");
-        }
-      }
-    }
+    Set<Coordinate> res1Coords = Arrays
+        .stream(result1.getCoordinates())
+        .collect(Collectors.toSet());
+    assertTrue(Arrays
+        .stream(result2.getCoordinates())
+        .anyMatch(res1Coords::contains));
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void test132() {
     // Crossing ways without common node, but crossing node at same position
@@ -276,17 +273,12 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.crosses(result2));
     assertTrue(result1.intersects(result2));
-    for (int j = 0; j < result1.getLength(); j++) {
-      for (int i = 0; i < result2.getLength(); i++) {
-        try {
-          ((LineString) result1).getCoordinateN(j).equals(
-              ((LineString) result2).getCoordinateN(i));
-        } catch (Exception e) {
-          e.printStackTrace();
-          fail("No common node");
-        }
-      }
-    }
+    Set<Coordinate> res1Coords = Arrays
+        .stream(result1.getCoordinates())
+        .collect(Collectors.toSet());
+    assertTrue(Arrays
+        .stream(result2.getCoordinates())
+        .anyMatch(res1Coords::contains));
   }
 
   @Test
