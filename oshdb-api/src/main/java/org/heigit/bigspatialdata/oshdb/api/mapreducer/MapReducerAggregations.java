@@ -38,8 +38,8 @@ interface MapReducerAggregations<X> {
    * </ul>
    *
    * <p>
-   * Functionally, this interface is similar to Java8 Stream's
-   * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a>
+   * Functionally, this interface is similar to Java11 Stream's
+   * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Stream.html#reduce(U,java.util.function.BiFunction,java.util.function.BinaryOperator)">reduce(identity,accumulator,combiner)</a>
    * interface.
    * </p>
    *
@@ -85,8 +85,8 @@ interface MapReducerAggregations<X> {
    * </ul>
    *
    * <p>
-   * Functionally, this interface is similar to Java8 Stream's
-   * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-T-java.util.function.BinaryOperator-">reduce(identity,accumulator)</a>
+   * Functionally, this interface is similar to Java11 Stream's
+   * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Stream.html#reduce(T,java.util.function.BinaryOperator)">reduce(identity,accumulator)</a>
    * interface.
    * </p>
    *

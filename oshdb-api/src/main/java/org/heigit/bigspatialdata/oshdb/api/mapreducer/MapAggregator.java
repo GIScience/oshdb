@@ -867,8 +867,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * </ul>
    *
    * <p>
-   * Functionally, this interface is similar to Java8 Stream's <a
-   * href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a>
+   * Functionally, this interface is similar to Java11 Stream's
+   * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Stream.html#reduce(U,java.util.function.BiFunction,java.util.function.BinaryOperator)">reduce(identity,accumulator,combiner)</a>
    * interface.
    * </p>
    *
@@ -951,8 +951,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * </ul>
    *
    * <p>
-   * Functionally, this interface is similar to Java8 Stream's <a
-   * href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html#reduce-U-java.util.function.BiFunction-java.util.function.BinaryOperator-">reduce(identity,accumulator,combiner)</a>
+   * Functionally, this interface is similar to Java11 Stream's
+   * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Stream.html#reduce(U,java.util.function.BiFunction,java.util.function.BinaryOperator)">reduce(identity,accumulator,combiner)</a>
    * interface.
    * </p>
    *
