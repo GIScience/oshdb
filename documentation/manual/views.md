@@ -22,7 +22,7 @@ MapReducer<OSMEntitySnapshot> snapshotsMapReducer = OSMEntitySnapshotView.on(osh
 MapReducer<OSMContribution> contributionsMapReducer = OSMContributionView.on(oshdb);
 ```
 
-A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html) object in Java 8: It stores all the information about what kind of filters, transformation functions and aggregation methods should be applied to the data and is executed exactly once by calling a terminal operation, such as the reduce method, or one of the supplied specialized reducers (e.g., `count`, `sum`, etc.). The chapter “[Map and Reduce](map-reduce.md)” of this manual describes the ideas of the `MapReducer` object in more detail.
+A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Stream.html) object in Java 11: It stores all the information about what kind of filters, transformation functions and aggregation methods should be applied to the data and is executed exactly once by calling a terminal operation, such as the reduce method, or one of the supplied specialized reducers (e.g., `count`, `sum`, etc.). The chapter “[Map and Reduce](map-reduce.md)” of this manual describes the ideas of the `MapReducer` object in more detail.
 
 ### Snapshot View
 

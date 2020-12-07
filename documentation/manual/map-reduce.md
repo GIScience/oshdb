@@ -31,7 +31,7 @@ The [`reduce`](https://docs.ohsome.org/java/oshdb/0.5.10/aggregated/org/heigit/b
 
 Every OSHDB query must have exactly one terminal reduce operation (or use the `stream` method explained [below](#stream)).
 
-> Remark: If you are already familiar with [Hadoop](https://en.wikipedia.org/wiki/Apache_Hadoop), note that for defining a reduce operation we use the terminology of the [Java stream API](https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html) which is slightly different from the terminology used in Hadoop. In particular, the Java stream API and Hadoop use the same term 'combiner' for different things.
+> Remark: If you are already familiar with [Hadoop](https://en.wikipedia.org/wiki/Apache_Hadoop), note that for defining a reduce operation we use the terminology of the [Java stream API](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/package-summary.html) which is slightly different from the terminology used in Hadoop. In particular, the Java stream API and Hadoop use the same term 'combiner' for different things.
 
 specialized reducers
 --------------------
