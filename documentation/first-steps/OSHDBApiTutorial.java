@@ -1,3 +1,5 @@
+package org.example.oshdb.api.tutorial;
+
 import java.util.SortedMap;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
