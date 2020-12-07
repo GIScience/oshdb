@@ -195,27 +195,19 @@ public class OSMXmlReader {
             roles.put(role, r);
           }
 
-          OSMType t;
-          if ("node".equalsIgnoreCase(type)) {
-            t = OSMType.NODE;
-          } else if ("way".equalsIgnoreCase(type)) {
-            t = OSMType.WAY;
-          } else if ("relation".equalsIgnoreCase(type)) {
-            t = OSMType.RELATION;
-          } else {
-            t = null;
-          }
-
           // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
           OSHEntity data = null;
+          OSMType t = null;
           // relation-relation-members do not get data, because they are unsupported
-          switch (t) {
-            case NODE:
+          switch (type.toLowerCase()) {
+            case "node":
+              t = OSMType.NODE;
               if (this.nodes.containsKey(memId)) {
                 data = OSHNodeImpl.build(this.nodes().get(memId));
               }
               break;
-            case WAY:
+            case "way":
+              t = OSMType.WAY;
               Map<Long, OSHNode> wayNodes = new TreeMap<>();
               for (OSMWay way : this.ways().get(memId)) {
                 for (OSMMember wayNode : way.getRefs()) {
@@ -228,6 +220,9 @@ public class OSMXmlReader {
                     wayNodes.values().stream().filter(Objects::nonNull).collect(Collectors.toList())
                 );
               }
+              break;
+            case "relation":
+              t = OSMType.RELATION;
               break;
             default:
               break;
@@ -268,6 +263,7 @@ public class OSMXmlReader {
    *
    * @param xmlFilePath file path(s) to use
    */
+  @SuppressWarnings("UnstableApiUsage") // allow usage of getFileExtension(...), which is @Beta
   public void add(Path... xmlFilePath) {
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -303,22 +299,17 @@ public class OSMXmlReader {
 
   private static Iterable<Element> iterableOf(NodeList elements) {
     final int lastIndex = elements.getLength();
-    return new Iterable<Element>() {
+    return () -> new Iterator<>() {
+      private int index = 0;
+
       @Override
-      public Iterator<Element> iterator() {
-        return new Iterator<Element>() {
-          private int index = 0;
+      public boolean hasNext() {
+        return index < lastIndex;
+      }
 
-          @Override
-          public boolean hasNext() {
-            return index < lastIndex;
-          }
-
-          @Override
-          public Element next() {
-            return (Element) elements.item(index++);
-          }
-        };
+      @Override
+      public Element next() {
+        return (Element) elements.item(index++);
       }
     };
   }
@@ -327,6 +318,7 @@ public class OSMXmlReader {
     return iterableOf(doc.getElementsByTagName(tag));
   }
 
+  @SuppressWarnings("unused")
   private static Iterable<Element> elementsByTag(Element e, String tag) {
     return iterableOf(e.getElementsByTagName(tag));
   }
@@ -407,6 +399,7 @@ public class OSMXmlReader {
   /**
    * Get attribute {@code name} from {@link Element} {@code e} as {@code boolean}.
    */
+  @SuppressWarnings("unused")
   public static boolean attrAsBoolean(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
