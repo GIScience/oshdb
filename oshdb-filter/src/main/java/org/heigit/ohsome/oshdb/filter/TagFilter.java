@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import javax.annotation.Nonnull;
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
-import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
+import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
+import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
+import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagKey;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.jetbrains.annotations.Contract;
 
 /**

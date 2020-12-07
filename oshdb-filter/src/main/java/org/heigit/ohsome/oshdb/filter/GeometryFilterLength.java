@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import javax.annotation.Nonnull;
-import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
+import org.heigit.ohsome.oshdb.util.geometry.Geo;
 
 /**
  * A filter which checks the length of OSM feature geometries.

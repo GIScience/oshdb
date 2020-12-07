@@ -2,8 +2,8 @@ package org.heigit.ohsome.oshdb.filter;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
 
 /**
  * A filter which executes a "id [not] in range" check.

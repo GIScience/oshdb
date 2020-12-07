@@ -3,9 +3,9 @@ package org.heigit.ohsome.oshdb.filter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.jetbrains.annotations.Contract;
 
 /**
