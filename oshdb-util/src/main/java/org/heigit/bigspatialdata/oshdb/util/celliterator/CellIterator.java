@@ -321,9 +321,9 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
-        if (osmEntity instanceof OSMWay && ((OSMWay)osmEntity).getRefs().length == 0
+        if (osmEntity instanceof OSMWay && ((OSMWay) osmEntity).getRefs().length == 0
             || osmEntity instanceof OSMRelation
-                && ((OSMRelation)osmEntity).getMembers().length == 0) {
+                && ((OSMRelation) osmEntity).getMembers().length == 0) {
           // skip way/relation with zero nodes/members
           continue;
         }
@@ -626,8 +626,8 @@ public class CellIterator implements Serializable {
           if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
             prev = new IterateAllEntry(timestamp,
                 osmEntity, prev.osmEntity, oshEntity,
-                new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
-                new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
+                new LazyEvaluatedObject<>((Geometry) null), prev.geometry,
+                new LazyEvaluatedObject<>((Geometry) null), prev.unclippedGeometry,
                 new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
                 osmEntity.getChangesetId()
             );
@@ -672,8 +672,8 @@ public class CellIterator implements Serializable {
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
                   osmEntity, prev.osmEntity, oshEntity,
-                  new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
-                  new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
+                  new LazyEvaluatedObject<>((Geometry) null), prev.geometry,
+                  new LazyEvaluatedObject<>((Geometry) null), prev.unclippedGeometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
                   changesetTs.get(timestamp)
               );
@@ -718,8 +718,8 @@ public class CellIterator implements Serializable {
             if (prev != null && !prev.activities.contains(ContributionType.DELETION)) {
               prev = new IterateAllEntry(timestamp,
                   osmEntity, prev.osmEntity, oshEntity,
-                  new LazyEvaluatedObject<>((Geometry)null), prev.geometry,
-                  new LazyEvaluatedObject<>((Geometry)null), prev.unclippedGeometry,
+                  new LazyEvaluatedObject<>((Geometry) null), prev.geometry,
+                  new LazyEvaluatedObject<>((Geometry) null), prev.unclippedGeometry,
                   new LazyEvaluatedContributionTypes(EnumSet.of(ContributionType.DELETION)),
                   changesetTs.get(timestamp)
               );
@@ -775,8 +775,8 @@ public class CellIterator implements Serializable {
           } else {
             result = new IterateAllEntry(timestamp,
                 osmEntity, null, oshEntity,
-                geom, new LazyEvaluatedObject<>((Geometry)null),
-                unclippedGeom, new LazyEvaluatedObject<>((Geometry)null),
+                geom, new LazyEvaluatedObject<>((Geometry) null),
+                unclippedGeom, new LazyEvaluatedObject<>((Geometry) null),
                 activity,
                 changesetTs.get(timestamp)
             );

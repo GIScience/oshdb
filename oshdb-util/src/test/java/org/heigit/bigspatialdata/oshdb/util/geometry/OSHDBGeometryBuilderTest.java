@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -11,7 +12,6 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.FakeTagInterpreterA
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.FakeTagInterpreterAreaNever;
 import org.heigit.bigspatialdata.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.bigspatialdata.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.bigspatialdata.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,17 +32,6 @@ public class OSHDBGeometryBuilderTest {
     testData.add("./src/test/resources/geometryBuilder.osh");
   }
 
-  private OSHDBTimestamp toOSHDBTimestamp(String timeString) {
-    try {
-      return new OSHDBTimestamp(
-          IsoDateTimeParser.parseIsoDateTime(timeString).toEpochSecond()
-      );
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
-
   @Test
   public void testPointGetGeometry() {
     OSMEntity entity = testData.nodes().get(1L).get(1);
@@ -60,17 +49,17 @@ public class OSHDBGeometryBuilderTest {
     // by bbox
     OSHDBBoundingBox clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 90.0);
     Geometry result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipBbox);
-    assertEquals(false, result.isEmpty());
+    assertFalse(result.isEmpty());
     clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 0.0, 0.0);
     result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipBbox);
-    assertEquals(true, result.isEmpty());
+    assertTrue(result.isEmpty());
     // by poly
     Polygon clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
     result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipPoly);
-    assertEquals(false, result.isEmpty());
+    assertFalse(result.isEmpty());
     clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-1, -1, 1, 1));
     result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipPoly);
-    assertEquals(true, result.isEmpty());
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -118,12 +107,12 @@ public class OSHDBGeometryBuilderTest {
     entity = testData.ways().get(4L).get(0);
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("Point", result.getGeometryType());
-    assertEquals(false, result.isEmpty());
+    assertFalse(result.isEmpty());
 
     // zero noded way
     entity = testData.ways().get(5L).get(0);
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    assertEquals(true, result.isEmpty());
+    assertTrue(result.isEmpty());
   }
 
   @Test
@@ -177,9 +166,9 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testBoundingBoxOf() throws ParseException {
+  public void testBoundingBoxOf() {
     OSHDBBoundingBox bbox = OSHDBGeometryBuilder.boundingBoxOf(new Envelope(-180, 180, -90, 90));
-    assertEquals(new String("(-180.0000000,-90.0000000,180.0000000,90.0000000)"), bbox.toString());
+    assertEquals("(-180.0000000,-90.0000000,180.0000000,90.0000000)", bbox.toString());
   }
 
   @Test
@@ -217,24 +206,4 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(0, 0)};
     Assert.assertArrayEquals(test, geometry.getCoordinates());
   }
-
-  abstract class FakeTagInterpreter implements TagInterpreter {
-
-    @Override
-    public boolean isArea(OSMEntity entity) {
-      return false;
-    }
-
-    @Override
-    public boolean isLine(OSMEntity entity) {
-      return false;
-    }
-
-    @Override
-    public boolean hasInterestingTagKey(OSMEntity osm) {
-      return false;
-    }
-
-  }
-
 }

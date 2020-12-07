@@ -2,6 +2,7 @@ package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 public class IterateByContributionNodesTest {
-  private GridOSHNodes oshdbDataGridCell;
+  private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
 
@@ -48,7 +49,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
@@ -71,7 +72,7 @@ public class IterateByContributionNodesTest {
         result.get(2).activities.get()
     );
     assertEquals(1, result.get(0).changeset);
-    assertEquals(null, result.get(0).previousGeometry.get());
+    assertNull(result.get(0).previousGeometry.get());
     Geometry geom = result.get(0).geometry.get();
     assertTrue(geom instanceof Point);
     assertEquals(result.get(0).geometry.get(), result.get(1).previousGeometry.get());
@@ -88,7 +89,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 2,
         osmEntity -> true,
@@ -124,7 +125,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 3,
         osmEntity -> true,
@@ -171,7 +172,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 4,
         osmEntity -> true,
@@ -186,7 +187,7 @@ public class IterateByContributionNodesTest {
         result.get(0).activities.get()
     );
     assertEquals(
-        EnumSet.of(ContributionType.TAG_CHANGE,ContributionType.GEOMETRY_CHANGE),
+        EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
     );
     assertEquals(
@@ -301,7 +302,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
@@ -337,7 +338,7 @@ public class IterateByContributionNodesTest {
             "2007-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 7,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("disused:shop")),
@@ -369,7 +370,7 @@ public class IterateByContributionNodesTest {
             "2007-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(0,0, 180, 90),
+        new OSHDBBoundingBox(0, 0, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 8,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
@@ -402,7 +403,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
@@ -418,11 +419,11 @@ public class IterateByContributionNodesTest {
     // lon lat changes, so that node in v2 is outside bbox
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -438,7 +439,7 @@ public class IterateByContributionNodesTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(2,result.size());
+    assertEquals(2, result.size());
   }
 
   @Test
@@ -447,11 +448,11 @@ public class IterateByContributionNodesTest {
     final GeometryFactory geometryFactory = new GeometryFactory();
     // create clipping polygon for area of interest
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -459,7 +460,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        polygonFromCoordinates,// clipping polygon
+        polygonFromCoordinates, // clipping polygon
         areaDecider,
         oshEntity -> oshEntity.getId() == 6,
         // filter entity for tag = shop
@@ -468,8 +469,8 @@ public class IterateByContributionNodesTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    // result size =2 becuase if tag filtered for disappears it's a deletion
-    assertEquals(2,result.size()); // one version with tag shop
+    // result size =2 because if tag filtered for disappears it's a deletion
+    assertEquals(2, result.size()); // one version with tag shop
   }
 
   @Test
@@ -477,10 +478,10 @@ public class IterateByContributionNodesTest {
     // different cases of relative position between node coordinate(s) and cell bbox / query polygon
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[4];
-    coords[0] = new Coordinate(0.0,0.0);
-    coords[1] = new Coordinate(1.5,0.0);
-    coords[2] = new Coordinate(0.0,1.5);
-    coords[3] = new Coordinate(0.0,0.0);
+    coords[0] = new Coordinate(0.0, 0.0);
+    coords[1] = new Coordinate(1.5, 0.0);
+    coords[2] = new Coordinate(0.0, 1.5);
+    coords[3] = new Coordinate(0.0, 0.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -494,10 +495,10 @@ public class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
-            .getId(1.0, 1.0)/* approx. 0,0,5.6,5.6*/)).collect(Collectors.toList());
+            .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)).collect(Collectors.toList());
 
     assertEquals(2, result.size());
-    assertTrue(result.get(0).osmEntity.getId() == 13);
-    assertTrue(result.get(1).osmEntity.getId() == 14);
+    assertEquals(13, result.get(0).osmEntity.getId());
+    assertEquals(14, result.get(1).osmEntity.getId());
   }
 }

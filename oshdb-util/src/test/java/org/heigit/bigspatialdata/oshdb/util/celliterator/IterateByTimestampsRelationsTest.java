@@ -25,8 +25,7 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
 public class IterateByTimestampsRelationsTest {
-  private GridOSHRelations oshdbDataGridCell;
-  private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
+  private final GridOSHRelations oshdbDataGridCell;
   TagInterpreter areaDecider;
 
   /**
@@ -34,6 +33,7 @@ public class IterateByTimestampsRelationsTest {
    * {@link GridOSHRelations}.
    */
   public IterateByTimestampsRelationsTest() throws IOException {
+    OSMXmlReader osmXmlTestData = new OSMXmlReader();
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
@@ -49,7 +49,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 500,
         osmEntity -> true,
@@ -79,7 +79,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 501,
         osmEntity -> true,
@@ -92,17 +92,18 @@ public class IterateByTimestampsRelationsTest {
     assertEquals(303, result.get(0).osmEntity.getChangesetId());
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void testWaysNotExistent() {
     // relation with two ways, both missing
     try {
-      List<IterateByTimestampEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z",
               "P1Y"
           ).get(),
-          new OSHDBBoundingBox(-180,-90, 180, 90),
+          new OSHDBBoundingBox(-180, -90, 180, 90),
           areaDecider,
           oshEntity -> oshEntity.getId() == 502,
           osmEntity -> true,
@@ -125,7 +126,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 503,
         osmEntity -> true,
@@ -148,7 +149,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 504,
         osmEntity -> true,
@@ -180,7 +181,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 505,
         osmEntity -> true,
@@ -211,7 +212,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 506,
         osmEntity -> true,
@@ -236,7 +237,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 507,
         osmEntity -> true,
@@ -254,17 +255,18 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom2 instanceof GeometryCollection);
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void testNodesOfWaysNotExistent() {
     // relation 2 way members nodes do not exist
     try {
-      List<IterateByTimestampEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z",
               "P1Y"
           ).get(),
-          new OSHDBBoundingBox(-180,-90, 180, 90),
+          new OSHDBBoundingBox(-180, -90, 180, 90),
           areaDecider,
           oshEntity -> oshEntity.getId() == 508,
           osmEntity -> true,
@@ -287,7 +289,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 509,
         osmEntity -> true,
@@ -323,7 +325,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 510,
         osmEntity -> true,
@@ -345,7 +347,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 511,
         osmEntity -> true,
@@ -370,7 +372,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 512,
         osmEntity -> true,
@@ -396,7 +398,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 513,
         osmEntity -> true,
@@ -422,7 +424,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 514,
         osmEntity -> true,
@@ -449,7 +451,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 515,
         osmEntity -> true,
@@ -474,11 +476,11 @@ public class IterateByTimestampsRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -487,7 +489,7 @@ public class IterateByTimestampsRelationsTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         polygonFromCoordinates,
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
@@ -496,7 +498,7 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(10,result.size());
+    assertEquals(10, result.size());
   }
 
   @Test
@@ -504,11 +506,11 @@ public class IterateByTimestampsRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.7,10.4);
-    coords[1] = new Coordinate(10.94,10.4);
-    coords[2] = new Coordinate(10.94,10.9);
-    coords[3] = new Coordinate(10.7,10.9);
-    coords[4] = new Coordinate(10.7,10.4);
+    coords[0] = new Coordinate(10.7, 10.4);
+    coords[1] = new Coordinate(10.94, 10.4);
+    coords[2] = new Coordinate(10.94, 10.9);
+    coords[3] = new Coordinate(10.7, 10.9);
+    coords[4] = new Coordinate(10.7, 10.4);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -525,7 +527,7 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(0,result.size());
+    assertEquals(0, result.size());
   }
 
   @Test
@@ -533,11 +535,11 @@ public class IterateByTimestampsRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,52.7);
-    coords[2] = new Coordinate(52.7,52.7);
-    coords[3] = new Coordinate(52.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 52.7);
+    coords[2] = new Coordinate(52.7, 52.7);
+    coords[3] = new Coordinate(52.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -546,7 +548,7 @@ public class IterateByTimestampsRelationsTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
+        new OSHDBBoundingBox(10.8, 10.3, 52.7, 52.7),
         polygonFromCoordinates,
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
@@ -555,7 +557,7 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(10,result.size());
+    assertEquals(10, result.size());
   }
 
   @Test
@@ -563,11 +565,11 @@ public class IterateByTimestampsRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(48,49);
-    coords[1] = new Coordinate(48,50);
-    coords[2] = new Coordinate(49,50);
-    coords[3] = new Coordinate(49,49);
-    coords[4] = new Coordinate(48,49);
+    coords[0] = new Coordinate(48, 49);
+    coords[1] = new Coordinate(48, 50);
+    coords[2] = new Coordinate(49, 50);
+    coords[3] = new Coordinate(49, 49);
+    coords[4] = new Coordinate(48, 49);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> resultPoly = (new CellIterator(
@@ -576,7 +578,7 @@ public class IterateByTimestampsRelationsTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(50,51, 51, 52),
+        new OSHDBBoundingBox(50, 51, 51, 52),
         polygonFromCoordinates,
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
@@ -599,7 +601,7 @@ public class IterateByTimestampsRelationsTest {
             "2019-08-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -616,11 +618,11 @@ public class IterateByTimestampsRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,52.7);
-    coords[2] = new Coordinate(52.7,52.7);
-    coords[3] = new Coordinate(52.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 52.7);
+    coords[2] = new Coordinate(52.7, 52.7);
+    coords[3] = new Coordinate(52.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -638,7 +640,7 @@ public class IterateByTimestampsRelationsTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
 
-    assertEquals(3,result.size());
+    assertEquals(3, result.size());
   }
 
   @Test
@@ -650,7 +652,7 @@ public class IterateByTimestampsRelationsTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
+        new OSHDBBoundingBox(10.8, 10.3, 52.7, 52.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 517,
         osmEntity -> true,
@@ -658,7 +660,7 @@ public class IterateByTimestampsRelationsTest {
     )).iterateByTimestamps(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(3,result.size());
+    assertEquals(3, result.size());
   }
 
   @Test
@@ -670,7 +672,7 @@ public class IterateByTimestampsRelationsTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(50,50, 52, 52),
+        new OSHDBBoundingBox(50, 50, 52, 52),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -693,7 +695,7 @@ public class IterateByTimestampsRelationsTest {
             "2019-08-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -719,11 +721,11 @@ public class IterateByTimestampsRelationsTest {
     // happy if it works without crashing
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(7.31,1.0);
-    coords[1] = new Coordinate(7.335,1.0);
-    coords[2] = new Coordinate(7.335,2.0);
-    coords[3] = new Coordinate(7.31,2.0);
-    coords[4] = new Coordinate(7.31,1.0);
+    coords[0] = new Coordinate(7.31, 1.0);
+    coords[1] = new Coordinate(7.335, 1.0);
+    coords[2] = new Coordinate(7.335, 2.0);
+    coords[3] = new Coordinate(7.31, 2.0);
+    coords[4] = new Coordinate(7.31, 1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -753,7 +755,7 @@ public class IterateByTimestampsRelationsTest {
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 521,
         osmEntity -> true,
@@ -767,14 +769,14 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInVersion2() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2016-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 522,
         osmEntity -> true,
@@ -788,14 +790,14 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersion() {
-    // relation in first and third version visible = false, timeinterval includes version 3
+    // relation in first and third version visible = false, time interval includes version 3
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2016-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 523,
         osmEntity -> true,
@@ -812,11 +814,11 @@ public class IterateByTimestampsRelationsTest {
     // is deleted
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -839,14 +841,14 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInVersion2Clipped() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -869,14 +871,14 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
-    // relation in first and third version visible = false, timeinterval includes version 3
+    // relation in first and third version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -899,14 +901,14 @@ public class IterateByTimestampsRelationsTest {
 
   @Test
   public void testExcludingVersion2Clipped() {
-    // relation in second version visible = false, timeinterval includes version 3
+    // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(7.31,1.0);
-    coords[1] = new Coordinate(7.335,1.0);
-    coords[2] = new Coordinate(7.335,2.0);
-    coords[3] = new Coordinate(7.31,2.0);
-    coords[4] = new Coordinate(7.31,1.0);
+    coords[0] = new Coordinate(7.31, 1.0);
+    coords[1] = new Coordinate(7.335, 1.0);
+    coords[2] = new Coordinate(7.335, 2.0);
+    coords[3] = new Coordinate(7.31, 2.0);
+    coords[4] = new Coordinate(7.31, 1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -932,11 +934,11 @@ public class IterateByTimestampsRelationsTest {
     // relation with two way members(nodes of ways have changes in 2009 and 2011)
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(-180,-90);
-    coords[1] = new Coordinate(180,-90);
-    coords[2] = new Coordinate(180,90);
-    coords[3] = new Coordinate(-180,90);
-    coords[4] = new Coordinate(-180,-90);
+    coords[0] = new Coordinate(-180, -90);
+    coords[1] = new Coordinate(180, -90);
+    coords[2] = new Coordinate(180, 90);
+    coords[3] = new Coordinate(-180, 90);
+    coords[4] = new Coordinate(-180, -90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateByTimestampEntry> result = (new CellIterator(

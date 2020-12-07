@@ -6,6 +6,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
@@ -44,11 +47,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertEquals(1.02, ((Point) result).getY(), DELTA);
   }
 
-  @Test
+  /* @Test
   public void test101() {
     // 101: 4 single nodes
     // the same like test100() just with 4 nodes
-  }
+  } */
 
   @Test
   public void test102() {
@@ -72,11 +75,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertEquals(2, result1.getCoordinates().length);
   }
 
-  @Test
+  /* @Test
   public void test111() {
     // 111 : Way with 4 nodes
     // the same like test110() just with 4 nodes
-  }
+  } */
 
   @Test
   public void test112() {
@@ -233,8 +236,8 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.crosses(result2));
-    for (int j = 0; j < result1.getLength();j++) {
-      for (int i = 0; i < result2.getLength();i++) {
+    for (int j = 0; j < result1.getLength(); j++) {
+      for (int i = 0; i < result2.getLength(); i++) {
         assertNotEquals(((LineString) result1).getCoordinateN(j),
             ((LineString) result2).getCoordinateN(i));
       }
@@ -251,16 +254,12 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.intersects(result2));
-    for (int j = 0; j < result1.getLength();j++) {
-      for (int i = 0; i < result2.getLength();i++) {
-        try {
-          ((LineString) result1).getCoordinateN(j).equals(((LineString) result2).getCoordinateN(i));
-        } catch (Exception e) {
-          e.printStackTrace();
-          fail("No common node");
-        }
-      }
-    }
+    Set<Coordinate> res1Coords = Arrays
+        .stream(result1.getCoordinates())
+        .collect(Collectors.toSet());
+    assertTrue(Arrays
+        .stream(result2.getCoordinates())
+        .anyMatch(res1Coords::contains));
   }
 
   @Test
@@ -274,17 +273,12 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.crosses(result2));
     assertTrue(result1.intersects(result2));
-    for (int j = 0; j < result1.getLength();j++) {
-      for (int i = 0; i < result2.getLength();i++) {
-        try {
-          ((LineString) result1).getCoordinateN(j).equals(
-              ((LineString) result2).getCoordinateN(i));
-        } catch (Exception e) {
-          e.printStackTrace();
-          fail("No common node");
-        }
-      }
-    }
+    Set<Coordinate> res1Coords = Arrays
+        .stream(result1.getCoordinates())
+        .collect(Collectors.toSet());
+    assertTrue(Arrays
+        .stream(result2.getCoordinates())
+        .anyMatch(res1Coords::contains));
   }
 
   @Test

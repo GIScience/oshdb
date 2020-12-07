@@ -91,7 +91,7 @@ public class GridOSHFactory {
           ).collect(Collectors.toSet())
       ));
     }
-    oshdbDataGridCellWays = GridOSHWays.compact(-1, -1, 0, 0, 0, 0, oshWays);
+    oshdbDataGridCellWays = GridOSHWays.compact(cellId, cellZoom, 0, 0, 0, 0, oshWays);
     return oshdbDataGridCellWays;
   }
 
@@ -133,7 +133,8 @@ public class GridOSHFactory {
           ).filter(Objects::nonNull).collect(Collectors.toSet())
       ));
     }
-    oshdbDataGridCellRelations = GridOSHRelations.compact(0, 0, 0, 0, 0, 0, oshRelations);
+    oshdbDataGridCellRelations =
+        GridOSHRelations.compact(cellId, cellZoom, 0, 0, 0, 0, oshRelations);
     return oshdbDataGridCellRelations;
   }
 

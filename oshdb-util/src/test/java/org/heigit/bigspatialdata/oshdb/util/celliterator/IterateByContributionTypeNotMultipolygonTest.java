@@ -48,7 +48,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 500,
         osmEntity -> true,
@@ -88,7 +88,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 501,
         osmEntity -> true,
@@ -122,7 +122,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
           ).get(),
-          new OSHDBBoundingBox(-180,-90, 180, 90),
+          new OSHDBBoundingBox(-180, -90, 180, 90),
           areaDecider,
           oshEntity -> oshEntity.getId() == 502,
           osmEntity -> true,
@@ -144,7 +144,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 503,
         osmEntity -> true,
@@ -178,7 +178,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 504,
         osmEntity -> true,
@@ -218,7 +218,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 505,
         osmEntity -> true,
@@ -258,7 +258,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 506,
         osmEntity -> true,
@@ -297,7 +297,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 507,
         osmEntity -> true,
@@ -331,7 +331,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
           ).get(),
-          new OSHDBBoundingBox(-180,-90, 180, 90),
+          new OSHDBBoundingBox(-180, -90, 180, 90),
           areaDecider,
           oshEntity -> oshEntity.getId() == 508,
           osmEntity -> true,
@@ -353,7 +353,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 509,
         osmEntity -> true,
@@ -410,7 +410,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 510,
         osmEntity -> true,
@@ -437,7 +437,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 511,
         osmEntity -> true,
@@ -465,7 +465,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 512,
         osmEntity -> true,
@@ -499,7 +499,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 513,
         osmEntity -> true,
@@ -529,7 +529,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 514,
         osmEntity -> true,
@@ -564,7 +564,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 515,
         osmEntity -> true,
@@ -602,11 +602,11 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -622,7 +622,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(3,result.size());
+    assertEquals(3, result.size());
   }
 
   @Test
@@ -630,11 +630,11 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,52.7);
-    coords[2] = new Coordinate(52.7,52.7);
-    coords[3] = new Coordinate(52.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 52.7);
+    coords[2] = new Coordinate(52.7, 52.7);
+    coords[3] = new Coordinate(52.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -650,7 +650,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(3,result.size());
+    assertEquals(3, result.size());
   }
 
   @Test
@@ -658,11 +658,11 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(48,49);
-    coords[1] = new Coordinate(48,50);
-    coords[2] = new Coordinate(49,50);
-    coords[3] = new Coordinate(49,49);
-    coords[4] = new Coordinate(48,49);
+    coords[0] = new Coordinate(48, 49);
+    coords[1] = new Coordinate(48, 50);
+    coords[2] = new Coordinate(49, 50);
+    coords[3] = new Coordinate(49, 49);
+    coords[4] = new Coordinate(48, 49);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -691,7 +691,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2019-08-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -717,11 +717,11 @@ public class IterateByContributionTypeNotMultipolygonTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,52.7);
-    coords[2] = new Coordinate(52.7,52.7);
-    coords[3] = new Coordinate(52.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 52.7);
+    coords[2] = new Coordinate(52.7, 52.7);
+    coords[3] = new Coordinate(52.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -748,7 +748,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2016-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
+        new OSHDBBoundingBox(10.8, 10.3, 52.7, 52.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 517,
         osmEntity -> true,
@@ -769,7 +769,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(50,50, 52, 52),
+        new OSHDBBoundingBox(50, 50, 52, 52),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -785,11 +785,11 @@ public class IterateByContributionTypeNotMultipolygonTest {
     // Polygon with self crossing way
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(7.31,1.0);
-    coords[1] = new Coordinate(7.335,1.0);
-    coords[2] = new Coordinate(7.335,2.0);
-    coords[3] = new Coordinate(7.31,2.0);
-    coords[4] = new Coordinate(7.31,1.0);
+    coords[0] = new Coordinate(7.31, 1.0);
+    coords[1] = new Coordinate(7.335, 1.0);
+    coords[2] = new Coordinate(7.335, 2.0);
+    coords[3] = new Coordinate(7.31, 2.0);
+    coords[4] = new Coordinate(7.31, 1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -807,7 +807,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
     ).collect(Collectors.toList());
     Geometry geom1 = result.get(0).geometry.get();
     assertTrue(geom1 instanceof GeometryCollection);
-    assertEquals(1,result.size());
+    assertEquals(1, result.size());
   }
 
   @Test
@@ -819,7 +819,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 521,
         osmEntity -> true,
@@ -844,7 +844,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2012-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 522,
         osmEntity -> true,
@@ -860,11 +860,11 @@ public class IterateByContributionTypeNotMultipolygonTest {
     // relation in first and third version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(

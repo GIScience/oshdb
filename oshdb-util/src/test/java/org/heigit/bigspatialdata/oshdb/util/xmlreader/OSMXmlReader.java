@@ -53,21 +53,17 @@ public class OSMXmlReader {
 
       db.relations().asMap().forEach((id, versions) -> {
         System.out.println("id:" + id);
-        versions.forEach(osm -> {
-          System.out.println("\t" + osm);
-        });
+        versions.forEach(osm -> System.out.println("\t" + osm));
       });
 
       System.out.println("\n\n");
-      db.ways.get(27913435L).forEach(osm -> {
-        System.out.println("\t" + osm);
-      });
+      db.ways.get(27913435L).forEach(osm -> System.out.println("\t" + osm));
 
       int key = 6;
-      System.out.println(db.keys.inverse().get(Integer.valueOf(key)));
+      System.out.println(db.keys.inverse().get(key));
       System.out.println(db.keys.get("place"));
 
-      System.out.println(db.keyValues.get(key).inverse().get(Integer.valueOf(2)));
+      System.out.println(db.keyValues.get(key).inverse().get(2));
 
     }
   }
@@ -136,7 +132,7 @@ public class OSMXmlReader {
         OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
             osm.getLat());
-        nodes.put(Long.valueOf(id), oldOSM);
+        nodes.put(id, oldOSM);
       }
       lastId = id;
     }
@@ -168,7 +164,7 @@ public class OSMXmlReader {
         // osm.setExtension(members);
         OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
-        ways.put(Long.valueOf(id), oldOSM);
+        ways.put(id, oldOSM);
       }
       lastId = id;
     }
@@ -195,35 +191,27 @@ public class OSMXmlReader {
 
           Integer r = roles.get(role);
           if (r == null) {
-            r = Integer.valueOf(roles.size());
+            r = roles.size();
             roles.put(role, r);
-          }
-
-          OSMType t;
-          if ("node".equalsIgnoreCase(type)) {
-            t = OSMType.NODE;
-          } else if ("way".equalsIgnoreCase(type)) {
-            t = OSMType.WAY;
-          } else if ("relation".equalsIgnoreCase(type)) {
-            t = OSMType.RELATION;
-          } else {
-            t = null;
           }
 
           // members[idx++] = new OSMMemberRelation(memId, t, r.intValue());
           OSHEntity data = null;
+          OSMType t = null;
           // relation-relation-members do not get data, because they are unsupported
-          switch (t) {
-            case NODE:
+          switch (type.toLowerCase()) {
+            case "node":
+              t = OSMType.NODE;
               if (this.nodes.containsKey(memId)) {
                 data = OSHNodeImpl.build(this.nodes().get(memId));
               }
               break;
-            case WAY:
+            case "way":
+              t = OSMType.WAY;
               Map<Long, OSHNode> wayNodes = new TreeMap<>();
               for (OSMWay way : this.ways().get(memId)) {
                 for (OSMMember wayNode : way.getRefs()) {
-                  wayNodes.putIfAbsent(wayNode.getId(), (OSHNode)wayNode.getEntity());
+                  wayNodes.putIfAbsent(wayNode.getId(), (OSHNode) wayNode.getEntity());
                 }
               }
               if (this.ways().containsKey(memId)) {
@@ -233,16 +221,19 @@ public class OSMXmlReader {
                 );
               }
               break;
+            case "relation":
+              t = OSMType.RELATION;
+              break;
             default:
               break;
           }
-          members[idx++] = new OSMMember(memId, t, r.intValue(), data);
+          members[idx++] = new OSMMember(memId, t, r, data);
         }
         // osm.setExtension(members);
         OSMRelation oldOSM = new OSMRelation(osm.getId(),
             osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
-        relations.put(Long.valueOf(id), oldOSM);
+        relations.put(id, oldOSM);
       }
       lastId = id;
     }
@@ -272,6 +263,7 @@ public class OSMXmlReader {
    *
    * @param xmlFilePath file path(s) to use
    */
+  @SuppressWarnings("UnstableApiUsage") // allow usage of getFileExtension(...), which is @Beta
   public void add(Path... xmlFilePath) {
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -307,22 +299,17 @@ public class OSMXmlReader {
 
   private static Iterable<Element> iterableOf(NodeList elements) {
     final int lastIndex = elements.getLength();
-    return new Iterable<Element>() {
+    return () -> new Iterator<>() {
+      private int index = 0;
+
       @Override
-      public Iterator<Element> iterator() {
-        return new Iterator<Element>() {
-          private int index = 0;
+      public boolean hasNext() {
+        return index < lastIndex;
+      }
 
-          @Override
-          public boolean hasNext() {
-            return index < lastIndex;
-          }
-
-          @Override
-          public Element next() {
-            return (Element) elements.item(index++);
-          }
-        };
+      @Override
+      public Element next() {
+        return (Element) elements.item(index++);
       }
     };
   }
@@ -331,6 +318,7 @@ public class OSMXmlReader {
     return iterableOf(doc.getElementsByTagName(tag));
   }
 
+  @SuppressWarnings("unused")
   private static Iterable<Element> elementsByTag(Element e, String tag) {
     return iterableOf(e.getElementsByTagName(tag));
   }
@@ -345,20 +333,20 @@ public class OSMXmlReader {
 
       Integer k = keys.get(key);
       if (k == null) {
-        k = Integer.valueOf(keyValues.size());
+        k = keyValues.size();
         keys.put(key, k);
         keyValues.add(HashBiMap.create());
       }
 
-      BiMap<String, Integer> values = keyValues.get(k.intValue());
+      BiMap<String, Integer> values = keyValues.get(k);
       Integer v = values.get(value);
       if (v == null) {
-        v = Integer.valueOf(values.size());
+        v = values.size();
         values.put(value, v);
       }
 
-      tags[idx++] = k.intValue();
-      tags[idx++] = v.intValue();
+      tags[idx++] = k;
+      tags[idx++] = v;
     }
     return tags;
   }
@@ -411,6 +399,7 @@ public class OSMXmlReader {
   /**
    * Get attribute {@code name} from {@link Element} {@code e} as {@code boolean}.
    */
+  @SuppressWarnings("unused")
   public static boolean attrAsBoolean(Element e, String name) {
     Attr attr = e.getAttributeNode(name);
     if (attr != null) {
