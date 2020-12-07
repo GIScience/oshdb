@@ -39,12 +39,11 @@ public class IterateByContributionRelationsTest {
   public IterateByContributionRelationsTest() throws IOException {
     // read osm xml data
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
-    // Used to provided information
+    // used to provide information needed to create actual geometries from OSM data
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
-    // needed to create actual geometries from OSM data
-    // get GridOSH's
+    // gets GridOSHs (holds the basic information, every OSM-Object has at a specific level) out of
+    // osm-xml file
     oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
-    // (Holds the basic information, every OSM-Object has at a specific level) out of osm-xml file
   }
 
   @Test

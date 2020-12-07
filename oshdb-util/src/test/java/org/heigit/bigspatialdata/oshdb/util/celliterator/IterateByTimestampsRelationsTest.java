@@ -92,12 +92,12 @@ public class IterateByTimestampsRelationsTest {
     assertEquals(303, result.get(0).osmEntity.getChangesetId());
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void testWaysNotExistent() {
     // relation with two ways, both missing
     try {
-      List<IterateByTimestampEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z",
@@ -255,12 +255,12 @@ public class IterateByTimestampsRelationsTest {
     assertTrue(geom2 instanceof GeometryCollection);
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   public void testNodesOfWaysNotExistent() {
     // relation 2 way members nodes do not exist
     try {
-      List<IterateByTimestampEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z",
