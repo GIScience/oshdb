@@ -7,8 +7,8 @@ Compiling software that includes the OSHDB currently requires Java 11 (i.e., ver
 
 ```
 <properties>
-  <maven.compiler.source>1.8</maven.compiler.source>
-  <maven.compiler.target>1.8</maven.compiler.target>
+  <maven.compiler.source>11</maven.compiler.source>
+  <maven.compiler.target>11</maven.compiler.target>
 </properties>
 ```
 
