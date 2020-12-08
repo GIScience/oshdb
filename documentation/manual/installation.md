@@ -19,9 +19,9 @@ Simply add the OSHDB as a dependency to your `pom.xml` file. For most use cases 
 ```xml
 <dependencies>
   <dependency>
-    <groupId>org.heigit.bigspatialdata</groupId>
+    <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-api</artifactId>
-    <version>0.5.10</version>
+    <version>0.6.0</version>
   </dependency>
 </dependencies>
 ```

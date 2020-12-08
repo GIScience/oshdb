@@ -6,9 +6,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.heigit.bigspatialdata</groupId>
+      <groupId>org.heigit.ohsome</groupId>
       <artifactId>oshdb-api</artifactId>
-      <version>0.5.10</version>
+      <version>0.6.0</version>
     </dependency>
   </dependencies>
 
