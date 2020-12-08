@@ -3,6 +3,18 @@ Changelog
 
 ## 0.7.0-SNAPSHOT (current master)
 
+### breaking changes
+
+* reorganizing java packages, moving them from `org/heigit/bigspatialdata` to `org/heigit/ohsome`
+
+When switching to the OSHDB version 0.7 you need to change your imports to the new path, e.g.:
+```java
+import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
+```
+
+### other changes
+
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. #306
 
 ### upgrading from 0.6.0
