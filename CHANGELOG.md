@@ -1,7 +1,7 @@
 Changelog
 =========
 
-## 0.6.0-RC1
+## 0.6.0
 
 ### breaking changes
 
