@@ -1,28 +1,26 @@
-ohsome filter
-=============
+oshdb filter
+============
 
 A parser and interpreter for filters which can be applied on OSM entities. It allows, for example, to filter by various combinations of OSM tags.
 
-[![build status](https://jenkins.ohsome.org/buildStatus/icon?job=ohsome-filter/master)](https://jenkins.ohsome.org/blue/organizations/jenkins/ohsome-filter/activity/?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.ohsome/ohsome-filter/badge.svg)](https://search.maven.org/artifact/org.heigit.ohsome/ohsome-filter)
-[![LICENSE](https://img.shields.io/github/license/GIScience/ohsome-filter)](COPYING)
-[![JavaDocs](https://img.shields.io/badge/Java-docs-blue.svg)](https://docs.ohsome.org/java/ohsome-filter)
-[![status: active](https://github.com/GIScience/badges/raw/master/status/active.svg)](https://github.com/GIScience/badges#active)
+Before this was integrated in the main OSHDB repository, this was developed as an independent library called [“_ohsome filter_”](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter).
 
 Usage
 -----
 
-Add the module to your maven dependencies (`pom.xml`):
+Filters can be used directly in the OSHDB:
 
-```xml
-<dependency>
-  <groupId>org.heigit.ohsome</groupId>
-  <artifactId>ohsome-filter</artifactId>
-  <version>1.4.1</version>
-</dependency>
+```java
+OSMEntitySnapshotView.on(…)
+    .areaOfInterest(…)
+    .timestamps(…)
+    .filter("geometry:polygon and building=*")
+    .aggregateByTimestamp()
+    .count()
+    .forEach((t, val) -> System.out.println(t + "\t" + val)); 
 ```
 
-Then parse filters like this:
+Alternatively one can parse filter strings like this:
 
 ```java
 String filterText = …;
@@ -31,20 +29,26 @@ FilterParser parser = new FilterParser(tagTranslator);
 FilterExpression filter = parser.parse(filterText);
 ```
 
-Filters can be applied to OSM entities, for example in a OSHDB query:
+Such filters can be applied to OSM entity snapshots, for example:
 
 ```java
+String featureRequirementsFilterText = "geometry:polygon and addr:housenumber=*";
+TagTranslator tagTranslator = …;
+FilterParser filterParser = new FilterParser(tagTranslator);
+FilterExpression featureRequirementsFilter = filterParser.parse(featureRequirementsFilterText);
+
 OSMEntitySnapshotView.on(…)
     .areaOfInterest(…)
-    .timestamps(…)
-    .osmEntityFilter(filter::applyOSM)
-    .aggregateByTimestamp()
-    .filter(snapshot -> filter.applyOSMGeometry(snapshot.getEntity(), snapshot.getGeometry()))
+    .timestamps("…")
+    .filter("building=*")
+    .aggreagteBy(snapshot ->
+        featureRequirementsFilter.applyOSMGeometry(snapshot.getEntity(), snapshot::getGeometry)
+            ? "feature matches requirements"
+            : "feature does not match requirements"
+    )
     .count()
-    .forEach((t, val) -> System.out.println(t + "\t" + val)); 
+    .forEach((t, val) -> System.out.println(t + "\t" + val));
 ```
-
-If a filter does not test the actual geometry of OSM features (i.e. when the filter does not contain a `geometry:…`, `area:…` or `length:…` selector), one can omit the `.filter()` statement above which applies the respective OSM entity geometries. This will improve query performance.
 
 Syntax
 ------
@@ -101,9 +105,4 @@ Here's some useful examples for filtering some OSM features:
 | highways | `type:way and highway in (motorway, motorway_link, trunk, trunk_link, primary, primary_link, secondary, secondary_link, tertiary, tertiary_link, unclassified, residential, living_street, pedestrian) or (highway=service and service=alley))` | The list of used tags depends on the exact definition of a "highway". In a different context, it may also incude less or even more highway tags (like `footway`, `cycleway`, `track`, `path`, all `highway=service`, etc.). |
 | residential roads missing a name (for quality assurance) | `type:way and highway=residential and name!=* and noname!=yes` | Note that some roads might be actually unnamed in reality. Such features can be marked as unnamed with the [`noname`](https://wiki.openstreetmap.org/wiki/Key:noname) tag in OSM. |
 | buildings with implausibly big footprints | `geometry:polygon and building=* and building!=no and area:(1E6..)` | The currently largest building by footprint area is a [car factory measuring about 887,800 m²](https://en.wikipedia.org/wiki/List_of_largest_buildings#Largest_footprint). |
-
-Documentation
--------------
-
-* Javadoc documentation: https://docs.ohsome.org/java/ohsome-filter/ 
 

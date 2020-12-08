@@ -4,41 +4,49 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>ohsome-filter</artifactId>
-  <version>1.5-SNAPSHOT</version>
-  <description>A flexible filtering library for OSM entities.</description>
-  <packaging>jar</packaging>
-
   <parent>
     <groupId>org.heigit.ohsome</groupId>
-    <artifactId>ohsome-parent</artifactId>
-    <version>2.7</version>
+    <artifactId>oshdb-parent</artifactId>
+    <version>0.6.0-SNAPSHOT</version>
+    <relativePath>../</relativePath>
   </parent>
 
+  <artifactId>oshdb-filter</artifactId>
+  <name>OSHDB filter</name>
+  <description>A flexible filtering library for OSM entities. Formerly known as "ohsome-filter".</description>
+
+  <properties>
+    <jparsec.version>3.1</jparsec.version>
+  </properties>
+
   <dependencies>
+    <!-- oshdb core and util -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- parser combinator library -->
     <dependency>
       <groupId>org.jparsec</groupId>
       <artifactId>jparsec</artifactId>
       <version>${jparsec.version}</version>
     </dependency>
-    <!-- oshdb core and util -->
-    <dependency>
-      <groupId>org.heigit.bigspatialdata</groupId>
-      <artifactId>oshdb</artifactId>
-      <version>${oshdb.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.heigit.bigspatialdata</groupId>
-      <artifactId>oshdb-util</artifactId>
-      <version>${oshdb.version}</version>
-    </dependency>
+
     <!-- jetbrains annotations (for method contracts) -->
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
-      <version>${jetbrains-annotations.version}</version>
+      <version>${jetbrainsannotations.version}</version>
     </dependency>
+
     <!-- junit unit test framework -->
     <dependency>
       <groupId>junit</groupId>
@@ -46,6 +54,7 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+
     <!-- H2 database (for tests) -->
     <dependency>
       <groupId>com.h2database</groupId>
@@ -53,90 +62,12 @@
       <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
+
     <!-- SLF4J -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j-log4j.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <properties>
-    <h2.version>1.4.193</h2.version>
-    <jacoco.version>0.8.5</jacoco.version>
-    <jetbrains-annotations.version>13.0</jetbrains-annotations.version>
-    <jparsec.version>3.1</jparsec.version>
-    <junit.version>4.12</junit.version>
-    <mavenpmd.version>3.11.0</mavenpmd.version>
-    <oshdb.version>[0.5.2,0.7)</oshdb.version>
-    <pmd.version>6.11.0</pmd.version>
-    <slf4j-log4j.version>1.7.25</slf4j-log4j.version>
-  </properties>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>${mavenpmd.version}</version>
-        <dependencies>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-core</artifactId>
-            <version>${pmd.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-java</artifactId>
-            <version>${pmd.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-    </plugins>
-  </build>
-
-  <repositories>
-    <repository>
-      <!--This will resolve artefacts of Osgeo, Boundless and potentially others through our own reopository (https://www.jfrog.com/confluence/display/RTF/Maven+Repository#MavenRepository-ResolvingArtifactsthroughArtifactory).-->
-      <id>HeiGIT main</id>
-      <name>Central Repository for OSHDB dependency related artefacts</name>
-      <url>http://repo.heigit.org/artifactory/main</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>HeiGIT main</id>
-      <name>Heigit/GIScience maven repository</name>
-      <url>http://repo.heigit.org/artifactory/main</url>
-    </pluginRepository>
-  </pluginRepositories>
-  <profiles>
-    <profile>
-      <id>jacoco</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco.version}</version>
-            <executions>
-              <execution>
-                <id>default-prepare-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>default-report</id>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
