@@ -1,7 +1,11 @@
 1.5-SNAPSHOT
 ------------
 
+1.4.1
+-----
+
 * mark as compatible with OSHDB version 0.6
+* update parent module to version 2.7
 
 1.4.0
 -----
