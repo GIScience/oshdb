@@ -1,6 +1,7 @@
 1.5-SNAPSHOT
 ------------
 
+* mark as compatible with OSHDB version 0.6
 
 1.4.0
 -----
