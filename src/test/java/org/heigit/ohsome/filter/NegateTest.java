@@ -164,7 +164,7 @@ public class NegateTest extends FilterTest {
     OSMEntity node = createTestOSMEntityNode();
     assertTrue(expression.applyOSMGeometry(node, gf.createPoint())
         != negation.applyOSMGeometry(node, gf.createPoint()));
-    OSMEntity way = createTestOSMEntityWay(new long[] {1,2,3,4,1});
+    OSMEntity way = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(way, gf.createLineString())
         != negation.applyOSMGeometry(way, gf.createLineString()));
     assertTrue(expression.applyOSMGeometry(way, gf.createPolygon())

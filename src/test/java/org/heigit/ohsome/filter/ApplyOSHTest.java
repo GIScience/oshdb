@@ -277,7 +277,7 @@ public class ApplyOSHTest extends FilterTest {
         createTestOSMEntityWay(new long[] {})
     )));
     assertTrue(expression.applyOSH(createTestOSHEntityWay(
-        createTestOSMEntityWay(new long[] {1,2,3,4,1})
+        createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1})
     )));
     assertFalse(expression.applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode()
@@ -291,7 +291,7 @@ public class ApplyOSHTest extends FilterTest {
   public void testGeometryTypeFilterPolygon() throws IOException {
     FilterExpression expression = parser.parse("geometry:polygon");
     assertTrue(expression.applyOSH(createTestOSHEntityWay(
-        createTestOSMEntityWay(new long[] {1,2,3,4,1})
+        createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1})
     )));
     assertTrue(expression.applyOSH(createTestOSHEntityRelation(
         createTestOSMEntityRelation("type", "multipolygon")

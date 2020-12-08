@@ -162,7 +162,7 @@ public class ApplyOSMTest extends FilterTest {
   public void testGeometryTypeFilterLine() {
     FilterExpression expression = parser.parse("geometry:line");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
-    assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {1,2,3,4,1})));
+    assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1})));
     assertFalse(expression.applyOSM(createTestOSMEntityNode()));
     assertFalse(expression.applyOSM(createTestOSMEntityRelation()));
   }
@@ -170,9 +170,9 @@ public class ApplyOSMTest extends FilterTest {
   @Test
   public void testGeometryTypeFilterPolygon() {
     FilterExpression expression = parser.parse("geometry:polygon");
-    assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {1,2,3,1})));
-    assertFalse(expression.applyOSM(createTestOSMEntityWay(new long[] {1,2,3,4})));
-    assertFalse(expression.applyOSM(createTestOSMEntityWay(new long[] {1,2,1})));
+    assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {1, 2, 3, 1})));
+    assertFalse(expression.applyOSM(createTestOSMEntityWay(new long[] {1, 2, 3, 4})));
+    assertFalse(expression.applyOSM(createTestOSMEntityWay(new long[] {1, 2, 1})));
     assertTrue(expression.applyOSM(createTestOSMEntityRelation("type", "multipolygon")));
     assertTrue(expression.applyOSM(createTestOSMEntityRelation("type", "boundary")));
     assertFalse(expression.applyOSM(createTestOSMEntityRelation()));
