@@ -10,13 +10,6 @@ public class TimestampParser {
    * {@link IsoDateTimeParser#parseIsoDateTime(String)} using a given {@link String timeString}.
    */
   public static OSHDBTimestamp toOSHDBTimestamp(String timeString) {
-    try {
-      return new OSHDBTimestamp(
-          IsoDateTimeParser.parseIsoDateTime(timeString).toEpochSecond()
-      );
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
+    return new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(timeString).toEpochSecond());
   }
 }

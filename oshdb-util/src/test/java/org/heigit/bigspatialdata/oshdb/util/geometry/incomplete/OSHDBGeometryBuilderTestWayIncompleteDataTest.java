@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.incomplete;
 
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -19,7 +20,6 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
   TagInterpreter areaDecider;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestWayIncompleteDataTest() {
     testData.add("./src/test/resources/incomplete-osm/way.osm");
@@ -66,7 +66,7 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
     Geometry result1 = null;
     try {
       result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-      assertTrue(result1.getCoordinates().length == 0);
+      assertEquals(0, result1.getCoordinates().length);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");

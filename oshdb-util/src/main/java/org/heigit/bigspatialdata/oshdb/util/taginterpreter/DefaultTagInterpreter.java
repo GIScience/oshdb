@@ -66,12 +66,12 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
       TagTranslator tagTranslator,
       String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile
   ) throws IOException, ParseException {
-    super(-1,-1, null, null, null, -1, -1, -1); // initialize with dummy parameters for now
+    super(-1, -1, null, null, null, -1, -1, -1); // initialize with dummy parameters for now
     // construct list of area tags for ways
     Map<Integer, Set<Integer>> wayAreaTags = new HashMap<>();
 
     JSONParser parser = new JSONParser();
-    JSONArray tagList = (JSONArray)parser.parse(new InputStreamReader(
+    JSONArray tagList = (JSONArray) parser.parse(new InputStreamReader(
         Thread.currentThread().getContextClassLoader().getResourceAsStream(areaTagsDefinitionFile)
     ));
     // todo: check json schema for validity
@@ -79,8 +79,8 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     @SuppressWarnings("unchecked") // we expect only JSON objects here in a valid definition file
     Iterable<JSONObject> iterableTagList = tagList;
     for (JSONObject tag : iterableTagList) {
-      String key = (String)tag.get("key");
-      switch ((String)tag.get("polygon")) {
+      String key = (String) tag.get("key");
+      switch ((String) tag.get("polygon")) {
         case "all":
           Set<Integer> valueIds = new InvertedHashSet<>();
           int keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
@@ -132,7 +132,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
 
     // list of uninteresting tags
     Set<Integer> uninterestingTagKeys = new HashSet<>();
-    JSONArray uninterestingTagsList = (JSONArray)parser.parse(new InputStreamReader(
+    JSONArray uninterestingTagsList = (JSONArray) parser.parse(new InputStreamReader(
         Thread.currentThread().getContextClassLoader().getResourceAsStream(
             uninterestingTagsDefinitionFile)));
     // todo: check json schema for validity
@@ -158,7 +158,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   @Override
   public boolean isArea(OSMEntity entity) {
     if (entity instanceof OSMRelation) {
-      return evaluateRelationForArea((OSMRelation)entity);
+      return evaluateRelationForArea((OSMRelation) entity);
     } else {
       return super.isArea(entity);
     }
@@ -167,7 +167,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   @Override
   public boolean isLine(OSMEntity entity) {
     if (entity instanceof OSMRelation) {
-      return evaluateRelationForLine((OSMRelation)entity);
+      return evaluateRelationForLine((OSMRelation) entity);
     } else {
       return super.isLine(entity);
     }

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-parent</artifactId>
-    <version>0.6.0-RC1</version>
+    <version>0.6.0</version>
     <relativePath>../</relativePath>
   </parent>
 
@@ -15,7 +15,7 @@
   <description>API to query the OpenStreetMap History Database. Includes MapReduce functionality to filter, analyze and aggregate data.</description>
 
   <properties>
-    <ohsomefilter.version>1.4.0</ohsomefilter.version>
+    <ohsomefilter.version>1.4.1</ohsomefilter.version>
     <tdigest.version>3.2</tdigest.version>
   </properties>
 

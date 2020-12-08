@@ -14,7 +14,7 @@ public class OSMRole {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof OSMRole && ((OSMRole)o).role.equals(this.role);
+    return o instanceof OSMRole && ((OSMRole) o).role.equals(this.role);
   }
 
   @Override

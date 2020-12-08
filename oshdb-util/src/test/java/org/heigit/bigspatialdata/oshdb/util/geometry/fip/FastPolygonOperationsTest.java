@@ -13,7 +13,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 public class FastPolygonOperationsTest {
-  private GeometryFactory gf = new GeometryFactory();
+  private final GeometryFactory gf = new GeometryFactory();
 
   @Test
   public void testEmptyGeometryPolygon() {
@@ -31,7 +31,7 @@ public class FastPolygonOperationsTest {
     Polygon p = FastPointInPolygonTest.createPolygon();
     FastPolygonOperations pop = new FastPolygonOperations(p);
 
-    assertNull(pop.intersection((Polygon) null));
+    assertNull(pop.intersection(null));
   }
 
   @Test

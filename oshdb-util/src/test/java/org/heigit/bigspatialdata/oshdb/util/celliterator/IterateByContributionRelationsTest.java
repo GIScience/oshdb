@@ -37,11 +37,13 @@ public class IterateByContributionRelationsTest {
    * {@link GridOSHRelations}.
    */
   public IterateByContributionRelationsTest() throws IOException {
-    osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");// read osm xml data
-    areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);// Used to provided information
-    // needed to create actual geometries from OSM data
-    oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);// get GridOSH's
-    // (Holds the basic information, every OSM-Object has at a specific level) out of osm-xml file
+    // read osm xml data
+    osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
+    // used to provide information needed to create actual geometries from OSM data
+    areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
+    // gets GridOSHs (holds the basic information, every OSM-Object has at a specific level) out of
+    // osm-xml file
+    oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
   }
 
   @Test
@@ -55,12 +57,12 @@ public class IterateByContributionRelationsTest {
             "2020-01-01T00:00:00Z"
         ).get(),
         // look at dat in this bbox
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         // needed to create actual geometries from OSM data
         areaDecider,
         // oshEntityPreFilter: get data of relation with id 500
         oshEntity -> oshEntity.getId() == 500,
-        osmEntity -> true,// osmEntityFilter: true -> get all
+        osmEntity -> true, // osmEntityFilter: true -> get all
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -100,7 +102,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 501,
         osmEntity -> true,
@@ -134,7 +136,7 @@ public class IterateByContributionRelationsTest {
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
           ).get(),
-          new OSHDBBoundingBox(-180,-90, 180, 90),
+          new OSHDBBoundingBox(-180, -90, 180, 90),
           areaDecider,
           oshEntity -> oshEntity.getId() == 502,
           osmEntity -> true,
@@ -156,7 +158,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 503,
         osmEntity -> true,
@@ -190,7 +192,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 504,
         osmEntity -> true,
@@ -230,7 +232,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 505,
         osmEntity -> true,
@@ -269,7 +271,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 506,
         osmEntity -> true,
@@ -308,7 +310,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 507,
         osmEntity -> true,
@@ -342,7 +344,7 @@ public class IterateByContributionRelationsTest {
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
           ).get(),
-          new OSHDBBoundingBox(-180,-90, 180, 90),
+          new OSHDBBoundingBox(-180, -90, 180, 90),
           areaDecider,
           oshEntity -> oshEntity.getId() == 508,
           osmEntity -> true,
@@ -364,7 +366,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 509,
         osmEntity -> true,
@@ -421,7 +423,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 510,
         osmEntity -> true,
@@ -448,7 +450,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 511,
         osmEntity -> true,
@@ -485,7 +487,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 512,
         osmEntity -> true,
@@ -519,7 +521,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 513,
         osmEntity -> true,
@@ -549,7 +551,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 514,
         osmEntity -> true,
@@ -584,7 +586,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 515,
         osmEntity -> true,
@@ -622,11 +624,11 @@ public class IterateByContributionRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -642,7 +644,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(3,result.size());
+    assertEquals(3, result.size());
   }
 
   @Test
@@ -650,11 +652,11 @@ public class IterateByContributionRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.7,10.4);
-    coords[1] = new Coordinate(10.94,10.4);
-    coords[2] = new Coordinate(10.94,10.9);
-    coords[3] = new Coordinate(10.7,10.9);
-    coords[4] = new Coordinate(10.7,10.4);
+    coords[0] = new Coordinate(10.7, 10.4);
+    coords[1] = new Coordinate(10.94, 10.4);
+    coords[2] = new Coordinate(10.94, 10.9);
+    coords[3] = new Coordinate(10.7, 10.9);
+    coords[4] = new Coordinate(10.7, 10.4);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -678,11 +680,11 @@ public class IterateByContributionRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,52.7);
-    coords[2] = new Coordinate(52.7,52.7);
-    coords[3] = new Coordinate(52.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 52.7);
+    coords[2] = new Coordinate(52.7, 52.7);
+    coords[3] = new Coordinate(52.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -698,7 +700,7 @@ public class IterateByContributionRelationsTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertEquals(3,result.size());
+    assertEquals(3, result.size());
   }
 
   @Test
@@ -706,11 +708,11 @@ public class IterateByContributionRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(48,49);
-    coords[1] = new Coordinate(48,50);
-    coords[2] = new Coordinate(49,50);
-    coords[3] = new Coordinate(49,49);
-    coords[4] = new Coordinate(48,49);
+    coords[0] = new Coordinate(48, 49);
+    coords[1] = new Coordinate(48, 50);
+    coords[2] = new Coordinate(49, 50);
+    coords[3] = new Coordinate(49, 49);
+    coords[4] = new Coordinate(48, 49);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -739,7 +741,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2019-08-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -764,11 +766,11 @@ public class IterateByContributionRelationsTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,52.7);
-    coords[2] = new Coordinate(52.7,52.7);
-    coords[3] = new Coordinate(52.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 52.7);
+    coords[2] = new Coordinate(52.7, 52.7);
+    coords[3] = new Coordinate(52.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -795,7 +797,7 @@ public class IterateByContributionRelationsTest {
             "2016-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 52.7, 52.7),
+        new OSHDBBoundingBox(10.8, 10.3, 52.7, 52.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 517,
         osmEntity -> true,
@@ -816,7 +818,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(50,50, 52, 52),
+        new OSHDBBoundingBox(50, 50, 52, 52),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -839,7 +841,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2019-08-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8,10.3, 22.7, 22.7),
+        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -850,7 +852,7 @@ public class IterateByContributionRelationsTest {
 
     // full geom of same timestamp with unclippedPreviousGeometry and unclippedGeometry
     assertEquals(result.get(1).unclippedPreviousGeometry.get().getArea(),
-        result.get(0).unclippedGeometry.get().getArea(),DELTA);
+        result.get(0).unclippedGeometry.get().getArea(), DELTA);
     // geom of requested area vs full geom after modification
     assertNotEquals(result.get(0).geometry.get().getArea(),
         result.get(0).unclippedGeometry.get().getArea());
@@ -869,11 +871,11 @@ public class IterateByContributionRelationsTest {
     // happy if it works without crashing
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(7.31,1.0);
-    coords[1] = new Coordinate(7.335,1.0);
-    coords[2] = new Coordinate(7.335,2.0);
-    coords[3] = new Coordinate(7.31,2.0);
-    coords[4] = new Coordinate(7.31,1.0);
+    coords[0] = new Coordinate(7.31, 1.0);
+    coords[1] = new Coordinate(7.335, 1.0);
+    coords[2] = new Coordinate(7.335, 2.0);
+    coords[3] = new Coordinate(7.31, 2.0);
+    coords[4] = new Coordinate(7.31, 1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -901,7 +903,7 @@ public class IterateByContributionRelationsTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 521,
         osmEntity -> true,
@@ -926,7 +928,7 @@ public class IterateByContributionRelationsTest {
             "2016-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 522,
         osmEntity -> true,
@@ -950,7 +952,7 @@ public class IterateByContributionRelationsTest {
             "2016-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 523,
         osmEntity -> true,
@@ -974,7 +976,7 @@ public class IterateByContributionRelationsTest {
             "2012-01-01T00:00:00Z",
             "2014-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 500,
         osmEntity -> !(osmEntity.getVersion() == 2),
@@ -997,11 +999,11 @@ public class IterateByContributionRelationsTest {
     // is deleted
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1035,11 +1037,11 @@ public class IterateByContributionRelationsTest {
     // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1069,11 +1071,11 @@ public class IterateByContributionRelationsTest {
     // relation in first and third version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,22.7);
-    coords[2] = new Coordinate(22.7,22.7);
-    coords[3] = new Coordinate(22.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 22.7);
+    coords[2] = new Coordinate(22.7, 22.7);
+    coords[3] = new Coordinate(22.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1102,11 +1104,11 @@ public class IterateByContributionRelationsTest {
     // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(7.31,1.0);
-    coords[1] = new Coordinate(7.335,1.0);
-    coords[2] = new Coordinate(7.335,2.0);
-    coords[3] = new Coordinate(7.31,2.0);
-    coords[4] = new Coordinate(7.31,1.0);
+    coords[0] = new Coordinate(7.31, 1.0);
+    coords[1] = new Coordinate(7.335, 1.0);
+    coords[2] = new Coordinate(7.335, 2.0);
+    coords[3] = new Coordinate(7.31, 2.0);
+    coords[4] = new Coordinate(7.31, 1.0);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -1136,11 +1138,11 @@ public class IterateByContributionRelationsTest {
     // relation with two way members(nodes of ways have changes in 2009 and 2011)
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(-180,-90);
-    coords[1] = new Coordinate(180,-90);
-    coords[2] = new Coordinate(180,90);
-    coords[3] = new Coordinate(-180,90);
-    coords[4] = new Coordinate(-180,-90);
+    coords[0] = new Coordinate(-180, -90);
+    coords[1] = new Coordinate(180, -90);
+    coords[2] = new Coordinate(180, 90);
+    coords[3] = new Coordinate(-180, 90);
+    coords[4] = new Coordinate(-180, -90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> result = (new CellIterator(

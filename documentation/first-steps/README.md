@@ -15,7 +15,7 @@ This _first steps_ tutorial will guide you through each of these steps individua
 
 ## 1. Download an oshdb extract
 
-For your first steps, we recommend that you download one of the available OSHDB data extracts from our [download server](https://downloads.ohsome.org/v0.5/). We will use this data file to run a simple analysis query on it.
+For your first steps, we recommend that you download one of the available OSHDB data extracts from our [download server](https://downloads.ohsome.org/v0.6/). We will use this data file to run a simple analysis query on it.
 
 ## 2. Add maven dependency
 
@@ -23,13 +23,13 @@ If you already have an existing Java maven project, the OSHDB-API can be added t
 
 ```xml
 <dependency>
-  <groupId>org.heigit.bigspatialdata</groupId>
+  <groupId>org.heigit.ohsome</groupId>
   <artifactId>oshdb-api</artifactId>
-  <version>0.5.10</version>
+  <version>0.6.0</version>
 </dependency>
 ```
 
-Note that the OSHDB requires Java 8, so it could sometimes be necessary to specify this additional restriction in the `pom.xml` as well. Take a look at this [example `pom.xml`](./example-pom.xml) file that shows how all these settings should be put together.
+Note that the OSHDB requires Java 11, so it could sometimes be necessary to specify this additional restriction in the `pom.xml` as well. Take a look at this [example `pom.xml`](./example-pom.xml) file that shows how all these settings should be put together.
 
 If you're starting a new OSHDB project from scratch, it's typically a good idea to create a new maven project using the "create new project" wizard of your IDE of choice. After that you can use the steps described above to add OSHDB as a dependency to the new project.
 

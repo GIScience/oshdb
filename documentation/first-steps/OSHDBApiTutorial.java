@@ -1,16 +1,17 @@
-package org.heigit.bigspatialdata.oshdb-tutorial;
+package org.example.oshdb.api.tutorial;
 
+import java.util.SortedMap;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
-import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.bigspatialdata.oshdb.osm.OSMType;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
+import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
+import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
 
 public class OSHDBApiTutorial {
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
     // calculates the total area of all osm ways tagged as "building" that are not larger than
     // 1000 m² for the timestamp 2019-01-01

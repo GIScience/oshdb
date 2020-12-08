@@ -3,14 +3,12 @@ Installation
 
 ## Configuring Java Version
 
-Compiling software that includes the OSHDB currently requires Java 8
-(i.e., version 1.8) or newer. Because maven projects use Java 1.5 by default, it is necessary to either configure your IDE accordingly or add the following
-compiler version to the properties section of your pom.xml file:
+Compiling software that includes the OSHDB currently requires Java 11 (i.e., version 11) or newer. Because maven projects use Java 1.5 by default, it is necessary to either configure your IDE accordingly or add the following compiler version to the properties section of your pom.xml file:
 
 ```
 <properties>
-  <maven.compiler.source>1.8</maven.compiler.source>
-  <maven.compiler.target>1.8</maven.compiler.target>
+  <maven.compiler.source>11</maven.compiler.source>
+  <maven.compiler.target>11</maven.compiler.target>
 </properties>
 ```
 
@@ -21,9 +19,9 @@ Simply add the OSHDB as a dependency to your `pom.xml` file. For most use cases 
 ```xml
 <dependencies>
   <dependency>
-    <groupId>org.heigit.bigspatialdata</groupId>
+    <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-api</artifactId>
-    <version>0.5.10</version>
+    <version>0.6.0</version>
   </dependency>
 </dependencies>
 ```

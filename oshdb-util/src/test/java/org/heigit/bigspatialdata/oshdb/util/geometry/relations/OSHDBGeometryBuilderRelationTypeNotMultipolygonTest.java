@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.relations;
 
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -21,7 +22,6 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
-  private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderRelationTypeNotMultipolygonTest() {
     testData.add("./src/test/resources/relations/relationTypeNotMultipolygon.osm");
@@ -35,7 +35,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection);
-      assertTrue(result.getNumGeometries() == 3);
+      assertEquals(3, result.getNumGeometries());
       assertTrue(result.getGeometryN(0) instanceof LineString);
       assertTrue(result.getGeometryN(1) instanceof Point);
       assertTrue(result.getGeometryN(2) instanceof LineString);
@@ -52,7 +52,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection);
-      assertTrue(result.getNumGeometries() == 3);
+      assertEquals(3, result.getNumGeometries());
       assertTrue(result.getGeometryN(0) instanceof Point);
       assertTrue(result.getGeometryN(1) instanceof Point);
       assertTrue(result.getGeometryN(2) instanceof Point);
@@ -69,7 +69,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection);
-      assertTrue(result.getNumGeometries() == 4);
+      assertEquals(4, result.getNumGeometries());
       assertTrue(result.getGeometryN(0) instanceof LineString);
       assertTrue(result.getGeometryN(1) instanceof Point);
       assertTrue(result.getGeometryN(2) instanceof LineString);
@@ -87,7 +87,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection);
-      assertTrue(result.getNumGeometries() == 3);
+      assertEquals(3, result.getNumGeometries());
       assertTrue(result.getGeometryN(0) instanceof LineString);
       assertTrue(result.getGeometryN(1) instanceof LineString);
       assertTrue(result.getGeometryN(2) instanceof LineString);

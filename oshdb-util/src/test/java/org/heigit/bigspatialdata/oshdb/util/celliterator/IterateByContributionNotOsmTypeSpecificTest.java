@@ -1,5 +1,6 @@
 package org.heigit.bigspatialdata.oshdb.util.celliterator;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
@@ -7,7 +8,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.osh.OSHRelation;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -23,16 +23,15 @@ import org.locationtech.jts.geom.Polygon;
 
 public class IterateByContributionNotOsmTypeSpecificTest {
 
-  private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations;
-  private static final double DELTA = 1E-6;
 
   /**
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * a list of {@link OSHRelation OSHRelations}.
    */
   public IterateByContributionNotOsmTypeSpecificTest() throws IOException {
+    OSMXmlReader osmXmlTestData = new OSMXmlReader();
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     GridOSHRelations oshdbDataGridCell = GridOSHFactory.getGridOSHRelations(osmXmlTestData);
@@ -46,11 +45,11 @@ public class IterateByContributionNotOsmTypeSpecificTest {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(10.8,12.7);
-    coords[2] = new Coordinate(12.7,12.7);
-    coords[3] = new Coordinate(12.7,10.3);
-    coords[4] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(10.8, 12.7);
+    coords[2] = new Coordinate(12.7, 12.7);
+    coords[3] = new Coordinate(12.7, 10.3);
+    coords[4] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> resultPoly = (new CellIterator(
@@ -77,10 +76,10 @@ public class IterateByContributionNotOsmTypeSpecificTest {
     final GeometryFactory geometryFactory = new GeometryFactory();
 
     Coordinate[] coords = new Coordinate[4];
-    coords[0] = new Coordinate(10.8,10.3);
-    coords[1] = new Coordinate(12.7,12.7);
-    coords[2] = new Coordinate(12.7,10.3);
-    coords[3] = new Coordinate(10.8,10.3);
+    coords[0] = new Coordinate(10.8, 10.3);
+    coords[1] = new Coordinate(12.7, 12.7);
+    coords[2] = new Coordinate(12.7, 10.3);
+    coords[3] = new Coordinate(10.8, 10.3);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> resultPoly = (new CellIterator(
@@ -107,11 +106,11 @@ public class IterateByContributionNotOsmTypeSpecificTest {
     final GeometryFactory geometryFactory = new GeometryFactory();
 
     Coordinate[] coords = new Coordinate[5];
-    coords[0] = new Coordinate(-180,-90);
-    coords[1] = new Coordinate(180,-90);
-    coords[2] = new Coordinate(180,90);
-    coords[3] = new Coordinate(-180,90);
-    coords[4] = new Coordinate(-180,-90);
+    coords[0] = new Coordinate(-180, -90);
+    coords[1] = new Coordinate(180, -90);
+    coords[2] = new Coordinate(180, 90);
+    coords[3] = new Coordinate(-180, 90);
+    coords[4] = new Coordinate(-180, -90);
     Polygon polygonFromCoordinates = geometryFactory.createPolygon(coords);
 
     List<IterateAllEntry> resultPoly = (new CellIterator(
@@ -127,7 +126,7 @@ public class IterateByContributionNotOsmTypeSpecificTest {
     )).iterateByContribution(
         oshdbDataGridCell
     ).collect(Collectors.toList());
-    assertTrue(!resultPoly.isEmpty());
+    assertFalse(resultPoly.isEmpty());
   }
 
 

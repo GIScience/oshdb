@@ -42,7 +42,7 @@ public class FastPolygonOperations implements Serializable {
     GeometryFactory gf = new GeometryFactory();
 
     Geometry[] result = new Geometry[numBands * numBands];
-    traverseQuads(bandIterations, 0,0, env, geom, gf, result);
+    traverseQuads(bandIterations, 0, 0, env, geom, gf, result);
 
     blocks = new ArrayList<>(Arrays.asList(result));
   }

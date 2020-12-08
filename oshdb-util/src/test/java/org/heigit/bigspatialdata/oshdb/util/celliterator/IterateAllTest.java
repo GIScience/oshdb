@@ -51,6 +51,7 @@ public class IterateAllTest {
   public IterateAllTest() {
   }
 
+  @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
   @Test
   public void testIssue108() throws SQLException, IOException, ClassNotFoundException,
       ParseException, OSHDBKeytablesNotFoundException {
@@ -93,8 +94,8 @@ public class IterateAllTest {
       }
     }
 
-    assertEquals(countTotal, 4);
-    assertEquals(countCreated, 0);
-    assertEquals(countOther, 4);
+    assertEquals(4, countTotal);
+    assertEquals(0, countCreated);
+    assertEquals(4, countOther);
   }
 }

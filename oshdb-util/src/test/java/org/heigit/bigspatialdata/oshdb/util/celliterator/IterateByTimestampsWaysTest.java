@@ -7,8 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHNodes;
-import org.heigit.bigspatialdata.oshdb.grid.GridOSHRelations;
 import org.heigit.bigspatialdata.oshdb.grid.GridOSHWays;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
@@ -24,9 +22,7 @@ import org.locationtech.jts.geom.Polygon;
 
 public class IterateByTimestampsWaysTest {
 
-  private GridOSHWays oshdbDataGridCell;
-  private GridOSHNodes oshdbDataGridCellNodes;
-  private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
+  private final GridOSHWays oshdbDataGridCell;
   TagInterpreter areaDecider;
 
   /**
@@ -34,6 +30,7 @@ public class IterateByTimestampsWaysTest {
    * {@link GridOSHWays}.
    */
   public IterateByTimestampsWaysTest() throws IOException {
+    OSMXmlReader osmXmlTestData = new OSMXmlReader();
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHWays(osmXmlTestData);
@@ -85,7 +82,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 101,
         osmEntity -> true,
@@ -116,7 +113,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 102,
         osmEntity -> true,
@@ -140,7 +137,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 103,
         osmEntity -> true,
@@ -178,7 +175,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 104,
         osmEntity -> true,
@@ -206,7 +203,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 105,
         osmEntity -> true,
@@ -232,7 +229,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 106,
         osmEntity -> true,
@@ -262,7 +259,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 107,
         osmEntity -> true,
@@ -292,7 +289,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 108,
         osmEntity -> true,
@@ -313,7 +310,7 @@ public class IterateByTimestampsWaysTest {
             "2010-02-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
@@ -338,7 +335,7 @@ public class IterateByTimestampsWaysTest {
             "2012-08-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
@@ -347,7 +344,7 @@ public class IterateByTimestampsWaysTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
 
-    assertNotEquals(result.get(0).geometry.get(),result.get(3).geometry.get());
+    assertNotEquals(result.get(0).geometry.get(), result.get(3).geometry.get());
     assertEquals(4, result.size());
     assertEquals(3, result.get(1).geometry.get().getNumPoints());
     assertEquals(4, result.get(0).unclippedGeometry.get().getNumPoints());

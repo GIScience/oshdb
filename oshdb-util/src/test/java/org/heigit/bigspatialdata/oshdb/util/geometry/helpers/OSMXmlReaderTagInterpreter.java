@@ -9,13 +9,13 @@ import org.heigit.bigspatialdata.oshdb.util.xmlreader.OSMXmlReader;
 
 public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
 
-  private int area;
-  private int areaYes;
-  private int type;
-  private int typeMultipolygon;
-  private int emptyRole;
-  private int outer;
-  private int inner;
+  private final int area;
+  private final int areaYes;
+  private final int type;
+  private final int typeMultipolygon;
+  private final int emptyRole;
+  private final int outer;
+  private final int inner;
 
   /**
    * Constructor reading all required values from a given {@link OSMXmlReader}.

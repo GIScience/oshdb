@@ -84,8 +84,7 @@ public class OSHDBTimestampsTest {
 
   @Test(expected = RuntimeException.class)
   public void testInvalidTimestamp() {
-    @SuppressWarnings("unused") // creating this object should trigger the exception
-    OSHDBTimestamps invalid = new OSHDBTimestamps("test123");
+    new OSHDBTimestamps("test123");
   }
 
 }

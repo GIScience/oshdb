@@ -1,6 +1,7 @@
 package org.heigit.bigspatialdata.oshdb.util.geometry.fip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.junit.Test;
@@ -15,108 +16,110 @@ public class FastBboxOutsidePolygonTest {
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 
     // inside
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-0.1,-0.4,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -0.1, -0.4, 0.1)));
     // partially inside
-    assertEquals(bop.test(new OSHDBBoundingBox(-1.5,-0.1,-0.4,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-0.1,1.4,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-1.1,-0.4,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-0.1,-0.4,1.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(-1.5, -0.1, -0.4, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -0.1, 1.4, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -1.1, -0.4, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -0.1, -0.4, 1.1)));
     // in concave part
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,-0.1,0.6,0.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,-0.9,0.6,-0.8)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,0.8,0.6,0.9)), false);
+    assertTrue(bop.test(new OSHDBBoundingBox(0.4, -0.1, 0.6, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(0.4, -0.9, 0.6, -0.8)));
+    assertFalse(bop.test(new OSHDBBoundingBox(0.4, 0.8, 0.6, 0.9)));
     // in concave part, coordinates all inside
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,-0.9,0.6,0.9)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(0.4, -0.9, 0.6, 0.9)));
     // outside poly's bbox
-    assertEquals(bop.test(new OSHDBBoundingBox(1.4,-0.1,1.6,0.1)), true);
+    assertTrue(bop.test(new OSHDBBoundingBox(1.4, -0.1, 1.6, 0.1)));
     // bbox covering
-    assertEquals(bop.test(new OSHDBBoundingBox(-11,-10,10,10)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(-11, -10, 10, 10)));
   }
 
   @Test
+  @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
   public void testBboxInPolygonWithHole() {
     Polygon p = FastPointInPolygonTest.createPolygonWithHole();
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 
     // inside
-    assertEquals(bop.test(new OSHDBBoundingBox(2.1,-0.1,2.2,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-0.9,3.2,-0.8)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,0.8,3.2,0.9)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.8,-0.1,3.9,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.1, -0.1, 2.2, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, -0.9, 3.2, -0.8)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, 0.8, 3.2, 0.9)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.8, -0.1, 3.9, 0.1)));
     // partially inside
-    assertEquals(bop.test(new OSHDBBoundingBox(1.8,-0.1,2.2,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-1.1,3.2,-0.8)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,0.8,3.2,1.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.8,-0.1,4.1,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(1.8, -0.1, 2.2, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, -1.1, 3.2, -0.8)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, 0.8, 3.2, 1.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.8, -0.1, 4.1, 0.1)));
     // in hole
-    assertEquals(bop.test(new OSHDBBoundingBox(2.9,-0.1,3.1,0.1)), true);
+    assertTrue(bop.test(new OSHDBBoundingBox(2.9, -0.1, 3.1, 0.1)));
     // partially in hole
-    assertEquals(bop.test(new OSHDBBoundingBox(2.4,-0.1,2.6,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-0.6,3.2,-0.4)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,0.4,3.2,0.6)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.4,-0.1,3.6,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.4, -0.1, 2.6, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, -0.6, 3.2, -0.4)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, 0.4, 3.2, 0.6)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.4, -0.1, 3.6, 0.1)));
     // intersecting hole
-    assertEquals(bop.test(new OSHDBBoundingBox(2.1,-0.1,3.9,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.1, -0.1, 3.9, 0.1)));
     // outside poly's bbox
-    assertEquals(bop.test(new OSHDBBoundingBox(4.1,-0.1,4.2,0.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(1.8,-0.1,1.9,0.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-1.2,3.2,-1.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,1.1,3.2,1.2)), true);
+    assertTrue(bop.test(new OSHDBBoundingBox(4.1, -0.1, 4.2, 0.1)));
+    assertTrue(bop.test(new OSHDBBoundingBox(1.8, -0.1, 1.9, 0.1)));
+    assertTrue(bop.test(new OSHDBBoundingBox(3.1, -1.2, 3.2, -1.1)));
+    assertTrue(bop.test(new OSHDBBoundingBox(3.1, 1.1, 3.2, 1.2)));
     // covering hole, but all vertices inside polygon
-    assertEquals(bop.test(new OSHDBBoundingBox(2.2,-0.8,3.8,0.8)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.2, -0.8, 3.8, 0.8)));
   }
 
   @Test
+  @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
   public void testBboxInMultiPolygon() {
     MultiPolygon p = FastPointInPolygonTest.createMultiPolygon();
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 
     // left polygon
     // inside
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-0.1,-0.4,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -0.1, -0.4, 0.1)));
     // partially inside
-    assertEquals(bop.test(new OSHDBBoundingBox(-1.5,-0.1,-0.4,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-0.1,1.4,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-1.1,-0.4,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(-0.6,-0.1,-0.4,1.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(-1.5, -0.1, -0.4, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -0.1, 1.4, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -1.1, -0.4, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(-0.6, -0.1, -0.4, 1.1)));
     // in concave part
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,-0.1,0.6,0.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,-0.9,0.6,-0.8)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,0.8,0.6,0.9)), false);
+    assertTrue(bop.test(new OSHDBBoundingBox(0.4, -0.1, 0.6, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(0.4, -0.9, 0.6, -0.8)));
+    assertFalse(bop.test(new OSHDBBoundingBox(0.4, 0.8, 0.6, 0.9)));
     // in concave part, coordinates all inside
-    assertEquals(bop.test(new OSHDBBoundingBox(0.4,-0.9,0.6,0.9)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(0.4, -0.9, 0.6, 0.9)));
     // outside poly's bbox
-    assertEquals(bop.test(new OSHDBBoundingBox(1.4,-0.1,1.6,0.1)), true);
+    assertTrue(bop.test(new OSHDBBoundingBox(1.4, -0.1, 1.6, 0.1)));
     // bbox covering
-    assertEquals(bop.test(new OSHDBBoundingBox(-11,-10,10,10)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(-11, -10, 10, 10)));
 
     // right polygon
     // inside
-    assertEquals(bop.test(new OSHDBBoundingBox(2.1,-0.1,2.2,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-0.9,3.2,-0.8)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,0.8,3.2,0.9)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.8,-0.1,3.9,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.1, -0.1, 2.2, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, -0.9, 3.2, -0.8)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, 0.8, 3.2, 0.9)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.8, -0.1, 3.9, 0.1)));
     // partially inside
-    assertEquals(bop.test(new OSHDBBoundingBox(1.8,-0.1,2.2,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-1.1,3.2,-0.8)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,0.8,3.2,1.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.8,-0.1,4.1,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(1.8, -0.1, 2.2, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, -1.1, 3.2, -0.8)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, 0.8, 3.2, 1.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.8, -0.1, 4.1, 0.1)));
     // in hole
-    assertEquals(bop.test(new OSHDBBoundingBox(2.9,-0.1,3.1,0.1)), true);
+    assertTrue(bop.test(new OSHDBBoundingBox(2.9, -0.1, 3.1, 0.1)));
     // partially in hole
-    assertEquals(bop.test(new OSHDBBoundingBox(2.4,-0.1,2.6,0.1)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-0.6,3.2,-0.4)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,0.4,3.2,0.6)), false);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.4,-0.1,3.6,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.4, -0.1, 2.6, 0.1)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, -0.6, 3.2, -0.4)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.1, 0.4, 3.2, 0.6)));
+    assertFalse(bop.test(new OSHDBBoundingBox(3.4, -0.1, 3.6, 0.1)));
     // intersecting hole
-    assertEquals(bop.test(new OSHDBBoundingBox(2.1,-0.1,3.9,0.1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.1, -0.1, 3.9, 0.1)));
     // outside poly's bbox
-    assertEquals(bop.test(new OSHDBBoundingBox(4.1,-0.1,4.2,0.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(1.8,-0.1,1.9,0.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,-1.2,3.2,-1.1)), true);
-    assertEquals(bop.test(new OSHDBBoundingBox(3.1,1.1,3.2,1.2)), true);
+    assertTrue(bop.test(new OSHDBBoundingBox(4.1, -0.1, 4.2, 0.1)));
+    assertTrue(bop.test(new OSHDBBoundingBox(1.8, -0.1, 1.9, 0.1)));
+    assertTrue(bop.test(new OSHDBBoundingBox(3.1, -1.2, 3.2, -1.1)));
+    assertTrue(bop.test(new OSHDBBoundingBox(3.1, 1.1, 3.2, 1.2)));
     // covering hole, but all vertices inside polygon
-    assertEquals(bop.test(new OSHDBBoundingBox(2.2,-0.8,3.8,0.8)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(2.2, -0.8, 3.8, 0.8)));
   }
 
   @Test
@@ -125,6 +128,6 @@ public class FastBboxOutsidePolygonTest {
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 
     // not inside
-    assertEquals(bop.test(new OSHDBBoundingBox(-1,-1,1,1)), false);
+    assertFalse(bop.test(new OSHDBBoundingBox(-1, -1, 1, 1)));
   }
 }

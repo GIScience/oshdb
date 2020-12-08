@@ -46,7 +46,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 100,
         osmEntity -> true,
@@ -95,7 +95,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 101,
         osmEntity -> true,
@@ -146,7 +146,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 102,
         osmEntity -> true,
@@ -179,7 +179,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:01Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 103,
         osmEntity -> true,
@@ -194,7 +194,7 @@ public class IterateByContributionWaysTest {
         result.get(0).activities.get()
     );
     assertEquals(
-        EnumSet.of(ContributionType.TAG_CHANGE,ContributionType.GEOMETRY_CHANGE),
+        EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
     );
     assertEquals(
@@ -230,7 +230,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:01Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 104,
         osmEntity -> true,
@@ -274,7 +274,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:01Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 105,
         osmEntity -> true,
@@ -288,7 +288,7 @@ public class IterateByContributionWaysTest {
         result.get(0).activities.get()
     );
     assertEquals(
-        EnumSet.of(ContributionType.TAG_CHANGE,ContributionType.GEOMETRY_CHANGE),
+        EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
     );
     assertEquals(
@@ -321,7 +321,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:01Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 106,
         osmEntity -> true,
@@ -335,7 +335,7 @@ public class IterateByContributionWaysTest {
         result.get(0).activities.get()
     );
     assertEquals(
-        EnumSet.of(ContributionType.TAG_CHANGE,ContributionType.GEOMETRY_CHANGE),
+        EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
         result.get(1).activities.get()
     );
 
@@ -361,7 +361,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:01Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 107,
         osmEntity -> true,
@@ -402,7 +402,7 @@ public class IterateByContributionWaysTest {
             "2009-02-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 108,
         osmEntity -> true,
@@ -424,7 +424,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180,-90, 180, 90),
+        new OSHDBBoundingBox(-180, -90, 180, 90),
         areaDecider,
         oshEntity -> oshEntity.getId() == 109,
         osmEntity -> true,
@@ -455,7 +455,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2009-08-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
@@ -483,7 +483,7 @@ public class IterateByContributionWaysTest {
             "2000-01-01T00:00:00Z",
             "2012-08-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(1.8,1.3, 2.7, 2.7),
+        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
