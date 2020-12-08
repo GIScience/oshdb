@@ -1,14 +1,14 @@
 package org.example.oshdb.api.tutorial;
 
 import java.util.SortedMap;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
-import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
-import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.bigspatialdata.oshdb.osm.OSMType;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
-import org.heigit.bigspatialdata.oshdb.util.geometry.Geo;
-import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps.Interval;
+import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.ohsome.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.util.geometry.Geo;
+import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps.Interval;
 
 public class OSHDBApiTutorial {
   public static void main(String[] args) throws Exception {
