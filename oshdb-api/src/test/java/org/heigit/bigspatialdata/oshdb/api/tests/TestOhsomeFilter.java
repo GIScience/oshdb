@@ -15,7 +15,7 @@ import org.heigit.ohsome.oshdb.filter.FilterParser;
 import org.junit.Test;
 
 /**
- * Tests integration of ohsome-filter library.
+ * Tests integration of oshdb-filter library.
  *
  * <p>
  *   Only basic "is it working at all" tests are done, since the library itself has its own set
