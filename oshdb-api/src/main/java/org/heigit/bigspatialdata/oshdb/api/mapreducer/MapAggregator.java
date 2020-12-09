@@ -812,13 +812,13 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   }
 
   /**
-   * Apply a custom "ohsome" filter expression to this query.
+   * Apply a custom filter expression to this query.
    *
-   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme
-   * and https://docs.ohsome.org/java/ohsome-filter/1.2-SNAPSHOT for further information about how
-   * to create such a filter expression object.</p>
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
+   *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how
+   *      to create such a filter expression object.
    *
-   * @param f the filter expression to apply to the mapAggregator
+   * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
@@ -827,12 +827,12 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   }
 
   /**
-   * Apply a custom "ohsome" filter to this query.
+   * Apply a textual filter to this query.
    *
-   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax
-   * for a description of the ohsome filter syntax.</p>
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
+   *      readme</a> for a description of the filter syntax.
    *
-   * @param f the ohsome filter string to apply to the mapAggregator
+   * @param f the filter string to apply
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
