@@ -2070,7 +2070,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Performs optimizations when filtering by an "ohsome filter" expression.
+   * Performs optimizations when filtering by a filter expression.
    *
    * <p>It is not always optimal to apply filter expressions directly "out of the box", because
    * it is using the flexible `osmEntityFilter` in the general case. If a filter expression can
