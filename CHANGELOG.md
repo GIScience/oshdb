@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## 0.7.0-SNAPSHOT (current master)
+
+* integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. #306
+
 ## 0.6.0
 
 ### breaking changes
