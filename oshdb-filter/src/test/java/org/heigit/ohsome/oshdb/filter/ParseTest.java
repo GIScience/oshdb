@@ -1,4 +1,4 @@
-package org.heigit.ohsome.filter;
+package org.heigit.ohsome.oshdb.filter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -9,26 +9,7 @@ import java.util.EnumSet;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTag;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
-import org.heigit.ohsome.oshdb.filter.AndOperator;
-import org.heigit.ohsome.oshdb.filter.ConstantFilter;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.filter.GeometryFilterArea;
-import org.heigit.ohsome.oshdb.filter.GeometryFilterLength;
-import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter;
 import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
-import org.heigit.ohsome.oshdb.filter.IdFilterEquals;
-import org.heigit.ohsome.oshdb.filter.IdFilterEqualsAnyOf;
-import org.heigit.ohsome.oshdb.filter.IdFilterNotEquals;
-import org.heigit.ohsome.oshdb.filter.IdFilterRange;
-import org.heigit.ohsome.oshdb.filter.OrOperator;
-import org.heigit.ohsome.oshdb.filter.TagFilter;
-import org.heigit.ohsome.oshdb.filter.TagFilterEquals;
-import org.heigit.ohsome.oshdb.filter.TagFilterEqualsAny;
-import org.heigit.ohsome.oshdb.filter.TagFilterEqualsAnyOf;
-import org.heigit.ohsome.oshdb.filter.TagFilterNotEquals;
-import org.heigit.ohsome.oshdb.filter.TagFilterNotEqualsAny;
-import org.heigit.ohsome.oshdb.filter.TagFilterNotEqualsAnyOf;
-import org.heigit.ohsome.oshdb.filter.TypeFilter;
 import org.junit.Test;
 
 /**

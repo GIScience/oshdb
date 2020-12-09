@@ -1,4 +1,4 @@
-package org.heigit.ohsome.filter;
+package org.heigit.ohsome.oshdb.filter;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.geometry.OSHDBGeometryBuilder;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;

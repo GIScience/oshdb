@@ -1,12 +1,10 @@
-package org.heigit.ohsome.filter;
+package org.heigit.ohsome.oshdb.filter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.junit.Test;
 
 /**

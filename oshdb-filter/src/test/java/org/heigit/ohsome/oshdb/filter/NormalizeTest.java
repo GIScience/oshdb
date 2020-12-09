@@ -1,4 +1,4 @@
-package org.heigit.ohsome.filter;
+package org.heigit.ohsome.oshdb.filter;
 
 import static org.junit.Assert.assertEquals;
 
