@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -408,7 +409,9 @@ public abstract class MapReducer<X> implements
    *
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmType(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
@@ -427,7 +430,10 @@ public abstract class MapReducer<X> implements
    *
    * @param f the filter function to call for each osm entity
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
+   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmEntityFilter(SerializablePredicate<OSMEntity> f) {
     MapReducer<X> ret = this.copy();
@@ -441,7 +447,9 @@ public abstract class MapReducer<X> implements
    *
    * @param key the tag key to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key) {
     return this.osmTag(new OSMTagKey(key));
@@ -453,7 +461,9 @@ public abstract class MapReducer<X> implements
    *
    * @param tag the tag (key, or key and value) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(OSMTagInterface tag) {
     if (tag instanceof OSMTag) {
@@ -471,7 +481,9 @@ public abstract class MapReducer<X> implements
    *
    * @param key the tag key to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
@@ -494,7 +506,9 @@ public abstract class MapReducer<X> implements
    * @param key the tag to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, String value) {
     return this.osmTag(new OSMTag(key, value));
@@ -506,7 +520,9 @@ public abstract class MapReducer<X> implements
    *
    * @param tag the tag (key-value pair or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTag tag) {
     MapReducer<X> ret = this.copy();
@@ -531,7 +547,9 @@ public abstract class MapReducer<X> implements
    * @param key the tag key to filter the osm entities for
    * @param values an array of tag values to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
@@ -611,7 +629,9 @@ public abstract class MapReducer<X> implements
    *
    * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(Collection<? extends OSMTagInterface> tags) {
     MapReducer<X> ret = this.copy();

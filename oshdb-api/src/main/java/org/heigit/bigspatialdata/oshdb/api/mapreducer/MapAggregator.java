@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -275,7 +276,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmType(Set<OSMType> typeFilter) {
     return this.copyTransform(this.mapReducer.osmType(typeFilter));
@@ -287,7 +290,10 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param f the filter function to call for each osm entity
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
+   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmEntityFilter(SerializablePredicate<OSMEntity> f) {
     return this.copyTransform(this.mapReducer.osmEntityFilter(f));
@@ -300,7 +306,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param tag the tag (key, or key and value) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(OSMTagInterface tag) {
     return this.copyTransform(this.mapReducer.osmTag(tag));
@@ -312,7 +320,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param key the tag key to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key) {
     return this.copyTransform(this.mapReducer.osmTag(key));
@@ -325,7 +335,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key, String value) {
     return this.copyTransform(this.mapReducer.osmTag(key, value));
@@ -339,7 +351,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param key the tag key to filter the osm entities for
    * @param values an array of tag values to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key, Collection<String> values) {
     return this.copyTransform(this.mapReducer.osmTag(key, values));
@@ -364,7 +378,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(Collection<? extends OSMTagInterface> tags) {
     return this.copyTransform(this.mapReducer.osmTag(tags));
