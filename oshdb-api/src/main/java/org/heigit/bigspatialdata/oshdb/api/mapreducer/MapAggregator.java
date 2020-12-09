@@ -41,7 +41,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
-import org.heigit.ohsome.filter.FilterExpression;
+import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;

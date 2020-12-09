@@ -1,4 +1,4 @@
-package org.heigit.ohsome.filter;
+package org.heigit.ohsome.oshdb.filter;
 
 import com.google.common.collect.Streams;
 import java.io.Serializable;

@@ -1,4 +1,4 @@
-package org.heigit.ohsome.filter;
+package org.heigit.ohsome.oshdb.filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +8,8 @@ import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
-import org.heigit.ohsome.filter.GeometryFilter.ValueRange;
-import org.heigit.ohsome.filter.GeometryTypeFilter.GeometryType;
+import org.heigit.ohsome.oshdb.filter.GeometryFilter.ValueRange;
+import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
 import org.jetbrains.annotations.Contract;
 import org.jparsec.OperatorTable;
 import org.jparsec.Parser;

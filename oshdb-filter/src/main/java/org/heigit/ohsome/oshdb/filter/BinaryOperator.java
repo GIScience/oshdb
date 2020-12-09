@@ -1,4 +1,4 @@
-package org.heigit.ohsome.filter;
+package org.heigit.ohsome.oshdb.filter;
 
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.Contract;
