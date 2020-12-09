@@ -11,11 +11,11 @@ import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.TagTranslator;
-import org.heigit.ohsome.filter.FilterParser;
+import org.heigit.ohsome.oshdb.filter.FilterParser;
 import org.junit.Test;
 
 /**
- * Tests integration of ohsome-filter library.
+ * Tests integration of oshdb-filter library.
  *
  * <p>
  *   Only basic "is it working at all" tests are done, since the library itself has its own set

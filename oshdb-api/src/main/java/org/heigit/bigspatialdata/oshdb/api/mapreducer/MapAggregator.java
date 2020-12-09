@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,7 +42,7 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBTimestamp;
 import org.heigit.bigspatialdata.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
-import org.heigit.ohsome.filter.FilterExpression;
+import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
@@ -275,7 +276,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmType(Set<OSMType> typeFilter) {
     return this.copyTransform(this.mapReducer.osmType(typeFilter));
@@ -287,7 +290,10 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param f the filter function to call for each osm entity
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
+   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmEntityFilter(SerializablePredicate<OSMEntity> f) {
     return this.copyTransform(this.mapReducer.osmEntityFilter(f));
@@ -300,7 +306,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param tag the tag (key, or key and value) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(OSMTagInterface tag) {
     return this.copyTransform(this.mapReducer.osmTag(tag));
@@ -312,7 +320,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param key the tag key to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key) {
     return this.copyTransform(this.mapReducer.osmTag(key));
@@ -325,7 +335,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key, String value) {
     return this.copyTransform(this.mapReducer.osmTag(key, value));
@@ -339,7 +351,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param key the tag key to filter the osm entities for
    * @param values an array of tag values to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key, Collection<String> values) {
     return this.copyTransform(this.mapReducer.osmTag(key, values));
@@ -364,7 +378,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this object (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(Collection<? extends OSMTagInterface> tags) {
     return this.copyTransform(this.mapReducer.osmTag(tags));
@@ -812,13 +828,13 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   }
 
   /**
-   * Apply a custom "ohsome" filter expression to this query.
+   * Apply a custom filter expression to this query.
    *
-   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme
-   * and https://docs.ohsome.org/java/ohsome-filter/1.2-SNAPSHOT for further information about how
-   * to create such a filter expression object.</p>
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
+   *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how
+   *      to create such a filter expression object.
    *
-   * @param f the filter expression to apply to the mapAggregator
+   * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
@@ -827,12 +843,12 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   }
 
   /**
-   * Apply a custom "ohsome" filter to this query.
+   * Apply a textual filter to this query.
    *
-   * <p>See https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax
-   * for a description of the ohsome filter syntax.</p>
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
+   *      readme</a> for a description of the filter syntax.
    *
-   * @param f the ohsome filter string to apply to the mapAggregator
+   * @param f the filter string to apply
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   @Contract(pure = true)

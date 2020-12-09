@@ -15,7 +15,6 @@
   <description>API to query the OpenStreetMap History Database. Includes MapReduce functionality to filter, analyze and aggregate data.</description>
 
   <properties>
-    <ohsomefilter.version>1.4.1</ohsomefilter.version>
     <tdigest.version>3.2</tdigest.version>
   </properties>
 
@@ -29,6 +28,12 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>oshdb-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-filter</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -89,12 +94,6 @@
       <groupId>com.tdunning</groupId>
       <artifactId>t-digest</artifactId>
       <version>${tdigest.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.heigit.ohsome</groupId>
-      <artifactId>ohsome-filter</artifactId>
-      <version>${ohsomefilter.version}</version>
     </dependency>
     
     <!-- TEST dependencies -->

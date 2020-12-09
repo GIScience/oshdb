@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,14 +64,14 @@ import org.heigit.bigspatialdata.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.bigspatialdata.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.bigspatialdata.oshdb.util.time.TimestampFormatter;
-import org.heigit.ohsome.filter.AndOperator;
-import org.heigit.ohsome.filter.Filter;
-import org.heigit.ohsome.filter.FilterExpression;
-import org.heigit.ohsome.filter.FilterParser;
-import org.heigit.ohsome.filter.GeometryTypeFilter;
-import org.heigit.ohsome.filter.TagFilterEquals;
-import org.heigit.ohsome.filter.TagFilterEqualsAny;
-import org.heigit.ohsome.filter.TypeFilter;
+import org.heigit.ohsome.oshdb.filter.AndOperator;
+import org.heigit.ohsome.oshdb.filter.Filter;
+import org.heigit.ohsome.oshdb.filter.FilterExpression;
+import org.heigit.ohsome.oshdb.filter.FilterParser;
+import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter;
+import org.heigit.ohsome.oshdb.filter.TagFilterEquals;
+import org.heigit.ohsome.oshdb.filter.TagFilterEqualsAny;
+import org.heigit.ohsome.oshdb.filter.TypeFilter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
@@ -408,7 +409,9 @@ public abstract class MapReducer<X> implements
    *
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmType(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
@@ -427,7 +430,10 @@ public abstract class MapReducer<X> implements
    *
    * @param f the filter function to call for each osm entity
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
+   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmEntityFilter(SerializablePredicate<OSMEntity> f) {
     MapReducer<X> ret = this.copy();
@@ -441,7 +447,9 @@ public abstract class MapReducer<X> implements
    *
    * @param key the tag key to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key) {
     return this.osmTag(new OSMTagKey(key));
@@ -453,7 +461,9 @@ public abstract class MapReducer<X> implements
    *
    * @param tag the tag (key, or key and value) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(OSMTagInterface tag) {
     if (tag instanceof OSMTag) {
@@ -471,7 +481,9 @@ public abstract class MapReducer<X> implements
    *
    * @param key the tag key to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTagKey key) {
     MapReducer<X> ret = this.copy();
@@ -494,7 +506,9 @@ public abstract class MapReducer<X> implements
    * @param key the tag to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, String value) {
     return this.osmTag(new OSMTag(key, value));
@@ -506,7 +520,9 @@ public abstract class MapReducer<X> implements
    *
    * @param tag the tag (key-value pair or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTag tag) {
     MapReducer<X> ret = this.copy();
@@ -531,7 +547,9 @@ public abstract class MapReducer<X> implements
    * @param key the tag key to filter the osm entities for
    * @param values an array of tag values to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Collection<String> values) {
     MapReducer<X> ret = this.copy();
@@ -611,7 +629,9 @@ public abstract class MapReducer<X> implements
    *
    * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(Collection<? extends OSMTagInterface> tags) {
     MapReducer<X> ret = this.copy();
@@ -717,13 +737,13 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Apply a custom "ohsome" filter expression to this query.
+   * Apply a custom filter expression to this query.
    *
-   * <p>See <a href="https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#ohsome-filter">https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#ohsome-filter</a>
-   * and <a href="https://docs.ohsome.org/java/ohsome-filter">https://docs.ohsome.org/java/ohsome-filter</a>
-   * for further information about how to create such a filter expression object.</p>
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
+   *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how
+   *      to create such a filter expression object.
    *
-   * @param f the filter expression to apply to the mapReducer
+   * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
@@ -751,12 +771,12 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Apply a custom "ohsome" filter to this query.
+   * Apply a textual filter to this query.
    *
-   * <p>See <a href="https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax">https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#syntax</a>
-   * for a description of the ohsome filter syntax.</p>
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
+   *      readme</a> for a description of the filter syntax.
    *
-   * @param f the ohsome filter string to apply to the mapReducer
+   * @param f the filter string to apply
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
@@ -2050,7 +2070,7 @@ public abstract class MapReducer<X> implements
   }
 
   /**
-   * Performs optimizations when filtering by an "ohsome filter" expression.
+   * Performs optimizations when filtering by a filter expression.
    *
    * <p>It is not always optimal to apply filter expressions directly "out of the box", because
    * it is using the flexible `osmEntityFilter` in the general case. If a filter expression can

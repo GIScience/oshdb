@@ -16,6 +16,7 @@
   <modules>
     <module>oshdb</module>
     <module>oshdb-api</module>
+    <module>oshdb-filter</module>
     <module>oshdb-tool</module>
     <module>oshdb-util</module>
   </modules>

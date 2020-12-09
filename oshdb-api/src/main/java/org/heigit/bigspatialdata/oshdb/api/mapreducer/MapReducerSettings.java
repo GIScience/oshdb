@@ -3,6 +3,7 @@ package org.heigit.bigspatialdata.oshdb.api.mapreducer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate;
 import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
@@ -11,6 +12,8 @@ import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.bigspatialdata.oshdb.util.tagtranslator.OSMTagKey;
+import org.heigit.ohsome.oshdb.filter.FilterExpression;
+import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
@@ -42,11 +45,38 @@ interface MapReducerSettings<M> {
   <P extends Geometry & Polygonal> M areaOfInterest(P polygonFilter);
 
   /**
+   * Apply a textual filter to this query.
+   *
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
+   *      readme</a> for a description of the filter syntax.
+   *
+   * @param f the filter string to apply
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  M filter(String f);
+
+  /**
+   * Apply a custom filter expression to this query.
+   *
+   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
+   *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how
+   *      to create such a filter expression object.
+   *
+   * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  @Contract(pure = true)
+  M filter(FilterExpression f);
+
+  /**
    * Limits the analysis to the given osm entity types.
    *
    * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   M osmType(Set<OSMType> typeFilter);
 
   /**
@@ -55,7 +85,9 @@ interface MapReducerSettings<M> {
    * @param type1 the set of osm types to filter (e.g. `OSMType.NODE`)
    * @param otherTypes more osm types which should be analyzed
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   default M osmType(OSMType type1, OSMType... otherTypes) {
     return osmType(EnumSet.of(type1, otherTypes));
   }
@@ -66,7 +98,10 @@ interface MapReducerSettings<M> {
    *
    * @param f the filter function to call for each osm entity
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
+   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
    */
+  @Deprecated
   M osmEntityFilter(SerializablePredicate<OSMEntity> f);
 
   /**
@@ -75,7 +110,9 @@ interface MapReducerSettings<M> {
    *
    * @param key the tag key to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   M osmTag(String key);
 
   /**
@@ -84,7 +121,9 @@ interface MapReducerSettings<M> {
    *
    * @param tag the tag (key, or key and value) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   M osmTag(OSMTagInterface tag);
 
   /**
@@ -94,7 +133,9 @@ interface MapReducerSettings<M> {
    * @param key the tag key to filter the osm entities for
    * @param value the tag value to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   M osmTag(String key, String value);
 
   /**
@@ -104,7 +145,9 @@ interface MapReducerSettings<M> {
    * @param key the tag key to filter the osm entities for
    * @param values an array of tag values to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   M osmTag(String key, Collection<String> values);
 
   /**
@@ -123,7 +166,9 @@ interface MapReducerSettings<M> {
    *
    * @param keyValuePairs the tags (key/value pairs or key=*) to filter the osm entities for
    * @return `this` mapReducer (can be used to chain multiple commands together)
+   * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Deprecated
   M osmTag(Collection<? extends OSMTagInterface> keyValuePairs);
 
   /** deprecated.
