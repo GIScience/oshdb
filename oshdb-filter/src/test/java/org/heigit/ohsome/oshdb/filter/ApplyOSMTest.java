@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -8,9 +7,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 /**
- * Test class for the ohsome-filter package.
- *
- * <p>Tests the parsing of filters and the application to OSM entities.</p>
+ * Tests the parsing of filters and the application to OSM entities.
  */
 public class ApplyOSMTest extends FilterTest {
   @Test

@@ -11,7 +11,7 @@ import org.heigit.ohsome.oshdb.filter.TypeFilter;
 import org.junit.Test;
 
 /**
- * Tests for negation of filters.
+ * Tests for normalization of filters.
  */
 public class NormalizeTest {
   @Test

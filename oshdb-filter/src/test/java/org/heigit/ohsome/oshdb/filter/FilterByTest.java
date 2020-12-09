@@ -13,6 +13,9 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests helper methods for creating filters from lambda functions.
+ */
 public class FilterByTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
   private final OSMNode testOSMEntity = createTestOSMEntityNode();
