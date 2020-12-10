@@ -1,5 +1,10 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
+import com.google.common.base.Functions;
+import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -17,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
-
 import org.heigit.ohsome.oshdb.tool.importer.extract.Extract.KeyValuePointer;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.Role;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.VF;
@@ -27,13 +31,6 @@ import org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator;
 import org.heigit.ohsome.oshdb.tool.importer.util.StringToIdMappingImpl;
 import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapper;
 import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapperImpl;
-
-import com.google.common.base.Functions;
-
-import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 public class TransformerTagRoles {
 

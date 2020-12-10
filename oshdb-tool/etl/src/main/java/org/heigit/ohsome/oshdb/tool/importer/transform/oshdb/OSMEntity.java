@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.util.Arrays;
-
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
 public interface OSMEntity {

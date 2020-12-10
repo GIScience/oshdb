@@ -1,13 +1,11 @@
 package org.heigit.ohsome.oshpbf.parser.pbf;
 
-import java.util.zip.DataFormatException;
-import java.util.zip.Inflater;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import crosby.binary.Fileformat;
 import crosby.binary.Osmformat;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 /**
  * A full OSM Pbf Blob. Contains both, <a href=

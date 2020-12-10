@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;

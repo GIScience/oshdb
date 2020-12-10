@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
+import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -7,7 +10,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.LongFunction;
-
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
@@ -21,10 +23,6 @@ import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Relation;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.RelationMember;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
-
-import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 public class TransformerRelation extends Transformer {
   private final ByteArrayOutputWrapper wrapperData = new ByteArrayOutputWrapper(1024);

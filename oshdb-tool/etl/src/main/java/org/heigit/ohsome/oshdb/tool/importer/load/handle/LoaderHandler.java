@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.tool.importer.load.handle;
 
 import java.util.Collection;
 import java.util.List;
-
 import org.heigit.ohsome.oshdb.tool.importer.load.LoaderKeyTables;
 import org.heigit.ohsome.oshdb.tool.importer.load.LoaderNode;
 import org.heigit.ohsome.oshdb.tool.importer.load.LoaderRelation;
@@ -10,7 +9,6 @@ import org.heigit.ohsome.oshdb.tool.importer.load.LoaderWay;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransfomRelation;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
-
 
 public class LoaderHandler implements LoaderKeyTables.Handler, LoaderNode.Handler, LoaderWay.Handler, LoaderRelation.Handler {
 

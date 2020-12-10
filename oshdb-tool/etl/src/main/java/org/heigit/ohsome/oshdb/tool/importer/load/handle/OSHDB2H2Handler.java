@@ -1,5 +1,10 @@
 package org.heigit.ohsome.oshdb.tool.importer.load.handle;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+import com.google.common.base.Stopwatch;
+import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
+import it.unimi.dsi.fastutil.io.FastByteArrayOutputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -23,13 +28,6 @@ import org.heigit.ohsome.oshdb.tool.importer.load.LoaderWay;
 import org.heigit.ohsome.oshdb.tool.importer.load.cli.DBH2Arg;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
-
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
-import com.google.common.base.Stopwatch;
-
-import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
-import it.unimi.dsi.fastutil.io.FastByteArrayOutputStream;
 
 public class OSHDB2H2Handler extends OSHDBHandler {
 

@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
-
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMType;

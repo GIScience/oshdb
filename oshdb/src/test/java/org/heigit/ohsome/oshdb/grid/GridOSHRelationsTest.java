@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.grid;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +17,6 @@ import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import static org.junit.Assert.assertEquals;
-
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.junit.Test;
 

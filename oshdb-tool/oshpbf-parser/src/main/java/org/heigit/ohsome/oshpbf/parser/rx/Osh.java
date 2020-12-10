@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshpbf.parser.rx;
 
 import java.util.List;
-
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 

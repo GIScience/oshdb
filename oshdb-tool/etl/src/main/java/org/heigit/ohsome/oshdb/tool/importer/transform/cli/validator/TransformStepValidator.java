@@ -1,10 +1,9 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.cli.validator;
 
-import java.util.Set;
-
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 import com.google.common.collect.Sets;
+import java.util.Set;
 
 public class TransformStepValidator implements IParameterValidator{
   private static final Set<String> stepSet;

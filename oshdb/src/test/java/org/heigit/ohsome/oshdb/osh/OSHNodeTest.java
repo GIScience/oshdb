@@ -1,13 +1,13 @@
 package org.heigit.ohsome.oshdb.osh;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.junit.Test;
 

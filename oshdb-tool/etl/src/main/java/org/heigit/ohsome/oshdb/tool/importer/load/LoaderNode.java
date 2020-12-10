@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.load;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -13,8 +15,6 @@ import java.util.stream.StreamSupport;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.transform.reader.TransfromNodeReaders;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
-import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 
 public class LoaderNode extends Loader {
   

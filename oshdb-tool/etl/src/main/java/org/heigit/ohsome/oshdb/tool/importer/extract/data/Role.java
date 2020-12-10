@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Comparator;
-
 import org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator;
 
 public class Role {

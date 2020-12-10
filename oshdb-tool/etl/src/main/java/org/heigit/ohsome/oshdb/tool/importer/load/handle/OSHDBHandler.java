@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.load.handle;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +27,6 @@ import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 
 public abstract class OSHDBHandler extends LoaderHandler {
 

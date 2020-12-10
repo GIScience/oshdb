@@ -1,17 +1,15 @@
 package org.heigit.ohsome.oshpbf.parser.rx;
 
-import java.util.List;
-
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
-
 import io.reactivex.Flowable;
 import io.reactivex.FlowableSubscriber;
 import io.reactivex.internal.fuseable.ConditionalSubscriber;
 import io.reactivex.internal.fuseable.QueueSubscription;
 import io.reactivex.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.plugins.RxJavaPlugins;
+import java.util.List;
+import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 public class OshMerger extends Flowable<Osh> {
 

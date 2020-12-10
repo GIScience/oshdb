@@ -1,8 +1,14 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract.collector;
 
-
 import static org.heigit.ohsome.oshdb.tool.importer.util.lambda.ConsumerUtil.throwingConsumer;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.PeekingIterator;
+import com.google.common.collect.Streams;
+import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -27,21 +33,11 @@ import java.util.PriorityQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.KVF;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.VF;
 import org.heigit.ohsome.oshdb.tool.importer.util.MergeIterator;
 import org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.TagText;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.PeekingIterator;
-import com.google.common.collect.Streams;
-
-import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 
 public class KVFCollector implements Iterable<KVF> {
 

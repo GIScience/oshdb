@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract.collector;
 
+import crosby.binary.Osmformat.HeaderBBox;
+import crosby.binary.Osmformat.HeaderBlock;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -7,15 +9,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Node;
 import org.heigit.ohsome.oshpbf.parser.rx.Osh;
-
-import crosby.binary.Osmformat.HeaderBBox;
-import crosby.binary.Osmformat.HeaderBlock;
 
 public class StatsCollector {
 

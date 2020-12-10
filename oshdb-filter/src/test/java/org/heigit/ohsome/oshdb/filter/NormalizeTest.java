@@ -4,10 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.filter.BinaryOperator;
-import org.heigit.ohsome.oshdb.filter.Filter;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.filter.TypeFilter;
 import org.junit.Test;
 
 /**

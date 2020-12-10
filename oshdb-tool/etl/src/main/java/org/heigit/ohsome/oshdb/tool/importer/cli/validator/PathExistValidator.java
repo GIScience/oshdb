@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.tool.importer.cli.validator;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class PathExistValidator implements IParameterValidator {
 

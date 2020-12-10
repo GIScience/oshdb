@@ -1,11 +1,9 @@
 package org.heigit.ohsome.oshdb.tool.importer.cli;
 
+import com.beust.jcommander.Parameter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import org.heigit.ohsome.oshdb.tool.importer.cli.validator.DirExistValidator;
-
-import com.beust.jcommander.Parameter;
 
 public class CommonArgs {
   @Parameter(names = { "-workDir", "--workingDir" }, description = "path to store the result files.", validateWith =DirExistValidator.class, required = false, order = 10)

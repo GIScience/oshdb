@@ -1,13 +1,13 @@
 package org.heigit.ohsome.oshdb.index;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Set;
 import java.util.TreeSet;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.index.XYGrid.IdRange;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.CellId;
-import static org.junit.Assert.assertEquals;
-
+import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

@@ -1,5 +1,13 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+import com.google.common.base.Functions;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Streams;
+import com.google.common.io.CountingOutputStream;
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.reactivex.Flowable;
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,7 +33,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.tool.importer.extract.cli.ExtractArgs;
 import org.heigit.ohsome.oshdb.tool.importer.extract.collector.KVFCollector;
@@ -44,16 +51,6 @@ import org.heigit.ohsome.oshpbf.parser.osm.v0_6.TagText;
 import org.heigit.ohsome.oshpbf.parser.rx.Osh;
 import org.heigit.ohsome.oshpbf.parser.rx.RxOshPbfReader;
 import org.wololo.geojson.GeoJSON;
-
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
-import com.google.common.base.Functions;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Streams;
-import com.google.common.io.CountingOutputStream;
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import io.reactivex.Flowable;
 
 public class Extract {
 

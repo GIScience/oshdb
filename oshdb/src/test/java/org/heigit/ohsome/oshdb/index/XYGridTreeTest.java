@@ -1,13 +1,14 @@
 package org.heigit.ohsome.oshdb.index;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.CellId;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.junit.Test;
 
 public class XYGridTreeTest {

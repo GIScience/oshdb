@@ -1,5 +1,14 @@
 package org.heigit.ohsome.oshpbf.parser.rx;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import crosby.binary.Fileformat;
+import crosby.binary.Osmformat;
+import crosby.binary.Osmformat.HeaderBlock;
+import io.reactivex.Emitter;
+import io.reactivex.Flowable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -10,21 +19,9 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
-
 import org.heigit.ohsome.oshpbf.parser.pbf.BlobToOSHIterator;
 import org.heigit.ohsome.oshpbf.parser.pbf.PbfBlob;
 import org.heigit.ohsome.oshpbf.parser.util.ByteBufferBackedInputStream;
-
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import crosby.binary.Fileformat;
-import crosby.binary.Osmformat;
-import crosby.binary.Osmformat.HeaderBlock;
-import io.reactivex.Emitter;
-import io.reactivex.Flowable;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;;
 
 public class RxOshPbfReader {
 

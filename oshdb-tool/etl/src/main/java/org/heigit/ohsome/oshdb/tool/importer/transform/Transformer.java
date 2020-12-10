@@ -1,5 +1,10 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -25,12 +30,6 @@ import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.TagText;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
-
-import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 public abstract class Transformer {
   private static class OSHDataContainer {

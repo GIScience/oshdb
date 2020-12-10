@@ -2,6 +2,9 @@ package org.heigit.ohsome.oshdb.tool.importer.extract.collector;
 
 import static org.heigit.ohsome.oshdb.tool.importer.util.lambda.ConsumerUtil.throwingConsumer;
 
+import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -19,14 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
-
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.Role;
 import org.heigit.ohsome.oshdb.tool.importer.util.MergeIterator;
 import org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator;
-
-import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 
 public class RoleCollector implements Iterable<Role> {
 

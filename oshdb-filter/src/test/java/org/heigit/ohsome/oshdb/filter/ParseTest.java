@@ -6,10 +6,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
-import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
 import org.junit.Test;
 
 /**

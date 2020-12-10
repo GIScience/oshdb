@@ -1,9 +1,5 @@
 package org.heigit.ohsome.oshdb.tool.importer.util.reactive;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.reactivestreams.Subscription;
-
 import io.reactivex.FlowableSubscriber;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.exceptions.CompositeException;
@@ -14,6 +10,8 @@ import io.reactivex.internal.functions.Functions;
 import io.reactivex.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.observers.LambdaConsumerIntrospection;
 import io.reactivex.plugins.RxJavaPlugins;
+import java.util.concurrent.atomic.AtomicReference;
+import org.reactivestreams.Subscription;
 
 public final class MyLambdaSubscriber<T> extends AtomicReference<Subscription>
     implements FlowableSubscriber<T>, Subscription, Disposable, LambdaConsumerIntrospection {

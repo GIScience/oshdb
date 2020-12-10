@@ -1,14 +1,12 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract.cli;
 
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParametersDelegate;
 import java.nio.file.Path;
-
 import org.heigit.ohsome.oshdb.tool.importer.cli.CommonArgs;
 import org.heigit.ohsome.oshdb.tool.importer.cli.DistributableArgs;
 import org.heigit.ohsome.oshdb.tool.importer.cli.validator.FileExistValidator;
 import org.heigit.ohsome.oshdb.tool.importer.cli.validator.TimeValidity;
-
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParametersDelegate;
 
 public class ExtractArgs {
   @ParametersDelegate

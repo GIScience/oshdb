@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;

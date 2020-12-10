@@ -1,11 +1,18 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+import com.google.common.base.Stopwatch;
+import io.reactivex.Flowable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.internal.functions.ObjectHelper;
+import io.reactivex.internal.operators.flowable.FlowableBlockingSubscribe;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
 import org.heigit.ohsome.oshdb.tool.importer.extract.Extract;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.OsmPbfMeta;
 import org.heigit.ohsome.oshdb.tool.importer.transform.cli.TransformArgs;
@@ -17,16 +24,6 @@ import org.heigit.ohsome.oshdb.tool.importer.util.reactive.MyLambdaSubscriber;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.rx.RxOshPbfReader;
 import org.reactivestreams.Publisher;
-
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
-import com.google.common.base.Stopwatch;
-
-import io.reactivex.Flowable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.internal.functions.ObjectHelper;
-import io.reactivex.internal.operators.flowable.FlowableBlockingSubscribe;
 
 public class Transform {
 

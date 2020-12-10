@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.tool.importer.util.long2long.page;
 
+import com.google.common.cache.CacheLoader;
+import it.unimi.dsi.fastutil.ints.Int2LongAVLTreeMap;
+import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -10,16 +13,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 import org.roaringbitmap.IntConsumer;
 import org.roaringbitmap.RoaringBitmap;
-
-import com.google.common.cache.CacheLoader;
-
-import it.unimi.dsi.fastutil.ints.Int2LongAVLTreeMap;
-import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
-
 
 public class PageLoader extends CacheLoader<Integer, Page> {
 

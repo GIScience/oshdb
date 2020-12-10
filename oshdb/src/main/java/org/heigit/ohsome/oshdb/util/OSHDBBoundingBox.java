@@ -2,9 +2,7 @@ package org.heigit.ohsome.oshdb.util;
 
 import java.io.Serializable;
 import java.util.Locale;
-
 import org.heigit.ohsome.oshdb.OSHDB;
-
 
 public class OSHDBBoundingBox implements Serializable {
   private static final long serialVersionUID = 1L;

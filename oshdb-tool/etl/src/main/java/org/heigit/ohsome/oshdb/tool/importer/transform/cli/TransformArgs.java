@@ -1,15 +1,13 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.cli;
 
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParametersDelegate;
+import com.beust.jcommander.validators.PositiveInteger;
 import java.nio.file.Path;
-
 import org.heigit.ohsome.oshdb.tool.importer.cli.CommonArgs;
 import org.heigit.ohsome.oshdb.tool.importer.cli.DistributableArgs;
 import org.heigit.ohsome.oshdb.tool.importer.cli.validator.FileExistValidator;
 import org.heigit.ohsome.oshdb.tool.importer.transform.cli.validator.TransformStepValidator;
-
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParametersDelegate;
-import com.beust.jcommander.validators.PositiveInteger;
 
 public class TransformArgs {
   @ParametersDelegate

@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.CommonEntityData;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;

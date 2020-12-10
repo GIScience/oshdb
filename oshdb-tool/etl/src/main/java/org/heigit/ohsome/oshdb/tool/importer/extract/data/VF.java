@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.tool.importer.extract.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator;
 
 public class VF {

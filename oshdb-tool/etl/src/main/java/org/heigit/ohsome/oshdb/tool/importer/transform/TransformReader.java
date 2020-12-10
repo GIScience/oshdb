@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -18,8 +20,6 @@ import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
-import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 
 public class TransformReader{
   public final Path path;

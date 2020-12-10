@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.PeekingIterator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -8,9 +10,6 @@ import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.PeekingIterator;
 
 public class MergeIterator<T> implements Iterator<T> {
   private final PriorityQueue<PeekingIterator<T>> queue;

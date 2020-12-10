@@ -1,5 +1,12 @@
 package org.heigit.ohsome.oshdb.tool.importer.util.long2long;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.Weigher;
+import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataOutputStream;
@@ -14,13 +21,6 @@ import org.heigit.ohsome.oshdb.tool.importer.util.long2long.page.Page;
 import org.heigit.ohsome.oshdb.tool.importer.util.long2long.page.PageLoader;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.roaringbitmap.RoaringBitmap;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.Weigher;
-import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 public class SortedLong2LongMap implements Closeable, LongToLongMap {
   public static class Sink implements Closeable {

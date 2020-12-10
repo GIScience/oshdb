@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.tool.importer.util.long2long.page;
 
 import java.io.IOException;
 import java.util.Arrays;
-
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 import org.roaringbitmap.IntConsumer;
 import org.roaringbitmap.RoaringBitmap;

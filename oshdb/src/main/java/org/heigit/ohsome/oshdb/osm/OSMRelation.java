@@ -1,7 +1,8 @@
 package org.heigit.ohsome.oshdb.osm;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;

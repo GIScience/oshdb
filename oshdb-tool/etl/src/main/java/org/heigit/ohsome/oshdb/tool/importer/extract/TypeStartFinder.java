@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import crosby.binary.Osmformat;
+import crosby.binary.Osmformat.PrimitiveBlock;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -8,16 +11,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
-
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.OsmPbfMeta;
 import org.heigit.ohsome.oshpbf.parser.pbf.PbfBlob;
 import org.heigit.ohsome.oshpbf.parser.rx.RxOshPbfReader;
-
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import crosby.binary.Osmformat;
-import crosby.binary.Osmformat.PrimitiveBlock;
 
 public class TypeStartFinder {
 

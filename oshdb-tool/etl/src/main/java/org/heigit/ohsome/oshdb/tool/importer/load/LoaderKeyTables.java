@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.load;
 
+import com.google.common.base.Functions;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -14,12 +15,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-
 import org.heigit.ohsome.oshdb.tool.importer.extract.Extract.KeyValuePointer;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.Role;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.VF;
-
-import com.google.common.base.Functions;
 
 public class LoaderKeyTables {
 

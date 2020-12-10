@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.osm;
 
 import java.io.Serializable;
 import java.util.Locale;
-
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 

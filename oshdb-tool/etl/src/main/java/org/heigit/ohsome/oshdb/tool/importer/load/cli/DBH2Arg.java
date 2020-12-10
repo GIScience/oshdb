@@ -1,12 +1,10 @@
 package org.heigit.ohsome.oshdb.tool.importer.load.cli;
 
-import java.nio.file.Path;
-
-import org.heigit.ohsome.oshdb.tool.importer.cli.CommonArgs;
-
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.validators.PositiveInteger;
+import java.nio.file.Path;
+import org.heigit.ohsome.oshdb.tool.importer.cli.CommonArgs;
 
 public class DBH2Arg {
   @ParametersDelegate

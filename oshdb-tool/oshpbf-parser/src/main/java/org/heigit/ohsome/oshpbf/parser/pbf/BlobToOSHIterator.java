@@ -1,16 +1,14 @@
 package org.heigit.ohsome.oshpbf.parser.pbf;
 
+import crosby.binary.Osmformat;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.rx.Osh;
-
-import crosby.binary.Osmformat;
 
 public class BlobToOSHIterator implements Iterator<Osh> {
 

@@ -1,17 +1,18 @@
 package org.heigit.ohsome.oshdb.osh;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -19,7 +20,6 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
-import com.google.common.collect.Lists;
 
 public abstract class OSHEntities {
   

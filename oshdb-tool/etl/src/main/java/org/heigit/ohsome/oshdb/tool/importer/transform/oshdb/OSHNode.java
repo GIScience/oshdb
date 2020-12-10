@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import org.heigit.ohsome.oshdb.osm.OSMType;
 
 public interface OSHNode extends OSHEntity {
