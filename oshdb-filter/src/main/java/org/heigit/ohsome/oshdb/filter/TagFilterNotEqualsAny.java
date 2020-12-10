@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
-import org.heigit.bigspatialdata.oshdb.util.OSHDBTagKey;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
 /**
  * A tag filter which executes a "key!=*" check.

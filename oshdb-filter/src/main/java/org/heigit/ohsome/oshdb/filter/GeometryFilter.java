@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nonnull;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.locationtech.jts.geom.Geometry;
 
 /**

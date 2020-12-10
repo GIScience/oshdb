@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 

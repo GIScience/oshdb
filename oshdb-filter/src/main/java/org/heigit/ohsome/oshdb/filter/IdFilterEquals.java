@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import org.heigit.bigspatialdata.oshdb.osh.OSHEntity;
-import org.heigit.bigspatialdata.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.jetbrains.annotations.Contract;
 
 /**

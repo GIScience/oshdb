@@ -18,7 +18,7 @@ that you are in the base directory of the downloaded
 ```bash
 cd oshdb-tool/etl
 mvn compile
-mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.extract.Extract" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles --timevalidity_from YYYY-MM-DD"
+mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.extract.Extract" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles --timevalidity_from YYYY-MM-DD"
 ```
 
 This creates the files `extract_keys`, `extract_keyvalues` and `extract_roles` 
@@ -28,7 +28,7 @@ For large files, you might have to increase the size of your JVM by executing
 `export MAVEN_OPTS="-Xmx???"` (replace ??? with a reasonable size for your machine)
 before extracting.
 
-Run `mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.extract.Extract"`
+Run `mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.extract.Extract"`
 to get help and more options.
 
 
@@ -38,7 +38,7 @@ After extraction, a transformation step creates the actual OSHDB using
 the H2 database engine:
 
 ```bash
-mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.transform.Transform" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles"
+mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.transform.Transform" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles"
 ```
 The transformation step is computation-intensive, so be easy on your computer
 and do not use too large files.
@@ -53,7 +53,7 @@ In order to enable the oshdb to provide a proper attribution of the imported dat
 have to set an attribution text and an attribution url
 
 ```bash
-mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.load.handle.OSHDB2H2Handler" -Dexec.args="-tmpDir ./tmpFiles --out /absolote/path/to/your-H2-database --attribution '© OpenStreetMap contributors' --attribution-url 'https://www.openstreetmap.org/copyright'"
+mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.load.handle.OSHDB2H2Handler" -Dexec.args="-tmpDir ./tmpFiles --out /absolote/path/to/your-H2-database --attribution '© OpenStreetMap contributors' --attribution-url 'https://www.openstreetmap.org/copyright'"
 ```
 
 You now have a ready-to-use oshdb named **your-H2-database.mv.db** in the specified
@@ -91,6 +91,6 @@ Apache website.
    has to be omitted):<br>
    ```bash
    cd oshdb-tool/etl
-   mvn exec:java -Dexec.mainClass="org.heigit.bigspatialdata.oshdb.tool.importer.util.OSHDB2Ignite" -Dexec.args="-ignite ignite-config.xml -db /absolute/path/to/your-H2-database"
+   mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.util.OSHDB2Ignite" -Dexec.args="-ignite ignite-config.xml -db /absolute/path/to/your-H2-database"
    ```
 
