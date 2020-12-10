@@ -34,7 +34,7 @@ The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/or
 
 ### Contribution View
 
-The [`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html) returns all modifications to matching OSM entities. This is in general more more computationally intensive than using the snapshot view, but allows to inspect the OSM data in more detail, especially if one is interested in how the OSM data is modified by the contributors to the OSM project.
+The [`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html) returns all modifications to matching OSM entities. This is in general more computationally intensive than using the snapshot view, but allows to inspect the OSM data in more detail, especially if one is interested in how the OSM data is modified by the contributors to the OSM project.
 
 Through the returned [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html) objects, one has access to the following properties:
 
