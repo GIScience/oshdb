@@ -57,8 +57,7 @@ public class TestOhsomeFilter {
 
   @Test
   public void testFilterObject() throws Exception {
-    MapReducer<OSMEntitySnapshot> mr = createMapReducer();
-    Number result = mr
+    Number result = createMapReducer()
         .filter(filterParser.parse("type:way and geometry:polygon and building=*"))
         .count();
 
@@ -79,12 +78,20 @@ public class TestOhsomeFilter {
 
   @Test
   public void testAggregateFilterObject() throws Exception {
-    MapReducer<OSMEntitySnapshot> mr = createMapReducer();
-    SortedMap<OSMType, Integer> result = mr
+    SortedMap<OSMType, Integer> result = createMapReducer()
         .aggregateBy(x -> x.getEntity().getType())
         .filter(filterParser.parse("(geometry:polygon or geometry:other) and building=*"))
         .count();
 
     assertEquals(42, result.get(OSMType.WAY).intValue());
+  }
+
+  @Test
+  public void testFilterGroupByEntity() throws Exception {
+    MapReducer<OSMEntitySnapshot> mr = createMapReducer();
+    Number osmTypeFilterResult = mr.groupByEntity().osmType(OSMType.WAY).count();
+    Number stringFilterResult = mr.groupByEntity().filter("type:way").count();
+
+    assertEquals(osmTypeFilterResult, stringFilterResult);
   }
 }
