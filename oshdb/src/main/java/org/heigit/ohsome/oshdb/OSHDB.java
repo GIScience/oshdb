@@ -2,7 +2,7 @@ package org.heigit.ohsome.oshdb;
 
 public abstract class OSHDB {
 
-  public static final int MAXZOOM = 15;
+  public static final int MAXZOOM = 14;
 
   // osm only stores 7 decimals for each coordinate
   public static final long GEOM_PRECISION_TO_LONG = 10000000L;
