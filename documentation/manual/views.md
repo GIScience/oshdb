@@ -28,9 +28,9 @@ A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/
 
 The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) is quite simple: it returns the state of the OSM data at a given point in time, or at multiple given points in time. In the OSHDB API, these are called snapshots and are represented by [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html) objects. They allow access to the following properties:
 
-* the [timestamp](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getTimestamp--) of the snapshot
-* the [geometry](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getGeometry--) of the queried OSM feature
-* the [OSM entity](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getEntity--) of this snapshot
+* the [timestamp](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getTimestamp()) of the snapshot
+* the [geometry](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getGeometry()) of the queried OSM feature
+* the [OSM entity](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getEntity()) of this snapshot
 
 ### Contribution View
 
@@ -38,12 +38,12 @@ The [`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/
 
 Through the returned [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html) objects, one has access to the following properties:
 
-* the [timestamp](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getTimestamp--) of the contribution
-* the geometries [before](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getGeometryBefore--) and [after](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getGeometryAfter--) the modification. If the contribution object represents a creation of an entity, the before geometry doesn't exist and returns `null` if it is accessed. Similarly, this is also true for the geometry after a deletion of an OSM object.
-* the OSM entity [before](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getEntityBefore--) and [after](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getEntityBefore--) the modification
-* the [id of the OSM user](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getContributorUserId--) who performed this contribution
-* the [id of the OSM changeset](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getChangesetId--) in which this contribution was performed
-* the [type](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getContributionTypes--) of the contribution.
+* the [timestamp](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getTimestamp()) of the contribution
+* the geometries [before](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getGeometryBefore()) and [after](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getGeometryAfter()) the modification. If the contribution object represents a creation of an entity, the before geometry doesn't exist and returns `null` if it is accessed. Similarly, this is also true for the geometry after a deletion of an OSM object.
+* the OSM entity [before](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getEntityBefore()) and [after](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getEntityBefore()) the modification
+* the [id of the OSM user](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getContributorUserId()) who performed this contribution
+* the [id of the OSM changeset](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getChangesetId()) in which this contribution was performed
+* the [type](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getContributionTypes()) of the contribution.
 
 The [contribution type](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/util/celliterator/ContributionType.html) can be either a **creation**, a **deletion**, a **tag change** or a **geometry change** of an OSM entity.
 
@@ -54,7 +54,7 @@ Note that there exist [cases](https://github.com/GIScience/oshdb/issues/87) wher
 GroupByEntity
 -------------
 
-The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity--) method of a MapReducer slightly changes the way the MapReducers recieves and transforms values: Instead of iterating over each snapshot or contribution individually, in this mode all snapshots or all contributions of an individual OSM entity are collected into a (by timestamp sorted) list first. This makes it possible to investigate the full edit history of individual OSM objects at once, which is for example needed when one is looking for contributions that got reverted at a later point in time.
+The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#groupByEntity()) method of a MapReducer slightly changes the way the MapReducers recieves and transforms values: Instead of iterating over each snapshot or contribution individually, in this mode all snapshots or all contributions of an individual OSM entity are collected into a (by timestamp sorted) list first. This makes it possible to investigate the full edit history of individual OSM objects at once, which is for example needed when one is looking for contributions that got reverted at a later point in time.
 
 It is recommended to call this method immediately after creating the MapReducer from a view:
 
