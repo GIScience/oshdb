@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.index;
 
+import static org.heigit.ohsome.oshdb.OSHDB.coordinateToLong;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
@@ -75,7 +77,7 @@ public class XYGridTree implements Serializable {
    * @return An iterator over the cellIds in all zoomlevel
    */
   public Iterable<CellId> getIds(double longitude, double latitude) {
-    return this.getIds((long) longitude * OSHDB.GEOM_PRECISION_TO_LONG, (long) latitude * OSHDB.GEOM_PRECISION_TO_LONG);
+    return this.getIds(coordinateToLong(longitude), coordinateToLong(latitude));
 
   }
 

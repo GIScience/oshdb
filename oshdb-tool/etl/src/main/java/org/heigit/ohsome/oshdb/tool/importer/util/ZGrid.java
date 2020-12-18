@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
+import static org.heigit.ohsome.oshdb.OSHDB.coordinateToLong;
+
 import java.util.Comparator;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
@@ -12,7 +14,7 @@ public class ZGrid {
   private static long ZOOM_FACTOR = 1L << 56;
   private static long ID_MASK = 0x00FFFFFFFFFFFFFFL;
 
-  private static final long space = (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+  private static final long space = coordinateToLong(360.0);
   private final int maxZoom;
   private static final OSHDBBoundingBox zeroBoundingBox = new OSHDBBoundingBox(0, 0, 0, 0);
 

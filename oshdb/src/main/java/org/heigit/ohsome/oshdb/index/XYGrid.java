@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.index;
 
+import static org.heigit.ohsome.oshdb.OSHDB.coordinateToLong;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
@@ -115,25 +117,25 @@ public class XYGrid implements Serializable {
    * @return Returns the ID of the tile as shown above
    */
   public long getId(double longitude, double latitude) {
-    return this.getId((long) (longitude * OSHDB.GEOM_PRECISION_TO_LONG), (long) (latitude * OSHDB.GEOM_PRECISION_TO_LONG));
+    return this.getId(coordinateToLong(longitude), coordinateToLong(latitude));
   }
 
   public long getId(long longitude, long latitude) {
     //return -1, if point is outside geographical coordinate range
-    if (longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (longitude > coordinateToLong(180.0) || longitude < coordinateToLong(-180.0) || latitude > coordinateToLong(90.0) || latitude < coordinateToLong(-90.0)) {
       return -1l;
     }
 
-    longitude += (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
-    latitude += (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    longitude += coordinateToLong(180.0);
+    latitude += coordinateToLong(90.0);
 
     //if it reaches the eastern most border,it is placed on the western most tile
-    if (longitude == (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (longitude == coordinateToLong(360.0)) {
       // wrap arround
       longitude = 0L;
     }
     //if it reaches the northpole, it is placed in the northern most tile
-    if (latitude == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (latitude == coordinateToLong(180.0)) {
       // fix latitude to clostest value under 180
       latitude -= 1L;
     }
@@ -303,34 +305,34 @@ public class XYGrid implements Serializable {
 
     IdRange outofboundsCell = IdRange.INVALID;
     //test if bbox is on earth or extends further
-    if (minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (minlong < coordinateToLong(-180.0) || minlong > coordinateToLong(180.0)) {
       result.add(outofboundsCell);
-      minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+      minlong = coordinateToLong(-180.0);
     }
-    if (minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (minlat < coordinateToLong(-90.0) || minlat > coordinateToLong(90.0)) {
       result.add(outofboundsCell);
-      minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+      minlat = coordinateToLong(-90.0);
     }
-    if (maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (maxlong > coordinateToLong(180.0) || maxlong < coordinateToLong(-180.0)) {
       result.add(outofboundsCell);
-      maxlong = (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+      maxlong = coordinateToLong(180.0);
     }
-    if (maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (maxlat > coordinateToLong(90.0) || maxlat < coordinateToLong(-90.0)) {
       result.add(outofboundsCell);
-      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+      maxlat = coordinateToLong(90.0);
     }
 
-    if (minlong == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
-      minlong = ((long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) - 1L;
+    if (minlong == coordinateToLong(180.0)) {
+      minlong = coordinateToLong(180.0) - 1L;
     }
-    if (maxlong == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
-      maxlong = ((long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) - 1L;
+    if (maxlong == coordinateToLong(180.0)) {
+      maxlong = coordinateToLong(180.0) - 1L;
     }
-    if (minlat == (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
-      minlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
+    if (minlat == coordinateToLong(90.0)) {
+      minlat = coordinateToLong(90.0) - 1L;
     }
-    if (maxlat == (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
-      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
+    if (maxlat == coordinateToLong(90.0)) {
+      maxlat = coordinateToLong(90.0) - 1L;
     }
 
     //cope with BBOX extending over the date-line
@@ -338,20 +340,20 @@ public class XYGrid implements Serializable {
       result.addAll(bbox2CellIdRanges(
           new OSHDBBoundingBox(
               minlong, minlat,
-              (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L, maxlat
+              coordinateToLong(180.0) - 1L, maxlat
           ), enlarge));
 
-      minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+      minlong = coordinateToLong(-180.0);
     }
 
     //At this point the following should be true
     //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
     //minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
     //calculate column and row range
-    int columnmin = (int) ((minlong + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
-    int columnmax = (int) ((maxlong + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
-    int rowmin = (int) ((minlat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
-    int rowmax = (int) ((maxlat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
+    int columnmin = (int) ((minlong + coordinateToLong(180.0)) / cellWidth);
+    int columnmax = (int) ((maxlong + coordinateToLong(180.0)) / cellWidth);
+    int rowmin = (int) ((minlat + coordinateToLong(90.0)) / cellWidth);
+    int rowmax = (int) ((maxlat + coordinateToLong(90.0)) / cellWidth);
 
     if (enlarge) {
       //it is impossible vor features to span over the datelimit, so the enlargement stops at column 0

@@ -1,8 +1,9 @@
 package org.heigit.ohsome.oshdb.osm;
 
+import static org.heigit.ohsome.oshdb.OSHDB.coordinateToDouble;
+
 import java.io.Serializable;
 import java.util.Locale;
-import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
@@ -25,11 +26,11 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   }
 
   public double getLongitude() {
-    return longitude * OSHDB.GEOM_PRECISION;
+    return coordinateToDouble(longitude);
   }
 
   public double getLatitude() {
-    return latitude * OSHDB.GEOM_PRECISION;
+    return coordinateToDouble(latitude);
   }
 
   public long getLon() {
