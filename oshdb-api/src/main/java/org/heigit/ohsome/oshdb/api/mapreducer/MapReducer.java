@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
@@ -754,20 +755,41 @@ public abstract class MapReducer<X> implements
     // apply geometry filter as first map function
     final List<MapFunction> remainingMappers = List.copyOf(ret.mappers);
     ret.mappers.clear();
-    if (ret.forClass.equals(OSMContribution.class)) {
-      ret = ret.filter(x -> {
-        OSMContribution c = (OSMContribution) x;
-        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
-          || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
-      });
-    } else if (ret.forClass.equals(OSMEntitySnapshot.class)) {
-      ret = ret.filter(x -> {
-        OSMEntitySnapshot s = (OSMEntitySnapshot) x;
-        return f.applyOSMGeometry(s.getEntity(), s::getGeometry);
-      });
+    if (this.grouping == Grouping.BY_ID) {
+      if (ret.forClass.equals(OSMContribution.class)) {
+        @SuppressWarnings("unchecked") MapReducer<X> result = (MapReducer<X>)
+            ret.map(x -> (Collection<OSMContribution>) x)
+                .map(contributions -> new ArrayList<>(Collections2.filter(contributions, c ->
+                    c != null && (f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+                    || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter)))))
+                .filter(contributions -> !contributions.isEmpty());
+        ret = result;
+      } else if (ret.forClass.equals(OSMEntitySnapshot.class)) {
+        @SuppressWarnings("unchecked") MapReducer<X> result = (MapReducer<X>)
+            ret.map(x -> (Collection<OSMEntitySnapshot>) x)
+                .map(snapshots -> new ArrayList<>(Collections2.filter(snapshots, s ->
+                    s != null && f.applyOSMGeometry(s.getEntity(), s::getGeometry))))
+                .filter(snapshots -> !snapshots.isEmpty());
+        ret = result;
+      }
+      ret.mappers.addAll(remainingMappers);
+      return optimizeFilters(ret, f);
+    } else {
+      if (ret.forClass.equals(OSMContribution.class)) {
+        ret = ret.filter(x -> {
+          OSMContribution c = (OSMContribution) x;
+          return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+              || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+        });
+      } else if (ret.forClass.equals(OSMEntitySnapshot.class)) {
+        ret = ret.filter(x -> {
+          OSMEntitySnapshot s = (OSMEntitySnapshot) x;
+          return f.applyOSMGeometry(s.getEntity(), s::getGeometry);
+        });
+      }
+      ret.mappers.addAll(remainingMappers);
+      return optimizeFilters(ret, f);
     }
-    ret.mappers.addAll(remainingMappers);
-    return optimizeFilters(ret, f);
   }
 
   /**
