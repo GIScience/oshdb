@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
@@ -759,16 +758,19 @@ public abstract class MapReducer<X> implements
       if (ret.forClass.equals(OSMContribution.class)) {
         @SuppressWarnings("unchecked") MapReducer<X> result = (MapReducer<X>)
             ret.map(x -> (Collection<OSMContribution>) x)
-                .map(contributions -> Lists.newArrayList(Iterables.filter(contributions, c ->
-                    c != null && (f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
-                    || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter)))))
+                .map(contributions -> contributions.stream()
+                    .filter(c -> c != null
+                        && (f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+                        || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter)))
+                    .collect(Collectors.toCollection(ArrayList::new)))
                 .filter(contributions -> !contributions.isEmpty());
         ret = result;
       } else if (ret.forClass.equals(OSMEntitySnapshot.class)) {
         @SuppressWarnings("unchecked") MapReducer<X> result = (MapReducer<X>)
             ret.map(x -> (Collection<OSMEntitySnapshot>) x)
-                .map(snapshots -> Lists.newArrayList(Iterables.filter(snapshots, s ->
-                    s != null && f.applyOSMGeometry(s.getEntity(), s::getGeometry))))
+                .map(snapshots -> snapshots.stream().filter(s ->
+                    s != null && f.applyOSMGeometry(s.getEntity(), s::getGeometry))
+                    .collect(Collectors.toCollection(ArrayList::new)))
                 .filter(snapshots -> !snapshots.isEmpty());
         ret = result;
       }
