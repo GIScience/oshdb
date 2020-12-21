@@ -17,6 +17,10 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. #306
 
+### bugfixes
+
+* fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. #321
+
 ### upgrading from 0.6.0
 
 * If you already used the "ohsome filter" functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
