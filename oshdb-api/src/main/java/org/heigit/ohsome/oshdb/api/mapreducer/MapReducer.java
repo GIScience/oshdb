@@ -58,6 +58,7 @@ import org.heigit.ohsome.oshdb.util.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
@@ -764,8 +765,14 @@ public abstract class MapReducer<X> implements
       } else if (ret.forClass.equals(OSMContribution.class)) {
         ret = ret.filter(x -> {
           OSMContribution c = (OSMContribution) x;
-          return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
-              || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+          if (c.is(ContributionType.CREATION)) {
+            return f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+          } else if (c.is(ContributionType.DELETION)) {
+            return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore);
+          } else {
+            return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+                || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+          }
         });
       }
     } else if (this.grouping == Grouping.BY_ID) {
@@ -773,8 +780,8 @@ public abstract class MapReducer<X> implements
       if (ret.forClass.equals(OSMEntitySnapshot.class)) {
         @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
             ret.map(x -> (Collection<OSMEntitySnapshot>) x)
-                .map(snapshots -> snapshots.stream().filter(s ->
-                    s != null && f.applyOSMGeometry(s.getEntity(), s::getGeometry))
+                .map(snapshots -> snapshots.stream()
+                    .filter(s -> f.applyOSMGeometry(s.getEntity(), s::getGeometry))
                     .collect(Collectors.toCollection(ArrayList::new)))
                 .filter(snapshots -> !snapshots.isEmpty());
         ret = filteredListMapper;
@@ -782,9 +789,16 @@ public abstract class MapReducer<X> implements
         @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
             ret.map(x -> (Collection<OSMContribution>) x)
                 .map(contributions -> contributions.stream()
-                    .filter(c -> c != null
-                        && (f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
-                        || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter)))
+                    .filter(c -> {
+                      if (c.is(ContributionType.CREATION)) {
+                        return f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+                      } else if (c.is(ContributionType.DELETION)) {
+                        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore);
+                      } else {
+                        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+                            || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+                      }
+                    })
                     .collect(Collectors.toCollection(ArrayList::new)))
                 .filter(contributions -> !contributions.isEmpty());
         ret = filteredListMapper;
