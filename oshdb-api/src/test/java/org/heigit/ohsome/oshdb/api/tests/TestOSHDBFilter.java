@@ -24,7 +24,7 @@ import org.junit.Test;
  *   of unit tests.
  * </p>
  */
-public class TestOhsomeFilter {
+public class TestOSHDBFilter {
   private final OSHDBDatabase oshdb;
   private final FilterParser filterParser;
 
@@ -35,7 +35,7 @@ public class TestOhsomeFilter {
    * Creates a test runner using the H2 backend.
    * @throws Exception if something goes wrong.
    */
-  public TestOhsomeFilter() throws Exception {
+  public TestOSHDBFilter() throws Exception {
     OSHDBH2 oshdb = new OSHDBH2("./src/test/resources/test-data");
     filterParser = new FilterParser(new TagTranslator(oshdb.getConnection()));
     this.oshdb = oshdb;
