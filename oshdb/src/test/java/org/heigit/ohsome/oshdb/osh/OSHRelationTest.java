@@ -258,4 +258,34 @@ public class OSHRelationTest {
     assertEquals(expResult, result);
   }
 
+  @Test
+  public void testIssue325() throws IOException {
+    OSHNode hnode1 = OSHNodeImpl.build(new ArrayList<>(List.of(
+        new OSMNode(123L, 2, new OSHDBTimestamp(2L), 2L, 0, new int[]{}, 0, 0),
+        new OSMNode(123L, 1, new OSHDBTimestamp(1L), 1L, 0, new int[]{}, 0, 0))));
+    OSHNode hnode2 = OSHNodeImpl.build(new ArrayList<>(List.of(
+        new OSMNode(124L, 2, new OSHDBTimestamp(2L), 2L, 0, new int[]{}, 0, 0),
+        new OSMNode(124L, 1, new OSHDBTimestamp(1L), 1L, 0, new int[]{}, 0, 0))));
+
+    OSHWay hway1 = OSHWayImpl.build(new ArrayList<>(List.of(
+        new OSMWay(1, 1, new OSHDBTimestamp(1L), 1L, 0, new int[]{}, new OSMMember[]{
+            new OSMMember(123, OSMType.NODE, 0),
+            new OSMMember(124, OSMType.NODE, 0)})
+    )), List.of(hnode1, hnode2));
+
+    OSHWay hway2 = OSHWayImpl.build(new ArrayList<>(List.of(
+        new OSMWay(2, -4, new OSHDBTimestamp(9L), 9L, 9, new int[]{}, new OSMMember[]{})
+    )), Collections.emptyList());
+
+    OSHRelation hrelation = OSHRelationImpl.build(new ArrayList<>(List.of(
+        new OSMRelation(1, 2, new OSHDBTimestamp(8L), 8L, 8, new int[]{1, 1, 2, 2}, new OSMMember[]{
+            new OSMMember(1, OSMType.WAY, 0),
+            new OSMMember(2, OSMType.WAY, 0)}),
+        new OSMRelation(1, 1, new OSHDBTimestamp(1L), 1L, 0, new int[]{1, 1, 2, 2}, new OSMMember[]{
+            new OSMMember(1, OSMType.WAY, 0)})
+    )), List.of(hnode1, hnode2), List.of(hway1, hway2));
+
+    List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hrelation, true);
+    assertNotNull(tss);
+  }
 }
