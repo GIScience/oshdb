@@ -1,6 +1,11 @@
 Changelog
 =========
 
+## 0.6.1
+
+* fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. #321
+* fix a crash when relations reference redacted ways. #325
+
 ## 0.6.0
 
 ### breaking changes

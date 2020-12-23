@@ -6,7 +6,9 @@ import java.util.SortedMap;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBDatabase;
 import org.heigit.bigspatialdata.oshdb.api.db.OSHDBH2;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.MapReducer;
+import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.bigspatialdata.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.bigspatialdata.oshdb.api.object.OSMContribution;
 import org.heigit.bigspatialdata.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.bigspatialdata.oshdb.osm.OSMType;
 import org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox;
@@ -39,15 +41,28 @@ public class TestOhsomeFilter {
     this.oshdb = oshdb;
   }
 
-  private MapReducer<OSMEntitySnapshot> createMapReducer() throws Exception {
+  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     return OSMEntitySnapshotView.on(oshdb)
         .areaOfInterest(bbox)
         .timestamps("2014-01-01");
   }
 
+  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.on(oshdb)
+        .areaOfInterest(bbox)
+        .timestamps("2008-01-01", "2014-01-01");
+  }
+
   @Test
   public void testFilterString() throws Exception {
-    Number result = createMapReducer()
+    Number result = createMapReducerOSMEntitySnapshot()
+        .map(x -> 1)
+        .filter("type:way and geometry:polygon and building=*")
+        .sum();
+
+    assertEquals(42, result.intValue());
+
+    result = createMapReducerOSMContribution()
         .map(x -> 1)
         .filter("type:way and geometry:polygon and building=*")
         .sum();
@@ -57,8 +72,7 @@ public class TestOhsomeFilter {
 
   @Test
   public void testFilterObject() throws Exception {
-    MapReducer<OSMEntitySnapshot> mr = createMapReducer();
-    Number result = mr
+    Number result = createMapReducerOSMEntitySnapshot()
         .filter(filterParser.parse("type:way and geometry:polygon and building=*"))
         .count();
 
@@ -67,7 +81,7 @@ public class TestOhsomeFilter {
 
   @Test
   public void testAggregateFilter() throws Exception {
-    SortedMap<OSMType, Integer> result = createMapReducer()
+    SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter("(geometry:polygon or geometry:other) and building=*")
         .count();
@@ -79,12 +93,26 @@ public class TestOhsomeFilter {
 
   @Test
   public void testAggregateFilterObject() throws Exception {
-    MapReducer<OSMEntitySnapshot> mr = createMapReducer();
-    SortedMap<OSMType, Integer> result = mr
+    SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter(filterParser.parse("(geometry:polygon or geometry:other) and building=*"))
         .count();
 
     assertEquals(42, result.get(OSMType.WAY).intValue());
+  }
+
+  @Test
+  public void testFilterGroupByEntity() throws Exception {
+    MapReducer<?> mr = createMapReducerOSMEntitySnapshot();
+    Number osmTypeFilterResult = mr.groupByEntity().osmType(OSMType.WAY).count();
+    Number stringFilterResult = mr.groupByEntity().filter("type:way").count();
+
+    assertEquals(osmTypeFilterResult, stringFilterResult);
+
+    mr = createMapReducerOSMContribution();
+    osmTypeFilterResult = mr.groupByEntity().osmType(OSMType.WAY).count();
+    stringFilterResult = mr.groupByEntity().filter("type:way").count();
+
+    assertEquals(osmTypeFilterResult, stringFilterResult);
   }
 }

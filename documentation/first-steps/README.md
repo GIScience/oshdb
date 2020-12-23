@@ -25,7 +25,7 @@ If you already have an existing Java maven project, the OSHDB-API can be added t
 <dependency>
   <groupId>org.heigit.ohsome</groupId>
   <artifactId>oshdb-api</artifactId>
-  <version>0.6.0</version>
+  <version>0.6.1</version>
 </dependency>
 ```
 
