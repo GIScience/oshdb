@@ -1,32 +1,34 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us improve the project.
 title: ''
 labels: 'bug'
 assignees: ''
 
 ---
 
-**Describe the bug**
+### Bug Description
 A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
+### How to Reproduce
+Steps to reproduce the behaviour:
 1. Go to '...'
-2. Execute code '....'
+2. Execute code '...'
 3. See error
 
-**Expected behavior**
+### Expected behaviour
 A clear and concise description of what you expected to happen.
 
-**Error messages, logs, screenshots**
+### Further Information
+#### Error messages, logs, screenshots
 If applicable, add printed error messages, log files or screenshots to help explain your problem.
 
-**System (please complete the following information):**
- - OS: [e.g. Ubuntu 18.04]
- - Java Version: [e.g. openjdk version "1.8.0_191"]
- - OSHDB Version [e.g. 0.6.1]
- - Maven version [e.g. 3.3.2]
-
-**Additional context**
+#### Additional Context
 Add any other context about the problem here.
+
+### System information
+Please complete the following information:
+ - OS: [e.g. Ubuntu 20.04 LTS]
+ - Java Version: [e.g. openjdk version "11.0.9.1"]
+ - OSHDB Version: [e.g. 0.6.1]
+ - Maven version: [e.g. 3.6.3]
