@@ -17,9 +17,9 @@ OSHDBIgnite
 
 The [`OSHDBIgnite`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/db/OSHDBIgnite.html) backend executes computations on a distributed cluster of computers running the [Apache Ignite](https://ignite.apache.org/) big data platform. Each of the computers of the cluster only holds a subset of the global OSHDB data set and can therefore execute its part of an OSHDB query more quickly than a single computer having to process the whole data set.
 
-There are currently three different [compute modes](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/db/OSHDBIgnite.html#computeMode--) available in the OSHDBIgnite backend:
+There are currently three different [compute modes](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/db/OSHDBIgnite.html#computeMode()) available in the OSHDBIgnite backend:
 
 * *LocalPeek* - (default) is optimized for small to mid scale queries.
 * *ScanQuery* - works better for large scale (e.g. global) analysis queries.
-* *AffinityCall* - is generally slower than the other two compute modes, but supports [streaming](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--) of results.
+* *AffinityCall* - is generally slower than the other two compute modes, but supports [streaming](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream()) of results.
 
