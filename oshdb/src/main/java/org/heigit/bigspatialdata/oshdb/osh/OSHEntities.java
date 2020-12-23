@@ -455,6 +455,11 @@ public abstract class OSHEntities {
 
     for (Entry<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityT : childEntityTs.entrySet()) {
       Iterator<OSHDBTimestamp> modTs = getModificationTimestamps(childEntityT.getKey()).iterator();
+      if (!modTs.hasNext()) {
+        // skip if the member has no "visible" version (for example because of data redactions)
+        // see https://github.com/GIScience/oshdb/issues/325
+        continue;
+      }
       LinkedList<OSHDBTimestamp> validMemberTs = childEntityT.getValue();
       OSHDBTimestamp current = modTs.next();
       outerTLoop: while (!validMemberTs.isEmpty()) {

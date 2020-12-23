@@ -1,6 +1,10 @@
 Changelog
 =========
 
+## 0.5.11
+
+* fix a crash when relations reference redacted ways (backported from version 0.6.1). #325
+
 ## 0.5.10
 
 * update Ignite to version 2.9.0
