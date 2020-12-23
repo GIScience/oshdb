@@ -20,6 +20,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 ### bugfixes
 
 * fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. #321
+* fix a crash when relations reference redacted ways. #325
 
 ### upgrading from 0.6.0
 
