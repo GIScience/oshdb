@@ -19,12 +19,15 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### bugfixes
 
-* fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. #321
-* fix a crash when relations reference redacted ways. #325
 
 ### upgrading from 0.6.0
 
 * If you already used the "ohsome filter" functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
+
+## 0.6.1
+
+* fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. #321
+* fix a crash when relations reference redacted ways. #325
 
 ## 0.6.0
 
@@ -62,6 +65,9 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * various code style and code quality improvements
 * the OSHDB is now published on Zenodo for easier citation using the DOI `10.5281/zenodo.4146991`
 
+## 0.5.11
+
+* fix a crash when relations reference redacted ways (backported from version 0.6.1). #325
 
 ## 0.5.10
 
