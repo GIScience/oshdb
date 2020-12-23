@@ -17,7 +17,7 @@ A transformation function can be set by calling the [`map`](https://docs.ohsome.
 flatMap
 -------
 
-A [`flatMap`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#flatMap(org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction) operation allows one to map any input value to an arbitrary amount of output values. Each of the output values can be transformed in further map steps individually.
+A [`flatMap`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#flatMap(org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction)) operation allows one to map any input value to an arbitrary amount of output values. Each of the output values can be transformed in further map steps individually.
 
 filter
 ------

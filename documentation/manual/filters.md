@@ -31,7 +31,7 @@ There exists also a [method](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated
 osmType
 -------
 
-Filters OSM entities by their OSM data type. These types are: node, way and relation, represented in the OSHDB by the enumeration [OSMType](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/osm/OSMType.html). In a MapReducer, the [method](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#osmType(java.util.EnumSet)) [`osmType`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#osmType(org.heigit.bigspatialdata.oshdb.osm.OSMType,org.heigit.bigspatialdata.oshdb.osm.OSMType...)) allows to filter objects that are of a specific OSM data type.
+Filters OSM entities by their OSM data type. These types are: node, way and relation, represented in the OSHDB by the enumeration [OSMType](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/osm/OSMType.html). In a MapReducer, the [method](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#osmType(java.util.Set)) [`osmType`](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#osmType(org.heigit.bigspatialdata.oshdb.osm.OSMType,org.heigit.bigspatialdata.oshdb.osm.OSMType...)) allows to filter objects that are of a specific OSM data type.
 
 osmTag
 ------
