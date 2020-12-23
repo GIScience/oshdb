@@ -58,6 +58,7 @@ import org.heigit.ohsome.oshdb.util.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
@@ -754,17 +755,57 @@ public abstract class MapReducer<X> implements
     // apply geometry filter as first map function
     final List<MapFunction> remainingMappers = List.copyOf(ret.mappers);
     ret.mappers.clear();
-    if (ret.forClass.equals(OSMContribution.class)) {
-      ret = ret.filter(x -> {
-        OSMContribution c = (OSMContribution) x;
-        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
-          || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
-      });
-    } else if (ret.forClass.equals(OSMEntitySnapshot.class)) {
-      ret = ret.filter(x -> {
-        OSMEntitySnapshot s = (OSMEntitySnapshot) x;
-        return f.applyOSMGeometry(s.getEntity(), s::getGeometry);
-      });
+    if (this.grouping == Grouping.NONE) {
+      // no grouping -> directly filter using the geometries of the snapshot / contribution
+      if (ret.forClass.equals(OSMEntitySnapshot.class)) {
+        ret = ret.filter(x -> {
+          OSMEntitySnapshot s = (OSMEntitySnapshot) x;
+          return f.applyOSMGeometry(s.getEntity(), s::getGeometry);
+        });
+      } else if (ret.forClass.equals(OSMContribution.class)) {
+        ret = ret.filter(x -> {
+          OSMContribution c = (OSMContribution) x;
+          if (c.is(ContributionType.CREATION)) {
+            return f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+          } else if (c.is(ContributionType.DELETION)) {
+            return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore);
+          } else {
+            return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+                || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+          }
+        });
+      }
+    } else if (this.grouping == Grouping.BY_ID) {
+      // grouping by entity -> filter each list entry individually
+      if (ret.forClass.equals(OSMEntitySnapshot.class)) {
+        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
+            ret.map(x -> (Collection<OSMEntitySnapshot>) x)
+                .map(snapshots -> snapshots.stream()
+                    .filter(s -> f.applyOSMGeometry(s.getEntity(), s::getGeometry))
+                    .collect(Collectors.toCollection(ArrayList::new)))
+                .filter(snapshots -> !snapshots.isEmpty());
+        ret = filteredListMapper;
+      } else if (ret.forClass.equals(OSMContribution.class)) {
+        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
+            ret.map(x -> (Collection<OSMContribution>) x)
+                .map(contributions -> contributions.stream()
+                    .filter(c -> {
+                      if (c.is(ContributionType.CREATION)) {
+                        return f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+                      } else if (c.is(ContributionType.DELETION)) {
+                        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore);
+                      } else {
+                        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+                            || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+                      }
+                    })
+                    .collect(Collectors.toCollection(ArrayList::new)))
+                .filter(contributions -> !contributions.isEmpty());
+        ret = filteredListMapper;
+      }
+    } else {
+      throw new UnsupportedOperationException(
+          "filtering not implemented in grouping mode " + this.grouping.toString());
     }
     ret.mappers.addAll(remainingMappers);
     return optimizeFilters(ret, f);
