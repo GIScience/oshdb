@@ -12,13 +12,10 @@ import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.junit.Test;
 
 public class OSHNodeTest {
-
-  public static final int USER_A = 1;
-  public static final int USER_B = 2;
-  public static final int[] TAGS_A = new int[] {1, 1};
-  public static final int[] TAGS_B = new int[] {2, 2};
-  public static final long[] LONLAT_A = new long[] {86756350l, 494186210l};
-  public static final long[] LONLAT_B = new long[] {87153340l, 494102830l};
+  private static final int USER_A = 1;
+  private static final int[] TAGS_A = new int[] {1, 1};
+  private static final long[] LONLAT_A = new long[] {86756350L, 494186210L};
+  private static final long[] LONLAT_B = new long[] {87153340L, 494102830L};
 
   @Test
   public void testBuild() throws IOException {
@@ -68,22 +65,6 @@ public class OSHNodeTest {
      * hosm.getData().length); for (OSMNode osm : hosm) { System.out.println(osm); }
      */
     // todo: actually assert something in this test
-  }
-
-  @Test
-  public void testGetModificationTimestamps() throws IOException {
-    List<OSMNode> versions = new ArrayList<>();
-
-    versions.add(new OSMNode(123l, 2, new OSHDBTimestamp(2l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-    versions.add(new OSMNode(123l, 1, new OSHDBTimestamp(1l), 0l, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]));
-
-    OSHNode hnode = OSHNodeImpl.build(versions);
-
-    List<OSHDBTimestamp> tss = OSHEntities.getModificationTimestamps(hnode);
-    assertNotNull(tss);
-    assertEquals(2, tss.size());
-    assertEquals(1l, tss.get(0).getRawUnixTimestamp());
-    assertEquals(2l, tss.get(1).getRawUnixTimestamp());
   }
 
   @Test

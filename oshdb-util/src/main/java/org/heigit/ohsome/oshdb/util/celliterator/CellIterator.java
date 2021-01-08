@@ -31,6 +31,7 @@ import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastPolygonOperations;
+import org.heigit.ohsome.oshdb.util.osh.OSHEntityTimeUtils;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampInterval;
 import org.locationtech.jts.geom.Coordinate;
@@ -286,7 +287,8 @@ public class CellIterator implements Serializable {
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
         List<OSHDBTimestamp> modTs =
-            OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter);
+            OSHEntityTimeUtils
+                .getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
@@ -570,9 +572,10 @@ public class CellIterator implements Serializable {
           && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
-      Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
+      Map<OSHDBTimestamp, Long> changesetTs = OSHEntityTimeUtils.getChangesetTimestamps(oshEntity);
       List<OSHDBTimestamp> modTs =
-          OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
+          OSHEntityTimeUtils
+              .getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
 
       if (modTs.isEmpty() || !timeInterval.intersects(
           new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1))
