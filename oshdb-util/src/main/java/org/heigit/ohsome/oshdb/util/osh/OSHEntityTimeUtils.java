@@ -106,7 +106,7 @@ public class OSHEntityTimeUtils {
     } else if (osh instanceof OSHRelation) {
       return getModificationTimestamps((OSHRelation) osh, true);
     } else {
-      return getModificationTimestamps((OSHNode) osh, true);
+      return getModificationTimestamps((OSHNode) osh);
     }
   }
 
@@ -129,12 +129,11 @@ public class OSHEntityTimeUtils {
     } else if (osh instanceof OSHRelation) {
       return getModificationTimestamps((OSHRelation) osh, recurse);
     } else {
-      return getModificationTimestamps((OSHNode) osh, recurse);
+      return getModificationTimestamps((OSHNode) osh);
     }
   }
 
-  static List<OSHDBTimestamp> getModificationTimestamps(OSHNode osh,
-      @SuppressWarnings({"unused", "SameParameterValue"}) boolean recurse) {
+  static List<OSHDBTimestamp> getModificationTimestamps(OSHNode osh) {
     List<OSHDBTimestamp> result = new ArrayList<>();
     for (OSMEntity osm : osh.getVersions()) {
       result.add(osm.getTimestamp());
