@@ -15,7 +15,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### other changes
 
-* integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. #306
+* integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. [#306]
 
 ### bugfixes
 
@@ -24,16 +24,21 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 * If you already used the "ohsome filter" functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
+[#306]: https://github.com/GIScience/oshdb/pull/306
+
 ## 0.6.1
 
-* fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. #321
-* fix a crash when relations reference redacted ways. #325
+* fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. [#321]
+* fix a crash when relations reference redacted ways. [#325]
+
+[#321]: https://github.com/GIScience/oshdb/issues/321
+[#325]: https://github.com/GIScience/oshdb/issues/325
 
 ## 0.6.0
 
 ### breaking changes
 
-* reorganize maven packages: rename group parent to ohsome-parent, rename local parent to oshdb-parent, and change groupId to `org.heigit.ohsome`. #234 #257
+* reorganize maven packages: rename group parent to ohsome-parent, rename local parent to oshdb-parent, and change groupId to `org.heigit.ohsome`. [#234] [#257]
 
 When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the new groupId, e.g.:
 ```xml
@@ -44,30 +49,41 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 </dependency>
 ```
 
-* Timestamp parser class renamed to `IsoDateTimeParser` from `ISODateTimeParser` and adjust how input timestamps (e.g. in `MapReducer.timestamps()`) are handled: only the UTC time zone identifier `Z` is supported. #265
-* Removed `UNKOWN` from the `OSMType` enumeration class. #239
+* Timestamp parser class renamed to `IsoDateTimeParser` from `ISODateTimeParser` and adjust how input timestamps (e.g. in `MapReducer.timestamps()`) are handled: only the UTC time zone identifier `Z` is supported. [#265]
+* Removed `UNKOWN` from the `OSMType` enumeration class. [#239]
 
 ### new features
 
-* improve accuracy of built-in geometry helper functions which calculate the geodesic lengths and areas of OSM geometries. #193
-* integrate [ohsome filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) functionality. #253
+* improve accuracy of built-in geometry helper functions which calculate the geodesic lengths and areas of OSM geometries. [#193]
+* integrate [ohsome filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) functionality. [#253]
 
 ### performance improvements
 
-* better handling of OSM multipolygons with touching inner rings. This improves performance considerably in some cases (especially large complex multipolygons). #249
-* improve performance of `aggregateByGeometry` queries. #272
-* improve performance of geometry-building of relations with a huge number members. #287
+* better handling of OSM multipolygons with touching inner rings. This improves performance considerably in some cases (especially large complex multipolygons). [#249]
+* improve performance of `aggregateByGeometry` queries. [#272]
+* improve performance of geometry-building of relations with a huge number members. [#287]
 
 ### bugfixes and other changes
 
 * compatibility fix to allow building of javadoc under Java 11
-* fix bug where in some cases, instead of an OSHDBTimeoutException an IniteException was thrown. #258
+* fix bug where in some cases, instead of an OSHDBTimeoutException an IniteException was thrown. [#258]
 * various code style and code quality improvements
 * the OSHDB is now published on Zenodo for easier citation using the DOI `10.5281/zenodo.4146991`
 
+[#193]: https://github.com/GIScience/oshdb/issues/193
+[#234]: https://github.com/GIScience/oshdb/issues/234
+[#239]: https://github.com/GIScience/oshdb/issues/239
+[#249]: https://github.com/GIScience/oshdb/issues/249
+[#253]: https://github.com/GIScience/oshdb/issues/253
+[#257]: https://github.com/GIScience/oshdb/issues/257
+[#258]: https://github.com/GIScience/oshdb/issues/258
+[#265]: https://github.com/GIScience/oshdb/issues/265
+[#272]: https://github.com/GIScience/oshdb/issues/272
+[#287]: https://github.com/GIScience/oshdb/issues/287
+
 ## 0.5.11
 
-* fix a crash when relations reference redacted ways (backported from version 0.6.1). #325
+* fix a crash when relations reference redacted ways (backported from version 0.6.1). [#325]
 
 ## 0.5.10
 
@@ -79,26 +95,42 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 ## 0.5.8
 
-* fix a regression in 0.5.7 when using oshdb on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. #235
-* fix a bug in the geometry builder utility causing exceptions to be thrown for certain invalid OSM multipolygons. #231
+* fix a regression in 0.5.7 when using oshdb on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. [#235]
+* fix a bug in the geometry builder utility causing exceptions to be thrown for certain invalid OSM multipolygons. [#231]
+
+[#231]: https://github.com/GIScience/oshdb/issues/231
+[#235]: https://github.com/GIScience/oshdb/issues/235
 
 ## 0.5.7
 
-* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (dafault) "LocalPeek" backend. #229
-* throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside of the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. #158
-* improve querying of tag from keytables. #224
-* minor bug fixes and coding clean up. #216, #198, #206
+* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (dafault) "LocalPeek" backend. [#229]
+* throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside of the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. [#158]
+* improve querying of tag from keytables. [#224]
+* minor bug fixes and coding clean up. [#216], [#198], [#206]
+
+[#158]: https://github.com/GIScience/oshdb/issues/158
+[#198]: https://github.com/GIScience/oshdb/issues/198
+[#206]: https://github.com/GIScience/oshdb/issues/206
+[#216]: https://github.com/GIScience/oshdb/issues/216
+[#224]: https://github.com/GIScience/oshdb/issues/224
+[#229]: https://github.com/GIScience/oshdb/issues/229
 
 ## 0.5.6
 
-* fix how osm-type filters work when called multiple times: now, like with other filters, osm entity must match all supplied type filters. #157
-* osmTag filters are more flexible: when used with a list of tags, it now accepts also `tagKey=*` statements (which can be mixed with `key=value` statements as before). #209
-* fix a bug where polygonal areas of interest would throw an exception in some (rare) edge cases. #204
+* fix how osm-type filters work when called multiple times: now, like with other filters, osm entity must match all supplied type filters. [#157]
+* osmTag filters are more flexible: when used with a list of tags, it now accepts also `tagKey=*` statements (which can be mixed with `key=value` statements as before). [#209]
+* fix a bug where polygonal areas of interest would throw an exception in some (rare) edge cases. [#204]
+
+[#157]: https://github.com/GIScience/oshdb/issues/157
+[#204]: https://github.com/GIScience/oshdb/issues/204
+[#209]: https://github.com/GIScience/oshdb/issues/209
 
 ## 0.5.5
 
 * improved performance of data [stream](https://docs.ohsome.org/java/oshdb/0.5.4/oshdb-api/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--)ing queries on ignite (using AffinityCall backend).
-* make monthly time intervals more intuitive to use. #201
+* make monthly time intervals more intuitive to use. [#201]
+
+[#201]: https://github.com/GIScience/oshdb/issues/201
 
 ## 0.5.4
 
@@ -110,8 +142,11 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 ## 0.5.2
 
-* fix calculation of insertIds / entities stored in too high zoom levels, which resulted in partially missing data in some queries #183
-* prevent crashes while building certain invalid multipolygon relation geometries #179
+* fix calculation of insertIds / entities stored in too high zoom levels, which resulted in partially missing data in some queries [#183]
+* prevent crashes while building certain invalid multipolygon relation geometries [#179]
+
+[#179]: https://github.com/GIScience/oshdb/issues/179
+[#183]: https://github.com/GIScience/oshdb/issues/183
 
 ## 0.5.1
 
@@ -122,15 +157,21 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 ### breaking changes
 
-* JTS library was updated to version 1.16. Because this library is now maintained by a different company, import statements need to be adjusted as explained in their [JTS migration guide](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115). #75
+* JTS library was updated to version 1.16. Because this library is now maintained by a different company, import statements need to be adjusted as explained in their [JTS migration guide](https://github.com/locationtech/jts/blob/master/MIGRATION.md#jts-115). [#75]
+
+[#75]: https://github.com/GIScience/oshdb/issues/75
 
 ### bugfixes
 
 * Fix incorrect detection of deletions in queries using the ContributionView.
 * Return the correct changeset id in case of concurrent updates on entities by different changesets.
-* Fix crash while checking empty geometries resulting from erroneous OSM data. #57
-* Fix a crash when trying to build polygons on partially incomplete OSM ways. #31
-* Make importer work with "factory-settings" ignite system. #49
+* Fix crash while checking empty geometries resulting from erroneous OSM data. [#57]
+* Fix a crash when trying to build polygons on partially incomplete OSM ways. [#31]
+* Make importer work with "factory-settings" ignite system. [#49]
+
+[#31]: https://github.com/GIScience/oshdb/issues/31
+[#49]: https://github.com/GIScience/oshdb/issues/49
+[#57]: https://github.com/GIScience/oshdb/issues/57
 
 ### new features
 
@@ -138,22 +179,22 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 * Refactored how result aggregation by custom groupings works. It is now possible to [combine multiple](documentation/manual/aggregation.md#combining-multiple-aggregateby) aggregation groupings.
 * Add methods to aggregate results by [sub-regions](documentation/manual/aggregation.md#aggregateByGeometry).
-* Results of data extraction queries can now also be streamed and immediately post-processed. #19
-* Include of [t-digest](https://github.com/tdunning/t-digest) algorithm to calculate estimated quantiles of results. #34
-* All backends now support query timeouts. #47 #68
+* Results of data extraction queries can now also be streamed and immediately post-processed. [#19]
+* Include of [t-digest](https://github.com/tdunning/t-digest) algorithm to calculate estimated quantiles of results. [#34]
+* All backends now support query timeouts. [#47] [#68]
 
 #### oshdb core
 
-* Tweaked data format slightly to avoid overly full grid cells at low zoom levels. #130
+* Tweaked data format slightly to avoid overly full grid cells at low zoom levels. [#130]
 
 ### performance
 
 #### oshdb-api
 
-* Make the `getModificationTimestamps` method of OSHEntites faster, resulting in general performance improvement of every query, but especially when analyzing complex relations. #10
-* Improve performance of bbox-in-polygon checking routines. #33
-* Avoid unnecessary clipping of geometries. #66
-* Improve building of complex multipolygon geometries. #111
+* Make the `getModificationTimestamps` method of OSHEntites faster, resulting in general performance improvement of every query, but especially when analyzing complex relations. [#10]
+* Improve performance of bbox-in-polygon checking routines. [#33]
+* Avoid unnecessary clipping of geometries. [#66]
+* Improve building of complex multipolygon geometries. [#111]
 * Many small performance improvements.
 
 #### oshdb-tool
@@ -163,14 +204,29 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 ### other changes
 
 * Source code is now released as open-source under _GNU Lesser General Public License version 3_.
-* Dependencies are updated and reduced to the minimum. Also they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading. #79 #5
+* Dependencies are updated and reduced to the minimum. Also they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading. [#79] [#5]
 * Drop most deprecated methods from OSHDB version 0.4.0
 * More [examples and documentation](https://github.com/GIScience/oshdb/tree/master/documentation) are available.
 * Many small bugfixes and improvements, especially for the Ignite backend. Ignite can now be considered stable and used to analyze a global data set.
 * oshdb-api: renamed some methods (`where` filter → `osmTag` and `osmEntityFilter`, `osmTypes` filter → `osmType`) and refactored some methods to accept a wider range of input objects.
-* `GeometryCollection` geometries are no longer ignored when calculating lengths or areas of features. #51
-* Restructured core OSHDB data structures to be more flexible in upcoming version changes. #138
-* Rename `getChangeset` method to `getChangesetId. #35
+* `GeometryCollection` geometries are no longer ignored when calculating lengths or areas of features. [#51]
+* Restructured core OSHDB data structures to be more flexible in upcoming version changes. [#138]
+* Rename `getChangeset` method to `getChangesetId. [#35]
+
+[#5]: https://github.com/GIScience/oshdb/issues/5
+[#10]: https://github.com/GIScience/oshdb/issues/10
+[#19]: https://github.com/GIScience/oshdb/issues/19
+[#33]: https://github.com/GIScience/oshdb/issues/33
+[#34]: https://github.com/GIScience/oshdb/issues/34
+[#35]: https://github.com/GIScience/oshdb/issues/35
+[#47]: https://github.com/GIScience/oshdb/issues/47
+[#51]: https://github.com/GIScience/oshdb/issues/51
+[#66]: https://github.com/GIScience/oshdb/issues/66
+[#68]: https://github.com/GIScience/oshdb/issues/68
+[#79]: https://github.com/GIScience/oshdb/issues/79
+[#111]: https://github.com/GIScience/oshdb/issues/111
+[#130]: https://github.com/GIScience/oshdb/issues/130
+[#138]: https://github.com/GIScience/oshdb/issues/138
 
 ## 0.4.0
 
