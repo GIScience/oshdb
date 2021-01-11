@@ -288,8 +288,7 @@ public class CellIterator implements Serializable {
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
         List<OSHDBTimestamp> modTs =
-            OSHEntityTimeUtils
-                .getModificationTimestamps(oshEntity, osmEntityFilter);
+            OSHEntityTimeUtils.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
@@ -575,8 +574,7 @@ public class CellIterator implements Serializable {
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntityTimeUtils.getChangesetTimestamps(oshEntity);
       List<OSHDBTimestamp> modTs =
-          OSHEntityTimeUtils
-              .getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
+          OSHEntityTimeUtils.getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
 
       if (modTs.isEmpty() || !timeInterval.intersects(
           new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1))

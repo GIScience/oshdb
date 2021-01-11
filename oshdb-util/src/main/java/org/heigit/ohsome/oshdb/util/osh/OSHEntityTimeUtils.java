@@ -24,7 +24,7 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
-public abstract class OSHEntityTimeUtils {
+public class OSHEntityTimeUtils {
   private OSHEntityTimeUtils() {
     throw new IllegalStateException("utility class");
   }
@@ -37,8 +37,7 @@ public abstract class OSHEntityTimeUtils {
    * @param osh the osh entity to work on
    * @return a map between timestamps and changeset ids
    */
-  public static Map<OSHDBTimestamp, Long> getChangesetTimestamps(
-      OSHEntity osh) {
+  public static Map<OSHDBTimestamp, Long> getChangesetTimestamps(OSHEntity osh) {
     if (osh instanceof OSHWay) {
       return getChangesetTimestamps((OSHWay) osh);
     } else if (osh instanceof OSHRelation) {
@@ -124,8 +123,7 @@ public abstract class OSHEntityTimeUtils {
    *        not
    * @return a list of timestamps where this entity has been modified
    */
-  public static List<OSHDBTimestamp> getModificationTimestamps(OSHEntity osh,
-      boolean recurse) {
+  public static List<OSHDBTimestamp> getModificationTimestamps(OSHEntity osh, boolean recurse) {
     if (osh instanceof OSHWay) {
       return getModificationTimestamps((OSHWay) osh, recurse);
     } else if (osh instanceof OSHRelation) {
@@ -217,7 +215,7 @@ public abstract class OSHEntityTimeUtils {
     return getModificationTimestamps((OSHNode) osh, osmEntityFilter);
   }
 
-  static List<OSHDBTimestamp> getModificationTimestamps(OSHNode osh,
+  private static List<OSHDBTimestamp> getModificationTimestamps(OSHNode osh,
       Predicate<OSMEntity> osmEntityFilter) {
     List<OSHDBTimestamp> result = new ArrayList<>();
     OSHDBTimestamp prevNonmatch = null;
@@ -235,12 +233,12 @@ public abstract class OSHEntityTimeUtils {
     return Lists.reverse(result);
   }
 
-  static List<OSHDBTimestamp> getModificationTimestamps(OSHWay osh,
+  private static List<OSHDBTimestamp> getModificationTimestamps(OSHWay osh,
       Predicate<OSMEntity> osmEntityFilter) {
     return getModificationTimestamps(osh, true, osmEntityFilter);
   }
 
-  static List<OSHDBTimestamp> getModificationTimestamps(OSHRelation osh,
+  private static List<OSHDBTimestamp> getModificationTimestamps(OSHRelation osh,
       Predicate<OSMEntity> osmEntityFilter) {
     return getModificationTimestamps(osh, true, osmEntityFilter);
   }
@@ -381,6 +379,7 @@ public abstract class OSHEntityTimeUtils {
               childEntityValidityTimestamps.push(nextT);
               childEntityValidityTimestamps.push(thisT);
             }
+            break;
           default:
             break;
         }
