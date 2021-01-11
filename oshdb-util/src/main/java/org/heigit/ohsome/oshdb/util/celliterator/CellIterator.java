@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -311,7 +312,7 @@ public class CellIterator implements Serializable {
       }
 
       SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
-          OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
+          getVersionsByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
 
       List<IterateByTimestampEntry> results = new LinkedList<>();
       osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity :
@@ -586,7 +587,7 @@ public class CellIterator implements Serializable {
       }
 
       SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
-          OSHEntities.getByTimestamps(oshEntity, modTs);
+          getVersionsByTimestamps(oshEntity, modTs);
 
       List<IterateAllEntry> results = new LinkedList<>();
 
@@ -805,6 +806,22 @@ public class CellIterator implements Serializable {
     });
   }
 
+  private static SortedMap<OSHDBTimestamp, OSMEntity> getVersionsByTimestamps(
+      OSHEntity osh, List<OSHDBTimestamp> byTimestamps) {
+    SortedMap<OSHDBTimestamp, OSMEntity> result = new TreeMap<>();
+
+    int i = byTimestamps.size() - 1;
+    Iterator<? extends OSMEntity> itr = osh.getVersions().iterator();
+    while (itr.hasNext() && i >= 0) {
+      OSMEntity osm = itr.next();
+      if (osm.getTimestamp().getRawUnixTimestamp() <= byTimestamps.get(i).getRawUnixTimestamp()) {
+        while (i >= 0 && osm.getTimestamp().getRawUnixTimestamp() <= byTimestamps.get(i)
+            .getRawUnixTimestamp()) {
+          result.put(byTimestamps.get(i), osm);
+          i--;
+        }
+      }
+    }
+    return result;
+  }
 }
-
-

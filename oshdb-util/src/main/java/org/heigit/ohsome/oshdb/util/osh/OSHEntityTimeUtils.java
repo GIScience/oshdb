@@ -25,6 +25,9 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
 public abstract class OSHEntityTimeUtils {
+  private OSHEntityTimeUtils() {
+    throw new IllegalStateException("utility class");
+  }
 
   /**
    * Returns the changeset ids which correspond to modifications of this entity.
