@@ -70,16 +70,16 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * various code style and code quality improvements
 * the OSHDB is now published on Zenodo for easier citation using the DOI `10.5281/zenodo.4146991`
 
-[#234]: https://github.com/GIScience/oshdb/issues/234
-[#257]: https://github.com/GIScience/oshdb/issues/257
-[#265]: https://github.com/GIScience/oshdb/issues/265
-[#239]: https://github.com/GIScience/oshdb/issues/239
 [#193]: https://github.com/GIScience/oshdb/issues/193
-[#253]: https://github.com/GIScience/oshdb/issues/253
+[#234]: https://github.com/GIScience/oshdb/issues/234
+[#239]: https://github.com/GIScience/oshdb/issues/239
 [#249]: https://github.com/GIScience/oshdb/issues/249
+[#253]: https://github.com/GIScience/oshdb/issues/253
+[#257]: https://github.com/GIScience/oshdb/issues/257
+[#258]: https://github.com/GIScience/oshdb/issues/258
+[#265]: https://github.com/GIScience/oshdb/issues/265
 [#272]: https://github.com/GIScience/oshdb/issues/272
 [#287]: https://github.com/GIScience/oshdb/issues/287
-[#258]: https://github.com/GIScience/oshdb/issues/258
 
 ## 0.5.11
 
@@ -98,8 +98,8 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * fix a regression in 0.5.7 when using oshdb on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. [#235]
 * fix a bug in the geometry builder utility causing exceptions to be thrown for certain invalid OSM multipolygons. [#231]
 
-[#235]: https://github.com/GIScience/oshdb/issues/235
 [#231]: https://github.com/GIScience/oshdb/issues/231
+[#235]: https://github.com/GIScience/oshdb/issues/235
 
 ## 0.5.7
 
@@ -108,12 +108,12 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * improve querying of tag from keytables. [#224]
 * minor bug fixes and coding clean up. [#216], [#198], [#206]
 
-[#229]: https://github.com/GIScience/oshdb/issues/229
 [#158]: https://github.com/GIScience/oshdb/issues/158
-[#224]: https://github.com/GIScience/oshdb/issues/224
-[#216]: https://github.com/GIScience/oshdb/issues/216
 [#198]: https://github.com/GIScience/oshdb/issues/198
 [#206]: https://github.com/GIScience/oshdb/issues/206
+[#216]: https://github.com/GIScience/oshdb/issues/216
+[#224]: https://github.com/GIScience/oshdb/issues/224
+[#229]: https://github.com/GIScience/oshdb/issues/229
 
 ## 0.5.6
 
@@ -122,8 +122,8 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * fix a bug where polygonal areas of interest would throw an exception in some (rare) edge cases. [#204]
 
 [#157]: https://github.com/GIScience/oshdb/issues/157
-[#209]: https://github.com/GIScience/oshdb/issues/209
 [#204]: https://github.com/GIScience/oshdb/issues/204
+[#209]: https://github.com/GIScience/oshdb/issues/209
 
 ## 0.5.5
 
@@ -145,8 +145,8 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * fix calculation of insertIds / entities stored in too high zoom levels, which resulted in partially missing data in some queries [#183]
 * prevent crashes while building certain invalid multipolygon relation geometries [#179]
 
-[#183]: https://github.com/GIScience/oshdb/issues/183
 [#179]: https://github.com/GIScience/oshdb/issues/179
+[#183]: https://github.com/GIScience/oshdb/issues/183
 
 ## 0.5.1
 
@@ -169,9 +169,9 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * Fix a crash when trying to build polygons on partially incomplete OSM ways. [#31]
 * Make importer work with "factory-settings" ignite system. [#49]
 
-[#57]: https://github.com/GIScience/oshdb/issues/57
 [#31]: https://github.com/GIScience/oshdb/issues/31
 [#49]: https://github.com/GIScience/oshdb/issues/49
+[#57]: https://github.com/GIScience/oshdb/issues/57
 
 ### new features
 
@@ -213,20 +213,20 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * Restructured core OSHDB data structures to be more flexible in upcoming version changes. [#138]
 * Rename `getChangeset` method to `getChangesetId. [#35]
 
-[#19]: https://github.com/GIScience/oshdb/issues/19
-[#34]: https://github.com/GIScience/oshdb/issues/34
-[#47]: https://github.com/GIScience/oshdb/issues/47
-[#68]: https://github.com/GIScience/oshdb/issues/68
-[#130]: https://github.com/GIScience/oshdb/issues/130
-[#10]: https://github.com/GIScience/oshdb/issues/10
-[#33]: https://github.com/GIScience/oshdb/issues/33
-[#66]: https://github.com/GIScience/oshdb/issues/66
-[#111]: https://github.com/GIScience/oshdb/issues/111
-[#79]: https://github.com/GIScience/oshdb/issues/79
 [#5]: https://github.com/GIScience/oshdb/issues/5
-[#51]: https://github.com/GIScience/oshdb/issues/51
-[#138]: https://github.com/GIScience/oshdb/issues/138
+[#10]: https://github.com/GIScience/oshdb/issues/10
+[#19]: https://github.com/GIScience/oshdb/issues/19
+[#33]: https://github.com/GIScience/oshdb/issues/33
+[#34]: https://github.com/GIScience/oshdb/issues/34
 [#35]: https://github.com/GIScience/oshdb/issues/35
+[#47]: https://github.com/GIScience/oshdb/issues/47
+[#51]: https://github.com/GIScience/oshdb/issues/51
+[#66]: https://github.com/GIScience/oshdb/issues/66
+[#68]: https://github.com/GIScience/oshdb/issues/68
+[#79]: https://github.com/GIScience/oshdb/issues/79
+[#111]: https://github.com/GIScience/oshdb/issues/111
+[#130]: https://github.com/GIScience/oshdb/issues/130
+[#138]: https://github.com/GIScience/oshdb/issues/138
 
 ## 0.4.0
 
