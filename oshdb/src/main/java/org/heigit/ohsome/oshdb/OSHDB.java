@@ -25,7 +25,7 @@ public abstract class OSHDB {
    * @return converted coordinate
    */
   public static double coordinateToDouble(long coordinate) {
-    return coordinate / (double) GEOM_PRECISION_TO_LONG;
+    return coordinate * GEOM_PRECISION;
   }
 
   /**
