@@ -5,7 +5,7 @@ The _OSHDB-API_ is a Java-API that allows one to run queries on the OSM history 
 The programming interface is based on the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model which divides any analysis into different steps:
 
 * OSM data is searched spatially, temporally and by its attributes.
-  <br><i>example: return all OSM ways which are tagged as "building" in a specific area in yearly steps between 2012 and 2019</i>
+  <br><i>example: return all OSM ways which are tagged as “building” in a specific area in yearly steps between 2012 and 2019</i>
 * Intermediate results are calculated for each OSM entity at each requested timestamp
   <br><i>example: return the building's footprint area</i>
 * The final result is calculated by combining the intermediate results together using one of the aggregation methods provided by the OSHDB-API.
@@ -31,7 +31,7 @@ If you already have an existing Java maven project, the OSHDB-API can be added t
 
 Note that the OSHDB requires Java 11, so it could sometimes be necessary to specify this additional restriction in the `pom.xml` as well. Take a look at this [example `pom.xml`](./example-pom.xml) file that shows how all these settings should be put together.
 
-If you're starting a new OSHDB project from scratch, it's typically a good idea to create a new maven project using the "create new project" wizard of your IDE of choice. After that you can use the steps described above to add OSHDB as a dependency to the new project.
+If you're starting a new OSHDB project from scratch, it's typically a good idea to create a new maven project using the “create new project” wizard of your IDE of choice. After that you can use the steps described above to add OSHDB as a dependency to the new project.
 
 ## 3. Start writing the OSHDB query
 

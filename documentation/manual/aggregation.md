@@ -10,7 +10,7 @@ When executing any of the below listed aggregateBy methods, the query's MapReduc
 aggregateBy
 -----------
 
-This is the most generic grouping method, that allows to produce aggregated results that refer to arbitrary subsets of the input data. The [`aggregateBy`](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#aggregateBy(org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction)) method accepts a function that must return an "index" value by which the respective result should be grouped by. For example, when one wants to group results by OSM type, the aggregateBy method should simply return the OSM type value, as in the following example using the OSHDB snapshot view:
+This is the most generic grouping method, that allows to produce aggregated results that refer to arbitrary subsets of the input data. The [`aggregateBy`](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#aggregateBy(org.heigit.bigspatialdata.oshdb.api.generic.function.SerializableFunction)) method accepts a function that must return an “index” value by which the respective result should be grouped by. For example, when one wants to group results by OSM type, the aggregateBy method should simply return the OSM type value, as in the following example using the OSHDB snapshot view:
 
 ```java
 Map<OSMType, Integer> countBuildingsByType = OSMEntitySnapshotView.on(…)

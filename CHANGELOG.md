@@ -22,7 +22,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### upgrading from 0.6.0
 
-* If you already used the "ohsome filter" functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
+* If you already used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
 
@@ -110,7 +110,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 ## 0.5.7
 
-* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (default) "LocalPeek" backend. ([#229])
+* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (default) “LocalPeek” backend. ([#229])
 * throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. ([#158])
 * improve querying of tag from keytables. ([#224])
 * minor bug fixes and coding clean up. ([#216], [#198], [#206])
@@ -181,7 +181,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * Return the correct changeset id in case of concurrent updates on entities by different changesets.
 * Fix crash while checking empty geometries resulting from erroneous OSM data. ([#57])
 * Fix a crash when trying to build polygons on partially incomplete OSM ways. ([#31])
-* Make importer work with "factory-settings" ignite system. ([#49])
+* Make importer work with “factory-settings” ignite system. ([#49])
 
 [#31]: https://github.com/GIScience/oshdb/issues/31
 [#49]: https://github.com/GIScience/oshdb/issues/49
@@ -301,21 +301,21 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 ### other changes
 
 * the git repository now includes the documentation and basic usage tutorial
-* moved "parent" maven module outside this repository
+* moved “parent” maven module outside this repository
 * improve code quality all over the place (reduced duplicate code, reduced or annotated type casting warnings, reduced usage of raw types)
 * various bugfixes
 
 
 ## 0.3.1
 
-* make java API methods work with updated "0.4" oshdb schema
+* make java API methods work with updated “0.4” oshdb schema
 * mark some methods as deprecated that are removed in 0.4
 
 
 ## 0.3.0
 
-* added a new easy to use _"functional programming style"_ API abstraction level that works on local oshdb files as well as on an Ignite cluster
-	* OSMEntitySnapshotMapper – iterates over entity "snapshots" at given timestamps
+* added a new easy to use _“functional programming style”_ API abstraction level that works on local oshdb files as well as on an Ignite cluster
+	* OSMEntitySnapshotMapper – iterates over entity “snapshots” at given timestamps
 	* OSMContributionMapper – iterates over all OSM contributions for each entity (i.e. creation, modifications, deletion)
 * (breaking) renamed properties of `CellIterator.iterateAll`'s results
 * (breaking) renamed `Geo.distanceOf` to `Geo.lengthOf`

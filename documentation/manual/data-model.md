@@ -17,7 +17,7 @@ Sometimes (historic) OSM data also contains erroneous data, such as ways with to
 OSH Entities
 ------------
 
-The OSHDB stores all versions of a single OSM elements collectively in a so called "OSH Entity". This makes it possible to apply a delta encoding to store individual properties of the related OSM entities.
+The OSHDB stores all versions of a single OSM elements collectively in a so called “OSH Entity”. This makes it possible to apply a delta encoding to store individual properties of the related OSM entities.
 
 Additionally, an OSH entity also contains the data of its references members (i.e., the nodes of a way and the nodes and way members of a relation). This makes it possible to generate geometries of the OSM elements on the fly in a flexible way and for arbitrary timestamps.
 
@@ -29,6 +29,6 @@ The global OSM history data set is divided into a set of partitions (grid cells)
 Keytables
 ---------
 
-In order to minimize memory needed to store the key and value strings of OSM tags, the OSHDB uses so called "keytables" that assign every string (e.g. the tag key `builing`) to a number. More often used strings are assigned to lower numbers compared to rarely used strings which are assigned to higher numbers.
+In order to minimize memory needed to store the key and value strings of OSM tags, the OSHDB uses so called “keytables” that assign every string (e.g. the tag key `builing`) to a number. More often used strings are assigned to lower numbers compared to rarely used strings which are assigned to higher numbers.
 
 This allows the data stored in the OSH entities to be more compact compared to storing each complete string with each entity.
