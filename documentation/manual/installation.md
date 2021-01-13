@@ -26,7 +26,7 @@ Simply add the OSHDB as a dependency to your `pom.xml` file. For most use cases 
 </dependencies>
 ```
 
-Advaced users may also be interested in other packages like the `oshdb` package for raw data access.
+Advanced users may also be interested in other packages like the `oshdb` package for raw data access.
 
 ## Option 2: Building from Source
 
@@ -45,4 +45,4 @@ cd ./oshdb
 mvn clean install
 ```
 
-After that, the binaries will be available in the local maven directory. A new OSHDB-Project can be set up directly by defining the dependency as explained in the previous section [option 1](#option-1:-adding-the-oshdb-as-a-maven-dependency), step 2.
+After that, the binaries will be available in the local maven directory. A new OSHDB-Project can be set up directly by defining the dependency as explained in the previous section [option 1](#option-1-adding-the-oshdb-as-a-maven-dependency), step 2.

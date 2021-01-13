@@ -54,11 +54,11 @@ We will use the snapshot view in this tutorial, but the contribution view can be
 OSMEntitySnapshotView.on(oshdb)
 ```
 
-Note that this is not yet a complete JAVA code line. It will be extended in the following steps to include statements that filter, transform and aggregate the OSM history data.
+Note that this is not a complete JAVA code line yet. It will be extended in the following steps to include statements that filter, transform and aggregate the OSM history data.
 
 ## 5. Setting spatial and temporal extents
 
-Every query must specify a spatial extent and a timestamp (or time range) for which the OSM data should be analyzed. This can be done by calling the methods `areaOfInterest` and `timestamps` on the object we got from the View in the previous step. The spatial extent can either be defined as a rectangular bounding box, or as an arbitrary polygonal [JTS](https://projects.eclipse.org/projects/locationtech.jts) geometry object. In our example, we will use a simple bounding box. The timesteamp can be defined by providing a date-time string.
+Every query must specify a spatial extent and a timestamp (or time range) for which the OSM data should be analyzed. This can be done by calling the methods `areaOfInterest` and `timestamps` on the object we got from the View in the previous step. The spatial extent can either be defined as a rectangular bounding box, or as an arbitrary polygonal [JTS](https://projects.eclipse.org/projects/locationtech.jts) geometry object. In our example, we will use a simple bounding box. The timestamp can be defined by providing a date-time string.
 
 ```java
     .areaOfInterest(new OSHDBBoundingBox(8.6634, 49.3965, 8.7245, 49.4268))
@@ -67,18 +67,18 @@ Every query must specify a spatial extent and a timestamp (or time range) for wh
 
 Note that the OSHDB expects (and returns) coordinates in the cartesian XY order: longitude first, then latitude. So, the parameters for specifying a bounding box in the OSHDB are in the following order: left, bottom, right, top (or: west, south, east, north). Just like the OpenStreetMap data, the OSHDB also works directly with coordinates in WGS84 coordinates ([EPSG:4326](https://epsg.io/4326)) of longitude and latitude. To quickly get the coordinates of a bounding box in this format, we recommend the following online tool: http://norbertrenner.de/osm/bbox.html
 
-For now, we only define a single timestamp in our query. But the OSHDB also supports querying the OSM history data for multiple timestamps at once. For example, one can analyze the data in yearly steps between 2012 and 2019. At the end of this tutorial we will show what (few) changes are necessary to let our query generate the results for many timestamps at once.
+For now, we only define a single timestamp in our query. The OSHDB also supports querying the OSM history data for multiple timestamps at once. For example, one can analyze the data in yearly steps between 2012 and 2019. At the end of this tutorial we will show what (few) changes are necessary to let our query generate the results for many timestamps at once.
 
 ## 6. Filtering OSM data
 
-There are several different ways to select a specific subset of the OSM dataset. In our example, we only want to look at OSM way objects which have the `building` tag. To filter these objects for our query, we add the following statements to our query:
+There are several ways to select a specific subset of the OSM dataset. In our example, we only want to look at OSM way objects which have the `building` tag. To filter these objects for our query, we add the following statements to our query:
 
 ```java
     .osmType(OSMType.WAY)
     .osmTag("building")
 ```
 
-There are other variants of these methods and a few more, all work in a similar way: one specifies which OSM objects should be keept. Multiple filters can be specified one after each other, resulting in the set of OSM objects that match all of the selectors (i.e. an **and** operation). 
+There are other variants of these methods and a few more, all work similarly: one specifies which OSM objects should be kept. Multiple filters can be specified one after each other, resulting in the set of OSM objects that match all selectors (i.e. an **and** operation). 
 
 ## 7. Calculating intermediate results
 
@@ -92,7 +92,7 @@ In a so called `map` step (of the MapReduce programming model), where these snap
 
 ## 8. Filtering intermediate results
 
-One can optionally also filter the intermediate results generated in the map step. This can be used for many different queries, but here, we use this to filter out outliers in the data (i.e. buildings that are larger than a fixed value of 1000&nbsp;m²).
+One can optionally also filter the intermediate results generated in the map step. This can be used for many queries, but here, we use this to filter out outliers in the data (i.e. buildings that are larger than a fixed value of 1000&nbsp;m²).
 
 ```java
     .filter(area -> area < 1000.0)
@@ -151,4 +151,4 @@ The result from this query is visualized in the following graph:
 
 ## 12. Next steps
 
-That's it for our first-steps tutorial. Of course there are many more options and features to explore in the OSHDB. For example how the contibution [view](../manual/views.md) let's you analyze each modification to the OSM objects individually, more advanced [filtering](../manual/filters.md) options, or other concepts like the [`flatMap`](../manual/map-reduce.md#flatmap) function, custom [`aggregateBy`](../manual/aggregation.md) and [`reduce`](../manual/map-reduce.md#reduce) operations, etc.
+That's it for our first-steps tutorial. Of course there are many more options and features to explore in the OSHDB. For example how the contribution [view](../manual/views.md) lets you analyze each modification to the OSM objects individually, more advanced [filtering](../manual/filters.md) options, or other concepts like the [`flatMap`](../manual/map-reduce.md#flatmap) function, custom [`aggregateBy`](../manual/aggregation.md) and [`reduce`](../manual/map-reduce.md#reduce) operations, etc.

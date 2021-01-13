@@ -2,7 +2,7 @@
 
 In order to create a local database instance of the OSHDB yourself, you
 need an .osh.pbf-file of your area of interest. You can get one, e.g., from
-[geofabrik](http://download.geofabrik.de/). The OSHDB instance may then
+[Geofabrik](http://download.geofabrik.de/). The OSHDB instance may then
 be created by the steps extract, transform and load as follows:
 
 ## Extract
@@ -21,8 +21,8 @@ mvn compile
 mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.extract.Extract" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles --timevalidity_from YYYY-MM-DD"
 ```
 
-This creates the files `extract_keys`, `extract_keyvalues` and `extract_roles` 
-containing the keys and the values of tags and the roles of relations.
+This creates the files `extract_keys`, `extract_keyvalues`, and `extract_roles`
+containing the keys, values of tags, and roles of relations.
 
 For large files, you might have to increase the size of your JVM by executing
 `export MAVEN_OPTS="-Xmx???"` (replace ??? with a reasonable size for your machine)
@@ -53,7 +53,7 @@ In order to enable the oshdb to provide a proper attribution of the imported dat
 have to set an attribution text and an attribution url
 
 ```bash
-mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.load.handle.OSHDB2H2Handler" -Dexec.args="-tmpDir ./tmpFiles --out /absolote/path/to/your-H2-database --attribution '© OpenStreetMap contributors' --attribution-url 'https://www.openstreetmap.org/copyright'"
+mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.load.handle.OSHDB2H2Handler" -Dexec.args="-tmpDir ./tmpFiles --out /absolute/path/to/your-H2-database --attribution '© OpenStreetMap contributors' --attribution-url 'https://www.openstreetmap.org/copyright'"
 ```
 
 You now have a ready-to-use oshdb named **your-H2-database.mv.db** in the specified
@@ -79,7 +79,7 @@ Apache website.
 2. Then start as many ignite servers in a pseudo-distributed system as you
    think your computer can handle using an appropriate ignite-config.xml.
    Ignite's default configuration file is located at
-   /opt/ignite/config/default-config.xml.
+   `/opt/ignite/config/default-config.xml`.
    You either have to use a terminal for each ignite server or nohup:<br>
    ```bash
    nohup /opt/ignite/bin/ignite.sh ignite-config.xml &>/opt/ignite/log.log &

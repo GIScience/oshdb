@@ -26,6 +26,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
 
+
 ## 0.6.1
 
 * fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. [#321]
@@ -33,6 +34,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 [#321]: https://github.com/GIScience/oshdb/issues/321
 [#325]: https://github.com/GIScience/oshdb/issues/325
+
 
 ## 0.6.0
 
@@ -66,7 +68,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 ### bugfixes and other changes
 
 * compatibility fix to allow building of javadoc under Java 11
-* fix bug where in some cases, instead of an OSHDBTimeoutException an IniteException was thrown. [#258]
+* fix bug where in some cases, instead of an OSHDBTimeoutException an IgniteException was thrown. [#258]
 * various code style and code quality improvements
 * the OSHDB is now published on Zenodo for easier citation using the DOI `10.5281/zenodo.4146991`
 
@@ -81,17 +83,21 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 [#272]: https://github.com/GIScience/oshdb/issues/272
 [#287]: https://github.com/GIScience/oshdb/issues/287
 
+
 ## 0.5.11
 
 * fix a crash when relations reference redacted ways (backported from version 0.6.1). [#325]
+
 
 ## 0.5.10
 
 * update Ignite to version 2.9.0
 
+
 ## 0.5.9
 
 * update Ignite to version 2.8.0
+
 
 ## 0.5.8
 
@@ -101,10 +107,11 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 [#231]: https://github.com/GIScience/oshdb/issues/231
 [#235]: https://github.com/GIScience/oshdb/issues/235
 
+
 ## 0.5.7
 
-* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (dafault) "LocalPeek" backend. [#229]
-* throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside of the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. [#158]
+* fix regression in version 0.5.6 which made queries run slowly when executed on ignite using the (default) "LocalPeek" backend. [#229]
+* throw an exception if the `aggregateByTimestamps(callback)` is fed with timestamps outside the query's time range. Before this change, this used to cause unspecific exceptions or undefined behaviour. [#158]
 * improve querying of tag from keytables. [#224]
 * minor bug fixes and coding clean up. [#216], [#198], [#206]
 
@@ -114,6 +121,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 [#216]: https://github.com/GIScience/oshdb/issues/216
 [#224]: https://github.com/GIScience/oshdb/issues/224
 [#229]: https://github.com/GIScience/oshdb/issues/229
+
 
 ## 0.5.6
 
@@ -125,6 +133,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 [#204]: https://github.com/GIScience/oshdb/issues/204
 [#209]: https://github.com/GIScience/oshdb/issues/209
 
+
 ## 0.5.5
 
 * improved performance of data [stream](https://docs.ohsome.org/java/oshdb/0.5.4/oshdb-api/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--)ing queries on ignite (using AffinityCall backend).
@@ -132,13 +141,16 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 [#201]: https://github.com/GIScience/oshdb/issues/201
 
+
 ## 0.5.4
 
 * fix a regression where broken referential integrity in OSM data causes a crash during geometry building
 
+
 ## 0.5.3
 
 * update Ignite to version 2.7.5
+
 
 ## 0.5.2
 
@@ -148,10 +160,12 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 [#179]: https://github.com/GIScience/oshdb/issues/179
 [#183]: https://github.com/GIScience/oshdb/issues/183
 
+
 ## 0.5.1
 
-* oshdb-util: Fix a bug in `Geo.areaOf` when applied to polygons with holes. Before this fix, the method errorneously skipped the first inner ring when calculating the total area of a polygon. This affected geometries constructed from OSM multipolygon relations.
+* oshdb-util: Fix a bug in `Geo.areaOf` when applied to polygons with holes. Before this fix, the method erroneously skipped the first inner ring when calculating the total area of a polygon. This affected geometries constructed from OSM multipolygon relations.
 * oshdb-util: Implemented `QUARTERLY`, `WEEKLY`, `DAILY`, and `HOURLY` as additional time intervals.
+
 
 ## 0.5.0
 
@@ -191,7 +205,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 #### oshdb-api
 
-* Make the `getModificationTimestamps` method of OSHEntites faster, resulting in general performance improvement of every query, but especially when analyzing complex relations. [#10]
+* Make the `getModificationTimestamps` method of OSHEntities faster, resulting in general performance improvement of every query, but especially when analyzing complex relations. [#10]
 * Improve performance of bbox-in-polygon checking routines. [#33]
 * Avoid unnecessary clipping of geometries. [#66]
 * Improve building of complex multipolygon geometries. [#111]
@@ -204,10 +218,10 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 ### other changes
 
 * Source code is now released as open-source under _GNU Lesser General Public License version 3_.
-* Dependencies are updated and reduced to the minimum. Also they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading. [#79] [#5]
+* Dependencies are updated and reduced to the minimum. Also, they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading. [#79] [#5]
 * Drop most deprecated methods from OSHDB version 0.4.0
 * More [examples and documentation](https://github.com/GIScience/oshdb/tree/master/documentation) are available.
-* Many small bugfixes and improvements, especially for the Ignite backend. Ignite can now be considered stable and used to analyze a global data set.
+* Many small bugfixes and improvements, especially for the Ignite-backend. Ignite can now be considered stable and used to analyze a global data set.
 * oshdb-api: renamed some methods (`where` filter → `osmTag` and `osmEntityFilter`, `osmTypes` filter → `osmType`) and refactored some methods to accept a wider range of input objects.
 * `GeometryCollection` geometries are no longer ignored when calculating lengths or areas of features. [#51]
 * Restructured core OSHDB data structures to be more flexible in upcoming version changes. [#138]
@@ -227,6 +241,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 [#111]: https://github.com/GIScience/oshdb/issues/111
 [#130]: https://github.com/GIScience/oshdb/issues/130
 [#138]: https://github.com/GIScience/oshdb/issues/138
+
 
 ## 0.4.0
 
@@ -286,14 +301,16 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 ### other changes
 
 * the git repository now includes the documentation and basic usage tutorial
-* moved "parent" maven module outside of this repository
+* moved "parent" maven module outside this repository
 * improve code quality all over the place (reduced duplicate code, reduced or annotated type casting warnings, reduced usage of raw types)
 * various bugfixes
+
 
 ## 0.3.1
 
 * make java API methods work with updated "0.4" oshdb schema
 * mark some methods as deprecated that are removed in 0.4
+
 
 ## 0.3.0
 
@@ -310,6 +327,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * extended unit test coverage
 * various bugfixes
 * …
+
 
 ## 0.2.0
 

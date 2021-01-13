@@ -9,13 +9,13 @@ For this, the [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated
 areaOfInterest
 --------------
 
-This defines the region where the query should be restricted on. It can be either a [bounding box](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#areaOfInterest(org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox)) ([`OSHDBBoundingBox`](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/util/OSHDBBoundingBox.html)) or any [(polygonal) JTS geomety](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#areaOfInterest(P)) such as a Polygon or MultiPolygon.
+This defines the region where the query should be restricted on. It can be either a [bounding box](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#areaOfInterest(org.heigit.bigspatialdata.oshdb.util.OSHDBBoundingBox)) ([`OSHDBBoundingBox`](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/util/OSHDBBoundingBox.html)) or any [(polygonal) JTS geometry](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#areaOfInterest(P)) such as a Polygon or MultiPolygon.
 
-The ouput of this filter will keep only OSM entities whose geometry lie within or which intersect the given areaOfInterest. This inclused also OSM entities for which that none of their child elements lie within the given area of interest.
+The output of this filter will keep only OSM entities whose geometry lie within or which intersect the given areaOfInterest. This included also OSM entities for which that none of their child elements lie within the given area of interest.
 
 > For example, a large forest polygon in OSM that completely encompasses a small area of interest _is_ returned by the OSHDB API.
 
-The resulting geometries produced by the different OSHDB [views](views.md) are by default clipped to the specified area of interest. This makes it possible to directly calculate the length or area of linear or polygonal OSM features within the given query region, without having to consider the fact that some of the features might only partially lie within the region. It is, at the same time, still possible to access full extent of the respective OSM features' [unclipped](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getGeometryUnclipped()) [geometries](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getGeometryUnclippedBefore()).
+The resulting geometries produced by the different OSHDB [views](views.md) are by default clipped to the specified area of interest. This makes it possible to directly calculate the length or area of linear or polygonal OSM features within the given query region, without having to consider the fact that some features might only partially lie within the region. It is, at the same time, still possible to access full extent of the respective OSM features' [unclipped](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMEntitySnapshot.html#getGeometryUnclipped()) [geometries](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getGeometryUnclippedBefore()).
 
 The OSHDB is able to cope well even with complex polygons that have many vertices, but keep in mind that using simpler geometries will generally result in higher query performance: For example a bounding-box query is executed slightly faster than a polygon-areaOfInterest query with a rectangular polygon. 
 
@@ -42,12 +42,12 @@ This is the most commonly used filter to select a certain subset of OSM data. It
 osmEntityFilter
 ---------------
 
-It is possible to [define custom filtering functions](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#osmEntityFilter(org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate)), that take an OSM entity object as input and decide wether each individual entity should be included in the result or not by returning a boolean value.
+It is possible to [define custom filtering functions](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#osmEntityFilter(org.heigit.bigspatialdata.oshdb.api.generic.function.SerializablePredicate)), that take an OSM entity object as input and decide whether each individual entity should be included in the result or not by returning a boolean value.
 
 _ohsome_ filter
 ---------------
 
-An easy way to provide complex [`filter`s](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter(java.lang.String)) is through the functionality of [ohsome filters](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme), which allow one to define osm data filter in a human readable syntax. With these one can combine several tag, type and geometry filters with arbitrary boolean operators.
+An easy way to provide complex [`filter`s](https://docs.ohsome.org/java/oshdb/0.6.1/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#filter(java.lang.String)) is through the functionality of [ohsome filters](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme), which allow one to define osm data filter in a human-readable syntax. With these one can combine several tag-, type- and geometry-filters with arbitrary boolean operators.
 
 _lambda_ filter
 ---------------
