@@ -10,7 +10,7 @@ Closes #
 -
 
 ### Checklist
-- [ ] My code follows the [code-style](https://github.com/GIScience/oshdb/blob/master/CONTRIBUTING.md) rules and I have checked on the [static analyses](https://jenkins.ohsome.org/job/oshdb/view/change-requests/) and [benchmark](https://reports.ohsome.org/oshdb-benchmarks/) (if applicable) results
+- [ ] My code follows the [code-style](https://github.com/GIScience/oshdb/blob/master/CONTRIBUTING.md) rules, and I have checked on the [static analyses](https://jenkins.ohsome.org/job/oshdb/view/change-requests/) and [benchmark](https://reports.ohsome.org/oshdb-benchmarks/) (if applicable) results
 - [ ] I have commented my code
 - [ ] I have written javadoc (required for public methods)
 - [ ] I have added sufficient unit tests

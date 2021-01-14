@@ -59,12 +59,12 @@ Filters are defined in textual form. A filter expression can be composed out of 
 
 |   | description | example |
 |---|-------------|---------|
-| `key=value` | matches all entites which have this exact tag | `natural=tree` |
-| `key=*` | matches all entites which have any tag with the given key | `addr:housenumber=*` |
-| `key!=value` | matches all entites which do not have this exact tag – the same as `not key=value` | `oneway!=yes` |
-| `key!=*` | matches all entites which do not have any tag with the given key – the same as `not key=*`  | `name!=*` |
+| `key=value` | matches all entities which have this exact tag | `natural=tree` |
+| `key=*` | matches all entities which have any tag with the given key | `addr:housenumber=*` |
+| `key!=value` | matches all entities which do not have this exact tag – the same as `not key=value` | `oneway!=yes` |
+| `key!=*` | matches all entities which do not have any tag with the given key – the same as `not key=*`  | `name!=*` |
 | `key in (list,of,values)` | matches all entities with have a tag with the given key and one of the given comma separated values | `highway in (residential, living_street)` |
-| `type:osm-type` | matches all entites of the given OSM type | `type:node` |
+| `type:osm-type` | matches all entities of the given OSM type | `type:node` |
 | `id:osm-id` | matches all entities with the given OSM id | `id:1` |
 | `id:osm-type/osm-id` | matches all entities with the given OSM type and id | `id:node/1` |
 | `id:(list,of,ids)` | matches all entities whose OSM id is in the given comma separated list of ids | `id:(1,2,3)` |
@@ -102,7 +102,7 @@ Here's some useful examples for filtering some OSM features:
 | forests/woods | `(landuse=forest or natural=wood) and geometry:polygon` | Using `geometry:polygon` will select closed ways as well as multipolygons (e.g. a forest with clearings). |
 | parks and park benches | `leisure=park and geometry:polygon or amenity=bench and (geometry:point or geometry:line)` | A filter can also fetch features of different geometry types: this returns parks (polygons) as well as park benches (points or lines). |
 | buildings | `building=* and building!=no and geometry:polygon` | This filter excludes the (rare) objects marked with `building=no`, which is a tag used to indicate that a feature might be expected to be a building (e.g. from an outdated aerial imagery source), but is in reality not one. |
-| highways | `type:way and highway in (motorway, motorway_link, trunk, trunk_link, primary, primary_link, secondary, secondary_link, tertiary, tertiary_link, unclassified, residential, living_street, pedestrian) or (highway=service and service=alley))` | The list of used tags depends on the exact definition of a "highway". In a different context, it may also incude less or even more highway tags (like `footway`, `cycleway`, `track`, `path`, all `highway=service`, etc.). |
+| highways | `type:way and highway in (motorway, motorway_link, trunk, trunk_link, primary, primary_link, secondary, secondary_link, tertiary, tertiary_link, unclassified, residential, living_street, pedestrian) or (highway=service and service=alley))` | The list of used tags depends on the exact definition of a "highway". In a different context, it may also include less or even more highway tags (like `footway`, `cycleway`, `track`, `path`, all `highway=service`, etc.). |
 | residential roads missing a name (for quality assurance) | `type:way and highway=residential and name!=* and noname!=yes` | Note that some roads might be actually unnamed in reality. Such features can be marked as unnamed with the [`noname`](https://wiki.openstreetmap.org/wiki/Key:noname) tag in OSM. |
 | buildings with implausibly big footprints | `geometry:polygon and building=* and building!=no and area:(1E6..)` | The currently largest building by footprint area is a [car factory measuring about 887,800 m²](https://en.wikipedia.org/wiki/List_of_largest_buildings#Largest_footprint). |
 
