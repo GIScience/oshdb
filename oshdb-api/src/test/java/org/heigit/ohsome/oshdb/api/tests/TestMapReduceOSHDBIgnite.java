@@ -94,5 +94,7 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
       e.printStackTrace();
       fail(e.toString());
     }
+
+    ignite.cluster().state(ClusterState.ACTIVE_READ_ONLY);
   }
 }

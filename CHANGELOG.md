@@ -19,12 +19,14 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### bugfixes
 
+* don't change cluster state when executing queries on an Ignite cluster. ([#335]) 
 
 ### upgrading from 0.6.0
 
 * If you already used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
+[#335]: https://github.com/GIScience/oshdb/pull/335
 
 
 ## 0.6.1
