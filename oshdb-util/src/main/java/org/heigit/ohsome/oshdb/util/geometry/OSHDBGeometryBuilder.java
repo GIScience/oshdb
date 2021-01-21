@@ -242,7 +242,9 @@ public class OSHDBGeometryBuilder {
     List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
     // check if there are any touching inner/outer rings, merge any
     mergeTouchingRings(innerRingsNodes);
+    // create JTS rings for non-degenerate rings only
     List<LinearRing> innerRings = innerRingsNodes.stream()
+        .filter(ring -> ring.size() >= LinearRing.MINIMUM_VALID_SIZE)
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
@@ -349,7 +351,7 @@ public class OSHDBGeometryBuilder {
           // merge this ring (ringNodes) into the previously encountered one (targetNodes)
           LinkedList<OSMNode> targetNodes = ringSegments.get(segment);
           // remove all segments pointing to the target ring, as we will rebuild it from scratch
-          ringSegments.values().remove(targetNodes);
+          ringSegments.values().removeAll(Collections.singleton(targetNodes));
           // cut and rewind target and current rings to the matching segment we found
           cutAtSegment(targetNodes, segment);
           cutAtSegment(ringNodes, segment);

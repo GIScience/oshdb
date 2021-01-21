@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version="0.6">
+
+  <relation id="1" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <member type="way" ref="1" role="outer"/>
+    <member type="way" ref="2" role="inner"/>
+    <member type="way" ref="2" role="inner"/>
+    <member type="way" ref="2" role="inner"/>
+    <tag k="type" v="multipolygon"/>
+  </relation>
+  <way id="1" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <nd ref="11"/>
+    <nd ref="12"/>
+    <nd ref="13"/>
+    <nd ref="14"/>
+    <nd ref="11"/>
+  </way>
+  <way id="2" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1">
+    <nd ref="21"/>
+    <nd ref="22"/>
+    <nd ref="23"/>
+    <nd ref="21"/>
+  </way>
+  <node id="11" lat="-10" lon="-10" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1"/>
+  <node id="12" lat="10" lon="-10" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1"/>
+  <node id="13" lat="10" lon="10" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1"/>
+  <node id="14" lat="-10" lon="10" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1"/>
+  <node id="21" lat="0" lon="0" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1"/>
+  <node id="22" lat="0" lon="1" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1"/>
+  <node id="23" lat="1" lon="1" version="1" timestamp="2014-01-01T00:00:00Z" uid="1" user="test" changeset="1"/>
+
+</osm>
