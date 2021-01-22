@@ -1,6 +1,15 @@
 Changelog
 =========
 
+## 0.6.2
+
+* don't change cluster state when executing queries on an Ignite cluster. ([#335])
+* fix bug when building multipolygon geometries with certain invalid inner ring configurations (e.g. duplicate inner rings). ([#334])
+
+[#334]: https://github.com/GIScience/oshdb/issues/334
+[#335]: https://github.com/GIScience/oshdb/pull/335
+
+
 ## 0.6.1
 
 * fix a crash caused when _oshdb-filters_ are used in `groupByEntity` queries. #321
