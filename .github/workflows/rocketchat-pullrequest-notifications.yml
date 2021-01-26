@@ -1,0 +1,40 @@
+name: Rocket.Chat Pull Request push notifications
+
+on:
+  pull_request:
+    branches: [ master, main ]
+    types: [ labeled ]
+
+jobs:
+  rocketchat_pullrequest_notification:
+    name: Someone labeled their Pull Request
+    runs-on: ubuntu-latest
+    if: ${{ contains('comments welcome|help wanted|waiting for review', github.event.label.name) }}
+    steps:
+      - name: Push notification for a Pull Request labeled as "comments welcome"
+        if: ${{ github.event.label.name == 'comments welcome' }}
+        uses: daniL16/action-notify-rocketChat@2.0.1
+        with:
+          message: ${{ github.event.sender.login }} would like to get feedback on pull request ${{ github.event.pull_request.html_url }}
+          ROCKET_CHAT_HOOK: ${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}
+          ROCKET_CHAT_URL: ${{ secrets.ROCKETCHAT_SERVER }}
+          BOT_NAME: ${{ github.event.sender.login }}
+          BOT_AVATAR: ${{ github.event.sender.avatar_url }}
+      - name: Push notification for a Pull Request labeled as "help wanted"
+        if: ${{ github.event.label.name == 'help wanted' }}
+        uses: daniL16/action-notify-rocketChat@2.0.1
+        with:
+          message: ${{ github.event.sender.login }} needs help on pull request ${{ github.event.pull_request.html_url }}
+          ROCKET_CHAT_HOOK: ${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}
+          ROCKET_CHAT_URL: ${{ secrets.ROCKETCHAT_SERVER }}
+          BOT_NAME: ${{ github.event.sender.login }}
+          BOT_AVATAR: ${{ github.event.sender.avatar_url }}
+      - name: Push notification for a Pull Request labeled as "waiting for review"
+        if: ${{ github.event.label.name == 'waiting for review' }}
+        uses: daniL16/action-notify-rocketChat@2.0.1
+        with:
+          message: ${{ github.event.sender.login }} is waiting for a code review on pull request ${{ github.event.pull_request.html_url }}
+          ROCKET_CHAT_HOOK: ${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}
+          ROCKET_CHAT_URL: ${{ secrets.ROCKETCHAT_SERVER }}
+          BOT_NAME: ${{ github.event.sender.login }}
+          BOT_AVATAR: ${{ github.event.sender.avatar_url }}
