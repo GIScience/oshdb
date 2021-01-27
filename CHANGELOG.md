@@ -19,12 +19,14 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### bugfixes
 
+* fix an infinite loop caused by certain invalid multipolygons with touching inner rings which are partially incomplete. ([#343])
 
 ### upgrading from 0.6.0
 
 * If you already used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
+[#343]: https://github.com/GIScience/oshdb/pull/343
 
 
 ## 0.6.2
