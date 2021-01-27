@@ -25,9 +25,17 @@ public class OSHDBGeometryBuilderMultipolygonInvalidInnersTest {
   }
 
   @Test
-  public void test() {
+  public void testDuplicateInnerRings() {
     // data has invalid (duplicate) inner rings
     OSMEntity entity = testData.relations().get(1L).get(0);
+    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
+    assertTrue(result instanceof Polygon);
+  }
+
+  @Test
+  public void testTouchingIncompleteInnerRings() {
+    // data has invalid (duplicate) inner rings
+    OSMEntity entity = testData.relations().get(2L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
     assertTrue(result instanceof Polygon);
   }

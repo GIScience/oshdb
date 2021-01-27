@@ -579,12 +579,11 @@ public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
 
   @Test
   public void test746() {
-    // IImpossible multipolygon out of two way.
+    // Impossible multipolygon out of two ways.
     OSMEntity entity1 = testData.relations().get(746900L).get(0);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, tagInterpreter);
       assertTrue(result instanceof GeometryCollection || result instanceof Polygonal);
-      assertEquals(2, result.getNumGeometries());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Should not have thrown any exception");
