@@ -408,7 +408,7 @@ public class OSHDBGeometryBuilder {
     // split the ring open, by removing the "redundant" coordinate.
     // example: (A,B,C,D,E,F,A) -> (B,C,D,E,F,A)
     ring.removeFirst();
-    while (true) {
+    for (int i = 0; i < ring.size(); i++) {
       // do the open ends of the current ring match the cut segment?
       Segment splitSegment = new Segment(ring.getFirst().getId(), ring.getLast().getId());
       if (cutSegment.equals(splitSegment)) {
@@ -420,6 +420,8 @@ public class OSHDBGeometryBuilder {
         ring.add(ring.removeFirst());
       }
     }
+    assert false : "cut segment not found in ring";
+    throw new RuntimeException("cut segment not found in ring");
   }
 
   /**
