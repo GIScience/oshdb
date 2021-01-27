@@ -496,11 +496,11 @@ public class OSHDBGeometryBuilder {
     List<LinkedList<OSMNode>> joined = new LinkedList<>();
     while (!ways.isEmpty()) {
       LinkedList<OSMNode> current = ways.remove(0);
-      joined.add(current);
-      while (!ways.isEmpty()) {
+      while (true) {
         long firstId = current.getFirst().getId();
         long lastId = current.getLast().getId();
         if (firstId == lastId) {
+          joined.add(current);
           break; // ring is complete -> we're done
         }
         boolean joinable = false;
