@@ -408,7 +408,7 @@ public class OSHDBGeometryBuilder {
     // split the ring open, by removing the "redundant" coordinate.
     // example: (A,B,C,D,E,F,A) -> (B,C,D,E,F,A)
     ring.removeFirst();
-    while (true) {
+    for (int i = 0; i < ring.size(); i++) {
       // do the open ends of the current ring match the cut segment?
       Segment splitSegment = new Segment(ring.getFirst().getId(), ring.getLast().getId());
       if (cutSegment.equals(splitSegment)) {
@@ -420,6 +420,8 @@ public class OSHDBGeometryBuilder {
         ring.add(ring.removeFirst());
       }
     }
+    assert false : "cut segment not found in ring";
+    throw new IllegalStateException("cut segment not found in ring");
   }
 
   /**
@@ -485,25 +487,28 @@ public class OSHDBGeometryBuilder {
 
   // helper that joins adjacent osm ways into linear rings
   private static List<LinkedList<OSMNode>> buildRings(Stream<Stream<OSMNode>> lines) {
-    // make a (mutable) copy of the polygons array
+    // make a (mutable) copy of the lines list
     List<LinkedList<OSMNode>> ways = lines
         .map(line -> line.collect(Collectors.toCollection(LinkedList::new)))
         .filter(nodesList -> !nodesList.isEmpty())
         .collect(Collectors.toCollection(LinkedList::new));
 
     List<LinkedList<OSMNode>> joined = new LinkedList<>();
+    // iterate until there are no more ways left to process
     while (!ways.isEmpty()) {
       LinkedList<OSMNode> current = ways.remove(0);
-      joined.add(current);
-      while (!ways.isEmpty()) {
+      // iterate until the way cannot be joined to another way
+      boolean joinable;
+      do {
         long firstId = current.getFirst().getId();
         long lastId = current.getLast().getId();
         if (firstId == lastId) {
-          break; // ring is complete -> we're done
+          // ring is complete -> we are done
+          joined.add(current);
+          break;
         }
-        boolean joinable = false;
-        var waysIterator = ways.iterator();
-        while (waysIterator.hasNext()) {
+        joinable = false;
+        for (var waysIterator = ways.iterator(); waysIterator.hasNext();) {
           LinkedList<OSMNode> what = waysIterator.next();
           if (lastId == what.getFirst().getId()) {
             // end of partial ring matches to start of current line
@@ -511,35 +516,28 @@ public class OSHDBGeometryBuilder {
             current.addAll(what);
             waysIterator.remove();
             joinable = true;
-            break;
           } else if (firstId == what.getLast().getId()) {
             // start of partial ring matches end of current line
             what.removeLast();
             current.addAll(0, what);
             waysIterator.remove();
             joinable = true;
-            break;
           } else if (lastId == what.getLast().getId()) {
             // end of partial ring matches end of current line
             what.removeLast();
             current.addAll(Lists.reverse(what));
             waysIterator.remove();
             joinable = true;
-            break;
           } else if (firstId == what.getFirst().getId()) {
             // start of partial ring matches start of current line
             what.removeFirst();
             current.addAll(0, Lists.reverse(what));
             waysIterator.remove();
             joinable = true;
-            break;
           }
         }
-        if (!joinable) {
-          // Invalid geometry (dangling way, unclosed ring)
-          break;
-        }
-      }
+        // joinable==false for invalid geometries (dangling way, unclosed ring)
+      } while (joinable);
     }
 
     return joined;
