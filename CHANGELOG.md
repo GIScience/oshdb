@@ -19,7 +19,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### bugfixes
 
-### upgrading from 0.6.0
+### upgrading from 0.6
 
 * If you already used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
