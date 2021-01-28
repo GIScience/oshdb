@@ -1,6 +1,13 @@
 Changelog
 =========
 
+## 0.6.3
+
+* fix an infinite loop caused by certain invalid multipolygons with touching inner rings which are partially incomplete. ([#343])
+
+[#343]: https://github.com/GIScience/oshdb/pull/343
+
+
 ## 0.6.2
 
 * don't change cluster state when executing queries on an Ignite cluster. ([#335])
