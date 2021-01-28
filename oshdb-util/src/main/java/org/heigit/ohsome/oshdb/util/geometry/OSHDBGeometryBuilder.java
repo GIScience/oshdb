@@ -421,7 +421,7 @@ public class OSHDBGeometryBuilder {
       }
     }
     assert false : "cut segment not found in ring";
-    throw new RuntimeException("cut segment not found in ring");
+    throw new IllegalStateException("cut segment not found in ring");
   }
 
   /**
