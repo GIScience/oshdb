@@ -19,11 +19,14 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### bugfixes
 
+* when filtering for `geometry:other`: also consider GeometryCollections occuring as a side effect of clipping ([#338])
+
 ### upgrading from 0.6
 
 * If you already used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
+[#338]: https://github.com/GIScience/oshdb/issues/338
 
 
 ## 0.6.3
