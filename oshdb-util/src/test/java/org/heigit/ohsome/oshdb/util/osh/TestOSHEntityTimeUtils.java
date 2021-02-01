@@ -2,10 +2,10 @@ package org.heigit.ohsome.oshdb.util.osh;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
@@ -295,5 +295,149 @@ public class TestOSHEntityTimeUtils {
 
     List<OSHDBTimestamp> tss = OSHEntityTimeUtils.getModificationTimestamps(hrelation, true);
     assertNotNull(tss);
+  }
+
+  @Test
+  public void testGetChangesetTimestampsNode() throws IOException {
+    OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(123L, 2, new OSHDBTimestamp(2L), 8L, 1, new int[] {1, 1},
+            86756350L, 494186210L),
+        new OSMNode(123L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 2},
+            86756350L, 494186210L)
+    ));
+
+    var tss = OSHEntityTimeUtils.getChangesetTimestamps(hnode);
+    assertNotNull(tss);
+    assertEquals(2, tss.size());
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+    assertEquals(8L, tss.get(new OSHDBTimestamp(2L)).longValue());
+  }
+
+  @Test
+  public void testGetChangesetTimestampsWay() throws IOException {
+    OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(1L, 3, new OSHDBTimestamp(5L), 5L, 1, new int[] {},
+            86756340L, 494186210L),
+        new OSMNode(1L, 2, new OSHDBTimestamp(3L), 3L, 1, new int[] {},
+            86756340L, 494186210L),
+        new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756340L, 494186200L)
+    ));
+    OSHNode hnode2 = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(2L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756380L, 494186210L)
+    ));
+    OSHNode hnode3 = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(3L, 1, new OSHDBTimestamp(4L), 4L, 1, new int[] {},
+            86756390L, 494186210L)
+    ));
+
+    OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
+        new OSMWay(1L, 3, new OSHDBTimestamp(4L), 4L, 1, new int[] {1, 2}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0),
+            new OSMMember(3L, OSMType.NODE, 0)
+        }),
+        new OSMWay(1L, 2, new OSHDBTimestamp(2L), 2L, 1, new int[] {1, 2}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0)
+        }),
+        new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0)
+        })
+    ), List.of(hnode1, hnode2, hnode3));
+
+    /* t1 = way created
+     * t2 = only way tags changed
+     * t3 = only node changed
+     * t4 = node added/removed
+     * (t5) = removed node changed again
+     */
+
+    var tss = OSHEntityTimeUtils.getChangesetTimestamps(hway);
+    assertNotNull(tss);
+    assertTrue(tss.size() >= 4);
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+    assertEquals(2L, tss.get(new OSHDBTimestamp(2L)).longValue());
+    assertEquals(3L, tss.get(new OSHDBTimestamp(3L)).longValue());
+    assertEquals(4L, tss.get(new OSHDBTimestamp(4L)).longValue());
+  }
+
+  @Test
+  public void testGetChangesetTimestampsRelation() throws IOException {
+    OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(1L, 2, new OSHDBTimestamp(3L), 3L, 1, new int[] {},
+            86756340L, 494186210L),
+        new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756340L, 494186200L)
+    ));
+    OSHNode hnode2 = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(2L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756380L, 494186210L)
+    ));
+    OSHNode hnode3 = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(3L, 1, new OSHDBTimestamp(4L), 4L, 1, new int[] {},
+            86756390L, 494186210L)
+    ));
+    OSHNode hnode4 = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(4L, 3, new OSHDBTimestamp(8L), 8L, 1, new int[] {1, 1},
+            86756340L, 494186210L),
+        new OSMNode(4L, 2, new OSHDBTimestamp(6L), 6L, 1, new int[] {2, 2},
+            86756340L, 494186210L),
+        new OSMNode(4L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1},
+            86756390L, 494186210L)
+    ));
+
+    OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
+        new OSMWay(1L, 1, new OSHDBTimestamp(4L), 4L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0),
+            new OSMMember(3L, OSMType.NODE, 0)
+        }),
+        new OSMWay(1L, 1, new OSHDBTimestamp(2L), 2L, 1, new int[] {1, 2}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0)
+        }),
+        new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 2}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0)
+        })
+    ), List.of(hnode1, hnode2, hnode3, hnode4));
+
+    OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
+        new OSMRelation(1L, 3, new OSHDBTimestamp(7L), 7L, 1, new int[] {1, 2}, new OSMMember[] {
+            new OSMMember(1L, OSMType.WAY, 0)
+        }),
+        new OSMRelation(1L, 2, new OSHDBTimestamp(5L), 5L, 1, new int[] {1, 2}, new OSMMember[] {
+            new OSMMember(1L, OSMType.WAY, 0),
+            new OSMMember(1L, OSMType.NODE, 0)
+        }),
+        new OSMRelation(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.WAY, 0),
+            new OSMMember(1L, OSMType.NODE, 0)
+        })
+    ), List.of(hnode1, hnode2, hnode3), List.of(hway));
+
+    /* t1 = relation with way and node created
+     * t2 = only way tags changed
+     * t3 = only node of way changed
+     * t4 = only node added to way
+     * t5 = only rel tags changed
+     * t6 = only node of relation changed
+     * t7 = node dropped from relation
+     * (t8) = removed node changed again
+     */
+
+    var tss = OSHEntityTimeUtils.getChangesetTimestamps(hrel);
+    assertNotNull(tss);
+    assertTrue(tss.size() >= 7);
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+    assertEquals(2L, tss.get(new OSHDBTimestamp(2L)).longValue());
+    assertEquals(3L, tss.get(new OSHDBTimestamp(3L)).longValue());
+    assertEquals(4L, tss.get(new OSHDBTimestamp(4L)).longValue());
+    assertEquals(5L, tss.get(new OSHDBTimestamp(5L)).longValue());
+    assertEquals(6L, tss.get(new OSHDBTimestamp(6L)).longValue());
+    assertEquals(7L, tss.get(new OSHDBTimestamp(7L)).longValue());
   }
 }
