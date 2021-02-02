@@ -87,10 +87,9 @@ public class GeometryTypeFilter implements Filter {
       case LINE:
         return EnumSet.of(OSMType.WAY);
       case POLYGON:
-        return POLYGON_TYPES;
       case OTHER:
       default:
-        return EnumSet.of(OSMType.RELATION);
+        return POLYGON_TYPES;
     }
   }
 
@@ -102,10 +101,9 @@ public class GeometryTypeFilter implements Filter {
       case LINE:
         return osmType == OSMType.WAY;
       case POLYGON:
-        return POLYGON_TYPES.contains(osmType);
       case OTHER:
       default:
-        return osmType == OSMType.RELATION;
+        return POLYGON_TYPES.contains(osmType);
     }
   }
 

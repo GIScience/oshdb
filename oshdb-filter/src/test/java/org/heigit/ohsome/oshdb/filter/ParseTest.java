@@ -252,7 +252,7 @@ public class ParseTest extends FilterTest {
     assertTrue(expression instanceof GeometryTypeFilter);
     assertEquals(GeometryType.OTHER, ((GeometryTypeFilter) expression).getGeometryType());
     assertEquals(
-        Collections.singleton(OSMType.RELATION),
+        EnumSet.of(OSMType.WAY, OSMType.RELATION),
         ((GeometryTypeFilter) expression).getOSMTypes()
     );
     assertEquals("geometry:other", expression.toString());

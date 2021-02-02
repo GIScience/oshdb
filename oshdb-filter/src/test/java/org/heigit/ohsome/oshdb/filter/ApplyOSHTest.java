@@ -301,11 +301,11 @@ public class ApplyOSHTest extends FilterTest {
   @Test
   public void testGeometryTypeFilterOther() throws IOException {
     FilterExpression expression = parser.parse("geometry:other");
-    assertFalse(expression.applyOSH(createTestOSHEntityWay(
-        createTestOSMEntityWay(new long[] {})
-    )));
     assertFalse(expression.applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode()
+    )));
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(
+        createTestOSMEntityWay(new long[] {})
     )));
     assertTrue(expression.applyOSH(createTestOSHEntityRelation(
         createTestOSMEntityRelation()

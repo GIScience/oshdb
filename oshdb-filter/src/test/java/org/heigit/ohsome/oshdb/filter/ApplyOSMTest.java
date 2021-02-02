@@ -178,8 +178,8 @@ public class ApplyOSMTest extends FilterTest {
   @Test
   public void testGeometryTypeFilterOther() {
     FilterExpression expression = parser.parse("geometry:other");
-    assertFalse(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
     assertFalse(expression.applyOSM(createTestOSMEntityNode()));
+    assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
     assertTrue(expression.applyOSM(createTestOSMEntityRelation()));
   }
 
