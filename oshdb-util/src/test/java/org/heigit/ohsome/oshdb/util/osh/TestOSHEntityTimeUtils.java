@@ -508,4 +508,23 @@ public class TestOSHEntityTimeUtils {
     assertTrue(tss.size() >= 1);
     assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
   }
+
+  @Test
+  public void testGetModificationTimestampsNestedRelations() throws IOException {
+    OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756380L, 494186210L)
+    ));
+    OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
+        new OSMRelation(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.WAY, 0),
+            new OSMMember(2L, OSMType.RELATION, 0)
+        })
+    ), List.of(hnode), Collections.emptyList());
+
+    var tss = OSHEntityTimeUtils.getModificationTimestamps(hrel);
+    assertNotNull(tss);
+    assertEquals(1, tss.size());
+    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+  }
 }

@@ -403,6 +403,8 @@ public class OSHEntityTimeUtils {
             }
             break;
           default:
+          case RELATION:
+            // skip relation->relation members
             break;
         }
       }
