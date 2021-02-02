@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -22,6 +23,7 @@ import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
+import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
@@ -66,12 +68,13 @@ public class OSHEntityTimeUtils {
 
     // recurse way nodes
     try {
-      osh.getNodes().forEach(oshNode -> {
-        if (oshNode != null) {
-          oshNode.getVersions().forEach(
-              osmNode -> result.putIfAbsent(osmNode.getTimestamp(), osmNode.getChangesetId()));
+      for (OSHNode node : osh.getNodes()) {
+        if (node != null) {
+          for (OSMNode version : node.getVersions()) {
+            result.putIfAbsent(version.getTimestamp(), version.getChangesetId());
+          }
         }
-      });
+      }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -87,11 +90,9 @@ public class OSHEntityTimeUtils {
 
     // recurse rel members
     try {
-      Stream.concat(osh.getNodes().stream(), osh.getWays().stream()).forEach(oshEntity -> {
-        if (oshEntity != null) {
-          getChangesetTimestamps(oshEntity).forEach(result::putIfAbsent);
-        }
-      });
+      Stream.concat(osh.getNodes().stream(), osh.getWays().stream())
+          .filter(Objects::nonNull)
+          .forEach(oshEntity -> getChangesetTimestamps(oshEntity).forEach(result::putIfAbsent));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

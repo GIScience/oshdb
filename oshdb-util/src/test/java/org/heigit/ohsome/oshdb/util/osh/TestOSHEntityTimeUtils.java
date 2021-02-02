@@ -440,4 +440,72 @@ public class TestOSHEntityTimeUtils {
     assertEquals(6L, tss.get(new OSHDBTimestamp(6L)).longValue());
     assertEquals(7L, tss.get(new OSHDBTimestamp(7L)).longValue());
   }
+
+  @Test
+  public void testGetModificationTimestampsBrokenData() throws IOException {
+    // missing way node reference
+    OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756380L, 494186210L)
+    ));
+
+    OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
+        new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0)
+        })
+    ), List.of(hnode));
+
+    var tss = OSHEntityTimeUtils.getModificationTimestamps(hway);
+    assertNotNull(tss);
+    assertEquals(1, tss.size());
+    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+
+    // missing relation member
+    OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
+        new OSMRelation(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.WAY, 0),
+            new OSMMember(3L, OSMType.NODE, 0)
+        })
+    ), List.of(hnode), List.of(hway));
+
+    tss = OSHEntityTimeUtils.getModificationTimestamps(hrel);
+    assertNotNull(tss);
+    assertEquals(1, tss.size());
+    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+  }
+
+  @Test
+  public void testGetChangesetTimestampsBrokenData() throws IOException {
+    // missing way node reference
+    OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756380L, 494186210L)
+    ));
+
+    OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
+        new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.NODE, 0),
+            new OSMMember(2L, OSMType.NODE, 0)
+        })
+    ), List.of(hnode));
+
+    var tss = OSHEntityTimeUtils.getChangesetTimestamps(hway);
+    assertNotNull(tss);
+    assertTrue(tss.size() >= 1);
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+
+    // missing relation member
+    OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
+        new OSMRelation(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
+            new OSMMember(1L, OSMType.WAY, 0),
+            new OSMMember(3L, OSMType.NODE, 0)
+        })
+    ), List.of(hnode), List.of(hway));
+
+    tss = OSHEntityTimeUtils.getChangesetTimestamps(hrel);
+    assertNotNull(tss);
+    assertTrue(tss.size() >= 1);
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+  }
 }
