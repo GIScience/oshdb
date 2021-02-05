@@ -37,6 +37,36 @@ public class TestOSHEntityTimeUtils {
     assertEquals(2, tss.size());
     assertEquals(1L, tss.get(0).getRawUnixTimestamp());
     assertEquals(2L, tss.get(1).getRawUnixTimestamp());
+
+    // additionally, also make sure that the same result is returned by the "recurse" variant
+    assertEquals(
+        OSHEntityTimeUtils.getModificationTimestamps(hnode),
+        OSHEntityTimeUtils.getModificationTimestamps(hnode, true));
+  }
+
+  @Test
+  public void testGetModificationTimestampsNodeWithFilter() throws IOException {
+    OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(123L, 3, new OSHDBTimestamp(3L), 3L, 1, new int[] {1, 2},
+            86756350L, 494186210L),
+        new OSMNode(123L, 2, new OSHDBTimestamp(2L), 2L, 1, new int[] {1, 2},
+            86756350L, 494186210L),
+        new OSMNode(123L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1},
+            86756350L, 494186210L)
+    ));
+
+    List<OSHDBTimestamp> tss =
+        OSHEntityTimeUtils.getModificationTimestamps(hnode, e -> e.hasTagValue(1, 1));
+
+    assertNotNull(tss);
+    assertEquals(2, tss.size());
+    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+    assertEquals(2L, tss.get(1).getRawUnixTimestamp());
+
+    // make sure that if no filter is supplied, the full result is returned
+    assertEquals(
+        OSHEntityTimeUtils.getModificationTimestamps(hnode),
+        OSHEntityTimeUtils.getModificationTimestamps(hnode, null));
   }
 
   @Test
@@ -473,6 +503,12 @@ public class TestOSHEntityTimeUtils {
     assertNotNull(tss);
     assertEquals(1, tss.size());
     assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+
+    // broken reference (potentially due to data redaction)
+    hnode = OSHNodeImpl.build(Lists.newArrayList(
+        new OSMNode(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {},
+            86756380L, 494186210L)
+    ));
   }
 
   @Test
