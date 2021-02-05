@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,10 +70,11 @@ public class OSHEntityTimeUtils {
     // recurse way nodes
     try {
       for (OSHNode node : osh.getNodes()) {
-        if (node != null) {
-          for (OSMNode version : node.getVersions()) {
-            result.putIfAbsent(version.getTimestamp(), version.getChangesetId());
-          }
+        if (node == null) {
+          continue;
+        }
+        for (OSMNode version : node.getVersions()) {
+          result.putIfAbsent(version.getTimestamp(), version.getChangesetId());
         }
       }
     } catch (IOException e) {
@@ -108,16 +110,7 @@ public class OSHEntityTimeUtils {
    * @return a list of timestamps where this entity has been modified
    */
   public static List<OSHDBTimestamp> getModificationTimestamps(OSHEntity osh) {
-    switch (osh.getType()) {
-      case NODE:
-        return getModificationTimestamps((OSHNode) osh);
-      case WAY:
-        return getModificationTimestamps((OSHWay) osh, true);
-      case RELATION:
-        return getModificationTimestamps((OSHRelation) osh, true);
-      default:
-        throw new UnsupportedOperationException(format(UNSUPPORTED_OSMTYPE_MESSAGE, osh.getType()));
-    }
+    return getModificationTimestamps(osh, true);
   }
 
   /**
@@ -138,9 +131,8 @@ public class OSHEntityTimeUtils {
       case NODE:
         return getModificationTimestamps((OSHNode) osh);
       case WAY:
-        return getModificationTimestamps((OSHWay) osh, recurse);
       case RELATION:
-        return getModificationTimestamps((OSHRelation) osh, recurse);
+        return getModificationTimestamps(osh, recurse, null);
       default:
         throw new UnsupportedOperationException(format(UNSUPPORTED_OSMTYPE_MESSAGE, osh.getType()));
     }
@@ -152,14 +144,6 @@ public class OSHEntityTimeUtils {
       result.add(osm.getTimestamp());
     }
     return Lists.reverse(result);
-  }
-
-  private static List<OSHDBTimestamp> getModificationTimestamps(OSHWay osh, boolean recurse) {
-    return getModificationTimestamps(osh, recurse, null);
-  }
-
-  private static List<OSHDBTimestamp> getModificationTimestamps(OSHRelation osh, boolean recurse) {
-    return getModificationTimestamps(osh, recurse, null);
   }
 
   /**
@@ -182,20 +166,7 @@ public class OSHEntityTimeUtils {
    */
   public static List<OSHDBTimestamp> getModificationTimestamps(OSHEntity osh,
       Predicate<OSMEntity> osmEntityFilter, Map<OSHDBTimestamp, Long> changesetTimestamps) {
-    List<OSHDBTimestamp> allModificationTimestamps;
-    switch (osh.getType()) {
-      case NODE:
-        allModificationTimestamps = getModificationTimestamps((OSHNode) osh, osmEntityFilter);
-        break;
-      case WAY:
-        allModificationTimestamps = getModificationTimestamps((OSHWay) osh, osmEntityFilter);
-        break;
-      case RELATION:
-        allModificationTimestamps = getModificationTimestamps((OSHRelation) osh, osmEntityFilter);
-        break;
-      default:
-        throw new UnsupportedOperationException(format(UNSUPPORTED_OSMTYPE_MESSAGE, osh.getType()));
-    }
+    List<OSHDBTimestamp> allModificationTimestamps = getModificationTimestamps(osh, true, osmEntityFilter);
 
     if (allModificationTimestamps.size() <= 1) {
       return allModificationTimestamps;
@@ -225,159 +196,65 @@ public class OSHEntityTimeUtils {
    */
   public static List<OSHDBTimestamp> getModificationTimestamps(OSHEntity osh,
       Predicate<OSMEntity> osmEntityFilter) {
-    switch (osh.getType()) {
-      case NODE:
-        return getModificationTimestamps((OSHNode) osh, osmEntityFilter);
-      case WAY:
-        return getModificationTimestamps((OSHWay) osh, osmEntityFilter);
-      case RELATION:
-        return getModificationTimestamps((OSHRelation) osh, osmEntityFilter);
-      default:
-        throw new UnsupportedOperationException(format(UNSUPPORTED_OSMTYPE_MESSAGE, osh.getType()));
-    }
+    return getModificationTimestamps(osh, true, osmEntityFilter);
   }
 
-  private static List<OSHDBTimestamp> getModificationTimestamps(OSHNode osh,
-      Predicate<OSMEntity> osmEntityFilter) {
-    List<OSHDBTimestamp> result = new ArrayList<>();
+  private static List<OSHDBTimestamp> getModificationTimestamps(
+      OSHEntity osh, boolean recurse, Predicate<OSMEntity> osmEntityFilter) {
+    // first, store this ways direct modifications (i.e. the major versions' timestamps)
+    var entityTs = getModificationTimestampsReverseNonRecursed(osh, osmEntityFilter);
+    if (!recurse || osh instanceof OSHNode) {
+      return Lists.reverse(entityTs);
+    }
+    // recurse children: start by collecting all referenced entities' modification timestamps
+    var childEntityTs = collectChildModificationTimestamps(osh, osmEntityFilter);
+    // merge entity and child data into result
+    return new ArrayList<>(mergeEntityAndChildTimestamps(entityTs, childEntityTs));
+  }
+
+  /** Returns the filtered entity versions' timestamps in reverse order. */
+  private static List<OSHDBTimestamp> getModificationTimestampsReverseNonRecursed(
+      OSHEntity osh, Predicate<OSMEntity> osmEntityFilter) {
+    List<OSHDBTimestamp> oshTs = new ArrayList<>();
     OSHDBTimestamp prevNonmatch = null;
     for (OSMEntity osm : osh.getVersions()) {
       if (osm.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osm))) {
         if (prevNonmatch != null) {
-          result.add(prevNonmatch);
+          oshTs.add(prevNonmatch);
           prevNonmatch = null;
         }
-        result.add(osm.getTimestamp());
+        oshTs.add(osm.getTimestamp());
       } else {
         prevNonmatch = osm.getTimestamp();
       }
     }
-    return Lists.reverse(result);
+    return oshTs;
   }
 
-  private static List<OSHDBTimestamp> getModificationTimestamps(OSHWay osh,
-      Predicate<OSMEntity> osmEntityFilter) {
-    return getModificationTimestamps(osh, true, osmEntityFilter);
-  }
-
-  private static List<OSHDBTimestamp> getModificationTimestamps(OSHRelation osh,
-      Predicate<OSMEntity> osmEntityFilter) {
-    return getModificationTimestamps(osh, true, osmEntityFilter);
-  }
-
-  private static List<OSHDBTimestamp> getModificationTimestamps(OSHWay osh, boolean recurse,
-      Predicate<OSMEntity> osmEntityFilter) {
-    List<OSHDBTimestamp> wayTs = new ArrayList<>();
-    List<OSMWay> versions = Lists.newLinkedList(osh.getVersions());
-    OSHDBTimestamp prevNonmatch = null;
-    for (OSMWay osm : versions) {
-      if (osm.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osm))) {
-        if (prevNonmatch != null) {
-          wayTs.add(prevNonmatch);
-          prevNonmatch = null;
-        }
-        wayTs.add(osm.getTimestamp());
-      } else {
-        prevNonmatch = osm.getTimestamp();
-      }
-    }
-    if (!recurse) {
-      return Lists.reverse(wayTs);
-    }
-
-    Map<OSHNode, LinkedList<OSHDBTimestamp>> childEntityTs = new TreeMap<>();
-
+  private static Map<OSHEntity, LinkedList<OSHDBTimestamp>> collectChildModificationTimestamps(
+      OSHEntity osh, Predicate<OSMEntity> osmEntityFilter) {
+    Map<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityTs
+        = new TreeMap<>(Comparator.comparingLong(OSHEntity::getId));
     OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
-    for (OSMWay osm : versions) {
+    for (OSMEntity osm : osh.getVersions()) {
       OSHDBTimestamp thisT = osm.getTimestamp();
-      if (!osm.isVisible() || (osmEntityFilter != null && !osmEntityFilter.test(osm))) {
+      if (!osm.isVisible()
+          || (osmEntityFilter != null && !osmEntityFilter.test(osm))) {
         nextT = thisT;
         continue;
       }
-      OSMMember[] nds = osm.getRefs();
-      for (OSMMember nd : nds) {
-        OSHNode oshNode = (OSHNode) nd.getEntity();
-        if (oshNode == null) {
-          continue;
-        }
-        LinkedList<OSHDBTimestamp> childEntityValidityTimestamps;
-        if (!childEntityTs.containsKey(oshNode)) {
-          childEntityValidityTimestamps = new LinkedList<>();
-          childEntityTs.put(oshNode, childEntityValidityTimestamps);
-        } else {
-          childEntityValidityTimestamps = childEntityTs.get(oshNode);
-        }
-        if (!childEntityValidityTimestamps.isEmpty()
-            && childEntityValidityTimestamps.getFirst().equals(nextT)) {
-          // merge consecutive time intervals
-          childEntityValidityTimestamps.pop();
-          childEntityValidityTimestamps.push(thisT);
-        } else {
-          childEntityValidityTimestamps.push(nextT);
-          childEntityValidityTimestamps.push(thisT);
-        }
-      }
-      nextT = thisT;
-    }
-
-    SortedSet<OSHDBTimestamp> result = new TreeSet<>(wayTs);
-
-    for (Entry<OSHNode, LinkedList<OSHDBTimestamp>> childEntityT : childEntityTs.entrySet()) {
-      Iterator<OSHDBTimestamp> modTs = getModificationTimestamps(childEntityT.getKey()).iterator();
-      LinkedList<OSHDBTimestamp> validMemberTs = childEntityT.getValue();
-      OSHDBTimestamp current = modTs.next();
-      outerTLoop: while (!validMemberTs.isEmpty()) {
-        OSHDBTimestamp fromTs = validMemberTs.pop();
-        OSHDBTimestamp toTs = validMemberTs.pop();
-        while (current.compareTo(fromTs) < 0) {
-          if (!modTs.hasNext()) {
-            break outerTLoop;
-          }
-          current = modTs.next();
-        }
-        while (current.compareTo(toTs) <= 0) {
-          result.add(current);
-          if (!modTs.hasNext()) {
-            break outerTLoop;
-          }
-          current = modTs.next();
-        }
-      }
-    }
-
-    return new ArrayList<>(result);
-  }
-
-  private static List<OSHDBTimestamp> getModificationTimestamps(OSHRelation osh, boolean recurse,
-      Predicate<OSMEntity> osmEntityFilter) {
-    List<OSHDBTimestamp> relTs = new ArrayList<>();
-    OSHDBTimestamp prevNonmatch = null;
-    List<OSMRelation> versions = Lists.newLinkedList(osh.getVersions());
-    for (OSMRelation osm : versions) {
-      if (osm.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osm))) {
-        if (prevNonmatch != null) {
-          relTs.add(prevNonmatch);
-          prevNonmatch = null;
-        }
-        relTs.add(osm.getTimestamp());
+      OSMMember[] members;
+      if (osm instanceof OSMRelation) {
+        members = ((OSMRelation) osm).getMembers();
+      } else if (osm instanceof OSMWay) {
+        members = ((OSMWay) osm).getRefs();
       } else {
-        prevNonmatch = osm.getTimestamp();
+        final String illegalOSMTypeMessage
+            = "cannot collect child members from anything other than ways or relations";
+        assert false : illegalOSMTypeMessage;
+        throw new IllegalStateException(illegalOSMTypeMessage);
       }
-    }
-    if (!recurse) {
-      return Lists.reverse(relTs);
-    }
-
-    Map<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityTs = new TreeMap<>();
-    OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
-    for (OSMRelation osmRelation : versions) {
-      OSHDBTimestamp thisT = osmRelation.getTimestamp();
-      if (!osmRelation.isVisible()
-          || (osmEntityFilter != null && !osmEntityFilter.test(osmRelation))) {
-        nextT = thisT;
-        continue;
-      }
-      for (OSMMember member : osmRelation.getMembers()) {
+      for (OSMMember member : members) {
         switch (member.getType()) {
           case NODE:
           case WAY:
@@ -410,9 +287,12 @@ public class OSHEntityTimeUtils {
       }
       nextT = thisT;
     }
+    return childEntityTs;
+  }
 
-    SortedSet<OSHDBTimestamp> result = new TreeSet<>(relTs);
-
+  private static SortedSet<OSHDBTimestamp> mergeEntityAndChildTimestamps(
+      List<OSHDBTimestamp> entityTs, Map<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityTs) {
+    SortedSet<OSHDBTimestamp> result = new TreeSet<>(entityTs);
     for (Entry<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityT : childEntityTs.entrySet()) {
       Iterator<OSHDBTimestamp> modTs = getModificationTimestamps(childEntityT.getKey()).iterator();
       if (!modTs.hasNext()) {
@@ -440,8 +320,7 @@ public class OSHEntityTimeUtils {
         }
       }
     }
-
-    return new ArrayList<>(result);
+    return result;
   }
 
   private static final String UNSUPPORTED_OSMTYPE_MESSAGE = "cannot get timestamps for %s objects";
