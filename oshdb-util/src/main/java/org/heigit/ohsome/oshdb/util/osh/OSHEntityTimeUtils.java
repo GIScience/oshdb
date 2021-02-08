@@ -7,11 +7,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -202,14 +200,17 @@ public class OSHEntityTimeUtils {
   private static List<OSHDBTimestamp> getModificationTimestamps(
       OSHEntity osh, boolean recurse, Predicate<OSMEntity> osmEntityFilter) {
     // first, store this ways direct modifications (i.e. the major versions' timestamps)
-    var entityTs = getModificationTimestampsReverseNonRecursed(osh, osmEntityFilter);
+    var entityTimestamps = getModificationTimestampsReverseNonRecursed(osh, osmEntityFilter);
     if (!recurse || osh instanceof OSHNode) {
-      return Lists.reverse(entityTs);
+      return Lists.reverse(entityTimestamps);
     }
-    // recurse children: start by collecting all referenced entities' modification timestamps
-    var childEntityTs = collectChildModificationTimestamps(osh, osmEntityFilter);
-    // merge entity and child data into result
-    return new ArrayList<>(mergeEntityAndChildTimestamps(entityTs, childEntityTs));
+    // recurse members: start by collecting all referenced members' validity time intervals
+    var membersValidityTimes = collectMembershipTimeIntervals(osh, osmEntityFilter);
+    // fill in member modification timestamps
+    var result = fillMembersModificationTimestamps(membersValidityTimes);
+    // combine with the entity's own modification timestamps
+    result.addAll(entityTimestamps);
+    return new ArrayList<>(result);
   }
 
   /** Returns the filtered entity versions' timestamps in reverse order. */
@@ -231,9 +232,13 @@ public class OSHEntityTimeUtils {
     return oshTs;
   }
 
-  private static Map<OSHEntity, LinkedList<OSHDBTimestamp>> collectChildModificationTimestamps(
+  /**
+   * Returns for each member of an entity a list of time intervals when the belong to the entity
+   * matching the given predicate.
+   */
+  private static Map<OSHEntity, LinkedList<OSHDBTimestamp>> collectMembershipTimeIntervals(
       OSHEntity osh, Predicate<OSMEntity> osmEntityFilter) {
-    Map<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityTs
+    Map<OSHEntity, LinkedList<OSHDBTimestamp>> memberTimes
         = new TreeMap<>(Comparator.comparingLong(OSHEntity::getId));
     OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
     for (OSMEntity osm : osh.getVersions()) {
@@ -250,7 +255,7 @@ public class OSHEntityTimeUtils {
         members = ((OSMWay) osm).getRefs();
       } else {
         final String illegalOSMTypeMessage
-            = "cannot collect child members from anything other than ways or relations";
+            = "cannot collect members from anything other than ways or relations";
         assert false : illegalOSMTypeMessage;
         throw new IllegalStateException(illegalOSMTypeMessage);
       }
@@ -262,21 +267,21 @@ public class OSHEntityTimeUtils {
             if (oshEntity == null) {
               continue;
             }
-            LinkedList<OSHDBTimestamp> childEntityValidityTimestamps;
-            if (!childEntityTs.containsKey(oshEntity)) {
-              childEntityValidityTimestamps = new LinkedList<>();
-              childEntityTs.put(oshEntity, childEntityValidityTimestamps);
+            LinkedList<OSHDBTimestamp> memberValidityTimestamps;
+            if (!memberTimes.containsKey(oshEntity)) {
+              memberValidityTimestamps = new LinkedList<>();
+              memberTimes.put(oshEntity, memberValidityTimestamps);
             } else {
-              childEntityValidityTimestamps = childEntityTs.get(oshEntity);
+              memberValidityTimestamps = memberTimes.get(oshEntity);
             }
-            if (!childEntityValidityTimestamps.isEmpty()
-                && childEntityValidityTimestamps.getFirst().equals(nextT)) {
+            if (!memberValidityTimestamps.isEmpty()
+                && memberValidityTimestamps.getFirst().equals(nextT)) {
               // merge consecutive time intervals
-              childEntityValidityTimestamps.pop();
-              childEntityValidityTimestamps.push(thisT);
+              memberValidityTimestamps.pop();
+              memberValidityTimestamps.push(thisT);
             } else {
-              childEntityValidityTimestamps.push(nextT);
-              childEntityValidityTimestamps.push(thisT);
+              memberValidityTimestamps.push(nextT);
+              memberValidityTimestamps.push(thisT);
             }
             break;
           default:
@@ -287,20 +292,24 @@ public class OSHEntityTimeUtils {
       }
       nextT = thisT;
     }
-    return childEntityTs;
+    return memberTimes;
   }
 
-  private static SortedSet<OSHDBTimestamp> mergeEntityAndChildTimestamps(
-      List<OSHDBTimestamp> entityTs, Map<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityTs) {
-    SortedSet<OSHDBTimestamp> result = new TreeSet<>(entityTs);
-    for (Entry<OSHEntity, LinkedList<OSHDBTimestamp>> childEntityT : childEntityTs.entrySet()) {
-      Iterator<OSHDBTimestamp> modTs = getModificationTimestamps(childEntityT.getKey()).iterator();
+  /**
+   * Returns the members' modification timestamps inside their given validity/membership time
+   * intervals.
+   */
+  private static SortedSet<OSHDBTimestamp> fillMembersModificationTimestamps(
+      Map<OSHEntity, LinkedList<OSHDBTimestamp>> membersValidityTimes) {
+    SortedSet<OSHDBTimestamp> result = new TreeSet<>();
+    for (var memberValidityTimes : membersValidityTimes.entrySet()) {
+      var modTs = getModificationTimestamps(memberValidityTimes.getKey()).iterator();
       if (!modTs.hasNext()) {
         // skip if the member has no "visible" version (for example because of data redactions)
         // see https://github.com/GIScience/oshdb/issues/325
         continue;
       }
-      LinkedList<OSHDBTimestamp> validMemberTs = childEntityT.getValue();
+      LinkedList<OSHDBTimestamp> validMemberTs = memberValidityTimes.getValue();
       OSHDBTimestamp current = modTs.next();
       outerTLoop: while (!validMemberTs.isEmpty()) {
         OSHDBTimestamp fromTs = validMemberTs.pop();
