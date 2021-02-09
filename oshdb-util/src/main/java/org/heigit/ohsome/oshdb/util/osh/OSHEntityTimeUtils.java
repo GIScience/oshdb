@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -302,34 +303,54 @@ public class OSHEntityTimeUtils {
   private static SortedSet<OSHDBTimestamp> fillMembersModificationTimestamps(
       Map<OSHEntity, LinkedList<OSHDBTimestamp>> membersValidityTimes) {
     SortedSet<OSHDBTimestamp> result = new TreeSet<>();
+    // iterate through all members individually
     for (var memberValidityTimes : membersValidityTimes.entrySet()) {
-      var modTs = getModificationTimestamps(memberValidityTimes.getKey()).iterator();
-      if (!modTs.hasNext()) {
+      var modTs = getModificationTimestamps(memberValidityTimes.getKey());
+      if (modTs.isEmpty()) {
         // skip if the member has no "visible" version (for example because of data redactions)
         // see https://github.com/GIScience/oshdb/issues/325
         continue;
       }
-      LinkedList<OSHDBTimestamp> validMemberTs = memberValidityTimes.getValue();
-      OSHDBTimestamp current = modTs.next();
-      outerTLoop: while (!validMemberTs.isEmpty()) {
-        OSHDBTimestamp fromTs = validMemberTs.pop();
-        OSHDBTimestamp toTs = validMemberTs.pop();
-        while (current.compareTo(fromTs) < 0) {
-          if (!modTs.hasNext()) {
-            break outerTLoop;
-          }
-          current = modTs.next();
-        }
-        while (current.compareTo(toTs) <= 0) {
-          result.add(current);
-          if (!modTs.hasNext()) {
-            break outerTLoop;
-          }
-          current = modTs.next();
-        }
-      }
+      processSingleMember(modTs.iterator(), memberValidityTimes.getValue(), result);
     }
     return result;
+  }
+
+  /**
+   * Processes a single member's modifaction timestamps and stores them in the "result" variable.
+   *
+   * @param modTs must not be empty
+   * @param validMemberTs will be empty after this operation
+   * @param result will be appended by this routine
+   */
+  private static void processSingleMember(
+      Iterator<OSHDBTimestamp> modTs,
+      LinkedList<OSHDBTimestamp> validMemberTs,
+      SortedSet<OSHDBTimestamp> result
+  ) {
+    OSHDBTimestamp current = modTs.next();
+    while (!validMemberTs.isEmpty()) {
+      // fetch next membership validity time interval
+      OSHDBTimestamp fromTs = validMemberTs.pop();
+      OSHDBTimestamp toTs = validMemberTs.pop();
+      // fast-forward until we find a timestamp which is after the start of the interval
+      while (current.compareTo(fromTs) < 0) {
+        if (!modTs.hasNext()) {
+          // stop if there are no more modification timestamps to consider
+          return;
+        }
+        current = modTs.next();
+      }
+      // add all of the member's modification timestamps which are in the interval to the result
+      while (current.compareTo(toTs) <= 0) {
+        result.add(current);
+        if (!modTs.hasNext()) {
+          // stop if there are no more modification timestamps to consider
+          return;
+        }
+        current = modTs.next();
+      }
+    }
   }
 
   private static final String UNSUPPORTED_OSMTYPE_MESSAGE = "cannot get timestamps for %s objects";
