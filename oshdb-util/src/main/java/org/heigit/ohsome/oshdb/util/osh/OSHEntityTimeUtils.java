@@ -17,6 +17,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
@@ -63,7 +64,7 @@ public class OSHEntityTimeUtils {
   private static Map<OSHDBTimestamp, Long> getChangesetTimestamps(OSHWay osh) {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
 
-    List<OSMWay> ways = org.heigit.ohsome.oshdb.osh.OSHEntities.toList(osh.getVersions());
+    List<OSMWay> ways = OSHEntities.toList(osh.getVersions());
     ways.forEach(osm -> result.put(osm.getTimestamp(), osm.getChangesetId()));
 
     // recurse way nodes
@@ -86,7 +87,7 @@ public class OSHEntityTimeUtils {
   private static Map<OSHDBTimestamp, Long> getChangesetTimestamps(OSHRelation osh) {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
 
-    List<OSMRelation> rels = org.heigit.ohsome.oshdb.osh.OSHEntities.toList(osh.getVersions());
+    List<OSMRelation> rels = OSHEntities.toList(osh.getVersions());
     rels.forEach(osmRel -> result.put(osmRel.getTimestamp(), osmRel.getChangesetId()));
 
     // recurse rel members
