@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
@@ -23,15 +24,30 @@ public final class OSHEntities {
    * @return all versions of the OSH entity as a list, with the most recent version first.
    */
   public static <T extends OSMEntity> List<T> toList(Iterable<T> versions) {
-    Iterator<T> itr = versions.iterator();
+    return toList(versions, osm -> osm);
+  }
+
+  /**
+   * Collects all versions of an OSH entity from an iterable ({@link OSHEntity#getVersions()})
+   * into a list.
+   *
+   * @param versions the versions of an OSH entity, as returned from {@link OSHEntity#getVersions()}
+   * @param <T> the type of the OSM entities: {@link org.heigit.ohsome.oshdb.osm.OSMNode},
+   *            {@link org.heigit.ohsome.oshdb.osm.OSMWay} or
+   *            {@link org.heigit.ohsome.oshdb.osm.OSMRelation}
+   * @return all versions of the OSH entity as a list, with the most recent version first.
+   */
+  public static <T extends OSMEntity, R> List<R> toList(
+      Iterable<T> versions, Function<T, R> transformer) {
+    final Iterator<T> itr = versions.iterator();
     if (!itr.hasNext()) {
       return Collections.emptyList();
     }
-    T last = itr.next();
-    List<T> list = new ArrayList<>(last.getVersion());
-    list.add(last);
+    final T last = itr.next();
+    List<R> list = new ArrayList<>(last.getVersion());
+    list.add(transformer.apply(last));
     while (itr.hasNext()) {
-      list.add(itr.next());
+      list.add(transformer.apply(itr.next()));
     }
     return list;
   }

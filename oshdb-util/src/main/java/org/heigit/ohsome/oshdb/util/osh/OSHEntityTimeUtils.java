@@ -15,6 +15,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
@@ -119,11 +120,7 @@ public class OSHEntityTimeUtils {
   }
 
   private static List<OSHDBTimestamp> getModificationTimestamps(OSHNode osh) {
-    List<OSHDBTimestamp> result = new ArrayList<>();
-    for (OSMEntity osm : osh.getVersions()) {
-      result.add(osm.getTimestamp());
-    }
-    return Lists.reverse(result);
+    return Lists.reverse(OSHEntities.toList(osh.getVersions(), OSMEntity::getTimestamp));
   }
 
   /**
@@ -146,7 +143,8 @@ public class OSHEntityTimeUtils {
    */
   public static List<OSHDBTimestamp> getModificationTimestamps(OSHEntity osh,
       Predicate<OSMEntity> osmEntityFilter, Map<OSHDBTimestamp, Long> changesetTimestamps) {
-    List<OSHDBTimestamp> allModificationTimestamps = getModificationTimestamps(osh, true, osmEntityFilter);
+    List<OSHDBTimestamp> allModificationTimestamps =
+        getModificationTimestamps(osh, true, osmEntityFilter);
 
     if (allModificationTimestamps.size() <= 1) {
       return allModificationTimestamps;
