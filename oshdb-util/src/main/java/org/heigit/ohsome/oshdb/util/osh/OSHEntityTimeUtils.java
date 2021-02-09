@@ -11,20 +11,16 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
-import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
-import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
@@ -57,48 +53,32 @@ public class OSHEntityTimeUtils {
 
   private static Map<OSHDBTimestamp, Long> getChangesetTimestamps(OSHNode osh) {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
-    osh.getVersions().forEach(osm -> result.put(osm.getTimestamp(), osm.getChangesetId()));
+    putChangesetTimestamps(osh, result);
     return result;
   }
 
   private static Map<OSHDBTimestamp, Long> getChangesetTimestamps(OSHWay osh) {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
-
-    List<OSMWay> ways = OSHEntities.toList(osh.getVersions());
-    ways.forEach(osm -> result.put(osm.getTimestamp(), osm.getChangesetId()));
-
+    putChangesetTimestamps(osh, result);
     // recurse way nodes
     try {
-      for (OSHNode node : osh.getNodes()) {
-        if (node == null) {
-          continue;
-        }
-        for (OSMNode version : node.getVersions()) {
-          result.putIfAbsent(version.getTimestamp(), version.getChangesetId());
-        }
-      }
+      putChangesetTimestamps(osh.getNodes(), result);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-
     return result;
   }
 
   private static Map<OSHDBTimestamp, Long> getChangesetTimestamps(OSHRelation osh) {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
-
-    List<OSMRelation> rels = OSHEntities.toList(osh.getVersions());
-    rels.forEach(osmRel -> result.put(osmRel.getTimestamp(), osmRel.getChangesetId()));
-
+    putChangesetTimestamps(osh, result);
     // recurse rel members
     try {
-      Stream.concat(osh.getNodes().stream(), osh.getWays().stream())
-          .filter(Objects::nonNull)
-          .forEach(oshEntity -> getChangesetTimestamps(oshEntity).forEach(result::putIfAbsent));
+      putChangesetTimestamps(osh.getNodes(), result);
+      putChangesetTimestampsRecurse(osh.getWays(), result);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-
     return result;
   }
 
@@ -232,6 +212,43 @@ public class OSHEntityTimeUtils {
       }
     }
     return oshTs;
+  }
+
+  /**
+   * Puts all changeset timestamps into the result of the given OSH entity.
+   */
+  private static void putChangesetTimestamps(OSHEntity osh, Map<OSHDBTimestamp, Long> result) {
+    for (OSMEntity osm : osh.getVersions()) {
+      result.putIfAbsent(osm.getTimestamp(), osm.getChangesetId());
+    }
+  }
+
+  /**
+   * Puts all changeset timestamps into the result of all OSH nodes in the given list.
+   */
+  private static void putChangesetTimestamps(
+      List<OSHNode> oshList, Map<OSHDBTimestamp, Long> result) {
+    for (OSHEntity osh : oshList) {
+      if (osh == null) {
+        continue;
+      }
+      for (OSMEntity osm : osh.getVersions()) {
+        result.putIfAbsent(osm.getTimestamp(), osm.getChangesetId());
+      }
+    }
+  }
+
+  /**
+   * Puts all changeset timestamps into the result of all OSH entities in the given list.
+   */
+  private static void putChangesetTimestampsRecurse(
+      List<? extends OSHEntity> oshList, Map<OSHDBTimestamp, Long> result) {
+    for (OSHEntity osh : oshList) {
+      if (osh == null) {
+        continue;
+      }
+      getChangesetTimestamps(osh).forEach(result::putIfAbsent);
+    }
   }
 
   /**
