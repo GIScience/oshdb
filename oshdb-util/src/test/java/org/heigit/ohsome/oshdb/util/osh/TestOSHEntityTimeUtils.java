@@ -230,7 +230,7 @@ public class TestOSHEntityTimeUtils {
         new OSMRelation(1, 1, new OSHDBTimestamp(5L),
         10001L, 1, new int[]{1, 1, 2, 2},
             new OSMMember[]{new OSMMember(1, OSMType.WAY, 0)})
-    ), List.of(hnode1, hnode2, hnode3), List.of(hway1));
+    ), List.of(hnode1), List.of(hway1));
 
     List<OSHDBTimestamp> tss = OSHEntityTimeUtils.getModificationTimestamps(hrelation, false);
     assertNotNull(tss);
@@ -433,7 +433,7 @@ public class TestOSHEntityTimeUtils {
             new OSMMember(1L, OSMType.NODE, 0),
             new OSMMember(2L, OSMType.NODE, 0)
         })
-    ), List.of(hnode1, hnode2, hnode3, hnode4));
+    ), List.of(hnode1, hnode2, hnode3));
 
     OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
         new OSMRelation(1L, 3, new OSHDBTimestamp(7L), 7L, 1, new int[] {1, 2}, new OSMMember[] {
@@ -441,13 +441,13 @@ public class TestOSHEntityTimeUtils {
         }),
         new OSMRelation(1L, 2, new OSHDBTimestamp(5L), 5L, 1, new int[] {1, 2}, new OSMMember[] {
             new OSMMember(1L, OSMType.WAY, 0),
-            new OSMMember(1L, OSMType.NODE, 0)
+            new OSMMember(4L, OSMType.NODE, 0)
         }),
         new OSMRelation(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {1, 1}, new OSMMember[] {
             new OSMMember(1L, OSMType.WAY, 0),
-            new OSMMember(1L, OSMType.NODE, 0)
+            new OSMMember(4L, OSMType.NODE, 0)
         })
-    ), List.of(hnode1, hnode2, hnode3), List.of(hway));
+    ), List.of(hnode4), List.of(hway));
 
     /* t1 = relation with way and node created
      * t2 = only way tags changed
