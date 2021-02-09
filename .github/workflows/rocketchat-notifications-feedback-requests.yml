@@ -1,0 +1,35 @@
+name: Rocket.Chat push notifications
+
+on:
+  pull_request:
+    branches: [ master, main ]
+    types: [ labeled ]
+  issues:
+    types: [ labeled ]
+
+jobs:
+  rocketchat_pullrequest_notification:
+    name: Someone labeled their Pull Request
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request && contains('comments welcome|help wanted|waiting for review', github.event.label.name) }}
+    steps:
+      - name: Push notification for a Pull Request labeled as "comments welcome"
+        if: ${{ github.event.label.name == 'comments welcome' }}
+        run: curl "${{ secrets.ROCKETCHAT_SERVER }}/hooks/${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}" -d "text=${{ github.event.sender.login }} would like to get feedback on pull request ${{ github.event.pull_request.html_url }}" -d "username=${{ github.event.sender.login }}" -d "avatar=${{ github.event.sender.avatar_url }}"
+      - name: Push notification for a Pull Request labeled as "help wanted"
+        if: ${{ github.event.label.name == 'help wanted' }}
+        run: curl "${{ secrets.ROCKETCHAT_SERVER }}/hooks/${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}" -d "text=${{ github.event.sender.login }} needs help with pull request ${{ github.event.pull_request.html_url }}" -d "username=${{ github.event.sender.login }}" -d "avatar=${{ github.event.sender.avatar_url }}"
+      - name: Push notification for a Pull Request labeled as "waiting for review"
+        if: ${{ github.event.label.name == 'waiting for review' }}
+        run: curl "${{ secrets.ROCKETCHAT_SERVER }}/hooks/${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}" -d "text=${{ github.event.sender.login }} is waiting for a code review of pull request ${{ github.event.pull_request.html_url }}" -d "username=${{ github.event.sender.login }}" -d "avatar=${{ github.event.sender.avatar_url }}"
+  rocketchat_issue_notification:
+    name: Someone labeled their Issue
+    runs-on: ubuntu-latest
+    if: ${{ github.event.issue && contains('comments welcome|help wanted', github.event.label.name) }}
+    steps:
+      - name: Push notification for an Issue labeled as "comments welcome"
+        if: ${{ github.event.label.name == 'comments welcome' }}
+        run: curl "${{ secrets.ROCKETCHAT_SERVER }}/hooks/${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}" -d "text=${{ github.event.sender.login }} would like to get feedback on issue ${{ github.event.issue.html_url }}" -d "username=${{ github.event.sender.login }}" -d "avatar=${{ github.event.sender.avatar_url }}"
+      - name: Push notification for an Issue labeled as "help wanted"
+        if: ${{ github.event.label.name == 'help wanted' }}
+        run: curl "${{ secrets.ROCKETCHAT_SERVER }}/hooks/${{ secrets.ROCKETCHAT_HOOK_PR_NOTIFICATIONS }}" -d "text=${{ github.event.sender.login }} needs help with issue ${{ github.event.issue.html_url }}" -d "username=${{ github.event.sender.login }}" -d "avatar=${{ github.event.sender.avatar_url }}"
