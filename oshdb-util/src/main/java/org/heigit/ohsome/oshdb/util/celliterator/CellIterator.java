@@ -804,20 +804,21 @@ public class CellIterator implements Serializable {
     });
   }
 
+  /**
+   * Returns the corresponding OSMEntity "versions" of the given OSHEntity which are valid at the
+   * given timestamps.
+   */
   private static SortedMap<OSHDBTimestamp, OSMEntity> getVersionsByTimestamps(
-      OSHEntity osh, List<OSHDBTimestamp> byTimestamps) {
+      OSHEntity osh, List<OSHDBTimestamp> timestamps) {
     SortedMap<OSHDBTimestamp, OSMEntity> result = new TreeMap<>();
 
-    int i = byTimestamps.size() - 1;
+    int i = timestamps.size() - 1;
     Iterator<? extends OSMEntity> itr = osh.getVersions().iterator();
     while (itr.hasNext() && i >= 0) {
       OSMEntity osm = itr.next();
-      if (osm.getTimestamp().getRawUnixTimestamp() <= byTimestamps.get(i).getRawUnixTimestamp()) {
-        while (i >= 0 && osm.getTimestamp().getRawUnixTimestamp() <= byTimestamps.get(i)
-            .getRawUnixTimestamp()) {
-          result.put(byTimestamps.get(i), osm);
-          i--;
-        }
+      while (i >= 0 && osm.getTimestamp().compareTo(timestamps.get(i)) <= 0) {
+        result.put(timestamps.get(i), osm);
+        i--;
       }
     }
     return result;
