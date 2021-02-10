@@ -186,7 +186,7 @@ public class OSHEntityTimeUtils {
     // recurse members: start by collecting all referenced members' validity time intervals
     var membersValidityTimes = collectMembershipTimeIntervals(osh, osmEntityFilter);
     // fill in member modification timestamps
-    var result = fillMembersModificationTimestamps(membersValidityTimes);
+    SortedSet<OSHDBTimestamp> result = fillMembersModificationTimestamps(membersValidityTimes);
     // combine with the entity's own modification timestamps
     result.addAll(entityTimestamps);
     return new ArrayList<>(result);
