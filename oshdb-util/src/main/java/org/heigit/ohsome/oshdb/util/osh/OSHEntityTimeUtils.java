@@ -143,25 +143,24 @@ public class OSHEntityTimeUtils {
    */
   public static List<OSHDBTimestamp> getModificationTimestamps(OSHEntity osh,
       Predicate<OSMEntity> osmEntityFilter, Map<OSHDBTimestamp, Long> changesetTimestamps) {
-    List<OSHDBTimestamp> allModificationTimestamps =
+    final List<OSHDBTimestamp> allModificationTimestamps =
         getModificationTimestamps(osh, true, osmEntityFilter);
 
     if (allModificationTimestamps.size() <= 1) {
       return allModificationTimestamps;
     }
     // group modification timestamps by changeset
-    List<OSHDBTimestamp> result = new ArrayList<>(allModificationTimestamps.size());
-    allModificationTimestamps = Lists.reverse(allModificationTimestamps);
     long nextChangeset = -1L;
-    for (OSHDBTimestamp timestamp : allModificationTimestamps) {
+    int pos = allModificationTimestamps.size();
+    for (OSHDBTimestamp timestamp : Lists.reverse(allModificationTimestamps)) {
       long changeset = changesetTimestamps.get(timestamp);
       if (changeset != nextChangeset) {
-        result.add(timestamp);
+        allModificationTimestamps.set(--pos, timestamp);
       }
       nextChangeset = changeset;
     }
 
-    return Lists.reverse(result);
+    return allModificationTimestamps.subList(pos, allModificationTimestamps.size());
   }
 
   /**
