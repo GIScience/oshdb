@@ -178,7 +178,7 @@ public class OSHEntityTimeUtils {
 
   private static List<OSHDBTimestamp> getModificationTimestamps(
       OSHEntity osh, boolean recurse, Predicate<OSMEntity> osmEntityFilter) {
-    // first, store this ways direct modifications (i.e. the major versions' timestamps)
+    // first, store this ways direct modifications (i.e. the "major" versions' timestamps)
     var entityTimestamps = getModificationTimestampsReverseNonRecursed(osh, osmEntityFilter);
     if (!recurse || osh instanceof OSHNode) {
       return Lists.reverse(entityTimestamps);
@@ -195,20 +195,29 @@ public class OSHEntityTimeUtils {
   /** Returns the filtered entity versions' timestamps in reverse order. */
   private static List<OSHDBTimestamp> getModificationTimestampsReverseNonRecursed(
       OSHEntity osh, Predicate<OSMEntity> osmEntityFilter) {
-    List<OSHDBTimestamp> oshTs = new ArrayList<>();
-    OSHDBTimestamp prevNonmatch = null;
+    List<OSHDBTimestamp> result = new ArrayList<>();
+    // `nextNonMatchTime` stores the timestamp when the entity is deleted or doesn't match the
+    // filter anymore. This is used to fold consecutive "non-matching" versions. example:
+    //     a way has tag K=A in version 1, tag K=B in version 2 and is deleted in version 3, and
+    //     the filter only matches versions with the tag K=A. Then in the first iteration of the
+    //     loop, the nextNonMatchTime will be set to t3, in the second iteration it will be set
+    //     to t2 and in the third iteration it will be added to the result.
+    OSHDBTimestamp nextNonMatchTime = null;
     for (OSMEntity osm : osh.getVersions()) {
       if (osm.isVisible() && (osmEntityFilter == null || osmEntityFilter.test(osm))) {
-        if (prevNonmatch != null) {
-          oshTs.add(prevNonmatch);
-          prevNonmatch = null;
+        if (nextNonMatchTime != null) {
+          // the next version of this entity is deleted or doesn't match the filter anymore
+          // -> also return the time of the "deletion"
+          result.add(nextNonMatchTime);
+          nextNonMatchTime = null;
         }
-        oshTs.add(osm.getTimestamp());
+        result.add(osm.getTimestamp());
       } else {
-        prevNonmatch = osm.getTimestamp();
+        // save the time of the next "deletion" for later
+        nextNonMatchTime = osm.getTimestamp();
       }
     }
-    return oshTs;
+    return result;
   }
 
   /**
@@ -259,23 +268,13 @@ public class OSHEntityTimeUtils {
     OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
     for (OSMEntity osm : osh.getVersions()) {
       OSHDBTimestamp thisT = osm.getTimestamp();
-      if (!osm.isVisible()
-          || (osmEntityFilter != null && !osmEntityFilter.test(osm))) {
+      // skip versions which are deleted or don't match the given filter
+      if (!osm.isVisible() || (osmEntityFilter != null && !osmEntityFilter.test(osm))) {
+        // remember "valid-to" time
         nextT = thisT;
         continue;
       }
-      OSMMember[] members;
-      if (osm instanceof OSMRelation) {
-        members = ((OSMRelation) osm).getMembers();
-      } else if (osm instanceof OSMWay) {
-        members = ((OSMWay) osm).getRefs();
-      } else {
-        final String illegalOSMTypeMessage
-            = "cannot collect members from anything other than ways or relations";
-        assert false : illegalOSMTypeMessage;
-        throw new IllegalStateException(illegalOSMTypeMessage);
-      }
-      for (OSMMember member : members) {
+      for (OSMMember member : getRefsOrMembers(osm)) {
         switch (member.getType()) {
           case NODE:
           case WAY:
@@ -283,19 +282,15 @@ public class OSHEntityTimeUtils {
             if (oshEntity == null) {
               continue;
             }
-            LinkedList<OSHDBTimestamp> memberValidityTimestamps;
-            if (!memberTimes.containsKey(oshEntity)) {
-              memberValidityTimestamps = new LinkedList<>();
-              memberTimes.put(oshEntity, memberValidityTimestamps);
-            } else {
-              memberValidityTimestamps = memberTimes.get(oshEntity);
-            }
+            LinkedList<OSHDBTimestamp> memberValidityTimestamps =
+                memberTimes.computeIfAbsent(oshEntity, ignored -> new LinkedList<>());
             if (!memberValidityTimestamps.isEmpty()
                 && memberValidityTimestamps.getFirst().equals(nextT)) {
               // merge consecutive time intervals
               memberValidityTimestamps.pop();
               memberValidityTimestamps.push(thisT);
             } else {
+              // add new time interval for this member
               memberValidityTimestamps.push(nextT);
               memberValidityTimestamps.push(thisT);
             }
@@ -311,6 +306,21 @@ public class OSHEntityTimeUtils {
     return memberTimes;
   }
 
+  /** Returns the list of all members of a relation or referenced nodes of a way. */
+  private static OSMMember[] getRefsOrMembers(OSMEntity osm) {
+    switch (osm.getType()) {
+      case RELATION:
+        return ((OSMRelation) osm).getMembers();
+      case WAY:
+        return  ((OSMWay) osm).getRefs();
+      default:
+        final String illegalOSMTypeMessage
+            = "cannot collect members from anything other than ways or relations";
+        assert false : illegalOSMTypeMessage;
+        throw new IllegalStateException(illegalOSMTypeMessage);
+    }
+  }
+
   /**
    * Returns the members' modification timestamps inside their given validity/membership time
    * intervals.
@@ -318,7 +328,6 @@ public class OSHEntityTimeUtils {
   private static SortedSet<OSHDBTimestamp> fillMembersModificationTimestamps(
       Map<OSHEntity, LinkedList<OSHDBTimestamp>> membersValidityTimes) {
     SortedSet<OSHDBTimestamp> result = new TreeSet<>();
-    // iterate through all members individually
     for (var memberValidityTimes : membersValidityTimes.entrySet()) {
       var modTs = getModificationTimestamps(memberValidityTimes.getKey());
       if (modTs.isEmpty()) {
