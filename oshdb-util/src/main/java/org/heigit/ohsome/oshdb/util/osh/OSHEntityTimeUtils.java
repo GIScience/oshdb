@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -263,8 +264,7 @@ public class OSHEntityTimeUtils {
    */
   private static Map<OSHEntity, LinkedList<OSHDBTimestamp>> collectMembershipTimeIntervals(
       OSHEntity osh, Predicate<OSMEntity> osmEntityFilter) {
-    Map<OSHEntity, LinkedList<OSHDBTimestamp>> memberTimes
-        = new TreeMap<>(Comparator.comparingLong(OSHEntity::getId));
+    Map<OSHEntity, LinkedList<OSHDBTimestamp>> memberTimes = new HashMap<>();
     OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
     for (OSMEntity osm : osh.getVersions()) {
       OSHDBTimestamp thisT = osm.getTimestamp();
