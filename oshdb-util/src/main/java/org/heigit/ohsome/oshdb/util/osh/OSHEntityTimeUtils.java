@@ -341,7 +341,7 @@ public class OSHEntityTimeUtils {
   }
 
   /**
-   * Processes a single member's modifaction timestamps and stores them in the "result" variable.
+   * Processes a single member's modification timestamps and stores them in the "result" variable.
    *
    * @param modTs must not be empty
    * @param validMemberTs will be empty after this operation
