@@ -16,6 +16,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 ### other changes
 
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. ([#306])
+* improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage. ([#327])
 
 ### bugfixes
 
@@ -26,6 +27,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 * If you already used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
+[#327]: https://github.com/GIScience/oshdb/issues/327
 [#338]: https://github.com/GIScience/oshdb/issues/338
 
 
