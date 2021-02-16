@@ -16,10 +16,10 @@ pipeline {
         script {
           env.MAVEN_HOME = '/usr/share/maven'
 
-          author = sh(returnStdout: true, script: 'git show -s --pretty=%an')
+          author = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
           echo author
 
-          commiti= sh(returnStdout: true, script: 'git log -1')
+          commiti= sh(returnStdout: true, script: 'git log -1').trim()
           echo commiti
 
           reponame=sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
@@ -269,4 +269,3 @@ pipeline {
     }
   }
 }
-
