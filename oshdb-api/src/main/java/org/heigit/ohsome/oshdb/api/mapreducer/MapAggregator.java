@@ -36,6 +36,7 @@ import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer.Grouping;
 import org.heigit.ohsome.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.api.object.OSMContribution;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
@@ -290,8 +291,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @param f the filter function to call for each osm entity
    * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
-   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with {@link
+   *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Filter.SerializablePredicate)}
+   *             instead
    */
   @Deprecated
   @Contract(pure = true)

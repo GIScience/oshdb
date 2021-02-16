@@ -431,8 +431,9 @@ public abstract class MapReducer<X> implements
    *
    * @param f the filter function to call for each osm entity
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
-   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with {@link
+   *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Filter.SerializablePredicate)}
+   *             instead
    */
   @Deprecated
   @Contract(pure = true)
