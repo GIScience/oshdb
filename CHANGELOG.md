@@ -13,6 +13,10 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 ```
 
+### performance improvements
+
+* replace an unnecessarily used Map with a more lightweight implementation using a List. ([#352])
+
 ### other changes
 
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. ([#306])
@@ -29,6 +33,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 [#306]: https://github.com/GIScience/oshdb/pull/306
 [#327]: https://github.com/GIScience/oshdb/issues/327
 [#338]: https://github.com/GIScience/oshdb/issues/338
+[#352]: https://github.com/GIScience/oshdb/pull/352
 
 
 ## 0.6.3

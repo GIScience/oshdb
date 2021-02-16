@@ -29,12 +29,14 @@ public final class OSHEntities {
 
   /**
    * Collects all versions of an OSH entity from an iterable ({@link OSHEntity#getVersions()})
-   * into a list.
+   * into a list after applying a transformation function.
    *
    * @param versions the versions of an OSH entity, as returned from {@link OSHEntity#getVersions()}
+   * @param transformer a function which is called for each version
    * @param <T> the type of the OSM entities: {@link org.heigit.ohsome.oshdb.osm.OSMNode},
    *            {@link org.heigit.ohsome.oshdb.osm.OSMWay} or
    *            {@link org.heigit.ohsome.oshdb.osm.OSMRelation}
+   * @param <R> the type of the returned list's items
    * @return all versions of the OSH entity as a list, with the most recent version first.
    */
   public static <T extends OSMEntity, R> List<R> toList(
