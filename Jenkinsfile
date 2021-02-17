@@ -1,13 +1,21 @@
 pipeline {
-  agent {label 'master'}
+  agent {label 'main'}
 
   environment {
+    REPO_NAME = sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
+    VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
+    LATEST_AUTHOR = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
+    LATEST_COMMIT_ID = sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
+
+    MAVEN_TEST_OPTIONS = ' '
+    INFER_BRANCH_REGEX = /(^master$)/
+    SNAPSHOT_BRANCH_REGEX = /(^master$)/
+    // START CUSTOM oshdb
+    BENCHMARK_EXAMPLES_BRANCH_REGEX = /(^master$)/
+    // END CUSTOM oshdb
     RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
     RELEASE_DEPLOY = false
     SNAPSHOT_DEPLOY = false
-
-    VERSION = sh(returnStdout: true, script: 'mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
-    MAVEN_TEST_OPTIONS = ' '
   }
 
   stages {
@@ -16,23 +24,15 @@ pipeline {
         script {
           env.MAVEN_HOME = '/usr/share/maven'
 
-          author = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
-          echo author
-
-          commiti= sh(returnStdout: true, script: 'git log -1').trim()
-          echo commiti
-
-          reponame=sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
-          echo reponame
-
-          gittiid=sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
-          echo gittiid
+          echo REPO_NAME
+          echo LATEST_AUTHOR
+          echo LATEST_COMMIT_ID
 
           echo env.BRANCH_NAME
           echo env.BUILD_NUMBER
           echo env.TAG_NAME
 
-          if(!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
+          if (!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
             echo 'Version:'
             echo VERSION
             error 'The version declaration is invalid. It is neither a release nor a snapshot. Maybe an error occured while fetching the parent pom using maven?'
@@ -53,7 +53,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "$reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Review the code!" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "*${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Review the code!" , rawMessage: true
         }
       }
     }
@@ -61,7 +61,7 @@ pipeline {
     stage ('Deploy Snapshot') {
       when {
         expression {
-          return env.BRANCH_NAME ==~ /(^master$)/ && VERSION ==~ /.*-SNAPSHOT$/
+          return env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX && VERSION ==~ /.*-SNAPSHOT$/
         }
       }
       steps {
@@ -73,7 +73,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Deployment of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Deployment of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Is Artifactory running?" , rawMessage: true
         }
       }
     }
@@ -100,7 +100,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Deployment of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}. Is Artifactory running?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Deployment of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Is Artifactory running?" , rawMessage: true
         }
       }
     }
@@ -109,7 +109,7 @@ pipeline {
     stage ('Trigger Benchmark and build Examples') {
       when {
         expression {
-          return env.BRANCH_NAME ==~ /(^master$)/
+          return env.BRANCH_NAME ==~ BENCHMARK_EXAMPLES_BRANCH_REGEX
         }
       }
       steps {
@@ -118,7 +118,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Triggering of Benchmarks or Examples for $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Triggering of Benchmarks or Examples for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
         }
       }
     }
@@ -136,26 +136,26 @@ pipeline {
           // load dependencies to artifactory
           rtMaven.run pom: 'pom.xml', goals: 'org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2'
 
-          javadc_dir="/srv/javadoc/java/" + reponame + "/" + VERSION + "/"
+          javadc_dir = "/srv/javadoc/java/" + REPO_NAME + "/" + VERSION + "/"
           echo javadc_dir
 
           rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:javadoc -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2'
-          sh "echo $javadc_dir"
+          sh "echo ${javadc_dir}"
           // make sure jenkins uses bash not dash!
-          sh "mkdir -p $javadc_dir && rm -Rf $javadc_dir* && find . -path '*/target/site/apidocs' -exec cp -R --parents {} $javadc_dir \\; && find $javadc_dir -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find $javadc_dir -type d -empty -delete"
+          sh "mkdir -p ${javadc_dir} && rm -Rf ${javadc_dir}* && find . -path '*/target/site/apidocs' -exec cp -R --parents {} ${javadc_dir} \\; && find ${javadc_dir} -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find ${javadc_dir} -type d -empty -delete"
         }
 
         // START CUSTOM oshdb
         script {
-          javadc_dir=javadc_dir + "aggregated/"
+          javadc_dir = javadc_dir + "aggregated/"
           rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:aggregate -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2'
-          sh "mkdir -p $javadc_dir && rm -Rf $javadc_dir* && find . -path './target/site/apidocs' -exec cp -R --parents {} $javadc_dir \\; && find $javadc_dir -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find $javadc_dir -type d -empty -delete"
+          sh "mkdir -p ${javadc_dir} && rm -Rf ${javadc_dir}* && find . -path './target/site/apidocs' -exec cp -R --parents {} ${javadc_dir} \\; && find ${javadc_dir} -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find ${javadc_dir} -type d -empty -delete"
         }
         // END CUSTOM oshdb
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Deployment of javadoc $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Deployment of javadoc *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
         }
       }
     }
@@ -163,8 +163,10 @@ pipeline {
     stage ('Reports and Statistics') {
       steps {
         script {
+          report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
+
           // jacoco
-          report_dir="/srv/reports/" + reponame + "/" + VERSION + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/jacoco/"
+          report_dir = report_basedir + "/jacoco/"
 
           rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
           jacoco(
@@ -173,14 +175,14 @@ pipeline {
               sourcePattern    : '**/src/main/java',
               inclusionPattern : '/org/heigit/**'
           )
-          sh "mkdir -p $report_dir && rm -Rf $report_dir* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} $report_dir \\; && find $report_dir -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find $report_dir -type d -empty -delete"
+          sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
 
           // infer
-          if(env.BRANCH_NAME ==~ /(^master$)/) {
-            report_dir="/srv/reports/" + reponame + "/" + VERSION + "_"  + env.BRANCH_NAME + "/" +  env.BUILD_NUMBER + "_" +gittiid+"/infer/"
+          if (env.BRANCH_NAME ==~ INFER_BRANCH_REGEX) {
+            report_dir = report_basedir + "/infer/"
             sh "mvn clean"
             sh "infer run --pmd-xml -r -- mvn compile"
-            sh "mkdir -p $report_dir && rm -Rf $report_dir* && cp -R ./infer-out/* $report_dir"
+            sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && cp -R ./infer-out/* ${report_dir}"
           }
 
           // warnings plugin
@@ -196,7 +198,7 @@ pipeline {
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Reporting of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
         }
       }
     }
@@ -204,50 +206,49 @@ pipeline {
     stage ('Check Dependencies') {
       when {
         expression {
-          if(currentBuild.number > 1) {
-            monthpre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            echo monthpre.toString()
-            monthnow=new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            echo monthnow.toString()
-            return monthpre!=monthnow
+          if (currentBuild.number > 1) {
+            month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            echo month_pre.toString()
+            month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            echo month_now.toString()
+            return month_pre != month_now
           }
           return false
         }
       }
       steps {
         script {
-          updatenotify=sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies.*\\n.* \\n"').trim()
-          echo updatenotify
+          update_notify = sh(returnStdout: true, script: 'mvn versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies.*\\n.* \\n"').trim()
+          echo update_notify
         }
-        rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "You might have updates in your dependecies: ${updatenotify}" , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "Check your dependencies in *${REPO_NAME}*. You might have updates: ${update_notify}" , rawMessage: true
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:' , message: "Checking for updates in $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:' , message: "Checking for updates in *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
         }
       }
     }
 
-
     stage ('Encourage') {
       when {
         expression {
-          if(currentBuild.number > 1) {
-            datepre=new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis()).clearTime()
-            echo datepre.format( 'yyyyMMdd' )
-            datenow=new Date(currentBuild.rawBuild.getStartTimeInMillis()).clearTime()
-            echo datenow.format( 'yyyyMMdd' )
-            return datepre.numberAwareCompareTo(datenow)<0
+          if (currentBuild.number > 1) {
+            date_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis()).clearTime()
+            echo date_pre.format( 'yyyyMMdd' )
+            date_now = new Date(currentBuild.rawBuild.getStartTimeInMillis()).clearTime()
+            echo date_now.format( 'yyyyMMdd' )
+            return date_pre.numberAwareCompareTo(date_now)<0
           }
           return false
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "Hey, this is just your daily notice that Jenkins is still working for you on $reponame Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', emoji: ':wink:', message: "Hey, this is just your daily notice that Jenkins is still working for you on *${REPO_NAME}* Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':wink:' , message: "Reporting of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
         }
       }
     }
@@ -259,11 +260,11 @@ pipeline {
         }
       }
       steps {
-        rocketSend channel: 'jenkinsohsome', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: $reponame-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+        rocketSend channel: 'jenkinsohsome', emoji: ':sunglasses:', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: *${REPO_NAME}*-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', message: "Reporting of $reponame-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${author}." , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
         }
       }
     }
