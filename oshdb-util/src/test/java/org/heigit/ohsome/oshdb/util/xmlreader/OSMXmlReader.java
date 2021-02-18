@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.util.xmlreader;
 
-import static org.heigit.ohsome.oshdb.osm.Coordinates.GEOM_PRECISION_TO_LONG;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToLong;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -125,8 +125,8 @@ public class OSMXmlReader {
         double lon = osm.isVisible() ? attrAsDouble(e, "lon") : 0.0;
         double lat = osm.isVisible() ? attrAsDouble(e, "lat") : 0.0;
 
-        long longitude = Math.round(lon * GEOM_PRECISION_TO_LONG);
-        long latitude = Math.round(lat * GEOM_PRECISION_TO_LONG);
+        long longitude = coordinateToLong(lon);
+        long latitude = coordinateToLong(lat);
 
         osm.setExtension(longitude, latitude);
 

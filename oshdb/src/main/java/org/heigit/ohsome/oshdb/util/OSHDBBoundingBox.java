@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.util;
 
-import static org.heigit.ohsome.oshdb.osm.Coordinates.GEOM_PRECISION_TO_LONG;
 import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToDouble;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToLong;
 
 import java.io.Serializable;
 import java.util.Locale;
@@ -65,10 +65,10 @@ public class OSHDBBoundingBox implements Serializable {
   }
   
   public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
-    this.minLon = Math.round(minLon * GEOM_PRECISION_TO_LONG);
-    this.maxLon = Math.round(maxLon * GEOM_PRECISION_TO_LONG);
-    this.minLat = Math.round(minLat * GEOM_PRECISION_TO_LONG);
-    this.maxLat = Math.round(maxLat * GEOM_PRECISION_TO_LONG);
+    this.minLon = coordinateToLong(minLon);
+    this.maxLon = coordinateToLong(maxLon);
+    this.minLat = coordinateToLong(minLat);
+    this.maxLat = coordinateToLong(maxLat);
   }
 
   public OSHDBBoundingBox(int minLon, int minLat, int maxLon, int maxLat) {
