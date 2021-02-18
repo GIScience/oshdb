@@ -172,7 +172,7 @@ interface MapReducerSettings<M> {
   M osmTag(Collection<? extends OSMTagInterface> keyValuePairs);
 
   /** deprecated.
-   * @deprecated replaced by {@link #osmType(OSMType, OSMType...)}
+   * @deprecated replaced by {@link #osmType(Set)}
    */
   @Deprecated
   default M osmTypes(EnumSet<OSMType> typeFilter) {

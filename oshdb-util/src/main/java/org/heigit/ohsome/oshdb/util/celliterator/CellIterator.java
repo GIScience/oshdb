@@ -1,9 +1,11 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastPolygonOperations;
+import org.heigit.ohsome.oshdb.util.osh.OSHEntityTimeUtils;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampInterval;
 import org.locationtech.jts.geom.Coordinate;
@@ -286,7 +289,7 @@ public class CellIterator implements Serializable {
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
         List<OSHDBTimestamp> modTs =
-            OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter);
+            OSHEntityTimeUtils.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
@@ -308,14 +311,13 @@ public class CellIterator implements Serializable {
         }
       }
 
-      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
-          OSHEntities.getByTimestamps(oshEntity, new ArrayList<>(queryTs.keySet()));
+      List<OSHDBTimestamp> timestamps = new ArrayList<>(queryTs.keySet());
+      List<OSMEntity> osmEntityAtTimestamps = getVersionsByTimestamps(oshEntity, timestamps);
 
       List<IterateByTimestampEntry> results = new LinkedList<>();
-      osmEntityLoop: for (Map.Entry<OSHDBTimestamp, OSMEntity> entity :
-          osmEntityByTimestamps.entrySet()) {
-        OSHDBTimestamp timestamp = entity.getKey();
-        OSMEntity osmEntity = entity.getValue();
+      osmEntityLoop: for (int j = 0; j < osmEntityAtTimestamps.size(); j++) {
+        OSHDBTimestamp timestamp = timestamps.get(j);
+        OSMEntity osmEntity = osmEntityAtTimestamps.get(j);
 
         if (!osmEntity.isVisible()) {
           // skip because this entity is deleted at this timestamp
@@ -570,9 +572,9 @@ public class CellIterator implements Serializable {
           && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
       );
 
-      Map<OSHDBTimestamp, Long> changesetTs = OSHEntities.getChangesetTimestamps(oshEntity);
+      Map<OSHDBTimestamp, Long> changesetTs = OSHEntityTimeUtils.getChangesetTimestamps(oshEntity);
       List<OSHDBTimestamp> modTs =
-          OSHEntities.getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
+          OSHEntityTimeUtils.getModificationTimestamps(oshEntity, osmEntityFilter, changesetTs);
 
       if (modTs.isEmpty() || !timeInterval.intersects(
           new OSHDBTimestampInterval(modTs.get(0), modTs.get(modTs.size() - 1))
@@ -582,17 +584,16 @@ public class CellIterator implements Serializable {
         return Stream.empty();
       }
 
-      SortedMap<OSHDBTimestamp, OSMEntity> osmEntityByTimestamps =
-          OSHEntities.getByTimestamps(oshEntity, modTs);
+      List<OSMEntity> osmEntityAtTimestamps = getVersionsByTimestamps(oshEntity, modTs);
 
       List<IterateAllEntry> results = new LinkedList<>();
 
       IterateAllEntry prev = null;
 
       osmEntityLoop:
-      for (Map.Entry<OSHDBTimestamp, OSMEntity> entity : osmEntityByTimestamps.entrySet()) {
-        OSHDBTimestamp timestamp = entity.getKey();
-        OSMEntity osmEntity = entity.getValue();
+      for (int j = 0; j < osmEntityAtTimestamps.size(); j++) {
+        OSHDBTimestamp timestamp = modTs.get(j);
+        OSMEntity osmEntity = osmEntityAtTimestamps.get(j);
 
         // prev = results.size() > 0 ? results.get(results.size()-1) : null;
         // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of
@@ -802,6 +803,24 @@ public class CellIterator implements Serializable {
     });
   }
 
+  /**
+   * Returns a list of corresponding osm OSMEntity "versions" of the given OSHEntity which are
+   * valid at the given timestamps. The resulting list will contain the same number of entries
+   * as the supplied list of timestamps.
+   */
+  private static List<OSMEntity> getVersionsByTimestamps(
+      OSHEntity osh, List<OSHDBTimestamp> timestamps) {
+    List<OSMEntity> result = new ArrayList<>(timestamps.size());
+
+    int i = timestamps.size() - 1;
+    Iterator<? extends OSMEntity> itr = osh.getVersions().iterator();
+    while (itr.hasNext() && i >= 0) {
+      OSMEntity osm = itr.next();
+      while (i >= 0 && osm.getTimestamp().compareTo(timestamps.get(i)) <= 0) {
+        result.add(osm);
+        i--;
+      }
+    }
+    return Lists.reverse(result);
+  }
 }
-
-

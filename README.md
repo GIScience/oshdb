@@ -1,9 +1,13 @@
 OSHDB - OpenStreetMap History Data Analysis
 ===========================================
 
+> :information_source: 2021 User Survey :information_source:<br>
+> The organisation behind ohsome and the OSHDB (<a href="https://heigit.org">HeiGIT</a>) will be having an organisational review. To ensure that we can continue to provide developing software and providing services in the future, we would like to invite you to take part in a <a href="https://survey.heigit.org/653841" target="_blank">user survey</a>. Thanks for your participation!
+
+
 High-performance spatio-temporal data analysis platform for OpenStreetMap full-history data. Developed by [HeiGIT](https://heigit.org).
 
-<img src="https://heigit.org/wp-content/uploads/2018/01/HeiGIT_Logo_cut-505x100@2x.png" height="80px" width="404px">
+<img src="https://heigit.org/wp-content/uploads/2018/01/HeiGIT_Logo_cut-505x100@2x.png" height="80px" width="404px" alt="HeiGIT Logo">
 
 [![Build Status](https://jenkins.ohsome.org/buildStatus/icon?job=oshdb/master)](https://jenkins.ohsome.org/blue/organizations/jenkins/oshdb/activity/?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.ohsome/oshdb/badge.svg)](https://search.maven.org/artifact/org.heigit.ohsome/oshdb)
@@ -22,7 +26,7 @@ The OSHDB allows to investigate the evolution of the amount of data and the cont
         .osmTag("highway")
         .map(contribution -> contribution.getContributorUserId())
         .countUniq();
-        
+
     System.out.println(numberOfUsersEditingHighways);
 ```
 
@@ -40,8 +44,8 @@ Central Concepts
 
 The OSHDB is designed to be appropriate for a large spectrum of potential use cases and is therefore built around the following central ideas and design goals:
 
-* _Lossless Information_: The full OSM history data set should be stored and be queryable by the OSHDB, including errorneous or partially incomplete data.
-* _Simple, Generic API_: Writing queries with the OSHDB should be simple and intuitive, while at the same time flexbile and generic to allow a wide variety of analysis queries.
+* _Lossless Information_: The full OSM history data set should be stored and be queryable by the OSHDB, including erroneous or partially incomplete data.
+* _Simple, Generic API_: Writing queries with the OSHDB should be simple and intuitive, while at the same time flexible and generic to allow a wide variety of analysis queries.
 * _High Performance_: The OSM history data set is large and thus requires efficiency in the way the data is stored and in the way it can be accessed and processed.
 * _Local and Distributed Deployment_: Analysis queries should scale well from data explorations of small regions up to global studies of the complete OSM data set.
 
@@ -49,7 +53,7 @@ The OSHDB splits data storage and computations. It is then possible to use the [
 
 ### Data Model
 
-The OSHDB uses it's own binary data format that encapsulates the OSM history data available from [planet.osm.org](https://planet.osm.org/) and is optimized for efficient storage and access to the history data. In order to allow parallelized data processing, the OSHDB data model also includes a data partitioning scheme.
+The OSHDB uses its own binary data format that encapsulates the OSM history data available from [planet.osm.org](https://planet.osm.org/) and is optimized for efficient storage and access to the history data. In order to allow parallelized data processing, the OSHDB data model also includes a data partitioning scheme.
 
 [![schematic overview of the OSHDB data model](documentation/manual/data-model.svg)](documentation/manual/data-model.md)
 
@@ -71,7 +75,7 @@ Documentation
 
 * [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
-* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/0.6.0/aggregated/)
+* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/0.6.3/aggregated/)
 
 Examples
 --------
@@ -83,7 +87,7 @@ How to Cite
 
 When using the OSHDB directly or indirectly (e.g. through the [ohsome API](https://api.ohsome.org)) for a publication, please cite it using the [`doi:10.5281/zenodo.4146990`](https://doi.org/10.5281/zenodo.4146990) or a corresponding version-specific DOI found on [zenodo](https://zenodo.org/record/4146990).
 
-For scientific papers or similar publications around the analyis of OSM history data, please consider to additionally also cite the technical paper describing the OSHDB: [`doi:10.1186/s40965-019-0061-3`](https://doi.org/10.1186/s40965-019-0061-3).
+For scientific papers or similar publications around the analysis of OSM history data, please consider to additionally also cite the technical paper describing the OSHDB: [`doi:10.1186/s40965-019-0061-3`](https://doi.org/10.1186/s40965-019-0061-3).
 
 Publications and Presentations
 ------------------------------
@@ -100,7 +104,7 @@ See Also
 Projects using the OSHDB:
 
 * **https://api.ohsome.org**<br>A web api for executing common queries on OSM history data
-* https://osm-measure.geog.uni-heidelberg.de/about<br>A reasearch project about data quality measures related to OSM data.
+* https://osm-measure.geog.uni-heidelberg.de/about<br>A research project about data quality measures related to OSM data.
 
 Other projects analyzing OSM history data:
 
@@ -109,5 +113,4 @@ Other projects analyzing OSM history data:
 * https://github.com/mojodna/osm2orc
 * https://github.com/mapbox/osm-wayback, https://mapbox.github.io/osm-analysis-dashboard/
 * https://osmstats.stevecoast.com
-
 

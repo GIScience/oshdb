@@ -53,6 +53,14 @@ public class ApplyOSMGeometryTest extends FilterTest {
     assertFalse(expression.applyOSMGeometry(validRelation, gf.createMultiPoint()));
     assertFalse(expression.applyOSMGeometry(validRelation, gf.createMultiLineString()));
     assertFalse(expression.applyOSMGeometry(validRelation, gf.createMultiPolygon()));
+
+    // also ways can result in GeometryCollections after a clipping operation!
+    OSMEntity validWay = createTestOSMEntityWay(new long[]{1, 2, 3, 4, 1});
+    assertTrue(expression.applyOSMGeometry(validWay, gf.createGeometryCollection()));
+    assertFalse(expression.applyOSMGeometry(validWay, gf.createPolygon()));
+    assertFalse(expression.applyOSMGeometry(validWay, gf.createMultiPoint()));
+    assertFalse(expression.applyOSMGeometry(validWay, gf.createMultiLineString()));
+    assertFalse(expression.applyOSMGeometry(validWay, gf.createMultiPolygon()));
   }
 
   @Test
