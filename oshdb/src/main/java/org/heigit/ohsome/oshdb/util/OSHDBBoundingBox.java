@@ -10,7 +10,7 @@ public class OSHDBBoundingBox implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /**
-   * calculates the intersection of two bounding boxes.
+   * Calculates the intersection of two bounding boxes.
    *
    * @param first the first bounding box
    * @param second the second bounding box

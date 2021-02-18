@@ -124,7 +124,8 @@ public class StatsCollector {
     }
     
     if(minLon != Integer.MAX_VALUE){
-      out.printf("data.bbox=%.7f,%.7f,%.7f,%.7f%n",minLon*GEOM_PRECISION,minLat*GEOM_PRECISION,maxLon*GEOM_PRECISION,maxLat*GEOM_PRECISION);
+      out.printf("data.bbox=%.7f,%.7f,%.7f,%.7f%n", minLon * GEOM_PRECISION,
+          minLat * GEOM_PRECISION, maxLon * GEOM_PRECISION, maxLat * GEOM_PRECISION);
     }
     
     out.printf("data.timerange=%s,%s%n",

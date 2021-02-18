@@ -167,7 +167,7 @@ public class ZGrid {
   }
 
   private static long normalizeLon(long lon) {
-    return lon + (long) (180.0 * GEOM_PRECISION_TO_LONG);
+    return lon + coordinateToLong(180.0);
   }
 
   private static long denormalizeLon(long lon) {
