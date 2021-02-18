@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.osm;
 
-import static org.heigit.ohsome.oshdb.OSHDB.coordinateToDouble;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToDouble;
 
 import java.io.Serializable;
 import java.util.Locale;

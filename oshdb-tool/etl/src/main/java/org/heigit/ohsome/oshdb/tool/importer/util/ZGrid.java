@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
-import static org.heigit.ohsome.oshdb.OSHDB.coordinateToLong;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.GEOM_PRECISION_TO_LONG;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToLong;
 
 import java.util.Comparator;
-import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 
 public class ZGrid {
@@ -167,19 +167,19 @@ public class ZGrid {
   }
 
   private static long normalizeLon(long lon) {
-    return lon + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lon + (long) (180.0 * GEOM_PRECISION_TO_LONG);
   }
 
   private static long denormalizeLon(long lon) {
-    return lon - (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lon - (long) (180.0 * GEOM_PRECISION_TO_LONG);
   }
 
   private static long normalizeLat(long lat) {
-    return lat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lat + (long) (90.0 * GEOM_PRECISION_TO_LONG);
   }
 
   private static long denormalizeLat(long lat) {
-    return lat - (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lat - (long) (90.0 * GEOM_PRECISION_TO_LONG);
   }
 
   private static boolean validateLon(long lon) {

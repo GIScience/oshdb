@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.index;
 
+import static org.heigit.ohsome.oshdb.osm.Coordinates.GEOM_PRECISION;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
@@ -107,7 +108,7 @@ public class XYGridTest {
   @Test
   public void test179_90_2() {
     // Testing Coordinates: 179, 90, zoom 2
-    double longitude = 180.0 - OSHDB.GEOM_PRECISION;
+    double longitude = 180.0 - GEOM_PRECISION;
     double latitude = 90.0;
 
     Long expResult = (long) 7;
@@ -168,7 +169,7 @@ public class XYGridTest {
   @Test
   public void test179_90_30() {
     // Testing Coordinates: 179, 90, zoom 30
-    double longitude = 180.0-OSHDB.GEOM_PRECISION;
+    double longitude = 180.0-GEOM_PRECISION;
     double latitude = 90.0;
 
     Long expResult = 576460752303423487L;
@@ -202,27 +203,27 @@ public class XYGridTest {
   @Test
   public void testGetCellDimensions() {
     long cellId = 0L;
-    OSHDBBoundingBox expResult = new OSHDBBoundingBox(-180.0, -90.0, -90.0 - OSHDB.GEOM_PRECISION, 0.0 - OSHDB.GEOM_PRECISION);
+    OSHDBBoundingBox expResult = new OSHDBBoundingBox(-180.0, -90.0, -90.0 - GEOM_PRECISION, 0.0 - GEOM_PRECISION);
     OSHDBBoundingBox result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 6L;
-    expResult = new OSHDBBoundingBox(0.0, 0.0, 90.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = new OSHDBBoundingBox(0.0, 0.0, 90.0 - GEOM_PRECISION, 90.0);
     result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 7L;
-    expResult = new OSHDBBoundingBox(90.0, 0.0, 180.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = new OSHDBBoundingBox(90.0, 0.0, 180.0 - GEOM_PRECISION, 90.0);
     result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new OSHDBBoundingBox(-180.0, -90.0, 180.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = new OSHDBBoundingBox(-180.0, -90.0, 180.0 - GEOM_PRECISION, 90.0);
     result = zero.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new OSHDBBoundingBox(-180.0, -90.0, 0.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = new OSHDBBoundingBox(-180.0, -90.0, 0.0 - GEOM_PRECISION, 90.0);
     XYGrid instance = new XYGrid(1);
     result = instance.getCellDimensions(cellId);
     assertEquals(expResult, result);
@@ -374,8 +375,8 @@ public class XYGridTest {
     OSHDBBoundingBox expResult = new OSHDBBoundingBox(
         0.0,
         -90.0,
-        90.0 - OSHDB.GEOM_PRECISION,
-        0.0 - OSHDB.GEOM_PRECISION);
+        90.0 - GEOM_PRECISION,
+        0.0 - GEOM_PRECISION);
     assertEquals(expResult, result);
   }
 }

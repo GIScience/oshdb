@@ -1,19 +1,16 @@
 package org.heigit.ohsome.oshdb.util;
 
-import static org.heigit.ohsome.oshdb.OSHDB.coordinateToDouble;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.GEOM_PRECISION_TO_LONG;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToDouble;
 
 import java.io.Serializable;
 import java.util.Locale;
-import org.heigit.ohsome.oshdb.OSHDB;
 
 public class OSHDBBoundingBox implements Serializable {
   private static final long serialVersionUID = 1L;
-  public static final OSHDBBoundingBox EMPTY = new OSHDBBoundingBox(0L, 0L, 0L, 0L);
-  public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(Long.MAX_VALUE,Long.MAX_VALUE,Long.MIN_VALUE,Long.MIN_VALUE);
-
 
   /**
-   * calculates the intersection of two bounding boxes
+   * calculates the intersection of two bounding boxes.
    *
    * @param first the first bounding box
    * @param second the second bounding box
@@ -68,10 +65,10 @@ public class OSHDBBoundingBox implements Serializable {
   }
   
   public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
-    this.minLon = Math.round(minLon * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.maxLon = Math.round(maxLon * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.minLat = Math.round(minLat * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.maxLat = Math.round(maxLat * OSHDB.GEOM_PRECISION_TO_LONG);
+    this.minLon = Math.round(minLon * GEOM_PRECISION_TO_LONG);
+    this.maxLon = Math.round(maxLon * GEOM_PRECISION_TO_LONG);
+    this.minLat = Math.round(minLat * GEOM_PRECISION_TO_LONG);
+    this.maxLat = Math.round(maxLat * GEOM_PRECISION_TO_LONG);
   }
 
   public OSHDBBoundingBox(int minLon, int minLat, int maxLon, int maxLat) {

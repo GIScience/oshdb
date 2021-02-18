@@ -1,12 +1,12 @@
 package org.heigit.ohsome.oshdb.index;
 
-import static org.heigit.ohsome.oshdb.OSHDB.coordinateToLong;
-
+import static org.heigit.ohsome.oshdb.osm.Coordinates.GEOM_PRECISION_TO_LONG;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToLong;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import org.heigit.ohsome.oshdb.OSHDB;
+import org.heigit.ohsome.oshdb.osm.Coordinates;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.slf4j.Logger;
@@ -104,7 +104,7 @@ public class XYGrid implements Serializable {
     }
 
     zoompow = (long) Math.pow(2, this.zoom);
-    cellWidth = (360.0 / zoompow) * OSHDB.GEOM_PRECISION_TO_LONG;
+    cellWidth = (360.0 / zoompow) * GEOM_PRECISION_TO_LONG;
   }
 
   /**
@@ -164,7 +164,7 @@ public class XYGrid implements Serializable {
    * @return length in degree of borders of cells
    */
   public double getCellWidth() {
-    return cellWidth * OSHDB.GEOM_PRECISION;
+    return cellWidth * Coordinates.GEOM_PRECISION;
   }
 
   /**
@@ -179,8 +179,8 @@ public class XYGrid implements Serializable {
     int x = (int) (cellId % zoompow);
     int y = (int) ((cellId - x) / zoompow);
     //calculate the values of the south-western most corner
-    long lon = (long) ((x * cellWidth) - (180.0 * OSHDB.GEOM_PRECISION_TO_LONG));
-    long lat = (long) ((y * cellWidth) - (90.0 * OSHDB.GEOM_PRECISION_TO_LONG));
+    long lon = (long) ((x * cellWidth) - (180.0 * GEOM_PRECISION_TO_LONG));
+    long lat = (long) ((y * cellWidth) - (90.0 * GEOM_PRECISION_TO_LONG));
 
     final long minlong = lon;
     final long maxlong = (long) (lon + cellWidth) - 1L;
@@ -188,11 +188,11 @@ public class XYGrid implements Serializable {
     final long minlat;
     final long maxlat;
     if (zoom == 0) {
-      minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
-      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
-    } else if (lat == ((long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - cellWidth)) {
+      minlat = (long) (-90.0 * GEOM_PRECISION_TO_LONG);
+      maxlat = (long) (90.0 * GEOM_PRECISION_TO_LONG);
+    } else if (lat == ((long) (90.0 * GEOM_PRECISION_TO_LONG) - cellWidth)) {
       minlat = lat;
-      maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+      maxlat = (long) (90.0 * GEOM_PRECISION_TO_LONG);
     } else {
       minlat = lat;
       maxlat = (long) (lat + cellWidth) - 1L;

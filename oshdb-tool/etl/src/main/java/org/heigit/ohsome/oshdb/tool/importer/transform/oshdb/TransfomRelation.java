@@ -94,7 +94,7 @@ public class TransfomRelation extends OSHRelation2 {
   
   protected TransfomRelation(byte[] data, int offset, int length, byte header, long id, 
       long baseTimestamp, long baseLongitude, long baseLatitude, int dataOffset, int dataLength, long[] nodeIds, long[] wayIds) {
-    super(data, offset, length, header, id, OSHDBBoundingBox.EMPTY, baseTimestamp, baseLongitude, baseLatitude, new int[0], dataOffset, dataLength);
+    super(data, offset, length, header, id, new OSHDBBoundingBox(0L, 0L, 0L, 0L), baseTimestamp, baseLongitude, baseLatitude, new int[0], dataOffset, dataLength);
 
     offsetToId = new HashMap<>(2);
     offsetToId.put(OSMType.NODE,nodeIds);

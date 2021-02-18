@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.index;
 
-import static org.heigit.ohsome.oshdb.OSHDB.coordinateToLong;
+import static org.heigit.ohsome.oshdb.osm.Coordinates.coordinateToLong;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -45,11 +45,11 @@ public class XYGridTree implements Serializable {
    */
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
-    return new Iterable<CellId>() {
+    return new Iterable<>() {
 
       @Override
       public Iterator<CellId> iterator() {
-        Iterator<CellId> result = new Iterator<CellId>() {
+        Iterator<CellId> result = new Iterator<>() {
           private int level = -1;
 
           @Override
@@ -117,10 +117,10 @@ public class XYGridTree implements Serializable {
    */
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX, final boolean enlarge) {
-    return new Iterable<CellId>() {
+    return new Iterable<>() {
       @Override
       public Iterator<CellId> iterator() {
-        return new Iterator<CellId>() {
+        return new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
           private IdRange row = rows.next();
@@ -218,10 +218,10 @@ public class XYGridTree implements Serializable {
    */
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox, final boolean enlarge) {
-    return new Iterable<CellIdRange>() {
+    return new Iterable<>() {
       @Override
       public Iterator<CellIdRange> iterator() {
-        return new Iterator<CellIdRange>() {
+        return new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
