@@ -47,7 +47,10 @@ pipeline {
           rtMaven.deployer.deployArtifacts = false
 
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
+            // START CUSTOM oshdb
+            // CUSTOM: added withDep profile
             buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
+            // END CUSTOM oshdb
           }
         }
       }
