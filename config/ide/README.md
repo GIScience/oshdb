@@ -4,7 +4,7 @@ Here are some suggestions for how to set up your IDE and code linting tools to u
 
 ## IntelliJ
 
-Please follow this [guide](https://www.jetbrains.com/help/idea/configuring-code-style.html#d80998e33) using this [intellij-java-google-style.xml](/config/ide/intellij-java-google-style.xml).
+Please follow this [guide](https://www.jetbrains.com/help/idea/settings-code-style.html) using this [intellij-java-google-style.xml](/config/ide/intellij-java-google-style.xml).
 
 ## Eclipse
 
