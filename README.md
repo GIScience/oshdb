@@ -1,10 +1,6 @@
 OSHDB - OpenStreetMap History Data Analysis
 ===========================================
 
-> :information_source: 2021 User Survey :information_source:<br>
-> The organisation behind ohsome and the OSHDB (<a href="https://heigit.org">HeiGIT</a>) will be having an organisational review. To ensure that we can continue to provide developing software and providing services in the future, we would like to invite you to take part in a <a href="https://survey.heigit.org/653841" target="_blank">user survey</a>. Thanks for your participation!
-
-
 High-performance spatio-temporal data analysis platform for OpenStreetMap full-history data. Developed by [HeiGIT](https://heigit.org).
 
 <img src="https://heigit.org/wp-content/uploads/2018/01/HeiGIT_Logo_cut-505x100@2x.png" height="80px" width="404px" alt="HeiGIT Logo">
@@ -113,4 +109,5 @@ Other projects analyzing OSM history data:
 * https://github.com/mojodna/osm2orc
 * https://github.com/mapbox/osm-wayback, https://mapbox.github.io/osm-analysis-dashboard/
 * https://osmstats.stevecoast.com
+
 
