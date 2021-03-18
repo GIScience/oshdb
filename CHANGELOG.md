@@ -26,7 +26,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 ### bugfixes
 
-* when filtering for `geometry:other`: also consider GeometryCollections occuring as a side effect of clipping ([#338])
+* when filtering for `geometry:other`: also consider GeometryCollections occurring as a side effect of clipping ([#338])
 
 ### upgrading from 0.6
 
