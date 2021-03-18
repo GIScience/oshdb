@@ -47,16 +47,55 @@ pipeline {
           rtMaven.deployer.deployArtifacts = false
 
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            // START CUSTOM oshdb
-            // CUSTOM: added withDep profile
-            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
-            // END CUSTOM oshdb
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
           }
         }
       }
       post {
         failure {
           rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "*${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Review the code!" , rawMessage: true
+        }
+      }
+    }
+
+    stage ('Reports and Statistics') {
+      steps {
+        script {
+          report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
+
+          // jacoco
+          report_dir = report_basedir + "/jacoco/"
+
+          jacoco(
+              execPattern      : '**/target/jacoco.exec',
+              classPattern     : '**/target/classes',
+              sourcePattern    : '**/src/main/java',
+              inclusionPattern : '/org/heigit/**'
+          )
+          sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
+
+          // infer
+          if (env.BRANCH_NAME ==~ INFER_BRANCH_REGEX) {
+            report_dir = report_basedir + "/infer/"
+            sh "mvn clean"
+            sh "infer run --pmd-xml -r -- mvn compile"
+            sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && cp -R ./infer-out/* ${report_dir}"
+          }
+
+          // warnings plugin
+          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e compile checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
+
+          recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
+          recordIssues enabledForFailure: true, tool: checkStyle()
+          recordIssues enabledForFailure: true, tool: spotBugs()
+          recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
+          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
+          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/infer-out/report.xml', id: 'infer')
+        }
+      }
+      post {
+        failure {
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
         }
       }
     }
@@ -69,6 +108,12 @@ pipeline {
       }
       steps {
         script {
+          // START CUSTOM oshdb
+          // CUSTOM: added withDep profile
+          withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:jar source:jar package -P sign,git,withDep -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+          }
+          // END CUSTOM oshdb
           rtMaven.deployer.deployArtifacts buildInfo
           server.publishBuildInfo buildInfo
           SNAPSHOT_DEPLOY = true
@@ -89,6 +134,12 @@ pipeline {
       }
       steps {
         script {
+          // START CUSTOM oshdb
+          // CUSTOM: added withDep profile
+          withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:jar source:jar package -P sign,git,withDep -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+          }
+          // END CUSTOM oshdb
           rtMaven.deployer.deployArtifacts buildInfo
           server.publishBuildInfo buildInfo
           RELEASE_DEPLOY = true
@@ -97,8 +148,7 @@ pipeline {
             file(credentialsId: 'ossrh-settings', variable: 'settingsFile'),
             string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')
         ]) {
-          // copy of the above build, since "deploy" does rebuild the packages, without withDep profile
-          sh 'mvn -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+          sh 'mvn clean -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
         }
       }
       post {
@@ -159,49 +209,6 @@ pipeline {
       post {
         failure {
           rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Deployment of javadoc *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
-        }
-      }
-    }
-
-    stage ('Reports and Statistics') {
-      steps {
-        script {
-          report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
-
-          // jacoco
-          report_dir = report_basedir + "/jacoco/"
-
-          rtMaven.run pom: 'pom.xml', goals: 'clean verify -Pjacoco -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
-          jacoco(
-              execPattern      : '**/target/jacoco.exec',
-              classPattern     : '**/target/classes',
-              sourcePattern    : '**/src/main/java',
-              inclusionPattern : '/org/heigit/**'
-          )
-          sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
-
-          // infer
-          if (env.BRANCH_NAME ==~ INFER_BRANCH_REGEX) {
-            report_dir = report_basedir + "/infer/"
-            sh "mvn clean"
-            sh "infer run --pmd-xml -r -- mvn compile"
-            sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && cp -R ./infer-out/* ${report_dir}"
-          }
-
-          // warnings plugin
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e compile checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
-
-          recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
-          recordIssues enabledForFailure: true, tool: checkStyle()
-          recordIssues enabledForFailure: true, tool: spotBugs()
-          recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
-          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
-          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/infer-out/report.xml', id: 'infer')
-        }
-      }
-      post {
-        failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
         }
       }
     }
