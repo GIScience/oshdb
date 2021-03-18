@@ -22,6 +22,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. ([#306])
 * make sure predicate-filters are always serializable. ([#353])
 * improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage. ([#327])
+* update ohsome parent to version 2.8 ([#360])
 
 ### bugfixes
 
@@ -36,6 +37,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 [#338]: https://github.com/GIScience/oshdb/issues/338
 [#352]: https://github.com/GIScience/oshdb/pull/352
 [#353]: https://github.com/GIScience/oshdb/pull/353
+[#360]: https://github.com/GIScience/oshdb/pull/360
 
 ## 0.6.3
 
