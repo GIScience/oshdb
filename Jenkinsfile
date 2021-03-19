@@ -83,7 +83,7 @@ pipeline {
           }
 
           // warnings plugin
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e compile checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
+          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e clean compile checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:3.1.7:spotbugs -Dmaven.repo.local=.m2'
 
           recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
           recordIssues enabledForFailure: true, tool: checkStyle()
@@ -111,7 +111,7 @@ pipeline {
           // START CUSTOM oshdb
           // CUSTOM: added withDep profile
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:jar source:jar package -P sign,git,withDep -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
           }
           // END CUSTOM oshdb
           rtMaven.deployer.deployArtifacts buildInfo
@@ -137,7 +137,7 @@ pipeline {
           // START CUSTOM oshdb
           // CUSTOM: added withDep profile
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean javadoc:jar source:jar package -P sign,git,withDep -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
           }
           // END CUSTOM oshdb
           rtMaven.deployer.deployArtifacts buildInfo
@@ -148,7 +148,7 @@ pipeline {
             file(credentialsId: 'ossrh-settings', variable: 'settingsFile'),
             string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')
         ]) {
-          sh 'mvn clean -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+          sh 'mvn clean compile -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2 -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
         }
       }
       post {
@@ -248,7 +248,7 @@ pipeline {
             echo date_pre.format( 'yyyyMMdd' )
             date_now = new Date(currentBuild.rawBuild.getStartTimeInMillis()).clearTime()
             echo date_now.format( 'yyyyMMdd' )
-            return date_pre.numberAwareCompareTo(date_now)<0
+            return date_pre.numberAwareCompareTo(date_now) < 0
           }
           return false
         }
