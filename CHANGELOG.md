@@ -28,6 +28,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 
 * when filtering for `geometry:other`: also consider GeometryCollections occurring as a side effect of clipping ([#338])
 * make `aggregateByGeometry` robust against broken geometries causing topology exceptions (regression in version 0.6) ([#362])
+* fix a crash caused by the use of non-existent tags in oshdb filters ([#363])
 
 ### upgrading from 0.6
 
@@ -40,6 +41,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 [#353]: https://github.com/GIScience/oshdb/pull/353
 [#360]: https://github.com/GIScience/oshdb/pull/360
 [#362]: https://github.com/GIScience/oshdb/pull/362
+[#363]: https://github.com/GIScience/oshdb/pull/363
 
 ## 0.6.3
 
