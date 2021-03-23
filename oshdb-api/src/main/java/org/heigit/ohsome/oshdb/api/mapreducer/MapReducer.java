@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -488,17 +487,12 @@ public abstract class MapReducer<X> implements
   @Deprecated
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTagKey key) {
-    MapReducer<X> ret = this.copy();
     OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf(key);
     if (!keyId.isPresentInKeytables()) {
       LOG.warn("Tag key {} not found. No data will match this filter.", key.toString());
-      ret.preFilters.add(ignored -> false);
-      ret.filters.add(ignored -> false);
-      return ret;
+      return osmTagEmptyResult();
     }
-    ret.preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    ret.filters.add(osmEntity -> osmEntity.hasTagKey(keyId));
-    return ret;
+    return osmTag(keyId);
   }
 
   /**
@@ -527,19 +521,13 @@ public abstract class MapReducer<X> implements
   @Deprecated
   @Contract(pure = true)
   private MapReducer<X> osmTag(OSMTag tag) {
-    MapReducer<X> ret = this.copy();
     OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(tag);
     if (!keyValueId.isPresentInKeytables()) {
       LOG.warn("Tag {}={} not found. No data will match this filter.",
           tag.getKey(), tag.getValue());
-      ret.preFilters.add(ignored -> false);
-      ret.filters.add(ignored -> false);
-      return ret;
+      return osmTagEmptyResult();
     }
-    OSHDBTagKey keyId = new OSHDBTagKey(keyValueId.getKey());
-    ret.preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
-    ret.filters.add(osmEntity -> osmEntity.hasTagValue(keyValueId.getKey(), keyValueId.getValue()));
-    return ret;
+    return osmTag(keyValueId);
   }
 
   /**
@@ -554,15 +542,16 @@ public abstract class MapReducer<X> implements
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Collection<String> values) {
-    MapReducer<X> ret = this.copy();
     OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
-    if (!oshdbKey.isPresentInKeytables() || values.size() == 0) {
-      LOG.warn((values.size() > 0 ? "Tag key {} not found." : "Empty tag value list.")
-          + " No data will match this filter.", key);
-      ret.preFilters.add(ignored -> false);
-      ret.filters.add(ignored -> false);
-      return ret;
+    if (!oshdbKey.isPresentInKeytables() || values.isEmpty()) {
+      LOG.warn(
+          (values.isEmpty()
+              ? "Empty tag value list. No data will match this filter."
+              : "Tag key {} not found. No data will match this filter."),
+          key
+      );
+      return osmTagEmptyResult();
     }
     Set<Integer> valueIds = new HashSet<>();
     for (String value : values) {
@@ -573,7 +562,8 @@ public abstract class MapReducer<X> implements
         valueIds.add(keyValueId.getValue());
       }
     }
-    ret.preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    MapReducer<X> ret = this.copy();
+    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(keyId));
     ret.filters.add(osmEntity -> {
       int[] tags = osmEntity.getRawTags();
       for (int i = 0; i < tags.length; i += 2) {
@@ -599,16 +589,14 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Pattern valuePattern) {
-    MapReducer<X> ret = this.copy();
     OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables()) {
       LOG.warn("Tag key {} not found. No data will match this filter.", key);
-      ret.preFilters.add(ignored -> false);
-      ret.filters.add(ignored -> false);
-      return ret;
+      return osmTagEmptyResult();
     }
-    ret.preFilters.add(oshEntitiy -> oshEntitiy.hasTagKey(keyId));
+    MapReducer<X> ret = this.copy();
+    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(keyId));
     ret.filters.add(osmEntity -> {
       int[] tags = osmEntity.getRawTags();
       for (int i = 0; i < tags.length; i += 2) {
@@ -636,12 +624,9 @@ public abstract class MapReducer<X> implements
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(Collection<? extends OSMTagInterface> tags) {
-    MapReducer<X> ret = this.copy();
     if (tags.isEmpty()) {
       LOG.warn("Empty tag list. No data will match this filter.");
-      ret.preFilters.add(ignored -> false);
-      ret.filters.add(ignored -> false);
-      return ret;
+      return osmTagEmptyResult();
     }
     // for the "pre"-filter which removes all entities which don't match at least one of the
     // given tag keys
@@ -666,8 +651,9 @@ public abstract class MapReducer<X> implements
         keyIds.add(keyId.toInt());
       }
     }
-    ret.preFilters.add(oshEntitiy -> {
-      for (int key : oshEntitiy.getRawTagKeys()) {
+    MapReducer<X> ret = this.copy();
+    ret.preFilters.add(oshEntity -> {
+      for (int key : oshEntity.getRawTagKeys()) {
         if (preKeyIds.contains(key)) {
           return true;
         }
@@ -682,6 +668,27 @@ public abstract class MapReducer<X> implements
       }
       return false;
     });
+    return ret;
+  }
+
+  private MapReducer<X> osmTag(OSHDBTag tag) {
+    MapReducer<X> ret = this.copy();
+    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tag.getKey()));
+    ret.filters.add(osmEntity -> osmEntity.hasTagValue(tag.getKey(), tag.getValue()));
+    return ret;
+  }
+
+  private MapReducer<X> osmTag(OSHDBTagKey tagKey) {
+    MapReducer<X> ret = this.copy();
+    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tagKey));
+    ret.filters.add(osmEntity -> osmEntity.hasTagKey(tagKey));
+    return ret;
+  }
+
+  private MapReducer<X> osmTagEmptyResult() {
+    MapReducer<X>  ret = this.copy();
+    ret.preFilters.add(ignored -> false);
+    ret.filters.add(ignored -> false);
     return ret;
   }
 
@@ -2143,18 +2150,13 @@ public abstract class MapReducer<X> implements
     // basic optimizations (“low hanging fruit”):
     // single filters, and-combination of single filters, etc.
     if (filter instanceof TagFilterEquals) {
-      OSMTag tag = this.getTagTranslator().getOSMTagOf(((TagFilterEquals) filter).getTag());
-      return mapRed.osmTag(tag);
-    }
-    if (filter instanceof TagFilterEqualsAny) {
-      OSMTagKey key = this.getTagTranslator().getOSMTagKeyOf(
-          ((TagFilterEqualsAny) filter).getTag());
+      return mapRed.osmTag(((TagFilterEquals) filter).getTag());
+    } else if (filter instanceof TagFilterEqualsAny) {
+      OSHDBTagKey key = ((TagFilterEqualsAny) filter).getTag();
       return mapRed.osmTag(key);
-    }
-    if (filter instanceof TypeFilter) {
+    } else if (filter instanceof TypeFilter) {
       return mapRed.osmType(((TypeFilter) filter).getType());
-    }
-    if (filter instanceof AndOperator) {
+    } else if (filter instanceof AndOperator) {
       return optimizeFilters0(optimizeFilters0(mapRed,
           ((AndOperator) filter).getLeftOperand()),
           ((AndOperator) filter).getRightOperand());
