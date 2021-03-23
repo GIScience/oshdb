@@ -417,6 +417,7 @@ public abstract class MapReducer<X> implements
     return osmTypeInternal(typeFilter);
   }
 
+  @Contract(pure = true)
   private MapReducer<X> osmTypeInternal(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
     typeFilter = Sets.intersection(ret.typeFilter, typeFilter);
@@ -675,6 +676,7 @@ public abstract class MapReducer<X> implements
     return ret;
   }
 
+  @Contract(pure = true)
   private MapReducer<X> osmTag(OSHDBTag tag) {
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tag.getKey()));
@@ -682,6 +684,7 @@ public abstract class MapReducer<X> implements
     return ret;
   }
 
+  @Contract(pure = true)
   private MapReducer<X> osmTag(OSHDBTagKey tagKey) {
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tagKey));
@@ -689,6 +692,7 @@ public abstract class MapReducer<X> implements
     return ret;
   }
 
+  @Contract(pure = true)
   private MapReducer<X> osmTagEmptyResult() {
     MapReducer<X>  ret = this.copy();
     ret.preFilters.add(ignored -> false);
