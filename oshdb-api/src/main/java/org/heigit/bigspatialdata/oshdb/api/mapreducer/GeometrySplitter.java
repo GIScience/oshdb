@@ -22,6 +22,7 @@ import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.bigspatialdata.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -118,14 +119,17 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
           try {
             boolean intersects = pg.intersects(snapshotGeometry);
             if (!intersects) {
-              return Stream.empty(); // not actually intersecting -> skip
+              // not actually intersecting -> skip
+              return Stream.empty();
             } else {
               return Stream.of(new IndexData<>(index, new OSMEntitySnapshot(data,
-                  new LazyEvaluatedObject<>(() -> poop.intersection(snapshotGeometry))
+                  new LazyEvaluatedObject<>(() ->
+                      faultTolerantIntersection(snapshotGeometry, poop))
               )));
             }
           } catch (TopologyException ignored) {
-            return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
+            // JTS cannot handle broken osm geometry -> skip
+            return Stream.empty();
           }
         }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
   }
@@ -180,12 +184,12 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
             ));
           }
 
-          // contribution fully outside -> skip
           if (bops.get(index).test(contributionGeometryBbox)) {
+            // contribution fully outside -> skip
             return Stream.empty();
           }
-          // contribution fully inside -> directly return
           if (bips.get(index).test(contributionGeometryBbox)) {
+            // contribution fully inside -> directly return
             return Stream.of(new IndexData<>(index, data));
           }
 
@@ -197,17 +201,30 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
             boolean intersectsAfter = contributionGeometryAfter != null
                 && pg.intersects(contributionGeometryAfter);
             if ((!intersectsBefore) && (!intersectsAfter)) {
-              return Stream.empty(); // not actually intersecting -> skip
+              // not actually intersecting -> skip
+              return Stream.empty();
             } else {
               return Stream.of(new IndexData<>(index, new OSMContribution(data,
-                  new LazyEvaluatedObject<>(() -> poop.intersection(contributionGeometryBefore)),
-                  new LazyEvaluatedObject<>(() -> poop.intersection(contributionGeometryAfter)))
+                  new LazyEvaluatedObject<>(() ->
+                      faultTolerantIntersection(contributionGeometryBefore, poop)),
+                  new LazyEvaluatedObject<>(() ->
+                      faultTolerantIntersection(contributionGeometryAfter, poop)))
               ));
             }
           } catch (TopologyException ignored) {
-            return Stream.empty(); // JTS cannot handle broken osm geometry -> skip
+            // JTS cannot handle broken osm geometry -> skip
+            return Stream.empty();
           }
         }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
+  }
+
+  private static Geometry faultTolerantIntersection(Geometry subject, FastPolygonOperations poop) {
+    try {
+      return poop.intersection(subject);
+    } catch (TopologyException ignored) {
+      // JTS cannot handle broken osm geometry -> return empty geometry
+      return (new GeometryFactory()).createGeometryCollection();
+    }
   }
 
   /**
