@@ -414,6 +414,10 @@ public abstract class MapReducer<X> implements
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmType(Set<OSMType> typeFilter) {
+    return osmTypeInternal(typeFilter);
+  }
+
+  private MapReducer<X> osmTypeInternal(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
     typeFilter = Sets.intersection(ret.typeFilter, typeFilter);
     if (typeFilter.isEmpty()) {
@@ -2155,7 +2159,7 @@ public abstract class MapReducer<X> implements
       OSHDBTagKey key = ((TagFilterEqualsAny) filter).getTag();
       return mapRed.osmTag(key);
     } else if (filter instanceof TypeFilter) {
-      return mapRed.osmType(((TypeFilter) filter).getType());
+      return mapRed.osmTypeInternal(EnumSet.of(((TypeFilter) filter).getType()));
     } else if (filter instanceof AndOperator) {
       return optimizeFilters0(optimizeFilters0(mapRed,
           ((AndOperator) filter).getLeftOperand()),
