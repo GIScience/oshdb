@@ -1,10 +1,11 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.SortedMap;
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
+import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -25,7 +26,7 @@ import org.junit.Test;
  * </p>
  */
 public class TestOSHDBFilter {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBJdbc oshdb;
   private final FilterParser filterParser;
 
   private final OSHDBBoundingBox bbox =
@@ -114,5 +115,21 @@ public class TestOSHDBFilter {
     stringFilterResult = mr.groupByEntity().filter("type:way").count();
 
     assertEquals(osmTypeFilterResult, stringFilterResult);
+  }
+
+  @Test
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  public void testFilterNonExistentTag() throws Exception {
+    FilterParser parser = new FilterParser(new TagTranslator(oshdb.getConnection()));
+    try {
+      createMapReducerOSMEntitySnapshot()
+          .filter(parser.parse("type:way and nonexistentkey=*"))
+          .count();
+      createMapReducerOSMContribution()
+          .filter(parser.parse("type:way and nonexistentkey=nonexistentvalue"))
+          .count();
+    } catch (Exception e) {
+      fail("should not crash on non-existent tags");
+    }
   }
 }

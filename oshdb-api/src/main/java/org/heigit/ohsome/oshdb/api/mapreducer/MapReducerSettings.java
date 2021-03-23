@@ -3,9 +3,9 @@ package org.heigit.ohsome.oshdb.api.mapreducer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.heigit.ohsome.oshdb.api.generic.function.SerializablePredicate;
+import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
@@ -98,8 +98,9 @@ interface MapReducerSettings<M> {
    *
    * @param f the filter function to call for each osm entity
    * @return `this` mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with
-   *             {@link org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Predicate)} instead
+   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with {@link
+   *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Filter.SerializablePredicate)}
+   *             instead
    */
   @Deprecated
   M osmEntityFilter(SerializablePredicate<OSMEntity> f);
