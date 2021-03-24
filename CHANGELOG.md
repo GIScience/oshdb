@@ -1,6 +1,15 @@
 Changelog
 =========
 
+## 0.6.4
+
+* make `aggregateByGeometry` robust against broken geometries causing topology exceptions (regression in version 0.6) ([#362])
+* fix a crash caused by the use of non-existent tags in oshdb filters ([#363])
+
+[#362]: https://github.com/GIScience/oshdb/pull/362
+[#363]: https://github.com/GIScience/oshdb/pull/363
+
+
 ## 0.6.3
 
 * fix an infinite loop caused by certain invalid multipolygons with touching inner rings which are partially incomplete. ([#343])
