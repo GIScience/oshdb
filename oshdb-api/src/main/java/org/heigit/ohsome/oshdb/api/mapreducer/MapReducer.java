@@ -2188,7 +2188,7 @@ public abstract class MapReducer<X> implements
       }
       allTypes.addAll(subTypes);
     }
-    mapRed = mapRed.osmType(allTypes);
+    mapRed = mapRed.osmTypeInternal(allTypes);
     // (todo) intelligently group queried tags
     /*
      * here, we could optimize a few situations further: when a specific tag or key is used in all
