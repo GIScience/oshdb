@@ -811,7 +811,7 @@ public abstract class MapReducer<X> implements
     } else if (this.grouping == Grouping.BY_ID) {
       // grouping by entity -> filter each list entry individually
       if (ret.forClass.equals(OSMEntitySnapshot.class)) {
-        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
+        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper =
             ret.map(x -> (Collection<OSMEntitySnapshot>) x)
                 .map(snapshots -> snapshots.stream()
                     .filter(s -> f.applyOSMGeometry(s.getEntity(), s::getGeometry))
@@ -819,7 +819,7 @@ public abstract class MapReducer<X> implements
                 .filter(snapshots -> !snapshots.isEmpty());
         ret = filteredListMapper;
       } else if (ret.forClass.equals(OSMContribution.class)) {
-        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
+        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper =
             ret.map(x -> (Collection<OSMContribution>) x)
                 .map(contributions -> contributions.stream()
                     .filter(c -> {

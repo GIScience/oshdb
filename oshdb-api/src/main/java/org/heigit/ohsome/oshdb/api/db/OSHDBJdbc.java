@@ -70,9 +70,9 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
     }
     MapReducer<X> mapReducer;
     if (this.useMultithreading) {
-      mapReducer = new MapReducerJdbcMultithread<X>(this, forClass);
+      mapReducer = new MapReducerJdbcMultithread<>(this, forClass);
     } else {
-      mapReducer = new MapReducerJdbcSinglethread<X>(this, forClass);
+      mapReducer = new MapReducerJdbcSinglethread<>(this, forClass);
     }
     mapReducer = mapReducer.keytables(this);
     return mapReducer;

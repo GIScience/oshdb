@@ -28,7 +28,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     AFFINITY_CALL
   }
 
-  private final transient Ignite ignite;
+  private final Ignite ignite;
   private ComputeMode computeMode = ComputeMode.LOCAL_PEEK;
 
   private IgniteRunnable onCloseCallback = null;
@@ -73,13 +73,13 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     }
     switch (this.computeMode()) {
       case LOCAL_PEEK:
-        mapReducer = new MapReducerIgniteLocalPeek<X>(this, forClass);
+        mapReducer = new MapReducerIgniteLocalPeek<>(this, forClass);
         break;
       case SCAN_QUERY:
-        mapReducer = new MapReducerIgniteScanQuery<X>(this, forClass);
+        mapReducer = new MapReducerIgniteScanQuery<>(this, forClass);
         break;
       case AFFINITY_CALL:
-        mapReducer = new MapReducerIgniteAffinityCall<X>(this, forClass);
+        mapReducer = new MapReducerIgniteAffinityCall<>(this, forClass);
         break;
       default:
         throw new UnsupportedOperationException("Backend not implemented for this compute mode.");
