@@ -14,7 +14,7 @@ public class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgni
    * @throws Exception if something goes wrong
    */
   public TestMapReduceOSHDBIgniteAffinityCall() throws Exception {
-    super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.AffinityCall));
+    super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.AFFINITY_CALL));
   }
 
   @Test

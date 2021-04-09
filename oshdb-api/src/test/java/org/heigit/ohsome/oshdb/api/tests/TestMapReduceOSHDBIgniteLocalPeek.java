@@ -8,6 +8,6 @@ public class TestMapReduceOSHDBIgniteLocalPeek extends TestMapReduceOSHDBIgnite 
    * @throws Exception if something goes wrong
    */
   public TestMapReduceOSHDBIgniteLocalPeek() throws Exception {
-    super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.LocalPeek));
+    super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.LOCAL_PEEK));
   }
 }

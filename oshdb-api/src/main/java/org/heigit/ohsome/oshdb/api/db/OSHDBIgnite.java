@@ -23,13 +23,13 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
  */
 public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   public enum ComputeMode {
-    LocalPeek,
-    ScanQuery,
-    AffinityCall
+    LOCAL_PEEK,
+    SCAN_QUERY,
+    AFFINITY_CALL
   }
 
   private final transient Ignite ignite;
-  private ComputeMode computeMode = ComputeMode.LocalPeek;
+  private ComputeMode computeMode = ComputeMode.LOCAL_PEEK;
 
   private IgniteRunnable onCloseCallback = null;
 
@@ -72,13 +72,13 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
       throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedCaches));
     }
     switch (this.computeMode()) {
-      case LocalPeek:
+      case LOCAL_PEEK:
         mapReducer = new MapReducerIgniteLocalPeek<X>(this, forClass);
         break;
-      case ScanQuery:
+      case SCAN_QUERY:
         mapReducer = new MapReducerIgniteScanQuery<X>(this, forClass);
         break;
-      case AffinityCall:
+      case AFFINITY_CALL:
         mapReducer = new MapReducerIgniteAffinityCall<X>(this, forClass);
         break;
       default:
