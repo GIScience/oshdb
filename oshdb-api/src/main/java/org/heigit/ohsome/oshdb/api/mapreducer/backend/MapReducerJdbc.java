@@ -57,13 +57,11 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
         .filter(Optional::isPresent).map(Optional::get)
         .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
         .collect(Collectors.joining(" union all "));
-    try (PreparedStatement pstmt =
-        ((OSHDBJdbc) this.oshdb).getConnection().prepareStatement(sqlQuery)) {
-      pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
-      pstmt.setLong(2, cellIdRange.getStart().getId());
-      pstmt.setLong(3, cellIdRange.getEnd().getId());
-      return pstmt.executeQuery();
-    }
+    PreparedStatement pstmt = ((OSHDBJdbc) this.oshdb).getConnection().prepareStatement(sqlQuery);
+    pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
+    pstmt.setLong(2, cellIdRange.getStart().getId());
+    pstmt.setLong(3, cellIdRange.getEnd().getId());
+    return pstmt.executeQuery();
   }
 
   /**
