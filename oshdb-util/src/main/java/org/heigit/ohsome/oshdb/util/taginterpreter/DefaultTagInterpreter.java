@@ -174,7 +174,8 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   }
 
   // checks if the relation has the tag "type=multipolygon"
-  private boolean evaluateRelationForArea(OSMRelation entity) {
+  @Override
+  protected boolean evaluateRelationForArea(OSMRelation entity) {
     int[] tags = entity.getRawTags();
     // skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
     // the following is slightly faster than running

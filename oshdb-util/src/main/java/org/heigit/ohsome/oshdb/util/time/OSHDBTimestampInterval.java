@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.util.time;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -33,7 +34,7 @@ public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTim
   }
 
   @SuppressWarnings("MissingJavadocMethod")
-  public int compareTo(@Nonnull OSHDBTimestamp timestamp) {
+  public int compareAgainstTimestamp(@Nonnull OSHDBTimestamp timestamp) {
     if (this.includes(timestamp)) {
       return 0;
     }
@@ -50,5 +51,10 @@ public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTim
     return o != null && o instanceof OSHDBTimestampInterval
         && this.fromTimestamp.equals(((OSHDBTimestampInterval) o).fromTimestamp)
         && this.toTimestamp.equals(((OSHDBTimestampInterval) o).toTimestamp);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(fromTimestamp, toTimestamp);
   }
 }

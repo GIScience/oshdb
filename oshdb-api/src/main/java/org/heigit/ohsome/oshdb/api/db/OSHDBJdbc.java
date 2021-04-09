@@ -80,10 +80,9 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
 
   @Override
   public String metadata(String property) {
-    try {
-      PreparedStatement stmt = connection.prepareStatement(
-          "SELECT value from " + TableNames.T_METADATA.toString(this.prefix()) + " where key=?"
-      );
+    try (PreparedStatement stmt = connection.prepareStatement(
+        "SELECT value from " + TableNames.T_METADATA.toString(this.prefix()) + " where key=?"
+    )) {
       stmt.setString(1, property);
       ResultSet result = stmt.executeQuery();
       if (result.next()) {

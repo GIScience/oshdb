@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -256,6 +257,9 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
       @Override
       public Long next() {
+        if (buffer.isEmpty()) {
+          throw new NoSuchElementException();
+        }
         return buffer.remove(buffer.size() - 1);
       }
     }
