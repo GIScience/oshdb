@@ -66,13 +66,13 @@ public class OSHDBH2 extends OSHDBJdbc {
       return this;
     }
 
-    Connection dest = DriverManager.getConnection("jdbc:h2:mem:");
     try (Connection src = this.getConnection()) {
+      this.connection = DriverManager.getConnection("jdbc:h2:mem:");
       try (
           Statement srcStmt = src.createStatement();
           ResultSet srcRst = srcStmt.executeQuery("script nodata")
       ) {
-        try (Statement destStmt = dest.createStatement()) {
+        try (Statement destStmt = this.connection.createStatement()) {
           while (srcRst.next()) {
             destStmt.executeUpdate(srcRst.getString(1));
           }
@@ -91,7 +91,7 @@ public class OSHDBH2 extends OSHDBJdbc {
               .map(ignored -> "?")
               .collect(Collectors.joining(", "));
 
-          PreparedStatement destStmt = dest.prepareStatement(
+          PreparedStatement destStmt = this.connection.prepareStatement(
               "insert into " + tablename + "(" + columns + ") values (" + placeholders + ")"
           );
           rs = srcStmt.executeQuery("select " + columns + " from " + tablename);
@@ -121,10 +121,6 @@ public class OSHDBH2 extends OSHDBJdbc {
         }
       }
     }
-
-
-    this.connection = dest;
     return this;
   }
-
 }

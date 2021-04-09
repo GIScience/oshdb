@@ -54,7 +54,7 @@ public class IsoDateTimeParser {
           + isoDateTime);
     }
 
-    if (isoDateTime.matches("^([0-9]|-)*T([0-9]|:|\\.)*[+-]([0-9]|:)*$")) {
+    if (isoDateTime.matches("^([-0-9])*T([0-9:.])*[+-]([0-9:])*$")) {
       throw new OSHDBTimestampIllegalArgumentException(
           "No timezone designator other than 'Z' is allowed: " + isoDateTime);
     }

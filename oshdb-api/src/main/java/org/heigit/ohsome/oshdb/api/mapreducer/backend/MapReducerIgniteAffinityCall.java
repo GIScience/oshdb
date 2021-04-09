@@ -236,7 +236,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
     Stream<X> result = Stream.empty();
     for (OSMType osmType : typeFilter) {
       assert TableNames.forOSMType(osmType).isPresent();
-      String cacheName = TableNames.forOSMType(osmType).get().toString(this.oshdb.prefix());
+      String cacheName = TableNames.forOSMType(osmType).orElseThrow().toString(this.oshdb.prefix());
       IgniteCache<Long, GridOSHEntity> cache = ignite.cache(cacheName);
 
       GetMatchingKeysPreflight preflight;
