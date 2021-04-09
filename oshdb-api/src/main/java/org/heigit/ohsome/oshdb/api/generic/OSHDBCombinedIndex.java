@@ -73,7 +73,7 @@ public class OSHDBCombinedIndex<
     TreeMap<U, SortedMap<V, A>> ret = new TreeMap<>();
     result.forEach((index, data) -> {
       if (!ret.containsKey(index.getFirstIndex())) {
-        ret.put(index.getFirstIndex(), new TreeMap<V, A>());
+        ret.put(index.getFirstIndex(), new TreeMap<>());
       }
       ret.get(index.getFirstIndex()).put(index.getSecondIndex(), data);
     });

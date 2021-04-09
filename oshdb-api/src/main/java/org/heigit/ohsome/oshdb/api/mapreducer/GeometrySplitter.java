@@ -87,7 +87,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
   public Map<U, OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
-    List<U> candidates = (List<U>) spatialIndex.query(
+    List<U> candidates = spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
     return candidates.stream()
@@ -151,7 +151,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
   public Map<U, OSMContribution> splitOSMContribution(OSMContribution data) {
     OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
-    List<U> candidates = (List<U>) spatialIndex.query(
+    List<U> candidates = spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
     return candidates.stream()

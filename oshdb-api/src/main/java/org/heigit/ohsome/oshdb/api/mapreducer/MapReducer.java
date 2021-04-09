@@ -799,7 +799,7 @@ public abstract class MapReducer<X> implements
     } else if (this.grouping == Grouping.BY_ID) {
       // grouping by entity -> filter each list entry individually
       if (ret.forClass.equals(OSMEntitySnapshot.class)) {
-        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
+        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper =
             ret.map(x -> (Collection<OSMEntitySnapshot>) x)
                 .map(snapshots -> snapshots.stream()
                     .filter(s -> f.applyOSMGeometry(s.getEntity(), s::getGeometry))
@@ -807,7 +807,7 @@ public abstract class MapReducer<X> implements
                 .filter(snapshots -> !snapshots.isEmpty());
         ret = filteredListMapper;
       } else if (ret.forClass.equals(OSMContribution.class)) {
-        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
+        @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper =
             ret.map(x -> (Collection<OSMContribution>) x)
                 .map(contributions -> contributions.stream()
                     .filter(c -> {
@@ -1011,7 +1011,7 @@ public abstract class MapReducer<X> implements
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
     final OSHDBTimestamp minTime = timestamps.first();
     final OSHDBTimestamp maxTime = timestamps.last();
-    return new MapAggregator<OSHDBTimestamp, X>(this, data -> {
+    return new MapAggregator<>(this, data -> {
       // match timestamps to the given timestamp list
       OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
       if (aggregationTimestamp == null
@@ -1047,7 +1047,7 @@ public abstract class MapReducer<X> implements
     }
 
     GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
-    if (this.mappers.size() > 0) {
+    if (!this.mappers.isEmpty()) {
       throw new UnsupportedOperationException(
           "please call aggregateByGeometry before setting any map or flatMap functions"
       );
