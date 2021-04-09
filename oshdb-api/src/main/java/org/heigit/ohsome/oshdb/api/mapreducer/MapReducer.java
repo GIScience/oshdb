@@ -120,9 +120,18 @@ import org.slf4j.LoggerFactory;
 public abstract class MapReducer<X> implements
     MapReducerSettings<MapReducer<X>>, Mappable<X>, MapReducerAggregations<X>,
     MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
 
-  protected OSHDBDatabase oshdb;
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
+  public static final String TAG_KEY_NOT_FOUND =
+      "Tag key {} not found. No data will match this filter.";
+  public static final String TAG_NOT_FOUND =
+      "Tag {}={} not found. No data will match this filter.";
+  public static final String EMPTY_TAG_LIST =
+      "Empty tag value list. No data will match this filter.";
+  public static final String UNIMPLEMENTED_DATA_VIEW = "Unimplemented data view: %s";
+  public static final String UNSUPPORTED_GROUPING = "Unsupported grouping: %s";
+
+  protected transient OSHDBDatabase oshdb;
   protected transient OSHDBJdbc keytables;
 
   protected Long timeout = null;
@@ -158,7 +167,7 @@ public abstract class MapReducer<X> implements
   protected EnumSet<OSMType> typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> filters = new ArrayList<>();
-  final List<MapFunction> mappers = new LinkedList<>();
+  final LinkedList<MapFunction> mappers = new LinkedList<>();
 
 
   // basic constructor
@@ -494,7 +503,7 @@ public abstract class MapReducer<X> implements
   private MapReducer<X> osmTag(OSMTagKey key) {
     OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf(key);
     if (!keyId.isPresentInKeytables()) {
-      LOG.warn("Tag key {} not found. No data will match this filter.", key.toString());
+      LOG.warn(TAG_KEY_NOT_FOUND, key.toString());
       return osmTagEmptyResult();
     }
     return osmTag(keyId);
@@ -528,8 +537,7 @@ public abstract class MapReducer<X> implements
   private MapReducer<X> osmTag(OSMTag tag) {
     OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(tag);
     if (!keyValueId.isPresentInKeytables()) {
-      LOG.warn("Tag {}={} not found. No data will match this filter.",
-          tag.getKey(), tag.getValue());
+      LOG.warn(TAG_NOT_FOUND, tag.getKey(), tag.getValue());
       return osmTagEmptyResult();
     }
     return osmTag(keyValueId);
@@ -551,9 +559,7 @@ public abstract class MapReducer<X> implements
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables() || values.isEmpty()) {
       LOG.warn(
-          (values.isEmpty()
-              ? "Empty tag value list. No data will match this filter."
-              : "Tag key {} not found. No data will match this filter."),
+          (values.isEmpty() ? EMPTY_TAG_LIST : TAG_KEY_NOT_FOUND),
           key
       );
       return osmTagEmptyResult();
@@ -562,7 +568,7 @@ public abstract class MapReducer<X> implements
     for (String value : values) {
       OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(key, value);
       if (!keyValueId.isPresentInKeytables()) {
-        LOG.warn("Tag {}={} not found. No data will match this tag value.", key, value);
+        LOG.warn(TAG_NOT_FOUND, key, value);
       } else {
         valueIds.add(keyValueId.getValue());
       }
@@ -597,7 +603,7 @@ public abstract class MapReducer<X> implements
     OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables()) {
-      LOG.warn("Tag key {} not found. No data will match this filter.", key);
+      LOG.warn(TAG_KEY_NOT_FOUND, key);
       return osmTagEmptyResult();
     }
     MapReducer<X> ret = this.copy();
@@ -644,8 +650,7 @@ public abstract class MapReducer<X> implements
         OSMTag keyValue = (OSMTag) tag;
         OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(keyValue);
         if (!keyValueId.isPresentInKeytables()) {
-          LOG.warn("Tag {}={} not found. No data will match this tag value.",
-              keyValue.getKey(), keyValue.getValue());
+          LOG.warn(TAG_NOT_FOUND, keyValue.getKey(), keyValue.getValue());
         } else {
           preKeyIds.add(keyValueId.getKey());
           keyValueIds.add(keyValueId);
@@ -1145,8 +1150,8 @@ public abstract class MapReducer<X> implements
                 combiner
             );
           } else {
-            throw new UnsupportedOperationException(
-                "Unimplemented data view: " + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         } else {
           final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
@@ -1169,8 +1174,8 @@ public abstract class MapReducer<X> implements
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
           } else {
-            throw new UnsupportedOperationException(
-                "Unimplemented data view: " + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         }
       case BY_ID:
@@ -1206,12 +1211,12 @@ public abstract class MapReducer<X> implements
               combiner
           );
         } else {
-          throw new UnsupportedOperationException(
-              "Unimplemented data view: " + this.forClass.toString());
+          throw new UnsupportedOperationException(String.format(
+              UNIMPLEMENTED_DATA_VIEW, this.forClass));
         }
       default:
-        throw new UnsupportedOperationException(
-            "Unsupported grouping: " + this.grouping.toString());
+        throw new UnsupportedOperationException(String.format(
+            UNSUPPORTED_GROUPING, this.grouping));
     }
   }
 
@@ -1632,8 +1637,8 @@ public abstract class MapReducer<X> implements
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
           } else {
-            throw new UnsupportedOperationException(
-                "Unimplemented data view: " + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         } else {
           final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
@@ -1656,8 +1661,8 @@ public abstract class MapReducer<X> implements
                   return outputList;
                 });
           } else {
-            throw new UnsupportedOperationException("Unimplemented data view: "
-                + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         }
       case BY_ID:
@@ -1683,12 +1688,12 @@ public abstract class MapReducer<X> implements
               data -> flatMapper.apply(data);
           return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(snapshotFlatMapper);
         } else {
-          throw new UnsupportedOperationException(
-              "Unimplemented data view: " + this.forClass.toString());
+          throw new UnsupportedOperationException(String.format(
+              UNIMPLEMENTED_DATA_VIEW, this.forClass));
         }
       default:
-        throw new UnsupportedOperationException(
-            "Unsupported grouping: " + this.grouping.toString());
+        throw new UnsupportedOperationException(String.format(
+            UNSUPPORTED_GROUPING, this.grouping));
     }
   }
 
