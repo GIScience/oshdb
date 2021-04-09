@@ -950,11 +950,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     );
     // fill nodata entries with "0"
     @SuppressWarnings("unchecked") // all zerofills must "add up" to <U>
-    Collection<U> zerofill = (Collection<U>) this.completeZerofill(
+    Collection<U> allZerofills = (Collection<U>) this.completeZerofill(
         result.keySet(),
         Lists.reverse(this.zerofill)
     );
-    zerofill.forEach(zerofillKey -> {
+    allZerofills.forEach(zerofillKey -> {
       if (!result.containsKey(zerofillKey)) {
         result.put(zerofillKey, identitySupplier.get());
       }
