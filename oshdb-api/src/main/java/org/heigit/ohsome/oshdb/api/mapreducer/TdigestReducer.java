@@ -5,6 +5,7 @@ import com.tdunning.math.stats.TDigest;
 import java.util.Arrays;
 
 class TdigestReducer {
+  private TdigestReducer() {}
 
   /**
    * A COMPRESSION parameter of 1000 should provide relatively precise results, while not being

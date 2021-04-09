@@ -4,10 +4,15 @@ import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
 
 /**
  * A function that has a flag: <i>isFlatMapper</i>.
+ *
+ * <p>Note that this class is using raw types on purpose because MapReducer's "map functions"
+ * are designed to input and output arbitrary data types. The necessary type checks are performed
+ * at at runtime in the respective setters.</p>
  */
+@SuppressWarnings({"rawtypes", "unchecked"}) // see javadoc above
 class MapFunction implements SerializableFunction {
-  private SerializableFunction mapper;
-  private boolean isFlatMapper;
+  private final SerializableFunction mapper;
+  private final boolean isFlatMapper;
 
   MapFunction(SerializableFunction mapper, boolean isFlatMapper) {
     this.mapper = mapper;
@@ -19,9 +24,6 @@ class MapFunction implements SerializableFunction {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  // mappers are using raw types because they work on arbitrary data types
-  // the necessary type checks are done at the respective setters
   public Object apply(Object o) {
     return this.mapper.apply(o);
   }

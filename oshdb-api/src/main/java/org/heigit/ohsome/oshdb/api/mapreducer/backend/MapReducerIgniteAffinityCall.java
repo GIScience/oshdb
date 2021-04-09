@@ -466,10 +466,9 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       this.cellIdRangesByLevel = new HashMap<>();
       for (CellIdRange cellIdRange : cellIdRanges) {
         int level = cellIdRange.getStart().getZoomLevel();
-        if (!this.cellIdRangesByLevel.containsKey(level)) {
-          this.cellIdRangesByLevel.put(level, new TreeMap<>());
-        }
-        this.cellIdRangesByLevel.get(level).put(cellIdRange.getStart().getId(), cellIdRange);
+        this.cellIdRangesByLevel
+            .computeIfAbsent(level, ignored -> new TreeMap<>())
+            .put(cellIdRange.getStart().getId(), cellIdRange);
       }
     }
 
