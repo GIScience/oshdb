@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
@@ -54,6 +55,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
       minLat = baseLatitude + wrapper.readSInt64();
       maxLat = minLat + wrapper.readUInt64();
     } else {
+      
       minLon = 1;
       minLat = 1;
       maxLon = -1;
@@ -125,6 +127,33 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     }
 
     return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
+  }
+  
+  @Override
+  public boolean intersects(OSHDBBoundable otherBbox) {
+    if (minLon <= maxLon && minLat <= maxLat) {
+      return super.intersects(otherBbox);      
+    } else {
+      return getBoundingBox().intersects(otherBbox);
+    }
+  }
+  
+  @Override
+  public boolean isInside(OSHDBBoundingBox otherBbox) {
+    if (minLon <= maxLon && minLat <= maxLat) {
+      return super.isInside(otherBbox);      
+    } else {
+      return getBoundingBox().isInside(otherBbox);
+    }
+  }
+  
+  @Override
+  public boolean isPoint() {
+    if (minLon <= maxLon && minLat <= maxLat) {
+      return super.isPoint();      
+    } else {
+      return getBoundingBox().isPoint();
+    }
   }
 
   @Override
