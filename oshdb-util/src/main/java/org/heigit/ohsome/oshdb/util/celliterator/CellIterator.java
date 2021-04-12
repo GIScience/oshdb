@@ -263,9 +263,6 @@ public class CellIterator implements Serializable {
 
     Iterable<? extends OSHEntity> cellData = cell.getEntities();
     return Streams.stream(cellData).flatMap(oshEntity -> {
-      if(oshEntity.getId() == 2003796811L) {
-        System.out.println("debug");
-      }
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
               !oshEntity.intersects(boundingBox)

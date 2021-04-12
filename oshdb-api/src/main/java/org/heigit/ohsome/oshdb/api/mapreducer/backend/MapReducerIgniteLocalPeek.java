@@ -393,7 +393,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     IgniteCompute compute = ignite.compute();
 
     ComputeTaskFuture<S> asyncResult = compute.executeAsync(
-        new OSHDBIgniteMapReduceComputeTask<>(
+        new OSHDBIgniteMapReduceComputeTask<Object, S>(
             computeJob,
             identitySupplier,
             combiner,

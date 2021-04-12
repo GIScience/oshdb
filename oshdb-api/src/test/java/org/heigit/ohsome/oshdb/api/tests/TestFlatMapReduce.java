@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.Assert.assertEquals;
+
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -99,7 +99,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
   @NotNull
   @Override
   protected MapReducer<X> copy() {
-    return new MapReducerIgniteScanQuery<>(this);
+    return new MapReducerIgniteScanQuery<X>(this);
   }
 
   @Override
@@ -494,7 +494,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     computeJob.setNodesToPart(nodesToPart);
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
     ComputeTaskFuture<S> result = compute.executeAsync(
-        new OSHDBIgniteMapReduceComputeTask<>(
+        new OSHDBIgniteMapReduceComputeTask<Object, S>(
             computeJob,
             identitySupplier,
             combiner,
