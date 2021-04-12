@@ -69,8 +69,8 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   public OSHDBBoundingBox add(OSHDBBoundingBox bbox){
     return new OSHDBBoundingBox(
         Math.min(minLon,bbox.minLon),
-        Math.max(maxLon,bbox.maxLon),
         Math.min(minLat,bbox.minLat),
+        Math.max(maxLon,bbox.maxLon),
         Math.max(maxLat,bbox.maxLat));
   }
   
