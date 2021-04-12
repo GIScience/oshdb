@@ -11,7 +11,7 @@ pipeline {
     INFER_BRANCH_REGEX = /(^master$)/
     SNAPSHOT_BRANCH_REGEX = /(^master$)/
     // START CUSTOM oshdb
-    BENCHMARK_EXAMPLES_BRANCH_REGEX = /(^master$)/
+    BENCHMARK_BRANCH_REGEX = /(^master$)/
     // END CUSTOM oshdb
     RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
     RELEASE_DEPLOY = false
@@ -159,19 +159,41 @@ pipeline {
     }
 
     // START CUSTOM oshdb
-    stage ('Trigger Benchmark and build Examples') {
+    stage ('Trigger Benchmarks') {
       when {
         expression {
-          return env.BRANCH_NAME ==~ BENCHMARK_EXAMPLES_BRANCH_REGEX
+          return env.BRANCH_NAME ==~ BENCHMARK_BRANCH_REGEX
         }
       }
       steps {
         build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
-        build job: 'oshdb-examples/master', quietPeriod: 360, wait: false
       }
       post {
         failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Triggering of Benchmarks or Examples for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Triggering of Benchmarks for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
+        }
+      }
+    }
+
+    stage ('Build Examples') {
+      when {
+        anyOf {
+          equals expected: true, actual: RELEASE_DEPLOY
+          equals expected: true, actual: SNAPSHOT_DEPLOY
+        }
+      }
+      steps {
+        script {
+          if (RELEASE_DEPLOY == true) {
+            build job: 'oshdb-examples/oshdb-stable', quietPeriod: 360, wait: false
+          } else {
+            build job: 'oshdb-examples/oshdb-snapshot', quietPeriod: 360, wait: false
+          }
+        }
+      }
+      post {
+        failure {
+          rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Triggering of Examples build for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>)." , rawMessage: true
         }
       }
     }
