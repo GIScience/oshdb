@@ -35,8 +35,8 @@ public class TestOSHEntityTimeUtils {
     List<OSHDBTimestamp> tss = OSHEntityTimeUtils.getModificationTimestamps(hnode);
     assertNotNull(tss);
     assertEquals(2, tss.size());
-    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(2L, tss.get(1).getRawUnixTimestamp());
+    assertEquals(1L, tss.get(0).getEpochSecond());
+    assertEquals(2L, tss.get(1).getEpochSecond());
 
     // additionally, also make sure that the same result is returned by the "recurse" variant
     assertEquals(
@@ -60,8 +60,8 @@ public class TestOSHEntityTimeUtils {
 
     assertNotNull(tss);
     assertEquals(2, tss.size());
-    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(2L, tss.get(1).getRawUnixTimestamp());
+    assertEquals(1L, tss.get(0).getEpochSecond());
+    assertEquals(2L, tss.get(1).getEpochSecond());
 
     // make sure that if no filter is supplied, the full result is returned
     assertEquals(
@@ -105,19 +105,19 @@ public class TestOSHEntityTimeUtils {
     List<OSHDBTimestamp> tss = OSHEntityTimeUtils.getModificationTimestamps(hway, false);
     assertNotNull(tss);
     assertEquals(3, tss.size());
-    assertEquals(5L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(7L, tss.get(1).getRawUnixTimestamp());
-    assertEquals(13L, tss.get(2).getRawUnixTimestamp());
+    assertEquals(5L, tss.get(0).getEpochSecond());
+    assertEquals(7L, tss.get(1).getEpochSecond());
+    assertEquals(13L, tss.get(2).getEpochSecond());
 
     tss = OSHEntityTimeUtils.getModificationTimestamps(hway, true);
     assertNotNull(tss);
     assertEquals(6, tss.size());
-    assertEquals(5L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(6L, tss.get(1).getRawUnixTimestamp());
-    assertEquals(7L, tss.get(2).getRawUnixTimestamp());
-    assertEquals(8L, tss.get(3).getRawUnixTimestamp());
-    assertEquals(12L, tss.get(4).getRawUnixTimestamp());
-    assertEquals(13L, tss.get(5).getRawUnixTimestamp());
+    assertEquals(5L, tss.get(0).getEpochSecond());
+    assertEquals(6L, tss.get(1).getEpochSecond());
+    assertEquals(7L, tss.get(2).getEpochSecond());
+    assertEquals(8L, tss.get(3).getEpochSecond());
+    assertEquals(12L, tss.get(4).getEpochSecond());
+    assertEquals(13L, tss.get(5).getEpochSecond());
   }
 
   @Test
@@ -163,14 +163,14 @@ public class TestOSHEntityTimeUtils {
     List<OSHDBTimestamp> tss = OSHEntityTimeUtils.getModificationTimestamps(hway, true);
     assertNotNull(tss);
     assertEquals(8, tss.size());
-    assertEquals(5L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(6L, tss.get(1).getRawUnixTimestamp());
-    assertEquals(7L, tss.get(2).getRawUnixTimestamp());
-    assertEquals(8L, tss.get(3).getRawUnixTimestamp());
-    assertEquals(12L, tss.get(4).getRawUnixTimestamp());
-    assertEquals(13L, tss.get(5).getRawUnixTimestamp());
-    assertEquals(14L, tss.get(6).getRawUnixTimestamp());
-    assertEquals(16L, tss.get(7).getRawUnixTimestamp());
+    assertEquals(5L, tss.get(0).getEpochSecond());
+    assertEquals(6L, tss.get(1).getEpochSecond());
+    assertEquals(7L, tss.get(2).getEpochSecond());
+    assertEquals(8L, tss.get(3).getEpochSecond());
+    assertEquals(12L, tss.get(4).getEpochSecond());
+    assertEquals(13L, tss.get(5).getEpochSecond());
+    assertEquals(14L, tss.get(6).getEpochSecond());
+    assertEquals(16L, tss.get(7).getEpochSecond());
 
     tss = OSHEntityTimeUtils.getModificationTimestamps(
         hway,
@@ -178,11 +178,11 @@ public class TestOSHEntityTimeUtils {
     );
     assertNotNull(tss);
     assertEquals(5, tss.size());
-    assertEquals(5L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(6L, tss.get(1).getRawUnixTimestamp());
-    assertEquals(7L, tss.get(2).getRawUnixTimestamp());
-    assertEquals(14L, tss.get(3).getRawUnixTimestamp());
-    assertEquals(16L, tss.get(4).getRawUnixTimestamp());
+    assertEquals(5L, tss.get(0).getEpochSecond());
+    assertEquals(6L, tss.get(1).getEpochSecond());
+    assertEquals(7L, tss.get(2).getEpochSecond());
+    assertEquals(14L, tss.get(3).getEpochSecond());
+    assertEquals(16L, tss.get(4).getEpochSecond());
   }
 
   @Test
@@ -235,25 +235,25 @@ public class TestOSHEntityTimeUtils {
     List<OSHDBTimestamp> tss = OSHEntityTimeUtils.getModificationTimestamps(hrelation, false);
     assertNotNull(tss);
     assertEquals(4, tss.size());
-    assertEquals(5L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(8L, tss.get(1).getRawUnixTimestamp());
-    assertEquals(10L, tss.get(2).getRawUnixTimestamp());
-    assertEquals(20L, tss.get(3).getRawUnixTimestamp());
+    assertEquals(5L, tss.get(0).getEpochSecond());
+    assertEquals(8L, tss.get(1).getEpochSecond());
+    assertEquals(10L, tss.get(2).getEpochSecond());
+    assertEquals(20L, tss.get(3).getEpochSecond());
 
     tss = OSHEntityTimeUtils.getModificationTimestamps(hrelation, true);
     assertNotNull(tss);
     assertEquals(7, tss.size());
-    assertEquals(5L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(6L, tss.get(1).getRawUnixTimestamp());
-    assertEquals(7L, tss.get(2).getRawUnixTimestamp());
-    assertEquals(8L, tss.get(3).getRawUnixTimestamp());
+    assertEquals(5L, tss.get(0).getEpochSecond());
+    assertEquals(6L, tss.get(1).getEpochSecond());
+    assertEquals(7L, tss.get(2).getEpochSecond());
+    assertEquals(8L, tss.get(3).getEpochSecond());
     // timestamp 9 has to be missing because at the time, the way wasn't a member of the
     // relation anymore
-    assertEquals(10L,  tss.get(4).getRawUnixTimestamp());
+    assertEquals(10L,  tss.get(4).getEpochSecond());
     // timestamp 11 has to be missing because at the time, the node wasn't part of the way
     // member of the relation anymore
-    assertEquals(12L, tss.get(5).getRawUnixTimestamp());
-    assertEquals(20L, tss.get(6).getRawUnixTimestamp());
+    assertEquals(12L, tss.get(5).getEpochSecond());
+    assertEquals(20L, tss.get(6).getEpochSecond());
   }
 
   @Test
@@ -284,12 +284,12 @@ public class TestOSHEntityTimeUtils {
     );
     assertNotNull(tss);
     assertEquals(5, tss.size());
-    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
-    assertEquals(2L, tss.get(1).getRawUnixTimestamp());
-    assertEquals(3L, tss.get(2).getRawUnixTimestamp());
+    assertEquals(1L, tss.get(0).getEpochSecond());
+    assertEquals(2L, tss.get(1).getEpochSecond());
+    assertEquals(3L, tss.get(2).getEpochSecond());
     // ts 4 missing since entity filter doesn't match then
-    assertEquals(5L, tss.get(3).getRawUnixTimestamp());
-    assertEquals(6L, tss.get(4).getRawUnixTimestamp());
+    assertEquals(5L, tss.get(3).getEpochSecond());
+    assertEquals(6L, tss.get(4).getEpochSecond());
   }
 
   @Test
@@ -489,7 +489,7 @@ public class TestOSHEntityTimeUtils {
     var tss = OSHEntityTimeUtils.getModificationTimestamps(hway);
     assertNotNull(tss);
     assertEquals(1, tss.size());
-    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+    assertEquals(1L, tss.get(0).getEpochSecond());
 
     // missing relation member
     OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
@@ -502,7 +502,7 @@ public class TestOSHEntityTimeUtils {
     tss = OSHEntityTimeUtils.getModificationTimestamps(hrel);
     assertNotNull(tss);
     assertEquals(1, tss.size());
-    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+    assertEquals(1L, tss.get(0).getEpochSecond());
 
     // broken reference (potentially due to data redaction)
     hnode = OSHNodeImpl.build(Lists.newArrayList(
@@ -561,6 +561,6 @@ public class TestOSHEntityTimeUtils {
     var tss = OSHEntityTimeUtils.getModificationTimestamps(hrel);
     assertNotNull(tss);
     assertEquals(1, tss.size());
-    assertEquals(1L, tss.get(0).getRawUnixTimestamp());
+    assertEquals(1L, tss.get(0).getEpochSecond());
   }
 }

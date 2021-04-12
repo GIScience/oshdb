@@ -64,7 +64,7 @@ public final class OSHEntities {
    */
   public static OSMEntity getByTimestamp(OSHEntity osh, OSHDBTimestamp timestamp) {
     for (OSMEntity osm : osh.getVersions()) {
-      if (osm.getTimestamp().getRawUnixTimestamp() <= timestamp.getRawUnixTimestamp()) {
+      if (osm.getTimestamp().getEpochSecond() <= timestamp.getEpochSecond()) {
         return osm;
       }
     }

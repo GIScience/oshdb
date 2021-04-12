@@ -45,7 +45,7 @@ public class OSHDBTimestamp implements Comparable<OSHDBTimestamp>, Serializable 
     return new Date(this.tstamp * 1000);
   }
 
-  public long getRawUnixTimestamp() {
+  public long getEpochSecond() {
     return this.tstamp;
   }
 

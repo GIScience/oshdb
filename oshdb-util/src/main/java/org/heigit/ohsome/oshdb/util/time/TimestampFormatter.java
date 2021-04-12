@@ -73,7 +73,7 @@ public class TimestampFormatter {
    * @return the formatted date string
    */
   public String isoDateTime(OSHDBTimestamp date) {
-    return this.isoDateTime(date.getRawUnixTimestamp());
+    return this.isoDateTime(date.getEpochSecond());
   }
 
 }

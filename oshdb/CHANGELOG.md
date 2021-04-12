@@ -5,6 +5,7 @@ Changelog OSHDB MODULE
 
 ### renaming / moving
  - OSMWay.getRef() -> OSMWay.getMember()
+ - OSHDBTimestamp.getRawUnixTimestamp() -> OSHDBTimestamp.getEpochSecond()
 
 ### breaking changes
 

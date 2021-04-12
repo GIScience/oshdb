@@ -94,7 +94,7 @@ public class OSMWayTest {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, new OSMMember[] {part, part});
     long expResult = 1L;
-    long result = instance.getTimestamp().getRawUnixTimestamp();
+    long result = instance.getTimestamp().getEpochSecond();
     assertEquals(expResult, result);
   }
 

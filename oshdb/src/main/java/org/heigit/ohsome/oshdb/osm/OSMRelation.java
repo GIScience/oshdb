@@ -46,7 +46,7 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     if (c == 0) {
       c = Integer.compare(Math.abs(version), Math.abs(o.version));
       if (c == 0) {
-        c = Long.compare(timestamp.getRawUnixTimestamp(), o.timestamp.getRawUnixTimestamp());
+        c = Long.compare(timestamp.getEpochSecond(), o.timestamp.getEpochSecond());
       }
     }
     return c;

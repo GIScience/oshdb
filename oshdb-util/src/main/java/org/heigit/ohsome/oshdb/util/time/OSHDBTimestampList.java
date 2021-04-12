@@ -24,7 +24,7 @@ public interface OSHDBTimestampList extends Serializable {
    */
   default SortedSet<Long> getRawUnixTimestamps() {
     return this.get().stream()
-        .map(OSHDBTimestamp::getRawUnixTimestamp)
+        .map(OSHDBTimestamp::getEpochSecond)
         .collect(Collectors.toCollection(TreeSet::new));
   }
 }

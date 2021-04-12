@@ -101,7 +101,7 @@ public abstract class OSHEntity2 {
         final int visible = version.isVisible()?1:-1;
         
         versionNumber = out.writeSInt32Delta(version.getVersion()*visible,versionNumber);
-        timestamp = out.writeSInt64Delta(version.getTimestamp().getRawUnixTimestamp(), timestamp);
+        timestamp = out.writeSInt64Delta(version.getTimestamp().getEpochSecond(), timestamp);
         changeset = out.writeSInt64Delta(version.getChangesetId(),changeset);
         
         byte changed = 0;

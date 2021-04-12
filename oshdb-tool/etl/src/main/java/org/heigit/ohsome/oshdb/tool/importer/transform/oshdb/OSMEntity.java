@@ -17,6 +17,6 @@ public interface OSMEntity {
 
   public default String asString() {
     return String.format("ID:%d V:%d TS:%d CS:%d VIS:%s UID:%d TAGS:%S", getId(), getVersion(),
-        getTimestamp().getRawUnixTimestamp(), getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
+        getTimestamp().getEpochSecond(), getChangeset(), isVisible(), getUserId(), Arrays.toString(getTags()));
   }
 }

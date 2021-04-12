@@ -55,10 +55,10 @@ public abstract class OSHEntityImpl
       lastVersion = v;
 
       output.writeSInt64(
-          (version.getTimestamp().getRawUnixTimestamp() - lastTimestamp) - baseTimestamp);
-      if (!firstVersion && lastTimestamp < version.getTimestamp().getRawUnixTimestamp())
+          (version.getTimestamp().getEpochSecond() - lastTimestamp) - baseTimestamp);
+      if (!firstVersion && lastTimestamp < version.getTimestamp().getEpochSecond())
         timestampsNotInOrder = true;
-      lastTimestamp = version.getTimestamp().getRawUnixTimestamp();
+      lastTimestamp = version.getTimestamp().getEpochSecond();
 
       output.writeSInt64(version.getChangesetId() - lastChangeset);
       lastChangeset = version.getChangesetId();
@@ -214,7 +214,7 @@ public abstract class OSHEntityImpl
     
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
         last.getVersion(),
-        first.getTimestamp().getRawUnixTimestamp(),
+        first.getTimestamp().getEpochSecond(),
         getBoundingBox().getMinLat(), getBoundingBox().getMinLon(), getBoundingBox().getMaxLat(),
         getBoundingBox().getMaxLon());
   }

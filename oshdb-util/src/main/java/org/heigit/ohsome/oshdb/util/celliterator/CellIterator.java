@@ -294,7 +294,7 @@ public class CellIterator implements Serializable {
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
           while (j < modTs.size()
-              && modTs.get(j).getRawUnixTimestamp() <= requestedT.getRawUnixTimestamp()) {
+              && modTs.get(j).getEpochSecond() <= requestedT.getEpochSecond()) {
             needToRequest = true;
             j++;
           }
