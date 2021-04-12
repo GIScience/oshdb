@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
-import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +41,8 @@ import org.heigit.ohsome.oshdb.api.object.OSMContribution;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
+import org.heigit.ohsome.oshdb.osh.OSHEntityFilter;
+import org.heigit.ohsome.oshdb.osm.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
@@ -53,6 +54,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.collect.Streams;
 
 /**
  * {@inheritDoc}
@@ -97,7 +99,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
   @NotNull
   @Override
   protected MapReducer<X> copy() {
-    return new MapReducerIgniteScanQuery<X>(this);
+    return new MapReducerIgniteScanQuery<>(this);
   }
 
   @Override
@@ -299,7 +301,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, String cacheName,
         Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<V, M> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       this.cacheName = cacheName;
@@ -368,7 +370,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<OSMContribution, R> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -393,7 +395,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -418,7 +420,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -443,7 +445,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -492,7 +494,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     computeJob.setNodesToPart(nodesToPart);
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
     ComputeTaskFuture<S> result = compute.executeAsync(
-        new OSHDBIgniteMapReduceComputeTask<Object, S>(
+        new OSHDBIgniteMapReduceComputeTask<>(
             computeJob,
             identitySupplier,
             combiner,

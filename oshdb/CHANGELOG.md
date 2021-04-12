@@ -10,6 +10,7 @@ Changelog OSHDB MODULE
 ### moving
  - oshdb.util.OSHDBTimestamp - oshdb.OSHDBTimestamp
  - oshdb.util.OSHDBTag - oshdb.OSHDBTag
+ - CellIterator.OSHEntityFilter/OSMEntityFilter - oshdb.osh.OSHEntityFilter, oshdb.osm.OSMEntityFilter
  
 
 ### breaking changes

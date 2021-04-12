@@ -11,7 +11,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -20,7 +19,9 @@ import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osh.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osm.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
@@ -59,10 +60,6 @@ import com.google.common.collect.Streams;
  */
 public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
-
-  public interface OSHEntityFilter extends Predicate<OSHEntity>, Serializable {}
-
-  public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {}
 
   private final TreeSet<OSHDBTimestamp> timestamps;
   private final OSHDBBoundingBox boundingBox;
