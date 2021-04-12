@@ -338,8 +338,8 @@ public class TestOSHEntityTimeUtils {
     var tss = OSHEntityTimeUtils.getChangesetTimestamps(hnode);
     assertNotNull(tss);
     assertEquals(2, tss.size());
-    assertEquals(1L, tss.get(1L).longValue());
-    assertEquals(8L, tss.get(2L).longValue());
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+    assertEquals(8L, tss.get(new OSHDBTimestamp(2L)).longValue());
   }
 
   @Test
@@ -387,10 +387,10 @@ public class TestOSHEntityTimeUtils {
     var tss = OSHEntityTimeUtils.getChangesetTimestamps(hway);
     assertNotNull(tss);
     assertTrue(tss.size() >= 4);
-    assertEquals(1L, tss.get(1L).longValue());
-    assertEquals(2L, tss.get(2L).longValue());
-    assertEquals(3L, tss.get(3L).longValue());
-    assertEquals(4L, tss.get(4L).longValue());
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+    assertEquals(2L, tss.get(new OSHDBTimestamp(2L)).longValue());
+    assertEquals(3L, tss.get(new OSHDBTimestamp(3L)).longValue());
+    assertEquals(4L, tss.get(new OSHDBTimestamp(4L)).longValue());
   }
 
   @Test
@@ -461,13 +461,13 @@ public class TestOSHEntityTimeUtils {
     var tss = OSHEntityTimeUtils.getChangesetTimestamps(hrel);
     assertNotNull(tss);
     assertTrue(tss.size() >= 7);
-    assertEquals(1L, tss.get(1L).longValue());
-    assertEquals(2L, tss.get(2L).longValue());
-    assertEquals(3L, tss.get(3L).longValue());
-    assertEquals(4L, tss.get(4L).longValue());
-    assertEquals(5L, tss.get(5L).longValue());
-    assertEquals(6L, tss.get(6L).longValue());
-    assertEquals(7L, tss.get(7L).longValue());
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
+    assertEquals(2L, tss.get(new OSHDBTimestamp(2L)).longValue());
+    assertEquals(3L, tss.get(new OSHDBTimestamp(3L)).longValue());
+    assertEquals(4L, tss.get(new OSHDBTimestamp(4L)).longValue());
+    assertEquals(5L, tss.get(new OSHDBTimestamp(5L)).longValue());
+    assertEquals(6L, tss.get(new OSHDBTimestamp(6L)).longValue());
+    assertEquals(7L, tss.get(new OSHDBTimestamp(7L)).longValue());
   }
 
   @Test
@@ -528,7 +528,7 @@ public class TestOSHEntityTimeUtils {
     var tss = OSHEntityTimeUtils.getChangesetTimestamps(hway);
     assertNotNull(tss);
     assertTrue(tss.size() >= 1);
-    assertEquals(1L, tss.get(1L).longValue());
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
 
     // missing relation member
     OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
@@ -541,7 +541,7 @@ public class TestOSHEntityTimeUtils {
     tss = OSHEntityTimeUtils.getChangesetTimestamps(hrel);
     assertNotNull(tss);
     assertTrue(tss.size() >= 1);
-    assertEquals(1L, tss.get(1L).longValue());
+    assertEquals(1L, tss.get(new OSHDBTimestamp(1L)).longValue());
   }
 
   @Test
