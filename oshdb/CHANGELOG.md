@@ -9,6 +9,7 @@ Changelog OSHDB MODULE
  
 ### moving
  - oshdb.util.OSHDBTimestamp - oshdb.OSHDBTimestamp
+ - oshdb.util.OSHDBTag - oshdb.OSHDBTag
  
 
 ### breaking changes

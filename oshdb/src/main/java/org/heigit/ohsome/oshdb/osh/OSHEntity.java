@@ -16,6 +16,7 @@ public interface OSHEntity {
 
   OSHDBBoundingBox getBoundingBox();
 
+  @Deprecated
   int[] getRawTagKeys();
 
   boolean hasTagKey(OSHDBTagKey tag);

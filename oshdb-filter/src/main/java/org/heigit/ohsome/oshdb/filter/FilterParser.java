@@ -2,10 +2,10 @@ package org.heigit.ohsome.oshdb.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.filter.GeometryFilter.ValueRange;
 import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagKey;

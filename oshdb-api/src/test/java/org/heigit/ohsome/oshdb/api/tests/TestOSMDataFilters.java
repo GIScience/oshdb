@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -11,6 +10,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
@@ -209,10 +209,9 @@ public class TestOSMDataFilters {
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
         .uniq(snapshot -> {
-          int[] tags = snapshot.getEntity().getRawTags();
-          for (int i = 0; i < tags.length; i += 2) {
-            if (tags[i] == 6 /* name */) {
-              return tags[i + 1];
+          for (OSHDBTag tag : snapshot.getEntity().getTags()) {
+            if (tag.getKey() == 6 /* name */) {
+              return tag.getValue();
             }
           }
           // cannot actually happen (since we query only snapshots with a name, but needed to make

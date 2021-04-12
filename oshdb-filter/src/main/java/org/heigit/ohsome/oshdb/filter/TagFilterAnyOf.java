@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.heigit.ohsome.oshdb.util.OSHDBTag;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 
 /**
  * A tag filter which executes a "key [not] in (value1, value2, …)" check.
