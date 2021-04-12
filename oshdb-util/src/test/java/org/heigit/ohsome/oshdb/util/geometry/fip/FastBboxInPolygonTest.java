@@ -2,8 +2,7 @@ package org.heigit.ohsome.oshdb.util.geometry.fip;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.junit.Test;
 import org.locationtech.jts.geom.GeometryFactory;

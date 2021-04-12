@@ -9,12 +9,12 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
@@ -44,17 +44,20 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     // header holds data on bitlevel and can then be compared to stereotypical
     // bitcombinations (e.g. this.HEADER_HAS_TAGS)
     final byte header = wrapper.readRawByte();
-    final OSHDBBoundingBox bbox;
+    final long minLon;
+    final long minLat;
+    final long maxLon;
+    final long maxLat;
     if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
-      final long minLon = baseLongitude + wrapper.readSInt64();
-      final long maxLon = minLon + wrapper.readUInt64();
-      final long minLat = baseLatitude + wrapper.readSInt64();
-      final long maxLat = minLat + wrapper.readUInt64();
-
-      bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
-
+      minLon = baseLongitude + wrapper.readSInt64();
+      maxLon = minLon + wrapper.readUInt64();
+      minLat = baseLatitude + wrapper.readSInt64();
+      maxLat = minLat + wrapper.readUInt64();
     } else {
-      bbox = null;
+      minLon = 1;
+      minLat = 1;
+      maxLon = -1;
+      maxLat = -1;
     }
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
@@ -73,16 +76,18 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     // TODO maybe better to store number of versions instead
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHNodeImpl(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude,
-        header, id, bbox, keys, dataOffset, dataLength);
+    return new OSHNodeImpl(data, offset, length, 
+        baseNodeId, baseTimestamp, baseLongitude, baseLatitude,
+        header, id, minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
   }
 
   private OSHNodeImpl(final byte[] data, final int offset, final int length, final long baseNodeId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
+      final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat, 
+      final int[] keys,
       final int dataOffset, final int dataLength) {
     super(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id,
-        bbox, keys, dataOffset, dataLength);
+        minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
   }
 
   @Override
@@ -97,8 +102,8 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
 
   @Override
   public OSHDBBoundingBox getBoundingBox() {
-    if (bbox != null) {
-      return bbox;
+    if (minLon <= maxLon && minLat <= maxLat) {
+      return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
     }
 
     long minLon = Long.MAX_VALUE;

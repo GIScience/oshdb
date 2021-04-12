@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import org.heigit.ohsome.oshdb.OSHDB;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.index.XYGrid.IdRange;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 
 /**
  * Multi zoomlevel functionality for the XYGrid.

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.grid.GridOSHWays;
@@ -25,7 +26,6 @@ import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransfomRelation;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 public abstract class OSHDBHandler extends LoaderHandler {

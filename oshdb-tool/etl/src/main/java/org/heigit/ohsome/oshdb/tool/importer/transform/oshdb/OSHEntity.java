@@ -2,8 +2,8 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 
 public interface OSHEntity {
 

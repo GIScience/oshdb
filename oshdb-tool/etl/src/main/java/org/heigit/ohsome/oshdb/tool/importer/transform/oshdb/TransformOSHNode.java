@@ -3,8 +3,8 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
@@ -56,6 +56,6 @@ public class TransformOSHNode extends OSHNode2 {
 
   private TransformOSHNode(final byte[] data, final int offset, final int length, final byte header, final long id,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude, final int dataOffset, final int dataLength) {
-    super(data, offset, length, header,id, OSHDBBoundingBox.EMPTY, baseTimestamp, baseLongitude, baseLatitude, new int[0], dataOffset, dataLength);
+    super(data, offset, length, header,id, OSHDBBoundingBox.INVALID, baseTimestamp, baseLongitude, baseLatitude, new int[0], dataOffset, dataLength);
   }
 }

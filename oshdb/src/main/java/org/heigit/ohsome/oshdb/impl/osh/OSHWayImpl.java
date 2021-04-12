@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -23,7 +24,6 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
@@ -61,8 +61,6 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     final long minLat = baseLatitude + wrapper.readSInt64();
     final long maxLat = minLat + wrapper.readUInt64();
 
-    final OSHDBBoundingBox bbox = new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
-
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
       final int size = wrapper.readUInt32();
@@ -98,17 +96,17 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     final int dataLength = length - (dataOffset - offset);
 
     return new OSHWayImpl(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude,
-        header, id, bbox, keys, dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
+        header, id, minLon, minLat, maxLon, maxLat, keys, 
+        dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
   }
 
   private OSHWayImpl(final byte[] data, final int offset, final int length, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
+      byte header, final long id, long minLon, long minLat, long maxLon, long maxLat, int[] keys,
       final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
       final int nodeDataLength) {
     super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
-        bbox, keys, dataOffset, dataLength);
-
+        minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
     this.nodeDataOffset = nodeDataOffset;

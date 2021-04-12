@@ -3,11 +3,11 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
 public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {

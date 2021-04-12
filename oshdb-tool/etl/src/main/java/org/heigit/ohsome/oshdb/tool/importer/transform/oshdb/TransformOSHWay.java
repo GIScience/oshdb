@@ -1,18 +1,18 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 public class TransformOSHWay extends OSHWay2 {
 
@@ -87,7 +87,7 @@ public class TransformOSHWay extends OSHWay2 {
   }
 
   private TransformOSHWay(final byte[] data, final int offset, final int length, byte header, final long id, final long baseTimestamp,final long baseLongitude, final long baseLatitude, final int dataOffset, final int dataLength, final long[] nodeIds) {
-    super(data, offset, length, header, id, OSHDBBoundingBox.EMPTY, 
+    super(data, offset, length, header, id, OSHDBBoundingBox.INVALID, 
         baseTimestamp, baseLongitude, baseLatitude,
         new int[0], 
         dataOffset, dataLength);

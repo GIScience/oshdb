@@ -16,4 +16,5 @@ Changelog OSHDB MODULE
 
 ### new features
  - new interface OSHDBTimeable
+ - new interface OSHDBBoundable
 

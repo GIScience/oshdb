@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +13,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -22,7 +23,6 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
@@ -38,6 +38,7 @@ import org.locationtech.jts.geom.prep.PreparedPolygon;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.collect.Lists;
 
 /**
  * Builds JTS geometries from OSM entities.
@@ -155,7 +156,7 @@ public class OSHDBGeometryBuilder {
    * @param bbox The BoundingBox the polygon should be created for.
    * @return a rectangular Polygon
    */
-  public static Polygon getGeometry(@Nonnull OSHDBBoundingBox bbox) {
+  public static Polygon getGeometry(@Nonnull OSHDBBoundable bbox) {
     assert bbox != null : "a bounding box is not allowed to be null";
 
     GeometryFactory gf = new GeometryFactory();

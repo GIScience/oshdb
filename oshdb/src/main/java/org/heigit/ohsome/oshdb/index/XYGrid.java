@@ -5,8 +5,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import org.heigit.ohsome.oshdb.OSHDB;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,8 +75,7 @@ public class XYGrid implements Serializable {
     if (y < grid.zoompow / 2 - 1) {
       topRightId += grid.zoompow;
     }
-    OSHDBBoundingBox result = grid.getCellDimensions(id);
-    result.add(grid.getCellDimensions(topRightId));
+    OSHDBBoundingBox result = grid.getCellDimensions(id).add(grid.getCellDimensions(topRightId));
     return result;
   }
 

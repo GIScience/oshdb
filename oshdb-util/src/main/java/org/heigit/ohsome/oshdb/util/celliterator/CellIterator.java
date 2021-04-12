@@ -1,7 +1,5 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -16,6 +14,7 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGrid;
@@ -27,7 +26,6 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
@@ -49,6 +47,8 @@ import org.locationtech.jts.geom.Puntal;
 import org.locationtech.jts.geom.TopologyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 /**
  * Allows to iterate through the contents of OSH grid cells.
@@ -268,8 +268,8 @@ public class CellIterator implements Serializable {
     return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox)
-              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+              !oshEntity.intersects(boundingBox)
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -280,8 +280,8 @@ public class CellIterator implements Serializable {
         return Stream.empty();
       }
       boolean fullyInside = allFullyInside || (
-          oshEntity.getBoundingBox().isInside(boundingBox)
-          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+          oshEntity.isInside(boundingBox)
+          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
       );
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
@@ -555,8 +555,8 @@ public class CellIterator implements Serializable {
     return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox)
-              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+              !oshEntity.intersects(boundingBox)
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -568,8 +568,8 @@ public class CellIterator implements Serializable {
       }
 
       boolean fullyInside = allFullyInside || (
-          oshEntity.getBoundingBox().isInside(boundingBox)
-          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+          oshEntity.isInside(boundingBox)
+          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntityTimeUtils.getChangesetTimestamps(oshEntity);

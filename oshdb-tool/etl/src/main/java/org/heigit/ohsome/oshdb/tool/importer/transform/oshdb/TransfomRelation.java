@@ -1,18 +1,18 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 public class TransfomRelation extends OSHRelation2 {
   
@@ -94,7 +94,7 @@ public class TransfomRelation extends OSHRelation2 {
   
   protected TransfomRelation(byte[] data, int offset, int length, byte header, long id, 
       long baseTimestamp, long baseLongitude, long baseLatitude, int dataOffset, int dataLength, long[] nodeIds, long[] wayIds) {
-    super(data, offset, length, header, id, OSHDBBoundingBox.EMPTY, baseTimestamp, baseLongitude, baseLatitude, new int[0], dataOffset, dataLength);
+    super(data, offset, length, header, id, OSHDBBoundingBox.INVALID, baseTimestamp, baseLongitude, baseLatitude, new int[0], dataOffset, dataLength);
 
     offsetToId = new HashMap<>(2);
     offsetToId.put(OSMType.NODE,nodeIds);
