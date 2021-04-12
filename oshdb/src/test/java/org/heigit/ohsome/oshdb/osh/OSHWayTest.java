@@ -68,14 +68,14 @@ public class OSHWayTest {
     Iterator<OSMWay> itr = hway.getVersions().iterator();
     assertTrue(itr.hasNext());
     way = itr.next();
-    members = way.getRefs();
+    members = way.getMembers();
     assertEquals(2, members.length);
     assertEquals(100, members[0].getId());
     assertEquals(104, members[1].getId());
 
     assertTrue(itr.hasNext());
     way = itr.next();
-    members = way.getRefs();
+    members = way.getMembers();
     assertEquals(2, members.length);
 
     assertEquals(102, members[0].getId());

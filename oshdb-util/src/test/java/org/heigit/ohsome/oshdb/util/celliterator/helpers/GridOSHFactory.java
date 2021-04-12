@@ -87,7 +87,7 @@ public class GridOSHFactory {
       Collection<OSMWay> wayVersions = entry.getValue();
       oshWays.add(OSHWayImpl.build(new ArrayList<>(wayVersions),
           wayVersions.stream().flatMap(osmWay ->
-              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
+              Arrays.stream(osmWay.getMembers()).map(ref -> oshNodes.get(ref.getId()))
           ).collect(Collectors.toSet())
       ));
     }
@@ -153,7 +153,7 @@ public class GridOSHFactory {
       Collection<OSMWay> wayVersions = entry.getValue();
       oshWays.put(entry.getKey(), OSHWayImpl.build(new ArrayList<>(wayVersions),
           wayVersions.stream().flatMap(osmWay ->
-              Arrays.stream(osmWay.getRefs()).map(ref -> oshNodes.get(ref.getId()))
+              Arrays.stream(osmWay.getMembers()).map(ref -> oshNodes.get(ref.getId()))
           ).collect(Collectors.toSet())
       ));
     }

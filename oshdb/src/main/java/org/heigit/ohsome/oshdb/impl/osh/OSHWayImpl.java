@@ -270,7 +270,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
       OSMEntity version = way;
 
       byte changed = 0;
-      OSMMember[] refs = way.getRefs();
+      OSMMember[] refs = way.getMembers();
       if (version.isVisible() && !memberEquals(refs, lastRefs)) {
         changed |= CHANGED_REFS;
       }

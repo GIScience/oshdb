@@ -76,7 +76,7 @@ class BaseTagInterpreter implements TagInterpreter {
       return false;
     } else if (entity instanceof OSMWay) {
       OSMWay way = (OSMWay) entity;
-      OSMMember[] nds = way.getRefs();
+      OSMMember[] nds = way.getMembers();
       // must form closed ring with at least 3 vertices
       if (nds.length < 4 || nds[0].getId() != nds[nds.length - 1].getId()) {
         return false;

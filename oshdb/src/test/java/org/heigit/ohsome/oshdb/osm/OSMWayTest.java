@@ -17,17 +17,17 @@ public class OSMWayTest {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, new OSMMember[] {part, part});
     OSMMember[] expResult = new OSMMember[] {part, part};
-    OSMMember[] result = instance.getRefs();
+    OSMMember[] result = instance.getMembers();
     assertArrayEquals(expResult, result);
 
     instance = new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, new OSMMember[] {});
     expResult = new OSMMember[] {};
-    result = instance.getRefs();
+    result = instance.getMembers();
     assertArrayEquals(expResult, result);
 
     instance = new OSMWay(1L, 1, new OSHDBTimestamp(1L), 1L, 1, new int[] {}, null);
     expResult = null;
-    result = instance.getRefs();
+    result = instance.getMembers();
     assertArrayEquals(expResult, result);
   }
 

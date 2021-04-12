@@ -36,8 +36,8 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
     protected boolean extension(ByteArrayOutputWrapper out,OSMEntity version,long baseLongitude, long baseLatitude, 
         Map<Long, Integer> nodeOffsets,Map<Long, Integer> wayOffsets, Map<Long, Integer> relationOffsets) throws IOException {
       OSMWay way = (OSMWay) version;
-      if (!memberEquals(way.getRefs(), members)) {
-        members = way.getRefs();
+      if (!memberEquals(way.getMembers(), members)) {
+        members = way.getMembers();
         out.writeUInt32(members.length);
         long lastId = 0;
         for (OSMMember member : members) {

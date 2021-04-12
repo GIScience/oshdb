@@ -312,7 +312,7 @@ public class OSHEntityTimeUtils {
       case RELATION:
         return ((OSMRelation) osm).getMembers();
       case WAY:
-        return  ((OSMWay) osm).getRefs();
+        return  ((OSMWay) osm).getMembers();
       default:
         final String illegalOSMTypeMessage
             = "cannot collect members from anything other than ways or relations";

@@ -226,6 +226,6 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
     OSHDBTimestamp timestamp = way.getTimestamp();
     Geometry result = OSHDBGeometryBuilder.getGeometry(way, timestamp, areaDecider);
     // no exception should have been thrown at this point
-    assertTrue(result.getCoordinates().length < way.getRefs().length);
+    assertTrue(result.getCoordinates().length < way.getMembers().length);
   }
 }

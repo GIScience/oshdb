@@ -139,7 +139,7 @@ public class GeometryTypeFilter implements Filter {
     // type specific checks
     if (geometryType == GeometryType.POLYGON) {
       if (osmType == OSMType.WAY) {
-        OSMMember[] wayNodes = ((OSMWay) entity).getRefs();
+        OSMMember[] wayNodes = ((OSMWay) entity).getMembers();
         return wayNodes.length >= 4 && wayNodes[0].getId() == wayNodes[wayNodes.length - 1].getId();
       } else if (osmType == OSMType.RELATION) {
         return entity.hasTagValue(typeMultipolygon.getKey(), typeMultipolygon.getValue())
