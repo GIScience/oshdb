@@ -9,12 +9,12 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
@@ -170,7 +170,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
             latitude = wrapper.readSInt64() + latitude;
           }
 
-          return new OSMNode(id, version, new OSHDBTimestamp(baseTimestamp + timestamp), changeset,
+          return new OSMNode(id, version, (baseTimestamp + timestamp), changeset,
               userId, keyValues, (version > 0) ? baseLongitude + longitude : 0,
               (version > 0) ? baseLatitude + latitude : 0);
         } catch (IOException e) {

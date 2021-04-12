@@ -3,7 +3,7 @@ package org.heigit.ohsome.oshdb.osm;
 import java.io.Serializable;
 import java.util.Locale;
 import org.heigit.ohsome.oshdb.OSHDB;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
@@ -12,7 +12,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   private final long longitude;
   private final long latitude;
 
-  public OSMNode(final long id, final int version, final OSHDBTimestamp timestamp, final long changeset,
+  public OSMNode(final long id, final int version, final long timestamp, final long changeset,
       final int userId, final int[] tags, final long longitude, final long latitude) {
     super(id, version, timestamp, changeset, userId, tags);
     this.longitude = longitude;
@@ -57,7 +57,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
       c = Integer.compare(Math.abs(version), Math.abs(o.version));
     }
     if (c == 0) {
-      c = Long.compare(timestamp.getEpochSecond(), o.timestamp.getEpochSecond());
+      c = Long.compare(timestamp, o.timestamp);
     }
     return c;
   }

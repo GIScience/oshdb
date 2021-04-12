@@ -3,7 +3,7 @@ package org.heigit.ohsome.oshdb.util.time;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
 /**
  * A helper class to transform timestamps between string, date and long.

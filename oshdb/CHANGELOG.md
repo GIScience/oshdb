@@ -3,11 +3,16 @@ Changelog OSHDB MODULE
 
 ## 0.7
 
-### renaming / moving
+### renaming
  - OSMWay.getRef() -> OSMWay.getMember()
  - OSHDBTimestamp.getRawUnixTimestamp() -> OSHDBTimestamp.getEpochSecond()
+ 
+### moving
+ - oshdb.util.OSHDBTimestamp - oshdb.OSHDBTimestamp
+ 
 
 ### breaking changes
 
 ### new features
+ - new interface OSHDBTimeable
 

@@ -9,33 +9,33 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.junit.Test;
 
 public class OSHWayTest {
 
   OSHNode node100 = OSHNodeTest.buildOSHNode(new OSMNode(
-      100L, 1, new OSHDBTimestamp(1L), 0L, 123, new int[]{1, 2}, 494094984L, 86809727L));
+      100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094984L, 86809727L));
   OSHNode node102 = OSHNodeTest.buildOSHNode(new OSMNode(
-      102L, 1, new OSHDBTimestamp(1L), 0L, 123, new int[]{2, 1}, 494094984L, 86809727L));
+      102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094984L, 86809727L));
   OSHNode node104 = OSHNodeTest.buildOSHNode(new OSMNode(
-      104L, 1, new OSHDBTimestamp(1L), 0L, 123, new int[]{2, 4}, 494094984L, 86809727L));
+      104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094984L, 86809727L));
 
   public OSHWayTest() throws IOException {}
 
   @Test
   public void testGetNodes() throws IOException {
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 1, 2, 1},
+        new OSMWay(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
                 new OSMMember(102, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)}),
-        new OSMWay(123, 3, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 1, 2, 2},
+        new OSMWay(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
             new OSMMember[]{
                 new OSMMember(100, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)})
@@ -49,11 +49,11 @@ public class OSHWayTest {
   @Test
   public void testWithMissingNode() throws IOException {
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123, 3, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 1, 2, 2},
+        new OSMWay(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
             new OSMMember[]{
                 new OSMMember(100, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)}),
-        new OSMWay(123, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 1, 2, 1},
+        new OSMWay(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
                 new OSMMember(102, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)})
@@ -85,11 +85,11 @@ public class OSHWayTest {
   @Test
   public void testToString() throws IOException {
     OSHWay instance = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 1, 2, 1},
+        new OSMWay(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
                 new OSMMember(102, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)}),
-        new OSMWay(123, 3, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 1, 2, 2},
+        new OSMWay(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
             new OSMMember[]{
                 new OSMMember(100, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)})

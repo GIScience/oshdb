@@ -1,10 +1,5 @@
 package org.heigit.ohsome.oshdb.util.xmlreader;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.io.Files;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,6 +34,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.io.Files;
 
 public class OSMXmlReader {
 
@@ -130,7 +130,7 @@ public class OSMXmlReader {
         osm.setExtension(longitude, latitude);
 
         OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
-            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
+            osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
             osm.getLat());
         nodes.put(id, oldOSM);
       }
@@ -163,7 +163,7 @@ public class OSMXmlReader {
         }
         // osm.setExtension(members);
         OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
-            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
+            osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         ways.put(id, oldOSM);
       }
       lastId = id;
@@ -232,7 +232,7 @@ public class OSMXmlReader {
         // osm.setExtension(members);
         OSMRelation oldOSM = new OSMRelation(osm.getId(),
             osm.getVersion() * (osm.isVisible() ? 1 : -1),
-            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
+            osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         relations.put(id, oldOSM);
       }
       lastId = id;

@@ -4,16 +4,16 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBTimeable;
 import org.heigit.ohsome.oshdb.util.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
-public abstract class OSMEntity {
+public abstract class OSMEntity implements OSHDBTimeable {
 
   protected final long id;
 
   protected final int version;
-  protected final OSHDBTimestamp timestamp;
+  protected final long timestamp;
   protected final long changesetId;
   protected final int userId;
   protected final int[] tags;
@@ -28,7 +28,7 @@ public abstract class OSMEntity {
    * @param userId UserID
    * @param tags An array of OSHDB key-value ids. The format is [KID1,VID1,KID2,VID2...KIDn,VIDn].
    */
-  public OSMEntity(final long id, final int version, final OSHDBTimestamp timestamp,
+  public OSMEntity(final long id, final int version, final long timestamp,
       final long changesetId, final int userId, final int[] tags) {
     this.id = id;
     this.version = version;
@@ -48,7 +48,8 @@ public abstract class OSMEntity {
     return Math.abs(version);
   }
 
-  public OSHDBTimestamp getTimestamp() {
+  @Override
+  public long getEpochSecond() {
     return timestamp;
   }
 
@@ -151,10 +152,8 @@ public abstract class OSMEntity {
     return false;
   }
 
-
-
   public boolean equalsTo(OSMEntity o) {
-    return id == o.id && version == o.version && timestamp.equals(o.timestamp)
+    return id == o.id && version == o.version && timestamp == o.timestamp
         && changesetId == o.changesetId && userId == o.userId && Arrays.equals(tags, o.tags);
   }
 

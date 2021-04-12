@@ -1,15 +1,14 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.util.Arrays;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimeable;
 
-public interface OSMEntity {
+public interface OSMEntity extends OSHDBTimeable {
 
   public long getId();
   public boolean isVisible();
   
   public int getVersion();
-  public OSHDBTimestamp getTimestamp();
   public long getChangeset();
   public int getUserId();
   public int[] getTags();

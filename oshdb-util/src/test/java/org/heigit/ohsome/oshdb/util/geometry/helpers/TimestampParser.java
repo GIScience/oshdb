@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.util.geometry.helpers;
 
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser;
 
 public class TimestampParser {

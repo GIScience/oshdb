@@ -4,15 +4,15 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
 public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializable {
 
   private static final long serialVersionUID = 1L;
   private final OSMMember[] members;
 
-  public OSMWay(final long id, final int version, final OSHDBTimestamp timestamp, final long changeset,
+  public OSMWay(final long id, final int version, final long timestamp, final long changeset,
       final int userId, final int[] tags, final OSMMember[] refs) {
     super(id, version, timestamp, changeset, userId, tags);
     this.members = refs;
@@ -50,7 +50,7 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
       c = Integer.compare(Math.abs(version), Math.abs(o.version));
     }
     if (c == 0) {
-      c = Long.compare(timestamp.getEpochSecond(), o.timestamp.getEpochSecond());
+      c = Long.compare(timestamp, o.timestamp);
     }
     return c;
   }

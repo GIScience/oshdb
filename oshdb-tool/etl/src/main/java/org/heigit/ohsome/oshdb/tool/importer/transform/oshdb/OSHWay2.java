@@ -8,7 +8,6 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
 public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
@@ -100,7 +99,7 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
             members[i] = way.getMember(memId);
           }
         }
-        return new OSMWay(entity.id, version, new OSHDBTimestamp(entity.baseTimestamp + timestamp), changeset, userId, keyValues, members);
+        return new OSMWay(entity.id, version, (entity.baseTimestamp + timestamp), changeset, userId, keyValues, members);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

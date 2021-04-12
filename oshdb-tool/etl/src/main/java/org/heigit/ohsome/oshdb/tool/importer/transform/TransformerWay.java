@@ -1,8 +1,5 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
-import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,10 +11,12 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapper;
 import org.heigit.ohsome.oshdb.tool.importer.util.long2long.SortedLong2LongMap;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Way;
+import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 public class TransformerWay extends Transformer {
   private final ByteArrayOutputWrapper baData = new ByteArrayOutputWrapper(1024);
@@ -31,12 +30,14 @@ public class TransformerWay extends Transformer {
     super(maxMemory,maxZoom, workDirectory,tagToIdMapper,workerId);
     this.nodeToCell = nodeToCell;
   }
+  @Override
   public OSMType type(){
     return OSMType.WAY;
   }
   
   private final long[] lastDataSize = new long[2];
   
+  @Override
   public void transform(long id, List<Entity> versions) {    
     List<OSMWay> ways = new ArrayList<>(versions.size());
     LongSortedSet nodeIds = new LongAVLTreeSet();
@@ -77,7 +78,7 @@ public class TransformerWay extends Transformer {
   private OSMWay getOSM(Way entity) {
     return new OSMWay(entity.getId() //
         , modifiedVersion(entity) //
-        , new OSHDBTimestamp(entity.getTimestamp()) //
+        , entity.getTimestamp() //
         , entity.getChangeset() //
         , entity.getUserId() //
         , getKeyValue(entity.getTags()) //
