@@ -90,6 +90,33 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
       final int dataOffset, final int dataLength) {
     super(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id,
         minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
+    
+    // correct bbox!
+    if (!(minLon <= maxLon && minLat <= maxLat)) {
+      minLon = Long.MAX_VALUE;
+      maxLon = Long.MIN_VALUE;
+      minLat = Long.MAX_VALUE;
+      maxLat = Long.MIN_VALUE;
+      for (OSMNode osm : this) {
+        if (osm.isVisible()) {
+          minLon = Math.min(minLon, osm.getLon());
+          maxLon = Math.max(maxLon, osm.getLon());
+
+          minLat = Math.min(minLat, osm.getLat());
+          maxLat = Math.max(maxLat, osm.getLat());
+        }
+      }
+
+      if (minLon == Long.MAX_VALUE || minLat == Long.MAX_VALUE) {
+        minLon = minLat = -1;
+        maxLon = maxLat = 1;
+      } else {
+        this.minLon = minLon;
+        this.minLat = minLat;
+        this.maxLon = maxLon;
+        this.maxLat = maxLat;
+      }
+    }
   }
 
   @Override
@@ -100,60 +127,6 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
   @Override
   public Iterable<OSMNode> getVersions() {
     return this;
-  }
-
-  @Override
-  public OSHDBBoundingBox getBoundingBox() {
-    if (minLon <= maxLon && minLat <= maxLat) {
-      return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
-    }
-
-    long minLon = Long.MAX_VALUE;
-    long maxLon = Long.MIN_VALUE;
-    long minLat = Long.MAX_VALUE;
-    long maxLat = Long.MIN_VALUE;
-    for (OSMNode osm : this) {
-      if (osm.isVisible()) {
-        minLon = Math.min(minLon, osm.getLon());
-        maxLon = Math.max(maxLon, osm.getLon());
-
-        minLat = Math.min(minLat, osm.getLat());
-        maxLat = Math.max(maxLat, osm.getLat());
-      }
-    }
-
-    if (minLon == Long.MAX_VALUE || minLat == Long.MAX_VALUE) {
-      return null;
-    }
-
-    return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
-  }
-  
-  @Override
-  public boolean intersects(OSHDBBoundable otherBbox) {
-    if (minLon <= maxLon && minLat <= maxLat) {
-      return super.intersects(otherBbox);      
-    } else {
-      return getBoundingBox().intersects(otherBbox);
-    }
-  }
-  
-  @Override
-  public boolean isInside(OSHDBBoundingBox otherBbox) {
-    if (minLon <= maxLon && minLat <= maxLat) {
-      return super.isInside(otherBbox);      
-    } else {
-      return getBoundingBox().isInside(otherBbox);
-    }
-  }
-  
-  @Override
-  public boolean isPoint() {
-    if (minLon <= maxLon && minLat <= maxLat) {
-      return super.isPoint();      
-    } else {
-      return getBoundingBox().isPoint();
-    }
   }
 
   @Override

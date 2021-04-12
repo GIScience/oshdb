@@ -1,9 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
-import com.tdunning.math.stats.TDigest;
 import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,7 +17,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,25 +25,27 @@ import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.generic.NumberUtils;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBiConsumer;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBiFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBinaryOperator;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializablePredicate;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer.Grouping;
 import org.heigit.ohsome.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.api.object.OSMContribution;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osm.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
+import org.heigit.ohsome.oshdb.util.function.SerializableBiConsumer;
+import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
+import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
+import com.tdunning.math.stats.TDigest;
 
 
 /**
@@ -86,7 +85,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
-    this.mapReducer = mapReducer.map(data -> new IndexValuePair<U, X>(
+    this.mapReducer = mapReducer.map(data -> new IndexValuePair<>(
         indexer.apply(data),
         data
     ));
@@ -121,7 +120,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       copyTransformKey(MapReducer<IndexValuePair<V, X>> mapReducer) {
     @SuppressWarnings("unchecked") // we convert the mapAggregator to a new key type "V"
     MapAggregator<V, ?> transformedMapAggregator = (MapAggregator<V, ?>) this;
-    return new MapAggregator<V, X>(transformedMapAggregator, mapReducer);
+    return new MapAggregator<>(transformedMapAggregator, mapReducer);
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -139,7 +138,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
       aggregateBy(SerializableFunction<X, V> indexer, Collection<V> zerofill) {
     MapAggregator<OSHDBCombinedIndex<U, V>, X> res = this
-        .mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<U, V>(
+        .mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<>(
             existingIndex,
             indexer.apply(data)
         ));
@@ -254,6 +253,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param bboxFilter the bounding box to query the data in
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapAggregator<U, X> areaOfInterest(OSHDBBoundingBox bboxFilter) {
     return this.copyTransform(this.mapReducer.areaOfInterest(bboxFilter));
@@ -267,6 +267,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param polygonFilter the bounding box to query the data in
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public <P extends Geometry & Polygonal> MapAggregator<U, X> areaOfInterest(P polygonFilter) {
     return this.copyTransform(this.mapReducer.areaOfInterest(polygonFilter));
@@ -279,6 +280,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmType(Set<OSMType> typeFilter) {
@@ -292,12 +294,13 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param f the filter function to call for each osm entity
    * @return a modified copy of this object (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with {@link
-   *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Filter.SerializablePredicate)}
+   *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(OSMEntityFilter)}
    *             instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
-  public MapAggregator<U, X> osmEntityFilter(SerializablePredicate<OSMEntity> f) {
+  public MapAggregator<U, X> osmEntityFilter(OSMEntityFilter f) {
     return this.copyTransform(this.mapReducer.osmEntityFilter(f));
   }
 
@@ -310,6 +313,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(OSMTagInterface tag) {
@@ -324,6 +328,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key) {
@@ -339,6 +344,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key, String value) {
@@ -355,6 +361,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key, Collection<String> values) {
@@ -369,6 +376,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param valuePattern a regular expression which the tag value of the osm entity must match
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(String key, Pattern valuePattern) {
     return this.copyTransform(this.mapReducer.osmTag(key, valuePattern));
@@ -382,6 +390,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return a modified copy of this object (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapAggregator<U, X> osmTag(Collection<? extends OSMTagInterface> tags) {
@@ -405,6 +414,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return the sum of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Number> sum() throws Exception {
     return this
@@ -425,6 +435,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the summed up results of the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> SortedMap<U, R> sum(SerializableFunction<X, R> mapper)
       throws Exception {
@@ -441,6 +452,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @return the total count of features or modifications, summed up over all timestamps
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Integer> count() throws Exception {
     return this.sum(ignored -> 1);
@@ -454,6 +466,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @return the set of distinct values
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Set<X>> uniq() throws Exception {
     return this.reduce(
@@ -472,6 +485,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param <R> the type that is returned by the `mapper` function
    * @return a set of distinct values returned by the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public <R> SortedMap<U, Set<R>> uniq(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).uniq();
@@ -485,6 +499,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @return the set of distinct values
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Integer> countUniq() throws Exception {
     return transformSortedMap(this.uniq(), Set::size);
@@ -499,6 +514,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @return the average of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Double> average() throws Exception {
     return this
@@ -513,6 +529,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the average of the numbers returned by the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper)
       throws Exception {
@@ -529,6 +546,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *        return the value and weight combination of numbers to average
    * @return the weighted average of the numbers returned by the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper)
       throws Exception {
@@ -552,6 +570,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @return estimated median
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Double> estimatedMedian() throws Exception {
     return this.estimatedQuantile(0.5);
@@ -568,6 +587,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param mapper function that returns the numbers to generate the mean for
    * @return estimated median
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> SortedMap<U, Double> estimatedMedian(SerializableFunction<X, R> mapper)
       throws Exception {
@@ -585,6 +605,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, Double> estimatedQuantile(double q) throws Exception {
     return this.makeNumeric().estimatedQuantile(n -> n, q);
@@ -603,6 +624,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> SortedMap<U, Double> estimatedQuantile(
       SerializableFunction<X, R> mapper,
@@ -625,6 +647,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q) throws Exception {
     return this.makeNumeric().estimatedQuantiles(n -> n, q);
@@ -642,6 +665,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> SortedMap<U, List<Double>> estimatedQuantiles(
       SerializableFunction<X, R> mapper,
@@ -667,6 +691,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @return a function that computes estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, DoubleUnaryOperator> estimatedQuantiles() throws Exception {
     return this.makeNumeric().estimatedQuantiles(n -> n);
@@ -684,6 +709,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param mapper function that returns the numbers to generate the quantiles for
    * @return a function that computes estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> SortedMap<U, DoubleUnaryOperator> estimatedQuantiles(
       SerializableFunction<X, R> mapper
@@ -732,6 +758,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @return an aggregated map of lists with all results
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, List<X>> collect() throws Exception {
     return this.reduce(
@@ -746,24 +773,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * @return a stream with all results returned by the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public Stream<Entry<U, X>> stream() throws Exception {
-    return this.mapReducer.stream().map(d -> new Entry<U, X>() {
-      @Override
-      public U getKey() {
-        return d.getKey();
-      }
-
-      @Override
-      public X getValue() {
-        return d.getValue();
-      }
-
-      @Override
-      public X setValue(X value) {
-        throw new RuntimeException("cannot modify the value of this entry");
-      }
-    });
+    return this.mapReducer.stream().map(d -> 
+      new AbstractMap.SimpleImmutableEntry<>(d.getKey(),d.getValue()));
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -778,6 +792,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
    * @return a modified copy of this MapAggregator object operating on the transformed type R
    */
+  @Override
   @Contract(pure = true)
   public <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper) {
     return this.copyTransform(this.mapReducer.map(inData -> {
@@ -801,12 +816,13 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
    * @return a modified copy of this MapAggregator object operating on the transformed type R
    */
+  @Override
   @Contract(pure = true)
   public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     return this.copyTransform(this.mapReducer.flatMap(inData -> {
       List<IndexValuePair<U, R>> outData = new LinkedList<>();
       flatMapper.apply(inData.getValue()).forEach(flatMappedData ->
-          outData.add(new IndexValuePair<U, R>(
+          outData.add(new IndexValuePair<>(
               inData.getKey(),
               flatMappedData
           ))
@@ -822,6 +838,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *        (when f returns true) or discarded (when f returns false)
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapAggregator<U, X> filter(SerializablePredicate<X> f) {
     return this.copyTransform(this.mapReducer.filter(data ->
@@ -839,6 +856,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapAggregator<U, X> filter(FilterExpression f) {
     return this.copyTransform(this.mapReducer.filter(f));
@@ -853,6 +871,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * @param f the filter string to apply
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapAggregator<U, X> filter(String f) {
     return this.copyTransform(this.mapReducer.filter(f));
@@ -905,6 +924,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
+  @Override
   @Contract(pure = true)
   public <S> SortedMap<U, S> reduce(
       SerializableSupplier<S> identitySupplier,
@@ -921,7 +941,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
           return m;
         },
         (a, b) -> {
-          TreeMap<U, S> combined = new TreeMap<U, S>(a);
+          TreeMap<U, S> combined = new TreeMap<>(a);
           for (SortedMap.Entry<U, S> entry : b.entrySet()) {
             combined.merge(entry.getKey(), entry.getValue(), combiner);
           }
@@ -985,6 +1005,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
+  @Override
   @Contract(pure = true)
   public SortedMap<U, X> reduce(
       SerializableSupplier<X> identitySupplier,

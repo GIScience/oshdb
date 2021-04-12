@@ -1,8 +1,7 @@
 package org.heigit.ohsome.oshdb.osm;
 
-import java.io.Serializable;
-import java.util.function.Predicate;
+import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 
-public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {
+public interface OSMEntityFilter extends SerializablePredicate<OSMEntity> {
 
 }

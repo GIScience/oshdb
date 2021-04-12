@@ -1,22 +1,18 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import java.io.Serializable;
-import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.filter.NegatableFilter.FilterInternal;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntityFilter;
+import org.heigit.ohsome.oshdb.util.function.SerializableBiPredicate;
 import org.locationtech.jts.geom.Geometry;
 
 /**
  * A filter condition which can be applied to an OSM entity.
  */
 public interface Filter extends FilterExpression {
-
-  /** A bi-predicate which is also serializable. */
-  interface SerializableBiPredicate<T, U> extends BiPredicate<T, U>, Serializable {}
 
   /**
    * Constructs a simple filter based on a predicate on OSH entities.

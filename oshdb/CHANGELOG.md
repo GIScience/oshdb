@@ -11,6 +11,7 @@ Changelog OSHDB MODULE
  - oshdb.util.OSHDBTimestamp - oshdb.OSHDBTimestamp
  - oshdb.util.OSHDBTag - oshdb.OSHDBTag
  - CellIterator.OSHEntityFilter/OSMEntityFilter - oshdb.osh.OSHEntityFilter, oshdb.osm.OSMEntityFilter
+ - oshdb-api.generic.function - oshdb.util.function
  
 
 ### breaking changes

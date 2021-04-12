@@ -105,10 +105,10 @@ public abstract class OSHEntityImpl
 
   protected final long id;
   protected final byte header;
-  protected final long minLon;
-  protected final long maxLon;
-  protected final long minLat;
-  protected final long maxLat;
+  protected long minLon;
+  protected long maxLon;
+  protected long minLat;
+  protected long maxLat;
   protected final int[] keys;
   protected final int dataOffset;
   protected final int dataLength;
