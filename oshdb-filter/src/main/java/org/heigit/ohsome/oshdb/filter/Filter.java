@@ -3,9 +3,9 @@ package org.heigit.ohsome.oshdb.filter;
 import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.filter.NegatableFilter.FilterInternal;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
-import org.heigit.ohsome.oshdb.osh.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.osm.OSMEntityFilter;
+import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
+import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiPredicate;
 import org.locationtech.jts.geom.Geometry;
 
