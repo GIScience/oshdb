@@ -51,7 +51,6 @@ import org.locationtech.jts.geom.TopologyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Allows to iterate through the contents of OSH grid cells.
  *

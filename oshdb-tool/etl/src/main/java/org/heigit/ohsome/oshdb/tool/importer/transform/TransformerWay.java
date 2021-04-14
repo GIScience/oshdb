@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
+import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,9 +17,6 @@ import org.heigit.ohsome.oshdb.tool.importer.util.long2long.SortedLong2LongMap;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Way;
-import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 public class TransformerWay extends Transformer {
   private final ByteArrayOutputWrapper baData = new ByteArrayOutputWrapper(1024);
