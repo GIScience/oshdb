@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.util.geometry.osmtestdata;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osm.OSMMember;

@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
+import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -46,7 +47,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.Streams;
 
 /**
  * {@inheritDoc}
@@ -393,7 +393,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     IgniteCompute compute = ignite.compute();
 
     ComputeTaskFuture<S> asyncResult = compute.executeAsync(
-        new OSHDBIgniteMapReduceComputeTask<Object, S>(
+        new OSHDBIgniteMapReduceComputeTask<>(
             computeJob,
             identitySupplier,
             combiner,

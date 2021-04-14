@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.List;
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.junit.Test;

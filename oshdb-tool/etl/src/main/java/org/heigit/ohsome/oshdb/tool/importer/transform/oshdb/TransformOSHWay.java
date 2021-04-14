@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,8 +13,6 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 public class TransformOSHWay extends OSHWay2 {
 

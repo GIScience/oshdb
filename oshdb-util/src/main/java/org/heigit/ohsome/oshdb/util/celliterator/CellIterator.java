@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -48,8 +50,7 @@ import org.locationtech.jts.geom.Puntal;
 import org.locationtech.jts.geom.TopologyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
+
 
 /**
  * Allows to iterate through the contents of OSH grid cells.

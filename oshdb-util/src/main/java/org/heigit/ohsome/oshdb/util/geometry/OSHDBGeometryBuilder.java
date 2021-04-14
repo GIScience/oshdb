@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +39,6 @@ import org.locationtech.jts.geom.prep.PreparedPolygon;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.Lists;
 
 /**
  * Builds JTS geometries from OSM entities.

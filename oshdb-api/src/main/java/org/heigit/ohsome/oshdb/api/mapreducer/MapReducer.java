@@ -1,5 +1,9 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
+import com.tdunning.math.stats.TDigest;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -76,10 +80,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
-import com.tdunning.math.stats.TDigest;
 
 /**
  * Main class of oshdb's "functional programming" API.
@@ -256,6 +256,7 @@ public abstract class MapReducer<X> implements
    * @param bboxFilter the bounding box to query the data in
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapReducer<X> areaOfInterest(@NotNull OSHDBBoundingBox bboxFilter) {
     MapReducer<X> ret = this.copy();
@@ -275,6 +276,7 @@ public abstract class MapReducer<X> implements
    * @param polygonFilter the bounding box to query the data in
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(@NotNull P polygonFilter) {
     MapReducer<X> ret = this.copy();
@@ -412,6 +414,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmType(Set<OSMType> typeFilter) {
@@ -440,6 +443,7 @@ public abstract class MapReducer<X> implements
    *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(OSMEntityFilter)}
    *             instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmEntityFilter(OSMEntityFilter f) {
@@ -456,6 +460,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key) {
@@ -470,6 +475,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(OSMTagInterface tag) {
@@ -510,6 +516,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, String value) {
@@ -545,6 +552,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Collection<String> values) {
@@ -593,6 +601,7 @@ public abstract class MapReducer<X> implements
    * @param valuePattern a regular expression which the tag value of the osm entity must match
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapReducer<X> osmTag(String key, Pattern valuePattern) {
     OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
@@ -627,6 +636,7 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
+  @Override
   @Deprecated
   @Contract(pure = true)
   public MapReducer<X> osmTag(Collection<? extends OSMTagInterface> tags) {
@@ -713,6 +723,7 @@ public abstract class MapReducer<X> implements
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
    * @return a modified copy of this MapReducer object operating on the transformed type (&lt;R&gt;)
    */
+  @Override
   @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
     MapReducer<?> ret = this.copy();
@@ -732,6 +743,7 @@ public abstract class MapReducer<X> implements
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
    * @return a modified copy of this MapReducer object operating on the transformed type (&lt;R&gt;)
    */
+  @Override
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
@@ -748,6 +760,7 @@ public abstract class MapReducer<X> implements
    *        returns true) or discarded (when f returns false)
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapReducer<X> filter(SerializablePredicate<X> f) {
     return this
@@ -764,6 +777,7 @@ public abstract class MapReducer<X> implements
    * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapReducer<X> filter(FilterExpression f) {
     MapReducer<X> ret = this.copy();
@@ -837,6 +851,7 @@ public abstract class MapReducer<X> implements
    * @param f the filter string to apply
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
+  @Override
   @Contract(pure = true)
   public MapReducer<X> filter(String f) {
     return this.filter(new FilterParser(this.getTagTranslator()).parse(f));
@@ -914,6 +929,7 @@ public abstract class MapReducer<X> implements
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    */
+  @Override
   @Contract(pure = true)
   public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer
@@ -1007,7 +1023,7 @@ public abstract class MapReducer<X> implements
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
     final OSHDBTimestamp minTime = timestamps.first();
     final OSHDBTimestamp maxTime = timestamps.last();
-    return new MapAggregator<OSHDBTimestamp, X>(this, data -> {
+    return new MapAggregator<>(this, data -> {
       // match timestamps to the given timestamp list
       OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
       if (aggregationTimestamp == null
@@ -1112,6 +1128,7 @@ public abstract class MapReducer<X> implements
    * @throws Exception if during the reducing operation an exception happens (see the respective
    *         implementations for details).
    */
+  @Override
   @Contract(pure = true)
   public <S> S reduce(
       SerializableSupplier<S> identitySupplier,
@@ -1253,6 +1270,7 @@ public abstract class MapReducer<X> implements
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
+  @Override
   @Contract(pure = true)
   public X reduce(SerializableSupplier<X> identitySupplier,
       SerializableBinaryOperator<X> accumulator) throws Exception {
@@ -1276,6 +1294,7 @@ public abstract class MapReducer<X> implements
    * @return the sum of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
+  @Override
   @Contract(pure = true)
   public Number sum() throws Exception {
     return this.makeNumeric().reduce(() -> 0, NumberUtils::add);
@@ -1291,6 +1310,7 @@ public abstract class MapReducer<X> implements
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the summed up results of the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> R sum(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).reduce(() -> (R) (Integer) 0, NumberUtils::add);
@@ -1301,6 +1321,7 @@ public abstract class MapReducer<X> implements
    *
    * @return the total count of features or modifications, summed up over all timestamps
    */
+  @Override
   @Contract(pure = true)
   public Integer count() throws Exception {
     return this.sum(ignored -> 1);
@@ -1314,6 +1335,7 @@ public abstract class MapReducer<X> implements
    *
    * @return the set of distinct values
    */
+  @Override
   @Contract(pure = true)
   public Set<X> uniq() throws Exception {
     return this.reduce(
@@ -1332,6 +1354,7 @@ public abstract class MapReducer<X> implements
    * @param <R> the type that is returned by the `mapper` function
    * @return a set of distinct values returned by the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public <R> Set<R> uniq(SerializableFunction<X, R> mapper) throws Exception {
     return this.map(mapper).uniq();
@@ -1345,6 +1368,7 @@ public abstract class MapReducer<X> implements
    *
    * @return the set of distinct values
    */
+  @Override
   @Contract(pure = true)
   public Integer countUniq() throws Exception {
     return this.uniq().size();
@@ -1359,6 +1383,7 @@ public abstract class MapReducer<X> implements
    * @return the average of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
+  @Override
   @Contract(pure = true)
   public Double average() throws Exception {
     return this.makeNumeric().average(n -> n);
@@ -1371,6 +1396,7 @@ public abstract class MapReducer<X> implements
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the average of the numbers returned by the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> Double average(SerializableFunction<X, R> mapper) throws Exception {
     return this.weightedAverage(data -> new WeightedValue(mapper.apply(data), 1.0));
@@ -1386,6 +1412,7 @@ public abstract class MapReducer<X> implements
    *        return the value and weight combination of numbers to average
    * @return the weighted average of the numbers returned by the `mapper` function
    */
+  @Override
   @Contract(pure = true)
   public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
     MutableWeightedDouble runningSums =
@@ -1407,6 +1434,7 @@ public abstract class MapReducer<X> implements
    *
    * @return estimated median
    */
+  @Override
   @Contract(pure = true)
   public Double estimatedMedian() throws Exception {
     return this.estimatedQuantile(0.5);
@@ -1423,6 +1451,7 @@ public abstract class MapReducer<X> implements
    * @param mapper function that returns the numbers to generate the mean for
    * @return estimated median
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper)
       throws Exception {
@@ -1440,6 +1469,7 @@ public abstract class MapReducer<X> implements
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
+  @Override
   @Contract(pure = true)
   public Double estimatedQuantile(double q) throws Exception {
     return this.makeNumeric().estimatedQuantile(n -> n, q);
@@ -1458,6 +1488,7 @@ public abstract class MapReducer<X> implements
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q)
       throws Exception {
@@ -1475,6 +1506,7 @@ public abstract class MapReducer<X> implements
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public List<Double> estimatedQuantiles(Iterable<Double> q) throws Exception {
     return this.makeNumeric().estimatedQuantiles(n -> n, q);
@@ -1492,6 +1524,7 @@ public abstract class MapReducer<X> implements
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> List<Double> estimatedQuantiles(
       SerializableFunction<X, R> mapper,
@@ -1514,6 +1547,7 @@ public abstract class MapReducer<X> implements
    *
    * @return a function that computes estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public DoubleUnaryOperator estimatedQuantiles() throws Exception {
     return this.makeNumeric().estimatedQuantiles(n -> n);
@@ -1531,6 +1565,7 @@ public abstract class MapReducer<X> implements
    * @param mapper function that returns the numbers to generate the quantiles for
    * @return a function that computes estimated quantile boundaries
    */
+  @Override
   @Contract(pure = true)
   public <R extends Number> DoubleUnaryOperator estimatedQuantiles(
       SerializableFunction<X, R> mapper

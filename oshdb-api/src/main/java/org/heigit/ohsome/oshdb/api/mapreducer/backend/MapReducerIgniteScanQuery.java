@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,7 +55,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.Streams;
 
 /**
  * {@inheritDoc}
@@ -99,7 +99,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
   @NotNull
   @Override
   protected MapReducer<X> copy() {
-    return new MapReducerIgniteScanQuery<X>(this);
+    return new MapReducerIgniteScanQuery<>(this);
   }
 
   @Override
@@ -494,7 +494,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
     computeJob.setNodesToPart(nodesToPart);
     IgniteRunnable onClose = oshdb.onClose().orElse(() -> { });
     ComputeTaskFuture<S> result = compute.executeAsync(
-        new OSHDBIgniteMapReduceComputeTask<Object, S>(
+        new OSHDBIgniteMapReduceComputeTask<>(
             computeJob,
             identitySupplier,
             combiner,

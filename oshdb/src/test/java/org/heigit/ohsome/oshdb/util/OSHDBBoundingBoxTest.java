@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.util;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.junit.Test;
 
