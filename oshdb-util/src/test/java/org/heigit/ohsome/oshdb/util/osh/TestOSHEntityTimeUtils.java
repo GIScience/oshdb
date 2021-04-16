@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +21,6 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.Test;
-import com.google.common.collect.Lists;
 
 public class TestOSHEntityTimeUtils {
   @Test
