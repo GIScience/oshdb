@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>ohsome-parent</artifactId>
-    <version>2.8</version>
+    <version>2.9</version>
   </parent>
 
   <artifactId>oshdb-parent</artifactId>
@@ -12,6 +12,12 @@
   <name>OSHDB parent module</name>
   <description>Common dependencies, settings and profiles that are shared by all components of the OSHDB</description>
   <packaging>pom</packaging>
+
+  <scm>
+    <connection>scm:git:git@github.com/GIScience/oshdb.git</connection>
+    <developerConnection>scm:git:git@github.com/GIScience/oshdb.git</developerConnection>
+    <url>https://github.com/GIScience/oshdb</url>
+  </scm>
 
   <modules>
     <module>oshdb</module>
@@ -46,6 +52,8 @@
     <roaringbitmap.version>0.6.59</roaringbitmap.version>
     <rxjava2.version>2.1.9</rxjava2.version>
     <slf4j.version>1.7.25</slf4j.version>
+    <sonar.moduleKey>${project.artifactId}</sonar.moduleKey>
+    <sonar.projectKey>${project.groupId}:oshdb</sonar.projectKey>
     <wololo.version>0.13.0</wololo.version>
   </properties>
 
@@ -79,13 +87,6 @@
       <url>https://repo.heigit.org/artifactory/main</url>
     </repository>
   </repositories>
-
-  <scm>
-    <!-- https://maven.apache.org/pom.html#SCM -->
-    <connection>scm:git:git@github.com/GIScience/oshdb.git</connection>
-    <developerConnection>scm:git:git@github.com/GIScience/oshdb.git</developerConnection>
-    <url>https://github.com/GIScience/oshdb.git</url>
-  </scm>
 
   <issueManagement>
     <system>GitHub</system>
