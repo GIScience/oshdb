@@ -6,15 +6,35 @@ Changelog
 ### breaking changes
 
 * reorganize java packages, moving them from `org/heigit/bigspatialdata` to `org/heigit/ohsome`
+* integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter` ([#306])
+* rename methods and move classes/interfaces ([#369])
 
-  When switching to the OSHDB version 0.7 you need to change your imports to the new path, e.g.:
+> See the _upgrading from 0.6_ section below for instructions how to update your code according to these breaking changes.
+
+### performance improvements
+
+* replace an unnecessarily used Map with a more lightweight implementation using a List. ([#352])
+
+### other changes
+
+* make sure predicate-filters are always serializable ([#353])
+* improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage ([#327])
+* reorganize and update ohsome parent module ([#360])
+* add new interfaces `OSHDBTimeable` and `OSHDBBoundable` ([#369])
+
+### bugfixes
+
+* when filtering for `geometry:other`: also consider GeometryCollections occurring as a side effect of clipping ([#338])
+
+### upgrading from 0.6
+
+* Since the java package namespace was updated, you need to change your imports to the new path, e.g.:
   ```java
   import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
   import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
   ```
-
-* rename methods and move classes/interfaces ([#369]):
-
+* If you used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
+* the following methods, classes and packages were renamed or moved:
   |     | old | new |
   | --- | --- | --- |
   | renamed method | `OSMWay.getRef()` | `OSMWay.getMember()` |
@@ -25,25 +45,6 @@ Changelog
   | moved class | `CellIterator.OSMEntityFilter` | `oshdb-util/oshdb.osm.OSMEntityFilter` |
   | moved class | `oshdb-api.generic.function` | `oshdb-util/oshdb.util.function` |
 
-### performance improvements
-
-* replace an unnecessarily used Map with a more lightweight implementation using a List. ([#352])
-
-### other changes
-
-* integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter`. ([#306])
-* make sure predicate-filters are always serializable. ([#353])
-* improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage. ([#327])
-* reorganize and update ohsome parent module ([#360])
-* add new interfaces `OSHDBTimeable` and `OSHDBBoundable` ([#369])
-
-### bugfixes
-
-* when filtering for `geometry:other`: also consider GeometryCollections occurring as a side effect of clipping ([#338])
-
-### upgrading from 0.6
-
-* If you already used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
 [#327]: https://github.com/GIScience/oshdb/issues/327
