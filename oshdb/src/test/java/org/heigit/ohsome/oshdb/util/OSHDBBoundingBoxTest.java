@@ -24,7 +24,7 @@ public class OSHDBBoundingBoxTest {
     OSHDBBoundingBox first = new OSHDBBoundingBox(0.0, 89.0, 1.0, 90.0);
     OSHDBBoundingBox second = new OSHDBBoundingBox(0.0, 89.9, 2.0, 90.0);
     OSHDBBoundingBox expResult = new OSHDBBoundingBox(0.0, 89.9, 1.0, 90.0);
-    OSHDBBoundingBox result = OSHDBBoundingBox.intersect(first, second);
+    OSHDBBoundingBox result = first.intersection(second);
     assertEquals(expResult, result);
   }
 

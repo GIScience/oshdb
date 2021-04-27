@@ -8,18 +8,17 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(1L, 1L, -1L, -1L);
 
   /**
-   * Calculates the intersection of two bounding boxes.
+   * Calculates the intersection of this and {@code other} bounding boxes.
    *
-   * @param first  the first bounding box
-   * @param second the second bounding box
+   * @param other the bounding box for which to get the intersection
    * @return the intersection of the two bboxes
    */
-  public static OSHDBBoundingBox intersect(OSHDBBoundingBox first, OSHDBBoundingBox second) {
+  public OSHDBBoundingBox intersection(OSHDBBoundingBox other) {
     return new OSHDBBoundingBox(
-        Math.max(first.minLon, second.minLon),
-        Math.max(first.minLat, second.minLat),
-        Math.min(first.maxLon, second.maxLon),
-        Math.min(first.maxLat, second.maxLat));
+        Math.max(minLon, other.minLon),
+        Math.max(minLat, other.minLat),
+        Math.min(maxLon, other.maxLon),
+        Math.min(maxLat, other.maxLat));
   }
 
   public static OVERLAP overlap(OSHDBBoundingBox a, OSHDBBoundingBox b) {
@@ -30,15 +29,15 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
       return OVERLAP.NONE; // no overlap
     }
     // fit bbox in test
-    if (a.minLon >= b.minLon 
-        && a.maxLon <= b.maxLon 
+    if (a.minLon >= b.minLon
+        && a.maxLon <= b.maxLon
         && a.minLat >= b.minLat
         && a.maxLat <= b.maxLat) {
       return OVERLAP.A_COMPLETE_IN_B;
     }
     // fit test in bbox
-    if (b.minLon >= a.minLon 
-        && b.maxLon <= a.maxLon 
+    if (b.minLon >= a.minLon
+        && b.maxLon <= a.maxLon
         && b.minLat >= a.minLat
         && b.maxLat <= a.maxLat) {
       return OVERLAP.B_COMPLETE_IN_A;
@@ -104,11 +103,11 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, 
-        "(%3.7f,%3.7f,%3.7f,%3.7f)", 
-        this.getMinLon(), 
-        this.getMinLat(), 
-        this.getMaxLon(), 
+    return String.format(Locale.ENGLISH,
+        "(%3.7f,%3.7f,%3.7f,%3.7f)",
+        this.getMinLon(),
+        this.getMinLat(),
+        this.getMaxLon(),
         this.getMaxLat());
   }
 
