@@ -41,13 +41,12 @@ public interface OSHDBBoundable {
   }
 
   /**
-   * Returns true if the {@code other} {@code OSHDBBoundable} intersects this.
-   *
-   * @param other the {@code OSHDBBoundable} which this {@code OSHDBBoundable} is
-   *          being checked for intersecting
-   * @return {@code true} if the {@code OSHDBBoundable}s intersect
+   * Returns true if this {@code OSHDBBoundable} is inside/coveredBy the {@code other} object.
+   * @param other the {@code OSHDBBoundable} which is being checked for inside/coveredBy
+   *          this {@code OSHDBBoundable}
+   * @return {@code true} if the {@code OSHDBBoundable} is inside
    */
-  default boolean isInside(OSHDBBoundable other) {
+  default boolean coveredBy(OSHDBBoundable other) {
     return (other != null)
         && (getMinLatLong() >= other.getMinLatLong())
         && (getMaxLatLong() <= other.getMaxLatLong())

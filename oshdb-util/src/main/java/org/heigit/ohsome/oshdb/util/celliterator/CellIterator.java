@@ -277,7 +277,7 @@ public class CellIterator implements Serializable {
         return Stream.empty();
       }
       boolean fullyInside = allFullyInside || (
-          oshEntity.isInside(boundingBox)
+          oshEntity.coveredBy(boundingBox)
           && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
       );
 
@@ -435,7 +435,7 @@ public class CellIterator implements Serializable {
         return new LazyEvaluatedObject<>(fastPolygonClipper.intersection(geometry));
       }
     } else {
-      if (bbox.isInside(this.boundingBox)) {
+      if (bbox.coveredBy(this.boundingBox)) {
         return new LazyEvaluatedObject<>(geometry);
       } else if (!bbox.intersects(this.boundingBox)) {
         return new LazyEvaluatedObject<>(createEmptyGeometryLike(geometry));
@@ -565,7 +565,7 @@ public class CellIterator implements Serializable {
       }
 
       boolean fullyInside = allFullyInside || (
-          oshEntity.isInside(boundingBox)
+          oshEntity.coveredBy(boundingBox)
           && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
       );
 

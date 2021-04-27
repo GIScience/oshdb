@@ -261,8 +261,8 @@ public class XYGridTest {
 
   @Test
   public void testBbox2Ids() {
-    OSHDBBoundingBox BBOX = new OSHDBBoundingBox(-180, -90, 180, 90);
-    Set<IdRange> result = zero.bbox2CellIdRanges(BBOX, false);
+    OSHDBBoundingBox bbox = new OSHDBBoundingBox(-180, -90, 180, 90);
+    Set<IdRange> result = zero.bbox2CellIdRanges(bbox, false);
 
     assertEquals(1, result.size());
     IdRange interval = result.iterator().next();
@@ -270,8 +270,8 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(0, interval.getEnd());
 
-    BBOX = new OSHDBBoundingBox(-180, -90, 180, 90);
-    result = two.bbox2CellIdRanges(BBOX, false);
+    bbox = new OSHDBBoundingBox(-180, -90, 180, 90);
+    result = two.bbox2CellIdRanges(bbox, false);
 
     assertEquals(2, result.size());
     interval = result.iterator().next();
@@ -279,8 +279,8 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(3, interval.getEnd());
 
-    BBOX = new OSHDBBoundingBox(-10, -10, 10, 10);
-    result = zero.bbox2CellIdRanges(BBOX, false);
+    bbox = new OSHDBBoundingBox(-10, -10, 10, 10);
+    result = zero.bbox2CellIdRanges(bbox, false);
 
     assertEquals(1, result.size());
     interval = result.iterator().next();
@@ -288,8 +288,8 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(0, interval.getEnd());
 
-    BBOX = new OSHDBBoundingBox(179, 0, 89, 5);
-    result = zero.bbox2CellIdRanges(BBOX, false);
+    bbox = new OSHDBBoundingBox(179, 0, 89, 5);
+    result = zero.bbox2CellIdRanges(bbox, false);
 
     assertEquals(1, result.size());
     interval = result.iterator().next();
@@ -297,13 +297,13 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(0, interval.getEnd());
 
-    BBOX = new OSHDBBoundingBox(-10, -10, 10, 10);
+    bbox = new OSHDBBoundingBox(-10, -10, 10, 10);
     TreeSet<Long> expectedCellIds = new TreeSet<>();
     expectedCellIds.add(1L);
     expectedCellIds.add(2L);
     expectedCellIds.add(5L);
     expectedCellIds.add(6L);
-    result = two.bbox2CellIdRanges(BBOX, false);
+    result = two.bbox2CellIdRanges(bbox, false);
     for (IdRange interval2 : result) {
       for (long cellId = interval2.getStart(); cellId <= interval2.getEnd(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
@@ -311,13 +311,13 @@ public class XYGridTest {
     }
     assertEquals(0, expectedCellIds.size());
 
-    BBOX = new OSHDBBoundingBox(-180, 0, 89, 5);
+    bbox = new OSHDBBoundingBox(-180, 0, 89, 5);
     expectedCellIds = new TreeSet<>();
     expectedCellIds.add(4L);
     expectedCellIds.add(5L);
     expectedCellIds.add(6L);
 
-    result = two.bbox2CellIdRanges(BBOX, false);
+    result = two.bbox2CellIdRanges(bbox, false);
     for (IdRange interval2 : result) {
       for (long cellId = interval2.getStart(); cellId <= interval2.getEnd(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
@@ -325,14 +325,14 @@ public class XYGridTest {
     }
     assertEquals(0, expectedCellIds.size());
 
-    BBOX = new OSHDBBoundingBox(90, -90, 89, -1);
+    bbox = new OSHDBBoundingBox(90, -90, 89, -1);
     expectedCellIds = new TreeSet<>();
     expectedCellIds.add(0L);
     expectedCellIds.add(1L);
     expectedCellIds.add(2L);
     expectedCellIds.add(3L);
 
-    result = two.bbox2CellIdRanges(BBOX, false);
+    result = two.bbox2CellIdRanges(bbox, false);
     for (IdRange interval2 : result) {
       for (long cellId = interval2.getStart(); cellId <= interval2.getEnd(); cellId++) {
         assertEquals(true, expectedCellIds.remove(cellId));
@@ -347,10 +347,10 @@ public class XYGridTest {
     assertEquals(0, interval.getEnd());
 
     // test performance for maximum sized BBOX
-    BBOX = new OSHDBBoundingBox(-180, -90, 180, 90);
+    bbox = new OSHDBBoundingBox(-180, -90, 180, 90);
     int expResult = (int)Math.pow(2,MAXZOOM)/2;
     LOG.info("If this throws a warning because of the maximum zoomlevel, we have to change XYGrid-Code:");
-    result = new XYGrid(MAXZOOM).bbox2CellIdRanges(BBOX, true);
+    result = new XYGrid(MAXZOOM).bbox2CellIdRanges(bbox, true);
     assertEquals(expResult, result.size());
     interval = result.iterator().next();
     assertEquals(0, interval.getStart());

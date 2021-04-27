@@ -301,16 +301,18 @@ public class XYGrid implements Serializable {
   public Set<IdRange> bbox2CellIdRanges(OSHDBBoundingBox bbox, boolean enlarge) {
     //initialise basic variables
     Set<IdRange> result = new TreeSet<>();
-    long minlong = bbox.getMinLonLong();
+
     long minlat = bbox.getMinLatLong();
-    long maxlong = bbox.getMaxLonLong();
     long maxlat = bbox.getMaxLatLong();
 
-    if (minlat > maxlat || minlong > maxlong) {
+    if (minlat > maxlat) {
       LOG.warn("The minimum values are not smaller than the maximum values. "
           + "This might throw an exeption one day?");
       return null;
     }
+
+    long minlong = bbox.getMinLonLong();
+    long maxlong = bbox.getMaxLonLong();
 
     IdRange outofboundsCell = IdRange.INVALID;
     //test if bbox is on earth or extends further
