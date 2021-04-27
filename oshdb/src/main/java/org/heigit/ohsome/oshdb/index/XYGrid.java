@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
  */
 public class XYGrid implements Serializable {
 
-
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
 
@@ -119,12 +118,16 @@ public class XYGrid implements Serializable {
    * @return Returns the ID of the tile as shown above
    */
   public long getId(double longitude, double latitude) {
-    return this.getId((long) (longitude * OSHDB.GEOM_PRECISION_TO_LONG), (long) (latitude * OSHDB.GEOM_PRECISION_TO_LONG));
+    return this.getId((long) (longitude * OSHDB.GEOM_PRECISION_TO_LONG),
+        (long) (latitude * OSHDB.GEOM_PRECISION_TO_LONG));
   }
 
   public long getId(long longitude, long latitude) {
     //return -1, if point is outside geographical coordinate range
-    if (longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       return -1l;
     }
 
@@ -211,9 +214,10 @@ public class XYGrid implements Serializable {
   public long getEstimatedIdCount(final OSHDBBoundingBox data) {
     //number of Cells in x * number of cells in y
     return Math.max(
-        (long) Math.ceil(data.getMaxLonLong() / cellWidth) - (long) Math.floor(data.getMinLonLong() / cellWidth),
-        (long) Math.ceil(data.getMaxLatLong() / cellWidth) - (long) Math.floor(data.getMinLatLong() / cellWidth)
-    );
+        (long) Math.ceil(data.getMaxLonLong() / cellWidth)
+        - (long) Math.floor(data.getMinLonLong() / cellWidth),
+        (long) Math.ceil(data.getMaxLatLong() / cellWidth)
+        - (long) Math.floor(data.getMinLatLong() / cellWidth));
   }
 
   /**
@@ -229,13 +233,13 @@ public class XYGrid implements Serializable {
 
     private static final long serialVersionUID = 371851731642753753L;
 
-    public static final IdRange INVALID = new IdRange(-1L,-1L);
+    public static final IdRange INVALID = new IdRange(-1L, -1L);
 
     private final long start;
     private final long end;
 
     public static IdRange of(long start, long end) {
-      return new IdRange(start,end);
+      return new IdRange(start, end);
     }
 
     private IdRange(long start, long end) {
@@ -284,8 +288,10 @@ public class XYGrid implements Serializable {
   /**
    * Calculates all tiles, that lie within a bounding-box.
    *
+   * <p>
    * TODO but priority 999: Add possibility to snap the BBX to the tile-grid.
    * TODO: is an exception needed?
+   * </p>
    *
    * @param bbox The bounding box. First dimension is longitude, second is latitude.
    * @param enlarge if true, the BBOX is enlarged by one tile to the south-west (bottom-left)
@@ -300,26 +306,31 @@ public class XYGrid implements Serializable {
     long maxlong = bbox.getMaxLonLong();
     long maxlat = bbox.getMaxLatLong();
 
-    if (minlat > maxlat) {
-      LOG.warn("The minimum values are not smaller than the maximum values. This might throw an exeption one day?");
+    if (minlat > maxlat || minlong > maxlong) {
+      LOG.warn("The minimum values are not smaller than the maximum values. "
+          + "This might throw an exeption one day?");
       return null;
     }
 
     IdRange outofboundsCell = IdRange.INVALID;
     //test if bbox is on earth or extends further
-    if (minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) || maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       maxlong = (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) || maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if (maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
@@ -343,7 +354,7 @@ public class XYGrid implements Serializable {
           new OSHDBBoundingBox(
               minlong, minlat,
               (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L, maxlat
-          ), enlarge));
+              ), enlarge));
 
       minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
@@ -358,7 +369,8 @@ public class XYGrid implements Serializable {
     int rowmax = (int) ((maxlat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
 
     if (enlarge) {
-      //it is impossible vor features to span over the datelimit, so the enlargement stops at column 0
+      // it is impossible for features to span over the datelimit, so the enlargement stops at
+      // column 0
       if (columnmin > 0) {
         columnmin -= 1;
       }

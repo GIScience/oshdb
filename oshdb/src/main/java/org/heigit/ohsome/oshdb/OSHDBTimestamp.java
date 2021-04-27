@@ -53,6 +53,6 @@ public class OSHDBTimestamp implements OSHDBTimeable, Comparable<OSHDBTimestamp>
   }
 
   public String toString() {
-    return OSHDBTimeable.toString(this);
+    return OSHDBTimeable.toIsoDateTime(this);
   }
 }

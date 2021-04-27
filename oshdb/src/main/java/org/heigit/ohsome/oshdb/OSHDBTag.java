@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class OSHDBTag implements Serializable {
-    
+
   private static final long serialVersionUID = 1L;
   private final int key;
   private final int value;
@@ -28,7 +28,7 @@ public class OSHDBTag implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof OSHDBTag 
+    return o instanceof OSHDBTag
         && ((OSHDBTag) o).key == this.key && ((OSHDBTag) o).value == this.value;
   }
 
@@ -36,7 +36,7 @@ public class OSHDBTag implements Serializable {
   public int hashCode() {
     return Objects.hash(this.key, this.value);
   }
-  
+
   @Override
   public String toString() {
     return Integer.toString(this.key) + "=" + Integer.toString(this.value);
