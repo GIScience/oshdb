@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * XYGrid spans an equal degree grid over the world.
- * 
+ *
  * <p>Example IDs for zoom = 2:
  * <table style="text-align:center; border-spacing: 4px">
  * <caption>How XYGrid sees the world.</caption>
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class XYGrid implements Serializable {
 
-  
+
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(XYGrid.class);
 
@@ -75,8 +75,13 @@ public class XYGrid implements Serializable {
     if (y < grid.zoompow / 2 - 1) {
       topRightId += grid.zoompow;
     }
-    OSHDBBoundingBox result = grid.getCellDimensions(id).add(grid.getCellDimensions(topRightId));
-    return result;
+    OSHDBBoundingBox bbox = grid.getCellDimensions(id);
+    OSHDBBoundingBox topRight = grid.getCellDimensions(topRightId);
+    return new OSHDBBoundingBox(
+        Math.min(bbox.getMinLonLong(), topRight.getMinLonLong()),
+        Math.min(bbox.getMinLatLong(), topRight.getMinLatLong()),
+        Math.max(bbox.getMaxLonLong(), topRight.getMaxLonLong()),
+        Math.max(bbox.getMaxLatLong(), topRight.getMaxLatLong()));
   }
 
   private final int zoom;
@@ -219,7 +224,7 @@ public class XYGrid implements Serializable {
   public int getLevel() {
     return zoom;
   }
-  
+
   public static class IdRange implements Comparable<IdRange>, Serializable {
 
     private static final long serialVersionUID = 371851731642753753L;

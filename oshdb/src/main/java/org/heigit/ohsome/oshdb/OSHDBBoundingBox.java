@@ -5,12 +5,12 @@ import java.util.Locale;
 
 public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   private static final long serialVersionUID = 1L;
-  public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(1L,1L,-1L,-1L);
+  public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(1L, 1L, -1L, -1L);
 
   /**
-   * calculates the intersection of two bounding boxes
+   * Calculates the intersection of two bounding boxes.
    *
-   * @param first the first bounding box
+   * @param first  the first bounding box
    * @param second the second bounding box
    * @return the intersection of the two bboxes
    */
@@ -19,8 +19,7 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
         Math.max(first.minLon, second.minLon),
         Math.max(first.minLat, second.minLat),
         Math.min(first.maxLon, second.maxLon),
-        Math.min(first.maxLat, second.maxLat)
-    );
+        Math.min(first.maxLat, second.maxLat));
   }
 
   public static OVERLAP overlap(OSHDBBoundingBox a, OSHDBBoundingBox b) {
@@ -31,13 +30,17 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
       return OVERLAP.NONE; // no overlap
     }
     // fit bbox in test
-    if (a.minLon >= b.minLon && a.maxLon <= b.maxLon && a.minLat >= b.minLat
-            && a.maxLat <= b.maxLat) {
+    if (a.minLon >= b.minLon 
+        && a.maxLon <= b.maxLon 
+        && a.minLat >= b.minLat
+        && a.maxLat <= b.maxLat) {
       return OVERLAP.A_COMPLETE_IN_B;
     }
     // fit test in bbox
-    if (b.minLon >= a.minLon && b.maxLon <= a.maxLon && b.minLat >= a.minLat
-            && b.maxLat <= a.maxLat) {
+    if (b.minLon >= a.minLon 
+        && b.maxLon <= a.maxLon 
+        && b.minLat >= a.minLat
+        && b.maxLat <= a.maxLat) {
       return OVERLAP.B_COMPLETE_IN_A;
     }
     return OVERLAP.OVERLAPPING;
@@ -54,7 +57,7 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
     this.minLat = minLat;
     this.maxLat = maxLat;
   }
-    
+
   public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
     this.minLon = Math.round(minLon * OSHDB.GEOM_PRECISION_TO_LONG);
     this.maxLon = Math.round(maxLon * OSHDB.GEOM_PRECISION_TO_LONG);
@@ -65,44 +68,40 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   public OSHDBBoundingBox(int minLon, int minLat, int maxLon, int maxLat) {
     this((double) minLon, (double) minLat, (double) maxLon, (double) maxLat);
   }
-  
-  public OSHDBBoundingBox add(OSHDBBoundingBox bbox){
-    return new OSHDBBoundingBox(
-        Math.min(minLon,bbox.minLon),
-        Math.min(minLat,bbox.minLat),
-        Math.max(maxLon,bbox.maxLon),
-        Math.max(maxLat,bbox.maxLat));
-  }
-  
-  public long getMinLonLong(){
+
+  @Override
+  public long getMinLonLong() {
     return minLon;
   }
 
-  public long getMaxLonLong(){
+  @Override
+  public long getMaxLonLong() {
     return maxLon;
   }
-  
-  public long getMinLatLong(){
+
+  @Override
+  public long getMinLatLong() {
     return minLat;
   }
 
-  public long getMaxLatLong(){
+  @Override
+  public long getMaxLatLong() {
     return maxLat;
   }
-  
+
   @Override
   public OSHDBBoundingBox getBoundingBox() {
     return this;
   }
 
   public long[] getLon() {
-    return new long[]{minLon, maxLon};
+    return new long[] {minLon, maxLon};
   }
 
   public long[] getLat() {
-    return new long[]{minLat, maxLat};
+    return new long[] {minLat, maxLat};
   }
-    
+
   @Override
   public String toString() {
     return String.format(Locale.ENGLISH, 
@@ -153,5 +152,5 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
     A_COMPLETE_IN_B,
     B_COMPLETE_IN_A
   }
-  
+
 }
