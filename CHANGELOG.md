@@ -5,19 +5,25 @@ Changelog
 
 ### breaking changes
 
-* reorganizing java packages, moving them from `org/heigit/bigspatialdata` to `org/heigit/ohsome`
-* renaming OSMWay.getRef() to OSMWay.getMember()
-* renaming OSHDBTimestamp.getRawUnixTimestamp() to OSHDBTimestamp.getEpochSecond()
-* moving oshdb.util.OSHDBTimestamp to oshdb.OSHDBTimestamp
-* moving oshdb.util.OSHDBTag to oshdb.OSHDBTag
-* moving CellIterator.OSHEntityFilter/OSMEntityFilter to oshdb-util/oshdb.osh.OSHEntityFilter, oshdb-util/oshdb.osm.OSMEntityFilter
-* moving oshdb-api.generic.function - oshdb-util/oshdb.util.function
+* reorganize java packages, moving them from `org/heigit/bigspatialdata` to `org/heigit/ohsome`
 
-When switching to the OSHDB version 0.7 you need to change your imports to the new path, e.g.:
-```java
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-```
+  When switching to the OSHDB version 0.7 you need to change your imports to the new path, e.g.:
+  ```java
+  import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+  import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
+  ```
+
+* rename methods and move classes/interfaces ([#369]):
+
+  |     | old | new |
+  | --- | --- | --- |
+  | renamed method | `OSMWay.getRef()` | `OSMWay.getMember()` |
+  | renamed method | `OSHDBTimestamp.getRawUnixTimestamp()` | `OSHDBTimestamp.getEpochSecond()` |
+  | moved class | `oshdb.util.OSHDBTimestamp` | `oshdb.OSHDBTimestamp` |
+  | moved class | `oshdb.util.OSHDBTag` | `oshdb.OSHDBTag` |
+  | moved class | `CellIterator.OSHEntityFilter` | `oshdb-util/oshdb.osh.OSHEntityFilter` |
+  | moved class | `CellIterator.OSMEntityFilter` | `oshdb-util/oshdb.osm.OSMEntityFilter` |
+  | moved class | `oshdb-api.generic.function` | `oshdb-util/oshdb.util.function` |
 
 ### performance improvements
 
@@ -29,8 +35,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 * make sure predicate-filters are always serializable. ([#353])
 * improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage. ([#327])
 * reorganize and update ohsome parent module ([#360])
-* new interface OSHDBTimeable
-* new interface OSHDBBoundable
+* add new interfaces `OSHDBTimeable` and `OSHDBBoundable` ([#369])
 
 ### bugfixes
 
@@ -46,6 +51,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 [#352]: https://github.com/GIScience/oshdb/pull/352
 [#353]: https://github.com/GIScience/oshdb/pull/353
 [#360]: https://github.com/GIScience/oshdb/pull/360
+[#369]: https://github.com/GIScience/oshdb/pull/369
 
 
 ## 0.6.4
