@@ -17,16 +17,8 @@ public interface OSHDBTimeable {
     return getEpochSecond() < other.getEpochSecond();
   }
 
-  static boolean isBefore(OSHDBTimeable a, OSHDBTimeable b) {
-    return a.isBefore(b);
-  }
-
   default boolean isAfter(OSHDBTimeable other) {
     return getEpochSecond() > other.getEpochSecond();
-  }
-
-  static boolean isAfter(OSHDBTimeable a, OSHDBTimeable b) {
-    return a.isAfter(b);
   }
 
   static int compare(OSHDBTimeable a, OSHDBTimeable b) {
