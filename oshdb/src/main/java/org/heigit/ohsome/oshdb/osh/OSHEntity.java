@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
-import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
@@ -23,7 +22,7 @@ public interface OSHEntity extends OSHDBBoundable {
   boolean hasTagKey(int key);
 
   Iterable<? extends OSMEntity> getVersions();
-  
+
   default List<OSHNode> getNodes() throws IOException {
     return Collections.emptyList();
   }

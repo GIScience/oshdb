@@ -10,10 +10,6 @@ public interface OSHDBBoundable {
 
   long getMaxLatLong();
 
-  default OSHDBBoundingBox getBoundingBox() {
-    return new OSHDBBoundingBox(getMinLonLong(), getMinLatLong(), getMaxLonLong(), getMaxLatLong());
-  }
-
   default double getMinLon() {
     return getMinLonLong() * OSHDB.GEOM_PRECISION;
   }
@@ -51,7 +47,7 @@ public interface OSHDBBoundable {
    *          being checked for intersecting
    * @return {@code true} if the {@code OSHDBBoundable}s intersect
    */
-  default boolean isInside(OSHDBBoundingBox other) {
+  default boolean isInside(OSHDBBoundable other) {
     return (other != null)
         && (getMinLatLong() >= other.getMinLatLong())
         && (getMaxLatLong() <= other.getMaxLatLong())
@@ -61,5 +57,23 @@ public interface OSHDBBoundable {
 
   default boolean isPoint() {
     return getMinLonLong() == getMaxLonLong() && getMinLatLong() == getMaxLatLong();
+  }
+
+  default boolean isValid() {
+    return getMinLonLong() <= getMaxLonLong() && getMinLatLong() <= getMaxLatLong();
+  }
+
+  /**
+   * Calculates the intersection of this and {@code other} bounding boxes.
+   *
+   * @param other the bounding box for which to get the intersection
+   * @return the intersection of the two bboxes
+   */
+  default OSHDBBoundingBox intersection(OSHDBBoundable other) {
+    return new OSHDBBoundingBox(
+        Math.max(getMinLonLong(), other.getMinLonLong()),
+        Math.max(getMinLatLong(), other.getMinLatLong()),
+        Math.min(getMaxLonLong(), other.getMaxLonLong()),
+        Math.min(getMaxLatLong(), other.getMaxLatLong()));
   }
 }

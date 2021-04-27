@@ -7,20 +7,6 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   private static final long serialVersionUID = 1L;
   public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(1L, 1L, -1L, -1L);
 
-  /**
-   * Calculates the intersection of this and {@code other} bounding boxes.
-   *
-   * @param other the bounding box for which to get the intersection
-   * @return the intersection of the two bboxes
-   */
-  public OSHDBBoundingBox intersection(OSHDBBoundingBox other) {
-    return new OSHDBBoundingBox(
-        Math.max(minLon, other.minLon),
-        Math.max(minLat, other.minLat),
-        Math.min(maxLon, other.maxLon),
-        Math.min(maxLat, other.maxLat));
-  }
-
   public static OVERLAP overlap(OSHDBBoundingBox a, OSHDBBoundingBox b) {
     if (b.minLon >= a.maxLon
         || b.maxLon <= a.minLon
@@ -86,11 +72,6 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   @Override
   public long getMaxLatLong() {
     return maxLat;
-  }
-
-  @Override
-  public OSHDBBoundingBox getBoundingBox() {
-    return this;
   }
 
   public long[] getLon() {

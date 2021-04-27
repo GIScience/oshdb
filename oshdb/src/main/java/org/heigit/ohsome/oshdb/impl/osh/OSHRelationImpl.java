@@ -14,8 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
@@ -29,7 +28,8 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
-public class OSHRelationImpl extends OSHEntityImpl implements OSHRelation, Iterable<OSMRelation>, Serializable {
+public class OSHRelationImpl extends OSHEntityImpl
+    implements OSHRelation, Iterable<OSMRelation>, Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -133,7 +133,7 @@ public class OSHRelationImpl extends OSHEntityImpl implements OSHRelation, Itera
   }
 
   private OSHRelationImpl(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude, byte header, 
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude, byte header,
       long id, long minLon, long minLat, long maxLon, long maxLat, int[] keys,
       final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
       final int nodeDataLength, final int[] wayIndex, final int wayDataOffset,
@@ -269,6 +269,7 @@ public class OSHRelationImpl extends OSHEntityImpl implements OSHRelation, Itera
     return Collections.emptyIterator();
   }
 
+  @Override
   public List<OSHNode> getNodes() throws IOException {
     List<OSHNode> nodes = new ArrayList<>(nodeIndex.length);
     for (int index = 0; index < nodeIndex.length; index++) {
@@ -282,31 +283,37 @@ public class OSHRelationImpl extends OSHEntityImpl implements OSHRelation, Itera
     return nodes;
   }
 
+  @Override
   public List<OSHWay> getWays() throws IOException {
     List<OSHWay> ways = new ArrayList<>(wayIndex.length);
     for (int index = 0; index < wayIndex.length; index++) {
       int offset = wayIndex[index];
       int length = ((index < wayIndex.length - 1) ? wayIndex[index + 1] : wayDataLength) - offset;
-      OSHWay w =
-          OSHWayImpl.instance(data, wayDataOffset + offset, length, 0, 0, baseLongitude, baseLatitude);
+      OSHWay w = OSHWayImpl.instance(data, wayDataOffset + offset, length, 0, 0, baseLongitude,
+          baseLatitude);
       ways.add(w);
     }
     return ways;
   }
 
-  public static OSHRelationImpl build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
+  public static OSHRelationImpl build(final List<OSMRelation> versions,
+      final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways) throws IOException {
     return build(versions, nodes, ways, 0, 0, 0, 0);
   }
-  
-  public static OSHRelationImpl build(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
+
+  public static OSHRelationImpl build(final List<OSMRelation> versions,
+      final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
       final long baseLongitude, final long baseLatitude) throws IOException {
-      ByteBuffer buffer = buildRecord(versions, nodes, ways, baseId, baseTimestamp, baseLongitude, baseLatitude);
-      return OSHRelationImpl.instance(buffer.array(), 0, buffer.remaining(), baseId, baseTimestamp, baseLongitude, baseLatitude);
+    ByteBuffer buffer =
+        buildRecord(versions, nodes, ways, baseId, baseTimestamp, baseLongitude, baseLatitude);
+    return OSHRelationImpl.instance(buffer.array(), 0, buffer.remaining(), baseId, baseTimestamp,
+        baseLongitude, baseLatitude);
   }
 
-  public static ByteBuffer buildRecord(final List<OSMRelation> versions, final Collection<OSHNode> nodes,
+  public static ByteBuffer buildRecord(final List<OSMRelation> versions,
+      final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
       final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
@@ -327,8 +334,8 @@ public class OSHRelationImpl extends OSHEntityImpl implements OSHRelation, Itera
     int idx = 0;
     int offset = 0;
     for (OSHNode node : nodes) {
-      OSHDBBoundingBox bbox = node.getBoundingBox();
-      if (bbox != null) {
+      OSHDBBoundable bbox = node;
+      if (bbox.isValid()) {
         minLon = Math.min(minLon, bbox.getMinLonLong());
         maxLon = Math.max(maxLon, bbox.getMaxLonLong());
         minLat = Math.min(minLat, bbox.getMinLatLong());
@@ -347,9 +354,10 @@ public class OSHRelationImpl extends OSHEntityImpl implements OSHRelation, Itera
         }
       }
 
-      
-      
-      ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(node.getVersions()), 0, 0, baseLongitude, baseLatitude);
+
+
+      ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(node.getVersions()), 0, 0,
+          baseLongitude, baseLatitude);
       nodeOffsets.put(node.getId(), idx);
       nodeByteArrayIndex[idx++] = offset;
       offset = buffer.remaining();
@@ -363,13 +371,14 @@ public class OSHRelationImpl extends OSHEntityImpl implements OSHRelation, Itera
     idx = 0;
     offset = 0;
     for (OSHWay way : ways) {
-      OSHDBBoundingBox bbox = way.getBoundingBox();
+      OSHDBBoundable bbox = way;
       minLon = Math.min(minLon, bbox.getMinLonLong());
       maxLon = Math.max(maxLon, bbox.getMaxLonLong());
       minLat = Math.min(minLat, bbox.getMinLatLong());
       maxLat = Math.max(maxLat, bbox.getMaxLatLong());
-      
-      ByteBuffer buffer = OSHWayImpl.buildRecord(OSHEntities.toList(way.getVersions()), way.getNodes(), 0, 0, baseLongitude, baseLatitude);
+
+      ByteBuffer buffer = OSHWayImpl.buildRecord(OSHEntities.toList(way.getVersions()),
+          way.getNodes(), 0, 0, baseLongitude, baseLatitude);
       wayOffsets.put(way.getId(), idx);
       wayByteArrayIndex[idx++] = offset;
       offset = buffer.remaining();
