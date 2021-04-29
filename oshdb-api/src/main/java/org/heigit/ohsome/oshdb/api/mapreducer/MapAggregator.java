@@ -190,7 +190,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       return timestamps.floor(aggregationTimestamp);
     }, this.mapReducer.getZerofillTimestamps());
   }
-  
+
   /**
    * Aggregates the results by sub-regions as well, in addition to the timestamps.
    *
@@ -776,8 +776,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Override
   @Contract(pure = true)
   public Stream<Entry<U, X>> stream() throws Exception {
-    return this.mapReducer.stream().map(d -> 
-      new SimpleImmutableEntry<>(d.getKey(),d.getValue()));
+    return this.mapReducer.stream().map(d ->
+      new SimpleImmutableEntry<>(d.getKey(), d.getValue()));
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -1083,7 +1083,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
         TreeMap::new
     ));
   }
-  
+
   /**
    * A generic Pair class for holding index/value pairs.
    */

@@ -33,7 +33,7 @@ public class OSHDBH2 extends OSHDBJdbc {
         "jdbc:h2:" + databaseFile.replaceAll("\\.mv\\.db$", "") + ";ACCESS_MODE_DATA=r"
     );
   }
-  
+
   public OSHDBH2(Connection conn) throws ClassNotFoundException, SQLException {
     super(conn);
   }

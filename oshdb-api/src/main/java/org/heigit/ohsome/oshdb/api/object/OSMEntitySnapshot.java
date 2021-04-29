@@ -16,7 +16,7 @@ import org.locationtech.jts.geom.Geometry;
  */
 public class OSMEntitySnapshot implements OSHDBMapReducible, Comparable<OSMEntitySnapshot> {
   private final IterateByTimestampEntry data;
-  
+
   public OSMEntitySnapshot(IterateByTimestampEntry data) {
     this.data = data;
   }

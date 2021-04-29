@@ -47,7 +47,7 @@ public class OSHDBCombinedIndex<
   public int hashCode() {
     return java.util.Objects.hash(index1, index2);
   }
- 
+
   @Override
   public String toString() {
     return this.getFirstIndex().toString() + "&" + this.getSecondIndex().toString();
