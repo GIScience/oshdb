@@ -2,14 +2,14 @@ package org.heigit.ohsome.oshdb.tool.importer.extract.data;
 
 import java.util.Iterator;
 
-public class KVF {
+public class KeyValueFrequency {
 
   public final String key;
   public final int freq;
 
-  public final Iterator<VF> vfIterator;
+  public final Iterator<ValueFrequency> vfIterator;
 
-  public KVF(String key, int freq, Iterator<VF> vfIterator) {
+  public KeyValueFrequency(String key, int freq, Iterator<ValueFrequency> vfIterator) {
     this.key = key;
     this.freq = freq;
     this.vfIterator = vfIterator;

@@ -15,109 +15,113 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
 public class TransfomRelation extends OSHRelation2 {
-  
+
   public static TransfomRelation build(ByteArrayOutputWrapper output, ByteArrayOutputWrapper record,
-      ByteArrayOutputWrapper aux, 
-      List<OSMRelation> versions, 
-      LongSortedSet nodeIds, LongSortedSet wayIds, 
-      final long baseId, final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+      ByteArrayOutputWrapper aux, List<OSMRelation> versions, LongSortedSet nodeIds,
+      LongSortedSet wayIds, final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
 
     output.reset();
     record.reset();
     aux.reset();
-    
-    final long id = versions.get(0).getId();
-    
-//    byte header = 0;
-    //record.writeByte(header);
 
-    record.writeUInt64(id - baseId);
-    
+    final long id = versions.get(0).getId();
+
+    // byte header = 0;
+    // record.writeByte(header);
+
+    record.writeU64(id - baseId);
+
     Map<Long, Integer> nodeOffsets = memberOffsets(nodeIds, record);
     Map<Long, Integer> wayOffsets = memberOffsets(wayIds, record);
-    
-    OSHRelation2.OSHRelationBuilder builder =  new OSHRelation2.OSHRelationBuilder();
-    builder.build(output, aux, versions, baseTimestamp, baseLongitude, baseLatitude, nodeOffsets, wayOffsets, Collections.emptyMap());
+
+    OSHRelation2.OSHRelationBuilder builder = new OSHRelation2.OSHRelationBuilder();
+    builder.build(output, aux, versions, baseTimestamp, baseLongitude, baseLatitude, nodeOffsets,
+        wayOffsets, Collections.emptyMap());
 
     record.writeByteArray(output.array(), 0, output.length());
-    return TransfomRelation.instance(record.array(), 0, record.length(),baseId,baseTimestamp,baseLongitude,baseLatitude);
+    return TransfomRelation.instance(record.array(), 0, record.length(), baseId, baseTimestamp,
+        baseLongitude, baseLatitude);
   }
-  
-  private static Map<Long, Integer> memberOffsets(LongSortedSet ids, ByteArrayOutputWrapper out) throws IOException{
-    out.writeUInt32(ids.size());
+
+  private static Map<Long, Integer> memberOffsets(LongSortedSet ids, ByteArrayOutputWrapper out)
+      throws IOException {
+    out.writeU32(ids.size());
     Map<Long, Integer> offsets = new HashMap<>(ids.size());
     long nodeId = 0;
     LongIterator itr = ids.iterator();
-    for(int i=0; itr.hasNext(); i++){
-      nodeId = out.writeUInt64Delta(itr.nextLong(),nodeId);
+    for (int i = 0; itr.hasNext(); i++) {
+      nodeId = out.writeU64Delta(itr.nextLong(), nodeId);
       offsets.put(nodeId, i);
     }
     return offsets;
   }
-  
-  private static long[] readMemberIds(ByteArrayWrapper wrapper) throws IOException{
-    final long[] nodeIds = new long[wrapper.readUInt32()];    
+
+  private static long[] readMemberIds(ByteArrayWrapper wrapper) throws IOException {
+    final long[] nodeIds = new long[wrapper.readU32()];
     long nodeId = 0;
     for (int i = 0; i < nodeIds.length; i++) {
-      nodeId = wrapper.readUInt64Delta(nodeId);
+      nodeId = wrapper.readU64Delta(nodeId);
       nodeIds[i] = nodeId;
     }
     return nodeIds;
   }
-  
-  public static TransfomRelation instance(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+
+  public static TransfomRelation instance(final byte[] data, final int offset, final int length,
+      final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
-    
-    final byte header = 0; //wrapper.readRawByte();
-    final long id = wrapper.readUInt64() + baseId;
+
+    final byte header = 0; // wrapper.readRawByte();
+    final long id = wrapper.readU64() + baseId;
 
     final long[] nodeIds = readMemberIds(wrapper);
     final long[] wayIds = readMemberIds(wrapper);
 
     final int dataOffset = wrapper.getPos();
     final int dataLength = length - (dataOffset - offset);
-    return new TransfomRelation(data, offset, length, header, id, 
-        baseTimestamp, baseLongitude, baseLatitude,        
-        dataOffset, dataLength, 
-        nodeIds,wayIds);
+    return new TransfomRelation(data, offset, length, header, id, baseTimestamp, baseLongitude,
+        baseLatitude, dataOffset, dataLength, nodeIds, wayIds);
   }
-  
-  public static TransfomRelation instance(final byte[] data, final int offset, final int length) throws IOException {
+
+  public static TransfomRelation instance(final byte[] data, final int offset, final int length)
+      throws IOException {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
-  
 
-  final Map<OSMType,long[]> offsetToId;
-  
-  protected TransfomRelation(byte[] data, int offset, int length, byte header, long id, 
-      long baseTimestamp, long baseLongitude, long baseLatitude, int dataOffset, int dataLength, long[] nodeIds, long[] wayIds) {
-    super(data, offset, length, header, id, OSHDBBoundingBox.INVALID, baseTimestamp, baseLongitude, baseLatitude, new int[0], dataOffset, dataLength);
+
+  final Map<OSMType, long[]> offsetToId;
+
+  protected TransfomRelation(byte[] data, int offset, int length, byte header, long id,
+      long baseTimestamp, long baseLongitude, long baseLatitude, int dataOffset, int dataLength,
+      long[] nodeIds, long[] wayIds) {
+    super(data, offset, length, header, id, OSHDBBoundingBox.INVALID, baseTimestamp, baseLongitude,
+        baseLatitude, new int[0], dataOffset, dataLength);
 
     offsetToId = new HashMap<>(2);
-    offsetToId.put(OSMType.NODE,nodeIds);
-    offsetToId.put(OSMType.WAY,wayIds);
+    offsetToId.put(OSMType.NODE, nodeIds);
+    offsetToId.put(OSMType.WAY, wayIds);
   }
 
   @Override
   public OSMMember getMember(long memId, int type, int role) {
-    if (type < 0)
+    if (type < 0) {
       return new OSMMember(memId, OSMType.fromInt(type * -1), role);
-    else {
+    } else {
       OSMType osmType = OSMType.fromInt(type);
       long id = offsetToId.get(osmType)[(int) memId];
       return new OSMMember(id, OSMType.fromInt(type), role);
     }
   }
 
-  public long[] getNodeIds(){
+  public long[] getNodeIds() {
     return offsetToId.get(OSMType.NODE);
   }
-  
-  public long[] getWayIds(){
+
+  public long[] getWayIds() {
     return offsetToId.get(OSMType.WAY);
   }
-  
+
 }

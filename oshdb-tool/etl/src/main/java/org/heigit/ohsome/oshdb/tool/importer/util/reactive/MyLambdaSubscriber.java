@@ -22,7 +22,8 @@ public final class MyLambdaSubscriber<T> extends AtomicReference<Subscription>
   final Action onComplete;
   final long requestValue;
 
-  public MyLambdaSubscriber(Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete, long requestValue) {
+  public MyLambdaSubscriber(Consumer<? super T> onNext, Consumer<? super Throwable> onError,
+      Action onComplete, long requestValue) {
     super();
     this.onNext = onNext;
     this.onError = onError;

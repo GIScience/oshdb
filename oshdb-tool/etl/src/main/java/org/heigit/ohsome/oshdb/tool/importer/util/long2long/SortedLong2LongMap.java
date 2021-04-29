@@ -55,11 +55,13 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
     }
 
     public void put(long id, long value) throws IOException {
-      if (id < 0)
+      if (id < 0) {
         throw new IllegalArgumentException("id must greater than 0 but is " + id);
-      if (id <= lastId)
+      }
+      if (id <= lastId) {
         throw new IllegalArgumentException(
             "id must in strict acsending order lastId was " + lastId + " new id is " + id);
+      }
 
       final int pageNumber = (int) (id / pageOffsetMask);
       final int pageOffset = (int) (id & pageOffsetMask);
@@ -69,13 +71,14 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
         lastPageNumber = pageNumber;
       }
 
-      output.writeSInt64(value - lastValue);
+      output.writeS64(value - lastValue);
       bitmap.add(pageOffset);
 
       lastId = id;
       lastValue = value;
     }
 
+    @Override
     public void close() {
       try {
         flushPage();
@@ -84,7 +87,6 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
       } catch (IOException e) {
         e.printStackTrace();
       }
-
     }
 
     private void flushPage() throws IOException {
@@ -146,8 +148,9 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
 
 
   public LongSortedSet get(LongSortedSet ids) {
-    if (ids.isEmpty())
+    if (ids.isEmpty()) {
       return ids;
+    }
 
     try {
       final LongSortedSet result = new LongAVLTreeSet();
@@ -164,13 +167,14 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
           page = cache.get(pageNumber);
           currentPageNumber = pageNumber;
         }
-        if(page == null) {
+        if (page == null) {
           throw new RuntimeException("page is null!");
         }
         long cellId = page.get(pageOffset);
-        if (cellId >= 0)
+        if (cellId >= 0) {
           result.add(cellId);
-        
+        }
+
       }
       return result;
     } catch (ExecutionException e) {
@@ -179,9 +183,11 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
 
   }
 
+  @Override
   public long get(long id) {
-    if (id < 0)
+    if (id < 0) {
       throw new IllegalArgumentException("id must greater than 0 but is " + id);
+    }
 
     final int pageNumber = (int) (id / pageOffsetMask);
     final int pageOffset = (int) (id & pageOffsetMask);
@@ -213,16 +219,6 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
       public int weigh(Integer arg0, Page page) {
         return page.weigh();
       }
-    })
-        /*
-         * .removalListener(new RemovalListener<Integer, Page>() {
-         * 
-         * @Override public void onRemoval(RemovalNotification<Integer, Page> notification) {
-         * System.out.println("evict "+ notification.getKey());
-         * 
-         * } })
-         */
-        .build(cacheLoader);
+    }).build(cacheLoader);
   }
-
 }

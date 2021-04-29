@@ -17,25 +17,59 @@ import org.slf4j.LoggerFactory;
  * <table style="text-align:center; border-spacing: 4px">
  * <caption>How XYGrid sees the world.</caption>
  * <tr>
- * <td></td><td></td><td colspan="3">+90 lat</td><td></td><td></td><td></td>
+ * <td></td>
+ * <td></td>
+ * <td colspan="3">+90 lat</td>
+ * <td></td>
+ * <td></td>
+ * <td></td>
  * </tr>
  * <tr>
- * <td></td><td>4</td><td>5</td><td>|</td><td>6</td><td>7</td><td></td><td></td>
+ * <td></td>
+ * <td>4</td>
+ * <td>5</td>
+ * <td>|</td>
+ * <td>6</td>
+ * <td>7</td>
+ * <td></td>
+ * <td></td>
  * </tr>
  * <tr>
- * <td>-180</td><td>-</td><td>-</td><td>0</td><td>-</td><td>-</td><td>+180</td><td>longitude</td>
+ * <td>-180</td>
+ * <td>-</td>
+ * <td>-</td>
+ * <td>0</td>
+ * <td>-</td>
+ * <td>-</td>
+ * <td>+180</td>
+ * <td>longitude</td>
  * </tr>
  * <tr>
- * <td></td><td>0</td><td>1</td><td>|</td><td>2</td><td>3</td><td></td><td></td>
+ * <td></td>
+ * <td>0</td>
+ * <td>1</td>
+ * <td>|</td>
+ * <td>2</td>
+ * <td>3</td>
+ * <td></td>
+ * <td></td>
  * </tr>
  * <tr>
- * <td></td><td></td><td colspan="3">-90 lat</td><td></td><td></td><td></td>
+ * <td></td>
+ * <td></td>
+ * <td colspan="3">-90 lat</td>
+ * <td></td>
+ * <td></td>
+ * <td></td>
  * </tr>
  * </table>
  *
- * <p>Longitude +180 will be wrapped around to -180. Coordinates lying on
- * grid-borders will be assigned to the north-eastern cell.</p>
+ * <p>
+ * Longitude +180 will be wrapped around to -180. Coordinates lying on grid-borders will be assigned
+ * to the north-eastern cell.
+ * </p>
  */
+@SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class XYGrid implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -44,40 +78,39 @@ public class XYGrid implements Serializable {
   /**
    * Calculate the OSHDBBoundingBox of a specific GridCell.
    *
-   * @param cellID
-   * @return
+   * @param cellId {@code CellId} for which to get the {@code OSHDBBoundingBox}
+   * @return {@code OSHDBBoundingBox} for {@code cellId}
    */
-  public static OSHDBBoundingBox getBoundingBox(final CellId cellID) {
-    XYGrid grid = new XYGrid(cellID.getZoomLevel());
-    return grid.getCellDimensions(cellID.getId());
+  public static OSHDBBoundingBox getBoundingBox(final CellId cellId) {
+    XYGrid grid = new XYGrid(cellId.getZoomLevel());
+    return grid.getCellDimensions(cellId.getId());
   }
 
   /**
    * Calculate the OSHDBBoundingBox of a specific GridCell.
    *
-   * @param cellID
-   * @param enlarge
-   * @return
+   * @param cellId {@code CellId} for which to get the {@code OSHDBBoundingBox}
+   * @param enlarge {@code true} if the bbox should be enlarged
+   * @return {@code OSHDBBoundingBox} for {@code cellId}
    */
-  public static OSHDBBoundingBox getBoundingBox(final CellId cellID, boolean enlarge) {
+  public static OSHDBBoundingBox getBoundingBox(final CellId cellId, boolean enlarge) {
     if (!enlarge) {
-      return getBoundingBox(cellID);
+      return getBoundingBox(cellId);
     }
-    XYGrid grid = new XYGrid(cellID.getZoomLevel());
-    long id = cellID.getId();
+    XYGrid grid = new XYGrid(cellId.getZoomLevel());
+    long id = cellId.getId();
     int x = (int) (id % grid.zoompow);
     int y = (int) ((id - x) / grid.zoompow);
     long topRightId = id;
-    if (x < grid.zoompow - 1) {
+    if (x < (grid.zoompow - 1)) {
       topRightId += 1;
     }
-    if (y < grid.zoompow / 2 - 1) {
+    if (y < ((grid.zoompow / 2) - 1)) {
       topRightId += grid.zoompow;
     }
     OSHDBBoundingBox bbox = grid.getCellDimensions(id);
     OSHDBBoundingBox topRight = grid.getCellDimensions(topRightId);
-    return new OSHDBBoundingBox(
-        Math.min(bbox.getMinLonLong(), topRight.getMinLonLong()),
+    return new OSHDBBoundingBox(Math.min(bbox.getMinLonLong(), topRight.getMinLonLong()),
         Math.min(bbox.getMinLatLong(), topRight.getMinLatLong()),
         Math.max(bbox.getMaxLonLong(), topRight.getMaxLonLong()),
         Math.max(bbox.getMaxLatLong(), topRight.getMaxLatLong()));
@@ -88,14 +121,15 @@ public class XYGrid implements Serializable {
   private final double cellWidth;
 
   /**
+   * XYGrid.
    *
-   * @param zoom The zoom to be used. The number of tiles in a row equals
-   * 2^zoom. The maximum zoom is 30 due to the maximum accuracy and values of
-   * used numeric formats.
+   * @param zoom The zoom to be used. The number of tiles in a row equals 2^zoom. The maximum zoom
+   *             is 30 due to the maximum accuracy and values of used numeric formats.
    */
   public XYGrid(final int zoom) {
     if (zoom > 30) {
-      LOG.warn("Zoom is too big, maximum number of tiles exceeds biggest possible Long. The maximum zoom of 30 is used instead.");
+      LOG.warn("Zoom is too big, maximum number of tiles exceeds biggest possible Long. "
+          + "The maximum zoom of 30 is used instead.");
       this.zoom = 30;
     } else if (zoom < 0) {
       LOG.warn("Zoom is too small. The minimum zoom of 0 (equals 1 tile) is used instead.");
@@ -109,12 +143,12 @@ public class XYGrid implements Serializable {
   }
 
   /**
-   * Returns the covering tile of a coordinate. Coordinates lying on borders
-   * will be placed in the northern and/or eastern tile except for coordinates
-   * on the North Pole which are placed in the northernmost tile.
+   * Returns the covering tile of a coordinate. Coordinates lying on borders will be placed in the
+   * northern and/or eastern tile except for coordinates on the North Pole which are placed in the
+   * northernmost tile.
    *
    * @param longitude Longitude of the point
-   * @param latitude Latitude of the point
+   * @param latitude  Latitude of the point
    * @return Returns the ID of the tile as shown above
    */
   public long getId(double longitude, double latitude) {
@@ -123,44 +157,44 @@ public class XYGrid implements Serializable {
   }
 
   public long getId(long longitude, long latitude) {
-    //return -1, if point is outside geographical coordinate range
-    if (longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
-        || longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
-        || latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
-        || latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
-      return -1l;
+    // return -1, if point is outside geographical coordinate range
+    if ((longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
+        || (longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
+        || (latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG))
+        || (latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
+      return -1L;
     }
 
     longitude += (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     latitude += (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
 
-    //if it reaches the eastern most border,it is placed on the western most tile
+    // if it reaches the eastern most border,it is placed on the western most tile
     if (longitude == (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       // wrap arround
       longitude = 0L;
     }
-    //if it reaches the northpole, it is placed in the northern most tile
+    // if it reaches the northpole, it is placed in the northern most tile
     if (latitude == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       // fix latitude to clostest value under 180
       latitude -= 1L;
     }
 
-    //calculate column and row
+    // calculate column and row
     final int x = (int) (longitude / cellWidth);
     final int y = (int) (latitude / cellWidth);
 
-    return y * zoompow + x;
+    return (y * zoompow) + x;
   }
 
   /**
    * Returns the smallest Id of the given Bounding Box.
    *
    *
-   * @param bbx
-   * @return south-western cellID of given BBOX
+   * @param bbox {@code OSHDBBoundingBox} for which the id is calculated
+   * @return south-western cellId of given BBOX
    */
-  public long getId(OSHDBBoundingBox bbx) {
-    return getId(bbx.getMinLonLong(), bbx.getMinLatLong());
+  public long getId(OSHDBBoundingBox bbox) {
+    return getId(bbox.getMinLonLong(), bbox.getMinLatLong());
   }
 
   /**
@@ -180,10 +214,10 @@ public class XYGrid implements Serializable {
    */
   public OSHDBBoundingBox getCellDimensions(final long cellId) {
 
-    //calculate the row and column, this tile-value corresponds to
+    // calculate the row and column, this tile-value corresponds to
     int x = (int) (cellId % zoompow);
     int y = (int) ((cellId - x) / zoompow);
-    //calculate the values of the south-western most corner
+    // calculate the values of the south-western most corner
     long lon = (long) ((x * cellWidth) - (180.0 * OSHDB.GEOM_PRECISION_TO_LONG));
     long lat = (long) ((y * cellWidth) - (90.0 * OSHDB.GEOM_PRECISION_TO_LONG));
 
@@ -212,12 +246,12 @@ public class XYGrid implements Serializable {
    * @return the long
    */
   public long getEstimatedIdCount(final OSHDBBoundingBox data) {
-    //number of Cells in x * number of cells in y
+    // number of Cells in x * number of cells in y
     return Math.max(
         (long) Math.ceil(data.getMaxLonLong() / cellWidth)
-        - (long) Math.floor(data.getMinLonLong() / cellWidth),
+            - (long) Math.floor(data.getMinLonLong() / cellWidth),
         (long) Math.ceil(data.getMaxLatLong() / cellWidth)
-        - (long) Math.floor(data.getMinLatLong() / cellWidth));
+            - (long) Math.floor(data.getMinLatLong() / cellWidth));
   }
 
   /**
@@ -272,7 +306,7 @@ public class XYGrid implements Serializable {
         return false;
       }
       IdRange other = (IdRange) obj;
-      return end == other.end && start == other.start;
+      return (end == other.end) && (start == other.start);
     }
 
     @Override
@@ -289,17 +323,17 @@ public class XYGrid implements Serializable {
    * Calculates all tiles, that lie within a bounding-box.
    *
    * <p>
-   * TODO but priority 999: Add possibility to snap the BBX to the tile-grid.
-   * TODO: is an exception needed?
+   * TODO but priority 999: Add possibility to snap the BBX to the tile-grid. TODO: is an exception
+   * needed?
    * </p>
    *
-   * @param bbox The bounding box. First dimension is longitude, second is latitude.
+   * @param bbox    The bounding box. First dimension is longitude, second is latitude.
    * @param enlarge if true, the BBOX is enlarged by one tile to the south-west (bottom-left)
-   *        direction, if false only holds tiles that intersect with the given BBOX.
+   *                direction, if false only holds tiles that intersect with the given BBOX.
    * @return Returns a set of Tile-IDs that lie within the given BBOX.
    */
   public Set<IdRange> bbox2CellIdRanges(OSHDBBoundingBox bbox, boolean enlarge) {
-    //initialise basic variables
+    // initialise basic variables
     Set<IdRange> result = new TreeSet<>();
 
     long minlat = bbox.getMinLatLong();
@@ -315,24 +349,24 @@ public class XYGrid implements Serializable {
     long maxlong = bbox.getMaxLonLong();
 
     IdRange outofboundsCell = IdRange.INVALID;
-    //test if bbox is on earth or extends further
-    if (minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
-        || minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    // test if bbox is on earth or extends further
+    if ((minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
+        || (minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
       result.add(outofboundsCell);
       minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
-        || minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if ((minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG))
+        || (minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
       result.add(outofboundsCell);
       minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
-        || maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if ((maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
+        || (maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
       result.add(outofboundsCell);
       maxlong = (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if (maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
-        || maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
+    if ((maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG))
+        || (maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
       result.add(outofboundsCell);
       maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
@@ -350,21 +384,18 @@ public class XYGrid implements Serializable {
       maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
     }
 
-    //cope with BBOX extending over the date-line
+    // cope with BBOX extending over the date-line
     if (minlong > maxlong) {
-      result.addAll(bbox2CellIdRanges(
-          new OSHDBBoundingBox(
-              minlong, minlat,
-              (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L, maxlat
-              ), enlarge));
+      result.addAll(bbox2CellIdRanges(new OSHDBBoundingBox(minlong, minlat,
+          (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L, maxlat), enlarge));
 
       minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
 
-    //At this point the following should be true
-    //minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
-    //minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
-    //calculate column and row range
+    // At this point the following should be true
+    // minlong[-180.0:179.999999]<=maxlong[-180.0:179.9999]
+    // minlat[0:89.99999999999]<=maxlat[0:89.99999999999]
+    // calculate column and row range
     int columnmin = (int) ((minlong + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
     int columnmax = (int) ((maxlong + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
     int rowmin = (int) ((minlat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) / cellWidth);
@@ -380,9 +411,9 @@ public class XYGrid implements Serializable {
         rowmin -= 1;
       }
     }
-    //add the regular cell ranges
+    // add the regular cell ranges
     for (int row = rowmin; row <= rowmax; row++) {
-      result.add(IdRange.of(row * zoompow + columnmin, row * zoompow + columnmax));
+      result.add(IdRange.of((row * zoompow) + columnmin, (row * zoompow) + columnmax));
     }
     return result;
   }
@@ -390,14 +421,13 @@ public class XYGrid implements Serializable {
   /**
    * Get 2D neighbours of given cellId.
    *
-   * @param center
-   * @return a set of ID-ranges containing the neighbours of the given cell and
-   * the cell itself. -1L,-1L will be added, if this cell lies on the edge of
-   * the XYGrid
+   * @param center Center {@code CellId}
+   * @return a set of ID-ranges containing the neighbours of the given cell and the cell itself.
+   *         -1L,-1L will be added, if this cell lies on the edge of the XYGrid
    */
   public Set<IdRange> getNeighbours(CellId center) {
     if (center.getZoomLevel() != this.zoom) {
-      //might return neighbours in current zoomlevel given the bbox of the provided CellId one day
+      // might return neighbours in current zoomlevel given the bbox of the provided CellId one day
       return null;
     }
 

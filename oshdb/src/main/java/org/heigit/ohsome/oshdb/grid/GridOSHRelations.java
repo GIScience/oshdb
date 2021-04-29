@@ -25,21 +25,23 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
     // TODO user iterator!!
     for (int i = 0; i < index.length; i++) {
       final OSHRelation osh = list.get(i);
-      final ByteBuffer buffer = OSHRelationImpl.buildRecord(OSHEntities.toList(osh.getVersions()),osh.getNodes(),osh.getWays(),baseId, baseTimestamp, baseLongitude, baseLatitude);
+      final ByteBuffer buffer = OSHRelationImpl.buildRecord(OSHEntities.toList(osh.getVersions()),
+          osh.getNodes(), osh.getWays(), baseId, baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
-      out.write(buffer.array(),0,buffer.remaining());
+      out.write(buffer.array(), 0, buffer.remaining());
       offset += buffer.remaining();
     }
     final byte[] data = out.toByteArray();
-    return new GridOSHRelations(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index,
-            data);
+    return new GridOSHRelations(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude,
+        index, data);
   }
 
-  private GridOSHRelations(final long id, final int level, final long baseId, final long baseTimestamp,
-          final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
+  private GridOSHRelations(final long id, final int level, final long baseId,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
-  
+
   @Override
   public Iterable<? extends OSHEntity> getEntities() {
     return this;
@@ -56,7 +58,8 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
         int length = ((pos < index.length - 1) ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
-          return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude);
+          return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp,
+              baseLongitude, baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();
         }

@@ -13,9 +13,8 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Node;
-
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Entity;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Node;
 
 public class TransformerNode extends Transformer {
 
@@ -23,8 +22,9 @@ public class TransformerNode extends Transformer {
   private final ByteArrayOutputWrapper baRecord = new ByteArrayOutputWrapper(1024);
   private final ByteArrayOutputWrapper baAux = new ByteArrayOutputWrapper(1024);
 
-  public TransformerNode(long maxMemory,int maxZoom, Path workDirectory, TagToIdMapper tagToIdMapper, int workerId) throws IOException {
-    super(maxMemory,maxZoom, workDirectory, tagToIdMapper,workerId);
+  public TransformerNode(long maxMemory, int maxZoom, Path workDirectory,
+      TagToIdMapper tagToIdMapper, int workerId) throws IOException {
+    super(maxMemory, maxZoom, workDirectory, tagToIdMapper, workerId);
   }
 
   @Override
@@ -32,8 +32,8 @@ public class TransformerNode extends Transformer {
     return OSMType.NODE;
   }
 
-
   private final long[] lastDataSize = new long[2];
+
   @Override
   public void transform(long id, List<Entity> versions) {
 
@@ -62,23 +62,24 @@ public class TransformerNode extends Transformer {
 
       final LongFunction<byte[]> toByteArray = baseId -> {
         try {
-          
-          if(id == 25094468){
+
+          if (id == 25094468) {
             System.out.println("here");
           }
-          
-          final TransformOSHNode osh = TransformOSHNode.build(baData, baRecord, baAux, nodes, baseId, 0L, baseLongitude, baseLatitude);
-                    
+
+          final TransformOSHNode osh = TransformOSHNode.build(baData, baRecord, baAux, nodes,
+              baseId, 0L, baseLongitude, baseLatitude);
+
           final byte[] record = new byte[baRecord.length()];
           System.arraycopy(baRecord.array(), 0, record, 0, record.length);
-                    
+
           return record;
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
       };
 
-      store(cellId,id,toByteArray);
+      store(cellId, id, toByteArray);
       addIdToCell(id, cellId);
     } catch (IOException e) {
       throw new RuntimeException(e);

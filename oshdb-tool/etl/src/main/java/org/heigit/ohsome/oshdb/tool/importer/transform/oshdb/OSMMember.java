@@ -8,11 +8,10 @@ public interface OSMMember {
   public OSMType getType();
 
   public int getRoleId();
-  
+
   public OSHEntity getEntity();
-  
-  public default String asString(){
-    return String.format("%s:%d (%d)",getType(),getId(),getRoleId());
+
+  public default String asString() {
+    return String.format("%s:%d (%d)", getType(), getId(), getRoleId());
   }
-  
 }

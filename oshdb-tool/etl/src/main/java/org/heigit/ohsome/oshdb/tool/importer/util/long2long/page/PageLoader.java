@@ -20,15 +20,15 @@ import org.roaringbitmap.RoaringBitmap;
 public class PageLoader extends CacheLoader<Integer, Page> {
 
   private static final Page empty = new EmptyPage();
-  
+
   private final Map<Integer, PageLocation> pageIndex;
   private final RandomAccessFile rafPages;
-  private final BiFunction<byte[],Integer, byte[]> decompress;
+  private final BiFunction<byte[], Integer, byte[]> decompress;
   private final int pageSizePower;
   private final int pageSize;
 
-  public PageLoader(String pageIndex, RandomAccessFile rafPages, BiFunction<byte[],Integer, byte[]> decompress)
-      throws IOException {
+  public PageLoader(String pageIndex, RandomAccessFile rafPages,
+      BiFunction<byte[], Integer, byte[]> decompress) throws IOException {
     this.rafPages = rafPages;
     this.decompress = decompress;
     this.pageIndex = new HashMap<>();
@@ -37,16 +37,17 @@ public class PageLoader extends CacheLoader<Integer, Page> {
 
       this.pageSizePower = dataInput.readInt();
       this.pageSize = (int) Math.pow(2, pageSizePower);
-      
+
       try {
         while (true) {
           final int pageNumber = dataInput.readInt();
           final long offset = dataInput.readLong();
           final int size = dataInput.readInt();
           final int rawSize = dataInput.readInt();
-          this.pageIndex.put(Integer.valueOf(pageNumber), new PageLocation(offset, size,rawSize));
+          this.pageIndex.put(Integer.valueOf(pageNumber), new PageLocation(offset, size, rawSize));
         }
       } catch (EOFException e) {
+        // no-op
       }
     }
   }
@@ -57,60 +58,64 @@ public class PageLoader extends CacheLoader<Integer, Page> {
 
   @Override
   public Page load(Integer key) throws Exception {
-  //  System.out.println("Load Page "+key);
+    // System.out.println("Load Page "+key);
     PageLocation loc = pageIndex.get(key);
-    if (loc == null)
+    if (loc == null) {
       return empty;
+    }
 
     rafPages.seek(loc.offset);
     byte[] bytes = new byte[loc.size];
     rafPages.readFully(bytes, 0, bytes.length);
-    bytes = decompress.apply(bytes,loc.rawSize);
+    bytes = decompress.apply(bytes, loc.rawSize);
 
     FastByteArrayInputStream input = new FastByteArrayInputStream(bytes);
     DataInputStream in = new DataInputStream(input);
     RoaringBitmap bitmap = new RoaringBitmap();
     bitmap.deserialize(in);
-    
-    
-    ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(bytes, (int) input.position(), input.available());
-    
-    if(bitmap.getLongCardinality() > (pageSize/2)){
+
+
+    ByteArrayWrapper wrapper =
+        ByteArrayWrapper.newInstance(bytes, (int) input.position(), input.available());
+
+    if (bitmap.getLongCardinality() > (pageSize / 2)) {
       long[] pageContent = new long[pageSize];
-      
+
       Arrays.fill(pageContent, -1);
-          
+
       bitmap.forEach(new IntConsumer() {
         private long lastValue = 0;
+
         @Override
         public void accept(int bit) {
           try {
-            pageContent[bit] = wrapper.readSInt64()+lastValue;
+            pageContent[bit] = wrapper.readS64() + lastValue;
             lastValue = pageContent[bit];
           } catch (IOException e) {
             e.printStackTrace();
           }
         }
       });
-    
+
       return new DensePage(pageContent);
-    }else{
+    } else {
       Int2LongAVLTreeMap map = new Int2LongAVLTreeMap();
       map.defaultReturnValue(-1);
-      
+
       bitmap.forEach(new IntConsumer() {
         private long value = 0;
+
         @Override
         public void accept(int bit) {
           try {
-            value = wrapper.readSInt64()+value; 
+            value = wrapper.readS64() + value;
             map.put(bit, value);
           } catch (IOException e) {
             e.printStackTrace();
           }
         }
       });
-      
+
       return new SparsePage(map);
     }
   }

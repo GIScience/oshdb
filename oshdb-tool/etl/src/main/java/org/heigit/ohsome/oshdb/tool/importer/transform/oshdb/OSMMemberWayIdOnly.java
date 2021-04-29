@@ -2,10 +2,10 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import org.heigit.ohsome.oshdb.osm.OSMType;
 
-public class OSMMemberWayIdOnly implements OSMMember{
+public class OSMMemberWayIdOnly implements OSMMember {
 
   private final long id;
-    
+
   public OSMMemberWayIdOnly(long id) {
     this.id = id;
   }
@@ -30,7 +30,7 @@ public class OSMMemberWayIdOnly implements OSMMember{
     return null;
   }
 
-  
+
   @Override
   public String toString() {
     return asString();

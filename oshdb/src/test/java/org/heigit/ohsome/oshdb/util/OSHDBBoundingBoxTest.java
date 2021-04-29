@@ -29,15 +29,6 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testOverlap() {
-    OSHDBBoundingBox a = new OSHDBBoundingBox(0.1, 89.1, 0.9, 89.9);
-    OSHDBBoundingBox b = new OSHDBBoundingBox(0.0, 89.0, 1.0, 90.0);
-    OSHDBBoundingBox.OVERLAP expResult = OSHDBBoundingBox.OVERLAP.A_COMPLETE_IN_B;
-    OSHDBBoundingBox.OVERLAP result = OSHDBBoundingBox.overlap(a, b);
-    assertEquals(expResult, result);
-  }
-
-  @Test
   public void testGetMinLon() {
     OSHDBBoundingBox instance = new OSHDBBoundingBox(0.0, 89.0, 1.0, 90.0);
     double expResult = 0.0;

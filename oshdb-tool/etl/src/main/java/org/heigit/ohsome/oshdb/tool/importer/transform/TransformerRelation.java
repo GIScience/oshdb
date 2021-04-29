@@ -18,25 +18,26 @@ import org.heigit.ohsome.oshdb.tool.importer.util.RoleToIdMapper;
 import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapper;
 import org.heigit.ohsome.oshdb.tool.importer.util.long2long.SortedLong2LongMap;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Relation;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.RelationMember;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Entity;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Relation;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.RelationMember;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 public class TransformerRelation extends Transformer {
   private final ByteArrayOutputWrapper wrapperData = new ByteArrayOutputWrapper(1024);
   private final ByteArrayOutputWrapper wrapperRecord = new ByteArrayOutputWrapper(1024);
   private final ByteArrayOutputWrapper wrapperNodeData = new ByteArrayOutputWrapper(1024);
- 
+
   final SortedLong2LongMap nodeToCell;
   final SortedLong2LongMap wayToCell;
 
-  public TransformerRelation(long maxMemory,int maxZoom, Path workDirectory, TagToIdMapper tagToIdMapper, RoleToIdMapper role2Id,
-      SortedLong2LongMap nodeToCell, SortedLong2LongMap wayToCell, int workerId) throws IOException {
-    super(maxMemory,maxZoom, workDirectory, tagToIdMapper,role2Id,workerId);
+  public TransformerRelation(long maxMemory, int maxZoom, Path workDirectory,
+      TagToIdMapper tagToIdMapper, RoleToIdMapper role2Id, SortedLong2LongMap nodeToCell,
+      SortedLong2LongMap wayToCell, int workerId) throws IOException {
+    super(maxMemory, maxZoom, workDirectory, tagToIdMapper, role2Id, workerId);
     this.nodeToCell = nodeToCell;
     this.wayToCell = wayToCell;
-    
+
   }
 
   @Override
@@ -46,8 +47,8 @@ public class TransformerRelation extends Transformer {
 
   private Roaring64NavigableMap bitmapRefNode = new Roaring64NavigableMap();
   private Roaring64NavigableMap bitmapRefWay = new Roaring64NavigableMap();
-  
-  
+
+
   @Override
   public void transform(long id, List<Entity> versions) {
     List<OSMRelation> entities = new ArrayList<>(versions.size());
@@ -60,11 +61,10 @@ public class TransformerRelation extends Transformer {
 
       for (OSMMember member : osm.getMembers()) {
         final OSMType type = member.getType();
-        if (type == OSMType.NODE){
+        if (type == OSMType.NODE) {
           nodeIds.add(member.getId());
           bitmapRefNode.add(member.getId());
-        }
-        else if (type == OSMType.WAY){
+        } else if (type == OSMType.WAY) {
           wayIds.add(member.getId());
           bitmapRefWay.add(member.getId());
         }
@@ -83,7 +83,8 @@ public class TransformerRelation extends Transformer {
     try {
       final LongFunction<byte[]> toByteArray = baseId -> {
         try {
-          TransfomRelation osh = TransfomRelation.build(wrapperData, wrapperRecord, wrapperNodeData,entities, nodeIds, wayIds, baseId, 0, 0, 0);
+          TransfomRelation osh = TransfomRelation.build(wrapperData, wrapperRecord, wrapperNodeData,
+              entities, nodeIds, wayIds, baseId, 0, 0, 0);
 
           final byte[] record = new byte[wrapperRecord.length()];
           System.arraycopy(wrapperRecord.array(), 0, record, 0, record.length);
@@ -94,7 +95,7 @@ public class TransformerRelation extends Transformer {
         }
       };
 
-      store(cellId,id, toByteArray,nodeIds,wayIds);
+      store(cellId, id, toByteArray, nodeIds, wayIds);
       addIdToCell(id, cellId);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -104,32 +105,36 @@ public class TransformerRelation extends Transformer {
   @Override
   public void complete() {
     super.complete();
-    
+
     bitmapRefNode.runOptimize();
-    try(FileOutputStream fileOut = new FileOutputStream(workDirectory.resolve("transform_nodeWithRelation.bitmap").toFile());
-        ObjectOutputStream out = new ObjectOutputStream(fileOut)){
+    try (
+        FileOutputStream fileOut = new FileOutputStream(
+            workDirectory.resolve("transform_nodeWithRelation.bitmap").toFile());
+        ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
       bitmapRefNode.writeExternal(out);
     } catch (IOException e) {
       e.printStackTrace();
     }
     bitmapRefWay.runOptimize();
-    try(FileOutputStream fileOut = new FileOutputStream(workDirectory.resolve("transform_wayWithRelation.bitmap").toFile());
-        ObjectOutputStream out = new ObjectOutputStream(fileOut)){
+    try (
+        FileOutputStream fileOut = new FileOutputStream(
+            workDirectory.resolve("transform_wayWithRelation.bitmap").toFile());
+        ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
       bitmapRefWay.writeExternal(out);
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
-  
-  
+
+
   private OSMRelation getOSM(Relation entity) {
-    return new OSMRelation(entity.getId() //
-        , modifiedVersion(entity) //
-        , entity.getTimestamp() //
-        , entity.getChangeset() //
-        , entity.getUserId() //
-        , getKeyValue(entity.getTags()) //
-        , convertToOSMMembers(entity.getMembers()));
+    return new OSMRelation(entity.getId(), //
+        modifiedVersion(entity), //
+        entity.getTimestamp(), //
+        entity.getChangeset(), //
+        entity.getUserId(), //
+        getKeyValue(entity.getTags()), //
+        convertToOSMMembers(entity.getMembers()));
   }
 
   private OSMMember[] convertToOSMMembers(RelationMember[] members) {

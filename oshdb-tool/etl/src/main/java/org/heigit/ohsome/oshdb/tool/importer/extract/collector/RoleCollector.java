@@ -56,8 +56,9 @@ public class RoleCollector implements Iterable<Role> {
 
   public void setTempDir(File dir) {
     dir.mkdirs();
-    if (dir.exists())
+    if (dir.exists()) {
       this.tempDir = dir;
+    }
   }
 
   public void setTempDeleteOneExit(boolean deleteOnExit) {
@@ -68,7 +69,8 @@ public class RoleCollector implements Iterable<Role> {
     return estimatedSize;
   }
 
-  public void inputOutputStream(Function<InputStream, InputStream> input, Function<OutputStream, OutputStream> output) {
+  public void inputOutputStream(Function<InputStream, InputStream> input,
+      Function<OutputStream, OutputStream> output) {
     this.inputStreamFunction = input;
     this.outputStreamFunction = output;
   }
@@ -77,7 +79,7 @@ public class RoleCollector implements Iterable<Role> {
     roles.forEach(role -> {
       if (role2Frequency.addTo(role, 1) == 0) {
         countRoles++;
-        estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue(role);
+        estimatedSize += SizeEstimator.estimatedSizeOfAvlEntryValue(role);
       }
     });
   }
@@ -97,13 +99,15 @@ public class RoleCollector implements Iterable<Role> {
   }
 
   public void writeTemp() throws IOException {
-    if (role2Frequency.isEmpty())
+    if (role2Frequency.isEmpty()) {
       return;
+    }
     File newTempFile;
     newTempFile = File.createTempFile(tempPrefix, tempSuffix, tempDir);
-    if (tempDeleteOnExit)
+    if (tempDeleteOnExit) {
       newTempFile.deleteOnExit();
-    try(OutputStream out  = new FileOutputStream(newTempFile)){
+    }
+    try (OutputStream out = new FileOutputStream(newTempFile)) {
       writeTemp(out);
     }
     tmpFiles.add(newTempFile);
@@ -131,8 +135,9 @@ public class RoleCollector implements Iterable<Role> {
 
     @Override
     public Role next() {
-      if (!hasNext())
+      if (!hasNext()) {
         throw new NoSuchElementException();
+      }
 
       try {
         final String role = input.readUTF();
@@ -154,7 +159,8 @@ public class RoleCollector implements Iterable<Role> {
     private final ObjectBidirectionalIterator<Entry<String>> roleIterator;
 
     public static RoleMapReader of(Object2IntAVLTreeMap<String> role2Frequency, boolean remove) {
-      final ObjectBidirectionalIterator<Entry<String>> roleIterator = role2Frequency.object2IntEntrySet().iterator();
+      final ObjectBidirectionalIterator<Entry<String>> roleIterator =
+          role2Frequency.object2IntEntrySet().iterator();
       return new RoleMapReader(roleIterator, remove);
     }
 
@@ -169,8 +175,9 @@ public class RoleCollector implements Iterable<Role> {
 
     @Override
     public Role next() {
-      if (!hasNext())
+      if (!hasNext()) {
         throw new NoSuchElementException();
+      }
 
       final Entry<String> entry = roleIterator.next();
       final String role = entry.getKey();
@@ -180,6 +187,7 @@ public class RoleCollector implements Iterable<Role> {
     }
   }
 
+  @Override
   public Iterator<Role> iterator() {
     List<Iterator<Role>> iters = new ArrayList<>(tmpFiles.size() + role2Frequency.size());
     tmpFiles.stream().map(file -> {

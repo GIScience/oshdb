@@ -23,7 +23,7 @@ public class TestPolyFileReader {
     GeoJSON result = PolyFileReader.parse(file);
     assertEquals(result.getType(), "Polygon");
     assertTrue(result instanceof Polygon);
-    Polygon poly = (Polygon)result;
+    Polygon poly = (Polygon) result;
     final double[][][] coordinates = poly.getCoordinates();
     assertEquals(coordinates.length, 1);
     assertEquals(coordinates[0].length, 23);
@@ -36,11 +36,12 @@ public class TestPolyFileReader {
   @Test
   public void testAustraliaOpen() throws URISyntaxException, IOException, ParseException {
     // simple polygon, open ring
-    Path file = Paths.get(TestPolyFileReader.class.getResource("/poly/australia-open.poly").toURI());
+    Path file =
+        Paths.get(TestPolyFileReader.class.getResource("/poly/australia-open.poly").toURI());
     GeoJSON result = PolyFileReader.parse(file);
     assertEquals(result.getType(), "Polygon");
     assertTrue(result instanceof Polygon);
-    Polygon poly = (Polygon)result;
+    Polygon poly = (Polygon) result;
     final double[][][] coordinates = poly.getCoordinates();
     assertEquals(coordinates.length, 1);
     assertEquals(coordinates[0].length, 23);
@@ -53,13 +54,10 @@ public class TestPolyFileReader {
     GeoJSON result = PolyFileReader.parse(file);
     assertEquals(result.getType(), "Polygon");
     assertTrue(result instanceof Polygon);
-    Polygon poly = (Polygon)result;
+    Polygon poly = (Polygon) result;
     final double[][][] coordinates = poly.getCoordinates();
     assertEquals(coordinates.length, 2);
-    assertEquals(
-        coordinates[0].length + coordinates[1].length,
-        639
-    );
+    assertEquals(coordinates[0].length + coordinates[1].length, 639);
   }
 
   @Test
@@ -69,16 +67,14 @@ public class TestPolyFileReader {
     GeoJSON result = PolyFileReader.parse(file);
     assertEquals(result.getType(), "MultiPolygon");
     assertTrue(result instanceof MultiPolygon);
-    MultiPolygon poly = (MultiPolygon)result;
+    MultiPolygon poly = (MultiPolygon) result;
     final double[][][][] coordinates = poly.getCoordinates();
     assertEquals(coordinates.length, 3);
     assertEquals(coordinates[0].length, 1);
     assertEquals(coordinates[1].length, 1);
     assertEquals(coordinates[2].length, 1);
-    assertEquals(
-        coordinates[0][0].length + coordinates[1][0].length + coordinates[2][0].length,
-        1111
-    );
+    assertEquals(coordinates[0][0].length + coordinates[1][0].length + coordinates[2][0].length,
+        1111);
   }
 
 }

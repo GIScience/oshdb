@@ -4,13 +4,13 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class OSMRelationTest {
 
-  public OSMRelationTest() {}
+  public OSMRelationTest() {
+  }
 
   @Test
   public void testGetMembers() {
@@ -171,7 +171,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testHasTagValueII() {
+  public void testHasTagValue2() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 3}, new OSMMember[] {part, part});
@@ -185,8 +185,8 @@ public class OSMRelationTest {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         new OSMRelation(1L, 2, 1L, 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
-    String expResult =
-        "Relation-> ID:1 V:+2+ TS:1 CS:1 VIS:true UID:1 TAGS:[1, 2] Mem:[T:WAY ID:1 R:1, T:WAY ID:1 R:1]";
+    String expResult = "Relation-> ID:1 V:+2+ TS:1 CS:1 VIS:true UID:1 TAGS:[1, 2] "
+        + "Mem:[T:WAY ID:1 R:1, T:WAY ID:1 R:1]";
     String result = instance.toString();
     assertEquals(expResult, result);
   }

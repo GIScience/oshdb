@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.function.Function;
 import org.heigit.ohsome.oshdb.tool.importer.extract.Extract.KeyValuePointer;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.Role;
-import org.heigit.ohsome.oshdb.tool.importer.extract.data.VF;
+import org.heigit.ohsome.oshdb.tool.importer.extract.data.ValueFrequency;
 
 public class LoaderKeyTables {
 
@@ -43,9 +43,10 @@ public class LoaderKeyTables {
     final Function<InputStream, InputStream> input = Functions.identity();
 
     try (
-        DataInputStream keyIn = new DataInputStream(
-            input.apply(new BufferedInputStream(new FileInputStream(workDirectory.resolve("extract_keys").toFile()))));
-        final RandomAccessFile raf = new RandomAccessFile(workDirectory.resolve("extract_keyvalues").toFile(), "r");
+        DataInputStream keyIn = new DataInputStream(input.apply(new BufferedInputStream(
+            new FileInputStream(workDirectory.resolve("extract_keys").toFile()))));
+        final RandomAccessFile raf =
+            new RandomAccessFile(workDirectory.resolve("extract_keyvalues").toFile(), "r");
         final FileChannel valuesChannel = raf.getChannel();) {
 
       final int length = keyIn.readInt();
@@ -54,13 +55,14 @@ public class LoaderKeyTables {
 
         final String key = kvp.key;
         List<String> values = Collections.emptyList();
-       
+
         values = new ArrayList<>(kvp.valuesNumber);
 
         valuesChannel.position(kvp.valuesOffset);
-        try(DataInputStream valueStream = new DataInputStream(Channels.newInputStream(valuesChannel));){
+        try (DataInputStream valueStream =
+            new DataInputStream(Channels.newInputStream(valuesChannel));) {
           for (int j = 0; j < kvp.valuesNumber; j++) {
-            final VF vf = VF.read(valueStream);
+            final ValueFrequency vf = ValueFrequency.read(valueStream);
             values.add(vf.value);
           }
         }
@@ -74,19 +76,18 @@ public class LoaderKeyTables {
 
   public void loadRoles() {
     final Function<InputStream, InputStream> input = Functions.identity();
-    try (DataInputStream roleIn = new DataInputStream(
-        input.apply(new BufferedInputStream(new FileInputStream(workDirectory.resolve("extract_roles").toFile()))))) {
+    try (DataInputStream roleIn = new DataInputStream(input.apply(new BufferedInputStream(
+        new FileInputStream(workDirectory.resolve("extract_roles").toFile()))))) {
       try {
         for (int id = 0; true; id++) {
           final Role role = Role.read(roleIn);
           handler.loadRole(id, role.role);
         }
       } catch (EOFException e) {
+        // we reached end of file!
       }
-
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
-
 }

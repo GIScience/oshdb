@@ -6,7 +6,7 @@ import java.util.stream.StreamSupport;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 
 public interface OSHNode extends OSHEntity {
-  
+
   @Override
   default OSMType getType() {
     return OSMType.NODE;
@@ -14,15 +14,15 @@ public interface OSHNode extends OSHEntity {
 
   @Override
   public OSHNode copy();
-  
+
   @Override
   public Iterator<OSMNode> iterator();
-  
+
   @Override
   public Iterable<OSMNode> versions();
-  
+
   @Override
-  public default Stream<OSMNode> stream(){
-      return StreamSupport.stream(versions().spliterator(), false);
+  public default Stream<OSMNode> stream() {
+    return StreamSupport.stream(versions().spliterator(), false);
   }
 }

@@ -11,6 +11,7 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.junit.Test;
 
+@SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class XYGridTreeTest {
 
   @Test
@@ -21,11 +22,11 @@ public class XYGridTreeTest {
     Iterator<CellId> result = instance.getIds(longitude, latitude).iterator();
     Set<CellId> cellIds = Sets.newHashSet(result);
     assertEquals(5, cellIds.size());
-    assertTrue(cellIds.contains(new CellId(0,0L)));
-    assertTrue(cellIds.contains(new CellId(1,1L)));
-    assertTrue(cellIds.contains(new CellId(2,6L)));
-    assertTrue(cellIds.contains(new CellId(3,20L)));
-    assertTrue(cellIds.contains(new CellId(4,72L)));
+    assertTrue(cellIds.contains(new CellId(0, 0L)));
+    assertTrue(cellIds.contains(new CellId(1, 1L)));
+    assertTrue(cellIds.contains(new CellId(2, 6L)));
+    assertTrue(cellIds.contains(new CellId(3, 20L)));
+    assertTrue(cellIds.contains(new CellId(4, 72L)));
   }
 
   @Test
@@ -54,16 +55,16 @@ public class XYGridTreeTest {
 
   @Test
   public void testBbox2CellIds_BoundingBox_boolean() {
-    OSHDBBoundingBox BBOX = new OSHDBBoundingBox(0.0, 0.0, 44.9, 44.9);
-    boolean enlarge = false;
-    XYGridTree instance = new XYGridTree(3);
     HashSet<CellId> expectedCellIds = new HashSet<>(4);
     expectedCellIds.add(new CellId(3, 20L));
     expectedCellIds.add(new CellId(2, 6L));
     expectedCellIds.add(new CellId(1, 1L));
     expectedCellIds.add(new CellId(0, 0L));
 
-    for (CellId now : instance.bbox2CellIds(BBOX, enlarge)) {
+    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, 0.0, 44.9, 44.9);
+    boolean enlarge = false;
+    XYGridTree instance = new XYGridTree(3);
+    for (CellId now : instance.bbox2CellIds(bbox, enlarge)) {
       assertEquals(true, expectedCellIds.remove(now));
     }
     assertEquals(0, expectedCellIds.size());
@@ -71,9 +72,6 @@ public class XYGridTreeTest {
 
   @Test
   public void testBbox2CellIds_BoundingBox2_boolean() {
-    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, 0.0, 89, 89);
-    boolean enlarge = true;
-    XYGridTree instance = new XYGridTree(3);
     HashSet<CellId> expectedCellIds = new HashSet<>(16);
     expectedCellIds.add(new CellId(3, 12L));
     expectedCellIds.add(new CellId(3, 11L));
@@ -92,6 +90,9 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(1, 0L));
     expectedCellIds.add(new CellId(0, 0L));
 
+    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, 0.0, 89, 89);
+    boolean enlarge = true;
+    XYGridTree instance = new XYGridTree(3);
     for (CellId now : instance.bbox2CellIds(bbox, enlarge)) {
       assertEquals(true, expectedCellIds.remove(now));
     }

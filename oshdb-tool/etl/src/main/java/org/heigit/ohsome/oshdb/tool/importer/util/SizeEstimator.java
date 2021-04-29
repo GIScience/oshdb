@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
 public class SizeEstimator {
-  
+
   private static int OBJ_HEADER;
   private static int ARR_HEADER;
   private static int PADDING;
@@ -12,7 +12,7 @@ public class SizeEstimator {
 
   private static final long AVL_ENTRY_SIZE = 96;
   private static final long AVL_MAP_SIZE = 128;
-  
+
   static {
     // By default we assume 64 bit JVM
     // (defensive approach since we will get
@@ -42,40 +42,40 @@ public class SizeEstimator {
     PADDING = 4;
     OBJ_OVERHEAD = OBJ_HEADER + OBJ_REF + INT_FIELD + ARR_HEADER + PADDING;
   }
-  
+
+  public static long estimatedSizeOf(byte[] bytes) {
+    return ARR_HEADER + bytes.length;
+  }
+
   public static long estimatedSizeOf(String s) {
     return (s.length() * 2) + OBJ_OVERHEAD;
   }
-  
-  public static long objOverhead(){
+
+  public static long objOverhead() {
     return OBJ_OVERHEAD;
   }
-  
-  public static long intField(){
+
+  public static long intField() {
     return INT_FIELD;
   }
-  
-  public static long linkedListEntry(){
-    return OBJ_HEADER+2*OBJ_REF;
-  }
-  
-  public static long estimatedSizeOf(byte[] bytes) {
-    return ARR_HEADER+bytes.length;
+
+  public static long linkedListEntry() {
+    return OBJ_HEADER + (2 * OBJ_REF);
   }
 
   public static long linkedList() {
-    return OBJ_HEADER+3*OBJ_REF + INT_FIELD;
+    return OBJ_HEADER + (3 * OBJ_REF) + INT_FIELD;
   }
 
   public static long avlTreeEntry() {
     return AVL_ENTRY_SIZE;
   }
-  
-  public static long estimatedSizeOfAVLEntryKey(String key) {
+
+  public static long estimatedSizeOfAvlEntryKey(String key) {
     return estimatedSizeOf(key) + AVL_ENTRY_SIZE + AVL_MAP_SIZE;
   }
 
-  public static long estimatedSizeOfAVLEntryValue(String value) {
+  public static long estimatedSizeOfAvlEntryValue(String value) {
     return estimatedSizeOf(value) + AVL_ENTRY_SIZE;
   }
 
@@ -87,5 +87,5 @@ public class SizeEstimator {
     long presFreeMemory = r.maxMemory() - allocatedMemory;
     return presFreeMemory;
   }
-  
+
 }

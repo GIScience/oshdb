@@ -71,16 +71,16 @@ public abstract class OSMEntity implements OSHDBTemporal {
       @Override
       public Iterator<OSHDBTag> iterator() {
         return new Iterator<OSHDBTag>() {
-          int i = 0;
+          int pos = 0;
 
           @Override
           public boolean hasNext() {
-            return i < tags.length;
+            return pos < tags.length;
           }
 
           @Override
           public OSHDBTag next() {
-            return new OSHDBTag(tags[i++], tags[i++]);
+            return new OSHDBTag(tags[pos++], tags[pos++]);
           }
         };
       }

@@ -7,310 +7,314 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.CommonEntityData;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Node;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Relation;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.RelationMember;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Tag;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.TagText;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Way;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.CommonEntityData;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Entity;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Node;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Relation;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.RelationMember;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Tag;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.TagText;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Way;
 
 public class OsmPrimitveBlockIterator implements Iterator<Object> {
 
-	private final long blockStartPostion;
-	private final Set<OSMType> types;
-	private final crosby.binary.Osmformat.StringTable stringTable;
-	private final String[] stringIndex;
+  private final long blockStartPostion;
+  private final Set<OSMType> types;
+  private final crosby.binary.Osmformat.StringTable stringTable;
+  private final String[] stringIndex;
 
-	public final  List<crosby.binary.Osmformat.PrimitiveGroup> groups;
-	private final  Iterator<crosby.binary.Osmformat.PrimitiveGroup> groupIterator;
+  public final List<crosby.binary.Osmformat.PrimitiveGroup> groups;
+  private final Iterator<crosby.binary.Osmformat.PrimitiveGroup> groupIterator;
 
-	public final int granularityLocation;
-	public final int granularityDate;
-	public final long offsetLongitude;
-	public final long offsetLatitude;
+  public final int granularityLocation;
+  public final int granularityDate;
+  public final long offsetLongitude;
+  public final long offsetLatitude;
 
-	private Iterator<Entity> entityIterator = Collections.emptyIterator();
+  private Iterator<Entity> entityIterator = Collections.emptyIterator();
 
-	public OsmPrimitveBlockIterator(long blockStartPosition,crosby.binary.Osmformat.PrimitiveBlock block, Set<OSMType> types) {
-		this.blockStartPostion = blockStartPosition;
-		this.types = types;
+  public OsmPrimitveBlockIterator(long blockStartPosition,
+      crosby.binary.Osmformat.PrimitiveBlock block, Set<OSMType> types) {
+    this.blockStartPostion = blockStartPosition;
+    this.types = types;
 
-		stringTable = block.getStringtable();
-		stringIndex = new String[stringTable.getSCount()];
+    stringTable = block.getStringtable();
+    stringIndex = new String[stringTable.getSCount()];
 
-		granularityLocation = block.getGranularity();
-		granularityDate = block.getDateGranularity();
-		offsetLongitude = block.getLonOffset();
-		offsetLatitude = block.getLatOffset();
+    granularityLocation = block.getGranularity();
+    granularityDate = block.getDateGranularity();
+    offsetLongitude = block.getLonOffset();
+    offsetLatitude = block.getLatOffset();
 
-		groups = block.getPrimitivegroupList();
-		groupIterator = groups.iterator();
+    groups = block.getPrimitivegroupList();
+    groupIterator = groups.iterator();
 
-	}
+  }
 
-	public long getBlockStartPosition() {
-		return blockStartPostion;
-	}
-	
-	
-	public Set<OSMType> getTypes(){
-	  return types;
-	}
+  public long getBlockStartPosition() {
+    return blockStartPostion;
+  }
 
-	@Override
-	public boolean hasNext() {
-		return groupIterator.hasNext() || entityIterator.hasNext();
-	}
 
-	@Override
-	public Entity next() {
-		if (!entityIterator.hasNext() && groupIterator.hasNext())
-			entityIterator = parse(groupIterator.next());
+  public Set<OSMType> getTypes() {
+    return types;
+  }
 
-		if (entityIterator.hasNext())
-			return entityIterator.next();
+  @Override
+  public boolean hasNext() {
+    return groupIterator.hasNext() || entityIterator.hasNext();
+  }
 
-		throw new NoSuchElementException("no entities within a group");
-	}
+  @Override
+  public Entity next() {
+    if (!entityIterator.hasNext() && groupIterator.hasNext()) {
+      entityIterator = parse(groupIterator.next());
+    }
 
-	private Iterator<Entity> parse(crosby.binary.Osmformat.PrimitiveGroup group) {
-		if (group.hasDense()) {
-			return parseDense(group.getDense());
-		} else if (hasElements(group.getNodesList())) {
-			return parseNodes(group.getNodesList());
-		} else if (hasElements(group.getWaysList())) {
-			return parseWays(group.getWaysList());
-		} else if (hasElements(group.getRelationsList())) {
-			return parseRelations(group.getRelationsList());
-		}
+    if (entityIterator.hasNext()) {
+      return entityIterator.next();
+    }
 
-		return Collections.emptyIterator();
-	}
+    throw new NoSuchElementException("no entities within a group");
+  }
 
-	private Iterator<Entity> parseRelations(List<crosby.binary.Osmformat.Relation> entities) {
-		return new Iterator<Entity>() {
-			final Iterator<crosby.binary.Osmformat.Relation> entityIterator = entities.iterator();
+  private Iterator<Entity> parse(crosby.binary.Osmformat.PrimitiveGroup group) {
+    if (group.hasDense()) {
+      return parseDense(group.getDense());
+    } else if (hasElements(group.getNodesList())) {
+      return parseNodes(group.getNodesList());
+    } else if (hasElements(group.getWaysList())) {
+      return parseWays(group.getWaysList());
+    } else if (hasElements(group.getRelationsList())) {
+      return parseRelations(group.getRelationsList());
+    }
 
-			@Override
-			public boolean hasNext() {
-				return entityIterator.hasNext();
-			}
+    return Collections.emptyIterator();
+  }
 
-			@Override
-			public Entity next() {
-				final crosby.binary.Osmformat.Relation entity = entityIterator.next();
+  private Iterator<Entity> parseRelations(List<crosby.binary.Osmformat.Relation> entities) {
+    return new Iterator<Entity>() {
+      final Iterator<crosby.binary.Osmformat.Relation> entityIterator = entities.iterator();
 
-				final CommonEntityData ced = getCommonEntityData(entity.getId(), entity.getInfo(), entity.getKeysList(),
-						entity.getValsList());
+      @Override
+      public boolean hasNext() {
+        return entityIterator.hasNext();
+      }
 
-				List<Integer> rolesSidList = entity.getRolesSidList();
-				List<Long> memIdsList = entity.getMemidsList();
-				List<crosby.binary.Osmformat.Relation.MemberType> typesList = entity.getTypesList();
-				long memId = 0;
-				RelationMember[] members = new RelationMember[memIdsList.size()];
-				crosby.binary.Osmformat.Relation.MemberType type;
-				for (int i = 0, iL = memIdsList.size(); i < iL; i++) {
-					int roleSid = rolesSidList.get(i);
-					memId += memIdsList.get(i);
-					type = typesList.get(i);
-					members[i] = new RelationMember(memId, getString(roleSid), type.getNumber());
-				}
+      @Override
+      public Entity next() {
+        final crosby.binary.Osmformat.Relation entity = entityIterator.next();
 
-				return new Relation(ced, members);
-			}
+        final CommonEntityData ced = getCommonEntityData(entity.getId(), entity.getInfo(),
+            entity.getKeysList(), entity.getValsList());
 
-		};
-	}
+        List<Integer> rolesSidList = entity.getRolesSidList();
+        List<Long> memIdsList = entity.getMemidsList();
+        List<crosby.binary.Osmformat.Relation.MemberType> typesList = entity.getTypesList();
+        long memId = 0;
+        RelationMember[] members = new RelationMember[memIdsList.size()];
+        crosby.binary.Osmformat.Relation.MemberType type;
+        for (int i = 0, length = memIdsList.size(); i < length; i++) {
+          int roleSid = rolesSidList.get(i);
+          memId += memIdsList.get(i);
+          type = typesList.get(i);
+          members[i] = new RelationMember(memId, getString(roleSid), type.getNumber());
+        }
 
-	private Iterator<Entity> parseWays(List<crosby.binary.Osmformat.Way> entities) {
-		return new Iterator<Entity>() {
-			final Iterator<crosby.binary.Osmformat.Way> entityIterator = entities.iterator();
+        return new Relation(ced, members);
+      }
 
-			@Override
-			public boolean hasNext() {
-				return entityIterator.hasNext();
-			}
+    };
+  }
 
-			@Override
-			public Entity next() {
-				final crosby.binary.Osmformat.Way entity = entityIterator.next();
+  private Iterator<Entity> parseWays(List<crosby.binary.Osmformat.Way> entities) {
+    return new Iterator<Entity>() {
+      final Iterator<crosby.binary.Osmformat.Way> entityIterator = entities.iterator();
 
-				final CommonEntityData ced = getCommonEntityData(entity.getId(), entity.getInfo(), entity.getKeysList(),
-						entity.getValsList());
+      @Override
+      public boolean hasNext() {
+        return entityIterator.hasNext();
+      }
 
-				final List<Long> refsList = entity.getRefsList();
-				final long[] refs = new long[refsList.size()];
+      @Override
+      public Entity next() {
+        final crosby.binary.Osmformat.Way entity = entityIterator.next();
 
-				long ref = 0;
-				int i = 0;
-				for (long refDelta : refsList) {
-					ref += refDelta;
-					refs[i++] = ref;
-				}
+        final CommonEntityData ced = getCommonEntityData(entity.getId(), entity.getInfo(),
+            entity.getKeysList(), entity.getValsList());
 
-				return new Way(ced, refs);
-			}
+        final List<Long> refsList = entity.getRefsList();
+        final long[] refs = new long[refsList.size()];
 
-		};
-	}
+        long ref = 0;
+        int i = 0;
+        for (long refDelta : refsList) {
+          ref += refDelta;
+          refs[i++] = ref;
+        }
 
-	private Iterator<Entity> parseNodes(final List<crosby.binary.Osmformat.Node> entities) {
-		return new Iterator<Entity>() {
-			final Iterator<crosby.binary.Osmformat.Node> entityIterator = entities.iterator();
+        return new Way(ced, refs);
+      }
 
-			@Override
-			public boolean hasNext() {
-				return entityIterator.hasNext();
-			}
+    };
+  }
 
-			@Override
-			public Entity next() {
-				final crosby.binary.Osmformat.Node entity = entityIterator.next();
+  private Iterator<Entity> parseNodes(final List<crosby.binary.Osmformat.Node> entities) {
+    return new Iterator<Entity>() {
+      final Iterator<crosby.binary.Osmformat.Node> entityIterator = entities.iterator();
 
-				final CommonEntityData ced = getCommonEntityData(entity.getId(), entity.getInfo(), entity.getKeysList(),
-						entity.getValsList());
-				final long lon = entity.getLon();
-				final long lat = entity.getLat();
+      @Override
+      public boolean hasNext() {
+        return entityIterator.hasNext();
+      }
 
-				return new Node(ced, lon, lat);
-			}
-		};
-	}
+      @Override
+      public Entity next() {
+        final crosby.binary.Osmformat.Node entity = entityIterator.next();
 
-	private Iterator<Entity> parseDense(crosby.binary.Osmformat.DenseNodes dense) {
-		return new Iterator<Entity>() {
-			final List<Long> idList = dense.getIdList();
-			final int idCount = idList.size();
+        final CommonEntityData ced = getCommonEntityData(entity.getId(), entity.getInfo(),
+            entity.getKeysList(), entity.getValsList());
+        final long lon = entity.getLon();
+        final long lat = entity.getLat();
 
-			final boolean hasDenseInfo = dense.hasDenseinfo();
-			final List<Integer> versionList = hasDenseInfo ? dense.getDenseinfo().getVersionList() : null;
-			final List<Long> timestampList = hasDenseInfo ? dense.getDenseinfo().getTimestampList() : null;
-			final List<Long> changesetList = hasDenseInfo ? dense.getDenseinfo().getChangesetList() : null;
-			final List<Integer> uidList = hasDenseInfo ? dense.getDenseinfo().getUidList() : null;
-			final List<Integer> userSidList = hasDenseInfo ? dense.getDenseinfo().getUserSidList() : null;
-			final List<Boolean> visibleList = hasDenseInfo ? dense.getDenseinfo().getVisibleList() : null;
+        return new Node(ced, lon, lat);
+      }
+    };
+  }
 
-			final List<Integer> keyValsList = dense.getKeysValsList();
-			final int keyVasCount = keyValsList.size();
+  private Iterator<Entity> parseDense(crosby.binary.Osmformat.DenseNodes dense) {
+    return new Iterator<Entity>() {
+      final List<Long> idList = dense.getIdList();
+      final int idCount = idList.size();
 
-			final List<Long> lonList = dense.getLonList();
-			final List<Long> latList = dense.getLatList();
+      final boolean hasDenseInfo = dense.hasDenseinfo();
+      final List<Integer> versionList = hasDenseInfo ? dense.getDenseinfo().getVersionList() : null;
+      final List<Long> timestampList =
+          hasDenseInfo ? dense.getDenseinfo().getTimestampList() : null;
+      final List<Long> changesetList =
+          hasDenseInfo ? dense.getDenseinfo().getChangesetList() : null;
+      final List<Integer> uidList = hasDenseInfo ? dense.getDenseinfo().getUidList() : null;
+      final List<Integer> userSidList = hasDenseInfo ? dense.getDenseinfo().getUserSidList() : null;
+      final List<Boolean> visibleList = hasDenseInfo ? dense.getDenseinfo().getVisibleList() : null;
 
-			int cursor = 0;
-			int keyVal = 0;
+      final List<Integer> keyValsList = dense.getKeysValsList();
+      final int keyVasCount = keyValsList.size();
 
-			long id = 0;
-			int version;
-			long timestamp = 0;
-			long changeset = 0;
-			int uid = 0;
-			int userSid = 0;
-			boolean visible;
+      final List<Long> lonList = dense.getLonList();
+      final List<Long> latList = dense.getLatList();
 
-			long lon = 0;
-			long lat = 0;
+      int cursor = 0;
+      int keyVal = 0;
 
-			@Override
-			public boolean hasNext() {
-				return cursor < idCount;
-			}
+      long id = 0;
+      int version;
+      long timestamp = 0;
+      long changeset = 0;
+      int uid = 0;
+      int userSid = 0;
+      boolean visible;
 
-			@Override
-			public Entity next() {
-				final int index = cursor++;
+      long lon = 0;
+      long lat = 0;
 
-				id += idList.get(index);
+      @Override
+      public boolean hasNext() {
+        return cursor < idCount;
+      }
 
-				if (hasDenseInfo) {
-					version = versionList.get(index);
-					timestamp += timestampList.get(index);
-					changeset += changesetList.get(index);
-					uid += uidList.get(index);
-					userSid += userSidList.get(index);
-					visible = (!visibleList.isEmpty())?visibleList.get(index):true;
-				}
+      @Override
+      public Entity next() {
+        final int index = cursor++;
 
-				List<Tag> tags = new ArrayList<>();
-				if (keyVal < keyVasCount) {
-					for (int key = keyValsList.get(keyVal++); key > 0; key = keyValsList.get(keyVal++)) {
-						int value = keyValsList.get(keyVal++);
-						tags.add(new TagText(getString(key), getString(value)));
-					}
-				}
-				
-				final CommonEntityData ced = new CommonEntityData(id, version, changeset, timestamp, visible, uid,
-						getString(userSid), tags.toArray(new TagText[tags.size()]));
+        id += idList.get(index);
 
-				lon += lonList.get(index);
-				lat += latList.get(index);
+        if (hasDenseInfo) {
+          version = versionList.get(index);
+          timestamp += timestampList.get(index);
+          changeset += changesetList.get(index);
+          uid += uidList.get(index);
+          userSid += userSidList.get(index);
+          visible = (!visibleList.isEmpty()) ? visibleList.get(index) : true;
+        }
 
-				return new Node(ced, lon, lat);
-			}
-		};
-	}
+        List<Tag> tags = new ArrayList<>();
+        if (keyVal < keyVasCount) {
+          for (int key = keyValsList.get(keyVal++); key > 0; key = keyValsList.get(keyVal++)) {
+            int value = keyValsList.get(keyVal++);
+            tags.add(new TagText(getString(key), getString(value)));
+          }
+        }
 
-	private CommonEntityData getCommonEntityData(final long id, final crosby.binary.Osmformat.Info info,
-			List<Integer> keysList, List<Integer> valsList) {
-		int version = -1;
-		if (info.hasVersion()) {
-			version = info.getVersion();
-		}
-		long timestamp = -1;
-		if (info.hasTimestamp()) {
-			timestamp = info.getTimestamp(); // // fix timestamp to
-												// dateGranularity = 1, osm only
-												// is second precision,
-												// block.getDateGranularity();
-		}
-		long changeset = -1;
-		if (info.hasChangeset()) {
-			changeset = Long.valueOf(info.getChangeset());
-		}
+        final CommonEntityData ced = new CommonEntityData(id, version, changeset, timestamp,
+            visible, uid, getString(userSid), tags.toArray(new TagText[tags.size()]));
 
-		boolean visible = false;
-		if (info.hasVisible()) {
-			visible = info.getVisible();
-		}
+        lon += lonList.get(index);
+        lat += latList.get(index);
 
-		int uid = -1;
-		if (info.hasUid()) {
-			uid = info.getUid();
-		}
-		String user = "";
-		if (info.hasUserSid()) {
-			user = getString(info.getUserSid());
-		}
+        return new Node(ced, lon, lat);
+      }
+    };
+  }
 
-		TagText[] tags = new TagText[keysList.size()];
-		for (int i = 0; i < keysList.size(); i++) {
-			tags[i] = new TagText(getString(keysList.get(i).intValue()), getString(valsList.get(i).intValue()));
-		}
+  private CommonEntityData getCommonEntityData(final long id,
+      final crosby.binary.Osmformat.Info info, List<Integer> keysList, List<Integer> valsList) {
+    int version = -1;
+    if (info.hasVersion()) {
+      version = info.getVersion();
+    }
+    long timestamp = -1;
+    if (info.hasTimestamp()) {
+      timestamp = info.getTimestamp(); // fix timestamp osm only is second precision,
+    }
+    long changeset = -1;
+    if (info.hasChangeset()) {
+      changeset = Long.valueOf(info.getChangeset());
+    }
 
-		return new CommonEntityData(id, version, changeset, timestamp, visible, uid, user, tags);
-	}
+    boolean visible = false;
+    if (info.hasVisible()) {
+      visible = info.getVisible();
+    }
 
-	/**
-	 * resolves a String value from its sid.
-	 * 
-	 * @param sid
-	 * @return
-	 */
-	private String getString(int sid) {
-		String s = stringIndex[sid];
-		if (s == null) {
-			s = stringTable.getS(sid).toStringUtf8();
-			stringIndex[sid] = s;
-		}
-		return s;
-	}
+    int uid = -1;
+    if (info.hasUid()) {
+      uid = info.getUid();
+    }
+    String user = "";
+    if (info.hasUserSid()) {
+      user = getString(info.getUserSid());
+    }
 
-	@SuppressWarnings("rawtypes")
-	private boolean hasElements(List l) {
-		if (l == null || l.isEmpty())
-			return false;
-		return true;
-	}
+    TagText[] tags = new TagText[keysList.size()];
+    for (int i = 0; i < keysList.size(); i++) {
+      tags[i] =
+          new TagText(getString(keysList.get(i).intValue()), getString(valsList.get(i).intValue()));
+    }
+
+    return new CommonEntityData(id, version, changeset, timestamp, visible, uid, user, tags);
+  }
+
+  /**
+   * resolves a String value from its sid.
+   *
+   * @param sid String Id to resolve
+   * @return coresponding String for {@code sid}
+   */
+  private String getString(int sid) {
+    String s = stringIndex[sid];
+    if (s == null) {
+      s = stringTable.getS(sid).toStringUtf8();
+      stringIndex[sid] = s;
+    }
+    return s;
+  }
+
+  @SuppressWarnings("rawtypes")
+  private boolean hasElements(List l) {
+    if ((l == null) || l.isEmpty()) {
+      return false;
+    }
+    return true;
+  }
 
 }

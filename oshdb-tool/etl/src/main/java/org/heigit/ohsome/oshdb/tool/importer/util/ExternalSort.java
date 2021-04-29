@@ -21,23 +21,24 @@ import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
 public class ExternalSort<T> {
-  
+
   @FunctionalInterface
   public interface Serialize<T> {
-    public void write(T obj, ObjectOutputStream out) throws IOException;
+    void write(T obj, ObjectOutputStream out) throws IOException;
   }
+
   @FunctionalInterface
   public interface Deserialize<T> {
-    public T read(ObjectInputStream in) throws IOException;
+    T read(ObjectInputStream in) throws IOException;
   }
-  
+
   private final Comparator<T> cmp;
   private final long maxSize;
-  
+
   private final ToLongFunction<T> estimator;
-  
-  private Serialize<T>  serialize = (it, out) -> {
-      out.writeObject(it);
+
+  private Serialize<T> serialize = (it, out) -> {
+    out.writeObject(it);
   };
   @SuppressWarnings("unchecked")
   private Deserialize<T> deserialize = in -> {
@@ -53,49 +54,51 @@ public class ExternalSort<T> {
 
   private boolean parallel;
   private File tmpDirectory;
-    
-  
-  
-  
-  public static <T> ExternalSort<T> of(Comparator<T> cmp, long maxSize, ToLongFunction<T> estimator){
-    ExternalSort<T> sorter = new ExternalSort<T>(cmp,maxSize,estimator);
+
+
+
+  public static <T> ExternalSort<T> of(Comparator<T> cmp, long maxSize,
+      ToLongFunction<T> estimator) {
+    ExternalSort<T> sorter = new ExternalSort<T>(cmp, maxSize, estimator);
     return sorter;
   }
-  
-  private ExternalSort(Comparator<T> cmp, long maxSize, ToLongFunction<T> estimator){
+
+  private ExternalSort(Comparator<T> cmp, long maxSize, ToLongFunction<T> estimator) {
     this.cmp = cmp;
     this.maxSize = maxSize;
     this.estimator = estimator;
   }
-  
-  public ExternalSort<T> with(Serialize<T>  serialize,Deserialize<T> deserialize){
+
+  public ExternalSort<T> with(Serialize<T> serialize, Deserialize<T> deserialize) {
     this.serialize = serialize;
     this.deserialize = deserialize;
     return this;
   }
-  
-  public ExternalSort<T> with(Function<OutputStream, OutputStream> output, Function<InputStream, InputStream> input){
+
+  public ExternalSort<T> with(Function<OutputStream, OutputStream> output,
+      Function<InputStream, InputStream> input) {
     this.output = output;
     this.input = input;
     return this;
   }
-  
-  public ExternalSort<T> withTempDirectory(File dir){
+
+  public ExternalSort<T> withTempDirectory(File dir) {
     this.tmpDirectory = dir;
     this.tmpDirectory.mkdirs();
     return this;
   }
- 
-  
-  public Iterator<T> sort(Iterator<T> source) throws IOException{
-    return sort(source,true);
+
+
+  public Iterator<T> sort(Iterator<T> source) throws IOException {
+    return sort(source, true);
   }
-  public Iterator<T> sort(Iterator<T> source, boolean parallel) throws IOException{
+
+  public Iterator<T> sort(Iterator<T> source, boolean parallel) throws IOException {
     this.parallel = parallel;
     return sortInBatch(source);
   }
-  
-  
+
+
 
   private Iterator<T> sortInBatch(Iterator<T> source) throws IOException {
     List<T> batch = new ArrayList<>();
@@ -106,8 +109,9 @@ public class ExternalSort<T> {
       T next = source.next();
       if (currentSize > maxSize) {
         File tmpFile = saveBatch(sortBatch(batch));
-        if (batches == null)
+        if (batches == null) {
           batches = new ArrayList<>();
+        }
         batches.add(tmpFile);
         currentSize = 0;
         batch.clear();
@@ -115,21 +119,24 @@ public class ExternalSort<T> {
       batch.add(next);
       currentSize += estimator.applyAsLong(next);
     }
-    List<Iterator<T>> merge = new ArrayList<>(((batches != null)?batches.size():0) + 1);
-    if(batches != null)
+    List<Iterator<T>> merge = new ArrayList<>(((batches != null) ? batches.size() : 0) + 1);
+    if (batches != null) {
       for (File file : batches) {
         InputStream in = input.apply(new BufferedInputStream(new FileInputStream(file)));
         merge.add(new BatchFileIterator<T>(in, deserialize));
       }
-    if (!batch.isEmpty())
+    }
+    if (!batch.isEmpty()) {
       merge.add(sortBatch(batch).iterator());
+    }
 
     return MergeIterator.of(merge, cmp, l -> l.get(0));
   }
 
   private List<T> sortBatch(List<T> batch) {
     if (parallel) {
-      batch = batch.parallelStream().sorted(cmp).collect(Collectors.toCollection(ArrayList<T>::new));
+      batch =
+          batch.parallelStream().sorted(cmp).collect(Collectors.toCollection(ArrayList<T>::new));
     } else {
       batch.sort(cmp);
     }
@@ -168,8 +175,9 @@ public class ExternalSort<T> {
 
     @Override
     public T next() {
-      if (!hasNext())
+      if (!hasNext()) {
         throw new NoSuchElementException();
+      }
       T ret = next;
       next = getNext();
       return ret;
@@ -179,17 +187,17 @@ public class ExternalSort<T> {
       try {
         return deserialize.read(input);
       } catch (IOException e) {
-        if (!(e instanceof EOFException))
+        if (!(e instanceof EOFException)) {
           e.printStackTrace();
+        }
         try {
           input.close();
         } catch (IOException e1) {
+          // no-opt
         }
-
         closed = true;
       }
       return null;
     }
-
   }
 }

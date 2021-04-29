@@ -10,11 +10,8 @@ import java.util.zip.Inflater;
 /**
  * A full OSM Pbf Blob. Contains both, <a href=
  * "http://wiki.openstreetmap.org/wiki/PBF_Format#File_format">BlobHeader(header)
- * and Blob(content)</a>. In addition this class hold the position within the
- * 
- * 
- * inputstream for this block.
- * 
+ * and Blob(content)</a>. In addition this class hold the position within the inputstream for
+ * this block.
  */
 public class PbfBlob {
 

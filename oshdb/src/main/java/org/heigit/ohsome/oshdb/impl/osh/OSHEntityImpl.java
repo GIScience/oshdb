@@ -13,8 +13,7 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
-public abstract class OSHEntityImpl
-    implements OSHEntity, Comparable<OSHEntity> {
+public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> {
 
   public static class Builder {
 
@@ -50,17 +49,16 @@ public abstract class OSHEntityImpl
 
     public void build(OSMEntity version, byte changed) throws IOException {
       int v = (version.getVersion() * (!version.isVisible() ? -1 : 1));
-      output.writeSInt32(v - lastVersion);
+      output.writeS32(v - lastVersion);
       lastVersion = v;
 
-      output.writeSInt64(
-          (version.getEpochSecond() - lastTimestamp) - baseTimestamp);
-      if (!firstVersion && lastTimestamp < version.getEpochSecond()) {
+      output.writeS64((version.getEpochSecond() - lastTimestamp) - baseTimestamp);
+      if (!firstVersion && (lastTimestamp < version.getEpochSecond())) {
         timestampsNotInOrder = true;
       }
       lastTimestamp = version.getEpochSecond();
 
-      output.writeSInt64(version.getChangesetId() - lastChangeset);
+      output.writeS64(version.getChangesetId() - lastChangeset);
       lastChangeset = version.getChangesetId();
 
       int userId = version.getUserId();
@@ -77,15 +75,15 @@ public abstract class OSHEntityImpl
       output.writeByte(changed);
 
       if ((changed & CHANGED_USER_ID) != 0) {
-        output.writeSInt32(userId - lastUserId);
+        output.writeS32(userId - lastUserId);
         lastUserId = userId;
       }
 
       if ((changed & CHANGED_TAGS) != 0) {
-        output.writeUInt32(keyValues.length);
+        output.writeU32(keyValues.length);
         for (int kv = 0; kv < keyValues.length; kv++) {
-          output.writeUInt32(keyValues[kv]);
-          if (kv % 2 == 0) {
+          output.writeU32(keyValues[kv]);
+          if ((kv % 2) == 0) {
             keySet.add(Integer.valueOf(keyValues[kv]));
           }
         }
@@ -116,10 +114,8 @@ public abstract class OSHEntityImpl
 
   public OSHEntityImpl(final byte[] data, final int offset, final int length, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id,
-      long minLon, long minLat, long maxLon, long maxLat,
-      final int[] keys,
-      final int dataOffset, final int dataLength) {
+      final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat,
+      final int[] keys, final int dataOffset, final int dataLength) {
     this.data = data;
     this.offset = offset;
     this.length = length;
@@ -141,7 +137,7 @@ public abstract class OSHEntityImpl
   }
 
   public byte[] getData() {
-    if (offset == 0 && length == data.length) {
+    if ((offset == 0) && (length == data.length)) {
       return data;
     }
     byte[] result = new byte[length];
@@ -184,16 +180,16 @@ public abstract class OSHEntityImpl
       @Override
       public Iterator<OSHDBTagKey> iterator() {
         return new Iterator<OSHDBTagKey>() {
-          int i = 0;
+          int pos = 0;
 
           @Override
           public boolean hasNext() {
-            return i < keys.length;
+            return pos < keys.length;
           }
 
           @Override
           public OSHDBTagKey next() {
-            return new OSHDBTagKey(keys[i++]);
+            return new OSHDBTagKey(keys[pos++]);
           }
         };
       }
@@ -246,9 +242,8 @@ public abstract class OSHEntityImpl
     }
 
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
-        last.getVersion(),
-        first.getEpochSecond(),
-        getMinLat(), getMinLon(), getMaxLat(), getMaxLon());
+        last.getVersion(), first.getEpochSecond(), getMinLat(), getMinLon(), getMaxLat(),
+        getMaxLon());
   }
 
 }

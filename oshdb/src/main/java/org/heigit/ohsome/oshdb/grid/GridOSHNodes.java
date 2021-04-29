@@ -15,34 +15,36 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
   private static final long serialVersionUID = 1L;
 
   public static GridOSHNodes rebase(final long id, final int level, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-          final List<OSHNode> list) throws IOException {
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final List<OSHNode> list) throws IOException {
 
     int offset = 0;
 
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final int[] index = new int[list.size()];
     for (int i = 0; i < index.length; i++) {
-      final ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(list.get(i).getVersions()), baseId, baseTimestamp, baseLongitude, baseLatitude);
+      final ByteBuffer buffer =
+          OSHNodeImpl.buildRecord(OSHEntities.toList(list.get(i).getVersions()), baseId,
+              baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
-      out.write(buffer.array(),0,buffer.remaining());
+      out.write(buffer.array(), 0, buffer.remaining());
       offset += buffer.remaining();
     }
     final byte[] data = out.toByteArray();
     return new GridOSHNodes(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index,
-            data);
+        data);
   }
 
   private GridOSHNodes(final long id, final int level, final long baseId, final long baseTimestamp,
-          final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
+      final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
-  
+
   @Override
   public Iterable<? extends OSHEntity> getEntities() {
     return this;
   }
-  
+
   @Override
   public Iterator<OSHNode> iterator() {
     return new Iterator<OSHNode>() {
@@ -55,7 +57,7 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
         pos++;
         try {
           return OSHNodeImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-                  baseLatitude);
+              baseLatitude);
         } catch (IOException e) {
           e.printStackTrace();
         }

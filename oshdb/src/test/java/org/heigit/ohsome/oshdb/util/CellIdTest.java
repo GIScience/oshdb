@@ -10,7 +10,7 @@ public class CellIdTest {
 
   @Test
   public void testGetid() {
-    CellId instance = new CellId(1,1L);
+    CellId instance = new CellId(1, 1L);
     long expResult = 1L;
     long result = instance.getId();
     assertEquals(expResult, result);
@@ -18,10 +18,10 @@ public class CellIdTest {
 
   @Test
   public void testGetzoomlevel() {
-    CellId instance = new CellId(1,1L);
+    CellId instance = new CellId(1, 1L);
     int expResult = 1;
     int result = instance.getZoomLevel();
     assertEquals(expResult, result);
   }
-  
+
 }

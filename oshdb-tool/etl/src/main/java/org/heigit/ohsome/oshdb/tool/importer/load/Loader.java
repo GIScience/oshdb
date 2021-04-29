@@ -14,18 +14,19 @@ public abstract class Loader implements Closeable {
 
   protected List<Loader> loaders = new ArrayList<>(2);
 
-  
-  public Loader(int minEntitiesPerCell){
+
+  public Loader(int minEntitiesPerCell) {
     this.minEntitiesPerCell = minEntitiesPerCell;
   }
-  
-  public void load(){
-    load(Long.MAX_VALUE,true);
+
+  public void load() {
+    load(Long.MAX_VALUE, true);
   }
-  public void load(long cellId){
-    load(cellId,false);
+
+  public void load(long cellId) {
+    load(cellId, false);
   }
-  
+
   public abstract void load(long cellId2, boolean all);
 
   public void addLoader(Loader loader) {

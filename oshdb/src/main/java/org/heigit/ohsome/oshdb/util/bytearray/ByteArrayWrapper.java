@@ -26,6 +26,13 @@ public class ByteArrayWrapper {
     return new ByteArrayWrapper(buffer, offset, len);
   }
 
+  /**
+   * Constructor for ByteArrayWrapper.
+   *
+   * @param buffer The buffer to be wrapped
+   * @param offset The offset within the buffer
+   * @param len The length of bytes which should be included
+   */
   public ByteArrayWrapper(final byte[] buffer, final int offset, final int len) {
     this.buffer = buffer;
     this.offset = offset;
@@ -54,34 +61,35 @@ public class ByteArrayWrapper {
   }
 
   /** Read an {@code sint32} field value from the stream. */
-  public int readSInt32() throws IOException {
+  public int readS32() throws IOException {
     return decodeZigZag32(readRawVarint32());
   }
-  
-  public int readSInt32Delta(int last) throws IOException {
-    return readSInt32() + last;
+
+  public int readS32Delta(int last) throws IOException {
+    return readS32() + last;
   }
-  
+
   /** Read a {@code uint32} field value from the stream. */
-  public int readUInt32() throws IOException {
+  public int readU32() throws IOException {
     return readRawVarint32();
   }
 
   /** Read an {@code sint64} field value from the stream. */
-  public long readSInt64() throws IOException {
+  public long readS64() throws IOException {
     return decodeZigZag64(readRawVarint64());
   }
-  public long readSInt64Delta(long last) throws IOException {
-    return readSInt64() + last;
+
+  public long readS64Delta(long last) throws IOException {
+    return readS64() + last;
   }
 
   /** Read a {@code uint64} field value from the stream. */
-  public long readUInt64() throws IOException {
+  public long readU64() throws IOException {
     return readRawVarint64();
   }
-  
-  public long readUInt64Delta(long last) throws IOException {
-    return readUInt64() + last;
+
+  public long readU64Delta(long last) throws IOException {
+    return readU64() + last;
   }
 
   /**
@@ -101,7 +109,7 @@ public class ByteArrayWrapper {
       if ((x = buffer[pos++]) >= 0) {
         bufferPos = pos;
         return x;
-      } else if (bufferSize - pos < 9) {
+      } else if ((bufferSize - pos) < 9) {
         break fastpath;
       } else if ((x ^= (buffer[pos++] << 7)) < 0L) {
         x ^= (~0L << 7);
@@ -113,8 +121,8 @@ public class ByteArrayWrapper {
         int y = buffer[pos++];
         x ^= y << 28;
         x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
-        if (y < 0 && buffer[pos++] < 0 && buffer[pos++] < 0 && buffer[pos++] < 0
-            && buffer[pos++] < 0 && buffer[pos++] < 0) {
+        if ((y < 0) && (buffer[pos++] < 0) && (buffer[pos++] < 0) && (buffer[pos++] < 0)
+            && (buffer[pos++] < 0) && (buffer[pos++] < 0)) {
           break fastpath; // Will throw malformedVarint()
         }
       }
@@ -150,7 +158,7 @@ public class ByteArrayWrapper {
       if ((y = buffer[pos++]) >= 0) {
         bufferPos = pos;
         return y;
-      } else if (bufferSize - pos < 9) {
+      } else if ((bufferSize - pos) < 9) {
         break fastpath;
       } else if ((x = y ^ (buffer[pos++] << 7)) < 0L) {
         x ^= (~0L << 7);
@@ -209,8 +217,14 @@ public class ByteArrayWrapper {
     return buffer[bufferPos++];
   }
 
+  /**
+   * Read bytes from input.
+   *
+   * @param size Number of bytes to read.
+   * @return
+   */
   public byte[] readByteArray(int size) throws IOException {
-    if (size <= this.bufferSize - this.bufferPos && size > 0) {
+    if ((size <= (this.bufferSize - this.bufferPos)) && (size > 0)) {
       byte[] result = Arrays.copyOfRange(this.buffer, this.bufferPos, this.bufferPos + size);
       this.bufferPos += size;
       return result;
@@ -224,7 +238,7 @@ public class ByteArrayWrapper {
    * to be varint encoded, thus always taking 10 bytes on the wire.)
    *
    * @param n An unsigned 32-bit integer, stored in a signed int because Java has no explicit
-   *        unsigned support.
+   *          unsigned support.
    * @return A signed 32-bit integer.
    */
   public static int decodeZigZag32(final int n) {
@@ -237,7 +251,7 @@ public class ByteArrayWrapper {
    * to be varint encoded, thus always taking 10 bytes on the wire.)
    *
    * @param n An unsigned 64-bit integer, stored in a signed int because Java has no explicit
-   *        unsigned support.
+   *          unsigned support.
    * @return A signed 64-bit integer.
    */
   public static long decodeZigZag64(final long n) {
@@ -255,8 +269,4 @@ public class ByteArrayWrapper {
             + "input has been truncated or that an embedded message "
             + "misreported its own length.");
   }
-
-  
-
-  
 }

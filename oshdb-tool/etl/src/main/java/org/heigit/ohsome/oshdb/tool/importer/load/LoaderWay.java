@@ -22,9 +22,10 @@ import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 public class LoaderWay extends Loader {
 
   public static interface Handler {
-    public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways, Collection<TransformOSHNode> nodes);
+    public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways,
+        Collection<TransformOSHNode> nodes);
   }
-  
+
   private static class Grid {
     long cellId = -2;
     List<TransformOSHWay> entities = null;
@@ -50,15 +51,18 @@ public class LoaderWay extends Loader {
   final LoaderNode nodeLoader;
 
   public final Long2ObjectMap<TransformOSHWay> invalids = new Long2ObjectAVLTreeMap<>();
-  
+
   Set<Long> nodesForCellSet = new HashSet<>();
   List<TransformOSHNode> forGrid;
 
-  public LoaderWay(Path workDirectory, Handler handler, int minEntitiesPerCell, LoaderNode nodeLoader,int maxZoomLevel) throws IOException {
+  public LoaderWay(Path workDirectory, Handler handler, int minEntitiesPerCell,
+      LoaderNode nodeLoader, int maxZoomLevel) throws IOException {
     super(minEntitiesPerCell);
     Path[] files;
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDirectory, "transform_way_*")) {
-      files = StreamSupport.stream(stream.spliterator(), false).collect(Collectors.toList()).toArray(new Path[0]);
+    try (
+        DirectoryStream<Path> stream = Files.newDirectoryStream(workDirectory, "transform_way_*")) {
+      files = StreamSupport.stream(stream.spliterator(), false).collect(Collectors.toList())
+          .toArray(new Path[0]);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -68,47 +72,52 @@ public class LoaderWay extends Loader {
     nodeLoader.addLoader(this);
     this.maxZoomLevel = Math.max(1, maxZoomLevel);
   }
-  
+
   @Override
   public void close() throws IOException {
     reader.close();
   }
 
   public int count = 0;
-  
-  public void load(long cellId2, boolean all) {
-    if (!reader.hasNext())
-      return;
 
-    if(reader.getCellId() == -1){
+  @Override
+  public void load(long cellId2, boolean all) {
+    if (!reader.hasNext()) {
+      return;
+    }
+
+    if (reader.getCellId() == -1) {
       Set<TransformOSHWay> set = reader.next();
       set.stream().forEach(osh -> invalids.put(osh.getId(), osh));
-      handler.handleWayGrid(-1, invalids.values(),Collections.emptyList());
+      handler.handleWayGrid(-1, invalids.values(), Collections.emptyList());
     }
-    
-    while (reader.hasNext() && (all || ZGrid.ORDER_DFS_TOP_DOWN.compare(reader.getCellId(), cellId2) <= 0)) {
+
+    while (reader.hasNext()
+        && (all || ZGrid.ORDER_DFS_TOP_DOWN.compare(reader.getCellId(), cellId2) <= 0)) {
       final long cellId = reader.getCellId();
       final int zoom = ZGrid.getZoom(cellId);
       currentZoom = zoom;
-      
+
       final Set<TransformOSHWay> ways = reader.next();
       count++;
       ways.forEach(way -> {
-        for (Loader loader : loaders)
+        for (Loader loader : loaders) {
           loader.visitWay(way);
+        }
       });
 
       maxZoom = initZoomLevel(maxZoom, zoom, zoomLevel, () -> new Grid());
 
       nodesForCellSet = new HashSet<>();
       ways.stream().forEach(osh -> {
-        for(Long id : osh.getNodeIds())
+        for (Long id : osh.getNodeIds()) {
           nodesForCellSet.add(id);
-       });
-      
+        }
+      });
+
       forGrid = new ArrayList<>(nodesForCellSet.size());
-      
-      nodeLoader.load(cellId,false);
+
+      nodeLoader.load(cellId, false);
 
       store(zoom);
 
@@ -131,51 +140,53 @@ public class LoaderWay extends Loader {
   private void store(int zoom) {
     for (int i = lastZoom; i >= zoom; i--) {
       Grid grid = zoomLevel.get(i);
-      if (grid == null || grid.entities == null)
+      if (grid == null || grid.entities == null) {
         continue;
+      }
 
       if (i > maxZoomLevel || (grid.entities.size() < minEntitiesPerCell && i > 0)) {
-        Grid parent = zoomLevel.get(i-1);
-       
-          if (parent.entities == null) {
-            parent.cellId = ZGrid.getParent(grid.cellId);
-            parent.entities = grid.entities;
-            parent.forGrid = grid.forGrid;
-            parent.nodesSet = grid.nodesSet;
-          }else{
-            parent.entities.addAll(grid.entities);
-            parent.forGrid.addAll(grid.forGrid);
-            
-            for(TransformOSHNode osh : grid.forGrid){
-              parent.nodesSet.remove(osh.getId());
-            }
-            parent.nodesSet.addAll(grid.nodesSet);
-          }            
-          grid.clear();
-          continue;
+        Grid parent = zoomLevel.get(i - 1);
+
+        if (parent.entities == null) {
+          parent.cellId = ZGrid.getParent(grid.cellId);
+          parent.entities = grid.entities;
+          parent.forGrid = grid.forGrid;
+          parent.nodesSet = grid.nodesSet;
+        } else {
+          parent.entities.addAll(grid.entities);
+          parent.forGrid.addAll(grid.forGrid);
+
+          for (TransformOSHNode osh : grid.forGrid) {
+            parent.nodesSet.remove(osh.getId());
+          }
+          parent.nodesSet.addAll(grid.nodesSet);
         }
-        
-      
-      for(TransformOSHNode osh : grid.forGrid){
+        grid.clear();
+        continue;
+      }
+
+
+      for (TransformOSHNode osh : grid.forGrid) {
         Long id = osh.getId();
-        for(int j= i-1; j>=0; j--){
+        for (int j = i - 1; j >= 0; j--) {
           final Grid parent = zoomLevel.get(j);
-          if(parent.nodesSet.contains(id)){
+          if (parent.nodesSet.contains(id)) {
             parent.forGrid.add(osh);
             parent.nodesSet.remove(id);
             break;
           }
         }
       }
-      
-      //some nodes could still be left, maybe they are invalid!
-      //TODO or should we ignore them?
+
+      // some nodes could still be left, maybe they are invalid!
+      // TODO or should we ignore them?
       grid.nodesSet.forEach(id -> {
         TransformOSHNode node = nodeLoader.invalidNodes.get(id.longValue());
-        if(node != null)
-        	grid.forGrid.add(node);
+        if (node != null) {
+          grid.forGrid.add(node);
+        }
       });
-      
+
       handler.handleWayGrid(grid.cellId, grid.entities, grid.forGrid);
       grid.clear();
     }
@@ -186,18 +197,18 @@ public class LoaderWay extends Loader {
   @Override
   public void visitNode(TransformOSHNode node) {
     final Long id = node.getId();
-    if(nodesForCellSet.contains(id)){
+    if (nodesForCellSet.contains(id)) {
       forGrid.add(node);
       nodesForCellSet.remove(id);
-    }else {
-      for(int i=lastZoom; i>=0; i--){
+    } else {
+      for (int i = lastZoom; i >= 0; i--) {
         final Grid g = zoomLevel.get(i);
-        if(g.nodesSet.contains(id)){
+        if (g.nodesSet.contains(id)) {
           g.forGrid.add(node);
           g.nodesSet.remove(id);;
           break;
         }
       }
-    }    
+    }
   }
 }
