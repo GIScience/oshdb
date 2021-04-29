@@ -55,7 +55,6 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
       minLat = baseLatitude + wrapper.readSInt64();
       maxLat = minLat + wrapper.readUInt64();
     } else {
-      
       minLon = 1;
       minLat = 1;
       maxLon = -1;
@@ -78,19 +77,19 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     // TODO maybe better to store number of versions instead
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHNodeImpl(data, offset, length, 
+    return new OSHNodeImpl(data, offset, length,
         baseNodeId, baseTimestamp, baseLongitude, baseLatitude,
         header, id, minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
   }
 
   private OSHNodeImpl(final byte[] data, final int offset, final int length, final long baseNodeId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat, 
+      final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat,
       final int[] keys,
       final int dataOffset, final int dataLength) {
     super(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id,
         minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
-    
+
     // correct bbox!
     if (!(minLon <= maxLon && minLat <= maxLat)) {
       minLon = Long.MAX_VALUE;
@@ -107,15 +106,10 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
         }
       }
 
-      if (minLon == Long.MAX_VALUE || minLat == Long.MAX_VALUE) {
-        minLon = minLat = -1;
-        maxLon = maxLat = 1;
-      } else {
-        this.minLon = minLon;
-        this.minLat = minLat;
-        this.maxLon = maxLon;
-        this.maxLat = maxLat;
-      }
+      this.minLon = minLon;
+      this.minLat = minLat;
+      this.maxLon = maxLon;
+      this.maxLat = maxLat;
     }
   }
 
@@ -123,7 +117,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
   public OSMType getType() {
     return OSMType.NODE;
   }
-  
+
   @Override
   public Iterable<OSMNode> getVersions() {
     return this;
@@ -192,11 +186,11 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
   public static OSHNodeImpl build(List<OSMNode> versions) throws IOException {
     return build(versions, 0, 0, 0, 0);
   }
-  
+
   public static OSHNodeImpl build(List<OSMNode> versions, final long baseId, final long baseTimestamp,
       final long baseLongitude, final long baseLatitude) throws IOException {
     ByteBuffer bb = buildRecord(versions, baseId, baseTimestamp, baseLongitude, baseLatitude);
-    
+
     return OSHNodeImpl.instance(bb.array(), 0, bb.remaining(), baseId, baseTimestamp,
         baseLongitude, baseLatitude);
   }
@@ -277,7 +271,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
 
     record.writeUInt64(id - baseId);
     record.writeByteArray(output.array(), 0, output.length());
-    
+
     return ByteBuffer.wrap(record.array(), 0, record.length());
   }
 
