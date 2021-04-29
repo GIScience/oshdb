@@ -5,6 +5,9 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Interface for objects which are associated to a single timestamp.
+ */
 public interface OSHDBTemporal {
 
   long getEpochSecond();

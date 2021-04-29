@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb;
 
+/**
+ * Interface for spatially boundable objects, i.e. objects which have a bounding box.
+ */
 public interface OSHDBBoundable {
 
   long getMinLonLong();
