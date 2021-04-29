@@ -199,7 +199,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
       int length =
-          ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
+          ((index < (nodeIndex.length - 1)) ? nodeIndex[index + 1] : nodeDataLength) - offset;
       OSHNode n = OSHNodeImpl.instance(data, nodeDataOffset + offset, length, lastId, 0,
           baseLongitude, baseLatitude);
       lastId = n.getId();
@@ -243,8 +243,6 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     for (OSHNode node : nodes) {
       final long nodeId = node.getId();
 
-
-      lastId = nodeId;
       nodeOffsets.put(node.getId(), idx);
       nodeByteArrayIndex[idx++] = offset;
       ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(node.getVersions()), lastId, 0,
@@ -263,6 +261,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
           maxLat = Math.max(maxLat, osm.getLat());
         }
       }
+      lastId = nodeId;
     }
 
     Builder builder = new Builder(output, baseTimestamp);
