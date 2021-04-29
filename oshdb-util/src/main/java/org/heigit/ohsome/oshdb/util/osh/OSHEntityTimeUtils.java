@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -16,6 +15,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
@@ -25,7 +25,6 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
 public class OSHEntityTimeUtils {
   private OSHEntityTimeUtils() {
@@ -87,7 +86,7 @@ public class OSHEntityTimeUtils {
   /**
    * Returns all timestamps at which this entity (or one or more of its child entities) has been
    * modified.
-   * 
+   *
    * @param osh the osh entity to work on
    * @return a list of timestamps where this entity has been modified
    */
@@ -121,7 +120,7 @@ public class OSHEntityTimeUtils {
   }
 
   private static List<OSHDBTimestamp> getModificationTimestamps(OSHNode osh) {
-    return Lists.reverse(OSHEntities.toList(osh.getVersions(), OSMEntity::getTimestamp));
+    return Lists.reverse(OSHEntities.toList(osh.getVersions(), e -> new OSHDBTimestamp(e)));
   }
 
   /**
@@ -167,7 +166,7 @@ public class OSHEntityTimeUtils {
   /**
    * Returns all timestamps at which this entity (or one or more of its child entities) has been
    * modified and matches a given condition/filter.
-   * 
+   *
    * @param osh the osh entity to work on
    * @param osmEntityFilter only timestamps for which the entity matches this filter are returned
    * @return a list of timestamps where this entity has been modified
@@ -212,10 +211,10 @@ public class OSHEntityTimeUtils {
           result.add(nextNonMatchTime);
           nextNonMatchTime = null;
         }
-        result.add(osm.getTimestamp());
+        result.add(new OSHDBTimestamp(osm));
       } else {
         // save the time of the next "deletion" for later
-        nextNonMatchTime = osm.getTimestamp();
+        nextNonMatchTime = new OSHDBTimestamp(osm);
       }
     }
     return result;
@@ -226,7 +225,7 @@ public class OSHEntityTimeUtils {
    */
   private static void putChangesetTimestamps(OSHEntity osh, Map<OSHDBTimestamp, Long> result) {
     for (OSMEntity osm : osh.getVersions()) {
-      result.putIfAbsent(osm.getTimestamp(), osm.getChangesetId());
+      result.putIfAbsent(new OSHDBTimestamp(osm), osm.getChangesetId());
     }
   }
 
@@ -240,7 +239,7 @@ public class OSHEntityTimeUtils {
         continue;
       }
       for (OSMEntity osm : osh.getVersions()) {
-        result.putIfAbsent(osm.getTimestamp(), osm.getChangesetId());
+        result.putIfAbsent(new OSHDBTimestamp(osm), osm.getChangesetId());
       }
     }
   }
@@ -267,7 +266,7 @@ public class OSHEntityTimeUtils {
     Map<OSHEntity, LinkedList<OSHDBTimestamp>> memberTimes = new HashMap<>();
     OSHDBTimestamp nextT = new OSHDBTimestamp(Long.MAX_VALUE);
     for (OSMEntity osm : osh.getVersions()) {
-      OSHDBTimestamp thisT = osm.getTimestamp();
+      OSHDBTimestamp thisT = new OSHDBTimestamp(osm);
       // skip versions which are deleted or don't match the given filter
       if (!osm.isVisible() || (osmEntityFilter != null && !osmEntityFilter.test(osm))) {
         // remember "valid-to" time
@@ -312,7 +311,7 @@ public class OSHEntityTimeUtils {
       case RELATION:
         return ((OSMRelation) osm).getMembers();
       case WAY:
-        return  ((OSMWay) osm).getRefs();
+        return  ((OSMWay) osm).getMembers();
       default:
         final String illegalOSMTypeMessage
             = "cannot collect members from anything other than ways or relations";

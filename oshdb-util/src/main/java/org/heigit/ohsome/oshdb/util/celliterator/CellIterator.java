@@ -13,9 +13,11 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBTemporal;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
@@ -26,8 +28,8 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
+import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
@@ -59,10 +61,6 @@ import org.slf4j.LoggerFactory;
  */
 public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
-
-  public interface OSHEntityFilter extends Predicate<OSHEntity>, Serializable {}
-
-  public interface OSMEntityFilter extends Predicate<OSMEntity>, Serializable {}
 
   private final TreeSet<OSHDBTimestamp> timestamps;
   private final OSHDBBoundingBox boundingBox;
@@ -268,8 +266,8 @@ public class CellIterator implements Serializable {
     return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox)
-              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+              !oshEntity.intersects(boundingBox)
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -280,8 +278,8 @@ public class CellIterator implements Serializable {
         return Stream.empty();
       }
       boolean fullyInside = allFullyInside || (
-          oshEntity.getBoundingBox().isInside(boundingBox)
-          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+          oshEntity.coveredBy(boundingBox)
+          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
       );
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
@@ -294,7 +292,7 @@ public class CellIterator implements Serializable {
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
           while (j < modTs.size()
-              && modTs.get(j).getRawUnixTimestamp() <= requestedT.getRawUnixTimestamp()) {
+              && modTs.get(j).getEpochSecond() <= requestedT.getEpochSecond()) {
             needToRequest = true;
             j++;
           }
@@ -323,7 +321,7 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
-        if (osmEntity instanceof OSMWay && ((OSMWay) osmEntity).getRefs().length == 0
+        if (osmEntity instanceof OSMWay && ((OSMWay) osmEntity).getMembers().length == 0
             || osmEntity instanceof OSMRelation
                 && ((OSMRelation) osmEntity).getMembers().length == 0) {
           // skip way/relation with zero nodes/members
@@ -438,7 +436,7 @@ public class CellIterator implements Serializable {
         return new LazyEvaluatedObject<>(fastPolygonClipper.intersection(geometry));
       }
     } else {
-      if (bbox.isInside(this.boundingBox)) {
+      if (bbox.coveredBy(this.boundingBox)) {
         return new LazyEvaluatedObject<>(geometry);
       } else if (!bbox.intersects(this.boundingBox)) {
         return new LazyEvaluatedObject<>(createEmptyGeometryLike(geometry));
@@ -555,8 +553,8 @@ public class CellIterator implements Serializable {
     return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
-              !oshEntity.getBoundingBox().intersects(boundingBox)
-              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundingBox()))
+              !oshEntity.intersects(boundingBox)
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -568,8 +566,8 @@ public class CellIterator implements Serializable {
       }
 
       boolean fullyInside = allFullyInside || (
-          oshEntity.getBoundingBox().isInside(boundingBox)
-          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity.getBoundingBox()))
+          oshEntity.coveredBy(boundingBox)
+          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
       );
 
       Map<OSHDBTimestamp, Long> changesetTs = OSHEntityTimeUtils.getChangesetTimestamps(oshEntity);
@@ -816,7 +814,7 @@ public class CellIterator implements Serializable {
     Iterator<? extends OSMEntity> itr = osh.getVersions().iterator();
     while (itr.hasNext() && i >= 0) {
       OSMEntity osm = itr.next();
-      while (i >= 0 && osm.getTimestamp().compareTo(timestamps.get(i)) <= 0) {
+      while (i >= 0 && OSHDBTemporal.compare(osm,timestamps.get(i)) <= 0) {
         result.add(osm);
         i--;
       }

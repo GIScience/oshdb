@@ -12,15 +12,17 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.object.OSMContribution;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastPolygonOperations;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygonal;
@@ -85,9 +87,9 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @return a list of OSMEntitySnapshot objects
    */
   public Map<U, OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
-    OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
+    OSHDBBoundable oshBoundingBox = data.getOSHEntity();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
-    List<U> candidates = (List<U>) spatialIndex.query(
+    List<U> candidates = spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
     return candidates.stream()
@@ -149,9 +151,9 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
    * @return a list of OSMContribution objects
    */
   public Map<U, OSMContribution> splitOSMContribution(OSMContribution data) {
-    OSHDBBoundingBox oshBoundingBox = data.getOSHEntity().getBoundingBox();
+    OSHDBBoundable oshBoundingBox = data.getOSHEntity();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
-    List<U> candidates = (List<U>) spatialIndex.query(
+    List<U> candidates = spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
     );
     return candidates.stream()
@@ -176,12 +178,9 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
                 contributionGeometryBefore.getEnvelopeInternal()
             );
           } else {
-            contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(
-                contributionGeometryBefore.getEnvelopeInternal()
-            );
-            contributionGeometryBbox.add(OSHDBGeometryBuilder.boundingBoxOf(
-                contributionGeometryAfter.getEnvelopeInternal()
-            ));
+            Envelope env = contributionGeometryBefore.getEnvelopeInternal();
+            env.expandToInclude(contributionGeometryAfter.getEnvelopeInternal());
+            contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(env);
           }
 
           if (bops.get(index).test(contributionGeometryBbox)) {

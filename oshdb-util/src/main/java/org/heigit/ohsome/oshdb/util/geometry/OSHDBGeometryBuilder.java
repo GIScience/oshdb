@@ -14,6 +14,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBTemporal;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -21,8 +25,6 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
@@ -72,7 +74,7 @@ public class OSHDBGeometryBuilder {
       OSMEntity entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider
   ) {
     GeometryFactory geometryFactory = new GeometryFactory();
-    if (timestamp.compareTo(entity.getTimestamp()) < 0) {
+    if (OSHDBTemporal.compare(timestamp, entity) < 0) {
       throw new AssertionError(
           "cannot produce geometry of entity for timestamp before this entity's version's timestamp"
       );
@@ -142,7 +144,7 @@ public class OSHDBGeometryBuilder {
       return getGeometryCollectionGeometry(relation, timestamp, areaDecider, geometryFactory);
     }
   }
-  
+
   /**
    * Converts a OSHDBBoundingBox to a rectangular polygon.
    *
@@ -155,7 +157,7 @@ public class OSHDBGeometryBuilder {
    * @param bbox The BoundingBox the polygon should be created for.
    * @return a rectangular Polygon
    */
-  public static Polygon getGeometry(@Nonnull OSHDBBoundingBox bbox) {
+  public static Polygon getGeometry(@Nonnull OSHDBBoundable bbox) {
     assert bbox != null : "a bounding box is not allowed to be null";
 
     GeometryFactory gf = new GeometryFactory();

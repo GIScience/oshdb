@@ -130,7 +130,7 @@ public class OSMXmlReader {
         osm.setExtension(longitude, latitude);
 
         OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
-            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
+            osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
             osm.getLat());
         nodes.put(id, oldOSM);
       }
@@ -163,7 +163,7 @@ public class OSMXmlReader {
         }
         // osm.setExtension(members);
         OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
-            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
+            osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         ways.put(id, oldOSM);
       }
       lastId = id;
@@ -210,7 +210,7 @@ public class OSMXmlReader {
               t = OSMType.WAY;
               Map<Long, OSHNode> wayNodes = new TreeMap<>();
               for (OSMWay way : this.ways().get(memId)) {
-                for (OSMMember wayNode : way.getRefs()) {
+                for (OSMMember wayNode : way.getMembers()) {
                   wayNodes.putIfAbsent(wayNode.getId(), (OSHNode) wayNode.getEntity());
                 }
               }
@@ -232,7 +232,7 @@ public class OSMXmlReader {
         // osm.setExtension(members);
         OSMRelation oldOSM = new OSMRelation(osm.getId(),
             osm.getVersion() * (osm.isVisible() ? 1 : -1),
-            osm.getTimestamp(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
+            osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         relations.put(id, oldOSM);
       }
       lastId = id;

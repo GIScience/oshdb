@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBiFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.api.object.OSMContribution;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 
 class Kernels implements Serializable {
   interface CellProcessor<S> extends SerializableBiFunction<GridOSHEntity, CellIterator, S> {}

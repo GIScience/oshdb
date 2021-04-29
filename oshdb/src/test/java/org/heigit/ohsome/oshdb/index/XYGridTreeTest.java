@@ -7,8 +7,8 @@ import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.junit.Test;
 
 public class XYGridTreeTest {

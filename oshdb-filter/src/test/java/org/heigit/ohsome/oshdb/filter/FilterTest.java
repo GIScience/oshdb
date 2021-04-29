@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
@@ -17,8 +18,6 @@ import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBTag;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.After;
@@ -57,7 +56,7 @@ abstract class FilterTest {
   }
 
   protected OSMNode createTestOSMEntityNode(String... keyValues) {
-    return new OSMNode(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), 0, 0);
+    return new OSMNode(1, 1, 0L, 1, 1, createTestTags(keyValues), 0, 0);
   }
 
   protected OSMWay createTestOSMEntityWay(long[] nodeIds, String... keyValues) {
@@ -65,11 +64,11 @@ abstract class FilterTest {
     for (int i = 0; i < refs.length; i++) {
       refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
     }
-    return new OSMWay(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues), refs);
+    return new OSMWay(1, 1, 0L, 1, 1, createTestTags(keyValues), refs);
   }
 
   protected OSMRelation createTestOSMEntityRelation(String... keyValues) {
-    return new OSMRelation(1, 1, new OSHDBTimestamp(0), 1, 1, createTestTags(keyValues),
+    return new OSMRelation(1, 1, 0L, 1, 1, createTestTags(keyValues),
         new OSMMember[] {});
   }
 

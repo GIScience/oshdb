@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
 public class MutableOSMEntity implements OSMEntity {
 
@@ -8,7 +8,7 @@ public class MutableOSMEntity implements OSMEntity {
 
   private int version;
   private boolean visible;
-  private OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
+  private long timestamp;
   private long changeset;
   private int userId;
   private int[] tags;
@@ -17,13 +17,14 @@ public class MutableOSMEntity implements OSMEntity {
     this.id = id;
     this.version = version;
     this.visible = visible;
-    this.timestamp.setTimestamp(timestamp);
+    this.timestamp = timestamp;
     this.changeset = changeset;
     this.userId = userId;
     this.tags = tags;
   }
   
   
+  @Override
   public long getId() {
     return id;
   }
@@ -32,6 +33,7 @@ public class MutableOSMEntity implements OSMEntity {
     this.id = id;
   }
 
+  @Override
   public int getVersion() {
     return version;
   }
@@ -49,19 +51,21 @@ public class MutableOSMEntity implements OSMEntity {
   public void setVersion(int version) {
     this.version = version;
   }
-
-  public OSHDBTimestamp getTimestamp() {
+  
+  @Override
+  public long getEpochSecond() {
     return timestamp;
   }
 
   public void setTimestamp(OSHDBTimestamp timestamp) {
-    this.timestamp = timestamp;
+    this.timestamp = timestamp.getEpochSecond();
   }
   
   public void setTimestamp(long timestamp) {
-    this.timestamp.setTimestamp(timestamp);
+    this.timestamp = timestamp;
   }
 
+  @Override
   public long getChangeset() {
     return changeset;
   }
@@ -70,6 +74,7 @@ public class MutableOSMEntity implements OSMEntity {
     this.changeset = changeset;
   }
 
+  @Override
   public int getUserId() {
     return userId;
   }
@@ -78,6 +83,7 @@ public class MutableOSMEntity implements OSMEntity {
     this.userId = userId;
   }
 
+  @Override
   public int[] getTags() {
     return tags;
   }

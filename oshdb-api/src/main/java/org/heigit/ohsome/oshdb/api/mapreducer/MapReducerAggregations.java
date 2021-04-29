@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBiFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBinaryOperator;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableSupplier;
+import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 
 /**
  * Interface defining the common aggregation methods found on MapReducer or MapAggregator objects.

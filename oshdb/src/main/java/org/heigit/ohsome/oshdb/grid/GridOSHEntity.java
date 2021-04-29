@@ -2,10 +2,10 @@ package org.heigit.ohsome.oshdb.grid;
 
 import java.io.Serializable;
 import java.util.Locale;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 
 public abstract class GridOSHEntity
     implements Serializable {

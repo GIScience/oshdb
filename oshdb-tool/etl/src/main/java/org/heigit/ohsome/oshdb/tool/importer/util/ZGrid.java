@@ -2,7 +2,7 @@ package org.heigit.ohsome.oshdb.tool.importer.util;
 
 import java.util.Comparator;
 import org.heigit.ohsome.oshdb.OSHDB;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 
 public class ZGrid {
   

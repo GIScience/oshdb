@@ -11,7 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

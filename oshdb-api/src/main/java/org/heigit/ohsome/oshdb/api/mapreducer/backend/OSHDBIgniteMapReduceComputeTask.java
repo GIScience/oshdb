@@ -14,9 +14,9 @@ import org.apache.ignite.compute.ComputeTask;
 import org.apache.ignite.compute.ComputeTaskAdapter;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBinaryOperator;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
+import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
+import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 
 /**
  * A cancelable ignite broadcast task.

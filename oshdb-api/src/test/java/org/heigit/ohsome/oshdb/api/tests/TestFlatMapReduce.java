@@ -9,13 +9,14 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.object.OSMContribution;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
@@ -50,9 +51,8 @@ public class TestFlatMapReduce {
             return new ArrayList<>();
           }
           List<Entry<Integer, Integer>> ret = new ArrayList<>();
-          int[] tags = contribution.getEntityAfter().getRawTags();
-          for (int i = 0; i < tags.length; i += 2) {
-            ret.add(new SimpleImmutableEntry<>(tags[i], tags[i + 1]));
+          for (OSHDBTag tag : contribution.getEntityAfter().getTags()) {
+            ret.add(new SimpleImmutableEntry<>(tag.getKey(), tag.getValue()));
           }
           return ret;
         })

@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
 import java.io.Serializable;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 
 /**
  * Interface for MapReducers or MapAggregators that can be aggregated by an arbitrary index.

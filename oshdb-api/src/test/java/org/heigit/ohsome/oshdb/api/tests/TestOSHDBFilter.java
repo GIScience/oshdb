@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.SortedMap;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
@@ -13,7 +14,6 @@ import org.heigit.ohsome.oshdb.api.object.OSMContribution;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.filter.FilterParser;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.Test;
 

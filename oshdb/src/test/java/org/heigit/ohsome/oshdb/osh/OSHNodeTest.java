@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.junit.Test;
 
 public class OSHNodeTest {
@@ -20,8 +19,8 @@ public class OSHNodeTest {
   @Test
   public void testBuild() throws IOException {
     OSHNode hnode = buildOSHNode(
-        new OSMNode(123L, 1, new OSHDBTimestamp(1L), 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
-        new OSMNode(123L, -2, new OSHDBTimestamp(2L), 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1])
+        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
+        new OSMNode(123L, -2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1])
     );
 
     assertNotNull(hnode);
@@ -49,9 +48,9 @@ public class OSHNodeTest {
     // 85391383800:27676689900
     // NODE: ID:3718143950 V:+1+ TS:1440747974000 CS:33637224 VIS:true USER:3191558 TAGS:[]
     // 49619125:78983750
-    versions.add(new OSMNode(3718143950L, 2, new OSHDBTimestamp(1480304071000L / 1000),
+    versions.add(new OSMNode(3718143950L, 2, 1480304071000L / 1000,
         43996323L, 4803525, new int[0], 85391383800L / 100, 27676689900L / 100));
-    versions.add(new OSMNode(3718143950L, 1, new OSHDBTimestamp(1440747974000L / 1000),
+    versions.add(new OSMNode(3718143950L, 1, 1440747974000L / 1000,
         33637224, 3191558, new int[0], 85391416000L / 100, 27676640000L / 100));
 
     OSHNode hosm = OSHNodeImpl.build(versions);
@@ -67,8 +66,8 @@ public class OSHNodeTest {
   @Test
   public void testToString() throws IOException {
     OSHNode instance = buildOSHNode(
-        new OSMNode(123L, 2, new OSHDBTimestamp(2L), 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
-        new OSMNode(123L, 1, new OSHDBTimestamp(1L), 0L, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1])
+        new OSMNode(123L, 2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
+        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1])
     );
 
     String expResult =

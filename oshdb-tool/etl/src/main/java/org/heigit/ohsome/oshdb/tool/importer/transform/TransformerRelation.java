@@ -17,7 +17,6 @@ import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransfomRelation;
 import org.heigit.ohsome.oshdb.tool.importer.util.RoleToIdMapper;
 import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapper;
 import org.heigit.ohsome.oshdb.tool.importer.util.long2long.SortedLong2LongMap;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Relation;
@@ -40,6 +39,7 @@ public class TransformerRelation extends Transformer {
     
   }
 
+  @Override
   public OSMType type() {
     return OSMType.RELATION;
   }
@@ -48,6 +48,7 @@ public class TransformerRelation extends Transformer {
   private Roaring64NavigableMap bitmapRefWay = new Roaring64NavigableMap();
   
   
+  @Override
   public void transform(long id, List<Entity> versions) {
     List<OSMRelation> entities = new ArrayList<>(versions.size());
     LongSortedSet nodeIds = new LongAVLTreeSet();
@@ -124,7 +125,7 @@ public class TransformerRelation extends Transformer {
   private OSMRelation getOSM(Relation entity) {
     return new OSMRelation(entity.getId() //
         , modifiedVersion(entity) //
-        , new OSHDBTimestamp(entity.getTimestamp()) //
+        , entity.getTimestamp() //
         , entity.getChangeset() //
         , entity.getUserId() //
         , getKeyValue(entity.getTags()) //

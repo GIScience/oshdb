@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
 /**
  * Provider of a sorted list of (unix) timestamps.
@@ -24,7 +24,7 @@ public interface OSHDBTimestampList extends Serializable {
    */
   default SortedSet<Long> getRawUnixTimestamps() {
     return this.get().stream()
-        .map(OSHDBTimestamp::getRawUnixTimestamp)
+        .map(OSHDBTimestamp::getEpochSecond)
         .collect(Collectors.toCollection(TreeSet::new));
   }
 }

@@ -20,7 +20,7 @@ public class OSHDBTagKey implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof OSHDBTagKey && ((OSHDBTagKey)o).key == this.key;
+    return o instanceof OSHDBTagKey && ((OSHDBTagKey) o).key == this.key;
   }
 
   @Override

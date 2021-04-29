@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.util.xmlreader;
 
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
 public class MutableOSMEntity {
 
@@ -8,7 +8,7 @@ public class MutableOSMEntity {
 
   private int version;
   private boolean visible;
-  private OSHDBTimestamp timestamp = new OSHDBTimestamp(0L);
+  private long timestamp;
   private long changeset;
   private int userId;
   private int[] tags;
@@ -38,16 +38,17 @@ public class MutableOSMEntity {
     this.version = version;
   }
 
-  public OSHDBTimestamp getTimestamp() {
+  public long getEpochSecond() {
     return timestamp;
   }
+  
 
   public void setTimestamp(OSHDBTimestamp timestamp) {
-    this.timestamp = timestamp;
+    this.timestamp = timestamp.getEpochSecond();
   }
   
   public void setTimestamp(long timestamp) {
-    this.timestamp.setTimestamp(timestamp);
+    this.timestamp = timestamp;
   }
 
   public long getChangeset() {

@@ -3,9 +3,9 @@ package org.heigit.ohsome.oshdb.filter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.util.OSHDBTag;
 
 /**
  * A tag filter which executes a "key in (value1, value2, …)" check.
