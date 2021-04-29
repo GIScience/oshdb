@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBTag;
-import org.heigit.ohsome.oshdb.OSHDBTimeable;
+import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
-public abstract class OSMEntity implements OSHDBTimeable {
+public abstract class OSMEntity implements OSHDBTemporal {
 
   protected final long id;
 

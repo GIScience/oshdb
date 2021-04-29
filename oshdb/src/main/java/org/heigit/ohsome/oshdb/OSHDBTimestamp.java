@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-public class OSHDBTimestamp implements OSHDBTimeable, Comparable<OSHDBTimestamp>, Serializable {
+public class OSHDBTimestamp implements OSHDBTemporal, Comparable<OSHDBTimestamp>, Serializable {
   private static final long serialVersionUID = 1L;
   private final long epochSecond;
 
@@ -53,6 +53,6 @@ public class OSHDBTimestamp implements OSHDBTimeable, Comparable<OSHDBTimestamp>
   }
 
   public String toString() {
-    return OSHDBTimeable.toIsoDateTime(this);
+    return OSHDBTemporal.toIsoDateTime(this);
   }
 }

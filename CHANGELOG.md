@@ -35,7 +35,7 @@ Changelog
 * make sure predicate-filters are always serializable. ([#353])
 * improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage. ([#327])
 * reorganize and update ohsome parent module ([#360])
-* add new interfaces `OSHDBTimeable` and `OSHDBBoundable` ([#369])
+* add new interfaces `OSHDBTemporal` and `OSHDBBoundable` ([#369])
 
 ### bugfixes
 
