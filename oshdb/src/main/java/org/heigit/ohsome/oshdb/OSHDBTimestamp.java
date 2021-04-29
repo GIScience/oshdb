@@ -1,10 +1,6 @@
 package org.heigit.ohsome.oshdb;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class OSHDBTimestamp implements OSHDBTimeable, Comparable<OSHDBTimestamp>, Serializable {

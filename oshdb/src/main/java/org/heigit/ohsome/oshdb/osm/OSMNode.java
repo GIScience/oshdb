@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.osm;
 import java.io.Serializable;
 import java.util.Locale;
 import org.heigit.ohsome.oshdb.OSHDB;
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
 
