@@ -127,10 +127,10 @@ abstract class FastInPolygon implements Serializable {
 
     int cn = 0; // crossing number counter
     for (Segment segment : band) {
-      // if (((V[i].y <= P.y) && (V[i+1].y > P.y))     // an upward crossing
+      // if (((V[i].y <= P.y) && (V[i+1].y > P.y))    // an upward crossing
       // || ((V[i].y > P.y) && (V[i+1].y <=  P.y))) { // a downward crossing
-      if ((segment.startY <= point.getY() && segment.endY > point.getY()) || // an upward crossing
-          (segment.startY > point.getY() && segment.endY <= point.getY())) {  // a downward crossing
+      if ((segment.startY <= point.getY() && segment.endY > point.getY()) // upward crossing
+          || (segment.startY > point.getY() && segment.endY <= point.getY())) { // downward crossing
         // compute  the actual edge-ray intersect x-coordinate
         /*float vt = (float)(P.y  - V[i].y) / (V[i+1].y - V[i].y);
         if (P.x <  V[i].x + vt * (V[i+1].x - V[i].x)) // P.x < intersect

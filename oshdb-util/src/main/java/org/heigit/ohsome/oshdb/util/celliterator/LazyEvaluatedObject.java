@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 /**
  * A lazily evaluated object.
- * 
+ *
  * <p>Useful as a wrapper to hold values which are potentially expensive to
  * calculate, but might sometimes not be requested.</p>
  *

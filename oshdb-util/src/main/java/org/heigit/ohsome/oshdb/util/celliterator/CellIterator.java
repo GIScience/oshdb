@@ -814,7 +814,7 @@ public class CellIterator implements Serializable {
     Iterator<? extends OSMEntity> itr = osh.getVersions().iterator();
     while (itr.hasNext() && i >= 0) {
       OSMEntity osm = itr.next();
-      while (i >= 0 && OSHDBTemporal.compare(osm,timestamps.get(i)) <= 0) {
+      while (i >= 0 && OSHDBTemporal.compare(osm, timestamps.get(i)) <= 0) {
         result.add(osm);
         i--;
       }
