@@ -9,10 +9,6 @@ public interface OSHDBTemporal {
 
   long getEpochSecond();
 
-  default OSHDBTimestamp getTimestamp() {
-    return new OSHDBTimestamp(getEpochSecond());
-  }
-
   default boolean isBefore(OSHDBTemporal other) {
     return getEpochSecond() < other.getEpochSecond();
   }

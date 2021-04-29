@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.osm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -119,7 +118,7 @@ public class OSMNodeTest {
   public void testGetTimestamp() {
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000L, 1000000000L);
     long expResult = 1L;
-    long result = instance.getTimestamp().getEpochSecond();
+    long result = instance.getEpochSecond();
     assertEquals(expResult, result);
   }
 

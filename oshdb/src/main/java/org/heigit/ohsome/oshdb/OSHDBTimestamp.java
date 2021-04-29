@@ -7,6 +7,10 @@ public class OSHDBTimestamp implements OSHDBTemporal, Comparable<OSHDBTimestamp>
   private static final long serialVersionUID = 1L;
   private final long epochSecond;
 
+  public OSHDBTimestamp(OSHDBTemporal temporal) {
+    this(temporal.getEpochSecond());
+  }
+
   public OSHDBTimestamp(long tstamp) {
     this.epochSecond = tstamp;
   }
@@ -14,7 +18,7 @@ public class OSHDBTimestamp implements OSHDBTemporal, Comparable<OSHDBTimestamp>
   public OSHDBTimestamp(Date tstamp) {
     this(tstamp.getTime() / 1000);
   }
-  
+
   @Override
   public int compareTo(OSHDBTimestamp other) {
     return Long.compare(this.epochSecond, other.epochSecond);
@@ -33,7 +37,7 @@ public class OSHDBTimestamp implements OSHDBTemporal, Comparable<OSHDBTimestamp>
   public int hashCode() {
     return Long.hashCode(this.epochSecond);
   }
-  
+
   public Date toDate() {
     return new Date(this.epochSecond * 1000);
   }
@@ -42,12 +46,8 @@ public class OSHDBTimestamp implements OSHDBTemporal, Comparable<OSHDBTimestamp>
   public long getEpochSecond() {
     return this.epochSecond;
   }
-  
-  @Override
-  public OSHDBTimestamp getTimestamp() {
-    return this;
-  }
 
+  @Override
   public String toString() {
     return OSHDBTemporal.toIsoDateTime(this);
   }

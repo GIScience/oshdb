@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGrid;
@@ -813,7 +814,7 @@ public class CellIterator implements Serializable {
     Iterator<? extends OSMEntity> itr = osh.getVersions().iterator();
     while (itr.hasNext() && i >= 0) {
       OSMEntity osm = itr.next();
-      while (i >= 0 && osm.getTimestamp().compareTo(timestamps.get(i)) <= 0) {
+      while (i >= 0 && OSHDBTemporal.compare(osm,timestamps.get(i)) <= 0) {
         result.add(osm);
         i--;
       }

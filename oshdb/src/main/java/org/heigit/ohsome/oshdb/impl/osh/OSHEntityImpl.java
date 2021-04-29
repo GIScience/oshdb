@@ -54,11 +54,11 @@ public abstract class OSHEntityImpl
       lastVersion = v;
 
       output.writeSInt64(
-          (version.getTimestamp().getEpochSecond() - lastTimestamp) - baseTimestamp);
-      if (!firstVersion && lastTimestamp < version.getTimestamp().getEpochSecond()) {
+          (version.getEpochSecond() - lastTimestamp) - baseTimestamp);
+      if (!firstVersion && lastTimestamp < version.getEpochSecond()) {
         timestampsNotInOrder = true;
       }
-      lastTimestamp = version.getTimestamp().getEpochSecond();
+      lastTimestamp = version.getEpochSecond();
 
       output.writeSInt64(version.getChangesetId() - lastChangeset);
       lastChangeset = version.getChangesetId();
@@ -85,8 +85,9 @@ public abstract class OSHEntityImpl
         output.writeUInt32(keyValues.length);
         for (int kv = 0; kv < keyValues.length; kv++) {
           output.writeUInt32(keyValues[kv]);
-          if (kv % 2 == 0) // only keys
+          if (kv % 2 == 0) {
             keySet.add(Integer.valueOf(keyValues[kv]));
+          }
         }
         lastKeyValues = keyValues;
       }
@@ -133,7 +134,7 @@ public abstract class OSHEntityImpl
     this.minLat = minLat;
     this.maxLon = maxLon;
     this.maxLat = maxLat;
-    
+
     this.keys = keys;
     this.dataOffset = dataOffset;
     this.dataLength = dataLength;
@@ -148,6 +149,7 @@ public abstract class OSHEntityImpl
     return result;
   }
 
+  @Override
   public long getId() {
     return id;
   }
@@ -155,22 +157,22 @@ public abstract class OSHEntityImpl
   public int getLength() {
     return length;
   }
-  
+
   @Override
   public long getMinLonLong() {
     return minLon;
   }
-  
+
   @Override
   public long getMinLatLong() {
     return minLat;
   }
-  
+
   @Override
   public long getMaxLonLong() {
     return maxLon;
   }
-  
+
   @Override
   public long getMaxLatLong() {
     return maxLat;
@@ -198,14 +200,17 @@ public abstract class OSHEntityImpl
     };
   }
 
+  @Override
   public int[] getRawTagKeys() {
     return keys;
   }
 
+  @Override
   public boolean hasTagKey(OSHDBTagKey tag) {
     return this.hasTagKey(tag.toInt());
   }
 
+  @Override
   public boolean hasTagKey(int key) {
     // todo: replace with binary search (keys are sorted)
     for (int i = 0; i < keys.length; i++) {
@@ -234,15 +239,15 @@ public abstract class OSHEntityImpl
   public String toString() {
     Iterator<? extends OSMEntity> itr = getVersions().iterator();
     OSMEntity last;
-    OSMEntity first;    
+    OSMEntity first;
     last = first = itr.next();
     while (itr.hasNext()) {
       first = itr.next();
     }
-    
+
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
         last.getVersion(),
-        first.getTimestamp().getEpochSecond(),
+        first.getEpochSecond(),
         getMinLat(), getMinLon(), getMaxLat(), getMaxLon());
   }
 

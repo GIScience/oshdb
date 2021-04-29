@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -73,7 +74,7 @@ public class OSHDBGeometryBuilder {
       OSMEntity entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider
   ) {
     GeometryFactory geometryFactory = new GeometryFactory();
-    if (timestamp.compareTo(entity.getTimestamp()) < 0) {
+    if (OSHDBTemporal.compare(timestamp, entity) < 0) {
       throw new AssertionError(
           "cannot produce geometry of entity for timestamp before this entity's version's timestamp"
       );
@@ -143,7 +144,7 @@ public class OSHDBGeometryBuilder {
       return getGeometryCollectionGeometry(relation, timestamp, areaDecider, geometryFactory);
     }
   }
-  
+
   /**
    * Converts a OSHDBBoundingBox to a rectangular polygon.
    *

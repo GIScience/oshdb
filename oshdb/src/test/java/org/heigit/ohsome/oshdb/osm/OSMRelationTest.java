@@ -71,7 +71,7 @@ public class OSMRelationTest {
     OSMRelation instance =
         new OSMRelation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
     long expResult = 1L;
-    long result = instance.getTimestamp().getEpochSecond();
+    long result = instance.getEpochSecond();
     assertEquals(expResult, result);
   }
 

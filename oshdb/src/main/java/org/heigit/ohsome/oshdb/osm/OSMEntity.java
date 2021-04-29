@@ -161,7 +161,7 @@ public abstract class OSMEntity implements OSHDBTemporal {
   @Override
   public String toString() {
     return String.format("ID:%d V:+%d+ TS:%d CS:%d VIS:%s UID:%d TAGS:%S", getId(), getVersion(),
-        getTimestamp().getEpochSecond(), getChangesetId(), isVisible(), getUserId(),
+        getEpochSecond(), getChangesetId(), isVisible(), getUserId(),
         Arrays.toString(getRawTags()));
   }
 }
