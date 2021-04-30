@@ -19,7 +19,7 @@ Changelog
 
 * make sure predicate-filters are always serializable ([#353])
 * improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage ([#327])
-* reorganize and update ohsome parent module ([#360])
+* reorganize and update ohsome parent module, requires maven version 3.6 or higher ([#360], [#375])
 * add new interfaces `OSHDBTemporal` and `OSHDBBoundable` ([#369])
 
 ### bugfixes
@@ -53,6 +53,7 @@ Changelog
 [#353]: https://github.com/GIScience/oshdb/pull/353
 [#360]: https://github.com/GIScience/oshdb/pull/360
 [#369]: https://github.com/GIScience/oshdb/pull/369
+[#375]: https://github.com/GIScience/oshdb/pull/375
 
 
 ## 0.6.4

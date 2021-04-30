@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>ohsome-parent</artifactId>
-    <version>2.9</version>
+    <version>2.10</version>
   </parent>
 
   <artifactId>oshdb-parent</artifactId>
@@ -42,11 +42,8 @@
     <jts.version>1.16.1</jts.version>
     <junit.version>4.13.1</junit.version>
     <mavenassembly.version>3.1.1</mavenassembly.version>
-    <mavenpmd.version>3.11.0</mavenpmd.version>
-    <mavensurefire.version>2.22.2</mavensurefire.version>
     <orgjson.version>20160810</orgjson.version>
     <osmosis.version>0.45</osmosis.version>
-    <pmd.version>6.11.0</pmd.version>
     <postgresql.version>42.1.4</postgresql.version>
     <protobuf.version>2.6.1</protobuf.version>
     <roaringbitmap.version>0.6.59</roaringbitmap.version>
@@ -92,34 +89,4 @@
     <system>GitHub</system>
     <url>https://github.com/GIScience/oshdb/issues</url>
   </issueManagement>
-
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${mavensurefire.version}</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>${mavenpmd.version}</version>
-        <dependencies>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-core</artifactId>
-            <version>${pmd.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-java</artifactId>
-            <version>${pmd.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-    </plugins>
-  </build>
 </project>
