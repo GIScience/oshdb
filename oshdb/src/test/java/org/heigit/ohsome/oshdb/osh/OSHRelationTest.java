@@ -17,25 +17,24 @@ import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.junit.Test;
 
 public class OSHRelationTest {
 
   OSHNode node100 = OSHNodeTest.buildOSHNode(new OSMNode(
-      100L, 1, new OSHDBTimestamp(1L), 0L, 123, new int[]{1, 2}, 494094980L, 86809720L));
+      100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094980L, 86809720L));
   OSHNode node102 = OSHNodeTest.buildOSHNode(new OSMNode(
-      102L, 1, new OSHDBTimestamp(1L), 0L, 123, new int[]{2, 1}, 494094970L, 86809730L));
+      102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094970L, 86809730L));
   OSHNode node104 = OSHNodeTest.buildOSHNode(new OSMNode(
-      104L, 1, new OSHDBTimestamp(1L), 0L, 123, new int[]{2, 4}, 494094960L, 86809740L));
+      104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094960L, 86809740L));
 
   OSHWay way200 = OSHWayImpl.build(Lists.newArrayList(
-      new OSMWay(200, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 2}, new OSMMember[]{
+      new OSMWay(200, 1, 3333L, 4444L, 23, new int[]{1, 2}, new OSMMember[]{
           new OSMMember(100, OSMType.NODE, 0),
           new OSMMember(104, OSMType.NODE, 0)})
   ), List.of(node100, node104));
   OSHWay way202 = OSHWayImpl.build(Lists.newArrayList(
-      new OSMWay(202, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{1, 2}, new OSMMember[]{
+      new OSMWay(202, 1, 3333L, 4444L, 23, new int[]{1, 2}, new OSMMember[]{
           new OSMMember(100, OSMType.NODE, 0),
           new OSMMember(102, OSMType.NODE, 0)})
   ), List.of(node100, node102));
@@ -45,7 +44,7 @@ public class OSHRelationTest {
   @Test
   public void testGetNodes() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{}, new OSMMember[]{
+        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0)})
@@ -58,7 +57,7 @@ public class OSHRelationTest {
   @Test
   public void testWithMissingNode() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{}, new OSMMember[]{
+        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0)})
@@ -87,7 +86,7 @@ public class OSHRelationTest {
   @Test
   public void testGetWays() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{}, new OSMMember[]{
+        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(200, OSMType.WAY, 0),
             new OSMMember(202, OSMType.WAY, 0)})
     ), Collections.emptyList(), List.of(way200, way202),
@@ -104,7 +103,7 @@ public class OSHRelationTest {
   @Test
   public void testCompact() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{}, new OSMMember[]{
+        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0),
@@ -152,7 +151,7 @@ public class OSHRelationTest {
   @Test
   public void testToString() throws IOException {
     OSHRelation instance = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, new OSHDBTimestamp(3333L), 4444L, 23, new int[]{}, new OSMMember[]{
+        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0)})

@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.jetbrains.annotations.Contract;
@@ -139,7 +139,7 @@ public class GeometryTypeFilter implements Filter {
     // type specific checks
     if (geometryType == GeometryType.POLYGON) {
       if (osmType == OSMType.WAY) {
-        OSMMember[] wayNodes = ((OSMWay) entity).getRefs();
+        OSMMember[] wayNodes = ((OSMWay) entity).getMembers();
         return wayNodes.length >= 4 && wayNodes[0].getId() == wayNodes[wayNodes.length - 1].getId();
       } else if (osmType == OSMType.RELATION) {
         return entity.hasTagValue(typeMultipolygon.getKey(), typeMultipolygon.getValue())

@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -20,7 +20,7 @@ import org.locationtech.jts.geom.Polygonal;
  * Fast bounding-box in (multi)polygon test inspired by
  * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
  */
-public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<OSHDBBoundingBox>,
+public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<OSHDBBoundable>,
     Serializable {
   private Collection<Envelope> outerBboxes = new ArrayList<>();
 
@@ -52,7 +52,7 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
    * Tests if the given bounding box is fully outside of the polygon.
    */
   @Override
-  public boolean test(OSHDBBoundingBox boundingBox) {
+  public boolean test(OSHDBBoundable boundingBox) {
     GeometryFactory gf = new GeometryFactory();
     Point p1 = gf.createPoint(new Coordinate(boundingBox.getMinLon(), boundingBox.getMinLat()));
     if (crossingNumber(p1, true) % 2 == 1) {

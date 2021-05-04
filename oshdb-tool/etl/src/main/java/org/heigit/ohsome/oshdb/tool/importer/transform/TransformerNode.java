@@ -7,12 +7,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.LongFunction;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapper;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Node;
@@ -28,12 +27,14 @@ public class TransformerNode extends Transformer {
     super(maxMemory,maxZoom, workDirectory, tagToIdMapper,workerId);
   }
 
+  @Override
   public OSMType type() {
     return OSMType.NODE;
   }
 
 
   private final long[] lastDataSize = new long[2];
+  @Override
   public void transform(long id, List<Entity> versions) {
 
     final List<OSMNode> nodes = new ArrayList<>(versions.size());
@@ -87,7 +88,7 @@ public class TransformerNode extends Transformer {
   private OSMNode getNode(Node entity) {
     return new OSMNode(entity.getId(), //
         modifiedVersion(entity), //
-        new OSHDBTimestamp(entity.getTimestamp()), //
+        entity.getTimestamp(), //
         entity.getChangeset(), //
         entity.getUserId(), //
         getKeyValue(entity.getTags()), //

@@ -4,12 +4,11 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializablePredicate;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagKey;
@@ -103,7 +102,7 @@ interface MapReducerSettings<M> {
    *             instead
    */
   @Deprecated
-  M osmEntityFilter(SerializablePredicate<OSMEntity> f);
+  M osmEntityFilter(OSMEntityFilter f);
 
   /**
    * Adds an osm tag filter: The analysis will be restricted to osm entities that have
@@ -192,7 +191,7 @@ interface MapReducerSettings<M> {
    * @deprecated replaced by {@link #osmEntityFilter}
    */
   @Deprecated
-  default M where(SerializablePredicate<OSMEntity> f) {
+  default M where(OSMEntityFilter f) {
     return this.osmEntityFilter(f);
   }
 

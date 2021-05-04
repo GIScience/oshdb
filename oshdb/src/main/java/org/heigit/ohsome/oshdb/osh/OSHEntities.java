@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 
 public final class OSHEntities {
   private OSHEntities() {
@@ -64,7 +64,7 @@ public final class OSHEntities {
    */
   public static OSMEntity getByTimestamp(OSHEntity osh, OSHDBTimestamp timestamp) {
     for (OSMEntity osm : osh.getVersions()) {
-      if (osm.getTimestamp().getRawUnixTimestamp() <= timestamp.getRawUnixTimestamp()) {
+      if (osm.getEpochSecond() <= timestamp.getEpochSecond()) {
         return osm;
       }
     }

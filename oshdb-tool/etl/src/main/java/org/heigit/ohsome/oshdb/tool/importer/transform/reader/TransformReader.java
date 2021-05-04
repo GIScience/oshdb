@@ -8,9 +8,9 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.TreeSet;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.OSHEntity2;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 
 
 public abstract class TransformReader<T extends OSHEntity2> implements Closeable {

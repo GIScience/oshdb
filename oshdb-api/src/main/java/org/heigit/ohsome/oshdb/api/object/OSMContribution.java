@@ -4,11 +4,11 @@ import com.google.common.collect.ComparisonChain;
 import java.util.EnumSet;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
@@ -230,7 +230,7 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
     OSHDBTimestamp contributionTimestamp = this.getTimestamp();
     // if the entity itself was modified at this exact timestamp, or we know from the contribution
     // type that the entity must also have been modified, we can just return the uid directly
-    if (contributionTimestamp.equals(entity.getTimestamp())
+    if (contributionTimestamp.getEpochSecond() == entity.getEpochSecond()
         || this.getEntityBefore() == null
         || this.getEntityBefore().getVersion() != this.getEntityAfter().getVersion()
     ) {
@@ -241,7 +241,7 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
     if (entity instanceof OSMWay) {
       userId = ((OSMWay) entity).getRefEntities(contributionTimestamp)
           .filter(Objects::nonNull)
-          .filter(n -> n.getTimestamp().equals(contributionTimestamp))
+          .filter(n -> n.getEpochSecond() == contributionTimestamp.getEpochSecond())
           .findFirst()
           .map(OSMEntity::getUserId)
           // "rare" race condition, caused by not properly ordered timestamps (t_x > t_{x+1})
@@ -250,7 +250,7 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
     } else if (entity instanceof OSMRelation) {
       userId = ((OSMRelation) entity).getMemberEntities(contributionTimestamp)
           .filter(Objects::nonNull)
-          .filter(e -> e.getTimestamp().equals(contributionTimestamp))
+          .filter(e -> e.getEpochSecond() == contributionTimestamp.getEpochSecond())
           .findFirst()
           .map(OSMEntity::getUserId)
           .orElseGet(() ->
@@ -261,7 +261,7 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
                   .map(e -> (OSMWay) e)
                   .flatMap(w -> w.getRefEntities(contributionTimestamp))
                   .filter(Objects::nonNull)
-                  .filter(n -> n.getTimestamp().equals(contributionTimestamp))
+                  .filter(n -> n.getEpochSecond() == contributionTimestamp.getEpochSecond())
                   .findFirst()
                   .map(OSMEntity::getUserId)
                   // possible "rare" race condition, caused by not properly ordered timestamps

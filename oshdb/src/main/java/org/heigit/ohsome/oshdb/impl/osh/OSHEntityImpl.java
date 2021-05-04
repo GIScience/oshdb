@@ -10,12 +10,11 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
 public abstract class OSHEntityImpl
-    implements OSHEntity, Comparable<OSHEntity>{
+    implements OSHEntity, Comparable<OSHEntity> {
 
   public static class Builder {
 
@@ -55,17 +54,19 @@ public abstract class OSHEntityImpl
       lastVersion = v;
 
       output.writeSInt64(
-          (version.getTimestamp().getRawUnixTimestamp() - lastTimestamp) - baseTimestamp);
-      if (!firstVersion && lastTimestamp < version.getTimestamp().getRawUnixTimestamp())
+          (version.getEpochSecond() - lastTimestamp) - baseTimestamp);
+      if (!firstVersion && lastTimestamp < version.getEpochSecond()) {
         timestampsNotInOrder = true;
-      lastTimestamp = version.getTimestamp().getRawUnixTimestamp();
+      }
+      lastTimestamp = version.getEpochSecond();
 
       output.writeSInt64(version.getChangesetId() - lastChangeset);
       lastChangeset = version.getChangesetId();
 
       int userId = version.getUserId();
-      if (userId != lastUserId)
+      if (userId != lastUserId) {
         changed |= CHANGED_USER_ID;
+      }
 
       int[] keyValues = version.getRawTags();
 
@@ -84,8 +85,9 @@ public abstract class OSHEntityImpl
         output.writeUInt32(keyValues.length);
         for (int kv = 0; kv < keyValues.length; kv++) {
           output.writeUInt32(keyValues[kv]);
-          if (kv % 2 == 0) // only keys
+          if (kv % 2 == 0) {
             keySet.add(Integer.valueOf(keyValues[kv]));
+          }
         }
         lastKeyValues = keyValues;
       }
@@ -104,14 +106,19 @@ public abstract class OSHEntityImpl
 
   protected final long id;
   protected final byte header;
-  protected final OSHDBBoundingBox bbox;
+  protected long minLon;
+  protected long maxLon;
+  protected long minLat;
+  protected long maxLat;
   protected final int[] keys;
   protected final int dataOffset;
   protected final int dataLength;
 
   public OSHEntityImpl(final byte[] data, final int offset, final int length, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, final OSHDBBoundingBox bbox, final int[] keys,
+      final byte header, final long id,
+      long minLon, long minLat, long maxLon, long maxLat,
+      final int[] keys,
       final int dataOffset, final int dataLength) {
     this.data = data;
     this.offset = offset;
@@ -123,7 +130,11 @@ public abstract class OSHEntityImpl
 
     this.header = header;
     this.id = id;
-    this.bbox = bbox;
+    this.minLon = minLon;
+    this.minLat = minLat;
+    this.maxLon = maxLon;
+    this.maxLat = maxLat;
+
     this.keys = keys;
     this.dataOffset = dataOffset;
     this.dataLength = dataLength;
@@ -138,6 +149,7 @@ public abstract class OSHEntityImpl
     return result;
   }
 
+  @Override
   public long getId() {
     return id;
   }
@@ -146,8 +158,24 @@ public abstract class OSHEntityImpl
     return length;
   }
 
-  public OSHDBBoundingBox getBoundingBox() {
-    return bbox;
+  @Override
+  public long getMinLonLong() {
+    return minLon;
+  }
+
+  @Override
+  public long getMinLatLong() {
+    return minLat;
+  }
+
+  @Override
+  public long getMaxLonLong() {
+    return maxLon;
+  }
+
+  @Override
+  public long getMaxLatLong() {
+    return maxLat;
   }
 
   public Iterable<OSHDBTagKey> getTagKeys() {
@@ -172,14 +200,17 @@ public abstract class OSHEntityImpl
     };
   }
 
+  @Override
   public int[] getRawTagKeys() {
     return keys;
   }
 
+  @Override
   public boolean hasTagKey(OSHDBTagKey tag) {
     return this.hasTagKey(tag.toInt());
   }
 
+  @Override
   public boolean hasTagKey(int key) {
     // todo: replace with binary search (keys are sorted)
     for (int i = 0; i < keys.length; i++) {
@@ -207,16 +238,17 @@ public abstract class OSHEntityImpl
   @Override
   public String toString() {
     Iterator<? extends OSMEntity> itr = getVersions().iterator();
-    OSMEntity last, first;    
+    OSMEntity last;
+    OSMEntity first;
     last = first = itr.next();
-    while(itr.hasNext())
+    while (itr.hasNext()) {
       first = itr.next();
-    
+    }
+
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
         last.getVersion(),
-        first.getTimestamp().getRawUnixTimestamp(),
-        getBoundingBox().getMinLat(), getBoundingBox().getMinLon(), getBoundingBox().getMaxLat(),
-        getBoundingBox().getMaxLon());
+        first.getEpochSecond(),
+        getMinLat(), getMinLon(), getMaxLat(), getMaxLon());
   }
 
 }

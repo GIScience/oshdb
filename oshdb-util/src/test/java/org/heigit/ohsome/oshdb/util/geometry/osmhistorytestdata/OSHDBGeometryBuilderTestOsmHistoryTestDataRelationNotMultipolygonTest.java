@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
@@ -33,7 +33,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testGeometryChange() {
     // relation getting more ways, one disappears, last version not valid
     OSMEntity entity = testData.relations().get(500L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -44,7 +44,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // second version
     OSMEntity entity1 = testData.relations().get(500L).get(1);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result1 instanceof GeometryCollection);
@@ -55,7 +55,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // third version
     OSMEntity entity2 = testData.relations().get(500L).get(2);
-    OSHDBTimestamp timestamp2 = entity2.getTimestamp();
+    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
     try {
       Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp2, areaDecider);
       assertTrue(result2 instanceof GeometryCollection || result2 instanceof Polygonal);
@@ -70,7 +70,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testVisibleChange() {
     // relation  visible tag changed
     OSMEntity entity = testData.relations().get(501L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -84,7 +84,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // second version
     OSMEntity entity1 = testData.relations().get(501L).get(1);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result1.isEmpty());
@@ -94,7 +94,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // third version
     OSMEntity entity2 = testData.relations().get(501L).get(2);
-    OSHDBTimestamp timestamp2 = entity2.getTimestamp();
+    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
     try {
       Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
       assertTrue(result2 instanceof GeometryCollection);
@@ -114,7 +114,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     OSMEntity entity = testData.relations().get(502L).get(0);
     Geometry result;
     try {
-      OSHDBTimestamp timestamp = entity.getTimestamp();
+      OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
       result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
       assertTrue(result.isValid());
@@ -129,7 +129,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testTagChange() {
     // relation tags changing
     OSMEntity entity = testData.relations().get(503L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -142,7 +142,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // second version
     OSMEntity entity1 = testData.relations().get(503L).get(1);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result1 instanceof GeometryCollection);
@@ -155,7 +155,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // third version
     OSMEntity entity2 = testData.relations().get(503L).get(2);
-    OSHDBTimestamp timestamp2 = entity2.getTimestamp();
+    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
     try {
       Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
       assertTrue(result2 instanceof GeometryCollection);
@@ -172,7 +172,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testGeometryChangeOfNodeRefsInWays() {
     // relation, way 109 -inner- and 110 -outer- ways changed node refs
     OSMEntity entity = testData.relations().get(504L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -186,7 +186,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // second version
     OSMEntity entity1 = testData.relations().get(504L).get(1);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result1 instanceof GeometryCollection);
@@ -219,7 +219,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testGeometryChangeOfNodeCoordinatesInWay() {
     // relation, way 112  changed node coordinates
     OSMEntity entity = testData.relations().get(505L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -250,7 +250,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testGeometryChangeOfNodeCoordinatesInRelationAndWay() {
     // relation, with node members, nodes changed coordinates
     OSMEntity entity = testData.relations().get(506L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -286,7 +286,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     // relation, not valid, should be a not empty geometryCollection
     OSMEntity entity = testData.relations().get(507L).get(0);
     try {
-      OSHDBTimestamp timestamp = entity.getTimestamp();
+      OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
       assertEquals(6, result.getNumGeometries());
@@ -303,7 +303,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     OSMEntity entity = testData.relations().get(508L).get(0);
     Geometry result;
     try {
-      OSHDBTimestamp timestamp = entity.getTimestamp();
+      OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
       result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
       assertTrue(result.isValid());
@@ -318,7 +318,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     // relation, way member: node 52 changes visible tag
     OSMEntity entity = testData.relations().get(509L).get(0);
     // timestamp where node 52 visible is false
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -350,7 +350,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testTagChangeOfNodeInWay() {
     // relation, way member: node 53 changes tags, 51 changes coordinates
     OSMEntity entity = testData.relations().get(510L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -381,7 +381,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testVisibleChangeOfWay() {
     // relation, way member: way 119 changes visible tag
     OSMEntity entity = testData.relations().get(511L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -410,7 +410,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testVisibleChangeOfOneWayOfOuterRing() {
     // relation, 2 way members making outer ring: way 120 changes visible tag later, 121 not
     OSMEntity entity = testData.relations().get(512L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -442,7 +442,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testTagChangeOfWay() {
     // relation, way member: way 122 changes tags
     OSMEntity entity = testData.relations().get(513L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -485,7 +485,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testOneOfTwoPolygonDisappears() {
     // relation, at the beginning two polygons, one disappears later
     OSMEntity entity = testData.relations().get(514L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -499,7 +499,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // second version
     OSMEntity entity1 = testData.relations().get(514L).get(1);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result1 instanceof GeometryCollection);
@@ -516,7 +516,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testWaySplitUpInTwo() {
     // relation, at the beginning one way, split up later into 2 ways
     OSMEntity entity = testData.relations().get(515L).get(0);
-    OSHDBTimestamp timestamp = entity.getTimestamp();
+    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -529,7 +529,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // second version
     OSMEntity entity1 = testData.relations().get(515L).get(1);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result1 instanceof GeometryCollection);
@@ -547,7 +547,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testRestrictionRoles() {
     // relation, restriction, role changes
     OSMEntity entity1 = testData.relations().get(518L).get(0);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -565,7 +565,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
   public void testRolesArePartAndOutline() {
     // relation as building with role=part and outline
     OSMEntity entity1 = testData.relations().get(519L).get(0);
-    OSHDBTimestamp timestamp1 = entity1.getTimestamp();
+    OSHDBTimestamp timestamp1 = new OSHDBTimestamp(entity1);
     try {
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity1, timestamp1, areaDecider);
       assertTrue(result instanceof GeometryCollection);
@@ -578,7 +578,7 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTe
     }
     // second version
     OSMEntity entity2 = testData.relations().get(519L).get(1);
-    OSHDBTimestamp timestamp2 = entity2.getTimestamp();
+    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
     try {
       Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
       assertTrue(result2 instanceof GeometryCollection);

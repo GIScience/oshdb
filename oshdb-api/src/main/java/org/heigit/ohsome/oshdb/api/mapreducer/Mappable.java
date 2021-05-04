@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializablePredicate;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.jetbrains.annotations.Contract;
 
 public interface Mappable<X> {

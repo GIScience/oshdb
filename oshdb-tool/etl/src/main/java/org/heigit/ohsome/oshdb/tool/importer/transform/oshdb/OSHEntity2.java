@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
@@ -64,33 +64,35 @@ public abstract class OSHEntity2 {
   }
 
   public abstract OSHBuilder builder();
-  
+
   private static final int CHANGED_USER_ID = 1 << 0;
   private static final int CHANGED_TAGS = 1 << 1;
   private static final int CHANGED_EXTENSION = 1 << 2;
-  
+
   private static final int CHANGED_FREE_BIT4 = 1 << 3;
   private static final int CHANGED_FREE_BIT5 = 1 << 4;
   private static final int CHANGED_FREE_BIT6 = 1 << 5;
   private static final int CHANGED_FREE_BIT7 = 1 << 6;
   private static final int CHANGED_FREE_BIT8 = 1 << 7;
-  
+
 
   protected static abstract class OSHBuilder {
 
     private Set<Integer> keySet = new TreeSet<>();
-    
-    public void build(ByteArrayOutputWrapper out,List<OSMEntity> versions,
-        long baseTimestamp,long baseLongitude,long baseLatitude, 
-        Map<Long,Integer> nodeOffsets,Map<Long,Integer> wayOffsets,Map<Long,Integer> relationOffsets) throws IOException {
+
+    public void build(ByteArrayOutputWrapper out, List<OSMEntity> versions, long baseTimestamp,
+        long baseLongitude, long baseLatitude, Map<Long, Integer> nodeOffsets,
+        Map<Long, Integer> wayOffsets, Map<Long, Integer> relationOffsets) throws IOException {
       ByteArrayOutputWrapper aux = new ByteArrayOutputWrapper();
-      build(out, aux, versions, baseTimestamp,baseLongitude,baseLatitude, nodeOffsets, wayOffsets, relationOffsets);
+      build(out, aux, versions, baseTimestamp, baseLongitude, baseLatitude, nodeOffsets, wayOffsets,
+          relationOffsets);
     }
-    
-    
-    public void build(ByteArrayOutputWrapper out,ByteArrayOutputWrapper aux,List<? extends OSMEntity> versions,
-        long baseTimestamp,long baseLongitude,long baseLatitude,
-        Map<Long,Integer> nodeOffsets,Map<Long,Integer> wayOffsets,Map<Long,Integer> relationOffsets) throws IOException {
+
+
+    public void build(ByteArrayOutputWrapper out, ByteArrayOutputWrapper aux,
+        List<? extends OSMEntity> versions, long baseTimestamp, long baseLongitude,
+        long baseLatitude, Map<Long, Integer> nodeOffsets, Map<Long, Integer> wayOffsets,
+        Map<Long, Integer> relationOffsets) throws IOException {
       int versionNumber = 0;
       long timestamp = 0;
       long changeset = 0;
@@ -98,12 +100,12 @@ public abstract class OSHEntity2 {
       int[] tags = new int[0];
 
       for (OSMEntity version : versions) {
-        final int visible = version.isVisible()?1:-1;
-        
-        versionNumber = out.writeSInt32Delta(version.getVersion()*visible,versionNumber);
-        timestamp = out.writeSInt64Delta(version.getTimestamp().getRawUnixTimestamp(), timestamp);
-        changeset = out.writeSInt64Delta(version.getChangesetId(),changeset);
-        
+        final int visible = version.isVisible() ? 1 : -1;
+
+        versionNumber = out.writeSInt32Delta(version.getVersion() * visible, versionNumber);
+        timestamp = out.writeSInt64Delta(version.getEpochSecond(), timestamp);
+        changeset = out.writeSInt64Delta(version.getChangesetId(), changeset);
+
         byte changed = 0;
         aux.reset();
         if (visible == 1) {
@@ -111,14 +113,15 @@ public abstract class OSHEntity2 {
             changed |= CHANGED_USER_ID;
             userId = aux.writeSInt32Delta(version.getUserId(), userId);
           }
-          if(!Arrays.equals(version.getRawTags(), tags)){
+          if (!Arrays.equals(version.getRawTags(), tags)) {
             changed |= CHANGED_TAGS;
             tags = version.getRawTags();
             aux.writeUInt32(tags.length);
-            for(int i=0; i< tags.length; i++){
+            for (int i = 0; i < tags.length; i++) {
               aux.writeUInt32(tags[i]);
-              if(i%2 == 0)
+              if (i % 2 == 0) {
                 keySet.add(Integer.valueOf(tags[i]));
+              }
             }
           }
           if(extension(aux,version,baseLongitude,baseLatitude, nodeOffsets, wayOffsets, relationOffsets)){
@@ -127,24 +130,23 @@ public abstract class OSHEntity2 {
         }
 
         out.writeByte(changed);
-        out.writeByteArray(aux.array(), 0, aux.length());        
+        out.writeByteArray(aux.array(), 0, aux.length());
       }
     }
-    
-    
+
+
 
     public Set<Integer> getKeySet() {
       return keySet;
     }
 
 
-    protected abstract boolean extension(ByteArrayOutputWrapper out, OSMEntity version, 
-        long baseLongitude,long baseLatitude,
-        Map<Long,Integer> nodeOffsets,Map<Long,Integer> wayOffsets,Map<Long,Integer> relationOffsets) throws IOException;
-
+    protected abstract boolean extension(ByteArrayOutputWrapper out, OSMEntity version,
+        long baseLongitude, long baseLatitude, Map<Long, Integer> nodeOffsets,
+        Map<Long, Integer> wayOffsets, Map<Long, Integer> relationOffsets) throws IOException;
   }
 
-  protected static abstract class OSMIterator<T> implements Iterator<T> {
+  protected abstract static class OSMIterator<T> implements Iterator<T> {
 
     protected final ByteArrayWrapper in;
     protected final OSHEntity2 entity;
@@ -199,7 +201,4 @@ public abstract class OSHEntity2 {
 
     protected abstract T extension();
   }
-  
-  
-  
 }

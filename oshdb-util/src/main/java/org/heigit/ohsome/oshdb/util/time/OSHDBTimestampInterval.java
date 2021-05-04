@@ -3,7 +3,7 @@ package org.heigit.ohsome.oshdb.util.time;
 import java.io.Serializable;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
 public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTimestampInterval> {
   private final OSHDBTimestamp fromTimestamp;
@@ -23,13 +23,13 @@ public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTim
   }
 
   public boolean intersects(OSHDBTimestampInterval other) {
-    return other.toTimestamp.getRawUnixTimestamp() >= this.fromTimestamp.getRawUnixTimestamp()
-        && other.fromTimestamp.getRawUnixTimestamp() <= this.toTimestamp.getRawUnixTimestamp();
+    return other.toTimestamp.getEpochSecond() >= this.fromTimestamp.getEpochSecond()
+        && other.fromTimestamp.getEpochSecond() <= this.toTimestamp.getEpochSecond();
   }
 
   public boolean includes(OSHDBTimestamp timestamp) {
-    return timestamp.getRawUnixTimestamp() >= this.fromTimestamp.getRawUnixTimestamp()
-        && timestamp.getRawUnixTimestamp() < this.toTimestamp.getRawUnixTimestamp();
+    return timestamp.getEpochSecond() >= this.fromTimestamp.getEpochSecond()
+        && timestamp.getEpochSecond() < this.toTimestamp.getEpochSecond();
   }
 
   @SuppressWarnings("MissingJavadocMethod")
@@ -37,7 +37,7 @@ public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTim
     if (this.includes(timestamp)) {
       return 0;
     }
-    return timestamp.getRawUnixTimestamp() < this.fromTimestamp.getRawUnixTimestamp() ? -1 : 1;
+    return timestamp.getEpochSecond() < this.fromTimestamp.getEpochSecond() ? -1 : 1;
   }
 
   @Override

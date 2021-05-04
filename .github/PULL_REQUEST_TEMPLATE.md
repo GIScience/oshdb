@@ -1,4 +1,4 @@
-Please add the **type of change** as label. If your PR is not ready for review and merge, please add `🚧 ` to the PR title.
+Please add the **type of change** as label. If your PR is not ready for review and merge, please add `🚧` to the PR title.
 
 ### Description
 Please add a clear and concise description of what your PR solves.

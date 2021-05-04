@@ -2,9 +2,9 @@ package org.heigit.ohsome.oshdb.api.object;
 
 import com.google.common.collect.ComparisonChain;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
 import org.locationtech.jts.geom.Geometry;

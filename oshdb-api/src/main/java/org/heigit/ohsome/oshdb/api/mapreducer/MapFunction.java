@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 
 /**
  * A function that has a flag: <i>isFlatMapper</i>.

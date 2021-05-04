@@ -19,12 +19,10 @@ import org.apache.ignite.IgniteCompute;
 import org.apache.ignite.compute.ComputeTaskFuture;
 import org.apache.ignite.compute.ComputeTaskTimeoutException;
 import org.apache.ignite.lang.IgniteFutureTimeoutException;
+import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBiFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableBinaryOperator;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableFunction;
-import org.heigit.ohsome.oshdb.api.generic.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.OSHDBIgniteMapReduceComputeTask.CancelableIgniteMapReduceJob;
@@ -34,11 +32,15 @@ import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.heigit.ohsome.oshdb.util.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.util.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
+import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
+import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
+import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.geom.Geometry;
@@ -69,7 +71,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   @NotNull
   @Override
   protected MapReducer<X> copy() {
-    return new MapReducerIgniteLocalPeek<X>(this);
+    return new MapReducerIgniteLocalPeek<>(this);
   }
 
   @Override
@@ -181,7 +183,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, List<String> cacheNames,
         Iterable<CellIdRange> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<V, M> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -286,7 +288,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<CellIdRange> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter,
@@ -310,7 +312,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<CellIdRange> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -335,7 +337,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<CellIdRange> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheNames, cellIdRanges, tstamps, bbox, poly, preFilter, filter,
@@ -359,7 +361,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         List<String> cacheNames, Iterable<CellIdRange> cellIdRanges,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
-        CellIterator.OSHEntityFilter preFilter, CellIterator.OSMEntityFilter filter,
+        OSHEntityFilter preFilter, OSMEntityFilter filter,
         SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
@@ -391,7 +393,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
     IgniteCompute compute = ignite.compute();
 
     ComputeTaskFuture<S> asyncResult = compute.executeAsync(
-        new OSHDBIgniteMapReduceComputeTask<Object, S>(
+        new OSHDBIgniteMapReduceComputeTask<>(
             computeJob,
             identitySupplier,
             combiner,
