@@ -155,7 +155,7 @@ public class H2Handler extends OSHDBHandler {
 
   }
 
-  public static void load(DbH2Arg config) throws ClassNotFoundException {
+  public static void load(DbH2Arg config) throws ClassNotFoundException, Exception {
     final Path workDirectory = config.common.workDir;
     Path oshdb = config.h2db;
     int maxZoomLevel = config.maxZoom;
@@ -294,12 +294,10 @@ public class H2Handler extends OSHDBHandler {
           System.out.println(" done! " + loadingWatch);
         }
       }
-    } catch (IOException | SQLException e) {
-      e.printStackTrace();
     }
   }
 
-  public static void main(String[] args) throws IOException, ClassNotFoundException, SQLException {
+  public static void main(String[] args) throws Exception {
 
     DbH2Arg config = new DbH2Arg();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();

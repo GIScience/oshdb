@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -164,7 +165,6 @@ public class KeyValueFrequencyCollector implements Iterable<KeyValueFrequency> {
         dataInput = new DataInputStream(new BufferedInputStream(input));
         return KeyValueFrequencyFileReader.of(dataInput);
       } catch (IOException e) {
-        e.printStackTrace();
         if (dataInput != null) {
           try {
             dataInput.close();
@@ -172,7 +172,7 @@ public class KeyValueFrequencyCollector implements Iterable<KeyValueFrequency> {
             e.addSuppressed(e2);
           }
         }
-        throw new RuntimeException(e.getMessage());
+        throw new UncheckedIOException(e);
       }
     }).forEach(iters::add);
     if (key2Frequency.size() > 0) {
@@ -389,7 +389,6 @@ public class KeyValueFrequencyCollector implements Iterable<KeyValueFrequency> {
 
       } catch (IOException e) {
         index = Integer.MAX_VALUE;
-        e.printStackTrace();
         throw new NoSuchElementException(e.getMessage());
       }
     }
@@ -429,7 +428,6 @@ public class KeyValueFrequencyCollector implements Iterable<KeyValueFrequency> {
         return new ValueFrequency(value, freq);
       } catch (IOException e) {
         index = Integer.MAX_VALUE;
-        e.printStackTrace();
         throw new NoSuchElementException(e.getMessage());
       }
     }
