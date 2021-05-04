@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.osm;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
@@ -9,7 +10,9 @@ import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
-public abstract class OSMEntity implements OSHDBTemporal {
+public abstract class OSMEntity implements OSHDBTemporal, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   protected final long id;
 

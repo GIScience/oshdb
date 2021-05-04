@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.osm;
 
+import java.io.Serializable;
 import java.util.Objects;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBRole;
@@ -7,8 +8,9 @@ import org.heigit.ohsome.oshdb.util.OSHDBRole;
 /**
  * Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
  */
-public class OSMMember {
+public class OSMMember implements Serializable {
 
+  private static final long serialVersionUID = 1L;
 
   private final long id;
   private final OSMType type;
