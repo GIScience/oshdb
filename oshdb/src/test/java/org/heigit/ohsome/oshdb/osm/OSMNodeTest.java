@@ -52,24 +52,24 @@ public class OSMNodeTest {
 
 
   @Test
-  public void testEqualsTo() {
+  public void testEquals() {
     OSMNode o =
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     OSMNode instance =
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     boolean expResult = true;
-    boolean result = instance.equalsTo(o);
+    boolean result = instance.equals(o);
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testEqualsTo2() {
+  public void testEquals2() {
     OSMNode o =
         new OSMNode(2L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     OSMNode instance =
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000L, 1000000000L);
     boolean expResult = false;
-    boolean result = instance.equalsTo(o);
+    boolean result = instance.equals(o);
     assertEquals(expResult, result);
   }
 
@@ -221,7 +221,7 @@ public class OSMNodeTest {
 
     OSMNode a = new OSMNode(id, version, timestamp, changeset, userId, tags, longitude, latitude);
     OSMNode b = new OSMNode(id, version, timestamp, changeset, userId, tags, longitude, latitude);
-    assertTrue(a.equalsTo(b));
+    assertTrue(a.equals(b));
   }
 
   @Test
