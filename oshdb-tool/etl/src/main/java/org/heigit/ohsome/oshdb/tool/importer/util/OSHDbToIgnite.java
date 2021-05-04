@@ -160,7 +160,7 @@ public class OSHDbToIgnite {
       jcom.usage();
       return;
     }
-    try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdb, "sa", "")) {
+    try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdb, "sa", null)) {
       OSHDbToIgnite.load(largs.ignitexml, con, largs.prefix);
     }
   }
