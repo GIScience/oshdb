@@ -58,11 +58,6 @@ public class TransformerNode extends Transformer {
 
       final LongFunction<byte[]> toByteArray = baseId -> {
         try {
-
-          if (id == 25094468) {
-            System.out.println("here");
-          }
-
           TransformOSHNode.build(baData, baRecord, baAux, nodes,
               baseId, 0L, baseLongitude, baseLatitude);
 
