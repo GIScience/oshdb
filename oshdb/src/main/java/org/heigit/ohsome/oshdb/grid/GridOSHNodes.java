@@ -14,6 +14,9 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Create a new {@code GridOSHNode} while rebasing the input nodes.
+   */
   public static GridOSHNodes rebase(final long id, final int level, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
       final List<OSHNode> list) throws IOException {

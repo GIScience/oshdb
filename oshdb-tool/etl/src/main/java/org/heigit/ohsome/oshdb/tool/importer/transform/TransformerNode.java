@@ -32,8 +32,6 @@ public class TransformerNode extends Transformer {
     return OSMType.NODE;
   }
 
-  private final long[] lastDataSize = new long[2];
-
   @Override
   public void transform(long id, List<Entity> versions) {
 
@@ -67,7 +65,7 @@ public class TransformerNode extends Transformer {
             System.out.println("here");
           }
 
-          final TransformOSHNode osh = TransformOSHNode.build(baData, baRecord, baAux, nodes,
+          TransformOSHNode.build(baData, baRecord, baAux, nodes,
               baseId, 0L, baseLongitude, baseLatitude);
 
           final byte[] record = new byte[baRecord.length()];

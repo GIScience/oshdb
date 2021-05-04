@@ -1,23 +1,18 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
@@ -181,27 +176,10 @@ public class TransformReader {
   public static void load(List<Grid<TransformOSHWay>> zoomLevel, int zoom,
       Long2ObjectMap<OSHNode> nodes) {
     Grid<TransformOSHWay> grid = zoomLevel.get(zoom);
-    List<Long> toRemove = new ArrayList<>();
     if (grid != null) {
       System.out.println("remove " + zoom);
       zoomLevel.set(zoom, null);
     }
-  }
-
-  /*
-   * private static Roaring64NavigableMap getUpperLevelRefMap(List<Grid<TransformOSHWay>> zoomLevel,
-   * int zoom) { while(zoom > 0){ Grid<TransformOSHWay> grid = zoomLevel.get(--zoom); if(grid !=
-   * null) return grid.refMap; } return null; }
-   */
-
-  private static Set<Long> getUpperLevelRefMapSet(List<Grid<TransformOSHWay>> zoomLevel, int zoom) {
-    while (zoom > 0) {
-      Grid<TransformOSHWay> grid = zoomLevel.get(--zoom);
-      if (grid != null) {
-        return grid.refMapSet;
-      }
-    }
-    return null;
   }
 
   public static class Grid<T> {

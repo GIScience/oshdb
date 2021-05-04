@@ -47,6 +47,9 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates an instances of {@code OSHWayImpl} from the given byte array.
+   */
   public static OSHWayImpl instance(final byte[] data, final int offset, final int length,
       final long baseId, final long baseTimestamp, final long baseLongitude,
       final long baseLatitude) throws IOException {
@@ -212,6 +215,9 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     return build(versions, nodes, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates a {@code OSHway} bases on the given list of way versions.
+   */
   public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude)
       throws IOException {
@@ -221,6 +227,10 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
         baseLongitude, baseLatitude);
   }
 
+  /**
+   * Creates a {@code OSHway} bases on the given list of way versions,
+   * but returns the underlying ByteBuffer instead of an instance of {@code OSHWay}.
+   */
   public static ByteBuffer buildRecord(List<OSMWay> versions, Collection<OSHNode> nodes,
       final long baseId, final long baseTimestamp, final long baseLongitude,
       final long baseLatitude) throws IOException {

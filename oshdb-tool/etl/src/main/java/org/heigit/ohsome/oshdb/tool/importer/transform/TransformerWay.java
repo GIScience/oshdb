@@ -37,8 +37,6 @@ public class TransformerWay extends Transformer {
     return OSMType.WAY;
   }
 
-  private final long[] lastDataSize = new long[2];
-
   @Override
   public void transform(long id, List<Entity> versions) {
     List<OSMWay> ways = new ArrayList<>(versions.size());
@@ -59,7 +57,7 @@ public class TransformerWay extends Transformer {
     try {
       final LongFunction<byte[]> toByteArray = baseId -> {
         try {
-          TransformOSHWay osh = TransformOSHWay.build(baData, baRecord, wrapperNodeData, ways,
+          TransformOSHWay.build(baData, baRecord, wrapperNodeData, ways,
               nodeIds, baseId, 0, 0, 0);
 
           final byte[] record = new byte[baRecord.length()];

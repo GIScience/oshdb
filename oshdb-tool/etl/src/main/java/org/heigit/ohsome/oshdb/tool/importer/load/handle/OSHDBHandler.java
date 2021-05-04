@@ -177,8 +177,6 @@ public abstract class OSHDBHandler extends LoaderHandler {
     List<OSHRelation> gridRelation = entities.stream().map(osh2 -> {
       List<OSMRelation> versions = osh2.stream().collect(Collectors.toList());
 
-      long rid = versions.get(0).getId();
-
       List<OSHNode> nodesForThisRelation = new ArrayList<>(osh2.getNodeIds().length);
       for (long id : osh2.getNodeIds()) {
         OSHNode node = idOshMap.get(id);

@@ -65,6 +65,9 @@ public abstract class OSMEntity implements OSHDBTemporal {
     return (version >= 0);
   }
 
+  /**
+   * Returns a "view" of the current osm tags.
+   */
   public Iterable<OSHDBTag> getTags() {
     return new Iterable<OSHDBTag>() {
       @Nonnull
@@ -96,6 +99,9 @@ public abstract class OSMEntity implements OSHDBTemporal {
     return this.hasTagKey(key.toInt());
   }
 
+  /**
+   * Test this {@code OSMEntity} if it contains a certain tag key(integer).
+   */
   public boolean hasTagKey(int key) {
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {
@@ -138,6 +144,9 @@ public abstract class OSMEntity implements OSHDBTemporal {
     return false;
   }
 
+  /**
+   * Test for a certain key/value combination.
+   */
   public boolean hasTagValue(int key, int value) {
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {

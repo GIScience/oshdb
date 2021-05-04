@@ -34,6 +34,9 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates an instances of {@code OSHNodeImpl} from the given byte array.
+   */
   public static OSHNodeImpl instance(final byte[] data, final int offset, final int length,
       final long baseNodeId, final long baseTimestamp, final long baseLongitude,
       final long baseLatitude) throws IOException {
@@ -182,6 +185,9 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     return build(versions, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates a {@code OSHNode} bases on the given list of node versions.
+   */
   public static OSHNodeImpl build(List<OSMNode> versions, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude)
       throws IOException {
@@ -191,6 +197,10 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
         baseLatitude);
   }
 
+  /**
+   * Creates a {@code OSHNode} bases on the given list of node versions, but returns the underlying
+   * ByteBuffer instead of an instance of {@code OSHNode}.
+   */
   public static ByteBuffer buildRecord(List<OSMNode> versions, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude)
       throws IOException {

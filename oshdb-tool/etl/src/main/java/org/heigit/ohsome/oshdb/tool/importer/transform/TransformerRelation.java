@@ -31,6 +31,9 @@ public class TransformerRelation extends Transformer {
   final SortedLong2LongMap nodeToCell;
   final SortedLong2LongMap wayToCell;
 
+  /**
+   * Creates a new {@code TransfomerRelation}.
+   */
   public TransformerRelation(long maxMemory, int maxZoom, Path workDirectory,
       TagToIdMapper tagToIdMapper, RoleToIdMapper role2Id, SortedLong2LongMap nodeToCell,
       SortedLong2LongMap wayToCell, int workerId) throws IOException {
@@ -83,7 +86,7 @@ public class TransformerRelation extends Transformer {
     try {
       final LongFunction<byte[]> toByteArray = baseId -> {
         try {
-          TransfomRelation osh = TransfomRelation.build(wrapperData, wrapperRecord, wrapperNodeData,
+          TransfomRelation.build(wrapperData, wrapperRecord, wrapperNodeData,
               entities, nodeIds, wayIds, baseId, 0, 0, 0);
 
           final byte[] record = new byte[wrapperRecord.length()];

@@ -11,6 +11,9 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   private final long longitude;
   private final long latitude;
 
+  /**
+   * Creates a new {@code OSMNode} instance.
+   */
   public OSMNode(final long id, final int version, final long timestamp, final long changeset,
       final int userId, final int[] tags, final long longitude, final long latitude) {
     super(id, version, timestamp, changeset, userId, tags);

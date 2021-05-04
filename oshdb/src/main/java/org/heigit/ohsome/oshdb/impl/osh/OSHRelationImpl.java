@@ -56,6 +56,9 @@ public class OSHRelationImpl extends OSHEntityImpl
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates an instances of {@code OSHRelationImpl} from the given byte array.
+   */
   public static OSHRelationImpl instance(final byte[] data, final int offset, final int length,
       final long baseId, final long baseTimestamp, final long baseLongitude,
       final long baseLatitude) throws IOException {
@@ -302,6 +305,9 @@ public class OSHRelationImpl extends OSHEntityImpl
     return build(versions, nodes, ways, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates a {@code OSHRelation} bases on the given list of relation versions.
+   */
   public static OSHRelationImpl build(final List<OSMRelation> versions,
       final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
@@ -312,6 +318,10 @@ public class OSHRelationImpl extends OSHEntityImpl
         baseLongitude, baseLatitude);
   }
 
+  /**
+   * Creates a {@code OSHRelation} bases on the given list of relation versions,
+   * but returns the underlying ByteBuffer instead of an instance of {@code OSHRelation}.
+   */
   public static ByteBuffer buildRecord(final List<OSMRelation> versions,
       final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,

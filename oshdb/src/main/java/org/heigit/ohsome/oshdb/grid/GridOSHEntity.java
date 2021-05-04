@@ -24,6 +24,9 @@ public abstract class GridOSHEntity
   protected final int[] index;
   protected final byte[] data;
 
+  /**
+   * Base constructor {@code GridOSHEntity}.
+   */
   public GridOSHEntity(final long id, final int level, final long baseId, final long baseTimestamp,
       final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
 
@@ -45,7 +48,7 @@ public abstract class GridOSHEntity
   public int getLevel() {
     return level;
   }
-  
+
   public abstract Iterable<? extends OSHEntity> getEntities();
 
   @Override

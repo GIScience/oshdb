@@ -156,6 +156,16 @@ public class XYGrid implements Serializable {
         (long) (latitude * OSHDB.GEOM_PRECISION_TO_LONG));
   }
 
+  /**
+   * Returns the covering tile of a coordinate. Coordinates lying on borders will be placed in the
+   * northern and/or eastern tile except for coordinates on the North Pole which are placed in the
+   * northernmost tile.
+   *
+   * @param longitude Longitude in osm-coordinate system (long integer)
+   * @param latitude Latitude in osm-coordinate system (long integer)
+   *
+   * @see XYGrid.getId
+   */
   public long getId(long longitude, long latitude) {
     // return -1, if point is outside geographical coordinate range
     if ((longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG))

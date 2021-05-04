@@ -31,7 +31,7 @@ public class ByteArrayWrapper {
    *
    * @param buffer The buffer to be wrapped
    * @param offset The offset within the buffer
-   * @param len The length of bytes which should be included
+   * @param len    The length of bytes which should be included
    */
   public ByteArrayWrapper(final byte[] buffer, final int offset, final int len) {
     this.buffer = buffer;
@@ -60,7 +60,10 @@ public class ByteArrayWrapper {
     return bufferSize - bufferPos;
   }
 
-  /** Read an {@code sint32} field value from the stream. */
+  /**
+   * Read an {@code sint32} field value from the stream.
+   *
+   */
   public int readS32() throws IOException {
     return decodeZigZag32(readRawVarint32());
   }
@@ -69,12 +72,16 @@ public class ByteArrayWrapper {
     return readS32() + last;
   }
 
-  /** Read a {@code uint32} field value from the stream. */
+  /**
+   * Read a {@code uint32} field value from the stream.
+   */
   public int readU32() throws IOException {
     return readRawVarint32();
   }
 
-  /** Read an {@code sint64} field value from the stream. */
+  /**
+   * Read an {@code sint64} field value from the stream.
+   */
   public long readS64() throws IOException {
     return decodeZigZag64(readRawVarint64());
   }
@@ -83,7 +90,9 @@ public class ByteArrayWrapper {
     return readS64() + last;
   }
 
-  /** Read a {@code uint64} field value from the stream. */
+  /**
+   * Read a {@code uint64} field value from the stream.
+   */
   public long readU64() throws IOException {
     return readRawVarint64();
   }

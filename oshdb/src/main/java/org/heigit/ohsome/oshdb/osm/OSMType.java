@@ -9,6 +9,10 @@ public enum OSMType {
     this.value = value;
   }
 
+  /**
+   * Returns an {@code OSMType} instance represented by the given integer value (0-2), or throws an
+   * exception otherwise.
+   */
   public static OSMType fromInt(final int value) {
     switch (value) {
       case 0:

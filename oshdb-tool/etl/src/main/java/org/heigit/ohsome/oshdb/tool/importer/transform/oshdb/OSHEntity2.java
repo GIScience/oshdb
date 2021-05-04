@@ -14,8 +14,6 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
 public abstract class OSHEntity2 {
   protected final byte[] data;
-  private final int offset;
-  private final int length;
 
   protected final long baseTimestamp;
   protected final long baseLongitude;
@@ -33,8 +31,6 @@ public abstract class OSHEntity2 {
       final long baseLongitude, final long baseLatitude, final int[] keys, final int dataOffset,
       final int dataLength) {
     this.data = data;
-    this.offset = offset;
-    this.length = length;
 
     this.baseTimestamp = baseTimestamp;
     this.baseLongitude = baseLongitude;

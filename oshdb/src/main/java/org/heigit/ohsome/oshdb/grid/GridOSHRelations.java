@@ -14,6 +14,9 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Creates a new {@code GridOSHRelations} while rebase/compacting the input relations.
+   */
   public static GridOSHRelations compact(final long id, final int level, final long baseId,
           final long baseTimestamp, final long baseLongitude, final long baseLatitude,
           final List<OSHRelation> list) throws IOException {

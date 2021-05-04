@@ -8,7 +8,6 @@ import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.index.XYGrid.IdRange;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,16 +17,9 @@ public class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
-  private XYGrid zero;
-  private XYGrid two;
-  private XYGrid thirty;
-
-  @Before
-  public void setUp() {
-    zero = new XYGrid(0);
-    two = new XYGrid(2);
-    thirty = new XYGrid(30);
-  }
+  private final XYGrid zero = new XYGrid(0);
+  private final XYGrid two = new XYGrid(2);
+  private final XYGrid thirty = new XYGrid(30);
 
   @Test
   public void testGetId_double_double() {
