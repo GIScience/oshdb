@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -122,8 +123,8 @@ public class RxOshPbfReader {
       final long sl;
       final long hl;
 
-      hl = (hardLimit <= 0) ? raf.getChannel().size() : hardLimit;
-      sl = Math.min(((softLimit <= 0) ? raf.getChannel().size() : softLimit), hl);
+      hl = hardLimit <= 0 ? raf.getChannel().size() : hardLimit;
+      sl = Math.min(softLimit <= 0 ? raf.getChannel().size() : softLimit, hl);
 
       if (seekStartPos(raf, pos, sl)) {
         return new PbfChannel(raf, sl, hl, true);
@@ -160,13 +161,13 @@ public class RxOshPbfReader {
       totalBytesRead++;
       int val = 0;
       while (nextByte != -1) {
-        if (((val < SIGNATURE_OSMDATA.length) && (SIGNATURE_OSMDATA[val] == nextByte))
-            || ((val < SIGNATURE_OSMHEADER.length) && (SIGNATURE_OSMHEADER[val] == nextByte))) {
+        if (val < SIGNATURE_OSMDATA.length && SIGNATURE_OSMDATA[val] == nextByte
+            || val < SIGNATURE_OSMHEADER.length && SIGNATURE_OSMHEADER[val] == nextByte) {
 
           pushBackBytes[BLOBHEADER_SIZE_BYTES + val] = (byte) nextByte;
 
-          if ((val == (SIGNATURE_OSMDATA.length - 1))
-              || (val == (SIGNATURE_OSMHEADER.length - 1))) {
+          if (val == SIGNATURE_OSMDATA.length - 1
+              || val == SIGNATURE_OSMHEADER.length - 1) {
             // Full OSMHeader\Data SIGNATURE is found.
             pushBackStream.unread(pushBackBytes, 0, BLOBHEADER_SIZE_BYTES + val + 1);
             totalBytesRead -= BLOBHEADER_SIZE_BYTES + val + 1;
@@ -175,12 +176,12 @@ public class RxOshPbfReader {
           val++;
         } else if (val != 0) {
           // break
-          if ((limit > 0) && (totalBytesRead > limit)) {
+          if (limit > 0 && totalBytesRead > limit) {
             return -1;
           }
 
           val = 0;
-          if ((SIGNATURE_OSMDATA[val] == nextByte) || (SIGNATURE_OSMHEADER[val] == nextByte)) {
+          if (SIGNATURE_OSMDATA[val] == nextByte || SIGNATURE_OSMHEADER[val] == nextByte) {
             pushBackBytes[BLOBHEADER_SIZE_BYTES + val] = (byte) nextByte;
             val++;
           } else {
@@ -256,7 +257,7 @@ public class RxOshPbfReader {
 
         input.raf.close();
       } catch (IOException io) {
-        //TODO check it?
+        throw new UncheckedIOException(io);
       }
     };
   }

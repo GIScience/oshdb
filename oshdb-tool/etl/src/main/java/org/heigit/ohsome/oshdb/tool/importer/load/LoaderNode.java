@@ -18,7 +18,7 @@ import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
 public class LoaderNode extends Loader {
 
-  public static interface Handler {
+  public interface Handler {
     void handleNodeGrid(long cellId, Collection<TransformOSHNode> nodes);
   }
 
@@ -78,7 +78,7 @@ public class LoaderNode extends Loader {
     }
 
     while (reader.hasNext()
-        && (all || (ZGrid.ORDER_DFS_TOP_DOWN.compare(reader.getCellId(), cellId2) <= 0))) {
+        && (all || ZGrid.ORDER_DFS_TOP_DOWN.compare(reader.getCellId(), cellId2) <= 0)) {
       final long cellId = reader.getCellId();
       final int zoom = ZGrid.getZoom(cellId);
       final Set<TransformOSHNode> nodes = reader.next();
@@ -113,11 +113,11 @@ public class LoaderNode extends Loader {
   private void store(int zoom) {
     for (int i = maxZoom; i >= zoom; i--) {
       Grid grid = zoomLevel.get(i);
-      if ((grid == null) || (grid.entities == null)) {
+      if (grid == null || grid.entities == null) {
         continue;
       }
 
-      if ((i > maxZoomLevel) || ((grid.entities.size() < minEntitiesPerCell) && (i > 0))) {
+      if (i > maxZoomLevel || grid.entities.size() < minEntitiesPerCell && i > 0) {
         Grid parent = zoomLevel.get(i - 1);
         if (parent.entities == null) {
           parent.cellId = ZGrid.getParent(grid.cellId);

@@ -22,7 +22,6 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
       final List<OSHNode> list) throws IOException {
 
     int offset = 0;
-
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final int[] index = new int[list.size()];
     for (int i = 0; i < index.length; i++) {
@@ -56,7 +55,7 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
       @Override
       public OSHNode next() {
         int offset = index[pos];
-        int length = ((pos < index.length - 1) ? index[pos + 1] : data.length) - offset;
+        int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
           return OSHNodeImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,

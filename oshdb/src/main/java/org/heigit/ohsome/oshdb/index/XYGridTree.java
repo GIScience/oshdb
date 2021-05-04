@@ -90,10 +90,9 @@ public class XYGridTree implements Serializable {
    */
   public CellId getInsertId(OSHDBBoundingBox bbox) {
     for (int i = maxLevel; i >= 0; i--) {
-      if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
-        continue;
+      if (gridMap.get(i).getEstimatedIdCount(bbox) <= 2) {
+        return new CellId(i, gridMap.get(i).getId(bbox.getMinLonLong(), bbox.getMinLatLong()));
       }
-      return new CellId(i, gridMap.get(i).getId(bbox.getMinLonLong(), bbox.getMinLatLong()));
     }
     return null;
   }
@@ -231,7 +230,7 @@ public class XYGridTree implements Serializable {
 
           @Override
           public boolean hasNext() {
-            return (level < maxLevel) || rows.hasNext();
+            return level < maxLevel || rows.hasNext();
           }
 
           @Override

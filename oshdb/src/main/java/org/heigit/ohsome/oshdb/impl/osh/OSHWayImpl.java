@@ -96,17 +96,17 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     final int dataOffset = nodeDataOffset + nodeDataLength;
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHWayImpl(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude,
+    return new OSHWayImpl(data, offset, length, baseTimestamp, baseLongitude, baseLatitude,
         header, id, minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength, nodeIndex,
         nodeDataOffset, nodeDataLength);
   }
 
-  private OSHWayImpl(final byte[] data, final int offset, final int length, final long baseId,
+  private OSHWayImpl(final byte[] data, final int offset, final int length,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude, byte header,
       final long id, long minLon, long minLat, long maxLon, long maxLat, int[] keys,
       final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
       final int nodeDataLength) {
-    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+    super(data, offset, length, baseTimestamp, baseLongitude, baseLatitude, header, id,
         minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
@@ -180,7 +180,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
               }
             }
 
-            return new OSMWay(id, version, (baseTimestamp + timestamp), changeset, userId,
+            return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId,
                 keyValues, members);
 
           } catch (IOException e) {
@@ -190,9 +190,8 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
         }
       };
     } catch (IOException e1) {
-      // no-op
+      return Collections.emptyIterator();
     }
-    return Collections.emptyIterator();
   }
 
   @Override
@@ -202,7 +201,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
       int length =
-          ((index < (nodeIndex.length - 1)) ? nodeIndex[index + 1] : nodeDataLength) - offset;
+          (index < nodeIndex.length - 1 ? nodeIndex[index + 1] : nodeDataLength) - offset;
       OSHNode n = OSHNodeImpl.instance(data, nodeDataOffset + offset, length, lastId, 0,
           baseLongitude, baseLatitude);
       lastId = n.getId();

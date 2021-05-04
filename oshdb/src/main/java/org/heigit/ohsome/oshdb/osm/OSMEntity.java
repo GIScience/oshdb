@@ -62,7 +62,7 @@ public abstract class OSMEntity implements OSHDBTemporal {
   }
 
   public boolean isVisible() {
-    return (version >= 0);
+    return version >= 0;
   }
 
   /**

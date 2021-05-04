@@ -234,7 +234,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
           changeset += changesetList.get(index);
           uid += uidList.get(index);
           userSid += userSidList.get(index);
-          visible = (!visibleList.isEmpty()) ? visibleList.get(index) : true;
+          visible = visibleList.isEmpty() || visibleList.get(index);
         }
 
         List<Tag> tags = new ArrayList<>();
@@ -311,7 +311,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
 
   @SuppressWarnings("rawtypes")
   private boolean hasElements(List l) {
-    if ((l == null) || l.isEmpty()) {
+    if (l == null || l.isEmpty()) {
       return false;
     }
     return true;

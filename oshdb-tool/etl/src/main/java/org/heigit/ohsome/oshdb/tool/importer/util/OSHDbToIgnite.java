@@ -94,7 +94,7 @@ public class OSHDbToIgnite {
         default:
           throw new IllegalArgumentException("unknown cacheName " + cacheName);
       }
-      try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
+      try (ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
         int cnt = 0;
         System.out.println(LocalDateTime.now() + " START loading " + tableName + " into "
             + cache.getName() + " on Ignite");
@@ -109,7 +109,7 @@ public class OSHDbToIgnite {
           @SuppressWarnings("unchecked")
           final T grid = (T) ois.readObject();
           streamer.addData(levelId, grid);
-          if ((++cnt % 10) == 0) {
+          if (++cnt % 10 == 0) {
             streamer.flush();
           }
         }

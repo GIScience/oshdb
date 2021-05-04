@@ -22,7 +22,6 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
           final List<OSHRelation> list) throws IOException {
 
     int offset = 0;
-
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final int[] index = new int[list.size()];
     // TODO user iterator!!
@@ -58,7 +57,7 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
       @Override
       public OSHRelation next() {
         int offset = index[pos];
-        int length = ((pos < index.length - 1) ? index[pos + 1] : data.length) - offset;
+        int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
           return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp,

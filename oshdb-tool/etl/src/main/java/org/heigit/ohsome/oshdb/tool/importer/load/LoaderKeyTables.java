@@ -21,10 +21,10 @@ import org.heigit.ohsome.oshdb.tool.importer.extract.data.ValueFrequency;
 
 public class LoaderKeyTables {
 
-  public static interface Handler {
-    public void loadKeyValues(int id, String key, List<String> values);
+  public interface Handler {
+    void loadKeyValues(int id, String key, List<String> values);
 
-    public void loadRole(int id, String role);
+    void loadRole(int id, String role);
   }
 
   Path workDirectory;
@@ -78,16 +78,14 @@ public class LoaderKeyTables {
     final Function<InputStream, InputStream> input = Functions.identity();
     try (DataInputStream roleIn = new DataInputStream(input.apply(new BufferedInputStream(
         new FileInputStream(workDirectory.resolve("extract_roles").toFile()))))) {
-      try {
-        for (int id = 0; true; id++) {
-          final Role role = Role.read(roleIn);
-          handler.loadRole(id, role.role);
-        }
-      } catch (EOFException e) {
-        // we reached end of file!
+      for (int id = 0; true; id++) {
+        final Role role = Role.read(roleIn);
+        handler.loadRole(id, role.role);
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      if (!(e instanceof EOFException)) {
+        e.printStackTrace();
+      }
     }
   }
 }

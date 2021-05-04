@@ -158,13 +158,13 @@ public class RoleCollector implements Iterable<Role> {
 
     private final ObjectBidirectionalIterator<Entry<String>> roleIterator;
 
-    public static RoleMapReader of(Object2IntAVLTreeMap<String> role2Frequency, boolean remove) {
+    public static RoleMapReader of(Object2IntAVLTreeMap<String> role2Frequency) {
       final ObjectBidirectionalIterator<Entry<String>> roleIterator =
           role2Frequency.object2IntEntrySet().iterator();
-      return new RoleMapReader(roleIterator, remove);
+      return new RoleMapReader(roleIterator);
     }
 
-    private RoleMapReader(ObjectBidirectionalIterator<Entry<String>> roleIterator, boolean remove) {
+    private RoleMapReader(ObjectBidirectionalIterator<Entry<String>> roleIterator) {
       this.roleIterator = roleIterator;
     }
 
@@ -202,14 +202,14 @@ public class RoleCollector implements Iterable<Role> {
           try {
             dataInput.close();
           } catch (Exception e2) {
-            // Exceptions should be ignored
+            e.addSuppressed(e2);
           }
         }
         throw new RuntimeException(e.getMessage());
       }
     }).forEach(iters::add);
     if (role2Frequency.size() > 0) {
-      iters.add(RoleMapReader.of(role2Frequency, true));
+      iters.add(RoleMapReader.of(role2Frequency));
     }
 
     return MergeIterator.of(iters, (a, b) -> a.role.compareTo(b.role), list -> {

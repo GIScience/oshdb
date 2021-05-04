@@ -118,20 +118,20 @@ public class ByteArrayWrapper {
       if ((x = buffer[pos++]) >= 0) {
         bufferPos = pos;
         return x;
-      } else if ((bufferSize - pos) < 9) {
+      } else if (bufferSize - pos < 9) {
         break fastpath;
-      } else if ((x ^= (buffer[pos++] << 7)) < 0L) {
-        x ^= (~0L << 7);
-      } else if ((x ^= (buffer[pos++] << 14)) >= 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14);
-      } else if ((x ^= (buffer[pos++] << 21)) < 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21);
+      } else if ((x ^= buffer[pos++] << 7) < 0L) {
+        x ^= ~0L << 7;
+      } else if ((x ^= buffer[pos++] << 14) >= 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14;
+      } else if ((x ^= buffer[pos++] << 21) < 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21;
       } else {
         int y = buffer[pos++];
         x ^= y << 28;
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
-        if ((y < 0) && (buffer[pos++] < 0) && (buffer[pos++] < 0) && (buffer[pos++] < 0)
-            && (buffer[pos++] < 0) && (buffer[pos++] < 0)) {
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28;
+        if (y < 0 && buffer[pos++] < 0 && buffer[pos++] < 0 && buffer[pos++] < 0
+            && buffer[pos++] < 0 && buffer[pos++] < 0) {
           break fastpath; // Will throw malformedVarint()
         }
       }
@@ -167,31 +167,29 @@ public class ByteArrayWrapper {
       if ((y = buffer[pos++]) >= 0) {
         bufferPos = pos;
         return y;
-      } else if ((bufferSize - pos) < 9) {
+      } else if (bufferSize - pos < 9) {
         break fastpath;
-      } else if ((x = y ^ (buffer[pos++] << 7)) < 0L) {
-        x ^= (~0L << 7);
-      } else if ((x ^= (buffer[pos++] << 14)) >= 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14);
-      } else if ((x ^= (buffer[pos++] << 21)) < 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21);
-      } else if ((x ^= ((long) buffer[pos++] << 28)) >= 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
-      } else if ((x ^= ((long) buffer[pos++] << 35)) < 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35);
-      } else if ((x ^= ((long) buffer[pos++] << 42)) >= 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42);
-      } else if ((x ^= ((long) buffer[pos++] << 49)) < 0L) {
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42)
-            ^ (~0L << 49);
+      } else if ((x = y ^ buffer[pos++] << 7) < 0L) {
+        x ^= ~0L << 7;
+      } else if ((x ^= buffer[pos++] << 14) >= 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14;
+      } else if ((x ^= buffer[pos++] << 21) < 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21;
+      } else if ((x ^= (long) buffer[pos++] << 28) >= 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28;
+      } else if ((x ^= (long) buffer[pos++] << 35) < 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35;
+      } else if ((x ^= (long) buffer[pos++] << 42) >= 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42;
+      } else if ((x ^= (long) buffer[pos++] << 49) < 0L) {
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42
+            ^ ~0L << 49;
       } else {
-        x ^= ((long) buffer[pos++] << 56);
-        x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42)
-            ^ (~0L << 49) ^ (~0L << 56);
-        if (x < 0L) {
-          if (buffer[pos++] < 0L) {
-            break fastpath; // Will throw malformedVarint()
-          }
+        x ^= (long) buffer[pos++] << 56;
+        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42
+            ^ ~0L << 49 ^ ~0L << 56;
+        if (x < 0L && buffer[pos++] < 0L) {
+          break fastpath; // Will throw malformedVarint()
         }
       }
       bufferPos = pos;
@@ -233,7 +231,7 @@ public class ByteArrayWrapper {
    * @return
    */
   public byte[] readByteArray(int size) throws IOException {
-    if ((size <= (this.bufferSize - this.bufferPos)) && (size > 0)) {
+    if (size <= this.bufferSize - this.bufferPos && size > 0) {
       byte[] result = Arrays.copyOfRange(this.buffer, this.bufferPos, this.bufferPos + size);
       this.bufferPos += size;
       return result;
@@ -251,7 +249,7 @@ public class ByteArrayWrapper {
    * @return A signed 32-bit integer.
    */
   public static int decodeZigZag32(final int n) {
-    return (n >>> 1) ^ -(n & 1);
+    return n >>> 1 ^ -(n & 1);
   }
 
   /**
@@ -264,7 +262,7 @@ public class ByteArrayWrapper {
    * @return A signed 64-bit integer.
    */
   public static long decodeZigZag64(final long n) {
-    return (n >>> 1) ^ -(n & 1);
+    return n >>> 1 ^ -(n & 1);
   }
 
   static InvalidProtocolBufferException malformedVarint() {

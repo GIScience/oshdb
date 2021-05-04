@@ -23,7 +23,7 @@ public class CellId implements Serializable {
    * @param id &gt;= 0
    */
   public CellId(int zoomLevel, long id) {
-    if ((id < -1) || (zoomLevel < 0) || (zoomLevel > 30)) {
+    if (id < -1 || zoomLevel < 0 || zoomLevel > 30) {
       LOG.error("zoomLevel or id out of range");
       // todo: what about the "-1" cell for garbage data.
       // todo: also check for id<=2^zoomLevel
@@ -34,7 +34,7 @@ public class CellId implements Serializable {
   }
 
   public static long getLevelId(int zoomlevel, long id) {
-    return (((long) zoomlevel) << 56) | id;
+    return (long) zoomlevel << 56 | id;
   }
 
   public long getLevelId() {
@@ -68,14 +68,14 @@ public class CellId implements Serializable {
       return false;
     }
     CellId cellId = (CellId) o;
-    return (cellId.getId() == this.id) && (cellId.getZoomLevel() == this.zoomLevel);
+    return cellId.getId() == this.id && cellId.getZoomLevel() == this.zoomLevel;
   }
 
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = (47 * hash) + this.zoomLevel;
-    hash = (47 * hash) + (int) (this.id ^ (this.id >>> 32));
+    hash = 47 * hash + this.zoomLevel;
+    hash = 47 * hash + (int) (this.id ^ this.id >>> 32);
     return hash;
   }
 

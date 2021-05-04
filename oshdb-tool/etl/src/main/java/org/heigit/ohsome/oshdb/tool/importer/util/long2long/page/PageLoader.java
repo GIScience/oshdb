@@ -46,8 +46,10 @@ public class PageLoader extends CacheLoader<Integer, Page> {
           final int rawSize = dataInput.readInt();
           this.pageIndex.put(Integer.valueOf(pageNumber), new PageLocation(offset, size, rawSize));
         }
-      } catch (EOFException e) {
-        // no-op
+      } catch (IOException e) {
+        if (!(e instanceof EOFException)) {
+          throw e;
+        }
       }
     }
   }
@@ -78,7 +80,7 @@ public class PageLoader extends CacheLoader<Integer, Page> {
     ByteArrayWrapper wrapper =
         ByteArrayWrapper.newInstance(bytes, (int) input.position(), input.available());
 
-    if (bitmap.getLongCardinality() > (pageSize / 2)) {
+    if (bitmap.getLongCardinality() > pageSize / 2) {
       long[] pageContent = new long[pageSize];
 
       Arrays.fill(pageContent, -1);

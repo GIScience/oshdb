@@ -18,7 +18,7 @@ public interface OSMEntity extends OSHDBTemporal {
   int[] getTags();
 
 
-  public default String asString() {
+  default String asString() {
     return String.format("ID:%d V:%d TS:%d CS:%d VIS:%s UID:%d TAGS:%S", getId(), getVersion(),
         getEpochSecond(), getChangeset(), isVisible(), getUserId(),
         Arrays.toString(getTags()));

@@ -37,7 +37,7 @@ public class BlobToOSHIterator implements Iterator<Osh> {
     }
 
     nextEntity = primitiveIterator.next();
-    if ((nextEntity.getVersion() != 1) && blob.isFirstBlob && skipFirst) {
+    if (nextEntity.getVersion() != 1 && blob.isFirstBlob && skipFirst) {
       // skip next versions of the same id
       System.out.println("skip " + nextEntity);
       final long skip = nextEntity.getId();
@@ -55,7 +55,7 @@ public class BlobToOSHIterator implements Iterator<Osh> {
 
   @Override
   public boolean hasNext() {
-    return (next != null);
+    return next != null;
   }
 
   @Override

@@ -32,7 +32,6 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
       offset += buffer.remaining();
     }
     final byte[] data = out.toByteArray();
-
     return new GridOSHWays(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index,
         data);
   }
@@ -55,7 +54,7 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
       @Override
       public OSHWay next() {
         int offset = index[pos];
-        int length = ((pos < (index.length - 1)) ? index[pos + 1] : data.length) - offset;
+        int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
         try {
           return OSHWayImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,

@@ -102,10 +102,10 @@ public class XYGrid implements Serializable {
     int x = (int) (id % grid.zoompow);
     int y = (int) ((id - x) / grid.zoompow);
     long topRightId = id;
-    if (x < (grid.zoompow - 1)) {
+    if (x < grid.zoompow - 1) {
       topRightId += 1;
     }
-    if (y < ((grid.zoompow / 2) - 1)) {
+    if (y < grid.zoompow / 2 - 1) {
       topRightId += grid.zoompow;
     }
     OSHDBBoundingBox bbox = grid.getCellDimensions(id);
@@ -139,7 +139,7 @@ public class XYGrid implements Serializable {
     }
 
     zoompow = (long) Math.pow(2, this.zoom);
-    cellWidth = (360.0 / zoompow) * OSHDB.GEOM_PRECISION_TO_LONG;
+    cellWidth = 360.0 / zoompow * OSHDB.GEOM_PRECISION_TO_LONG;
   }
 
   /**
@@ -168,10 +168,10 @@ public class XYGrid implements Serializable {
    */
   public long getId(long longitude, long latitude) {
     // return -1, if point is outside geographical coordinate range
-    if ((longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
-        || (longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
-        || (latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG))
-        || (latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
+    if (longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || latitude < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       return -1L;
     }
 
@@ -193,7 +193,7 @@ public class XYGrid implements Serializable {
     final int x = (int) (longitude / cellWidth);
     final int y = (int) (latitude / cellWidth);
 
-    return (y * zoompow) + x;
+    return y * zoompow + x;
   }
 
   /**
@@ -228,8 +228,8 @@ public class XYGrid implements Serializable {
     int x = (int) (cellId % zoompow);
     int y = (int) ((cellId - x) / zoompow);
     // calculate the values of the south-western most corner
-    long lon = (long) ((x * cellWidth) - (180.0 * OSHDB.GEOM_PRECISION_TO_LONG));
-    long lat = (long) ((y * cellWidth) - (90.0 * OSHDB.GEOM_PRECISION_TO_LONG));
+    long lon = (long) (x * cellWidth - 180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    long lat = (long) (y * cellWidth - 90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
 
     final long minlong = lon;
     final long maxlong = (long) (lon + cellWidth) - 1L;
@@ -239,7 +239,7 @@ public class XYGrid implements Serializable {
     if (zoom == 0) {
       minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
       maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
-    } else if (lat == ((long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - cellWidth)) {
+    } else if (lat == (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - cellWidth) {
       minlat = lat;
       maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     } else {
@@ -316,7 +316,7 @@ public class XYGrid implements Serializable {
         return false;
       }
       IdRange other = (IdRange) obj;
-      return (end == other.end) && (start == other.start);
+      return end == other.end && start == other.start;
     }
 
     @Override
@@ -360,32 +360,32 @@ public class XYGrid implements Serializable {
 
     IdRange outofboundsCell = IdRange.INVALID;
     // test if bbox is on earth or extends further
-    if ((minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
-        || (minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
+    if (minlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || minlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       minlong = (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if ((minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG))
-        || (minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
+    if (minlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || minlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       minlat = (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if ((maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG))
-        || (maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
+    if (maxlong > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || maxlong < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       maxlong = (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
-    if ((maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG))
-        || (maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG))) {
+    if (maxlat > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
+        || maxlat < (long) (-90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       result.add(outofboundsCell);
       maxlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     }
 
     if (minlong == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
-      minlong = ((long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) - 1L;
+      minlong = (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
     }
     if (maxlong == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
-      maxlong = ((long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) - 1L;
+      maxlong = (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
     }
     if (minlat == (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       minlat = (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG) - 1L;
@@ -423,7 +423,7 @@ public class XYGrid implements Serializable {
     }
     // add the regular cell ranges
     for (int row = rowmin; row <= rowmax; row++) {
-      result.add(IdRange.of((row * zoompow) + columnmin, (row * zoompow) + columnmax));
+      result.add(IdRange.of(row * zoompow + columnmin, row * zoompow + columnmax));
     }
     return result;
   }

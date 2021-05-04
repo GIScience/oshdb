@@ -77,10 +77,10 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 79 * hash + (int) (this.minLon ^ (this.minLon >>> 32));
-    hash = 79 * hash + (int) (this.maxLon ^ (this.maxLon >>> 32));
-    hash = 79 * hash + (int) (this.minLat ^ (this.minLat >>> 32));
-    hash = 79 * hash + (int) (this.maxLat ^ (this.maxLat >>> 32));
+    hash = 79 * hash + (int) (this.minLon ^ this.minLon >>> 32);
+    hash = 79 * hash + (int) (this.maxLon ^ this.maxLon >>> 32);
+    hash = 79 * hash + (int) (this.minLat ^ this.minLat >>> 32);
+    hash = 79 * hash + (int) (this.maxLat ^ this.maxLat >>> 32);
     return hash;
   }
 

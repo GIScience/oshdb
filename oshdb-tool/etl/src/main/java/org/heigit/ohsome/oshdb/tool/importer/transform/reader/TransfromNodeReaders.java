@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.reader;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,7 @@ public class TransfromNodeReaders implements Closeable {
       try {
         reader.close();
       } catch (IOException e) {
-        //TODO no-op
+        throw new UncheckedIOException(e);
       }
     });
   }
@@ -75,7 +76,7 @@ public class TransfromNodeReaders implements Closeable {
   public Set<TransformOSHNode> next() {
     next.add(queue.poll());
     final long cellId = next.get(0).getCellId();
-    while (!queue.isEmpty() && (cellId == queue.peek().cellId)) {
+    while (!queue.isEmpty() && cellId == queue.peek().cellId) {
       next.add(queue.poll());
     }
     // final int size = next.stream().mapToInt(TransformReader::getSize).sum();

@@ -17,6 +17,9 @@ public class ZGrid {
   private final int maxZoom;
   private static final OSHDBBoundingBox zeroBoundingBox = new OSHDBBoundingBox(0, 0, 0, 0);
 
+  /**
+   * Creates a {@code ZGrid} index based on maximal Zoom.
+   */
   public ZGrid(int maxZoom) {
     if (maxZoom < 1) {
       throw new IllegalArgumentException("maxZoom must be >= 1 but is " + maxZoom);
@@ -61,7 +64,7 @@ public class ZGrid {
       y[0] = minLat / cellWidth;
       y[1] = maxLat / cellWidth;
 
-      if ((x[0] == x[1]) && (y[0] == y[1])) {
+      if (x[0] == x[1] && y[0] == y[1]) {
         break;
       }
       zoom -= 1;
@@ -80,7 +83,7 @@ public class ZGrid {
   }
 
   public static long addZoomToId(long id, int zoom) {
-    return id + (zoom * ZOOM_FACTOR);
+    return id + zoom * ZOOM_FACTOR;
   }
 
   public static long getIdWithoutZoom(long zid) {
@@ -97,7 +100,7 @@ public class ZGrid {
       return zid;
     }
     final long diff = zoom - parentZoom;
-    final long id = (getIdWithoutZoom(zid) >>> (diff * 2));
+    final long id = getIdWithoutZoom(zid) >>> diff * 2;
 
     return addZoomToId(id, parentZoom);
   }
@@ -122,9 +125,9 @@ public class ZGrid {
     long[] xy = getXy(id);
 
     final long minLon = denormalizeLon(xy[0] * cellWidth);
-    final long maxLon = (minLon + cellWidth) - 1;
+    final long maxLon = minLon + cellWidth - 1;
     final long minLat = denormalizeLat(xy[1] * cellWidth);
-    final long maxLat = (minLat + cellWidth) - 1;
+    final long maxLat = minLat + cellWidth - 1;
 
     return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
   }
@@ -132,10 +135,10 @@ public class ZGrid {
   private static long[] getXy(long id) {
     long[] xy = new long[2];
     for (long mask = 1, offset = 0;
-        (id >= (1 << offset)) && (mask < Integer.MAX_VALUE);
+        id >= 1 << offset && mask < Integer.MAX_VALUE;
         mask <<= 1) {
-      xy[0] |= (id >> offset++) & mask;
-      xy[1] |= (id >> offset) & mask;
+      xy[0] |= id >> offset++ & mask;
+      xy[1] |= id >> offset & mask;
     }
     return xy;
   }
@@ -144,7 +147,7 @@ public class ZGrid {
     if (delta == 0) {
       return maxZoom;
     }
-    return Math.min(63 - Long.numberOfLeadingZeros((space / (delta))), maxZoom);
+    return Math.min(63 - Long.numberOfLeadingZeros(space / delta), maxZoom);
   }
 
   private static long morton(long x, long y) {
@@ -162,7 +165,7 @@ public class ZGrid {
     int mask = 1;
     for (int i = 0; i < n; i++) {
       z |= (x & mask) << i;
-      z |= (y & mask) << (1 + i);
+      z |= (y & mask) << 1 + i;
       mask <<= 1;
     }
     return z;
@@ -185,14 +188,14 @@ public class ZGrid {
   }
 
   private static boolean validateLon(long lon) {
-    if ((lon < 0) || (lon > space)) {
+    if (lon < 0 || lon > space) {
       return false;
     }
     return true;
   }
 
   private static boolean validateLat(long lat) {
-    if ((lat < 0) || (lat > (space / 2))) {
+    if (lat < 0 || lat > space / 2) {
       return false;
     }
     return true;
@@ -200,7 +203,7 @@ public class ZGrid {
 
   public static final Comparator<Long> ORDER_DFS_TOP_DOWN = (a, b) -> {
     if (a == -1) {
-      return (b == -1) ? 0 : -1;
+      return b == -1 ? 0 : -1;
     }
     if (b == -1) {
       return 1;
@@ -218,16 +221,16 @@ public class ZGrid {
     final long y;
     final int prio;
     if (aZ < bZ) {
-      x = aId << (DIMENSION * deltaZ);
+      x = aId << DIMENSION * deltaZ;
       y = bId;
       prio = -1;
     } else {
       x = aId;
-      y = bId << (DIMENSION * deltaZ);
+      y = bId << DIMENSION * deltaZ;
       prio = 1;
     }
     final int r = Long.compare(x, y);
-    return (r == 0) ? prio : r;
+    return r == 0 ? prio : r;
   };
 
   public static final Comparator<Long> ORDER_DFS_BOTTOM_UP = (a, b) -> {
@@ -245,15 +248,15 @@ public class ZGrid {
 
     if (aZ < bZ) {
       x = aId;
-      y = bId >>> (DIMENSION * deltaZ);
+      y = bId >>> DIMENSION * deltaZ;
       prio = 1;
     } else {
-      x = aId >>> (DIMENSION * deltaZ);;
+      x = aId >>> DIMENSION * deltaZ;
       y = bId;
       prio = -1;
     }
     final int r = Long.compare(x, y);
-    return (r == 0) ? prio : r;
+    return r == 0 ? prio : r;
   };
 
 }

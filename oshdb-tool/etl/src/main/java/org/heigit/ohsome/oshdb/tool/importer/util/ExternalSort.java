@@ -119,7 +119,7 @@ public class ExternalSort<T> {
       batch.add(next);
       currentSize += estimator.applyAsLong(next);
     }
-    List<Iterator<T>> merge = new ArrayList<>(((batches != null) ? batches.size() : 0) + 1);
+    List<Iterator<T>> merge = new ArrayList<>((batches != null ? batches.size() : 0) + 1);
     if (batches != null) {
       for (File file : batches) {
         InputStream in = input.apply(new BufferedInputStream(new FileInputStream(file)));
@@ -193,7 +193,7 @@ public class ExternalSort<T> {
         try {
           input.close();
         } catch (IOException e1) {
-          // no-opt
+          e.addSuppressed(e1);
         }
         closed = true;
       }

@@ -50,7 +50,7 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
 
 
   public boolean equalsTo(OSMNode o) {
-    return super.equalsTo(o) && (longitude == o.longitude) && (latitude == o.latitude);
+    return super.equalsTo(o) && longitude == o.longitude && latitude == o.latitude;
   }
 
   @Override

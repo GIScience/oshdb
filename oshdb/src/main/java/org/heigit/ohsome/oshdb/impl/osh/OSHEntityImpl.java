@@ -48,12 +48,12 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> 
     }
 
     protected void build(OSMEntity version, byte changed) throws IOException {
-      int v = (version.getVersion() * (!version.isVisible() ? -1 : 1));
+      int v = version.getVersion() * (!version.isVisible() ? -1 : 1);
       output.writeS32(v - lastVersion);
       lastVersion = v;
 
-      output.writeS64((version.getEpochSecond() - lastTimestamp) - baseTimestamp);
-      if (!firstVersion && (lastTimestamp < version.getEpochSecond())) {
+      output.writeS64(version.getEpochSecond() - lastTimestamp - baseTimestamp);
+      if (!firstVersion && lastTimestamp < version.getEpochSecond()) {
         timestampsNotInOrder = true;
       }
       lastTimestamp = version.getEpochSecond();
@@ -83,7 +83,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> 
         output.writeU32(keyValues.length);
         for (int kv = 0; kv < keyValues.length; kv++) {
           output.writeU32(keyValues[kv]);
-          if ((kv % 2) == 0) {
+          if (kv % 2 == 0) {
             keySet.add(Integer.valueOf(keyValues[kv]));
           }
         }
@@ -112,7 +112,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> 
   protected final int dataOffset;
   protected final int dataLength;
 
-  protected OSHEntityImpl(final byte[] data, final int offset, final int length, final long baseId,
+  protected OSHEntityImpl(final byte[] data, final int offset, final int length,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
       final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat,
       final int[] keys, final int dataOffset, final int dataLength) {
@@ -140,7 +140,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> 
    * Return the underlying data/byte array and creates a copy if necessary.
    */
   public byte[] getData() {
-    if ((offset == 0) && (length == data.length)) {
+    if (offset == 0 && length == data.length) {
       return data;
     }
     byte[] result = new byte[length];

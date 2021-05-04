@@ -47,7 +47,7 @@ public class TransformerTagRoles {
     final StringToIdMappingImpl[] value2IdMappings;
 
     final Function<InputStream, InputStream> input = Functions.identity();
-    try (final RandomAccessFile raf =
+    try (RandomAccessFile raf =
         new RandomAccessFile(workDirectory.resolve("extract_keyvalues").toFile(), "r")) {
       final FileChannel channel = raf.getChannel();
       try (
@@ -156,16 +156,15 @@ public class TransformerTagRoles {
         InputStream in = input.apply(new BufferedInputStream(
             new FileInputStream(workDirectory.resolve("extract_roles").toFile())));
         DataInputStream dataIn = new DataInputStream(new BufferedInputStream(in))) {
-
-      try {
-        while (true) {
-          final Role role = Role.read(dataIn);
-          final int hash = hashFunction.applyAsInt(role.role);
-          roleHash2Cnt.addTo(hash, 1);
-          roleCount++;
-        }
-      } catch (EOFException e) {
-        // no-op
+      while (true) {
+        final Role role = Role.read(dataIn);
+        final int hash = hashFunction.applyAsInt(role.role);
+        roleHash2Cnt.addTo(hash, 1);
+        roleCount++;
+      }
+    } catch (IOException e) {
+      if (!(e instanceof EOFException)) {
+        throw e;
       }
     }
 

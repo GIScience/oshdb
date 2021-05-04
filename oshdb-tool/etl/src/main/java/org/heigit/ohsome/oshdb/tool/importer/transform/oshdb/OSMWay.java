@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public interface OSMWay extends OSMEntity {
 
-  public OSMMember[] getMembers();
+  OSMMember[] getMembers();
 
   @Override
   default String asString() {

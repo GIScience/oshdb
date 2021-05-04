@@ -169,7 +169,7 @@ public class KeyValueFrequencyCollector implements Iterable<KeyValueFrequency> {
           try {
             dataInput.close();
           } catch (Exception e2) {
-            // Exceptions should be ignored
+            e.addSuppressed(e2);
           }
         }
         throw new RuntimeException(e.getMessage());
@@ -238,7 +238,7 @@ public class KeyValueFrequencyCollector implements Iterable<KeyValueFrequency> {
       final String value = vf.value;
       int freq = vf.freq;
 
-      while (!queue.isEmpty() && (comparator.compare(vf, queue.peek().peek()) == 0)) {
+      while (!queue.isEmpty() && comparator.compare(vf, queue.peek().peek()) == 0) {
         vf = poll();
         freq += vf.freq;
       }

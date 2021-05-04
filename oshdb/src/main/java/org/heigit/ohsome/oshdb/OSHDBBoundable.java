@@ -36,11 +36,11 @@ public interface OSHDBBoundable {
    * @return the intersection between this and {@code other} {@code OSHDBBoundable}
    */
   default boolean intersects(OSHDBBoundable other) {
-    return (other != null)
-        && (getMaxLatLong() >= other.getMinLatLong())
-        && (getMinLatLong() <= other.getMaxLatLong())
-        && (getMaxLonLong() >= other.getMinLonLong())
-        && (getMinLonLong() <= other.getMaxLonLong());
+    return other != null
+        && getMaxLatLong() >= other.getMinLatLong()
+        && getMinLatLong() <= other.getMaxLatLong()
+        && getMaxLonLong() >= other.getMinLonLong()
+        && getMinLonLong() <= other.getMaxLonLong();
   }
 
   /**
@@ -50,11 +50,11 @@ public interface OSHDBBoundable {
    * @return {@code true} if the {@code OSHDBBoundable} is inside
    */
   default boolean coveredBy(OSHDBBoundable other) {
-    return (other != null)
-        && (getMinLatLong() >= other.getMinLatLong())
-        && (getMaxLatLong() <= other.getMaxLatLong())
-        && (getMinLonLong() >= other.getMinLonLong())
-        && (getMaxLonLong() <= other.getMaxLonLong());
+    return other != null
+        && getMinLatLong() >= other.getMinLatLong()
+        && getMaxLatLong() <= other.getMaxLatLong()
+        && getMinLonLong() >= other.getMinLonLong()
+        && getMaxLonLong() <= other.getMaxLonLong();
   }
 
   default boolean isPoint() {

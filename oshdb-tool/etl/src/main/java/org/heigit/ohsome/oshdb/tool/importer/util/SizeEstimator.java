@@ -26,11 +26,9 @@ public class SizeEstimator {
     // string object
     // no harm done here since this is just an approximation.
     String arch = System.getProperty("sun.arch.data.model");
-    if (arch != null) {
-      if (arch.contains("32")) {
+    if (arch != null && arch.contains("32")) {
         // If exists and is 32 bit then we assume a 32bit JVM
         IS_64_BIT_JVM = false;
-      }
     }
     // The sizes below are a bit rough as we don't take into account
     // advanced JVM options such as compressed oops

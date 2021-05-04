@@ -21,7 +21,7 @@ import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
 public class LoaderWay extends Loader {
 
-  public static interface Handler {
+  public interface Handler {
     public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways,
         Collection<TransformOSHNode> nodes);
   }
@@ -144,7 +144,7 @@ public class LoaderWay extends Loader {
         continue;
       }
 
-      if (i > maxZoomLevel || (grid.entities.size() < minEntitiesPerCell && i > 0)) {
+      if (i > maxZoomLevel || grid.entities.size() < minEntitiesPerCell && i > 0) {
         Grid parent = zoomLevel.get(i - 1);
 
         if (parent.entities == null) {
@@ -205,7 +205,7 @@ public class LoaderWay extends Loader {
         final Grid g = zoomLevel.get(i);
         if (g.nodesSet.contains(id)) {
           g.forGrid.add(node);
-          g.nodesSet.remove(id);;
+          g.nodesSet.remove(id);
           break;
         }
       }

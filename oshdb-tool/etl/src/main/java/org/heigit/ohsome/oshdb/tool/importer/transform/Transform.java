@@ -113,7 +113,7 @@ public class Transform {
     if (worker >= workerTotal) {
       throw new IllegalArgumentException("worker must be lesser than totalWorker!");
     }
-    if ((workerTotal > 1) && (step.startsWith("a"))) {
+    if (workerTotal > 1 && step.startsWith("a")) {
       throw new IllegalArgumentException(
           "step all with totalWorker > 1 is not allwod use step (node,way or relation)");
     }
@@ -124,7 +124,7 @@ public class Transform {
     final long availableMemory = availableHeapMemory - Math.max(1 * GB, availableHeapMemory / 3);
 
     System.out.println("Transform:");
-    System.out.println("avaliable memory: " + (availableMemory / 1024L / 1024L) + " mb");
+    System.out.println("avaliable memory: " + availableMemory / 1024L / 1024L + " mb");
 
     final OsmPbfMeta pbfMeta = Extract.pbfMetaData(pbf);
 
@@ -132,16 +132,16 @@ public class Transform {
 
     if (step.startsWith("a") || step.startsWith("n")) {
       long maxMemory = availableMemory - tag2Id.estimatedSize();
-      if (maxMemory < (100 * MB)) {
+      if (maxMemory < 100 * MB) {
         System.out.println("warning: only 100MB memory left for transformation! "
             + "Increase heapsize -Xmx if possible");
       }
-      if (maxMemory < (1 * MB)) {
+      if (maxMemory < 1 * MB) {
         throw new Exception("to few memory left for transformation. "
             + "You need to increase JVM heapsize -Xmx for transforming");
       }
 
-      System.out.println("maxMemory for transformation: " + (maxMemory / 1024L / 1024L) + " mb");
+      System.out.println("maxMemory for transformation: " + maxMemory / 1024L / 1024L + " mb");
       System.out.print("start transforming nodes ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformNodes(pbfMeta, maxZoom,
           tag2Id, worker, workerTotal);
@@ -150,19 +150,19 @@ public class Transform {
 
     if (step.startsWith("a") || step.startsWith("w")) {
       final long mapMemory = availableMemory / 2L;
-      try (final SortedLong2LongMap node2Cell =
+      try (SortedLong2LongMap node2Cell =
           new SortedLong2LongMap(workDir.resolve("transform_idToCell_" + "node"), mapMemory);) {
         long maxMemory = availableMemory - tag2Id.estimatedSize() - mapMemory;
-        if (maxMemory < (100 * MB)) {
+        if (maxMemory < 100 * MB) {
           System.out.println("warning: only 100MB memory left for transformation! "
               + "Increase heapsize -Xmx if possible");
         }
-        if (maxMemory < (1 * MB)) {
+        if (maxMemory < 1 * MB) {
           throw new Exception("to few memory left for transformation. "
               + "You need to increase JVM heapsize -Xmx for transforming");
         }
 
-        System.out.println("maxMemory for transformation: " + (maxMemory / 1024L / 1024L) + " mb");
+        System.out.println("maxMemory for transformation: " + maxMemory / 1024L / 1024L + " mb");
         System.out.print("start transforming ways ...");
         Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformWays(pbfMeta,
             maxZoom, tag2Id, node2Cell, worker, workerTotal);
@@ -175,22 +175,22 @@ public class Transform {
       final long mapMemory = availableMemory / 2L;
       final long mapMemoryNode = mapMemory / 3L;
       try (
-          final SortedLong2LongMap node2Cell = new SortedLong2LongMap(
+          SortedLong2LongMap node2Cell = new SortedLong2LongMap(
               workDir.resolve("transform_idToCell_" + "node"), mapMemoryNode);
-          final SortedLong2LongMap way2Cell = new SortedLong2LongMap(
+          SortedLong2LongMap way2Cell = new SortedLong2LongMap(
               workDir.resolve("transform_idToCell_" + "way"), mapMemory - mapMemoryNode);) {
         long maxMemory =
             availableMemory - tag2Id.estimatedSize() - role2Id.estimatedSize() - mapMemory;
-        if (maxMemory < (100 * MB)) {
+        if (maxMemory < 100 * MB) {
           System.out.println("warning: only 100MB memory left for transformation! "
               + "Increase heapsize -Xmx if possible");
         }
-        if (maxMemory < (1 * MB)) {
+        if (maxMemory < 1 * MB) {
           throw new Exception("to few memory left for transformation. "
               + "You need to increase JVM heapsize -Xmx for transforming");
         }
 
-        System.out.println("maxMemory for transformation: " + (maxMemory / 1024L / 1024L) + " mb");
+        System.out.println("maxMemory for transformation: " + maxMemory / 1024L / 1024L + " mb");
         System.out.print("start transforming relations ...");
         Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformRelations(pbfMeta,
             maxZoom, tag2Id, role2Id, node2Cell, way2Cell, worker, workerTotal);

@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.util.long2long.page;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 import org.roaringbitmap.IntConsumer;
@@ -37,10 +38,9 @@ public class DensePage implements Page {
         try {
           page.cellIds[bit] = data.readS64() + lastValue;
         } catch (IOException e) {
-          // TODO throw unchecked exception
+          throw new UncheckedIOException(e);
         }
         lastValue = page.cellIds[bit];
-
       }
     });
 

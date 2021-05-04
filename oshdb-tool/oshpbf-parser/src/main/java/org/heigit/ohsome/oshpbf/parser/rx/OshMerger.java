@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshpbf.parser.rx;
 
 import io.reactivex.Flowable;
 import io.reactivex.FlowableSubscriber;
-import io.reactivex.internal.fuseable.ConditionalSubscriber;
 import io.reactivex.internal.fuseable.QueueSubscription;
 import io.reactivex.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.plugins.RxJavaPlugins;
@@ -21,11 +20,7 @@ public class OshMerger extends Flowable<Osh> {
 
   @Override
   protected void subscribeActual(Subscriber<? super Osh> actual) {
-    if (actual instanceof ConditionalSubscriber) {
-      // System.out.println("s instanceof ConditionalSubscriber");
-    }
     source.subscribe(new OshMergerSubscriber(actual));
-
   }
 
   private static final class OshMergerSubscriber implements FlowableSubscriber<Osh>, Subscription {
@@ -46,7 +41,7 @@ public class OshMerger extends Flowable<Osh> {
     }
 
     @Override
-    public final void onSubscribe(Subscription s) {
+    public void onSubscribe(Subscription s) {
       if (SubscriptionHelper.validate(this.upstream, s)) {
 
         this.upstream = s;

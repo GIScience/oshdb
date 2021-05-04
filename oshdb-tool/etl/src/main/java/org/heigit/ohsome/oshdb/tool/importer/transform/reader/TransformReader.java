@@ -68,7 +68,7 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
   }
 
   public boolean hasNext() {
-    return (pos + bytes) < end;
+    return pos + bytes < end;
   }
 
   @SuppressWarnings("rawtypes")
@@ -80,7 +80,7 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
       try {
         raf.close();
       } catch (Exception e2) {
-        // Exceptions should be ignored
+        e.addSuppressed(e2);
       }
       throw new RuntimeException(e);
     }

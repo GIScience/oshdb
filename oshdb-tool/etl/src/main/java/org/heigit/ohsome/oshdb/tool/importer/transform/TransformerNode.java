@@ -43,13 +43,11 @@ public class TransformerNode extends Transformer {
         final long zId = getCell(node.getLongitude(), node.getLatitude());
         if (zId >= 0) {
           cellIds.add(zId);
-        } else {
-          // System.err.printf("negative zId! %s%n", node);
         }
       }
       nodes.add(getNode(node));
     }
-    final long cellId = (cellIds.size() > 0) ? findBestFittingCellId(cellIds) : -1;
+    final long cellId = cellIds.size() > 0 ? findBestFittingCellId(cellIds) : -1;
 
     try {
 

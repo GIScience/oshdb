@@ -21,7 +21,7 @@ import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
 public class LoaderRelation extends Loader {
 
-  public static interface Handler {
+  public interface Handler {
     public void handleRelationGrid(long cellId, Collection<TransfomRelation> entities,
         Collection<TransformOSHNode> nodes, Collection<TransformOSHWay> ways);
   }
@@ -154,7 +154,7 @@ public class LoaderRelation extends Loader {
         continue;
       }
 
-      if (i > maxZoomLevel || (grid.entities.size() < minEntitiesPerCell && i > 0)) {
+      if (i > maxZoomLevel || grid.entities.size() < minEntitiesPerCell && i > 0) {
         Grid parent = zoomLevel.get(i - 1);
 
         if (parent.entities == null) {
@@ -215,7 +215,7 @@ public class LoaderRelation extends Loader {
         final Grid g = zoomLevel.get(i);
         if (g.nodesSet.contains(id)) {
           g.nodeforGrid.add(osh);
-          g.nodesSet.remove(id);;
+          g.nodesSet.remove(id);
           break;
         }
       }
@@ -233,7 +233,7 @@ public class LoaderRelation extends Loader {
         final Grid g = zoomLevel.get(i);
         if (g.waysSet.contains(id)) {
           g.wayforGrid.add(osh);
-          g.waysSet.remove(id);;
+          g.waysSet.remove(id);
           break;
         }
       }

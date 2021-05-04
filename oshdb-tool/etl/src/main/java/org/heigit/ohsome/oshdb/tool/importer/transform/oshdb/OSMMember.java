@@ -3,15 +3,15 @@ package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 
 public interface OSMMember {
-  public long getId();
+  long getId();
 
-  public OSMType getType();
+  OSMType getType();
 
-  public int getRoleId();
+  int getRoleId();
 
-  public OSHEntity getEntity();
+  OSHEntity getEntity();
 
-  public default String asString() {
+  default String asString() {
     return String.format("%s:%d (%d)", getType(), getId(), getRoleId());
   }
 }
