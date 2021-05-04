@@ -163,8 +163,6 @@ public class XYGrid implements Serializable {
    *
    * @param longitude Longitude in osm-coordinate system (long integer)
    * @param latitude Latitude in osm-coordinate system (long integer)
-   *
-   * @see XYGrid.getId
    */
   public long getId(long longitude, long latitude) {
     // return -1, if point is outside geographical coordinate range
