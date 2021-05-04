@@ -2,12 +2,12 @@ package org.heigit.ohsome.oshdb.tool.importer.util;
 
 public class SizeEstimator {
 
-  private static int OBJ_HEADER;
-  private static int ARR_HEADER;
-  private static int PADDING;
-  private static int INT_FIELD = 4;
-  private static int OBJ_REF;
-  private static int OBJ_OVERHEAD;
+  private static long OBJ_HEADER;
+  private static long ARR_HEADER;
+  private static long PADDING;
+  private static long INT_FIELD = 4;
+  private static long OBJ_REF;
+  private static long OBJ_OVERHEAD;
   private static boolean IS_64_BIT_JVM;
 
   private static final long AVL_ENTRY_SIZE = 96;
@@ -27,8 +27,8 @@ public class SizeEstimator {
     // no harm done here since this is just an approximation.
     String arch = System.getProperty("sun.arch.data.model");
     if (arch != null && arch.contains("32")) {
-        // If exists and is 32 bit then we assume a 32bit JVM
-        IS_64_BIT_JVM = false;
+      // If exists and is 32 bit then we assume a 32bit JVM
+      IS_64_BIT_JVM = false;
     }
     // The sizes below are a bit rough as we don't take into account
     // advanced JVM options such as compressed oops
@@ -46,7 +46,7 @@ public class SizeEstimator {
   }
 
   public static long estimatedSizeOf(String s) {
-    return (s.length() * 2) + OBJ_OVERHEAD;
+    return s.length() * 2 + OBJ_OVERHEAD;
   }
 
   public static long objOverhead() {
@@ -58,11 +58,11 @@ public class SizeEstimator {
   }
 
   public static long linkedListEntry() {
-    return OBJ_HEADER + (2 * OBJ_REF);
+    return OBJ_HEADER + 2L * OBJ_REF;
   }
 
   public static long linkedList() {
-    return OBJ_HEADER + (3 * OBJ_REF) + INT_FIELD;
+    return OBJ_HEADER + 3L * OBJ_REF + INT_FIELD;
   }
 
   public static long avlTreeEntry() {

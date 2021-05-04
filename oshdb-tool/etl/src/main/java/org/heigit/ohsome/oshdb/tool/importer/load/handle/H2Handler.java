@@ -176,13 +176,15 @@ public class H2Handler extends OSHDBHandler {
       try (Statement stmt = conn.createStatement()) {
 
 
-        try (BufferedReader br =
-            new BufferedReader(new FileReader(workDirectory.resolve("extract_meta").toFile()))) {
+        try (
+            BufferedReader br =
+                new BufferedReader(new FileReader(workDirectory.resolve("extract_meta").toFile()));
+            PreparedStatement insert = conn.prepareStatement(
+                "insert into " + TableNames.T_METADATA.toString() + " (key,value) values (?,?)");) {
           stmt.executeUpdate("drop table if exists " + TableNames.T_METADATA.toString()
               + "; create table if not exists " + TableNames.T_METADATA.toString()
               + "(key varchar primary key, value varchar)");
-          PreparedStatement insert = conn.prepareStatement(
-              "insert into " + TableNames.T_METADATA.toString() + " (key,value) values (?,?)");
+
           String line = null;
           while ((line = br.readLine()) != null) {
             if (line.trim().isEmpty()) {
@@ -213,32 +215,6 @@ public class H2Handler extends OSHDBHandler {
           insert.executeBatch();
         }
 
-
-        PreparedStatement insertKey = null;
-        PreparedStatement insertValue = null;
-        PreparedStatement insertRole = null;
-
-
-        if (!withOutKeyTables) {
-          stmt.executeUpdate("drop table if exists " + TableNames.E_KEY.toString()
-              + "; create table if not exists " + TableNames.E_KEY.toString()
-              + "(id int primary key, txt varchar)");
-          stmt.executeUpdate("drop table if exists " + TableNames.E_KEYVALUE.toString()
-              + "; create table if not exists " + TableNames.E_KEYVALUE.toString()
-              + "(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
-          stmt.executeUpdate("drop table if exists " + TableNames.E_ROLE.toString()
-              + "; create table if not exists " + TableNames.E_ROLE.toString()
-              + "(id int primary key, txt varchar)");
-
-
-          insertKey = conn.prepareStatement(
-              "insert into " + TableNames.E_KEY.toString() + " (id,txt) values (?,?)");
-          insertValue = conn.prepareStatement("insert into " + TableNames.E_KEYVALUE.toString()
-              + " ( keyId, valueId, txt ) values(?,?,?)");
-          insertRole = conn.prepareStatement(
-              "insert into " + TableNames.E_ROLE.toString() + " (id,txt) values(?,?)");
-        }
-
         stmt.executeUpdate("drop table if exists " + TableNames.T_NODES.toString()
             + "; create table if not exists " + TableNames.T_NODES.toString()
             + "(level int, id bigint, data blob,  primary key(level,id))");
@@ -258,46 +234,70 @@ public class H2Handler extends OSHDBHandler {
             ObjectInputStream in = new ObjectInputStream(fileIn)) {
           bitmapWays.readExternal(in);
         }
-        PreparedStatement insertNode = conn.prepareStatement(
-            "insert into " + TableNames.T_NODES.toString() + " (level,id,data) values(?,?,?)");
-        PreparedStatement insertWay = conn.prepareStatement(
-            "insert into " + TableNames.T_WAYS.toString() + " (level,id,data) values(?,?,?)");
-        PreparedStatement insertRelation = conn.prepareStatement(
-            "insert into " + TableNames.T_RELATIONS.toString() + " (level,id,data) values(?,?,?)");
-        LoaderHandler handler = new H2Handler(Roaring64NavigableMap.bitmapOf(), bitmapWays,
-            insertKey, insertValue, insertRole, insertNode, insertWay, insertRelation);
-
-        Stopwatch loadingWatch = Stopwatch.createUnstarted();
-        if (!withOutKeyTables) {
-          LoaderKeyTables keyTables = new LoaderKeyTables(workDirectory, handler);
-          System.out.print("loading tags ... ");
-          loadingWatch.reset().start();
-          keyTables.loadTags();
-          System.out.println(" done! " + loadingWatch);
-          System.out.print("loading roles ...");
-          loadingWatch.reset().start();
-          keyTables.loadRoles();
-          System.out.println(" done! " + loadingWatch);
-        }
-
         try (
-            LoaderNode node = new LoaderNode(workDirectory, handler, minNodesPerGrid,
-                onlyNodesWithTags, maxZoomLevel);
-            LoaderWay way =
-                new LoaderWay(workDirectory, handler, minWaysPerGrid, node, maxZoomLevel);
-            LoaderRelation rel = new LoaderRelation(workDirectory, handler, minRelationPerGrid,
-                node, way, maxZoomLevel);) {
-          System.out.print("loading to grid ...");
-          loadingWatch.reset().start();
-          rel.load();
+            PreparedStatement insertNode = conn.prepareStatement(
+                "insert into " + TableNames.T_NODES.toString() + " (level,id,data) values(?,?,?)");
+            PreparedStatement insertWay = conn.prepareStatement(
+                "insert into " + TableNames.T_WAYS.toString() + " (level,id,data) values(?,?,?)");
+            PreparedStatement insertRelation = conn.prepareStatement("insert into "
+                + TableNames.T_RELATIONS.toString() + " (level,id,data) values(?,?,?)")) {
+          LoaderHandler handler;
+
+          Stopwatch loadingWatch = Stopwatch.createUnstarted();
+          if (!withOutKeyTables) {
+            stmt.executeUpdate("drop table if exists " + TableNames.E_KEY.toString()
+                + "; create table if not exists " + TableNames.E_KEY.toString()
+                + "(id int primary key, txt varchar)");
+            stmt.executeUpdate("drop table if exists " + TableNames.E_KEYVALUE.toString()
+                + "; create table if not exists " + TableNames.E_KEYVALUE.toString()
+                + "(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
+            stmt.executeUpdate("drop table if exists " + TableNames.E_ROLE.toString()
+                + "; create table if not exists " + TableNames.E_ROLE.toString()
+                + "(id int primary key, txt varchar)");
+
+            try (
+                PreparedStatement insertKey = conn.prepareStatement(
+                    "insert into " + TableNames.E_KEY.toString() + " (id,txt) values (?,?)");
+                PreparedStatement insertValue = conn.prepareStatement("insert into "
+                    + TableNames.E_KEYVALUE.toString() + " ( keyId, valueId, txt ) values(?,?,?)");
+                PreparedStatement insertRole = conn.prepareStatement(
+                    "insert into " + TableNames.E_ROLE.toString() + " (id,txt) values(?,?)");) {
+
+              handler = new H2Handler(Roaring64NavigableMap.bitmapOf(), bitmapWays, insertKey,
+                  insertValue, insertRole, insertNode, insertWay, insertRelation);
+
+              LoaderKeyTables keyTables = new LoaderKeyTables(workDirectory, handler);
+              System.out.print("loading tags ... ");
+              loadingWatch.reset().start();
+              keyTables.loadTags();
+              System.out.println(" done! " + loadingWatch);
+              System.out.print("loading roles ...");
+              loadingWatch.reset().start();
+              keyTables.loadRoles();
+              System.out.println(" done! " + loadingWatch);
+            }
+          } else {
+            handler = new H2Handler(Roaring64NavigableMap.bitmapOf(), bitmapWays, null, null, null,
+                insertNode, insertWay, insertRelation);
+          }
+
+          try (
+              LoaderNode node = new LoaderNode(workDirectory, handler, minNodesPerGrid,
+                  onlyNodesWithTags, maxZoomLevel);
+              LoaderWay way =
+                  new LoaderWay(workDirectory, handler, minWaysPerGrid, node, maxZoomLevel);
+              LoaderRelation rel = new LoaderRelation(workDirectory, handler, minRelationPerGrid,
+                  node, way, maxZoomLevel);) {
+            System.out.print("loading to grid ...");
+            loadingWatch.reset().start();
+            rel.load();
+          }
+          System.out.println(" done! " + loadingWatch);
         }
-        System.out.println(" done! " + loadingWatch);
       }
     } catch (IOException | SQLException e) {
       e.printStackTrace();
     }
-
-
   }
 
   public static void main(String[] args) throws IOException, ClassNotFoundException, SQLException {
