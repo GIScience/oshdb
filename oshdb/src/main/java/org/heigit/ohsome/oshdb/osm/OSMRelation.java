@@ -39,6 +39,29 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
   }
 
   @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Arrays.hashCode(members);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (!(obj instanceof OSMRelation)) {
+      return false;
+    }
+    OSMRelation other = (OSMRelation) obj;
+    return Arrays.equals(members, other.members);
+  }
+
+  @Override
   public int compareTo(OSMRelation o) {
     int c = Long.compare(id, o.id);
     if (c == 0) {
