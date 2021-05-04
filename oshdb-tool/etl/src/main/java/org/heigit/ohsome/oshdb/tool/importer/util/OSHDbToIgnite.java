@@ -80,23 +80,23 @@ public class OSHDbToIgnite {
 
     try (IgniteDataStreamer<Long, T> streamer = ignite.dataStreamer(cache.getName())) {
       streamer.allowOverwrite(true);
-      final String tableName;
+      final String sql;
       switch (cacheName) {
         case T_NODES:
-          tableName = TableNames.T_NODES.toString();
+          sql = "select level, id, data from grid_node";
           break;
         case T_WAYS:
-          tableName = TableNames.T_WAYS.toString();
+          sql = "select level, id, data from grid_way";
           break;
         case T_RELATIONS:
-          tableName = TableNames.T_RELATIONS.toString();
+          sql = "select level, id, data from grid_relation";
           break;
         default:
           throw new IllegalArgumentException("unknown cacheName " + cacheName);
       }
-      try (ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
+      try (ResultSet rst = stmt.executeQuery(sql)) {
         int cnt = 0;
-        System.out.println(LocalDateTime.now() + " START loading " + tableName + " into "
+        System.out.println(LocalDateTime.now() + " START loading into "
             + cache.getName() + " on Ignite");
         while (rst.next()) {
           final int level = rst.getInt(1);
@@ -113,7 +113,7 @@ public class OSHDbToIgnite {
             streamer.flush();
           }
         }
-        System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into "
+        System.out.println(LocalDateTime.now() + " FINISHED loading into "
             + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException | SQLException e) {
         LOG.error("Could not import Grid!", e);

@@ -26,7 +26,6 @@ import org.heigit.ohsome.oshdb.tool.importer.load.LoaderNode;
 import org.heigit.ohsome.oshdb.tool.importer.load.LoaderRelation;
 import org.heigit.ohsome.oshdb.tool.importer.load.LoaderWay;
 import org.heigit.ohsome.oshdb.tool.importer.load.cli.DbH2Arg;
-import org.heigit.ohsome.oshdb.util.TableNames;
 import org.roaringbitmap.longlong.Roaring64NavigableMap;
 
 public class H2Handler extends OSHDBHandler {
@@ -180,9 +179,9 @@ public class H2Handler extends OSHDBHandler {
             BufferedReader br =
                 new BufferedReader(new FileReader(workDirectory.resolve("extract_meta").toFile()));
             PreparedStatement insert = conn.prepareStatement(
-                "insert into " + TableNames.T_METADATA.toString() + " (key,value) values (?,?)");) {
-          stmt.executeUpdate("drop table if exists " + TableNames.T_METADATA.toString()
-              + "; create table if not exists " + TableNames.T_METADATA.toString()
+                "insert into metadata (key,value) values (?,?)");) {
+          stmt.executeUpdate("drop table if exists metadata"
+              + "; create table if not exists metadata"
               + "(key varchar primary key, value varchar)");
 
           String line = null;
@@ -215,16 +214,16 @@ public class H2Handler extends OSHDBHandler {
           insert.executeBatch();
         }
 
-        stmt.executeUpdate("drop table if exists " + TableNames.T_NODES.toString()
-            + "; create table if not exists " + TableNames.T_NODES.toString()
+        stmt.executeUpdate("drop table if exists grid_node"
+            + "; create table if not exists grid_node"
             + "(level int, id bigint, data blob,  primary key(level,id))");
 
-        stmt.executeUpdate("drop table if exists " + TableNames.T_WAYS.toString()
-            + "; create table if not exists " + TableNames.T_WAYS.toString()
+        stmt.executeUpdate("drop table if exists grid_way"
+            + "; create table if not exists grid_way"
             + "(level int, id bigint, data blob,  primary key(level,id))");
 
-        stmt.executeUpdate("drop table if exists " + TableNames.T_RELATIONS.toString()
-            + "; create table if not exists " + TableNames.T_RELATIONS.toString()
+        stmt.executeUpdate("drop table if exists grid_relation"
+            + "; create table if not exists grid_relation"
             + "(level int, id bigint, data blob,  primary key(level,id))");
 
         Roaring64NavigableMap bitmapWays = new Roaring64NavigableMap();
@@ -236,32 +235,32 @@ public class H2Handler extends OSHDBHandler {
         }
         try (
             PreparedStatement insertNode = conn.prepareStatement(
-                "insert into " + TableNames.T_NODES.toString() + " (level,id,data) values(?,?,?)");
+                "insert into grid_node (level,id,data) values(?,?,?)");
             PreparedStatement insertWay = conn.prepareStatement(
-                "insert into " + TableNames.T_WAYS.toString() + " (level,id,data) values(?,?,?)");
-            PreparedStatement insertRelation = conn.prepareStatement("insert into "
-                + TableNames.T_RELATIONS.toString() + " (level,id,data) values(?,?,?)")) {
+                "insert into grid_way (level,id,data) values(?,?,?)");
+            PreparedStatement insertRelation = conn.prepareStatement(
+                "insert into grid_relation (level,id,data) values(?,?,?)")) {
           LoaderHandler handler;
 
           Stopwatch loadingWatch = Stopwatch.createUnstarted();
           if (!withOutKeyTables) {
-            stmt.executeUpdate("drop table if exists " + TableNames.E_KEY.toString()
-                + "; create table if not exists " + TableNames.E_KEY.toString()
+            stmt.executeUpdate("drop table if exists key"
+                + "; create table if not exists key "
                 + "(id int primary key, txt varchar)");
-            stmt.executeUpdate("drop table if exists " + TableNames.E_KEYVALUE.toString()
-                + "; create table if not exists " + TableNames.E_KEYVALUE.toString()
+            stmt.executeUpdate("drop table if exists keyvalue "
+                + "; create table if not exists keyvalue"
                 + "(keyId int, valueId int, txt varchar, primary key (keyId,valueId))");
-            stmt.executeUpdate("drop table if exists " + TableNames.E_ROLE.toString()
-                + "; create table if not exists " + TableNames.E_ROLE.toString()
+            stmt.executeUpdate("drop table if exists role"
+                + "; create table if not exists role"
                 + "(id int primary key, txt varchar)");
 
             try (
                 PreparedStatement insertKey = conn.prepareStatement(
-                    "insert into " + TableNames.E_KEY.toString() + " (id,txt) values (?,?)");
-                PreparedStatement insertValue = conn.prepareStatement("insert into "
-                    + TableNames.E_KEYVALUE.toString() + " ( keyId, valueId, txt ) values(?,?,?)");
+                    "insert into key (id,txt) values (?,?)");
+                PreparedStatement insertValue = conn.prepareStatement(
+                    "insert into keyvalue ( keyId, valueId, txt ) values(?,?,?)");
                 PreparedStatement insertRole = conn.prepareStatement(
-                    "insert into " + TableNames.E_ROLE.toString() + " (id,txt) values(?,?)");) {
+                    "insert into role (id,txt) values(?,?)");) {
 
               handler = new H2Handler(Roaring64NavigableMap.bitmapOf(), bitmapWays, insertKey,
                   insertValue, insertRole, insertNode, insertWay, insertRelation);
