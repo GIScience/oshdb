@@ -73,11 +73,11 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
    * Returns a "view" of the current osm tags.
    */
   public Iterable<OSHDBTag> getTags() {
-    return new Iterable<OSHDBTag>() {
+    return new Iterable<>() {
       @Nonnull
       @Override
       public Iterator<OSHDBTag> iterator() {
-        return new Iterator<OSHDBTag>() {
+        return new Iterator<>() {
           int pos = 0;
 
           @Override
@@ -94,7 +94,7 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
     };
   }
 
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   public int[] getRawTags() {
     return tags;
   }
