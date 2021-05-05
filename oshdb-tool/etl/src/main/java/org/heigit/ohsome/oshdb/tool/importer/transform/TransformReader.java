@@ -59,7 +59,7 @@ public class TransformReader {
   }
 
   public boolean hasNext() {
-    return (pos + bytes) < end;
+    return pos + bytes < end;
   }
 
   public void next() throws IOException {
@@ -69,7 +69,7 @@ public class TransformReader {
 
   @Override
   public String toString() {
-    return String.format("%d:%d %d, (#%d  %d)", (pos - 16), end, cellId, size, bytes);
+    return String.format("%d:%d %d, (#%d  %d)", pos - 16, end, cellId, size, bytes);
   }
 
 
@@ -123,7 +123,7 @@ public class TransformReader {
       System.out.println(reader.cellId + " " + reader.path);
       Set<OSHNode> nodes = reader.get();
       nodes.stream().filter(node -> node.getId() == 553542L).forEach(System.out::println);
-      while (!queue.isEmpty() && (queue.peek().cellId == reader.cellId)) {
+      while (!queue.isEmpty() && queue.peek().cellId == reader.cellId) {
         nodes.addAll(queue.peek().get());
         readers.add(queue.poll());
       }
@@ -143,9 +143,7 @@ public class TransformReader {
     public boolean hasNext() {
       return !queue.isEmpty();
     }
-
   }
-
 
   public static class WayReader extends TransformReader {
     public WayReader(Path path) throws IOException {
@@ -171,8 +169,6 @@ public class TransformReader {
     }
   }
 
-
-
   public static void load(List<Grid<TransformOSHWay>> zoomLevel, int zoom,
       Long2ObjectMap<OSHNode> nodes) {
     Grid<TransformOSHWay> grid = zoomLevel.get(zoom);
@@ -195,7 +191,7 @@ public class TransformReader {
     }
 
     public static <T> Grid<T> of(long cellId, Set<T> ways, Set<Long> refMapSet) {
-      return new Grid<T>(cellId, ways, refMapSet);
+      return new Grid<>(cellId, ways, refMapSet);
     }
   }
 }

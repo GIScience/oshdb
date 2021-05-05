@@ -118,7 +118,7 @@ public class Extract {
   private Path workDirectory = Paths.get(".");
   private Path tempDirectory = Paths.get(".");
 
-  public static OsmPbfMeta pbfMetaData(Path pbf) throws InvalidProtocolBufferException {
+  public static OsmPbfMeta pbfMetaData(Path pbf) throws Exception {
     return TypeStartFinder.getMetaData(pbf);
   }
 
@@ -150,13 +150,13 @@ public class Extract {
 
     final KeyValueFrequencyCollector kvFrequency = new KeyValueFrequencyCollector();
     kvFrequency.setWorkerId(workerId);
-    kvFrequency.setTempDir((workerTotal > 1) ? workDirectory.toFile() : tempDirectory.toFile());
-    kvFrequency.setTempDeleteOneExit((workerTotal > 1) || keepTemp);
+    kvFrequency.setTempDir(workerTotal > 1 ? workDirectory.toFile() : tempDirectory.toFile());
+    kvFrequency.setTempDeleteOneExit(workerTotal > 1 || keepTemp);
 
     final RoleCollector roleFrequency = new RoleCollector();
     roleFrequency.setWorkerId(workerId);
-    roleFrequency.setTempDir((workerTotal > 1) ? workDirectory.toFile() : tempDirectory.toFile());
-    roleFrequency.setTempDeleteOneExit((workerTotal > 1) || keepTemp);
+    roleFrequency.setTempDir(workerTotal > 1 ? workDirectory.toFile() : tempDirectory.toFile());
+    roleFrequency.setTempDeleteOneExit(workerTotal > 1 || keepTemp);
 
     final long fileLength = pbf.toFile().length();
     final long workSize = (long) Math.ceil(fileLength / (double) workerTotal);
@@ -170,7 +170,7 @@ public class Extract {
     });
 
     oshFlow = oshFlow.doOnNext(osh -> {
-      if ((kvFrequency.getEstimatedSize() + roleFrequency.getEstimatedSize()) > maxMemory) {
+      if (kvFrequency.getEstimatedSize() + roleFrequency.getEstimatedSize() > maxMemory) {
         kvFrequency.writeTemp();
         roleFrequency.writeTemp();
       }
@@ -185,7 +185,7 @@ public class Extract {
     });
 
     oshFlow = oshFlow.doOnNext(osh -> {
-      if ((kvFrequency.getEstimatedSize() + roleFrequency.getEstimatedSize()) > maxMemory) {
+      if (kvFrequency.getEstimatedSize() + roleFrequency.getEstimatedSize() > maxMemory) {
         kvFrequency.writeTemp();
         roleFrequency.writeTemp();
       }
@@ -225,7 +225,7 @@ public class Extract {
       if (config.timeValidityTo != null) {
         out.println("," + config.timeValidityTo);
       } else if (stats.header.hasOsmosisReplicationTimestamp()
-          && (stats.header.getOsmosisReplicationTimestamp() > 0)) {
+          && stats.header.getOsmosisReplicationTimestamp() > 0) {
         out.println("," + ZonedDateTime
             .ofInstant(Instant.ofEpochSecond(stats.header.getOsmosisReplicationTimestamp()),
                 ZoneOffset.UTC)

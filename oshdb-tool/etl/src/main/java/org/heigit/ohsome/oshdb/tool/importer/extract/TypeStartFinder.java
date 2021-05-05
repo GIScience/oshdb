@@ -6,6 +6,7 @@ import crosby.binary.Osmformat.PrimitiveBlock;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,8 +23,10 @@ public class TypeStartFinder {
    * Reads in the metadata.
    *
    * @param pbf Path to the pbf
+   * @throws IOException
+   * @throws FileNotFoundException
    */
-  public static OsmPbfMeta getMetaData(Path pbf) throws InvalidProtocolBufferException {
+  public static OsmPbfMeta getMetaData(Path pbf) throws FileNotFoundException, IOException {
     OsmPbfMeta meta = new OsmPbfMeta();
     meta.pbf = pbf;
     Path metaPath = pbf.getParent().resolve(pbf.getFileName().toString() + ".meta");
@@ -38,8 +41,6 @@ public class TypeStartFinder {
         meta.relationStart = input.readLong();
         meta.relationEnd = input.readLong();
         return meta;
-      } catch (IOException e) {
-        System.err.println(e);
       }
     }
 
@@ -78,15 +79,13 @@ public class TypeStartFinder {
       meta.relationEnd = fileSize;
 
     } else {
-
-
       if (wayStart == fileSize) {
         PbfBlob way = findWay(pbf);
-        wayStart = way.pos;
+        wayStart = way != null ? way.pos : -1;
       }
       if (relStart == fileSize) {
         PbfBlob relation = findRelation(pbf, wayStart + 1);
-        relStart = relation.pos;
+        relStart = relation != null ? relation.pos : -1;
       }
 
       meta.nodeStart = nodeStort;
@@ -97,7 +96,6 @@ public class TypeStartFinder {
       meta.relationEnd = fileSize;
     }
 
-
     try (DataOutputStream output = new DataOutputStream(new FileOutputStream(metaPath.toFile()))) {
       output.writeLong(meta.nodeStart);
       output.writeLong(meta.nodeEnd);
@@ -105,8 +103,6 @@ public class TypeStartFinder {
       output.writeLong(meta.wayEnd);
       output.writeLong(meta.relationStart);
       output.writeLong(meta.relationEnd);
-    } catch (IOException e) {
-      System.err.println(e);
     }
     return meta;
   }
@@ -152,9 +148,7 @@ public class TypeStartFinder {
         System.out.println("Found nothing");
         return null;
       }
-
     }
-
     return null;
   }
 

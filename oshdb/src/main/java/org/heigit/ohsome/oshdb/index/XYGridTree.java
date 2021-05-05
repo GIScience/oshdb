@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.index;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.TreeMap;
 import org.heigit.ohsome.oshdb.OSHDB;
@@ -58,6 +59,9 @@ public class XYGridTree implements Serializable {
 
           @Override
           public CellId next() {
+            if (!hasNext()) {
+              throw new NoSuchElementException();
+            }
             level++;
             return new CellId(gridMap.get(level).getLevel(),
                 gridMap.get(level).getId(longitude, latitude));

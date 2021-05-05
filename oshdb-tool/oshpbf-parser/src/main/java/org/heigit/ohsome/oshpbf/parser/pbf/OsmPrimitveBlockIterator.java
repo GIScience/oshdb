@@ -93,7 +93,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
   }
 
   private Iterator<Entity> parseRelations(List<crosby.binary.Osmformat.Relation> entities) {
-    return new Iterator<Entity>() {
+    return new Iterator<>() {
       final Iterator<crosby.binary.Osmformat.Relation> entityIterator = entities.iterator();
 
       @Override
@@ -128,7 +128,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
   }
 
   private Iterator<Entity> parseWays(List<crosby.binary.Osmformat.Way> entities) {
-    return new Iterator<Entity>() {
+    return new Iterator<>() {
       final Iterator<crosby.binary.Osmformat.Way> entityIterator = entities.iterator();
 
       @Override
@@ -160,7 +160,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
   }
 
   private Iterator<Entity> parseNodes(final List<crosby.binary.Osmformat.Node> entities) {
-    return new Iterator<Entity>() {
+    return new Iterator<>() {
       final Iterator<crosby.binary.Osmformat.Node> entityIterator = entities.iterator();
 
       @Override
@@ -183,7 +183,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
   }
 
   private Iterator<Entity> parseDense(crosby.binary.Osmformat.DenseNodes dense) {
-    return new Iterator<Entity>() {
+    return new Iterator<>() {
       final List<Long> idList = dense.getIdList();
       final int idCount = idList.size();
 
@@ -224,6 +224,9 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
 
       @Override
       public Entity next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
         final int index = cursor++;
 
         id += idList.get(index);
@@ -268,7 +271,7 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
     }
     long changeset = -1;
     if (info.hasChangeset()) {
-      changeset = Long.valueOf(info.getChangeset());
+      changeset = info.getChangeset();
     }
 
     boolean visible = false;

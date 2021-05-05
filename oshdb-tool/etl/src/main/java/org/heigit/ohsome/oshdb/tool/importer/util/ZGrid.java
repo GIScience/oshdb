@@ -99,7 +99,7 @@ public class ZGrid {
     if (zoom == parentZoom) {
       return zid;
     }
-    final long diff = zoom - parentZoom;
+    final long diff = (long) zoom - parentZoom;
     final long id = getIdWithoutZoom(zid) >>> diff * 2;
 
     return addZoomToId(id, parentZoom);

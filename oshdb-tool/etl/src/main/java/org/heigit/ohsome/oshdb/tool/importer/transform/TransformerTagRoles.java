@@ -68,7 +68,7 @@ public class TransformerTagRoles {
     }
 
     final Int2IntMap uniqueKeys = new Int2IntAVLTreeMap();
-    final Object2IntMap<String> notUniqueKeys = new Object2IntAVLTreeMap<String>();
+    final Object2IntMap<String> notUniqueKeys = new Object2IntAVLTreeMap<>();
     long estimatedSize = 0;
     try (
         InputStream in = input.apply(new BufferedInputStream(
@@ -116,7 +116,7 @@ public class TransformerTagRoles {
     }
 
     final Int2IntMap uniqueValues = new Int2IntAVLTreeMap();
-    final Object2IntMap<String> notUniqueValues = new Object2IntAVLTreeMap<String>();
+    final Object2IntMap<String> notUniqueValues = new Object2IntAVLTreeMap<>();
     long estimatedSize = 0;
     channel.position(kvp.valuesOffset);
     try (DataInputStream valueStream = new DataInputStream(Channels.newInputStream(channel));) {
@@ -148,7 +148,7 @@ public class TransformerTagRoles {
     final Int2IntAVLTreeMap roleHash2Cnt = new Int2IntAVLTreeMap();
 
     final Int2IntMap uniqueRoles = new Int2IntAVLTreeMap();
-    final Object2IntMap<String> notUniqueRoles = new Object2IntAVLTreeMap<String>();
+    final Object2IntMap<String> notUniqueRoles = new Object2IntAVLTreeMap<>();
 
     final Function<InputStream, InputStream> input = Functions.identity();
     int roleCount = 0;
@@ -157,14 +157,14 @@ public class TransformerTagRoles {
             new FileInputStream(workDirectory.resolve("extract_roles").toFile())));
         DataInputStream dataIn = new DataInputStream(new BufferedInputStream(in))) {
       while (true) {
-        final Role role = Role.read(dataIn);
-        final int hash = hashFunction.applyAsInt(role.role);
-        roleHash2Cnt.addTo(hash, 1);
-        roleCount++;
-      }
-    } catch (IOException e) {
-      if (!(e instanceof EOFException)) {
-        throw e;
+        try {
+          final Role role = Role.read(dataIn);
+          final int hash = hashFunction.applyAsInt(role.role);
+          roleHash2Cnt.addTo(hash, 1);
+          roleCount++;
+        } catch (EOFException e) {
+          break;
+        }
       }
     }
 

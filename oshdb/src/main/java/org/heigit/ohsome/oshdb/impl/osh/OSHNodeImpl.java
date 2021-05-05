@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -123,7 +124,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
 
   @Override
   public Iterator<OSMNode> iterator() {
-    return new Iterator<OSMNode>() {
+    return new Iterator<>() {
       ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
       int version = 0;
@@ -142,6 +143,9 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
 
       @Override
       public OSMNode next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
         try {
           version = wrapper.readS32() + version;
           timestamp = wrapper.readS64() + timestamp;

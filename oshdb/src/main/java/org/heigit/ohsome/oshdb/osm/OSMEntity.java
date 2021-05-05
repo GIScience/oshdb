@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.osm;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -87,6 +88,9 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
 
           @Override
           public OSHDBTag next() {
+            if (!hasNext()) {
+              throw new NoSuchElementException();
+            }
             return new OSHDBTag(tags[pos++], tags[pos++]);
           }
         };

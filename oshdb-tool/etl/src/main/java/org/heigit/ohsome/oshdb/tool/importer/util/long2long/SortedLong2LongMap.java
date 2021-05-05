@@ -51,7 +51,7 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
       this.compress = compress;
       this.pageSizePower = pageSizePower;
       this.pageSize = (int) Math.pow(2, pageSizePower);
-      this.pageOffsetMask = pageSize - 1;
+      this.pageOffsetMask = pageSize - 1L;
     }
 
     public void put(long id, long value) throws IOException {
@@ -144,8 +144,6 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
     this.pageSize = (int) Math.pow(2, pageSizePower);
     this.pageOffsetMask = pageSize - 1;
   }
-
-
 
   public LongSortedSet get(LongSortedSet ids) {
     if (ids.isEmpty()) {

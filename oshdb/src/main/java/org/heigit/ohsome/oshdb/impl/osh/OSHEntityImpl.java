@@ -5,6 +5,7 @@ import java.io.ObjectOutput;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -179,11 +180,11 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> 
 
   @Override
   public Iterable<OSHDBTagKey> getTagKeys() {
-    return new Iterable<OSHDBTagKey>() {
+    return new Iterable<>() {
       @Nonnull
       @Override
       public Iterator<OSHDBTagKey> iterator() {
-        return new Iterator<OSHDBTagKey>() {
+        return new Iterator<>() {
           int pos = 0;
 
           @Override
@@ -193,6 +194,9 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> 
 
           @Override
           public OSHDBTagKey next() {
+            if (!hasNext()) {
+              throw new NoSuchElementException();
+            }
             return new OSHDBTagKey(keys[pos++]);
           }
         };

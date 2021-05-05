@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -107,7 +108,7 @@ public abstract class OSHEntity2 {
             aux.writeU32(tags.length);
             for (int i = 0; i < tags.length; i++) {
               aux.writeU32(tags[i]);
-              if ((i % 2) == 0) {
+              if (i % 2 == 0) {
                 keySet.add(Integer.valueOf(tags[i]));
               }
             }
@@ -156,6 +157,9 @@ public abstract class OSHEntity2 {
 
     @Override
     public T next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
       try {
         version = in.readS32Delta(version);
         timestamp = in.readS64Delta(timestamp);

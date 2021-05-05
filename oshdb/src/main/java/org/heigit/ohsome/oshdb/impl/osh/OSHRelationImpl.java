@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -188,6 +189,9 @@ public class OSHRelationImpl extends OSHEntityImpl
 
         @Override
         public OSMRelation next() {
+          if (!hasNext()) {
+            throw new NoSuchElementException();
+          }
           try {
             version = wrapper.readS32() + version;
             timestamp = wrapper.readS64() + timestamp;

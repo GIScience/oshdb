@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
@@ -123,7 +124,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
   public Iterator<OSMWay> iterator() {
     try {
       final List<OSHNode> nodes = this.getNodes();
-      return new Iterator<OSMWay>() {
+      return new Iterator<>() {
         ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
         int version = 0;
@@ -141,6 +142,9 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
 
         @Override
         public OSMWay next() {
+          if (!hasNext()) {
+            throw new NoSuchElementException();
+          }
           try {
             version = wrapper.readS32() + version;
             timestamp = wrapper.readS64() + timestamp;

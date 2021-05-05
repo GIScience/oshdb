@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -49,11 +50,14 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
 
   @Override
   public Iterator<OSHNode> iterator() {
-    return new Iterator<OSHNode>() {
+    return new Iterator<>() {
       private int pos = 0;
 
       @Override
       public OSHNode next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
