@@ -38,7 +38,6 @@ public class Osh {
   /**
    * position in bytes of the blob containing this data in the pbf.
    *
-   * @return
    */
   public long[] getPos() {
     return pos;
