@@ -11,6 +11,5 @@ public class MutableOSMWay extends MutableOSMEntity implements OSMWay {
 
   public void setExtension(OSMMember[] members) {
     this.members = members;
-
   }
 }

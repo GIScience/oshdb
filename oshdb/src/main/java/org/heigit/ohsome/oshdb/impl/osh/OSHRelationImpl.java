@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,7 +170,7 @@ public class OSHRelationImpl extends OSHEntityImpl
       final List<OSHNode> nodes = getNodes();
       final List<OSHWay> ways = getWays();
 
-      return new Iterator<OSMRelation>() {
+      return new Iterator<>() {
         ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
         int version = 0;

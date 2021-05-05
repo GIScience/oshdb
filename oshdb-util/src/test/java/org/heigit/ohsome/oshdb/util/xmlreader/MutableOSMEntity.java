@@ -24,15 +24,15 @@ public class MutableOSMEntity {
   public int getVersion() {
     return version;
   }
-  
+
   public boolean isVisible() {
     return visible;
   }
-  
+
   public void isVisible(boolean visible) {
     this.visible = visible;
   }
-  
+
 
   public void setVersion(int version) {
     this.version = version;
@@ -41,12 +41,12 @@ public class MutableOSMEntity {
   public long getEpochSecond() {
     return timestamp;
   }
-  
+
 
   public void setTimestamp(OSHDBTimestamp timestamp) {
     this.timestamp = timestamp.getEpochSecond();
   }
-  
+
   public void setTimestamp(long timestamp) {
     this.timestamp = timestamp;
   }

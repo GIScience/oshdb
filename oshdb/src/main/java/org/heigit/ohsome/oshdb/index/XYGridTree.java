@@ -44,11 +44,11 @@ public class XYGridTree implements Serializable {
    */
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
-    return new Iterable<CellId>() {
+    return new Iterable<>() {
 
       @Override
       public Iterator<CellId> iterator() {
-        Iterator<CellId> result = new Iterator<CellId>() {
+        Iterator<CellId> result = new Iterator<>() {
           private int level = -1;
 
           @Override
@@ -102,7 +102,6 @@ public class XYGridTree implements Serializable {
    * are included.
    *
    * @param bbox {@code OSHDBBoundingBox} for the query
-   * @return
    */
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox bbox) {
     return bbox2CellIds(bbox, false);
@@ -113,14 +112,13 @@ public class XYGridTree implements Serializable {
    *
    * @param bbox {@code OSHDBBoundingBox} for the query
    * @param enlarge {@code true} if the query should include enlarged bboxes
-   * @return
    */
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox bbox, final boolean enlarge) {
-    return new Iterable<CellId>() {
+    return new Iterable<>() {
       @Override
       public Iterator<CellId> iterator() {
-        return new Iterator<CellId>() {
+        return new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
@@ -215,15 +213,15 @@ public class XYGridTree implements Serializable {
    *
    * @param bbox {@code OSHDBBoundingBox}
    * @param enlarge {@code true} to include enlarged bboxes
-   * @return
+   * @return List of {@code CellIdRanges} which are covered by the given bbox
    */
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
       final boolean enlarge) {
-    return new Iterable<CellIdRange>() {
+    return new Iterable<>() {
       @Override
       public Iterator<CellIdRange> iterator() {
-        return new Iterator<CellIdRange>() {
+        return new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();

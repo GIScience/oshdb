@@ -48,7 +48,6 @@ public class MutableOSMEntity implements OSMEntity {
     this.visible = visible;
   }
 
-
   public void setVersion(int version) {
     this.version = version;
   }

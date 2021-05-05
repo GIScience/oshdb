@@ -13,7 +13,6 @@ public class MutableOSMNode extends MutableOSMEntity implements OSMNode {
     this.longitude = longitude;
   }
 
-
   @Override
   public long getLat() {
     return latitude;

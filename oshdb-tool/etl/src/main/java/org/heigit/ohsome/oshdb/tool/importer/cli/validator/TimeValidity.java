@@ -11,6 +11,6 @@ public class TimeValidity implements IParameterValidator {
       IsoDateTimeParser.parseIsoDateTime(value);
     } catch (Exception e) {
       throw new ParameterException(e.getMessage());
-    }    
+    }
   }
 }

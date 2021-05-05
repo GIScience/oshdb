@@ -228,7 +228,6 @@ public class ByteArrayWrapper {
    * Read bytes from input.
    *
    * @param size Number of bytes to read.
-   * @return
    */
   public byte[] readByteArray(int size) throws IOException {
     if (size <= this.bufferSize - this.bufferPos && size > 0) {

@@ -38,15 +38,13 @@ public class ByteArrayOutputWrapper {
    * Write a delta encoded value to the stream.
    * @param value current value
    * @param last last value or delta encoding
-   * @return
    */
-  public long writeU64Delta(long value, long last) throws IOException {
+  public void writeU64Delta(long value, long last) throws IOException {
     final long delta = value - last;
     if (delta < 0) {
       throw new IllegalArgumentException("writeUInt64Delta with negative delta(" + delta + ")");
     }
     writeU64(delta);
-    return value;
   }
 
   public void writeS64(long value) throws IOException {

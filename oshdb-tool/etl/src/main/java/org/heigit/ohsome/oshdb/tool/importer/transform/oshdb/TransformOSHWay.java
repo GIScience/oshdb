@@ -52,7 +52,7 @@ public class TransformOSHWay extends OSHWay2 {
     long nodeId = 0;
     LongIterator itr = ids.iterator();
     for (int i = 0; itr.hasNext(); i++) {
-      nodeId = out.writeU64Delta(itr.nextLong(), nodeId);
+      out.writeU64Delta(itr.nextLong(), nodeId);
       offsets.put(nodeId, i);
     }
     return offsets;

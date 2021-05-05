@@ -209,13 +209,12 @@ public class TypeStartFinder {
    * Checks the of given PbfBlob.
    *
    * @param blob Blob.
-   * @return
    */
   public static OSMType getType(PbfBlob blob) throws InvalidProtocolBufferException {
     PrimitiveBlock block = blob.getPrimitivBlock();
     if (block != null) {
       Osmformat.PrimitiveGroup group = block.getPrimitivegroup(0);
-      if (group.hasDense() || (group.getNodesCount() > 0)) {
+      if (group.hasDense() || group.getNodesCount() > 0) {
         return OSMType.NODE;
       }
       if (group.getWaysCount() > 0) {

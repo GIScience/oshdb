@@ -44,7 +44,6 @@ public class CellId implements Serializable {
   /**
    * Converts a {@code long} level id to {@code CellId}.
    * @param levelId the {@code long} id from the conversion
-   * @return
    */
   public static CellId fromLevelId(long levelId) {
     final long id = levelId & 0x00FFFFFFFFFFFFFFL;
