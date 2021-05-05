@@ -7,7 +7,7 @@ Changelog
 
 * reorganize java packages, moving them from `org/heigit/bigspatialdata` to `org/heigit/ohsome`
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter` ([#306])
-* rename methods and move classes/interfaces ([#369])
+* rename some classes, methods and enum constants; move some classes/interfaces ([#369], [#374])
 
 > See the _upgrading from 0.6_ section below for instructions how to update your code according to these breaking changes.
 
@@ -21,6 +21,7 @@ Changelog
 * improve maintainability of parts of important central processing algorithms for determining entity modification history: refactoring improves code structure, adds inline documentation and enhances test coverage ([#327])
 * reorganize and update ohsome parent module, requires maven version 3.6 or higher ([#360], [#375])
 * add new interfaces `OSHDBTemporal` and `OSHDBBoundable` ([#369])
+* major improvements to code style guide adherence; fix some potential bugs found in static code analyis ([#374])
 
 ### bugfixes
 
@@ -34,7 +35,7 @@ Changelog
   import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
   ```
 * If you used the “ohsome filter” functionality from OSHDB version 0.6 and imported one or more classes from the ohsome filter module, you would need to adjust the package names from `org.heigit.ohsome.filter` to `org.heigit.ohsome.oshdb.filter`.
-* the following methods, classes and packages were renamed or moved:
+* the following enum constants, methods, classes and packages were renamed or moved:
   |     | old | new |
   | --- | --- | --- |
   | renamed method | `OSMWay.getRef()` | `OSMWay.getMember()` |
@@ -44,6 +45,7 @@ Changelog
   | moved class | `CellIterator.OSHEntityFilter` | `oshdb-util/oshdb.osh.OSHEntityFilter` |
   | moved class | `CellIterator.OSMEntityFilter` | `oshdb-util/oshdb.osm.OSMEntityFilter` |
   | moved class | `oshdb-api.generic.function` | `oshdb-util/oshdb.util.function` |
+  | renamed enum constants | `ComputeMode.LocalPeek`, `….ScanQuery`, `….AffinityCall` | `ComputeMode.LOCAL_PEEK`, `….SCAN_QUERY`, `….AFFINITY_CALL` |
 
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
@@ -53,6 +55,7 @@ Changelog
 [#353]: https://github.com/GIScience/oshdb/pull/353
 [#360]: https://github.com/GIScience/oshdb/pull/360
 [#369]: https://github.com/GIScience/oshdb/pull/369
+[#374]: https://github.com/GIScience/oshdb/pull/374
 [#375]: https://github.com/GIScience/oshdb/pull/375
 
 
