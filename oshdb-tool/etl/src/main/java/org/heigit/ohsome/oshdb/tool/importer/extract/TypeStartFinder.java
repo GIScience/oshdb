@@ -20,6 +20,7 @@ public class TypeStartFinder {
 
   /**
    * Reads in the metadata.
+   *
    * @param pbf Path to the pbf
    */
   public static OsmPbfMeta getMetaData(Path pbf) throws InvalidProtocolBufferException {
@@ -112,6 +113,7 @@ public class TypeStartFinder {
 
   /**
    * Seek for first PBF Way Blob.
+   *
    * @param pbf Path to Pbf
    */
   public static PbfBlob findWay(Path pbf) throws InvalidProtocolBufferException {

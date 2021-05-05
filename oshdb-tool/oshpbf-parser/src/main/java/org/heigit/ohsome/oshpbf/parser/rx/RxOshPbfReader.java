@@ -27,9 +27,9 @@ import org.heigit.ohsome.oshpbf.parser.util.ByteBufferBackedInputStream;
 public class RxOshPbfReader {
 
   private static final byte[] SIGNATURE_OSMDATA =
-      { /* wire_type */10, /* stringSize */7, 79, 83, 77, 68, 97, 116, 97};
+        { /* wire_type */10, /* stringSize */7, 79, 83, 77, 68, 97, 116, 97};
   private static final byte[] SIGNATURE_OSMHEADER =
-      { /* wire_type */10, /* stringSize */9, 79, 83, 77, 72, 101, 97, 100, 101, 114};
+        { /* wire_type */10, /* stringSize */9, 79, 83, 77, 72, 101, 97, 100, 101, 114};
   private static final int BLOBHEADER_SIZE_BYTES = 4;
   private static final int SIGNATURE_SIZE_BYTES =
       Math.max(SIGNATURE_OSMDATA.length, SIGNATURE_OSMHEADER.length);
@@ -106,7 +106,7 @@ public class RxOshPbfReader {
 
   public static Iterable<Osh> blobToOSHItr(PbfBlob blob, boolean skipFirst)
       throws InvalidProtocolBufferException {
-    return new Iterable<Osh>() {
+    return new Iterable<>() {
       final Osmformat.PrimitiveBlock block = blob.getPrimitivBlock();
 
       @Override

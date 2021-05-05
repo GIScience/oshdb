@@ -45,6 +45,7 @@ public interface OSHDBBoundable {
 
   /**
    * Returns true if this {@code OSHDBBoundable} is inside/coveredBy the {@code other} object.
+   *
    * @param other the {@code OSHDBBoundable} which is being checked for inside/coveredBy
    *          this {@code OSHDBBoundable}
    * @return {@code true} if the {@code OSHDBBoundable} is inside

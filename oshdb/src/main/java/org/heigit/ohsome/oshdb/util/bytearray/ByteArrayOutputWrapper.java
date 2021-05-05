@@ -36,6 +36,7 @@ public class ByteArrayOutputWrapper {
 
   /**
    * Write a delta encoded value to the stream.
+   *
    * @param value current value
    * @param last last value or delta encoding
    */

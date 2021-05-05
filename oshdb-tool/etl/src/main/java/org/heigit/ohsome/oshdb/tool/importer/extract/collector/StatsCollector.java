@@ -39,6 +39,7 @@ public class StatsCollector {
 
   /**
    * Adds Header Block.
+   *
    * @param header HeaderBlock
    */
   public void addHeader(HeaderBlock header) {
@@ -58,6 +59,7 @@ public class StatsCollector {
 
   /**
    * Add OSH Entity.
+   *
    * @param osh Entity
    */
   public void add(Osh osh) {
@@ -117,6 +119,7 @@ public class StatsCollector {
 
   /**
    * Prints the collected Stats to given PrintStream.
+   *
    * @param out PrintStream
    */
   public void print(PrintStream out) {

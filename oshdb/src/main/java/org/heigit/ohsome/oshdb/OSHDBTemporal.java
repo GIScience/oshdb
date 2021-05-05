@@ -26,6 +26,7 @@ public interface OSHDBTemporal {
 
   /**
    * Converts the given {@code OSHDBTemporal} to an iso-date-time string.
+   *
    * @param temporal The {@code OSHDBTemporal} which should converted.
    * @return the iso-date-time string for the {@code OSHDBTemporal}
    */
