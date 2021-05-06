@@ -11,7 +11,7 @@ public interface OSHEntity {
 
   OSHDBBoundingBox getBoundingBox();
 
-  abstract OSMType getType();
+  OSMType getType();
 
 
   Iterable<? extends OSMEntity> versions();

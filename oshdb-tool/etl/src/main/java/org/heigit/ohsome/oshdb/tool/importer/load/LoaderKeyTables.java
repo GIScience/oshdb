@@ -5,6 +5,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -74,7 +75,7 @@ public class LoaderKeyTables {
     }
   }
 
-  public void loadRoles() {
+  public void loadRoles() throws FileNotFoundException, IOException {
     final Function<InputStream, InputStream> input = Functions.identity();
     try (DataInputStream roleIn = new DataInputStream(input.apply(new BufferedInputStream(
         new FileInputStream(workDirectory.resolve("extract_roles").toFile()))))) {
@@ -82,10 +83,8 @@ public class LoaderKeyTables {
         final Role role = Role.read(roleIn);
         handler.loadRole(id, role.role);
       }
-    } catch (IOException e) {
-      if (!(e instanceof EOFException)) {
-        e.printStackTrace();
-      }
+    } catch (EOFException e) {
+      return; // ignore end of file exception
     }
   }
 }

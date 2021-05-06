@@ -124,7 +124,7 @@ public class Transform {
     final long availableMemory = availableHeapMemory - Math.max(1 * GB, availableHeapMemory / 3);
 
     System.out.println("Transform:");
-    System.out.println("avaliable memory: " + availableMemory / 1024L / 1024L + " mb");
+    System.out.println("avaliable memory: " + availableMemory / MB + " mb");
 
     final OsmPbfMeta pbfMeta = Extract.pbfMetaData(pbf);
 
@@ -141,7 +141,7 @@ public class Transform {
             + "You need to increase JVM heapsize -Xmx for transforming");
       }
 
-      System.out.println("maxMemory for transformation: " + maxMemory / 1024L / 1024L + " mb");
+      System.out.println("maxMemory for transformation: " + maxMemory / MB + " mb");
       System.out.print("start transforming nodes ...");
       Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformNodes(pbfMeta, maxZoom,
           tag2Id, worker, workerTotal);
@@ -162,7 +162,7 @@ public class Transform {
               + "You need to increase JVM heapsize -Xmx for transforming");
         }
 
-        System.out.println("maxMemory for transformation: " + maxMemory / 1024L / 1024L + " mb");
+        System.out.println("maxMemory for transformation: " + maxMemory / MB + " mb");
         System.out.print("start transforming ways ...");
         Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformWays(pbfMeta,
             maxZoom, tag2Id, node2Cell, worker, workerTotal);
@@ -190,7 +190,7 @@ public class Transform {
               + "You need to increase JVM heapsize -Xmx for transforming");
         }
 
-        System.out.println("maxMemory for transformation: " + maxMemory / 1024L / 1024L + " mb");
+        System.out.println("maxMemory for transformation: " + maxMemory / MB + " mb");
         System.out.print("start transforming relations ...");
         Transform.withMaxMemory(maxMemory).withWorkDirectory(workDir).transformRelations(pbfMeta,
             maxZoom, tag2Id, role2Id, node2Cell, way2Cell, worker, workerTotal);

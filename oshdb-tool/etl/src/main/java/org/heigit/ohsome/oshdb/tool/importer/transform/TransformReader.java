@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.tool.importer.transform;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -120,9 +121,7 @@ public class TransformReader {
       List<NodeReader> readers = new ArrayList<>(queue.size());
       NodeReader reader = queue.poll();
       readers.add(reader);
-      System.out.println(reader.cellId + " " + reader.path);
       Set<OSHNode> nodes = reader.get();
-      nodes.stream().filter(node -> node.getId() == 553542L).forEach(System.out::println);
       while (!queue.isEmpty() && queue.peek().cellId == reader.cellId) {
         nodes.addAll(queue.peek().get());
         readers.add(queue.poll());
@@ -132,8 +131,7 @@ public class TransformReader {
           r.next();
           queue.add(r);
         } catch (IOException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          throw new UncheckedIOException(e);
         }
 
       });

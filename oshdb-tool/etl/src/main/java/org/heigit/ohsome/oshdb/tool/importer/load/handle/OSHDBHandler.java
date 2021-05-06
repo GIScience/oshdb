@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.tool.importer.load.handle;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,8 +51,8 @@ public abstract class OSHDBHandler extends LoaderHandler {
     XYGrid xyGrid = new XYGrid(zoom);
 
     OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
-    long longitude = bbox.getMinLonLong() + ((bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2);
-    long latitude = bbox.getMinLatLong() + ((bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2);
+    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
+    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
     long xyId = xyGrid.getId(longitude, latitude);
 
     List<OSHNode> gridNodes = nodes.stream().map(osh2 -> {
@@ -60,7 +61,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
         OSHNode osh = OSHNodeImpl.build(versions);
         return osh;
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }).collect(Collectors.toList());
 
@@ -75,7 +76,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
       }
 
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -93,8 +94,8 @@ public abstract class OSHDBHandler extends LoaderHandler {
     XYGrid xyGrid = new XYGrid(zoom);
 
     OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
-    long longitude = bbox.getMinLonLong() + ((bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2);
-    long latitude = bbox.getMinLatLong() + ((bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2);
+    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
+    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
     long xyId = xyGrid.getId(longitude, latitude);
 
     Map<Long, OSHNode> idOshMap = new HashMap<>(nodes.size());
@@ -106,7 +107,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
         osh = OSHNodeImpl.build(versions);
         idOshMap.put(id, osh);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     });
 
@@ -128,7 +129,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
         }
         return osh;
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }).collect(Collectors.toList());
 
@@ -141,7 +142,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
         handleWayGrid(grid);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -157,8 +158,8 @@ public abstract class OSHDBHandler extends LoaderHandler {
     XYGrid xyGrid = new XYGrid(zoom);
 
     OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
-    long longitude = bbox.getMinLonLong() + ((bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2);
-    long latitude = bbox.getMinLatLong() + ((bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2);
+    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
+    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
     long xyId = xyGrid.getId(longitude, latitude);
 
     Map<Long, OSHNode> idOshMap = new HashMap<>(nodes.size());
@@ -170,7 +171,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
         osh = OSHNodeImpl.build(versions);
         idOshMap.put(id, osh);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     });
 
@@ -199,7 +200,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
             OSHRelationImpl.build(versions, nodesForThisRelation, waysForThisRelation);
         return ret;
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }).collect(Collectors.toList());
 
@@ -208,7 +209,7 @@ public abstract class OSHDBHandler extends LoaderHandler {
           longitude, latitude, gridRelation);
       handleRelationsGrid(grid);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 }

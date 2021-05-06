@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +102,7 @@ public class TransformerRelation extends Transformer {
       store(cellId, id, toByteArray, nodeIds, wayIds);
       addIdToCell(id, cellId);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -116,7 +117,7 @@ public class TransformerRelation extends Transformer {
         ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
       bitmapRefNode.writeExternal(out);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new UncheckedIOException(e);
     }
     bitmapRefWay.runOptimize();
     try (
@@ -125,7 +126,7 @@ public class TransformerRelation extends Transformer {
         ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
       bitmapRefWay.writeExternal(out);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new UncheckedIOException(e);
     }
   }
 

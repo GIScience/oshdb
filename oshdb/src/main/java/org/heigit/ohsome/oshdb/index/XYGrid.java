@@ -331,8 +331,8 @@ public class XYGrid implements Serializable {
    * Calculates all tiles, that lie within a bounding-box.
    *
    * <p>
-   * TODO but priority 999: Add possibility to snap the BBX to the tile-grid. TODO: is an exception
-   * needed?
+   * TODO but priority 999: Add possibility to snap the BBX to the tile-grid.
+   * TODO: is an exception needed?
    * </p>
    *
    * @param bbox    The bounding box. First dimension is longitude, second is latitude.

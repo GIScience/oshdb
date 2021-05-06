@@ -30,9 +30,9 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OSHDbToIgnite {
+public class OSHDBToIgnite {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OSHDbToIgnite.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OSHDBToIgnite.class);
 
   /**
    * Load your extracted and transformed OSH-Data into Ignite Caches.
@@ -51,9 +51,9 @@ public class OSHDbToIgnite {
 
       try (Statement stmt = oshdb.createStatement()) {
 
-        OSHDbToIgnite.<GridOSHNodes>doGridImport(ignite, stmt, TableNames.T_NODES, prefix);
-        OSHDbToIgnite.<GridOSHWays>doGridImport(ignite, stmt, TableNames.T_WAYS, prefix);
-        OSHDbToIgnite.<GridOSHRelations>doGridImport(ignite, stmt, TableNames.T_RELATIONS, prefix);
+        OSHDBToIgnite.<GridOSHNodes>doGridImport(ignite, stmt, TableNames.T_NODES, prefix);
+        OSHDBToIgnite.<GridOSHWays>doGridImport(ignite, stmt, TableNames.T_WAYS, prefix);
+        OSHDBToIgnite.<GridOSHRelations>doGridImport(ignite, stmt, TableNames.T_RELATIONS, prefix);
 
       } catch (SQLException ex) {
         LOG.error("", ex);
@@ -104,8 +104,6 @@ public class OSHDbToIgnite {
           final long levelId = CellId.getLevelId(level, id);
 
           final ObjectInputStream ois = new ObjectInputStream(rst.getBinaryStream(3));
-          // System.out.printf("level:%d, id:%d -> LevelId:%16s%n", level, id,
-          // Long.toHexString(levelId));
           @SuppressWarnings("unchecked")
           final T grid = (T) ois.readObject();
           streamer.addData(levelId, grid);
@@ -139,7 +137,6 @@ public class OSHDbToIgnite {
 
     @Parameter(names = {"-help", "--help", "-h", "--h"}, help = true, order = 0)
     public boolean help = false;
-
   }
 
   public static void main(String[] args) throws SQLException, IgniteCheckedException {
@@ -161,7 +158,7 @@ public class OSHDbToIgnite {
       return;
     }
     try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdb, "sa", null)) {
-      OSHDbToIgnite.load(largs.ignitexml, con, largs.prefix);
+      OSHDBToIgnite.load(largs.ignitexml, con, largs.prefix);
     }
   }
 }

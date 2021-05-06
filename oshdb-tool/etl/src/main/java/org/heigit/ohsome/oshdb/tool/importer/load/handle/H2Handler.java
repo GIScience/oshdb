@@ -64,7 +64,6 @@ public class H2Handler extends OSHDBHandler {
           insertValue.setInt(2, valueId);
           insertValue.setString(3, value);
           insertValue.addBatch();
-          // insertValue.executeUpdate();
           valueId++;
         } catch (SQLException e) {
           System.err.printf("error %d:%s %d:%s%n", keyId, key, valueId, value);
@@ -93,7 +92,6 @@ public class H2Handler extends OSHDBHandler {
 
   @Override
   public void handleNodeGrid(GridOSHNodes grid) {
-    // System.out.println("nod "+grid.getLevel()+":"+grid.getId());
     try {
       out.reset();
       try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
@@ -135,7 +133,6 @@ public class H2Handler extends OSHDBHandler {
 
   @Override
   public void handleRelationsGrid(GridOSHRelations grid) {
-    // System.out.println("rel "+ grid.getLevel()+":"+grid.getId());
     try {
       out.reset();
       try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
@@ -208,7 +205,7 @@ public class H2Handler extends OSHDBHandler {
           insert.addBatch();
 
           insert.setString(1, "oshdb.maxzoom");
-          insert.setString(2, "" + maxZoomLevel);
+          insert.setString(2, Integer.toString(maxZoomLevel));
           insert.addBatch();
 
           insert.executeBatch();
