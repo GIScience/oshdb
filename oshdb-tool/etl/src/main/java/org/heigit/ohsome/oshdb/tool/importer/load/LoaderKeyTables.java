@@ -36,11 +36,11 @@ public class LoaderKeyTables {
     this.handler = handler;
   }
 
-  public void load() {
+  public void load() throws IOException {
     loadTags();
   }
 
-  public void loadTags() {
+  public void loadTags() throws IOException {
     final Function<InputStream, InputStream> input = Functions.identity();
 
     try (
@@ -67,15 +67,12 @@ public class LoaderKeyTables {
             values.add(vf.value);
           }
         }
-
         handler.loadKeyValues(i, key, values);
       }
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
-  public void loadRoles() throws FileNotFoundException, IOException {
+  public void loadRoles() throws IOException {
     final Function<InputStream, InputStream> input = Functions.identity();
     try (DataInputStream roleIn = new DataInputStream(input.apply(new BufferedInputStream(
         new FileInputStream(workDirectory.resolve("extract_roles").toFile()))))) {
