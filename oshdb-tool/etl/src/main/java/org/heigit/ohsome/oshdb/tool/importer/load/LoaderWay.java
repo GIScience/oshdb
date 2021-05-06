@@ -22,7 +22,7 @@ import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 public class LoaderWay extends Loader {
 
   public interface Handler {
-    public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways,
+    void handleWayGrid(long cellId, Collection<TransformOSHWay> ways,
         Collection<TransformOSHNode> nodes);
   }
 

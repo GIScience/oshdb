@@ -15,7 +15,7 @@ public class ConsoleHandler extends LoaderHandler {
     final int valueLimit = 10;
     System.out.printf("%4d : k=%s,  (%d:%s%s)%n", id, key, values.size(),
         values.stream().limit(valueLimit).collect(Collectors.toList()).toString(),
-        (values.size() > valueLimit) ? "..." : "");
+        values.size() > valueLimit ? "..." : "");
   }
 
   @Override

@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.Map;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -95,11 +96,11 @@ public class OSHNode2 extends OSHEntity2 implements OSH<OSMNode> {
           longitude = in.readS64Delta(longitude);
           latitude = in.readS64Delta(latitude);
         }
-        return new OSMNode(entity.id, version, (entity.baseTimestamp + timestamp), changeset,
+        return new OSMNode(entity.id, version, entity.baseTimestamp + timestamp, changeset,
             userId, keyValues,
             entity.baseLongitude + longitude, entity.baseLatitude + latitude);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
   }

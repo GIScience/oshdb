@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.Map;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -125,10 +126,10 @@ public abstract class OSHRelation2 extends OSHEntity2 implements OSH<OSMRelation
 
           }
         }
-        return new OSMRelation(entity.id, version, (entity.baseTimestamp + timestamp), changeset,
+        return new OSMRelation(entity.id, version, entity.baseTimestamp + timestamp, changeset,
             userId, keyValues, members);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
   }

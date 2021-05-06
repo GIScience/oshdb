@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +16,8 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
 public abstract class OSHEntity2 {
   protected final byte[] data;
+  protected final int offset;
+  protected final int length;
 
   protected final long baseTimestamp;
   protected final long baseLongitude;
@@ -32,6 +35,8 @@ public abstract class OSHEntity2 {
       final long baseLongitude, final long baseLatitude, final int[] keys, final int dataOffset,
       final int dataLength) {
     this.data = data;
+    this.offset = offset;
+    this.length = length;
 
     this.baseTimestamp = baseTimestamp;
     this.baseLongitude = baseLongitude;
@@ -178,10 +183,9 @@ public abstract class OSHEntity2 {
             keyValues[i] = in.readU32();
           }
         }
-
         return extension();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
 

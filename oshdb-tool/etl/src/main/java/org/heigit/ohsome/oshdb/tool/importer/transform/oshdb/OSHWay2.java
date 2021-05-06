@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.Map;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -46,7 +47,7 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
           final Integer memberOffset = nodeOffsets.get(Long.valueOf(memId));
 
           if (memberOffset == null) {
-            lastId = out.writeS64Delta((memId * -1), lastId);
+            lastId = out.writeS64Delta(memId * -1, lastId);
           } else {
             long offset = memberOffset.longValue();
             lastId = out.writeS64Delta(offset, lastId);
@@ -100,10 +101,10 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
             members[i] = way.getMember(memId);
           }
         }
-        return new OSMWay(entity.id, version, (entity.baseTimestamp + timestamp), changeset, userId,
+        return new OSMWay(entity.id, version, entity.baseTimestamp + timestamp, changeset, userId,
             keyValues, members);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
   }

@@ -21,7 +21,7 @@ import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 public class LoaderRelation extends Loader {
 
   public interface Handler {
-    public void handleRelationGrid(long cellId, Collection<TransfomRelation> entities,
+    void handleRelationGrid(long cellId, Collection<TransfomRelation> entities,
         Collection<TransformOSHNode> nodes, Collection<TransformOSHWay> ways);
   }
 

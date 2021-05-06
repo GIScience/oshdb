@@ -9,6 +9,7 @@ import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,20 +39,18 @@ public class PageLoader extends CacheLoader<Integer, Page> {
       this.pageSizePower = dataInput.readInt();
       this.pageSize = (int) Math.pow(2, pageSizePower);
 
-      try {
-        while (true) {
-          try {
-            final int pageNumber = dataInput.readInt();
-            final long offset = dataInput.readLong();
-            final int size = dataInput.readInt();
-            final int rawSize = dataInput.readInt();
-            this.pageIndex.put(Integer.valueOf(pageNumber), new PageLocation(offset, size, rawSize));
-          } catch (EOFException e) {
-            break;
-          }
+      boolean eof = false;
+      while (!eof) {
+        try {
+          final int pageNumber = dataInput.readInt();
+          final long offset = dataInput.readLong();
+          final int size = dataInput.readInt();
+          final int rawSize = dataInput.readInt();
+          this.pageIndex.put(Integer.valueOf(pageNumber),
+              new PageLocation(offset, size, rawSize));
+        } catch (EOFException e) {
+          eof = true;
         }
-      } catch (IOException e) {
-          throw e;
       }
     }
   }
@@ -62,7 +61,6 @@ public class PageLoader extends CacheLoader<Integer, Page> {
 
   @Override
   public Page load(Integer key) throws Exception {
-    // System.out.println("Load Page "+key);
     PageLocation loc = pageIndex.get(key);
     if (loc == null) {
       return empty;
@@ -95,11 +93,10 @@ public class PageLoader extends CacheLoader<Integer, Page> {
             pageContent[bit] = wrapper.readS64() + lastValue;
             lastValue = pageContent[bit];
           } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException(e);
           }
         }
       });
-
       return new DensePage(pageContent);
     } else {
       Int2LongAVLTreeMap map = new Int2LongAVLTreeMap();
@@ -114,11 +111,10 @@ public class PageLoader extends CacheLoader<Integer, Page> {
             value = wrapper.readS64() + value;
             map.put(bit, value);
           } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException(e);
           }
         }
       });
-
       return new SparsePage(map);
     }
   }

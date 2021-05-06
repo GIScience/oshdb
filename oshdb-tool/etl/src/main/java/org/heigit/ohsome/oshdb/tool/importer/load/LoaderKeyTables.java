@@ -45,9 +45,9 @@ public class LoaderKeyTables {
     try (
         DataInputStream keyIn = new DataInputStream(input.apply(new BufferedInputStream(
             new FileInputStream(workDirectory.resolve("extract_keys").toFile()))));
-        final RandomAccessFile raf =
+        RandomAccessFile raf =
             new RandomAccessFile(workDirectory.resolve("extract_keyvalues").toFile(), "r");
-        final FileChannel valuesChannel = raf.getChannel();) {
+        FileChannel valuesChannel = raf.getChannel();) {
 
       final int length = keyIn.readInt();
       for (int i = 0; i < length; i++) {
