@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.Weigher;
+import com.google.common.io.Closeables;
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -13,6 +14,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
@@ -85,7 +87,7 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
         rafPages.close();
         rafPageIndex.close();
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new UncheckedIOException(e);
       }
     }
 
@@ -194,11 +196,9 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
       Page page = cache.get(pageNumber);
       final long cellId = page.get(pageOffset);
       return cellId;
-
     } catch (ExecutionException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
-    return -1;
   }
 
   @Override
@@ -206,7 +206,7 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
     try {
       rafPages.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new UncheckedIOException(e);
     }
   }
 

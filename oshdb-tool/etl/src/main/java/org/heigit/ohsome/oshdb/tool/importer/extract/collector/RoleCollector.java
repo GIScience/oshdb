@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -147,7 +148,6 @@ public class RoleCollector implements Iterable<Role> {
 
       } catch (IOException e) {
         index = Integer.MAX_VALUE;
-        e.printStackTrace();
         throw new NoSuchElementException(e.getMessage());
       }
     }
@@ -196,7 +196,6 @@ public class RoleCollector implements Iterable<Role> {
         dataInput = new DataInputStream(new BufferedInputStream(input));
         return RoleFileReader.of(dataInput);
       } catch (IOException e) {
-        e.printStackTrace();
         if (dataInput != null) {
           try {
             dataInput.close();
@@ -204,7 +203,7 @@ public class RoleCollector implements Iterable<Role> {
             e.addSuppressed(e2);
           }
         }
-        throw new RuntimeException(e.getMessage());
+        throw new UncheckedIOException(e);
       }
     }).forEach(iters::add);
     if (role2Frequency.size() > 0) {

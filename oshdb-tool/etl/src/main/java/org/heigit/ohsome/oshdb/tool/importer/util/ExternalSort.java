@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -182,15 +183,15 @@ public class ExternalSort<T> {
       try {
         return deserialize.read(input);
       } catch (IOException e) {
-        if (!(e instanceof EOFException)) {
-          e.printStackTrace();
-        }
+        closed = true;
         try {
           input.close();
         } catch (IOException e1) {
           e.addSuppressed(e1);
         }
-        closed = true;
+        if (!(e instanceof EOFException)) {
+          throw new UncheckedIOException(e);
+        }
       }
       return null;
     }
