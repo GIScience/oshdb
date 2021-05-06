@@ -91,7 +91,6 @@ public class TransfomRelation extends OSHRelation2 {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
-
   final Map<OSMType, long[]> offsetToId;
 
   protected TransfomRelation(byte[] data, int offset, int length, byte header, long id,

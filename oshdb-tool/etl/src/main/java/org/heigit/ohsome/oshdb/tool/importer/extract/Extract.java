@@ -236,7 +236,6 @@ public class Extract {
                 .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
       }
 
-
     } catch (Exception e) {
       e.printStackTrace();
     }

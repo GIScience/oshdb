@@ -22,7 +22,6 @@ public class PbfBlob {
   public final boolean isFirstBlob;
   public final boolean overSoftLimit;
 
-
   private Osmformat.PrimitiveBlock block = null;
 
   /**

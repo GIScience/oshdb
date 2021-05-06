@@ -364,8 +364,6 @@ public class OSHRelationImpl extends OSHEntityImpl
         }
       }
 
-
-
       ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(node.getVersions()), 0, 0,
           baseLongitude, baseLatitude);
       nodeOffsets.put(node.getId(), idx);

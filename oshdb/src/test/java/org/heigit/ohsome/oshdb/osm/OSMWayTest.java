@@ -50,7 +50,6 @@ public class OSMWayTest {
     assertEquals(expResult, result);
   }
 
-
   @Test
   public void testCompareTo() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);

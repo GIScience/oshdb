@@ -58,5 +58,4 @@ public class OSMMemberTest {
     assertEquals(expResult, result);
   }
 
-
 }

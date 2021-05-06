@@ -24,7 +24,6 @@ public class MutableOSMEntity implements OSMEntity {
     this.tags = tags;
   }
 
-
   @Override
   public long getId() {
     return id;

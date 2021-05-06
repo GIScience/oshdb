@@ -73,7 +73,6 @@ public class TransformReader {
     return String.format("%d:%d %d, (#%d  %d)", pos - 16, end, cellId, size, bytes);
   }
 
-
   public static class NodeReader extends TransformReader {
     public NodeReader(Path path) throws IOException {
       super(path);
@@ -152,7 +151,6 @@ public class TransformReader {
       final ByteBuffer data = ByteBuffer.allocateDirect(bytes);
       channel.read(data, pos);
       data.flip();
-
 
       Set<TransformOSHWay> ret = new TreeSet<>((a, b) -> Long.compare(a.getId(), b.getId()));
       while (data.hasRemaining()) {

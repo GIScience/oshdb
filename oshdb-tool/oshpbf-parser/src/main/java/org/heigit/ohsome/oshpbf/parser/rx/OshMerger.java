@@ -81,7 +81,6 @@ public class OshMerger extends Flowable<Osh> {
         upstream.request(1);
       }
 
-
     }
 
     private static Osh merge(Osh a, Osh b) {
@@ -120,8 +119,6 @@ public class OshMerger extends Flowable<Osh> {
       done = true;
       actual.onError(t);
     }
-
-
 
     @Override
     public void request(long n) {

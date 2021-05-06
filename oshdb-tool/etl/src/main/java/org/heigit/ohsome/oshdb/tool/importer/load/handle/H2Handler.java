@@ -165,12 +165,10 @@ public class H2Handler extends OSHDBHandler {
 
     boolean withOutKeyTables = config.withOutKeyTables;
 
-
     Class.forName("org.h2.Driver");
     try (Connection conn =
         DriverManager.getConnection("jdbc:h2:" + oshdb.toString() + "", "sa", null)) {
       try (Statement stmt = conn.createStatement()) {
-
 
         try (
             BufferedReader br =

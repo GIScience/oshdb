@@ -29,7 +29,6 @@ public class DensePage implements Page {
 
     Arrays.fill(page.cellIds, -1);
 
-
     bitmap.forEach(new IntConsumer() {
       private long lastValue = 0;
 

@@ -55,7 +55,6 @@ public class OsmPrimitveBlockIterator implements Iterator<Object> {
     return blockStartPostion;
   }
 
-
   public Set<OSMType> getTypes() {
     return types;
   }

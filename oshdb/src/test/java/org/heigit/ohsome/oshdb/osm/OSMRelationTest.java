@@ -191,6 +191,4 @@ public class OSMRelationTest {
     assertEquals(expResult, result);
   }
 
-
-
 }

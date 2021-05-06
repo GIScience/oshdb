@@ -50,7 +50,6 @@ public class OSMNodeTest {
     assertEquals(expResult, result);
   }
 
-
   @Test
   public void testEquals() {
     OSMNode o =

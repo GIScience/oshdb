@@ -13,7 +13,6 @@ public interface OSHEntity {
 
   OSMType getType();
 
-
   Iterable<? extends OSMEntity> versions();
 
   Iterator<? extends OSMEntity> iterator();

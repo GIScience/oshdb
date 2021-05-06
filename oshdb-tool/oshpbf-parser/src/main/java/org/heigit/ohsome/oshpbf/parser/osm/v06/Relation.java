@@ -25,5 +25,4 @@ public class Relation extends Entity {
     return "R " + super.toString() + " #members: " + members.length;
   }
 
-
 }

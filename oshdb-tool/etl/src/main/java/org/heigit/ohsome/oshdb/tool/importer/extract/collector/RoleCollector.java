@@ -223,7 +223,6 @@ public class RoleCollector implements Iterable<Role> {
 
   }
 
-
   protected Role read(DataInputStream in) throws IOException {
     final String key = in.readUTF();
     final int frequency = in.readInt();

@@ -12,13 +12,11 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
 public abstract class OSHRelation2 extends OSHEntity2 implements OSH<OSMRelation> {
 
-
   protected OSHRelation2(byte[] data, int offset, int length, byte header, long id,
       OSHDBBoundingBox bbox, long baseTimestamp, long baseLongitude, long baseLatitude, int[] keys,
       int dataOffset, int dataLength) {
     super(data, offset, length, header, id, bbox, baseTimestamp, baseLongitude, baseLatitude, keys,
         dataOffset, dataLength);
-
 
   }
 
@@ -94,14 +92,12 @@ public abstract class OSHRelation2 extends OSHEntity2 implements OSH<OSMRelation
 
   }
 
-
   public abstract OSMMember getMember(long memId, int type, int role);
 
   @Override
   public Iterator<OSMRelation> iterator() {
     return new OSMRelationIterator(data, dataOffset, dataLength, this);
   }
-
 
   public static class OSMRelationIterator extends OSMIterator<OSMRelation> {
     public OSMRelationIterator(byte[] data, int offset, int length, OSHRelation2 relation) {

@@ -7,8 +7,6 @@ public class OSMMemberWay implements OSMMember {
   private final long id;
   private final OSHNode node;
 
-
-
   public OSMMemberWay(long id, OSHNode node) {
     this.id = id;
     this.node = node;

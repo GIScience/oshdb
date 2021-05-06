@@ -52,7 +52,6 @@ public class TransformerRelation extends Transformer {
   private Roaring64NavigableMap bitmapRefNode = new Roaring64NavigableMap();
   private Roaring64NavigableMap bitmapRefWay = new Roaring64NavigableMap();
 
-
   @Override
   public void transform(long id, List<Entity> versions) {
     List<OSMRelation> entities = new ArrayList<>(versions.size());
@@ -129,7 +128,6 @@ public class TransformerRelation extends Transformer {
       throw new UncheckedIOException(e);
     }
   }
-
 
   private OSMRelation getOSM(Relation entity) {
     return new OSMRelation(entity.getId(),

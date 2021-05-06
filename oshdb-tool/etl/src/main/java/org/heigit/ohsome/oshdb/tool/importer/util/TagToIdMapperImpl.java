@@ -20,20 +20,17 @@ public class TagToIdMapperImpl implements TagToIdMapper {
     this.valueToId = valueToId;
   }
 
-
   public void get(String key, String value, int[] kv, int offset) {
     final int keyId = keyToId.getId(key);
     kv[offset] = keyId;
     kv[offset + 1] = valueToId[keyId].getId(value);
   }
 
-
   public int[] get(String key, String value) {
     final int[] ret = new int[2];
     get(key, value, ret, 0);
     return ret;
   }
-
 
   public static TagToIdMapperImpl load(String kvToIdMapping, ToIntFunction<String> hashFunction)
       throws FileNotFoundException, IOException {

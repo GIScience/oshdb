@@ -12,7 +12,6 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.OSHEntity2;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
-
 public abstract class TransformReader<T extends OSHEntity2> implements Closeable {
 
   public final Path path;
@@ -116,5 +115,4 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
   protected abstract T getInstance(byte[] data, int offset, int length, long baseId,
       long baseTimestamp, long baseLongitude, long baseLatitude) throws IOException;
 }
-
 

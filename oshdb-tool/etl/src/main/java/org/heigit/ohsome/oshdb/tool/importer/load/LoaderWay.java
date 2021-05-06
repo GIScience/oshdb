@@ -165,7 +165,6 @@ public class LoaderWay extends Loader {
         continue;
       }
 
-
       for (TransformOSHNode osh : grid.forGrid) {
         Long id = osh.getId();
         for (int j = i - 1; j >= 0; j--) {
@@ -191,8 +190,6 @@ public class LoaderWay extends Loader {
       grid.clear();
     }
   }
-
-
 
   @Override
   public void visitNode(TransformOSHNode node) {

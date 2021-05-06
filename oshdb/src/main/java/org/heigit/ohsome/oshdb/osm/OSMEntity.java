@@ -125,7 +125,6 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
     return false;
   }
 
-
   /**
    * Tests if any a given key is present but ignores certain values. Useful when looking for example
    * "TagKey" != "no"
@@ -169,8 +168,6 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
     }
     return false;
   }
-
-
 
   @Override
   public int hashCode() {

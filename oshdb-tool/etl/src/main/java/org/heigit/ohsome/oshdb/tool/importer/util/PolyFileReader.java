@@ -17,7 +17,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.wololo.geojson.GeoJSON;
 import org.wololo.jts2geojson.GeoJSONWriter;
 
-
 public class PolyFileReader {
 
   public static class GeomWithHoles {
@@ -107,7 +106,6 @@ public class PolyFileReader {
         coordinates.add(coord);
       }
     }
-
 
     List<Polygon> polys = new ArrayList<>(geoms.size());
     for (GeomWithHoles geom : geoms) {

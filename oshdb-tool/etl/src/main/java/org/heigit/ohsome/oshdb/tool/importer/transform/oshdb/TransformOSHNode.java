@@ -8,7 +8,6 @@ import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
-
 public class TransformOSHNode extends OSHNode2 {
 
   public static TransformOSHNode build(ByteArrayOutputWrapper output, ByteArrayOutputWrapper record,

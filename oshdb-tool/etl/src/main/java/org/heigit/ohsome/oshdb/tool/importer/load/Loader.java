@@ -7,13 +7,11 @@ import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 
-
 public abstract class Loader implements Closeable {
 
   protected final int minEntitiesPerCell;
 
   protected List<Loader> loaders = new ArrayList<>(2);
-
 
   public Loader(int minEntitiesPerCell) {
     this.minEntitiesPerCell = minEntitiesPerCell;

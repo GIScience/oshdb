@@ -18,7 +18,6 @@ import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.ohsome.oshdb.tool.importer.transform.reader.TransformRelationReaders;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
-
 public class LoaderRelation extends Loader {
 
   public interface Handler {
@@ -44,13 +43,11 @@ public class LoaderRelation extends Loader {
     }
   }
 
-
   final List<Grid> zoomLevel = new ArrayList<>(20);
   int currentZoom;
   int maxZoom = -1;
   final int maxZoomLevel;
   int lastZoom = -1;
-
 
   Set<Long> nodesForCellSet = new HashSet<>();
   List<TransformOSHNode> nodesForGrid;
@@ -145,7 +142,6 @@ public class LoaderRelation extends Loader {
     }
 
   }
-
 
   private void store(int zoom) {
     for (int i = lastZoom; i >= zoom; i--) {

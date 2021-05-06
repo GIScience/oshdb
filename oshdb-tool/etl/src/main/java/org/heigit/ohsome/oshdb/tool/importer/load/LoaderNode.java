@@ -64,7 +64,6 @@ public class LoaderNode extends Loader {
 
   public final Long2ObjectMap<TransformOSHNode> invalidNodes = new Long2ObjectAVLTreeMap<>();
 
-
   @Override
   public void load(long cellId2, boolean all) {
     if (!reader.hasNext()) {

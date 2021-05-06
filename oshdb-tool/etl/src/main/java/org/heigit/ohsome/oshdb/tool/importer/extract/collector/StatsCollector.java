@@ -45,7 +45,6 @@ public class StatsCollector {
   public void addHeader(HeaderBlock header) {
     this.header = header;
 
-
     nodes[3] = Long.MAX_VALUE;
     nodes[4] = Long.MIN_VALUE;
     ways[3] = Long.MAX_VALUE;
@@ -150,7 +149,6 @@ public class StatsCollector {
             .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
         ZonedDateTime.ofInstant(Instant.ofEpochSecond(maxTs), ZoneOffset.UTC)
             .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-
 
     out.println("data.nodes="
         + Arrays.stream(nodes, 1, nodes.length).collect(() -> new StringBuilder("" + nodes[0]),

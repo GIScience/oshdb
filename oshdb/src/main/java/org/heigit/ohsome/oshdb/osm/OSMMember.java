@@ -74,6 +74,4 @@ public class OSMMember implements Serializable {
     return id == other.id && roleId == other.roleId && type == other.type;
   }
 
-
-
 }

@@ -21,7 +21,6 @@ public class RoleToIdMapperImpl implements RoleToIdMapper {
     return roleToId.getId(role);
   }
 
-
   public static RoleToIdMapperImpl load(String roleToIdMapping, ToIntFunction<String> hashFunction)
       throws FileNotFoundException, IOException {
     try (DataInputStream in =

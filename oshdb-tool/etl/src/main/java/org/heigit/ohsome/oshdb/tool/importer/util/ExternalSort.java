@@ -55,8 +55,6 @@ public class ExternalSort<T> {
   private boolean parallel;
   private File tmpDirectory;
 
-
-
   public static <T> ExternalSort<T> of(Comparator<T> cmp, long maxSize,
       ToLongFunction<T> estimator) {
     ExternalSort<T> sorter = new ExternalSort<T>(cmp, maxSize, estimator);
@@ -88,7 +86,6 @@ public class ExternalSort<T> {
     return this;
   }
 
-
   public Iterator<T> sort(Iterator<T> source) throws IOException {
     return sort(source, true);
   }
@@ -97,8 +94,6 @@ public class ExternalSort<T> {
     this.parallel = parallel;
     return sortInBatch(source);
   }
-
-
 
   private Iterator<T> sortInBatch(Iterator<T> source) throws IOException {
     List<T> batch = new ArrayList<>();

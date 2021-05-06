@@ -30,7 +30,6 @@ public class OSMMemberWayIdOnly implements OSMMember {
     return null;
   }
 
-
   @Override
   public String toString() {
     return asString();

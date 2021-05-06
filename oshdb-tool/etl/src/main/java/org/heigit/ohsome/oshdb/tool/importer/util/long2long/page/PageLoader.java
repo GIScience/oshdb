@@ -78,7 +78,6 @@ public class PageLoader extends CacheLoader<Integer, Page> {
     RoaringBitmap bitmap = new RoaringBitmap();
     bitmap.deserialize(in);
 
-
     ByteArrayWrapper wrapper =
         ByteArrayWrapper.newInstance(bytes, (int) input.position(), input.available());
 

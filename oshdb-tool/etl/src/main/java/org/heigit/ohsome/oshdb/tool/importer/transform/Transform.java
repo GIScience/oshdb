@@ -40,7 +40,6 @@ public class Transform {
     return new Transform(availableMemory);
   }
 
-
   public Transform withWorkDirectory(Path workDirectory) {
     this.workDirectory = workDirectory;
     return this;
@@ -65,8 +64,6 @@ public class Transform {
         .map(osh -> osh.getVersions());
     subscribe(flow, transformer::transform, transformer::error, transformer::complete);
   }
-
-
 
   public void transformWays(OsmPbfMeta pbfMeta, int maxZoom, TagToIdMapper tag2Id,
       SortedLong2LongMap node2cell, int workerId, int workerTotal) throws IOException {

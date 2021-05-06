@@ -79,7 +79,6 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
 
   public static class OSMWayIterator extends OSMIterator<OSMWay> {
 
-
     public OSMWayIterator(byte[] data, int offset, int length, OSHWay2 way) {
       super(data, offset, length, way);
       this.way = way;
