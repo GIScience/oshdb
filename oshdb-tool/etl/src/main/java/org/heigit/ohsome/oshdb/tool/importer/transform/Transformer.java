@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -35,7 +35,7 @@ public abstract class Transformer {
   private static class OSHDataContainer {
     private long sizeInBytesOfData = 0;
     private long estimatedMemoryUsage =
-        SizeEstimator.objOverhead() + (2 * SizeEstimator.intField()) + SizeEstimator.linkedList();
+        SizeEstimator.objOverhead() + 2 * SizeEstimator.intField() + SizeEstimator.linkedList();
 
     private long lastId = 0;
     private List<byte[]> list = new LinkedList<>();
@@ -126,7 +126,7 @@ public abstract class Transformer {
 
     ids.sort((a, b) -> {
       final int c = Integer.compare(a.key, b.key);
-      return (c != 0) ? c : Integer.compare(a.value, b.value);
+      return c != 0 ? c : Integer.compare(a.value, b.value);
     });
     final int[] ret = new int[tags.length * 2];
     int i = 0;
@@ -139,7 +139,7 @@ public abstract class Transformer {
   }
 
   public int getRole(String role) {
-    return (roleToIdMapper != null) ? roleToIdMapper.getRole(role) : 0;
+    return roleToIdMapper != null ? roleToIdMapper.getRole(role) : 0;
   }
 
   protected long getCell(long longitude, long latitude) {
@@ -235,10 +235,8 @@ public abstract class Transformer {
         channel.write(byteBuffer);
       }
       System.out.println("done! " + bytesWritten + " bytes");
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new UncheckedIOException(e);
     }
 
     fileNumber++;

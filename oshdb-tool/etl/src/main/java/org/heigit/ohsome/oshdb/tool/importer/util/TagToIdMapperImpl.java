@@ -5,7 +5,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.function.ToIntFunction;
 
@@ -33,7 +32,7 @@ public class TagToIdMapperImpl implements TagToIdMapper {
   }
 
   public static TagToIdMapperImpl load(String kvToIdMapping, ToIntFunction<String> hashFunction)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     try (DataInputStream in =
         new DataInputStream(new BufferedInputStream(new FileInputStream(kvToIdMapping)))) {
       return read(in, hashFunction);

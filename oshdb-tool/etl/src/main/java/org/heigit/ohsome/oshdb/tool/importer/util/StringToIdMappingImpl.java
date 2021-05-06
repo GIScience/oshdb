@@ -9,7 +9,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.function.ToIntFunction;
 
@@ -51,7 +50,7 @@ public class StringToIdMappingImpl implements StringToIdMapping {
   }
 
   public static StringToIdMappingImpl load(String stringToIdMapping,
-      ToIntFunction<String> hashFunction) throws FileNotFoundException, IOException {
+      ToIntFunction<String> hashFunction) throws IOException {
     try (DataInputStream in =
         new DataInputStream(new BufferedInputStream(new FileInputStream(stringToIdMapping)))) {
       return read(in, hashFunction);

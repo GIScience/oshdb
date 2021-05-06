@@ -8,14 +8,12 @@ import com.google.common.base.Functions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Streams;
 import com.google.common.io.CountingOutputStream;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.reactivex.Flowable;
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -245,7 +243,7 @@ public class Extract {
   }
 
   public void sortByFrequency(ExtractKeyTablesResult extratKeyTablesResult)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     System.out.print("sorting tags by frequency ...");
     sortByFrequency(extratKeyTablesResult.kvFrequency);
     System.out.println(" done!");
@@ -255,7 +253,7 @@ public class Extract {
   }
 
   public void sortByFrequency(KeyValueFrequencyCollector kvFrequency)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     final long maxSize = maxMemory;
     final ExternalSort<ValueFrequency> valueSorter = ExternalSort.of((a, b) -> {
       final int c = Integer.compare(a.freq, b.freq);
@@ -315,7 +313,7 @@ public class Extract {
   }
 
   public void sortByFrequency(RoleCollector roleFrequency)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     final long maxSize = maxMemory;
     final Function<OutputStream, OutputStream> output = Functions.identity();
     try (

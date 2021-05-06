@@ -16,7 +16,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +120,7 @@ public class KeyValueFrequencyCollector implements Iterable<KeyValueFrequency> {
     splits.add(newTempFile);
   }
 
-  public void writeTemp(OutputStream outStream) throws FileNotFoundException, IOException {
+  public void writeTemp(OutputStream outStream) throws IOException {
     try (OutputStream outStream2 = outputStreamFunction.apply(outStream);
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(outStream2))) {
       out.writeInt(key2Frequency.size());

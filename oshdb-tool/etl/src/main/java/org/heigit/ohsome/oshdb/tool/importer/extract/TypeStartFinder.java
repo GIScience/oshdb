@@ -6,7 +6,6 @@ import crosby.binary.Osmformat.PrimitiveBlock;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +23,6 @@ public class TypeStartFinder {
    *
    * @param pbf Path to the pbf
    * @throws IOException
-   * @throws FileNotFoundException
    */
   public static OsmPbfMeta getMetaData(Path pbf) throws IOException {
     OsmPbfMeta meta = new OsmPbfMeta();

@@ -8,7 +8,6 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.internal.functions.ObjectHelper;
 import io.reactivex.internal.operators.flowable.FlowableBlockingSubscribe;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,12 +45,12 @@ public class Transform {
   }
 
   public static TagToIdMapper getTagToIdMapper(Path workDirectory)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     return TransformerTagRoles.getTagToIdMapper(workDirectory);
   }
 
   public static RoleToIdMapper getRoleToIdMapper(Path workDirectory)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     return TransformerTagRoles.getRoleToIdMapper(workDirectory);
   }
 

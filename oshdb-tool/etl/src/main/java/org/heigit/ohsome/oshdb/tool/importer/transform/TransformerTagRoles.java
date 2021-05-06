@@ -11,7 +11,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +34,7 @@ import org.heigit.ohsome.oshdb.tool.importer.util.TagToIdMapperImpl;
 public class TransformerTagRoles {
 
   public static TagToIdMapper getTagToIdMapper(Path workDirectory)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     final ToIntFunction<String> hashFunction = s -> s.hashCode();
 
     final Path tag2IdPath = workDirectory.resolve("transform_tag2Id");
@@ -137,7 +136,7 @@ public class TransformerTagRoles {
   }
 
   public static RoleToIdMapper getRoleToIdMapper(Path workDirectory)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     final ToIntFunction<String> hashFunction = s -> s.hashCode();
 
     final Path role2IdPath = workDirectory.resolve("transform_role2Id");

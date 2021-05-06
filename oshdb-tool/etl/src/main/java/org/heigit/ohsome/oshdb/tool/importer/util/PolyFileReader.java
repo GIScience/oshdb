@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -37,7 +36,7 @@ public class PolyFileReader {
   }
 
   public static GeoJSON parse(Path polyFile)
-      throws ParseException, FileNotFoundException, IOException {
+      throws ParseException, IOException {
     GeometryFactory geomFactory = new GeometryFactory();
     List<GeomWithHoles> geoms = new ArrayList<>();
 
@@ -113,7 +112,7 @@ public class PolyFileReader {
     }
 
     Geometry geom =
-        (polys.size() > 1) ? geomFactory.createMultiPolygon(polys.toArray(new Polygon[0]))
+        polys.size() > 1 ? geomFactory.createMultiPolygon(polys.toArray(new Polygon[0]))
             : polys.get(0);
 
     GeoJSONWriter writer = new GeoJSONWriter();
