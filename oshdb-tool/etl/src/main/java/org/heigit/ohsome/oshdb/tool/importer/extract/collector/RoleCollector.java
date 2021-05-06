@@ -77,7 +77,6 @@ public class RoleCollector implements Iterable<Role> {
   public void addAll(Collection<String> roles) {
     roles.forEach(role -> {
       if (role2Frequency.addTo(role, 1) == 0) {
-        countRoles++;
         estimatedSize += SizeEstimator.estimatedSizeOfAvlEntryValue(role);
       }
     });
