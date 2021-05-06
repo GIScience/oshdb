@@ -78,6 +78,7 @@ public class SizeEstimator {
   }
 
   public static long estimateAvailableMemory() {
+    //@SuppressFBWarnings("DM_GC")
     System.gc();
     // http://stackoverflow.com/questions/12807797/java-get-available-memory
     Runtime r = Runtime.getRuntime();

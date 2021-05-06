@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.impl.osh;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
@@ -14,7 +15,7 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
-public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity> {
+public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>, Serializable {
 
   public static class Builder {
 

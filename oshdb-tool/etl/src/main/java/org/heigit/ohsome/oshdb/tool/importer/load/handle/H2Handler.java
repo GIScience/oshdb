@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.load.handle;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Stopwatch;
@@ -172,7 +174,8 @@ public class H2Handler extends OSHDBHandler {
 
         try (
             BufferedReader br =
-                new BufferedReader(new FileReader(workDirectory.resolve("extract_meta").toFile()));
+                new BufferedReader(new FileReader(
+                    workDirectory.resolve("extract_meta").toFile(), UTF_8));
             PreparedStatement insert = conn.prepareStatement(
                 "insert into metadata (key,value) values (?,?)");) {
           stmt.executeUpdate("drop table if exists metadata"

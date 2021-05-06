@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator.estimatedSizeOf;
 
 import com.beust.jcommander.JCommander;
@@ -22,6 +23,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -142,7 +144,7 @@ public class Extract {
    * Extract.
    */
   public ExtractKeyTablesResult extract(ExtractArgs config, int workerId, int workerTotal,
-      boolean keepTemp) {
+      boolean keepTemp) throws IOException, ParseException {
     final Path pbf = config.pbf;
     final StatsCollector stats = new StatsCollector(pbf);
 
@@ -204,8 +206,8 @@ public class Extract {
     oshFlow.count().blockingGet();
 
     try (
-        FileOutputStream fos = new FileOutputStream(workDirectory.resolve("extract_meta").toFile());
-        PrintStream out = new PrintStream(fos)) {
+        PrintStream out = new PrintStream(
+            workDirectory.resolve("extract_meta").toFile(), UTF_8)) {
       stats.print(out);
 
       if (!config.md5.trim().isEmpty()) {
@@ -233,9 +235,6 @@ public class Extract {
             "," + ZonedDateTime.ofInstant(Instant.ofEpochSecond(stats.maxTs), ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
       }
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
 
     ExtractKeyTablesResult result = new ExtractKeyTablesResult(kvFrequency, roleFrequency);
@@ -339,7 +338,7 @@ public class Extract {
     }
   }
 
-  public static void execute(ExtractArgs config) {
+  public static void execute(ExtractArgs config) throws IOException, ParseException {
     Path workDir = config.common.workDir;
     Path tempDir = config.common.tempDir;
 
@@ -421,7 +420,7 @@ public class Extract {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, ParseException {
     ExtractArgs config = new ExtractArgs();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();
 
