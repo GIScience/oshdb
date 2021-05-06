@@ -34,7 +34,6 @@ public class RoleCollector implements Iterable<Role> {
 
   private final Object2IntAVLTreeMap<String> role2Frequency = new Object2IntAVLTreeMap<>();
 
-  private int countRoles = 0;
   private long estimatedSize = 0;
 
   public static final String tempPrefix = "temp_rolefrequency_";

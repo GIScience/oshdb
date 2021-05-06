@@ -39,18 +39,12 @@ public class PageLoader extends CacheLoader<Integer, Page> {
       this.pageSizePower = dataInput.readInt();
       this.pageSize = (int) Math.pow(2, pageSizePower);
 
-      boolean eof = false;
-      while (!eof) {
-        try {
-          final int pageNumber = dataInput.readInt();
-          final long offset = dataInput.readLong();
-          final int size = dataInput.readInt();
-          final int rawSize = dataInput.readInt();
-          this.pageIndex.put(Integer.valueOf(pageNumber),
-              new PageLocation(offset, size, rawSize));
-        } catch (EOFException e) {
-          eof = true;
-        }
+      while (dataInput.available() > 0) {
+        final int pageNumber = dataInput.readInt();
+        final long offset = dataInput.readLong();
+        final int size = dataInput.readInt();
+        final int rawSize = dataInput.readInt();
+        this.pageIndex.put(Integer.valueOf(pageNumber), new PageLocation(offset, size, rawSize));
       }
     }
   }

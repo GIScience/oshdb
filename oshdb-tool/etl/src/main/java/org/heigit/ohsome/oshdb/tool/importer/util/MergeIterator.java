@@ -52,7 +52,7 @@ public class MergeIterator<T> implements Iterator<T> {
     List<T> collect = new ArrayList<>(queue.size());
     collect.add(t);
 
-    while (!queue.isEmpty() && (comparator.compare(t, queue.peek().peek()) == 0)) {
+    while (!queue.isEmpty() && comparator.compare(t, queue.peek().peek()) == 0) {
       collect.add(poll());
     }
     if (collect.size() == 1) {
