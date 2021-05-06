@@ -26,7 +26,7 @@ public class TypeStartFinder {
    * @throws IOException
    * @throws FileNotFoundException
    */
-  public static OsmPbfMeta getMetaData(Path pbf) throws FileNotFoundException, IOException {
+  public static OsmPbfMeta getMetaData(Path pbf) throws IOException {
     OsmPbfMeta meta = new OsmPbfMeta();
     meta.pbf = pbf;
     Path metaPath = pbf.getParent().resolve(pbf.getFileName().toString() + ".meta");
@@ -49,7 +49,6 @@ public class TypeStartFinder {
     long nodeStort = fileSize;
     long wayStart = fileSize;
     long relStart = fileSize;
-    // long pos;
     long count = 0;
     for (PbfBlob blob : RxOshPbfReader.readBlob(pbf, 0, fileSize, -1).filter(PbfBlob::isData)
         .limit(100).blockingIterable()) {
@@ -66,7 +65,6 @@ public class TypeStartFinder {
         default:
           throw new IllegalStateException("unkown type");
       }
-      // pos = blob.pos;
       count++;
     }
 
@@ -195,9 +193,7 @@ public class TypeStartFinder {
         System.out.println("Found nothing");
         return null;
       }
-
     }
-
     return null;
   }
 
@@ -224,5 +220,4 @@ public class TypeStartFinder {
     throw new IllegalArgumentException(
         "block is null, could be a header pbf block instead of a data block!");
   }
-
 }
