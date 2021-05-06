@@ -128,11 +128,11 @@ public class OSHRelationImpl extends OSHEntityImpl
     final int dataOffset = wayDataOffset + wayDataLength;
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHRelationImpl(data, offset, length, //
-        baseTimestamp, baseLongitude, baseLatitude, //
-        header, id, minLon, minLat, maxLon, maxLat, keys, //
-        dataOffset, dataLength, //
-        nodeIndex, nodeDataOffset, nodeDataLength, //
+    return new OSHRelationImpl(data, offset, length,
+        baseTimestamp, baseLongitude, baseLatitude,
+        header, id, minLon, minLat, maxLon, maxLat, keys,
+        dataOffset, dataLength,
+        nodeIndex, nodeDataOffset, nodeDataLength,
         wayIndex, wayDataOffset, wayDataLength);
   }
 

@@ -60,8 +60,8 @@ public class Transform {
       int workerTotal) throws IOException {
     final Transformer transformer =
         new TransformerNode(maxMemory, maxZoom, workDirectory, tag2Id, workerId);
-    Flowable<List<Entity>> flow = RxOshPbfReader //
-        .readOsh(pbfMeta.pbf, pbfMeta.nodeStart, pbfMeta.nodeEnd, pbfMeta.nodeEnd) //
+    Flowable<List<Entity>> flow = RxOshPbfReader
+        .readOsh(pbfMeta.pbf, pbfMeta.nodeStart, pbfMeta.nodeEnd, pbfMeta.nodeEnd)
         .map(osh -> osh.getVersions());
     subscribe(flow, transformer::transform, transformer::error, transformer::complete);
   }
@@ -72,8 +72,8 @@ public class Transform {
       SortedLong2LongMap node2cell, int workerId, int workerTotal) throws IOException {
     final Transformer transformer =
         new TransformerWay(maxMemory, maxZoom, workDirectory, tag2Id, node2cell, workerId);
-    Flowable<List<Entity>> flow = RxOshPbfReader //
-        .readOsh(pbfMeta.pbf, pbfMeta.wayStart, pbfMeta.wayEnd, pbfMeta.wayEnd) //
+    Flowable<List<Entity>> flow = RxOshPbfReader
+        .readOsh(pbfMeta.pbf, pbfMeta.wayStart, pbfMeta.wayEnd, pbfMeta.wayEnd)
         .map(osh -> osh.getVersions());
     subscribe(flow, transformer::transform, transformer::error, transformer::complete);
 
@@ -84,8 +84,8 @@ public class Transform {
       int workerId, int workerTotal) throws IOException {
     final Transformer transformer = new TransformerRelation(maxMemory, maxZoom, workDirectory,
         tag2Id, role2Id, node2cell, way2cell, workerId);
-    Flowable<List<Entity>> flow = RxOshPbfReader //
-        .readOsh(pbfMeta.pbf, pbfMeta.relationStart, pbfMeta.relationEnd, pbfMeta.relationEnd) //
+    Flowable<List<Entity>> flow = RxOshPbfReader
+        .readOsh(pbfMeta.pbf, pbfMeta.relationStart, pbfMeta.relationEnd, pbfMeta.relationEnd)
         .map(osh -> osh.getVersions());
     subscribe(flow, transformer::transform, transformer::error, transformer::complete);
 

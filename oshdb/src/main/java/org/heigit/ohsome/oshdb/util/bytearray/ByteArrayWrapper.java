@@ -144,11 +144,9 @@ public class ByteArrayWrapper {
   /** Read a raw Varint from the stream. */
   public long readRawVarint64() throws IOException {
     // Implementation notes:
-    //
     // Optimized for one-byte values, expected to be common.
     // The particular code below was selected from various candidates
     // empirically, by winning VarintBenchmark.
-    //
     // Sign extension of (signed) Java bytes is usually a nuisance, but
     // we exploit it here to more easily obtain the sign of bytes read.
     // Instead of cleaning up the sign extension bits by masking eagerly,

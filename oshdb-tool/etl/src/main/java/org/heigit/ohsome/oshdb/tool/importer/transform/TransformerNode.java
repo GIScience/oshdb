@@ -78,12 +78,12 @@ public class TransformerNode extends Transformer {
   }
 
   private OSMNode getNode(Node entity) {
-    return new OSMNode(entity.getId(), //
-        modifiedVersion(entity), //
-        entity.getTimestamp(), //
-        entity.getChangeset(), //
-        entity.getUserId(), //
-        getKeyValue(entity.getTags()), //
+    return new OSMNode(entity.getId(),
+        modifiedVersion(entity),
+        entity.getTimestamp(),
+        entity.getChangeset(),
+        entity.getUserId(),
+        getKeyValue(entity.getTags()),
         entity.getLongitude(), entity.getLatitude());
   }
 }

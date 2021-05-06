@@ -77,12 +77,12 @@ public class TransformerWay extends Transformer {
   }
 
   private OSMWay getOSM(Way entity) {
-    return new OSMWay(entity.getId(), //
-        modifiedVersion(entity), //
-        entity.getTimestamp(), //
-        entity.getChangeset(), //
-        entity.getUserId(), //
-        getKeyValue(entity.getTags()), //
+    return new OSMWay(entity.getId(),
+        modifiedVersion(entity),
+        entity.getTimestamp(),
+        entity.getChangeset(),
+        entity.getUserId(),
+        getKeyValue(entity.getTags()),
         convertNodeIdsToOSMMembers(entity.getRefs()));
   }
 

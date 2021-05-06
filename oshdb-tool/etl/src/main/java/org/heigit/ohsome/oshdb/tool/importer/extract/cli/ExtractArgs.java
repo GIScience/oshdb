@@ -36,7 +36,7 @@ public class ExtractArgs {
 
   @Parameter(names = {"--timevalidity_to"},
       description = "latest valid timestamp in isodate format", validateWith = TimeValidity.class)
-  public String timeValidityTo = null; //
+  public String timeValidityTo = null;
 
   @Parameter(names = {"--overwrite"}, description = "overwrite existing files", order = 1)
   public boolean overwrite = false;

@@ -75,8 +75,8 @@ public class RxOshPbfReader {
     final BiFunction<PbfChannel, Emitter<PbfBlob>, PbfChannel> generator = readBlobFromChannel();
     final Consumer<? super PbfChannel> disposeState = closePbf();
     Flowable<PbfBlob> blobFlow = Flowable.generate(
-        initialState, generator, //
-        disposeState); //
+        initialState, generator,
+        disposeState);
     return blobFlow.subscribeOn(Schedulers.io());
   }
 

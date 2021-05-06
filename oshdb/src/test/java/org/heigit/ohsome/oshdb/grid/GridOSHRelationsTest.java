@@ -31,7 +31,6 @@ public class GridOSHRelationsTest {
   //    OSHNode node104 = buildOSHNode(
   //        Arrays.asList(
   //            new OSMNode(104L, 1, 1L, 0L, 123, new int[] {2, 4}, 494094984L, 86809727L)));
-  //
   //    OSHWay way200 =
   //        buildOSHWay(
   //            Arrays
@@ -48,32 +47,27 @@ public class GridOSHRelationsTest {
   //                        new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),
   //                            new OSMMember(102, OSMType.NODE, 0)})),
   //            Arrays.asList(node100, node102));
-  //
-  //    OSHRelation relation300 = OSHRelationImpl.build(Arrays.asList(//
+  //    OSHRelation relation300 = OSHRelationImpl.build(Arrays.asList(
   //        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[] {},
   //            new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null),
-  //                new OSMMember(102, OSMType.NODE, 0, null)}), //
+  //                new OSMMember(102, OSMType.NODE, 0, null)}),
   //        new OSMRelation(300, 2, 3333L, 4444L, 23, new int[] {1, 2},
   //            new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null),
-  //                new OSMMember(102, OSMType.NODE, 0, null)})), //
+  //                new OSMMember(102, OSMType.NODE, 0, null)})),
   //        Arrays.asList(node100, node102), Arrays.asList());
-  //
-  //    OSHRelation relation301 = OSHRelationImpl.build(Arrays.asList(//
+  //    OSHRelation relation301 = OSHRelationImpl.build(Arrays.asList(
   //        new OSMRelation(301, 1, 3333L, 4444L, 23, new int[] {},
   //            new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null),
-  //                new OSMMember(202, OSMType.WAY, 1, null)}), //
+  //                new OSMMember(202, OSMType.WAY, 1, null)}),
   //        new OSMRelation(301, 2, 3333L, 4444L, 23, new int[] {1, 2},
   //            new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null),
-  //                new OSMMember(202, OSMType.WAY, 1, null)})), //
+  //                new OSMMember(202, OSMType.WAY, 1, null)})),
   //        Arrays.asList(), Arrays.asList(way200, way202));
-  //
   //    long cellId = 1;
   //    int cellLevel = 2;
   //    long baseId = 1234;
-  //
   //    GridOSHRelations hosmCell = GridOSHRelations.compact(cellId, cellLevel, baseId, 0, 0, 0,
   //        Arrays.asList(relation300, relation301));
-  //
   //    /*
   //     * hosmCell.forEach(osh -> { OSHRelation oshRelation = (OSHRelation) osh; try {
   //     * System.out.printf("%d (%s) %d\n", oshRelation.getId(), print((List<OSHEntity>) (List)
@@ -127,22 +121,22 @@ public class GridOSHRelationsTest {
                             new OSMMember(102, OSMType.NODE, 0)})),
             Arrays.asList(node100, node102));
 
-    OSHRelation relation300 = OSHRelationImpl.build(Arrays.asList(//
+    OSHRelation relation300 = OSHRelationImpl.build(Arrays.asList(
         new OSMRelation(300, 1, 3333L, 4444L, 23, new int[] {},
             new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null),
-                new OSMMember(102, OSMType.NODE, 0, null)}), //
+                new OSMMember(102, OSMType.NODE, 0, null)}),
         new OSMRelation(300, 2, 3333L, 4444L, 23, new int[] {1, 2},
             new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null),
-                new OSMMember(102, OSMType.NODE, 0, null)})), //
+                new OSMMember(102, OSMType.NODE, 0, null)})),
         Arrays.asList(node100, node102), Arrays.asList());
 
-    OSHRelation relation301 = OSHRelationImpl.build(Arrays.asList(//
+    OSHRelation relation301 = OSHRelationImpl.build(Arrays.asList(
         new OSMRelation(301, 1, 3333L, 4444L, 23, new int[] {},
             new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null),
-                new OSMMember(202, OSMType.WAY, 1, null)}), //
+                new OSMMember(202, OSMType.WAY, 1, null)}),
         new OSMRelation(301, 2, 3333L, 4444L, 23, new int[] {1, 2},
             new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null),
-                new OSMMember(202, OSMType.WAY, 1, null)})), //
+                new OSMMember(202, OSMType.WAY, 1, null)})),
         Arrays.asList(), Arrays.asList(way200, way202));
 
     long cellId = 2;

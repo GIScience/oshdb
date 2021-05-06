@@ -14,7 +14,6 @@ public class GridOSHNodesTest {
 
   //  @Test
   //  public void testOSHCell() {
-  //
   //    try {
   //      List<OSHNode> hosmNodes = new ArrayList<>();
   //      for (int i = 0; i < 3; i++) {
@@ -27,10 +26,8 @@ public class GridOSHNodesTest {
   //            86809727L - (1000000 * i), 494094984L - (1000000 * i)));
   //        hosmNodes.add(OSHNodeImpl.build(versions));
   //      }
-  //
   //      GridOSHNodes cell = GridOSHNodes
   //                            .rebase(123, 2, 100, 100000L, 86000000, 490000000, hosmNodes);
-  //
   //      int countOSHNodes = 0;
   //      int countNodes = 0;
   //      Iterator<OSHNode> itr = cell.iterator();
@@ -41,10 +38,8 @@ public class GridOSHNodesTest {
   //          itr2.next();
   //          countNodes++;
   //        }
-  //
   //        countOSHNodes++;
   //      }
-  //
   //      // System.out.printf("hnodes:%d nodes:%d\n", countHNodes, countNodes);
   //    } catch (IOException e) {
   //      // TODO Auto-generated catch block

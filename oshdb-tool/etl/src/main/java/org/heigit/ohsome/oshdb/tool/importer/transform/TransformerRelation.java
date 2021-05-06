@@ -131,12 +131,12 @@ public class TransformerRelation extends Transformer {
 
 
   private OSMRelation getOSM(Relation entity) {
-    return new OSMRelation(entity.getId(), //
-        modifiedVersion(entity), //
-        entity.getTimestamp(), //
-        entity.getChangeset(), //
-        entity.getUserId(), //
-        getKeyValue(entity.getTags()), //
+    return new OSMRelation(entity.getId(),
+        modifiedVersion(entity),
+        entity.getTimestamp(),
+        entity.getChangeset(),
+        entity.getUserId(),
+        getKeyValue(entity.getTags()),
         convertToOSMMembers(entity.getMembers()));
   }
 
