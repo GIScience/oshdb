@@ -10,8 +10,6 @@ import org.heigit.ohsome.oshdb.util.OSHDBRole;
  */
 public class OSMMember implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final long id;
   private final OSMType type;
   private final int roleId;
@@ -59,7 +57,7 @@ public class OSMMember implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, roleId, type);
+    return Objects.hash(type, id, roleId);
   }
 
   @Override
@@ -71,7 +69,7 @@ public class OSMMember implements Serializable {
       return false;
     }
     OSMMember other = (OSMMember) obj;
-    return id == other.id && roleId == other.roleId && type == other.type;
+    return type == other.type && id == other.id && roleId == other.roleId;
   }
 
 }

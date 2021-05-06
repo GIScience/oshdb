@@ -17,50 +17,19 @@ import org.slf4j.LoggerFactory;
  * <table style="text-align:center; border-spacing: 4px">
  * <caption>How XYGrid sees the world.</caption>
  * <tr>
- * <td></td>
- * <td></td>
- * <td colspan="3">+90 lat</td>
- * <td></td>
- * <td></td>
- * <td></td>
+ * <td></td><td></td><td colspan="3">+90 lat</td><td></td><td></td><td></td>
  * </tr>
  * <tr>
- * <td></td>
- * <td>4</td>
- * <td>5</td>
- * <td>|</td>
- * <td>6</td>
- * <td>7</td>
- * <td></td>
- * <td></td>
+ * <td></td><td>4</td><td>5</td><td>|</td><td>6</td><td>7</td><td></td><td></td>
  * </tr>
  * <tr>
- * <td>-180</td>
- * <td>-</td>
- * <td>-</td>
- * <td>0</td>
- * <td>-</td>
- * <td>-</td>
- * <td>+180</td>
- * <td>longitude</td>
+ * <td>-180</td><td>-</td><td>-</td><td>0</td><td>-</td><td>-</td><td>+180</td><td>longitude</td>
  * </tr>
  * <tr>
- * <td></td>
- * <td>0</td>
- * <td>1</td>
- * <td>|</td>
- * <td>2</td>
- * <td>3</td>
- * <td></td>
- * <td></td>
+ * <td></td><td>0</td><td>1</td><td>|</td><td>2</td><td>3</td><td></td><td></td>
  * </tr>
  * <tr>
- * <td></td>
- * <td></td>
- * <td colspan="3">-90 lat</td>
- * <td></td>
- * <td></td>
- * <td></td>
+ * <td></td><td></td><td colspan="3">-90 lat</td><td></td><td></td><td></td>
  * </tr>
  * </table>
  *
@@ -165,7 +134,7 @@ public class XYGrid implements Serializable {
    * @param latitude Latitude in osm-coordinate system (long integer)
    */
   public long getId(long longitude, long latitude) {
-    // return -1, if point is outside geographical coordinate range
+    // return -1 if point is outside geographical coordinate range
     if (longitude > (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
         || longitude < (long) (-180.0 * OSHDB.GEOM_PRECISION_TO_LONG)
         || latitude > (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG)
@@ -176,12 +145,12 @@ public class XYGrid implements Serializable {
     longitude += (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
     latitude += (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
 
-    // if it reaches the eastern most border,it is placed on the western most tile
+    // if it reaches the eastern most border it is placed on the western most tile
     if (longitude == (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       // wrap arround
       longitude = 0L;
     }
-    // if it reaches the northpole, it is placed in the northern most tile
+    // if it reaches the northpole it is placed in the northern most tile
     if (latitude == (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG)) {
       // fix latitude to clostest value under 180
       latitude -= 1L;

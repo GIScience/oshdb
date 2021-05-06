@@ -30,8 +30,6 @@ public class TransformOSHWay extends OSHWay2 {
 
     final long id = versions.get(0).getId();
 
-    // byte header = 0;
-    // record.writeByte(header);
     record.writeU64Delta(id, baseId);
 
     Map<Long, Integer> nodeOffsets = writeNodeIds(nodeIds, record);
@@ -79,7 +77,7 @@ public class TransformOSHWay extends OSHWay2 {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
 
-    final byte header = 0; // wrapper.readRawByte();
+    final byte header = 0;
     final long id = wrapper.readU64() + baseId;
 
     final long[] nodeIds = readNodeIds(wrapper);

@@ -26,14 +26,8 @@ public class TransformOSHNode extends OSHNode2 {
     builder.build(output, aux, versions, baseTimestamp, baseLongitude, baseLatitude,
         Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
 
-    // byte header = 0;
-    // record.writeByte(header);
-
     record.writeU64(id - baseId);
     record.writeByteArray(output.array(), 0, output.length());
-
-    // final byte[] bytes = new byte[record.length()];
-    // System.arraycopy(record.array(), 0, bytes, 0, bytes.length);
 
     return TransformOSHNode.instance(record.array(), 0, record.length(), baseId, baseTimestamp,
         baseLongitude, baseLatitude);
@@ -45,7 +39,7 @@ public class TransformOSHNode extends OSHNode2 {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
 
-    final byte header = 0; // wrapper.readRawByte();
+    final byte header = 0;
 
     final long id = wrapper.readU64() + baseId;
     final int dataOffset = wrapper.getPos();

@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
@@ -64,9 +65,8 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
           return OSHWayImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
               baseLatitude);
         } catch (IOException e) {
-          e.printStackTrace();
+          throw new UncheckedIOException(e);
         }
-        return null;
       }
 
       @Override

@@ -1,7 +1,9 @@
 package org.heigit.ohsome.oshdb.osm;
 
 public enum OSMType {
-  NODE(0), WAY(1), RELATION(2);
+  NODE(0), 
+  WAY(1), 
+  RELATION(2);
 
   private final int value;
 

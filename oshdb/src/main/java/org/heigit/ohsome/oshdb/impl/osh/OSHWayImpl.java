@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -188,13 +189,12 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
                 keyValues, members);
 
           } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException(e);
           }
-          return null;
         }
       };
-    } catch (IOException e1) {
-      return Collections.emptyIterator();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -403,9 +403,8 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
       try {
         return OSHWayImpl.instance(data, 0, data.length);
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new UncheckedIOException(e);
       }
-      return null;
     }
   }
 }

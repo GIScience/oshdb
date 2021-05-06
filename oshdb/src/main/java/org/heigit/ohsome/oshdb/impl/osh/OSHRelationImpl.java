@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -264,14 +265,12 @@ public class OSHRelationImpl extends OSHEntityImpl
             return new OSMRelation(id, version, baseTimestamp + timestamp,
                 changeset, userId, keyValues, members);
           } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: handle exception(s)
+            throw new UncheckedIOException(e);
           }
-          return null;
         }
       };
     } catch (IOException e) {
-      return Collections.emptyIterator();
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -441,12 +440,10 @@ public class OSHRelationImpl extends OSHEntityImpl
               break;
             }
           }
-
           output.writeU32(member.getRawRoleId());
           lastMemberId = member.getId();
         }
       }
-
     }
 
     byte header = 0;
@@ -551,9 +548,8 @@ public class OSHRelationImpl extends OSHEntityImpl
       try {
         return OSHRelationImpl.instance(data, 0, data.length);
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new UncheckedIOException(e);
       }
-      return null;
     }
   }
 

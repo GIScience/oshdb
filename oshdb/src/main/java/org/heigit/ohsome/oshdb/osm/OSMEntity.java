@@ -13,8 +13,6 @@ import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
 public abstract class OSMEntity implements OSHDBTemporal, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   protected final long id;
 
   protected final int version;
@@ -171,11 +169,7 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + Arrays.hashCode(tags);
-    result = prime * result + Objects.hash(changesetId, id, timestamp, userId, version);
-    return result;
+    return Objects.hash(getType(), id, version);
   }
 
   @Override
@@ -187,8 +181,7 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
       return false;
     }
     OSMEntity other = (OSMEntity) obj;
-    return changesetId == other.changesetId && id == other.id && Arrays.equals(tags, other.tags)
-        && timestamp == other.timestamp && userId == other.userId && version == other.version;
+    return getType() == other.getType() && id == other.id && version == other.version;
   }
 
   @Override
