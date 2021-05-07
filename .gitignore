@@ -277,6 +277,8 @@ tags
 ### custom rules for all projects ###
 # track checkstyle version to switch automatically inside of IDEA for older branches
 !.idea/checkstyle-idea.xml
+# eclipse checkstyle
+.checkstyle
 
 # exclude oshdb database files from all projects
 *.oshdb.mv.db
