@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.osm;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Objects;
 import org.heigit.ohsome.oshdb.OSHDB;
 
 public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializable {
@@ -11,6 +12,9 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   private final long longitude;
   private final long latitude;
 
+  /**
+   * Creates a new {@code OSMNode} instance.
+   */
   public OSMNode(final long id, final int version, final long timestamp, final long changeset,
       final int userId, final int[] tags, final long longitude, final long latitude) {
     super(id, version, timestamp, changeset, userId, tags);
@@ -41,12 +45,31 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
 
   @Override
   public String toString() {
-    return String.format(Locale.ENGLISH, "NODE: %s %.7f:%.7f", super.toString(), getLongitude(), getLatitude());
+    return String.format(Locale.ENGLISH, "NODE: %s %.7f:%.7f", super.toString(), getLongitude(),
+        getLatitude());
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Objects.hash(latitude, longitude);
+    return result;
+  }
 
-  public boolean equalsTo(OSMNode o) {
-    return super.equalsTo(o) && longitude == o.longitude && latitude == o.latitude;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (!(obj instanceof OSMNode)) {
+      return false;
+    }
+    OSMNode other = (OSMNode) obj;
+    return latitude == other.latitude && longitude == other.longitude;
   }
 
   @Override
@@ -60,6 +83,4 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
     }
     return c;
   }
-
-
 }

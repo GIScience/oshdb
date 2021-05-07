@@ -1,19 +1,20 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator.estimatedSizeOf;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Functions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Streams;
 import com.google.common.io.CountingOutputStream;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.reactivex.Flowable;
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,6 +23,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -35,19 +37,19 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.tool.importer.extract.cli.ExtractArgs;
-import org.heigit.ohsome.oshdb.tool.importer.extract.collector.KVFCollector;
+import org.heigit.ohsome.oshdb.tool.importer.extract.collector.KeyValueFrequencyCollector;
 import org.heigit.ohsome.oshdb.tool.importer.extract.collector.RoleCollector;
 import org.heigit.ohsome.oshdb.tool.importer.extract.collector.StatsCollector;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.OsmPbfMeta;
 import org.heigit.ohsome.oshdb.tool.importer.extract.data.Role;
-import org.heigit.ohsome.oshdb.tool.importer.extract.data.VF;
+import org.heigit.ohsome.oshdb.tool.importer.extract.data.ValueFrequency;
 import org.heigit.ohsome.oshdb.tool.importer.util.ExternalSort;
 import org.heigit.ohsome.oshdb.tool.importer.util.PolyFileReader;
 import org.heigit.ohsome.oshdb.tool.importer.util.SizeEstimator;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Relation;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.RelationMember;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Tag;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.TagText;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Relation;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.RelationMember;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Tag;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.TagText;
 import org.heigit.ohsome.oshpbf.parser.rx.Osh;
 import org.heigit.ohsome.oshpbf.parser.rx.RxOshPbfReader;
 import org.wololo.geojson.GeoJSON;
@@ -55,10 +57,11 @@ import org.wololo.geojson.GeoJSON;
 public class Extract {
 
   public static class ExtractKeyTablesResult {
-    public final KVFCollector kvFrequency;
+    public final KeyValueFrequencyCollector kvFrequency;
     public final RoleCollector roleFrequency;
 
-    public ExtractKeyTablesResult(KVFCollector kvFrequency, RoleCollector roleFrequency) {
+    public ExtractKeyTablesResult(KeyValueFrequencyCollector kvFrequency,
+        RoleCollector roleFrequency) {
       this.kvFrequency = kvFrequency;
       this.roleFrequency = roleFrequency;
     }
@@ -77,6 +80,9 @@ public class Extract {
       this.valuesOffset = valuesOffset;
     }
 
+    /**
+     * Write to output.
+     */
     public void write(DataOutput out) throws IOException {
       out.writeUTF(key);
       out.writeInt(freq);
@@ -84,6 +90,9 @@ public class Extract {
       out.writeLong(valuesOffset);
     }
 
+    /**
+     * Read from input.
+     */
     public static KeyValuePointer read(DataInput in) throws IOException {
       final String key = in.readUTF();
       final int freq = in.readInt();
@@ -92,8 +101,11 @@ public class Extract {
       return new KeyValuePointer(key, freq, valuesNumber, valuesOffset);
     }
 
+    /**
+     * EstimateSize.
+     */
     public long estimateSize() {
-      final long size = SizeEstimator.estimatedSizeOf("") + SizeEstimator.estimatedSizeOf(key) // value
+      final long size = estimatedSizeOf("") + estimatedSizeOf(key) // value
           + 4 // freq
           + 4 // valueNumber
           + 8 // valuesOffset
@@ -106,7 +118,7 @@ public class Extract {
   private Path workDirectory = Paths.get(".");
   private Path tempDirectory = Paths.get(".");
 
-  public static OsmPbfMeta pbfMetaData(Path pbf) throws InvalidProtocolBufferException {
+  public static OsmPbfMeta pbfMetaData(Path pbf) throws Exception {
     return TypeStartFinder.getMetaData(pbf);
   }
 
@@ -128,18 +140,22 @@ public class Extract {
     return this;
   }
 
-  public ExtractKeyTablesResult extract(ExtractArgs config, int workerId, int workerTotal, boolean keepTemp) {
+  /**
+   * Extract.
+   */
+  public ExtractKeyTablesResult extract(ExtractArgs config, int workerId, int workerTotal,
+      boolean keepTemp) throws IOException, ParseException {
     final Path pbf = config.pbf;
     final StatsCollector stats = new StatsCollector(pbf);
-    
-    final KVFCollector kvFrequency = new KVFCollector();
+
+    final KeyValueFrequencyCollector kvFrequency = new KeyValueFrequencyCollector();
     kvFrequency.setWorkerId(workerId);
-    kvFrequency.setTempDir((workerTotal > 1) ? workDirectory.toFile() : tempDirectory.toFile());
+    kvFrequency.setTempDir(workerTotal > 1 ? workDirectory.toFile() : tempDirectory.toFile());
     kvFrequency.setTempDeleteOneExit(workerTotal > 1 || keepTemp);
 
     final RoleCollector roleFrequency = new RoleCollector();
     roleFrequency.setWorkerId(workerId);
-    roleFrequency.setTempDir((workerTotal > 1) ? workDirectory.toFile() : tempDirectory.toFile());
+    roleFrequency.setTempDir(workerTotal > 1 ? workDirectory.toFile() : tempDirectory.toFile());
     roleFrequency.setTempDeleteOneExit(workerTotal > 1 || keepTemp);
 
     final long fileLength = pbf.toFile().length();
@@ -147,8 +163,8 @@ public class Extract {
     final long start = workSize * workerId;
     final long softEnd = Math.min(start + workSize, fileLength);
 
-    Flowable<Osh> oshFlow = RxOshPbfReader.readOsh(pbf, start, softEnd, -1,stats::addHeader);
-    
+    Flowable<Osh> oshFlow = RxOshPbfReader.readOsh(pbf, start, softEnd, -1, stats::addHeader);
+
     oshFlow = oshFlow.doOnNext(osh -> {
       stats.add(osh);
     });
@@ -173,8 +189,9 @@ public class Extract {
         kvFrequency.writeTemp();
         roleFrequency.writeTemp();
       }
-      if (osh.getType() != OSMType.RELATION)
+      if (osh.getType() != OSMType.RELATION) {
         return;
+      }
       final Set<String> uniqueRoles = new HashSet<>();
 
       osh.getVersions().forEach(version -> {
@@ -187,40 +204,45 @@ public class Extract {
     });
 
     oshFlow.count().blockingGet();
-    
-    try(FileOutputStream fos = new FileOutputStream(workDirectory.resolve("extract_meta").toFile());
-        PrintStream out = new PrintStream(fos)){
+
+    try (
+        PrintStream out = new PrintStream(
+            workDirectory.resolve("extract_meta").toFile(), UTF_8)) {
       stats.print(out);
-      
-      if(!config.md5.trim().isEmpty())
-        out.println("file.md5="+config.md5);
-      
-      if(config.polyFile != null){
+
+      if (!config.md5.trim().isEmpty()) {
+        out.println("file.md5=" + config.md5);
+      }
+
+      if (config.polyFile != null) {
         GeoJSON json = PolyFileReader.parse(config.polyFile);
-        out.println("extract.region="+json.toString());
-      }else if(config.bbox != null){
-        out.println("extract.region={\"bbox\":["+config.bbox+"]}");
+        out.println("extract.region=" + json.toString());
+      } else if (config.bbox != null) {
+        out.println("extract.region={\"bbox\":[" + config.bbox + "]}");
       }
-      
-      out.print("extract.timerange="+config.timeValidityFrom);
-      if(config.timeValidityTo != null)
-        out.println(","+config.timeValidityTo);
-      else if(stats.header.hasOsmosisReplicationTimestamp() && stats.header.getOsmosisReplicationTimestamp() > 0){
-        out.println(","+ZonedDateTime.ofInstant(Instant.ofEpochSecond(stats.header.getOsmosisReplicationTimestamp()), ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-      }else {
-        out.println(","+ZonedDateTime.ofInstant(Instant.ofEpochSecond(stats.maxTs), ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+      out.print("extract.timerange=" + config.timeValidityFrom);
+      if (config.timeValidityTo != null) {
+        out.println("," + config.timeValidityTo);
+      } else if (stats.header.hasOsmosisReplicationTimestamp()
+          && stats.header.getOsmosisReplicationTimestamp() > 0) {
+        out.println("," + ZonedDateTime
+            .ofInstant(Instant.ofEpochSecond(stats.header.getOsmosisReplicationTimestamp()),
+                ZoneOffset.UTC)
+            .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+      } else {
+        out.println(
+            "," + ZonedDateTime.ofInstant(Instant.ofEpochSecond(stats.maxTs), ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
       }
-      
-      
-    } catch (Exception e) {
-      e.printStackTrace();
     }
-    
+
     ExtractKeyTablesResult result = new ExtractKeyTablesResult(kvFrequency, roleFrequency);
     return result;
   }
 
-  public void sortByFrequency(ExtractKeyTablesResult extratKeyTablesResult) throws FileNotFoundException, IOException {
+  public void sortByFrequency(ExtractKeyTablesResult extratKeyTablesResult)
+      throws IOException {
     System.out.print("sorting tags by frequency ...");
     sortByFrequency(extratKeyTablesResult.kvFrequency);
     System.out.println(" done!");
@@ -229,18 +251,22 @@ public class Extract {
     System.out.println(" done!");
   }
 
-  public void sortByFrequency(KVFCollector kvFrequency) throws FileNotFoundException, IOException {
+  public void sortByFrequency(KeyValueFrequencyCollector kvFrequency)
+      throws IOException {
     final long maxSize = maxMemory;
-    final ExternalSort<VF> valueSorter = ExternalSort.of((a, b) -> {
+    final ExternalSort<ValueFrequency> valueSorter = ExternalSort.of((a, b) -> {
       final int c = Integer.compare(a.freq, b.freq);
-      if (c != 0)
+      if (c != 0) {
         return c * -1; // reverse order
+      }
       return a.value.compareTo(b.value);
-    }, maxSize, VF::estimateSize).with(VF::write, VF::read);
+    }, maxSize, ValueFrequency::estimateSize).with(ValueFrequency::write, ValueFrequency::read);
 
     final Function<OutputStream, OutputStream> output = Functions.identity();
     final List<KeyValuePointer> keys = new ArrayList<>();
-    try (FileOutputStream fout = new FileOutputStream(workDirectory.resolve("extract_keyvalues").toFile());
+    try (
+        FileOutputStream fout =
+            new FileOutputStream(workDirectory.resolve("extract_keyvalues").toFile());
         BufferedOutputStream bout = new BufferedOutputStream(fout);
         CountingOutputStream keyValuesPositionOutput = new CountingOutputStream(output.apply(bout));
         DataOutputStream keyValuesDataOutput = new DataOutputStream(keyValuesPositionOutput)) {
@@ -263,16 +289,16 @@ public class Extract {
       });
     }
 
-    try (
-        FileOutputStream fs = new FileOutputStream(workDirectory.resolve("extract_keys").toFile());
+    try (FileOutputStream fs = new FileOutputStream(workDirectory.resolve("extract_keys").toFile());
         BufferedOutputStream bs = new BufferedOutputStream(fs);
         OutputStream os = output.apply(fs);
         DataOutputStream keyValuesDataOutput = new DataOutputStream(os)) {
       keyValuesDataOutput.writeInt(keys.size());
-      final int keyCount = (int) Streams.stream(ExternalSort.of((a, b) -> {
+      Streams.stream(ExternalSort.of((a, b) -> {
         final int c = Integer.compare(a.freq, b.freq);
-        if (c != 0)
+        if (c != 0) {
           return c * -1; // reverse order
+        }
         return a.key.compareTo(b.key);
       }, maxSize, KeyValuePointer::estimateSize).with(KeyValuePointer::write, KeyValuePointer::read)
           .sort(keys.iterator())).peek(kvp -> {
@@ -285,59 +311,69 @@ public class Extract {
     }
   }
 
-  public void sortByFrequency(RoleCollector roleFrequency) throws FileNotFoundException, IOException {
+  public void sortByFrequency(RoleCollector roleFrequency)
+      throws IOException {
     final long maxSize = maxMemory;
     final Function<OutputStream, OutputStream> output = Functions.identity();
-    try (FileOutputStream fout = new FileOutputStream(workDirectory.resolve("extract_roles").toFile());
+    try (
+        FileOutputStream fout =
+            new FileOutputStream(workDirectory.resolve("extract_roles").toFile());
         BufferedOutputStream bout = new BufferedOutputStream(fout);
         OutputStream os = output.apply(bout);
         DataOutputStream rolesDataOutput = new DataOutputStream(os)) {
-      final int keyCount = (int) Streams.stream(ExternalSort.of((a, b) -> {
+      Streams.stream(ExternalSort.of((a, b) -> {
         final int c = Integer.compare(a.freq, b.freq);
-        if (c != 0)
+        if (c != 0) {
           return c * -1; // reverse order
-        return a.role.compareTo(b.role);
-      }, maxSize, Role::estimateSize).with(Role::write, Role::read).sort(roleFrequency.iterator())).peek(r -> {
-        try {
-          r.write(rolesDataOutput);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
         }
-      }).count();
+        return a.role.compareTo(b.role);
+      }, maxSize, Role::estimateSize).with(Role::write, Role::read).sort(roleFrequency.iterator()))
+          .peek(r -> {
+            try {
+              r.write(rolesDataOutput);
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          }).count();
     }
   }
-  
-  public static void extract(ExtractArgs config) {
-    Path pbf = config.pbf;
+
+  public static void execute(ExtractArgs config) throws IOException, ParseException {
     Path workDir = config.common.workDir;
     Path tempDir = config.common.tempDir;
-    boolean overwrite = config.overwrite;
-    
-    if(workDir == null)
+
+    if (workDir == null) {
       workDir = Paths.get(".");
-    
-    if(tempDir == null)
+    }
+
+    if (tempDir == null) {
       tempDir = workDir;
+    }
 
     int worker = config.distribute.worker;
     int workerTotal = config.distribute.totalWorkers;
-    if (worker >= workerTotal)
+    if (worker >= workerTotal) {
       throw new IllegalArgumentException("worker must be lesser than totalWorker!");
+    }
 
     long availableMemory = SizeEstimator.estimateAvailableMemory();
     System.out.print("extracting key tables ...");
-    Extract extract = Extract.withMaxMemory(availableMemory).withWorkDirectory(workDir).withTempDirectory(tempDir);
+    Extract extract = Extract.withMaxMemory(availableMemory).withWorkDirectory(workDir)
+        .withTempDirectory(tempDir);
     if (config.distribute.merge) {
       try {
         List<File> tmp;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDir, KVFCollector.tempPrefix + "_*")) {
-          tmp = StreamSupport.stream(stream.spliterator(), false).map(Path::toFile).collect(Collectors.toList());
+        try (DirectoryStream<Path> stream =
+            Files.newDirectoryStream(workDir, KeyValueFrequencyCollector.tempPrefix + "_*")) {
+          tmp = StreamSupport.stream(stream.spliterator(), false).map(Path::toFile)
+              .collect(Collectors.toList());
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
-        if(tmp.isEmpty())
+        if (tmp.isEmpty()) {
           throw new RuntimeException("no files to merge");
-        KVFCollector kvFrequency = new KVFCollector(tmp);
+        }
+        KeyValueFrequencyCollector kvFrequency = new KeyValueFrequencyCollector(tmp);
         System.out.print("sorting tags by frequency ...");
         extract.sortByFrequency(kvFrequency);
         System.out.println(" done!");
@@ -346,15 +382,16 @@ public class Extract {
       }
       try {
         List<File> tmp;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(workDir,
-            RoleCollector.tempPrefix + "_*")) {
+        try (DirectoryStream<Path> stream =
+            Files.newDirectoryStream(workDir, RoleCollector.tempPrefix + "_*")) {
           tmp = StreamSupport.stream(stream.spliterator(), false).map(Path::toFile)
               .collect(Collectors.toList());
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
-        if(tmp.isEmpty())
+        if (tmp.isEmpty()) {
           throw new RuntimeException("no files to merge");
+        }
         RoleCollector roleFrequency = new RoleCollector(tmp);
         System.out.print("sorting roles by frequency ...");
         extract.sortByFrequency(roleFrequency);
@@ -364,8 +401,9 @@ public class Extract {
       }
     }
 
-    if (overwrite || !Files.exists(workDir.resolve("extract_keys"))
-        || !Files.exists(workDir.resolve("extract_keyvalues")) || !Files.exists(workDir.resolve("extract_roles"))) {
+    if (config.overwrite || !Files.exists(workDir.resolve("extract_keys"))
+        || !Files.exists(workDir.resolve("extract_keyvalues"))
+        || !Files.exists(workDir.resolve("extract_roles"))) {
       ExtractKeyTablesResult result = extract.extract(config, worker, workerTotal, false);
 
       try {
@@ -380,12 +418,9 @@ public class Extract {
         throw new RuntimeException(e);
       }
     }
-    
-    
-    
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, ParseException {
     ExtractArgs config = new ExtractArgs();
     JCommander jcom = JCommander.newBuilder().addObject(config).build();
 
@@ -403,7 +438,7 @@ public class Extract {
       return;
     }
     Stopwatch stopwatch = Stopwatch.createStarted();
-    extract(config);
-    System.out.println("extract done in "+stopwatch);
+    execute(config);
+    System.out.println("extract done in " + stopwatch);
   }
 }

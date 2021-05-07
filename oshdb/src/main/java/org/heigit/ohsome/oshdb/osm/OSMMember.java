@@ -1,14 +1,15 @@
 package org.heigit.ohsome.oshdb.osm;
 
+import java.io.Serializable;
+import java.util.Objects;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBRole;
 
 /**
  * Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
  */
-public class OSMMember {
-  
-  
+public class OSMMember implements Serializable {
+
   private final long id;
   private final OSMType type;
   private final int roleId;
@@ -18,6 +19,9 @@ public class OSMMember {
     this(id, type, roleId, null);
   }
 
+  /**
+   * Create a new {@code OSMMember} instance.
+   */
   public OSMMember(final long id, final OSMType type, final int roleId,
       OSHEntity entity) {
     this.id = id;
@@ -49,6 +53,23 @@ public class OSMMember {
   @Override
   public String toString() {
     return String.format("T:%s ID:%d R:%d", type, id, roleId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(type, id, roleId);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof OSMMember)) {
+      return false;
+    }
+    OSMMember other = (OSMMember) obj;
+    return type == other.type && id == other.id && roleId == other.roleId;
   }
 
 }

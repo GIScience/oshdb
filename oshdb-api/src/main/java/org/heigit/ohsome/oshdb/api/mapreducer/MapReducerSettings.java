@@ -75,7 +75,7 @@ interface MapReducerSettings<M> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   M osmType(Set<OSMType> typeFilter);
 
   /**
@@ -86,7 +86,7 @@ interface MapReducerSettings<M> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   default M osmType(OSMType type1, OSMType... otherTypes) {
     return osmType(EnumSet.of(type1, otherTypes));
   }
@@ -101,7 +101,7 @@ interface MapReducerSettings<M> {
    *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(Filter.SerializablePredicate)}
    *             instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   M osmEntityFilter(OSMEntityFilter f);
 
   /**
@@ -112,7 +112,7 @@ interface MapReducerSettings<M> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   M osmTag(String key);
 
   /**
@@ -123,7 +123,7 @@ interface MapReducerSettings<M> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   M osmTag(OSMTagInterface tag);
 
   /**
@@ -135,7 +135,7 @@ interface MapReducerSettings<M> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   M osmTag(String key, String value);
 
   /**
@@ -147,7 +147,7 @@ interface MapReducerSettings<M> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   M osmTag(String key, Collection<String> values);
 
   /**
@@ -168,13 +168,13 @@ interface MapReducerSettings<M> {
    * @return `this` mapReducer (can be used to chain multiple commands together)
    * @deprecated use oshdb-filter {@link #filter(String)} instead
    */
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   M osmTag(Collection<? extends OSMTagInterface> keyValuePairs);
 
   /** deprecated.
    * @deprecated replaced by {@link #osmType(Set)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M osmTypes(EnumSet<OSMType> typeFilter) {
     return this.osmType(typeFilter);
   }
@@ -182,7 +182,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmType(OSMType, OSMType...)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M osmTypes(OSMType type1, OSMType... otherTypes) {
     return this.osmType(type1, otherTypes);
   }
@@ -190,7 +190,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmEntityFilter}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(OSMEntityFilter f) {
     return this.osmEntityFilter(f);
   }
@@ -198,7 +198,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmTag(OSMTagInterface)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(OSMTagKey key) {
     return this.osmTag(key);
   }
@@ -206,7 +206,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmTag(String)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(String key) {
     return this.osmTag(key);
   }
@@ -214,7 +214,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmTag(OSMTagInterface)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(OSMTag tag) {
     return this.osmTag(tag);
   }
@@ -222,7 +222,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmTag(String, String)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(String key, String value) {
     return this.osmTag(key, value);
   }
@@ -230,7 +230,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmTag(String, Collection)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(String key, Collection<String> values) {
     return this.osmTag(key, values);
   }
@@ -238,7 +238,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmTag(String, Pattern)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(String key, Pattern valuePattern) {
     return this.osmTag(key, valuePattern);
   }
@@ -246,7 +246,7 @@ interface MapReducerSettings<M> {
   /** deprecated.
    * @deprecated replaced by {@link #osmTag(Collection)}
    */
-  @Deprecated
+  @Deprecated(since = "0.5.0", forRemoval = true)
   default M where(Collection<OSMTag> keyValuePairs) {
     return this.osmTag(keyValuePairs);
   }

@@ -1,14 +1,17 @@
 package org.heigit.ohsome.oshdb.osm;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
-public abstract class OSMEntity implements OSHDBTemporal {
+public abstract class OSMEntity implements OSHDBTemporal, Serializable {
 
   protected final long id;
 
@@ -62,32 +65,38 @@ public abstract class OSMEntity implements OSHDBTemporal {
   }
 
   public boolean isVisible() {
-    return (version >= 0);
+    return version >= 0;
   }
 
+  /**
+   * Returns a "view" of the current osm tags.
+   */
   public Iterable<OSHDBTag> getTags() {
-    return new Iterable<OSHDBTag>() {
+    return new Iterable<>() {
       @Nonnull
       @Override
       public Iterator<OSHDBTag> iterator() {
-        return new Iterator<OSHDBTag>() {
-          int i = 0;
+        return new Iterator<>() {
+          int pos = 0;
 
           @Override
           public boolean hasNext() {
-            return i < tags.length;
+            return pos < tags.length;
           }
 
           @Override
           public OSHDBTag next() {
-            return new OSHDBTag(tags[i++], tags[i++]);
+            if (!hasNext()) {
+              throw new NoSuchElementException();
+            }
+            return new OSHDBTag(tags[pos++], tags[pos++]);
           }
         };
       }
     };
   }
 
-  @Deprecated
+  @Deprecated(since = "0.7.0", forRemoval = true)
   public int[] getRawTags() {
     return tags;
   }
@@ -96,6 +105,9 @@ public abstract class OSMEntity implements OSHDBTemporal {
     return this.hasTagKey(key.toInt());
   }
 
+  /**
+   * Test this {@code OSMEntity} if it contains a certain tag key(integer).
+   */
   public boolean hasTagKey(int key) {
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {
@@ -110,7 +122,6 @@ public abstract class OSMEntity implements OSHDBTemporal {
     }
     return false;
   }
-
 
   /**
    * Tests if any a given key is present but ignores certain values. Useful when looking for example
@@ -138,6 +149,9 @@ public abstract class OSMEntity implements OSHDBTemporal {
     return false;
   }
 
+  /**
+   * Test for a certain key/value combination.
+   */
   public boolean hasTagValue(int key, int value) {
     for (int i = 0; i < tags.length; i += 2) {
       if (tags[i] < key) {
@@ -153,9 +167,21 @@ public abstract class OSMEntity implements OSHDBTemporal {
     return false;
   }
 
-  public boolean equalsTo(OSMEntity o) {
-    return id == o.id && version == o.version && timestamp == o.timestamp
-        && changesetId == o.changesetId && userId == o.userId && Arrays.equals(tags, o.tags);
+  @Override
+  public int hashCode() {
+    return Objects.hash(getType(), id, version);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof OSMEntity)) {
+      return false;
+    }
+    OSMEntity other = (OSMEntity) obj;
+    return getType() == other.getType() && id == other.id && version == other.version;
   }
 
   @Override

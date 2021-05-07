@@ -606,7 +606,7 @@ public class CellIterator implements Serializable {
 
         if (!timeInterval.includes(timestamp)) {
           // ignore osm entity because it's outside of the given time interval of interest
-          if (timeInterval.compareTo(timestamp) > 0) { // timestamp in the future of the interval
+          if (timeInterval.compareAgainstTimestamp(timestamp) > 0) { // timestamp in the future of the interval
             break; // abort current osmEntityByTimestamps loop, continue with next osh entity
           } else if (!timeInterval.includes(nextTs)) { // next modification state is also in not in
             // our time frame of interest
@@ -814,7 +814,7 @@ public class CellIterator implements Serializable {
     Iterator<? extends OSMEntity> itr = osh.getVersions().iterator();
     while (itr.hasNext() && i >= 0) {
       OSMEntity osm = itr.next();
-      while (i >= 0 && OSHDBTemporal.compare(osm,timestamps.get(i)) <= 0) {
+      while (i >= 0 && OSHDBTemporal.compare(osm, timestamps.get(i)) <= 0) {
         result.add(osm);
         i--;
       }

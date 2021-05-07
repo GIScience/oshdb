@@ -9,26 +9,26 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 /**
  * The root interface in the <i>osh hierarchy</i>.
  */
-public interface OSH<OSM extends OSMEntity> extends Iterable<OSM> {
+public interface OSH<T extends OSMEntity> extends Iterable<T> {
 
-  
-  
   /**
-   * Return the id of the osh object
+   * Return the id of the osh object.
+   *
    * @return the id of osh object
    */
   long getId();
-    
+
   /**
    * Returns the type of this osh object.
+   *
    * @return type
    */
   OSMType type();
-  
-  @Override
-  Iterator<OSM> iterator();
 
-  default Stream<OSM> stream() {
+  @Override
+  Iterator<T> iterator();
+
+  default Stream<T> stream() {
     return StreamSupport.stream(spliterator(), false);
   }
 

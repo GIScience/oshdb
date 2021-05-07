@@ -18,6 +18,7 @@ import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteDataStreamer;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.CacheMode;
+import org.apache.ignite.cluster.ClusterState;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgnitionEx;
@@ -29,42 +30,39 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OSHDB2Ignite {
+public class OSHDBToIgnite {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OSHDB2Ignite.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OSHDBToIgnite.class);
 
   /**
    * Load your extracted and transformed OSH-Data into Ignite Caches.
    *
-   * @param igniteXML Path to the Ignite-XML
-   * @param oshdb Connection to the OSHDB
-   * @param prefix
-   * @throws org.apache.ignite.IgniteCheckedException
+   * @param igniteXml Path to the Ignite-XML
+   * @param oshdb     Connection to the OSHDB
+   * @param prefix oshdb table prefix
    */
-  public static void load(File igniteXML, Connection oshdb, String prefix) throws IgniteCheckedException {
+  public static void load(File igniteXml, Connection oshdb, String prefix)
+      throws IgniteCheckedException {
     Ignition.setClientMode(true);
-    IgniteConfiguration cfg = IgnitionEx.loadConfiguration(igniteXML.toString()).get1();
+    IgniteConfiguration cfg = IgnitionEx.loadConfiguration(igniteXml.toString()).get1();
     cfg.setIgniteInstanceName("IgniteImportClientInstance");
     try (Ignite ignite = Ignition.start(cfg)) {
-      ignite.cluster().active(true);
+      ignite.cluster().state(ClusterState.ACTIVE);
 
       try (Statement stmt = oshdb.createStatement()) {
 
-        OSHDB2Ignite.<GridOSHNodes>doGridImport(ignite, stmt, TableNames.T_NODES, prefix);
-        OSHDB2Ignite.<GridOSHWays>doGridImport(ignite, stmt, TableNames.T_WAYS, prefix);
-        OSHDB2Ignite.<GridOSHRelations>doGridImport(ignite, stmt, TableNames.T_RELATIONS, prefix);
+        OSHDBToIgnite.<GridOSHNodes>doGridImport(ignite, stmt, TableNames.T_NODES, prefix);
+        OSHDBToIgnite.<GridOSHWays>doGridImport(ignite, stmt, TableNames.T_WAYS, prefix);
+        OSHDBToIgnite.<GridOSHRelations>doGridImport(ignite, stmt, TableNames.T_RELATIONS, prefix);
 
       } catch (SQLException ex) {
         LOG.error("", ex);
       }
-
-      //deactive  cluster after import, so that all caches get persist
-      ignite.cluster().active(false);
-      ignite.cluster().active(true);
     }
   }
 
-  private static <T> void doGridImport(Ignite ignite, Statement stmt, TableNames cacheName, String prefix) {
+  private static <T> void doGridImport(Ignite ignite, Statement stmt, TableNames cacheName,
+      String prefix) {
     final String cacheWithPrefix = cacheName.toString(prefix);
 
     ignite.destroyCache(cacheWithPrefix);
@@ -82,30 +80,30 @@ public class OSHDB2Ignite {
 
     try (IgniteDataStreamer<Long, T> streamer = ignite.dataStreamer(cache.getName())) {
       streamer.allowOverwrite(true);
-      final String tableName;
+      final String sql;
       switch (cacheName) {
         case T_NODES:
-          tableName = TableNames.T_NODES.toString();
+          sql = "select level, id, data from grid_node";
           break;
         case T_WAYS:
-          tableName = TableNames.T_WAYS.toString();
+          sql = "select level, id, data from grid_way";
           break;
         case T_RELATIONS:
-          tableName = TableNames.T_RELATIONS.toString();
+          sql = "select level, id, data from grid_relation";
           break;
         default:
           throw new IllegalArgumentException("unknown cacheName " + cacheName);
       }
-      try (final ResultSet rst = stmt.executeQuery("select level, id, data from " + tableName)) {
+      try (ResultSet rst = stmt.executeQuery(sql)) {
         int cnt = 0;
-        System.out.println(LocalDateTime.now() + " START loading " + tableName + " into " + cache.getName() + " on Ignite");
+        System.out.println(LocalDateTime.now() + " START loading into "
+            + cache.getName() + " on Ignite");
         while (rst.next()) {
           final int level = rst.getInt(1);
           final long id = rst.getLong(2);
           final long levelId = CellId.getLevelId(level, id);
 
           final ObjectInputStream ois = new ObjectInputStream(rst.getBinaryStream(3));
-//          System.out.printf("level:%d, id:%d -> LevelId:%16s%n", level, id, Long.toHexString(levelId));
           @SuppressWarnings("unchecked")
           final T grid = (T) ois.readObject();
           streamer.addData(levelId, grid);
@@ -113,7 +111,8 @@ public class OSHDB2Ignite {
             streamer.flush();
           }
         }
-        System.out.println(LocalDateTime.now() + " FINISHED loading " + tableName + " into " + cache.getName() + " on Ignite");
+        System.out.println(LocalDateTime.now() + " FINISHED loading into "
+            + cache.getName() + " on Ignite");
       } catch (IOException | ClassNotFoundException | SQLException e) {
         LOG.error("Could not import Grid!", e);
       }
@@ -125,18 +124,19 @@ public class OSHDB2Ignite {
   }
 
   private static class Config {
-    @Parameter(names = {"-ignite", "-igniteConfig", "-icfg"}, description = "Path ot ignite-config.xml", required = true, order = 1)
+    @Parameter(names = {"-ignite", "-igniteConfig", "-icfg"},
+        description = "Path ot ignite-config.xml", required = true, order = 1)
     public File ignitexml;
 
     @Parameter(names = {"--prefix"}, description = "cache table prefix", required = false)
     public String prefix;
 
-    @Parameter(names = {"-db", "-oshdb", "-outputDb"}, description = "Path to output H2", required = true, order = 2)
+    @Parameter(names = {"-db", "-oshdb", "-outputDb"}, description = "Path to output H2",
+        required = true, order = 2)
     public File oshdb;
 
     @Parameter(names = {"-help", "--help", "-h", "--h"}, help = true, order = 0)
     public boolean help = false;
-
   }
 
   public static void main(String[] args) throws SQLException, IgniteCheckedException {
@@ -157,8 +157,8 @@ public class OSHDB2Ignite {
       jcom.usage();
       return;
     }
-    try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdb, "sa", "")) {
-      OSHDB2Ignite.load(largs.ignitexml, con, largs.prefix);
+    try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdb, "sa", null)) {
+      OSHDBToIgnite.load(largs.ignitexml, con, largs.prefix);
     }
   }
 }

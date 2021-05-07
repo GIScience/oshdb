@@ -42,7 +42,7 @@ public class OSMMemberTest {
   }
 
   @Test
-  public void testGetDataII() {
+  public void testGetData2() {
     // getEntity (implicit null)
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     Object expResult = null;
@@ -57,6 +57,5 @@ public class OSMMemberTest {
     String result = instance.toString();
     assertEquals(expResult, result);
   }
-
 
 }

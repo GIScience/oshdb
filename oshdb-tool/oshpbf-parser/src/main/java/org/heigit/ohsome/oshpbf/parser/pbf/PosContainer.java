@@ -13,9 +13,9 @@ public class PosContainer<T> {
   public String toString() {
     return String.format("Pos:%d - %s", pos, content.toString());
   }
-  
-  public static <T> PosContainer<T>  get(long pos, T content){
+
+  public static <T> PosContainer<T> get(long pos, T content) {
     return new PosContainer<>(pos, content);
   }
-  
+
 }

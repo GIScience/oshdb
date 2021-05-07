@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.index;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.TreeMap;
 import org.heigit.ohsome.oshdb.OSHDB;
@@ -13,6 +14,7 @@ import org.heigit.ohsome.oshdb.util.CellId;
 /**
  * Multi zoomlevel functionality for the XYGrid.
  */
+@SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class XYGridTree implements Serializable {
   private static final long serialVersionUID = 1L;
   private final int maxLevel;
@@ -25,7 +27,7 @@ public class XYGridTree implements Serializable {
    */
   public XYGridTree(int maxzoom) {
     maxLevel = maxzoom;
-    for (int i=0; i<=maxzoom; i++) {
+    for (int i = 0; i <= maxzoom; i++) {
       gridMap.put(i, new XYGrid(i));
     }
   }
@@ -37,17 +39,17 @@ public class XYGridTree implements Serializable {
   /**
    * Get CellIds in all zoomlevel for a given point.
    *
-   * @param longitude
-   * @param latitude
+   * @param longitude Longiude for the given point
+   * @param latitude Latitude for the given point
    * @return An iterator over the cellIds in all zoomlevel
    */
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
-    return new Iterable<CellId>() {
+    return new Iterable<>() {
 
       @Override
       public Iterator<CellId> iterator() {
-        Iterator<CellId> result = new Iterator<CellId>() {
+        Iterator<CellId> result = new Iterator<>() {
           private int level = -1;
 
           @Override
@@ -57,8 +59,12 @@ public class XYGridTree implements Serializable {
 
           @Override
           public CellId next() {
+            if (!hasNext()) {
+              throw new NoSuchElementException();
+            }
             level++;
-            return new CellId(gridMap.get(level).getLevel(), gridMap.get(level).getId(longitude, latitude));
+            return new CellId(gridMap.get(level).getLevel(),
+                gridMap.get(level).getId(longitude, latitude));
           }
         };
 
@@ -70,60 +76,59 @@ public class XYGridTree implements Serializable {
   /**
    * Get CellIds in all zoomlevel for a given point.
    *
-   * @param longitude
-   * @param latitude
+   * @param longitude Longitude for the given point
+   * @param latitude Latitude for the given point
    * @return An iterator over the cellIds in all zoomlevel
    */
   public Iterable<CellId> getIds(double longitude, double latitude) {
-    return this.getIds((long) longitude * OSHDB.GEOM_PRECISION_TO_LONG, (long) latitude * OSHDB.GEOM_PRECISION_TO_LONG);
+    return this.getIds((long) longitude * OSHDB.GEOM_PRECISION_TO_LONG,
+        (long) latitude * OSHDB.GEOM_PRECISION_TO_LONG);
 
   }
 
   /**
    * Calculate cell, a line or relation should be stored in.
    *
-   * @param bbox
-   * @return
+   * @param bbox {@code OSHDBoundingBox} for which to get the {@code CellId}
+   * @return {@code CellId} for the given {@code OSHDBBoundingbox}
    */
   public CellId getInsertId(OSHDBBoundingBox bbox) {
-    for (int i=maxLevel; i>=0; i--) {
-      if (gridMap.get(i).getEstimatedIdCount(bbox) > 2) {
-        continue;
+    for (int i = maxLevel; i >= 0; i--) {
+      if (gridMap.get(i).getEstimatedIdCount(bbox) <= 2) {
+        return new CellId(i, gridMap.get(i).getId(bbox.getMinLonLong(), bbox.getMinLatLong()));
       }
-      return new CellId(i, gridMap.get(i).getId(bbox.getMinLonLong(), bbox.getMinLatLong()));
     }
     return null;
   }
 
   /**
-   * Query cells for given bbox. The boundingbox is automatically enlarged, so
-   * lines and relations are included.
+   * Query cells for given bbox. The boundingbox is automatically enlarged, so lines and relations
+   * are included.
    *
-   * @param BBOX
-   * @return
+   * @param bbox {@code OSHDBBoundingBox} for the query
    */
-  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX) {
-    return bbox2CellIds(BBOX, false);
+  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox bbox) {
+    return bbox2CellIds(bbox, false);
   }
 
   /**
    * Get CellIds in all zoomlevel for a given bbox.
    *
-   * @param BBOX
-   * @param enlarge
-   * @return
+   * @param bbox {@code OSHDBBoundingBox} for the query
+   * @param enlarge {@code true} if the query should include enlarged bboxes
    */
   @SuppressWarnings("Convert2Lambda")
-  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox BBOX, final boolean enlarge) {
-    return new Iterable<CellId>() {
+  public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox bbox, final boolean enlarge) {
+    return new Iterable<>() {
       @Override
       public Iterator<CellId> iterator() {
-        return new Iterator<CellId>() {
+        return new Iterator<>() {
           private int level = 0;
-          private Iterator<IdRange> rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+          private Iterator<IdRange> rows =
+              gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
           private IdRange row = rows.next();
-          private long maxID = row.getEnd();
-          private long currID = row.getStart() - 1;
+          private long maxId = row.getEnd();
+          private long currId = row.getStart() - 1;
 
           @Override
           public boolean hasNext() {
@@ -133,34 +138,34 @@ public class XYGridTree implements Serializable {
             if (rows.hasNext()) {
               return true;
             }
-            return currID < maxID;
+            return currId < maxId;
           }
 
           @Override
           public CellId next() {
-            if (currID < maxID) {
-              currID++;
-              return new CellId(level, currID);
+            if (currId < maxId) {
+              currId++;
+              return new CellId(level, currId);
             }
             if (rows.hasNext()) {
               row = rows.next();
-              currID = row.getStart();
-              maxID = row.getEnd();
-              return new CellId(level, currID);
+              currId = row.getStart();
+              maxId = row.getEnd();
+              return new CellId(level, currId);
             }
             level++;
-            rows = gridMap.get(level).bbox2CellIdRanges(BBOX, enlarge).iterator();
+            rows = gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
             row = rows.next();
-            currID = row.getStart();
-            maxID = row.getEnd();
-            return new CellId(level, currID);
+            currId = row.getStart();
+            maxId = row.getEnd();
+            return new CellId(level, currId);
           }
         };
       }
     };
   }
 
-  public static class CellIdRange implements Serializable{
+  public static class CellIdRange implements Serializable {
 
     private static final long serialVersionUID = -8704075537597232890L;
 
@@ -175,7 +180,7 @@ public class XYGridTree implements Serializable {
       this.start = start;
       this.end = end;
     }
-    
+
     public CellId getStart() {
       return start;
     }
@@ -183,8 +188,6 @@ public class XYGridTree implements Serializable {
     public CellId getEnd() {
       return end;
     }
-
-
 
     @Override
     public int hashCode() {
@@ -210,16 +213,17 @@ public class XYGridTree implements Serializable {
   /**
    * Get CellIds in all zoomlevel for a given bbox.
    *
-   * @param bbox
-   * @param enlarge
-   * @return
+   * @param bbox {@code OSHDBBoundingBox}
+   * @param enlarge {@code true} to include enlarged bboxes
+   * @return List of {@code CellIdRanges} which are covered by the given bbox
    */
   @SuppressWarnings("Convert2Lambda")
-  public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox, final boolean enlarge) {
-    return new Iterable<CellIdRange>() {
+  public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
+      final boolean enlarge) {
+    return new Iterable<>() {
       @Override
       public Iterator<CellIdRange> iterator() {
-        return new Iterator<CellIdRange>() {
+        return new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
@@ -236,10 +240,8 @@ public class XYGridTree implements Serializable {
               rows = gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
             }
             IdRange row = rows.next();
-            return CellIdRange.of(
-                new CellId(level, row.getStart()),
-                new CellId(level, row.getEnd())
-            );
+            return CellIdRange.of(new CellId(level, row.getStart()),
+                new CellId(level, row.getEnd()));
           }
         };
       }

@@ -7,35 +7,14 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   private static final long serialVersionUID = 1L;
   public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(1L, 1L, -1L, -1L);
 
-  public static OVERLAP overlap(OSHDBBoundingBox a, OSHDBBoundingBox b) {
-    if (b.minLon >= a.maxLon
-        || b.maxLon <= a.minLon
-        || b.minLat >= a.maxLat
-        || b.maxLat <= a.minLat) {
-      return OVERLAP.NONE; // no overlap
-    }
-    // fit bbox in test
-    if (a.minLon >= b.minLon
-        && a.maxLon <= b.maxLon
-        && a.minLat >= b.minLat
-        && a.maxLat <= b.maxLat) {
-      return OVERLAP.A_COMPLETE_IN_B;
-    }
-    // fit test in bbox
-    if (b.minLon >= a.minLon
-        && b.maxLon <= a.maxLon
-        && b.minLat >= a.minLat
-        && b.maxLat <= a.maxLat) {
-      return OVERLAP.B_COMPLETE_IN_A;
-    }
-    return OVERLAP.OVERLAPPING;
-  }
-
   private final long minLon;
   private final long maxLon;
   private final long minLat;
   private final long maxLat;
 
+  /**
+   * Creates an {@code OSHDBBoundingBox} instance from osm long coordinates.
+   */
   public OSHDBBoundingBox(long minLon, long minLat, long maxLon, long maxLat) {
     this.minLon = minLon;
     this.maxLon = maxLon;
@@ -43,6 +22,9 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
     this.maxLat = maxLat;
   }
 
+  /**
+   * Create an {@code OSHDBBoudingBox} with standard double longitude/latitude coordinates.
+   */
   public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
     this.minLon = Math.round(minLon * OSHDB.GEOM_PRECISION_TO_LONG);
     this.maxLon = Math.round(maxLon * OSHDB.GEOM_PRECISION_TO_LONG);
@@ -95,10 +77,10 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 79 * hash + (int) (this.minLon ^ (this.minLon >>> 32));
-    hash = 79 * hash + (int) (this.maxLon ^ (this.maxLon >>> 32));
-    hash = 79 * hash + (int) (this.minLat ^ (this.minLat >>> 32));
-    hash = 79 * hash + (int) (this.maxLat ^ (this.maxLat >>> 32));
+    hash = 79 * hash + (int) (this.minLon ^ this.minLon >>> 32);
+    hash = 79 * hash + (int) (this.maxLon ^ this.maxLon >>> 32);
+    hash = 79 * hash + (int) (this.minLat ^ this.minLat >>> 32);
+    hash = 79 * hash + (int) (this.maxLat ^ this.maxLat >>> 32);
     return hash;
   }
 
@@ -125,12 +107,4 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
     }
     return this.maxLat == other.maxLat;
   }
-
-  public enum OVERLAP {
-    NONE,
-    OVERLAPPING,
-    A_COMPLETE_IN_B,
-    B_COMPLETE_IN_A
-  }
-
 }

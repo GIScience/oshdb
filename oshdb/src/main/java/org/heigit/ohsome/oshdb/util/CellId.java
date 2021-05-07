@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A wrapper class for cellIds consisting of a zoom level and an zoom-level specific id
+ * A wrapper class for cellIds consisting of a zoom level and an zoom-level specific id.
  */
 public class CellId implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -34,23 +34,24 @@ public class CellId implements Serializable {
   }
 
   public static long getLevelId(int zoomlevel, long id) {
-    return ((long) zoomlevel) << 56 | id;
+    return (long) zoomlevel << 56 | id;
   }
 
   public long getLevelId() {
     return getLevelId(zoomLevel, id);
   }
 
+  /**
+   * Converts a {@code long} level id to {@code CellId}.
+   *
+   * @param levelId the {@code long} id from the conversion
+   */
   public static CellId fromLevelId(long levelId) {
     final long id = levelId & 0x00FFFFFFFFFFFFFFL;
     final int zoomlevel = (int) (levelId >>> 56);
     return new CellId(zoomlevel, id);
   }
 
-  /**
-   *
-   * @return
-   */
   public long getId() {
     return this.id;
   }
@@ -74,7 +75,7 @@ public class CellId implements Serializable {
   public int hashCode() {
     int hash = 7;
     hash = 47 * hash + this.zoomLevel;
-    hash = 47 * hash + (int) (this.id ^ (this.id >>> 32));
+    hash = 47 * hash + (int) (this.id ^ this.id >>> 32);
     return hash;
   }
 
@@ -83,10 +84,6 @@ public class CellId implements Serializable {
     return "CellId{" + "zoomLevel=" + zoomLevel + ", id=" + id + '}';
   }
 
-  /**
-   *
-   * @return
-   */
   public int getZoomLevel() {
     return this.zoomLevel;
   }

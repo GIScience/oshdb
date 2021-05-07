@@ -8,25 +8,18 @@ import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.index.XYGrid.IdRange;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
-  private XYGrid zero;
-  private XYGrid two;
-  private XYGrid thirty;
-
-  @Before
-  public void setUp() {
-    zero = new XYGrid(0);
-    two = new XYGrid(2);
-    thirty = new XYGrid(30);
-  }
+  private final XYGrid zero = new XYGrid(0);
+  private final XYGrid two = new XYGrid(2);
+  private final XYGrid thirty = new XYGrid(30);
 
   @Test
   public void testGetId_double_double() {
@@ -168,7 +161,7 @@ public class XYGridTest {
   @Test
   public void test179_90_30() {
     // Testing Coordinates: 179, 90, zoom 30
-    double longitude = 180.0-OSHDB.GEOM_PRECISION;
+    double longitude = 180.0 - OSHDB.GEOM_PRECISION;
     double latitude = 90.0;
 
     Long expResult = 576460752303423487L;
@@ -202,7 +195,8 @@ public class XYGridTest {
   @Test
   public void testGetCellDimensions() {
     long cellId = 0L;
-    OSHDBBoundingBox expResult = new OSHDBBoundingBox(-180.0, -90.0, -90.0 - OSHDB.GEOM_PRECISION, 0.0 - OSHDB.GEOM_PRECISION);
+    OSHDBBoundingBox expResult = new OSHDBBoundingBox(-180.0, -90.0, -90.0 - OSHDB.GEOM_PRECISION,
+        0.0 - OSHDB.GEOM_PRECISION);
     OSHDBBoundingBox result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
@@ -348,13 +342,14 @@ public class XYGridTest {
 
     // test performance for maximum sized BBOX
     bbox = new OSHDBBoundingBox(-180, -90, 180, 90);
-    int expResult = (int)Math.pow(2,MAXZOOM)/2;
-    LOG.info("If this throws a warning because of the maximum zoomlevel, we have to change XYGrid-Code:");
+    int expResult = (int) Math.pow(2, MAXZOOM) / 2;
+    LOG.info("If this throws a warning because of the maximum zoomlevel, "
+        + "we have to change XYGrid-Code:");
     result = new XYGrid(MAXZOOM).bbox2CellIdRanges(bbox, true);
     assertEquals(expResult, result.size());
     interval = result.iterator().next();
     assertEquals(0, interval.getStart());
-    assertEquals((int)Math.pow(2,MAXZOOM)-1, interval.getEnd());
+    assertEquals((int) Math.pow(2, MAXZOOM) - 1, interval.getEnd());
   }
 
   @Test
@@ -371,11 +366,8 @@ public class XYGridTest {
   @Test
   public void testGetBoundingBox() {
     OSHDBBoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
-    OSHDBBoundingBox expResult = new OSHDBBoundingBox(
-        0.0,
-        -90.0,
-        90.0 - OSHDB.GEOM_PRECISION,
-        0.0 - OSHDB.GEOM_PRECISION);
+    OSHDBBoundingBox expResult =
+        new OSHDBBoundingBox(0.0, -90.0, 90.0 - OSHDB.GEOM_PRECISION, 0.0 - OSHDB.GEOM_PRECISION);
     assertEquals(expResult, result);
   }
 }

@@ -18,7 +18,13 @@ import org.heigit.ohsome.oshpbf.parser.rx.RxOshPbfReader;
 
 public class TypeStartFinder {
 
-  public static OsmPbfMeta getMetaData(Path pbf) throws InvalidProtocolBufferException {
+  /**
+   * Reads in the metadata.
+   *
+   * @param pbf Path to the pbf
+   * @throws IOException
+   */
+  public static OsmPbfMeta getMetaData(Path pbf) throws IOException {
     OsmPbfMeta meta = new OsmPbfMeta();
     meta.pbf = pbf;
     Path metaPath = pbf.getParent().resolve(pbf.getFileName().toString() + ".meta");
@@ -33,8 +39,6 @@ public class TypeStartFinder {
         meta.relationStart = input.readLong();
         meta.relationEnd = input.readLong();
         return meta;
-      } catch (IOException e) {
-        System.err.println(e);
       }
     }
 
@@ -43,22 +47,22 @@ public class TypeStartFinder {
     long nodeStort = fileSize;
     long wayStart = fileSize;
     long relStart = fileSize;
-    long pos;
     long count = 0;
-    for (PbfBlob blob : RxOshPbfReader.readBlob(pbf, 0, fileSize, -1).filter(PbfBlob::isData).limit(100)
-        .blockingIterable()) {
+    for (PbfBlob blob : RxOshPbfReader.readBlob(pbf, 0, fileSize, -1).filter(PbfBlob::isData)
+        .limit(100).blockingIterable()) {
       switch (getType(blob)) {
-      case NODE:
-        nodeStort = Math.min(nodeStort, blob.pos);
-        break;
-      case WAY:
-        wayStart = Math.min(wayStart, blob.pos);
-        break;
-      case RELATION:
-        relStart = Math.min(relStart, blob.pos);
-        break;
+        case NODE:
+          nodeStort = Math.min(nodeStort, blob.pos);
+          break;
+        case WAY:
+          wayStart = Math.min(wayStart, blob.pos);
+          break;
+        case RELATION:
+          relStart = Math.min(relStart, blob.pos);
+          break;
+        default:
+          throw new IllegalStateException("unkown type");
       }
-      pos = blob.pos;
       count++;
     }
 
@@ -71,15 +75,13 @@ public class TypeStartFinder {
       meta.relationEnd = fileSize;
 
     } else {
-
-      
-      if(wayStart == fileSize){
+      if (wayStart == fileSize) {
         PbfBlob way = findWay(pbf);
-        wayStart = way.pos;
+        wayStart = way != null ? way.pos : -1;
       }
-      if(relStart == fileSize){
+      if (relStart == fileSize) {
         PbfBlob relation = findRelation(pbf, wayStart + 1);
-        relStart = relation.pos;
+        relStart = relation != null ? relation.pos : -1;
       }
 
       meta.nodeStart = nodeStort;
@@ -89,8 +91,7 @@ public class TypeStartFinder {
       meta.relationStart = relStart;
       meta.relationEnd = fileSize;
     }
-    
-    
+
     try (DataOutputStream output = new DataOutputStream(new FileOutputStream(metaPath.toFile()))) {
       output.writeLong(meta.nodeStart);
       output.writeLong(meta.nodeEnd);
@@ -98,12 +99,15 @@ public class TypeStartFinder {
       output.writeLong(meta.wayEnd);
       output.writeLong(meta.relationStart);
       output.writeLong(meta.relationEnd);
-    } catch (IOException e) {
-      System.err.println(e);
     }
     return meta;
   }
 
+  /**
+   * Seek for first PBF Way Blob.
+   *
+   * @param pbf Path to Pbf
+   */
   public static PbfBlob findWay(Path pbf) throws InvalidProtocolBufferException {
     long fileSize = pbf.toFile().length();
 
@@ -113,7 +117,8 @@ public class TypeStartFinder {
     while (high >= low) {
       long middle = (low + high) / 2;
 
-      Iterator<PbfBlob> blob = RxOshPbfReader.readBlob(pbf, middle, -1, -1).take(2).blockingIterable().iterator();
+      Iterator<PbfBlob> blob =
+          RxOshPbfReader.readBlob(pbf, middle, -1, -1).take(2).blockingIterable().iterator();
 
       if (blob.hasNext()) {
         PbfBlob b = blob.next();
@@ -139,13 +144,18 @@ public class TypeStartFinder {
         System.out.println("Found nothing");
         return null;
       }
-
     }
-
     return null;
   }
 
-  public static PbfBlob findRelation(Path pbf, long startPos) throws InvalidProtocolBufferException {
+  /**
+   * Seeks to the first Pbf Relation Blob.
+   *
+   * @param pbf Path to Pbf
+   * @param startPos Offset to begin.
+   */
+  public static PbfBlob findRelation(Path pbf, long startPos)
+      throws InvalidProtocolBufferException {
     long fileSize = pbf.toFile().length();
 
     long low = startPos;
@@ -154,7 +164,8 @@ public class TypeStartFinder {
     while (high >= low) {
       long middle = (low + high) / 2;
 
-      Iterator<PbfBlob> blob = RxOshPbfReader.readBlob(pbf, middle, -1, -1).take(2).blockingIterable().iterator();
+      Iterator<PbfBlob> blob =
+          RxOshPbfReader.readBlob(pbf, middle, -1, -1).take(2).blockingIterable().iterator();
 
       if (blob.hasNext()) {
         PbfBlob b = blob.next();
@@ -180,25 +191,31 @@ public class TypeStartFinder {
         System.out.println("Found nothing");
         return null;
       }
-
     }
-
     return null;
   }
 
+  /**
+   * Checks the of given PbfBlob.
+   *
+   * @param blob Blob.
+   */
   public static OSMType getType(PbfBlob blob) throws InvalidProtocolBufferException {
     PrimitiveBlock block = blob.getPrimitivBlock();
-    if(block != null) {
+    if (block != null) {
       Osmformat.PrimitiveGroup group = block.getPrimitivegroup(0);
-      if (group.hasDense() || group.getNodesCount() > 0)
+      if (group.hasDense() || group.getNodesCount() > 0) {
         return OSMType.NODE;
-      if (group.getWaysCount() > 0)
+      }
+      if (group.getWaysCount() > 0) {
         return OSMType.WAY;
-      if (group.getRelationsCount() > 0)
+      }
+      if (group.getRelationsCount() > 0) {
         return OSMType.RELATION;
+      }
       throw new IllegalArgumentException("unkown type for Pbf PrimitiveGroup!");
     }
-    throw new IllegalArgumentException("block is null, could be a header pbf block instead of a data block!");
+    throw new IllegalArgumentException(
+        "block is null, could be a header pbf block instead of a data block!");
   }
-
 }

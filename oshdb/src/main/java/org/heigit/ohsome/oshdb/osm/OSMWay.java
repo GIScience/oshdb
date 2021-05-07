@@ -27,7 +27,8 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
    * Returns the members for this current version.
    *
    * @return OSMMember for this version
-   */  public OSMMember[] getMembers() {
+   */
+  public OSMMember[] getMembers() {
     return members;
   }
 
@@ -41,6 +42,29 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
   @Override
   public String toString() {
     return String.format("WAY-> %s Refs:%s", super.toString(), Arrays.toString(getMembers()));
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Arrays.hashCode(members);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (!(obj instanceof OSMWay)) {
+      return false;
+    }
+    OSMWay other = (OSMWay) obj;
+    return Arrays.equals(members, other.members);
   }
 
   @Override

@@ -7,18 +7,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class DirExistValidator implements IParameterValidator{
+public class DirExistValidator implements IParameterValidator {
 
-	@Override
-	public void validate(String name, String value) throws ParameterException {
-		final Path path = Paths.get(value);
-		try {
+  @Override
+  public void validate(String name, String value) throws ParameterException {
+    final Path path = Paths.get(value);
+    try {
       Files.createDirectories(path);
     } catch (IOException e) {
-      throw new ParameterException("Directory "+value+" for parameter " + name + " could not created");
+      throw new ParameterException(
+          "Directory " + value + " for parameter " + name + " could not created");
     }
-		if(!Files.exists(path) && Files.isDirectory(path))
-		  throw new ParameterException("Directory "+value+" for parameter " + name + " does not exist!");
-	}
-
+    if (!Files.exists(path) && Files.isDirectory(path)) {
+      throw new ParameterException(
+          "Directory " + value + " for parameter " + name + " does not exist!");
+    }
+  }
 }

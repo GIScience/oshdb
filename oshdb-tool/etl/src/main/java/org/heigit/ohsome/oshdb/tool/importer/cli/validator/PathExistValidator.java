@@ -10,8 +10,8 @@ public class PathExistValidator implements IParameterValidator {
   @Override
   public void validate(String name, String value) throws ParameterException {
 
-    if (!Files.exists(Paths.get(value)))
+    if (!Files.exists(Paths.get(value))) {
       throw new ParameterException("File " + value + " for parameter " + name + " does not exist!");
+    }
   }
-
 }

@@ -8,48 +8,43 @@ import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
-public class ConsoleHandler extends LoaderHandler{
+public class ConsoleHandler extends LoaderHandler {
 
-  
   @Override
   public void loadKeyValues(int id, String key, List<String> values) {
     final int valueLimit = 10;
-    System.out.printf("%4d : k=%s,  (%d:%s%s)%n",id,key,values.size(), values.stream().limit(valueLimit).collect(Collectors.toList()).toString(),(values.size()> valueLimit)?"...":"");
+    System.out.printf("%4d : k=%s,  (%d:%s%s)%n", id, key, values.size(),
+        values.stream().limit(valueLimit).collect(Collectors.toList()).toString(),
+        values.size() > valueLimit ? "..." : "");
   }
 
   @Override
   public void loadRole(int id, String role) {
-    System.out.printf("%4d : r=%s%n",id,role);
+    System.out.printf("%4d : r=%s%n", id, role);
   }
-  
+
   @Override
   public void handleNodeGrid(long cellId, Collection<TransformOSHNode> nodes) {
     final int zoom = ZGrid.getZoom(cellId);
     final long id = ZGrid.getIdWithoutZoom(cellId);
     System.out.printf("load node grid (%d:%d %d) nodes:%d%n", zoom, id, cellId, nodes.size());
-    
-    
-    
   }
 
   @Override
-  public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways, Collection<TransformOSHNode> nodes) {
+  public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways,
+      Collection<TransformOSHNode> nodes) {
     final int zoom = ZGrid.getZoom(cellId);
     final long id = ZGrid.getIdWithoutZoom(cellId);
-    System.out.printf("load way grid (%d:%d %d) ways:%d nodes:%d%n", zoom, id, cellId, ways.size(), nodes.size());
-    
-    
-    
+    System.out.printf("load way grid (%d:%d %d) ways:%d nodes:%d%n", zoom, id, cellId, ways.size(),
+        nodes.size());
   }
 
   @Override
-  public void handleRelationGrid(long cellId, Collection<TransfomRelation> entities, Collection<TransformOSHNode> nodes,
-      Collection<TransformOSHWay> ways) {
+  public void handleRelationGrid(long cellId, Collection<TransfomRelation> entities,
+      Collection<TransformOSHNode> nodes, Collection<TransformOSHWay> ways) {
     final int zoom = ZGrid.getZoom(cellId);
     final long id = ZGrid.getIdWithoutZoom(cellId);
-    System.out.printf("load relation grid (%d:%d %d) ways:%d nodes:%d ways:%d%n", zoom, id, cellId, entities.size(),
-        nodes.size(), ways.size());
-
+    System.out.printf("load relation grid (%d:%d %d) ways:%d nodes:%d ways:%d%n", zoom, id, cellId,
+        entities.size(), nodes.size(), ways.size());
   }
-
 }

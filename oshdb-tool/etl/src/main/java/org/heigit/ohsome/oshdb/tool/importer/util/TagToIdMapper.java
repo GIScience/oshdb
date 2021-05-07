@@ -1,10 +1,13 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
 public interface TagToIdMapper {
-  
-  public int getKey(String key);
-  public int getValue(int key, String value);
-  public TagId getTag(String key, String value);
-  public long estimatedSize();
-  
+
+  int getKey(String key);
+
+  int getValue(int key, String value);
+
+  TagId getTag(String key, String value);
+
+  long estimatedSize();
+
 }

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,7 +49,6 @@ public class OSMWayTest {
     result = instance.toString();
     assertEquals(expResult, result);
   }
-
 
   @Test
   public void testCompareTo() {

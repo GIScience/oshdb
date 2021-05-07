@@ -2,48 +2,51 @@ package org.heigit.ohsome.oshpbf.parser.rx;
 
 import java.util.List;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshpbf.parser.osm.v0_6.Entity;
+import org.heigit.ohsome.oshpbf.parser.osm.v06.Entity;
 
 public class Osh {
   final boolean isComplete;
   final List<Entity> versions;
-  final long pos[];
-  
+  final long[] pos;
+
   public Osh(boolean isComplete, List<Entity> versions, long pos) {
-    this(isComplete,versions,new long[]{pos});
+    this(isComplete, versions, new long[] {pos});
   }
+
   public Osh(boolean isComplete, List<Entity> versions, long pos1, long pos2) {
-    this(isComplete,versions,new long[]{pos1,pos2});
+    this(isComplete, versions, new long[] {pos1, pos2});
   }
+
   public Osh(boolean isComplete, List<Entity> versions, long[] pos) {
     this.isComplete = isComplete;
     this.versions = versions;
     this.pos = pos;
   }
-  
-  public long getId(){
+
+  public long getId() {
     return versions.get(0).getId();
   }
-  
-  public OSMType getType(){
+
+  public OSMType getType() {
     return versions.get(0).getType();
   }
-  
-  public List<Entity> getVersions(){
+
+  public List<Entity> getVersions() {
     return versions;
   }
-  
+
   /**
-   * position in bytes of the blob containing this data in the pbf
-   * @return
+   * position in bytes of the blob containing this data in the pbf.
+   *
    */
-  public long[] getPos(){
+  public long[] getPos() {
     return pos;
   }
-  
+
   @Override
   public String toString() {
-    return String.format("%s[%d] complete:%s, #%d v:%d-%d", getType(), getId(), isComplete, versions.size(), versions.get(0).getVersion(), versions.get(versions.size()-1).getVersion());
+    return String.format("%s[%d] complete:%s, #%d v:%d-%d", getType(), getId(), isComplete,
+        versions.size(), versions.get(0).getVersion(),
+        versions.get(versions.size() - 1).getVersion());
   }
-
 }

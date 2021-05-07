@@ -37,7 +37,6 @@ public class FastPolygonOperationsTest {
   @Test
   public void testBug206() throws ParseException {
     // see https://github.com/GIScience/oshdb/pull/204
-    
     String polyWkt = "POLYGON ((-0.0473915 51.5539955,-0.0473872 51.5540543,-0.0473811 51.554121,"
         + "-0.0473792 51.5541494,-0.0473193 51.5541485,-0.047305 51.5540903,-0.0472924 51.5540904,"
         + "-0.0472852 51.5540674,-0.0472735 51.5540681,-0.0472692 51.5540517,-0.0472852 51.5540499,"

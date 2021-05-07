@@ -7,17 +7,17 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 
 public interface OSHEntity {
 
-  public long getId();
-  public OSHDBBoundingBox getBoundingBox();
-  
-  public abstract OSMType getType();
-  
-  
-  public Iterable<? extends OSMEntity> versions();
-  
-  public Iterator<? extends OSMEntity> iterator();
-  
-  public Stream<? extends OSMEntity> stream();
-  
-  public OSHEntity copy();
+  long getId();
+
+  OSHDBBoundingBox getBoundingBox();
+
+  OSMType getType();
+
+  Iterable<? extends OSMEntity> versions();
+
+  Iterator<? extends OSMEntity> iterator();
+
+  Stream<? extends OSMEntity> stream();
+
+  OSHEntity copy();
 }

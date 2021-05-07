@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.Weigher;
+import com.google.common.io.Closeables;
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -13,6 +14,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
@@ -51,15 +53,17 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
       this.compress = compress;
       this.pageSizePower = pageSizePower;
       this.pageSize = (int) Math.pow(2, pageSizePower);
-      this.pageOffsetMask = pageSize - 1;
+      this.pageOffsetMask = pageSize - 1L;
     }
 
     public void put(long id, long value) throws IOException {
-      if (id < 0)
+      if (id < 0) {
         throw new IllegalArgumentException("id must greater than 0 but is " + id);
-      if (id <= lastId)
+      }
+      if (id <= lastId) {
         throw new IllegalArgumentException(
             "id must in strict acsending order lastId was " + lastId + " new id is " + id);
+      }
 
       final int pageNumber = (int) (id / pageOffsetMask);
       final int pageOffset = (int) (id & pageOffsetMask);
@@ -69,22 +73,22 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
         lastPageNumber = pageNumber;
       }
 
-      output.writeSInt64(value - lastValue);
+      output.writeS64(value - lastValue);
       bitmap.add(pageOffset);
 
       lastId = id;
       lastValue = value;
     }
 
+    @Override
     public void close() {
       try {
         flushPage();
         rafPages.close();
         rafPageIndex.close();
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new UncheckedIOException(e);
       }
-
     }
 
     private void flushPage() throws IOException {
@@ -143,11 +147,10 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
     this.pageOffsetMask = pageSize - 1;
   }
 
-
-
   public LongSortedSet get(LongSortedSet ids) {
-    if (ids.isEmpty())
+    if (ids.isEmpty()) {
       return ids;
+    }
 
     try {
       final LongSortedSet result = new LongAVLTreeSet();
@@ -164,13 +167,14 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
           page = cache.get(pageNumber);
           currentPageNumber = pageNumber;
         }
-        if(page == null) {
+        if (page == null) {
           throw new RuntimeException("page is null!");
         }
         long cellId = page.get(pageOffset);
-        if (cellId >= 0)
+        if (cellId >= 0) {
           result.add(cellId);
-        
+        }
+
       }
       return result;
     } catch (ExecutionException e) {
@@ -179,9 +183,11 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
 
   }
 
+  @Override
   public long get(long id) {
-    if (id < 0)
+    if (id < 0) {
       throw new IllegalArgumentException("id must greater than 0 but is " + id);
+    }
 
     final int pageNumber = (int) (id / pageOffsetMask);
     final int pageOffset = (int) (id & pageOffsetMask);
@@ -190,11 +196,9 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
       Page page = cache.get(pageNumber);
       final long cellId = page.get(pageOffset);
       return cellId;
-
     } catch (ExecutionException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
-    return -1;
   }
 
   @Override
@@ -202,7 +206,7 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
     try {
       rafPages.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -213,16 +217,6 @@ public class SortedLong2LongMap implements Closeable, LongToLongMap {
       public int weigh(Integer arg0, Page page) {
         return page.weigh();
       }
-    })
-        /*
-         * .removalListener(new RemovalListener<Integer, Page>() {
-         * 
-         * @Override public void onRemoval(RemovalNotification<Integer, Page> notification) {
-         * System.out.println("evict "+ notification.getKey());
-         * 
-         * } })
-         */
-        .build(cacheLoader);
+    }).build(cacheLoader);
   }
-
 }

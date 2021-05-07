@@ -42,20 +42,27 @@ public class IsoDateTimeParserTest {
     String[] yyyyMmDdHhMmSsSss = {"2020-02-17T23:55:12.999Z", "2020-02-17T23:55:12.999"};
     String[] yyyyMmDdHhMmSsSssz = {"2020-02-17T23:55:12.999Z", "2020-02-17T23:55:12.999Z"};
 
-    Assert.assertEquals(yyyyMmDdHh[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHh[1]).toString());
-    Assert.assertEquals(yyyyMmDdHhz[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhz[1]).toString());
+    Assert.assertEquals(yyyyMmDdHh[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHh[1]).toString());
+    Assert.assertEquals(yyyyMmDdHhz[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhz[1]).toString());
 
-    Assert.assertEquals(yyyyMmDdHhMm[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMm[1]).toString());
-    Assert.assertEquals(yyyyMmDdHhMmz[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmz[1]).toString());
+    Assert.assertEquals(yyyyMmDdHhMm[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMm[1]).toString());
+    Assert.assertEquals(yyyyMmDdHhMmz[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmz[1]).toString());
 
-    Assert.assertEquals(yyyyMmDdHhMmSs[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSs[1]).toString());
-    Assert.assertEquals(yyyyMmDdHhMmSsz[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSsz[1]).toString());
+    Assert.assertEquals(yyyyMmDdHhMmSs[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSs[1]).toString());
+    Assert.assertEquals(yyyyMmDdHhMmSsz[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSsz[1]).toString());
 
-    Assert.assertEquals(yyyyMmDdHhMmSsSss[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSsSss[1]).toString());
-    Assert.assertEquals(yyyyMmDdHhMmSsSssz[0], IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSsSssz[1]).toString());
+    Assert.assertEquals(yyyyMmDdHhMmSsSss[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSsSss[1]).toString());
+    Assert.assertEquals(yyyyMmDdHhMmSsSssz[0],
+        IsoDateTimeParser.parseIsoDateTime(yyyyMmDdHhMmSsSssz[1]).toString());
 
   }
-
 
   @Test(expected = OSHDBTimestampException.class)
   public void throwsNegativeDateParseIsoDateTime() {
@@ -134,7 +141,8 @@ public class IsoDateTimeParserTest {
 
     // input, output Period, output Duration
     String[] fullDateTimePeriod = {"P1Y3M10DT1H15M25S", "P1Y3M10D", "PT1H15M25S"};
-    Map<String, Object> fullYearMonthDayTime = IsoDateTimeParser.parseIsoPeriod(fullDateTimePeriod[0]);
+    Map<String, Object> fullYearMonthDayTime =
+        IsoDateTimeParser.parseIsoPeriod(fullDateTimePeriod[0]);
     Period fullYearMonthDayTimePeriod = (Period) fullYearMonthDayTime.get("period");
     Duration fullYearMonthDayTimeDuration = (Duration) fullYearMonthDayTime.get("duration");
     Assert.assertEquals(fullDateTimePeriod[1], fullYearMonthDayTimePeriod.toString());

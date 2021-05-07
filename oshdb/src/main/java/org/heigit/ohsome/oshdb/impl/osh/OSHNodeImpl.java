@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -34,6 +36,9 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates an instances of {@code OSHNodeImpl} from the given byte array.
+   */
   public static OSHNodeImpl instance(final byte[] data, final int offset, final int length,
       final long baseNodeId, final long baseTimestamp, final long baseLongitude,
       final long baseLatitude) throws IOException {
@@ -47,10 +52,10 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     final long maxLon;
     final long maxLat;
     if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
-      minLon = baseLongitude + wrapper.readSInt64();
-      maxLon = minLon + wrapper.readUInt64();
-      minLat = baseLatitude + wrapper.readSInt64();
-      maxLat = minLat + wrapper.readUInt64();
+      minLon = baseLongitude + wrapper.readS64();
+      maxLon = minLon + wrapper.readU64();
+      minLat = baseLatitude + wrapper.readS64();
+      maxLat = minLat + wrapper.readU64();
     } else {
       minLon = 1;
       minLat = 1;
@@ -59,32 +64,30 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     }
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
-      final int size = wrapper.readUInt32();
+      final int size = wrapper.readU32();
       keys = new int[size];
       for (int i = 0; i < size; i++) {
-        keys[i] = wrapper.readUInt32();
+        keys[i] = wrapper.readU32();
       }
     } else {
       keys = new int[0];
     }
-    final long id = wrapper.readUInt64() + baseNodeId;
+    final long id = wrapper.readU64() + baseNodeId;
     final int dataOffset = wrapper.getPos();
 
     // TODO do we need dataLength?
     // TODO maybe better to store number of versions instead
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHNodeImpl(data, offset, length,
-        baseNodeId, baseTimestamp, baseLongitude, baseLatitude,
-        header, id, minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
+    return new OSHNodeImpl(data, offset, length, baseTimestamp, baseLongitude,
+        baseLatitude, header, id, minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
   }
 
-  private OSHNodeImpl(final byte[] data, final int offset, final int length, final long baseNodeId,
+  private OSHNodeImpl(final byte[] data, final int offset, final int length,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
       final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat,
-      final int[] keys,
-      final int dataOffset, final int dataLength) {
-    super(data, offset, length, baseNodeId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+      final int[] keys, final int dataOffset, final int dataLength) {
+    super(data, offset, length, baseTimestamp, baseLongitude, baseLatitude, header, id,
         minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
 
     // correct bbox!
@@ -122,7 +125,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
 
   @Override
   public Iterator<OSMNode> iterator() {
-    return new Iterator<OSMNode>() {
+    return new Iterator<>() {
       ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
       int version = 0;
@@ -141,36 +144,39 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
 
       @Override
       public OSMNode next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
         try {
-          version = wrapper.readSInt32() + version;
-          timestamp = wrapper.readSInt64() + timestamp;
-          changeset = wrapper.readSInt64() + changeset;
+          version = wrapper.readS32() + version;
+          timestamp = wrapper.readS64() + timestamp;
+          changeset = wrapper.readS64() + changeset;
 
           byte changed = wrapper.readRawByte();
 
           if ((changed & CHANGED_USER_ID) != 0) {
-            userId = wrapper.readSInt32() + userId;
+            userId = wrapper.readS32() + userId;
           }
 
           if ((changed & CHANGED_TAGS) != 0) {
-            int size = wrapper.readUInt32();
+            int size = wrapper.readU32();
             if (size < 0) {
               System.out.println("Something went wrong!");
             }
             keyValues = new int[size];
             for (int i = 0; i < size; i++) {
-              keyValues[i] = wrapper.readUInt32();
+              keyValues[i] = wrapper.readU32();
             }
           }
 
           if ((changed & CHANGED_LOCATION) != 0) {
-            longitude = wrapper.readSInt64() + longitude;
-            latitude = wrapper.readSInt64() + latitude;
+            longitude = wrapper.readS64() + longitude;
+            latitude = wrapper.readS64() + latitude;
           }
 
-          return new OSMNode(id, version, (baseTimestamp + timestamp), changeset,
-              userId, keyValues, (version > 0) ? baseLongitude + longitude : 0,
-              (version > 0) ? baseLatitude + latitude : 0);
+          return new OSMNode(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+              version > 0 ? baseLongitude + longitude : 0,
+              version > 0 ? baseLatitude + latitude : 0);
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -184,30 +190,36 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
     return build(versions, 0, 0, 0, 0);
   }
 
-  public static OSHNodeImpl build(List<OSMNode> versions, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude) throws IOException {
+  /**
+   * Creates a {@code OSHNode} bases on the given list of node versions.
+   */
+  public static OSHNodeImpl build(List<OSMNode> versions, final long baseId,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude)
+      throws IOException {
     ByteBuffer bb = buildRecord(versions, baseId, baseTimestamp, baseLongitude, baseLatitude);
 
-    return OSHNodeImpl.instance(bb.array(), 0, bb.remaining(), baseId, baseTimestamp,
-        baseLongitude, baseLatitude);
+    return OSHNodeImpl.instance(bb.array(), 0, bb.remaining(), baseId, baseTimestamp, baseLongitude,
+        baseLatitude);
   }
 
-  public static ByteBuffer buildRecord(List<OSMNode> versions, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude) throws IOException {
+  /**
+   * Creates a {@code OSHNode} bases on the given list of node versions, but returns the underlying
+   * ByteBuffer instead of an instance of {@code OSHNode}.
+   */
+  public static ByteBuffer buildRecord(List<OSMNode> versions, final long baseId,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude)
+      throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
-
-    ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
     long lastLongitude = baseLongitude;
     long lastLatitude = baseLatitude;
-
-    long id = versions.get(0).getId();
 
     long minLon = Long.MAX_VALUE;
     long maxLon = Long.MIN_VALUE;
     long minLat = Long.MAX_VALUE;
     long maxLat = Long.MIN_VALUE;
 
+    ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
     Builder builder = new Builder(output, baseTimestamp);
 
     for (OSMNode node : versions) {
@@ -221,9 +233,9 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
       }
       builder.build(version, changed);
       if ((changed & CHANGED_LOCATION) != 0) {
-        output.writeSInt64((node.getLon() - baseLongitude) - (lastLongitude - baseLongitude));
+        output.writeS64(node.getLon() - baseLongitude - (lastLongitude - baseLongitude));
         lastLongitude = node.getLon();
-        output.writeSInt64((node.getLat() - baseLatitude) - (lastLatitude - baseLatitude));
+        output.writeS64(node.getLat() - baseLatitude - (lastLatitude - baseLatitude));
         lastLatitude = node.getLat();
 
         minLon = Math.min(minLon, lastLongitude);
@@ -233,8 +245,6 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
         maxLat = Math.max(maxLat, lastLatitude);
       }
     } // for versions
-
-    ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
 
     byte header = 0;
     if (versions.size() > 1) {
@@ -251,22 +261,24 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
       header |= HEADER_HAS_BOUNDINGBOX;
     }
 
+    ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
     record.writeByte(header);
     if ((header & HEADER_HAS_BOUNDINGBOX) != 0) {
-      record.writeSInt64(minLon - baseLongitude);
-      record.writeUInt64(maxLon - minLon);
-      record.writeSInt64(minLat - baseLatitude);
-      record.writeUInt64(maxLat - minLat);
+      record.writeS64(minLon - baseLongitude);
+      record.writeU64(maxLon - minLon);
+      record.writeS64(minLat - baseLatitude);
+      record.writeU64(maxLat - minLat);
     }
 
     if ((header & HEADER_HAS_TAGS) != 0) {
-      record.writeUInt32(builder.getKeySet().size());
+      record.writeU32(builder.getKeySet().size());
       for (Integer key : builder.getKeySet()) {
-        record.writeUInt32(key.intValue());
+        record.writeU32(key.intValue());
       }
     }
 
-    record.writeUInt64(id - baseId);
+    long id = versions.get(0).getId();
+    record.writeU64(id - baseId);
     record.writeByteArray(output.array(), 0, output.length());
 
     return ByteBuffer.wrap(record.array(), 0, record.length());
@@ -310,9 +322,8 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
       try {
         return OSHNodeImpl.instance(data, 0, data.length);
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new UncheckedIOException(e);
       }
-      return null;
     }
   }
 

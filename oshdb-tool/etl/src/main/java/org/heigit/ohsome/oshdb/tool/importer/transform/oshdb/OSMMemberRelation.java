@@ -39,7 +39,7 @@ public class OSMMemberRelation implements OSMMember {
   public OSHEntity getEntity() {
     return entity;
   }
-  
+
   @Override
   public String toString() {
     return asString();

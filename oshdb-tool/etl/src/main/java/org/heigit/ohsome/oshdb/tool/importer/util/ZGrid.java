@@ -4,10 +4,11 @@ import java.util.Comparator;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 
+@SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class ZGrid {
-  
+
   public static OSHDBBoundingBox WORLD = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 180.0);
-  
+
   private static final int DIMENSION = 2;
   private static long ZOOM_FACTOR = 1L << 56;
   private static long ID_MASK = 0x00FFFFFFFFFFFFFFL;
@@ -16,6 +17,9 @@ public class ZGrid {
   private final int maxZoom;
   private static final OSHDBBoundingBox zeroBoundingBox = new OSHDBBoundingBox(0, 0, 0, 0);
 
+  /**
+   * Creates a {@code ZGrid} index based on maximal Zoom.
+   */
   public ZGrid(int maxZoom) {
     if (maxZoom < 1) {
       throw new IllegalArgumentException("maxZoom must be >= 1 but is " + maxZoom);
@@ -28,15 +32,15 @@ public class ZGrid {
     this.maxZoom = maxZoom;
   }
 
-  public long getIdSingleZIdWithZoom(long lon, long lat) {
-    return getIdSingleZIdWithZoom(lon, lon, lat, lat);
+  public long getIdSingleZidWithZoom(long lon, long lat) {
+    return getIdSingleZidWithZoom(lon, lon, lat, lat);
   }
 
-  public long getIdSingleZIdWithZoom(long[] lon, long[] lat) {
-    return getIdSingleZIdWithZoom(lon[0], lon[1], lat[0], lat[1]);
+  public long getIdSingleZidWithZoom(long[] lon, long[] lat) {
+    return getIdSingleZidWithZoom(lon[0], lon[1], lat[0], lat[1]);
   }
 
-  public long getIdSingleZIdWithZoom(long minLon, long maxLon, long minLat, long maxLat) {
+  public long getIdSingleZidWithZoom(long minLon, long maxLon, long minLat, long maxLat) {
     final long[] x = new long[2];
     final long[] y = new long[2];
 
@@ -45,8 +49,8 @@ public class ZGrid {
     minLat = normalizeLat(minLat);
     maxLat = normalizeLat(maxLat);
 
-    if (!validateLon(minLon) || !validateLon(maxLon)
-            || !validateLat(minLat) || !validateLat(maxLat)) {
+    if (!validateLon(minLon) || !validateLon(maxLon) || !validateLat(minLat)
+        || !validateLat(maxLat)) {
       return -1;
     }
 
@@ -74,50 +78,51 @@ public class ZGrid {
     return addZoomToId(morton(x[0], y[0]), zoom);
   }
 
-  public static int getZoom(long zId) {
-    return (int) (zId / ZOOM_FACTOR);
+  public static int getZoom(long zid) {
+    return (int) (zid / ZOOM_FACTOR);
   }
 
   public static long addZoomToId(long id, int zoom) {
-    return id + (zoom * ZOOM_FACTOR);
+    return id + zoom * ZOOM_FACTOR;
   }
 
-  public static long getIdWithoutZoom(long zId) {
-    return zId & ID_MASK;
+  public static long getIdWithoutZoom(long zid) {
+    return zid & ID_MASK;
   }
 
-  public static long getParent(long zId, int parentZoom) {
-    final int zoom = getZoom(zId);
+  public static long getParent(long zid, int parentZoom) {
+    final int zoom = getZoom(zid);
     if (zoom < parentZoom) {
-      throw new IllegalArgumentException("zoom of id already lesser than parentZoom (zoom:" + zoom + " parentZoom:" + parentZoom + ")");
+      throw new IllegalArgumentException("zoom of id already lesser than parentZoom (zoom:" + zoom
+          + " parentZoom:" + parentZoom + ")");
     }
     if (zoom == parentZoom) {
-      return zId;
+      return zid;
     }
-    final long diff = zoom - parentZoom;
-    final long id = (getIdWithoutZoom(zId) >>> diff * 2);
+    final long diff = (long) zoom - parentZoom;
+    final long id = getIdWithoutZoom(zid) >>> diff * 2;
 
     return addZoomToId(id, parentZoom);
   }
 
-  public static long getParent(long zId) {
-    final int zoom = getZoom(zId);
+  public static long getParent(long zid) {
+    final int zoom = getZoom(zid);
     if (zoom > 0) {
-      final long parentId = getIdWithoutZoom(zId) >>> 2;
+      final long parentId = getIdWithoutZoom(zid) >>> 2;
       return addZoomToId(parentId, zoom - 1);
     }
     return 0;
   }
 
-  public static OSHDBBoundingBox getBoundingBox(long zId) {
-    if (zId < 0) {
+  public static OSHDBBoundingBox getBoundingBox(long zid) {
+    if (zid < 0) {
       return zeroBoundingBox;
     }
-    final long id = getIdWithoutZoom(zId);
-    final int zoom = getZoom(zId);
+    final long id = getIdWithoutZoom(zid);
+    final int zoom = getZoom(zid);
     final long cellWidth = space / (long) Math.pow(2, zoom);
 
-    long[] xy = getXY(id);
+    long[] xy = getXy(id);
 
     final long minLon = denormalizeLon(xy[0] * cellWidth);
     final long maxLon = minLon + cellWidth - 1;
@@ -127,9 +132,11 @@ public class ZGrid {
     return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
   }
 
-  private static long[] getXY(long id) {
+  private static long[] getXy(long id) {
     long[] xy = new long[2];
-    for (long mask = 1, offset = 0; id >= (1 << offset) && mask < Integer.MAX_VALUE; mask <<= 1) {
+    for (long mask = 1, offset = 0;
+        id >= 1 << offset && mask < Integer.MAX_VALUE;
+        mask <<= 1) {
       xy[0] |= id >> offset++ & mask;
       xy[1] |= id >> offset & mask;
     }
@@ -140,7 +147,7 @@ public class ZGrid {
     if (delta == 0) {
       return maxZoom;
     }
-    return Math.min(63 - Long.numberOfLeadingZeros((space / (delta))), maxZoom);
+    return Math.min(63 - Long.numberOfLeadingZeros(space / delta), maxZoom);
   }
 
   private static long morton(long x, long y) {
@@ -195,11 +202,13 @@ public class ZGrid {
   }
 
   public static final Comparator<Long> ORDER_DFS_TOP_DOWN = (a, b) -> {
-    if(a == -1)
-      return (b == -1)?0:-1;
-    if(b == -1)
+    if (a == -1) {
+      return b == -1 ? 0 : -1;
+    }
+    if (b == -1) {
       return 1;
-    
+    }
+
     final long aZ = getZoom(a);
     final long bZ = getZoom(b);
     if (aZ == bZ) {
@@ -208,7 +217,8 @@ public class ZGrid {
     final long deltaZ = Math.abs(aZ - bZ);
     final long aId = getIdWithoutZoom(a);
     final long bId = getIdWithoutZoom(b);
-    final long x, y;
+    final long x;
+    final long y;
     final int prio;
     if (aZ < bZ) {
       x = aId << DIMENSION * deltaZ;
@@ -220,7 +230,7 @@ public class ZGrid {
       prio = 1;
     }
     final int r = Long.compare(x, y);
-    return (r == 0) ? prio : r;
+    return r == 0 ? prio : r;
   };
 
   public static final Comparator<Long> ORDER_DFS_BOTTOM_UP = (a, b) -> {
@@ -232,7 +242,8 @@ public class ZGrid {
     final long deltaZ = Math.abs(aZ - bZ);
     final long aId = getIdWithoutZoom(a);
     final long bId = getIdWithoutZoom(b);
-    final long x, y;
+    final long x;
+    final long y;
     final int prio;
 
     if (aZ < bZ) {
@@ -240,12 +251,12 @@ public class ZGrid {
       y = bId >>> DIMENSION * deltaZ;
       prio = 1;
     } else {
-      x = aId >>> DIMENSION * deltaZ;;
+      x = aId >>> DIMENSION * deltaZ;
       y = bId;
       prio = -1;
     }
     final int r = Long.compare(x, y);
-    return (r == 0) ? prio : r;
+    return r == 0 ? prio : r;
   };
 
 }

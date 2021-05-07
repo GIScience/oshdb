@@ -20,7 +20,8 @@ public class TransformOSHWay extends OSHWay2 {
 
   public static TransformOSHWay build(ByteArrayOutputWrapper output, ByteArrayOutputWrapper record,
       ByteArrayOutputWrapper aux, List<OSMWay> versions, LongSortedSet nodeIds, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude)
+      throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
 
     output.reset();
@@ -29,83 +30,84 @@ public class TransformOSHWay extends OSHWay2 {
 
     final long id = versions.get(0).getId();
 
-//    byte header = 0;
-//    record.writeByte(header);
-    record.writeUInt64Delta(id, baseId);
-    
+    record.writeU64Delta(id, baseId);
+
     Map<Long, Integer> nodeOffsets = writeNodeIds(nodeIds, record);
-    
+
     OSHWay2.OSHWayBuilder builder = new OSHWay2.OSHWayBuilder();
-    builder.build(output, aux, versions, baseTimestamp, baseLongitude, baseLatitude, nodeOffsets, Collections.emptyMap(), Collections.emptyMap());
-    
+    builder.build(output, aux, versions, baseTimestamp, baseLongitude, baseLatitude, nodeOffsets,
+        Collections.emptyMap(), Collections.emptyMap());
+
     record.writeByteArray(output.array(), 0, output.length());
-    return TransformOSHWay.instance(record.array(), 0, record.length(),baseId,baseTimestamp,baseLongitude,baseLatitude);
+    return TransformOSHWay.instance(record.array(), 0, record.length(), baseId, baseTimestamp,
+        baseLongitude, baseLatitude);
   }
-  
-  private static Map<Long, Integer> writeNodeIds(LongSortedSet ids, ByteArrayOutputWrapper out) throws IOException{
-    out.writeUInt32(ids.size());
+
+  private static Map<Long, Integer> writeNodeIds(LongSortedSet ids, ByteArrayOutputWrapper out)
+      throws IOException {
+    out.writeU32(ids.size());
     Map<Long, Integer> offsets = new HashMap<>(ids.size());
     long nodeId = 0;
     LongIterator itr = ids.iterator();
-    for(int i=0; itr.hasNext(); i++){
-      nodeId = out.writeUInt64Delta(itr.nextLong(),nodeId);
+    for (int i = 0; itr.hasNext(); i++) {
+      out.writeU64Delta(itr.nextLong(), nodeId);
       offsets.put(nodeId, i);
     }
     return offsets;
   }
-  
-  private static long[] readNodeIds(ByteArrayWrapper wrapper) throws IOException{
-    final long[] nodeIds = new long[wrapper.readUInt32()];    
+
+  private static long[] readNodeIds(ByteArrayWrapper wrapper) throws IOException {
+    final long[] nodeIds = new long[wrapper.readU32()];
     long nodeId = 0;
     for (int i = 0; i < nodeIds.length; i++) {
-      nodeId = wrapper.readUInt64Delta(nodeId);
+      nodeId = wrapper.readU64Delta(nodeId);
       nodeIds[i] = nodeId;
     }
     return nodeIds;
   }
 
-  public static TransformOSHWay instance(final byte[] data, final int offset, final int length) throws IOException {
+  public static TransformOSHWay instance(final byte[] data, final int offset, final int length)
+      throws IOException {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
-  public static TransformOSHWay instance(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
+  public static TransformOSHWay instance(final byte[] data, final int offset, final int length,
+      final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
-    
-    final byte header = 0; //wrapper.readRawByte();
-    final long id = wrapper.readUInt64() + baseId;
+
+    final byte header = 0;
+    final long id = wrapper.readU64() + baseId;
 
     final long[] nodeIds = readNodeIds(wrapper);
 
     final int dataOffset = wrapper.getPos();
     final int dataLength = length - (dataOffset - offset);
-    return new TransformOSHWay(data, offset, length, header, id, 
-        baseTimestamp, baseLongitude, baseLatitude,        
-        dataOffset, dataLength, 
-        nodeIds);
+    return new TransformOSHWay(data, offset, length, header, id, baseTimestamp, baseLongitude,
+        baseLatitude, dataOffset, dataLength, nodeIds);
   }
 
-  private TransformOSHWay(final byte[] data, final int offset, final int length, byte header, final long id, final long baseTimestamp,final long baseLongitude, final long baseLatitude, final int dataOffset, final int dataLength, final long[] nodeIds) {
-    super(data, offset, length, header, id, OSHDBBoundingBox.INVALID, 
-        baseTimestamp, baseLongitude, baseLatitude,
-        new int[0], 
-        dataOffset, dataLength);
+  private TransformOSHWay(final byte[] data, final int offset, final int length, byte header,
+      final long id, final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final int dataOffset, final int dataLength, final long[] nodeIds) {
+    super(data, offset, length, header, id, OSHDBBoundingBox.INVALID, baseTimestamp, baseLongitude,
+        baseLatitude, new int[0], dataOffset, dataLength);
     this.nodeIds = nodeIds;
   }
 
   @Override
   public OSMMember getMember(long memId) {
-    if (memId < 0)
+    if (memId < 0) {
       return new OSMMember(memId * -1, OSMType.NODE, -1);
-    else {
+    } else {
       long id = nodeIds[(int) memId];
       return new OSMMember(id, OSMType.NODE, -1);
     }
   }
-  
+
   public long[] getNodeIds() {
     return nodeIds;
   }
-  
+
 }

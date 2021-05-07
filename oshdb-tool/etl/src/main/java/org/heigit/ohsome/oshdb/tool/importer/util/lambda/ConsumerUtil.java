@@ -22,8 +22,9 @@ public class ConsumerUtil {
     };
   }
 
-  public static <T, E extends Exception> Consumer<T> throwingConsumer(ThrowingConsumer<T, Exception> consumer,
-      Class<E> clazz, ThrowingBiConsumer<T, E, Exception> exceptionHandler) {
+  public static <T, E extends Exception> Consumer<T> throwingConsumer(
+      ThrowingConsumer<T, Exception> consumer, Class<E> clazz,
+      ThrowingBiConsumer<T, E, Exception> exceptionHandler) {
     return i -> {
       try {
         consumer.accept(i);

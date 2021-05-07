@@ -5,7 +5,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.function.ToIntFunction;
 
@@ -20,11 +19,12 @@ public class RoleToIdMapperImpl implements RoleToIdMapper {
   public int getRole(String role) {
     return roleToId.getId(role);
   }
-  
-  
-  public static RoleToIdMapperImpl load(String roleToIdMapping,ToIntFunction<String> hashFunction) throws FileNotFoundException, IOException {
-    try (DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(roleToIdMapping)))) {
-      return read(in,hashFunction);
+
+  public static RoleToIdMapperImpl load(String roleToIdMapping, ToIntFunction<String> hashFunction)
+      throws IOException {
+    try (DataInputStream in =
+        new DataInputStream(new BufferedInputStream(new FileInputStream(roleToIdMapping)))) {
+      return read(in, hashFunction);
     }
   }
 
@@ -32,8 +32,9 @@ public class RoleToIdMapperImpl implements RoleToIdMapper {
     roleToId.write(out);
   }
 
-  public static RoleToIdMapperImpl read(DataInput in,ToIntFunction<String> hashFunction) throws IOException{
-    StringToIdMappingImpl roleToId = StringToIdMappingImpl.read(in,hashFunction);
+  public static RoleToIdMapperImpl read(DataInput in, ToIntFunction<String> hashFunction)
+      throws IOException {
+    StringToIdMappingImpl roleToId = StringToIdMappingImpl.read(in, hashFunction);
     return new RoleToIdMapperImpl(roleToId);
   }
 

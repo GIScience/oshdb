@@ -119,11 +119,20 @@ import org.slf4j.LoggerFactory;
  *        mapper function will be called with a parameter of this type as input
  */
 public abstract class MapReducer<X> implements
-MapReducerSettings<MapReducer<X>>, Mappable<X>, MapReducerAggregations<X>,
-MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
-  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
+    MapReducerSettings<MapReducer<X>>, Mappable<X>, MapReducerAggregations<X>,
+    MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
 
-  protected OSHDBDatabase oshdb;
+  private static final Logger LOG = LoggerFactory.getLogger(MapReducer.class);
+  public static final String TAG_KEY_NOT_FOUND =
+      "Tag key {} not found. No data will match this filter.";
+  public static final String TAG_NOT_FOUND =
+      "Tag {}={} not found. No data will match this filter.";
+  public static final String EMPTY_TAG_LIST =
+      "Empty tag value list. No data will match this filter.";
+  public static final String UNIMPLEMENTED_DATA_VIEW = "Unimplemented data view: %s";
+  public static final String UNSUPPORTED_GROUPING = "Unsupported grouping: %s";
+
+  protected transient OSHDBDatabase oshdb;
   protected transient OSHDBJdbc keytables;
 
   protected Long timeout = null;
@@ -159,7 +168,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   protected EnumSet<OSMType> typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> filters = new ArrayList<>();
-  final List<MapFunction> mappers = new LinkedList<>();
+  final LinkedList<MapFunction> mappers = new LinkedList<>();
 
 
   // basic constructor
@@ -328,7 +337,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   @Contract(pure = true)
   public MapReducer<X> timestamps(
       String isoDateStart, String isoDateEnd, OSHDBTimestamps.Interval interval
-      ) {
+  ) {
     return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
   }
 
@@ -391,15 +400,12 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
     SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
     try {
       timestamps.add(
-          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateFirst).toEpochSecond())
-          );
+          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateFirst).toEpochSecond()));
       timestamps.add(
-          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateSecond).toEpochSecond())
-          );
+          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateSecond).toEpochSecond()));
       for (String isoDate : isoDateMore) {
         timestamps.add(
-            new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDate).toEpochSecond())
-            );
+            new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDate).toEpochSecond()));
       }
     } catch (Exception e) {
       LOG.error("unable to parse ISO date string: " + e.getMessage());
@@ -501,7 +507,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   private MapReducer<X> osmTag(OSMTagKey key) {
     OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf(key);
     if (!keyId.isPresentInKeytables()) {
-      LOG.warn("Tag key {} not found. No data will match this filter.", key.toString());
+      LOG.warn(TAG_KEY_NOT_FOUND, key.toString());
       return osmTagEmptyResult();
     }
     return osmTag(keyId);
@@ -536,8 +542,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   private MapReducer<X> osmTag(OSMTag tag) {
     OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(tag);
     if (!keyValueId.isPresentInKeytables()) {
-      LOG.warn("Tag {}={} not found. No data will match this filter.",
-          tag.getKey(), tag.getValue());
+      LOG.warn(TAG_NOT_FOUND, tag.getKey(), tag.getValue());
       return osmTagEmptyResult();
     }
     return osmTag(keyValueId);
@@ -560,18 +565,16 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables() || values.isEmpty()) {
       LOG.warn(
-          (values.isEmpty()
-              ? "Empty tag value list. No data will match this filter."
-                  : "Tag key {} not found. No data will match this filter."),
+          (values.isEmpty() ? EMPTY_TAG_LIST : TAG_KEY_NOT_FOUND),
           key
-          );
+      );
       return osmTagEmptyResult();
     }
     Set<Integer> valueIds = new HashSet<>();
     for (String value : values) {
       OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(key, value);
       if (!keyValueId.isPresentInKeytables()) {
-        LOG.warn("Tag {}={} not found. No data will match this tag value.", key, value);
+        LOG.warn(TAG_NOT_FOUND, key, value);
       } else {
         valueIds.add(keyValueId.getValue());
       }
@@ -607,7 +610,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
     OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables()) {
-      LOG.warn("Tag key {} not found. No data will match this filter.", key);
+      LOG.warn(TAG_KEY_NOT_FOUND, key);
       return osmTagEmptyResult();
     }
     MapReducer<X> ret = this.copy();
@@ -655,8 +658,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
         OSMTag keyValue = (OSMTag) tag;
         OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(keyValue);
         if (!keyValueId.isPresentInKeytables()) {
-          LOG.warn("Tag {}={} not found. No data will match this tag value.",
-              keyValue.getKey(), keyValue.getValue());
+          LOG.warn(TAG_NOT_FOUND, keyValue.getKey(), keyValue.getValue());
         } else {
           preKeyIds.add(keyValueId.getKey());
           keyValueIds.add(keyValueId);
@@ -811,27 +813,27 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       if (ret.forClass.equals(OSMEntitySnapshot.class)) {
         @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
             ret.map(x -> (Collection<OSMEntitySnapshot>) x)
-            .map(snapshots -> snapshots.stream()
-                .filter(s -> f.applyOSMGeometry(s.getEntity(), s::getGeometry))
-                .collect(Collectors.toCollection(ArrayList::new)))
-            .filter(snapshots -> !snapshots.isEmpty());
+                .map(snapshots -> snapshots.stream()
+                    .filter(s -> f.applyOSMGeometry(s.getEntity(), s::getGeometry))
+                    .collect(Collectors.toCollection(ArrayList::new)))
+                .filter(snapshots -> !snapshots.isEmpty());
         ret = filteredListMapper;
       } else if (ret.forClass.equals(OSMContribution.class)) {
         @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
             ret.map(x -> (Collection<OSMContribution>) x)
-            .map(contributions -> contributions.stream()
-                .filter(c -> {
-                  if (c.is(ContributionType.CREATION)) {
-                    return f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
-                  } else if (c.is(ContributionType.DELETION)) {
-                    return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore);
-                  } else {
-                    return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
-                        || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
-                  }
-                })
-                .collect(Collectors.toCollection(ArrayList::new)))
-            .filter(contributions -> !contributions.isEmpty());
+                .map(contributions -> contributions.stream()
+                    .filter(c -> {
+                      if (c.is(ContributionType.CREATION)) {
+                        return f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+                      } else if (c.is(ContributionType.DELETION)) {
+                        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore);
+                      } else {
+                        return f.applyOSMGeometry(c.getEntityBefore(), c::getGeometryBefore)
+                            || f.applyOSMGeometry(c.getEntityAfter(), c::getGeometryAfter);
+                      }
+                    })
+                    .collect(Collectors.toCollection(ArrayList::new)))
+                .filter(contributions -> !contributions.isEmpty());
         ret = filteredListMapper;
       }
     } else {
@@ -887,8 +889,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
     if (!this.mappers.isEmpty()) {
       throw new UnsupportedOperationException(
           "groupByEntity() must be called before any `map` or `flatMap` "
-              + "transformation functions have been set"
-          );
+              + "transformation functions have been set");
     }
     if (this.grouping != Grouping.NONE) {
       throw new UnsupportedOperationException("A grouping is already active on this MapReducer");
@@ -915,7 +916,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
-      ) {
+  ) {
     return new MapAggregator<>(this, indexer, zerofill);
   }
 
@@ -933,7 +934,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   @Contract(pure = true)
   public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer
-      ) {
+  ) {
     return this.aggregateBy(indexer, Collections.emptyList());
   }
 
@@ -958,8 +959,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
     if (this.grouping != Grouping.NONE) {
       throw new UnsupportedOperationException(
           "automatic aggregateByTimestamp() cannot be used together with the groupByEntity() "
-              + "functionality -> try using aggregateByTimestamp(customTimestampIndex) instead"
-          );
+              + "functionality -> try using aggregateByTimestamp(customTimestampIndex) instead");
     }
 
     // by timestamp indexing function -> for some views we need to match the input data to the list
@@ -973,10 +973,10 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       throw new UnsupportedOperationException(
           "automatic aggregateByTimestamp() only implemented for OSMContribution and "
               + "OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead"
-          );
+      );
     }
 
-    if (this.mappers.size() > 0) {
+    if (!this.mappers.isEmpty()) {
       // for convenience we allow one to set this function even after some map functions were set.
       // if some map / flatMap functions were already set:
       // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
@@ -1019,7 +1019,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
    */
   public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp(
       SerializableFunction<X, OSHDBTimestamp> indexer
-      ) throws UnsupportedOperationException {
+  ) throws UnsupportedOperationException {
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
     final OSHDBTimestamp minTime = timestamps.first();
     final OSHDBTimestamp maxTime = timestamps.last();
@@ -1030,8 +1030,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
           || aggregationTimestamp.compareTo(minTime) < 0
           || aggregationTimestamp.compareTo(maxTime) > 0) {
         throw new OSHDBInvalidTimestampException(
-            "Aggregation timestamp outside of time query interval."
-            );
+            "Aggregation timestamp outside of time query interval.");
       }
       return timestamps.floor(aggregationTimestamp);
     }, getZerofillTimestamps());
@@ -1050,19 +1049,17 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
    */
   @Contract(pure = true)
   public <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal>
-  MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries) throws
-  UnsupportedOperationException {
+      MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries)
+      throws UnsupportedOperationException {
     if (this.grouping != Grouping.NONE) {
       throw new UnsupportedOperationException(
-          "aggregateByGeometry() cannot be used together with the groupByEntity() functionality"
-          );
+          "aggregateByGeometry() cannot be used together with the groupByEntity() functionality");
     }
 
     GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
-    if (this.mappers.size() > 0) {
+    if (!this.mappers.isEmpty()) {
       throw new UnsupportedOperationException(
-          "please call aggregateByGeometry before setting any map or flatMap functions"
-          );
+          "please call aggregateByGeometry before setting any map or flatMap functions");
     } else {
       MapAggregator<U, ? extends OSHDBMapReducible> ret;
       if (this.forClass.equals(OSMContribution.class)) {
@@ -1073,8 +1070,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
             .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
         throw new UnsupportedOperationException(
-            "aggregateByGeometry not implemented for objects of type: " + this.forClass.toString()
-            );
+            "aggregateByGeometry not implemented for objects of type: " + this.forClass);
       }
       @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
       MapAggregator<U, X> result = (MapAggregator<U, X>) ret;
@@ -1134,7 +1130,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, X, S> accumulator,
       SerializableBinaryOperator<S> combiner)
-          throws Exception {
+      throws Exception {
     checkTimeout();
     switch (this.grouping) {
       case NONE:
@@ -1144,27 +1140,27 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
-            data -> mapper.apply(data);
+                data -> mapper.apply(data);
             return this.mapReduceCellsOSMContribution(
                 contributionMapper,
                 identitySupplier,
                 accumulator,
                 combiner
-                );
+            );
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
-            data -> mapper.apply(data);
+                data -> mapper.apply(data);
             return this.mapReduceCellsOSMEntitySnapshot(
                 snapshotMapper,
                 identitySupplier,
                 accumulator,
                 combiner
-                );
+            );
           } else {
-            throw new UnsupportedOperationException(
-                "Unimplemented data view: " + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         } else {
           final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
@@ -1173,8 +1169,8 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                  .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
@@ -1182,13 +1178,13 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                  .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
           } else {
-            throw new UnsupportedOperationException(
-                "Unimplemented data view: " + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         }
       case BY_ID:
@@ -1205,31 +1201,31 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
           @SuppressWarnings("Convert2MethodRef")
           // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
-          data -> flatMapper.apply(data);
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMContributionGroupedById(
               contributionFlatMapper,
               identitySupplier,
               accumulator,
               combiner
-              );
+          );
         } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
           @SuppressWarnings("Convert2MethodRef")
           // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
-          data -> flatMapper.apply(data);
+              data -> flatMapper.apply(data);
           return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
               snapshotFlatMapper,
               identitySupplier,
               accumulator,
               combiner
-              );
+          );
         } else {
-          throw new UnsupportedOperationException(
-              "Unimplemented data view: " + this.forClass.toString());
+          throw new UnsupportedOperationException(String.format(
+              UNIMPLEMENTED_DATA_VIEW, this.forClass));
         }
       default:
-        throw new UnsupportedOperationException(
-            "Unsupported grouping: " + this.grouping.toString());
+        throw new UnsupportedOperationException(String.format(
+            UNSUPPORTED_GROUPING, this.grouping));
     }
   }
 
@@ -1342,7 +1338,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
         MapReducer::uniqIdentitySupplier,
         MapReducer::uniqAccumulator,
         MapReducer::uniqCombiner
-        );
+    );
   }
 
   /**
@@ -1420,7 +1416,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
             MutableWeightedDouble::identitySupplier,
             MutableWeightedDouble::accumulator,
             MutableWeightedDouble::combiner
-            );
+        );
     return runningSums.num / runningSums.weight;
   }
 
@@ -1529,7 +1525,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   public <R extends Number> List<Double> estimatedQuantiles(
       SerializableFunction<X, R> mapper,
       Iterable<Double> q
-      ) throws Exception {
+  ) throws Exception {
     return Streams.stream(q)
         .mapToDouble(Double::doubleValue)
         .map(this.estimatedQuantiles(mapper))
@@ -1569,7 +1565,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   @Contract(pure = true)
   public <R extends Number> DoubleUnaryOperator estimatedQuantiles(
       SerializableFunction<X, R> mapper
-      ) throws Exception {
+  ) throws Exception {
     TDigest digest = this.digest(mapper);
     return digest::quantile;
   }
@@ -1584,7 +1580,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
         TdigestReducer::identitySupplier,
         TdigestReducer::accumulator,
         TdigestReducer::combiner
-        );
+    );
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -1625,7 +1621,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
         MapReducer::collectIdentitySupplier,
         MapReducer::collectAccumulator,
         MapReducer::collectCombiner
-        );
+    );
   }
 
   /**
@@ -1644,8 +1640,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       return this.streamInternal();
     } catch (UnsupportedOperationException e) {
       LOG.info("stream not directly supported by chosen backend, falling back to "
-          + ".collect().stream()"
-          );
+          + ".collect().stream()");
       return this.collect().stream();
     }
   }
@@ -1661,17 +1656,17 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
-            data -> mapper.apply(data);
+                data -> mapper.apply(data);
             return this.mapStreamCellsOSMContribution(contributionMapper);
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
-            data -> mapper.apply(data);
+                data -> mapper.apply(data);
             return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
           } else {
-            throw new UnsupportedOperationException(
-                "Unimplemented data view: " + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         } else {
           final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
@@ -1680,8 +1675,8 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                  .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 });
           } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
@@ -1689,13 +1684,13 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                  .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                      .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 });
           } else {
-            throw new UnsupportedOperationException("Unimplemented data view: "
-                + this.forClass.toString());
+            throw new UnsupportedOperationException(String.format(
+                UNIMPLEMENTED_DATA_VIEW, this.forClass));
           }
         }
       case BY_ID:
@@ -1712,21 +1707,21 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
           @SuppressWarnings("Convert2MethodRef")
           // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
-          data -> flatMapper.apply(data);
+              data -> flatMapper.apply(data);
           return this.flatMapStreamCellsOSMContributionGroupedById(contributionFlatMapper);
         } else if (this.forClass.equals(OSMEntitySnapshot.class)) {
           @SuppressWarnings("Convert2MethodRef")
           // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
-          data -> flatMapper.apply(data);
+              data -> flatMapper.apply(data);
           return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(snapshotFlatMapper);
         } else {
-          throw new UnsupportedOperationException(
-              "Unimplemented data view: " + this.forClass.toString());
+          throw new UnsupportedOperationException(String.format(
+              UNIMPLEMENTED_DATA_VIEW, this.forClass));
         }
       default:
-        throw new UnsupportedOperationException(
-            "Unsupported grouping: " + this.grouping.toString());
+        throw new UnsupportedOperationException(String.format(
+            UNSUPPORTED_GROUPING, this.grouping));
     }
   }
 
@@ -1736,20 +1731,16 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   // -----------------------------------------------------------------------------------------------
 
   protected abstract Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper
-      ) throws Exception;
+      SerializableFunction<OSMContribution, X> mapper) throws Exception;
 
   protected abstract Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
-      ) throws Exception;
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception;
 
   protected abstract Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper
-      ) throws Exception;
+      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception;
 
   protected abstract Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper
-      ) throws Exception;
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception;
 
   // -----------------------------------------------------------------------------------------------
   // Generic map-reduce functions (internal).
@@ -1799,7 +1790,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-      ) throws Exception;
+  ) throws Exception;
 
   /**
    * Generic "flat" version of the map-reduce used by the `OSMContributionView`, with by-osm-id
@@ -1854,7 +1845,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-      ) throws Exception;
+  ) throws Exception;
 
   /**
    * Generic map-reduce used by the `OSMEntitySnapshotView`.
@@ -1899,7 +1890,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-      ) throws Exception;
+  ) throws Exception;
 
   /**
    * Generic "flat" version of the map-reduce used by the `OSMEntitySnapshotView`, with by-osm-id
@@ -1954,7 +1945,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-      ) throws Exception;
+  ) throws Exception;
 
   // -----------------------------------------------------------------------------------------------
   // Some helper methods for internal use in the mapReduce functions
@@ -1986,28 +1977,28 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   protected OSHEntityFilter getPreFilter() {
     return this.preFilters.isEmpty()
         ? oshEntity -> true
-            : oshEntity -> {
-              for (SerializablePredicate<OSHEntity> filter : this.preFilters) {
-                if (!filter.test(oshEntity)) {
-                  return false;
-                }
-              }
-              return true;
-            };
+        : oshEntity -> {
+          for (SerializablePredicate<OSHEntity> filter : this.preFilters) {
+            if (!filter.test(oshEntity)) {
+              return false;
+            }
+          }
+          return true;
+        };
   }
 
   // Helper that chains multiple osmEntity filters together
   protected OSMEntityFilter getFilter() {
     return this.filters.isEmpty()
         ? osmEntity -> true
-            : osmEntity -> {
-              for (SerializablePredicate<OSMEntity> filter : this.filters) {
-                if (!filter.test(osmEntity)) {
-                  return false;
-                }
-              }
-              return true;
-            };
+        : osmEntity -> {
+          for (SerializablePredicate<OSMEntity> filter : this.filters) {
+            if (!filter.test(osmEntity)) {
+              return false;
+            }
+          }
+          return true;
+        };
   }
 
   // get all cell ids covered by the current area of interest's bounding box
@@ -2064,8 +2055,7 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
         List<Object> newResults = new LinkedList<>();
         if (mapper.isFlatMapper()) {
           results.forEach(result ->
-          Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result))
-              );
+              Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result)));
         } else {
           results.forEach(result -> newResults.add(mapper.apply(result)));
         }
@@ -2105,11 +2095,11 @@ MapAggregatable<MapAggregator<? extends Comparable<?>, X>, X>, Serializable {
   @Contract(pure = true)
   static Number checkAndMapToNumeric(Object x) {
     // todo: slow??
-    if (!Number.class.isInstance(x)) {
-      throw new UnsupportedOperationException(
-          "Cannot convert to non-numeric values of type: " + x.getClass().toString());
+    if (x instanceof Number) {
+      return (Number) x;
     }
-    return (Number) x;
+    throw new UnsupportedOperationException(
+        "Cannot convert to non-numeric values of type: " + x.getClass());
   }
 
   /**

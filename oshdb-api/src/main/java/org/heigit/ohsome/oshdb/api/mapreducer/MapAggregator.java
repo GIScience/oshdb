@@ -190,7 +190,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       return timestamps.floor(aggregationTimestamp);
     }, this.mapReducer.getZerofillTimestamps());
   }
-  
+
   /**
    * Aggregates the results by sub-regions as well, in addition to the timestamps.
    *
@@ -776,8 +776,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Override
   @Contract(pure = true)
   public Stream<Entry<U, X>> stream() throws Exception {
-    return this.mapReducer.stream().map(d -> 
-      new SimpleImmutableEntry<>(d.getKey(),d.getValue()));
+    return this.mapReducer.stream().map(d ->
+      new SimpleImmutableEntry<>(d.getKey(), d.getValue()));
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -942,7 +942,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
         },
         (a, b) -> {
           TreeMap<U, S> combined = new TreeMap<>(a);
-          for (SortedMap.Entry<U, S> entry : b.entrySet()) {
+          for (Map.Entry<U, S> entry : b.entrySet()) {
             combined.merge(entry.getKey(), entry.getValue(), combiner);
           }
           return combined;
@@ -950,11 +950,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     );
     // fill nodata entries with "0"
     @SuppressWarnings("unchecked") // all zerofills must "add up" to <U>
-    Collection<U> zerofill = (Collection<U>) this.completeZerofill(
+    Collection<U> allZerofills = (Collection<U>) this.completeZerofill(
         result.keySet(),
         Lists.reverse(this.zerofill)
     );
-    zerofill.forEach(zerofillKey -> {
+    allZerofills.forEach(zerofillKey -> {
       if (!result.containsKey(zerofillKey)) {
         result.put(zerofillKey, identitySupplier.get());
       }
@@ -1083,7 +1083,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
         TreeMap::new
     ));
   }
-  
+
   /**
    * A generic Pair class for holding index/value pairs.
    */

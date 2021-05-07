@@ -12,64 +12,64 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.OSHEntity2;
 import org.heigit.ohsome.oshdb.tool.importer.util.ZGrid;
 
-
 public abstract class TransformReader<T extends OSHEntity2> implements Closeable {
-  
+
   public final Path path;
   private final RandomAccessFile raf;
   private final long end;
   protected final FileChannel channel;
-  
+
   private final ByteBuffer header = ByteBuffer.allocateDirect(8 + 4 + 4);
-  
+
   protected long pos = 0;
-  
+
   public long cellId = Long.MIN_VALUE;
   private int size = 0;
   private int bytes = 0;
-  
+
   public TransformReader(Path path) throws IOException {
     this.path = path;
     this.raf = new RandomAccessFile(path.toFile(), "r");
     this.end = raf.length();
     this.channel = raf.getChannel();
   }
-  
+
   @Override
   public void close() throws IOException {
     raf.close();
   }
-  
-  public long getCellId(){
+
+  public long getCellId() {
     return cellId;
   }
-  
-  public int getSize(){
+
+  public int getSize() {
     return size;
   }
-  
-  public Path getPath(){
+
+  public Path getPath() {
     return path;
   }
-  
-  protected void readHeader() throws IOException{
+
+  protected void readHeader() throws IOException {
     pos += bytes;
     header.clear();
-    channel.read(header,pos);
-    pos += header.capacity();  
-  
+    channel.read(header, pos);
+    pos += header.capacity();
+
     header.flip();
     this.cellId = header.getLong();
     this.size = header.getInt();
     this.bytes = header.getInt();
-    if(bytes < 0)
+    if (bytes < 0) {
       System.out.println("bytes is negative");
+    }
   }
-  
-  public boolean hasNext(){
-    return pos+bytes < end;
+
+  public boolean hasNext() {
+    return pos + bytes < end;
   }
-  
+
   @SuppressWarnings("rawtypes")
   public TransformReader next() {
     try {
@@ -77,13 +77,13 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
       return this;
     } catch (IOException e) {
       try {
-         raf.close();
+        raf.close();
       } catch (Exception e2) {
-        // Exceptions should be ignored
+        e.addSuppressed(e2);
       }
       throw new RuntimeException(e);
     }
-   
+
   }
 
   public Set<T> entities() {
@@ -96,13 +96,13 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
       final long baseLongitude = bbox.getMinLonLong();
       final long baseLatitude = bbox.getMinLatLong();
 
-      final Set<T> ret = new TreeSet<>((a,b) -> Long.compare(a.getId(), b.getId()));
+      final Set<T> ret = new TreeSet<>((a, b) -> Long.compare(a.getId(), b.getId()));
       long id = 0;
       while (data.hasRemaining()) {
         int length = data.getInt();
         byte[] content = new byte[length];
         data.get(content);
-        T node = getInstance(content, 0, length,id,0,baseLongitude,baseLatitude);
+        T node = getInstance(content, 0, length, id, 0, baseLongitude, baseLatitude);
         id = node.getId();
         ret.add(node);
       }
@@ -111,9 +111,8 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
       throw new RuntimeException(e);
     }
   }
-  
+
   protected abstract T getInstance(byte[] data, int offset, int length, long baseId,
       long baseTimestamp, long baseLongitude, long baseLatitude) throws IOException;
 }
-
 

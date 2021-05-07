@@ -39,7 +39,7 @@ import org.locationtech.jts.io.WKBWriter;
  *
  * @param <U> an arbitrary index type to identify supplied sub-regions
  */
-class GeometrySplitter<U extends Comparable<U>> implements Serializable {
+class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private STRtree spatialIndex = new STRtree();
@@ -271,7 +271,7 @@ class GeometrySplitter<U extends Comparable<U>> implements Serializable {
 
   protected <P extends Geometry & Polygonal> Object readResolve() throws ObjectStreamException {
     @SuppressWarnings("unchecked") // constructor checks that `subregions` only contain `P` entries
-    Map<U, P> subregions = (Map<U, P>) this.subregions;
-    return new GeometrySplitter<>(subregions);
+    Map<U, P> loadedSubregions = (Map<U, P>) this.subregions;
+    return new GeometrySplitter<>(loadedSubregions);
   }
 }

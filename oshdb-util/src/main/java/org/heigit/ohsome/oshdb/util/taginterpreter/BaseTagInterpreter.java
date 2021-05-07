@@ -58,7 +58,7 @@ class BaseTagInterpreter implements TagInterpreter {
     return false;
   }
 
-  private boolean evaluateRelationForArea(OSMRelation entity) {
+  protected boolean evaluateRelationForArea(OSMRelation entity) {
     int[] tags = entity.getRawTags();
     // skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
     for (int i = 0; i < tags.length; i += 2) {

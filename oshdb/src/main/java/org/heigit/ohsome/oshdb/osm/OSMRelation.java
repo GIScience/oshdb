@@ -28,16 +28,37 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
     return members;
   }
 
-  public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp, Predicate<OSMMember> memberFilter) {
-    return Arrays.stream(this.getMembers())
-        .filter(memberFilter)
-        .map(OSMMember::getEntity)
-        .filter(Objects::nonNull)
-        .map(entity -> OSHEntities.getByTimestamp(entity, timestamp));
+  public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp,
+      Predicate<OSMMember> memberFilter) {
+    return Arrays.stream(this.getMembers()).filter(memberFilter).map(OSMMember::getEntity)
+        .filter(Objects::nonNull).map(entity -> OSHEntities.getByTimestamp(entity, timestamp));
   }
 
   public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp) {
     return this.getMemberEntities(timestamp, osmMember -> true);
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Arrays.hashCode(members);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (!(obj instanceof OSMRelation)) {
+      return false;
+    }
+    OSMRelation other = (OSMRelation) obj;
+    return Arrays.equals(members, other.members);
   }
 
   @Override

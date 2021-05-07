@@ -10,19 +10,21 @@ import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransfomRelation;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHNode;
 import org.heigit.ohsome.oshdb.tool.importer.transform.oshdb.TransformOSHWay;
 
-public class LoaderHandler implements LoaderKeyTables.Handler, LoaderNode.Handler, LoaderWay.Handler, LoaderRelation.Handler {
+public class LoaderHandler implements LoaderKeyTables.Handler, LoaderNode.Handler,
+    LoaderWay.Handler, LoaderRelation.Handler {
 
   @Override
   public void handleNodeGrid(long cellId, Collection<TransformOSHNode> nodes) {
   }
 
   @Override
-  public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways, Collection<TransformOSHNode> nodes) {
+  public void handleWayGrid(long cellId, Collection<TransformOSHWay> ways,
+      Collection<TransformOSHNode> nodes) {
   }
 
   @Override
-  public void handleRelationGrid(long cellId, Collection<TransfomRelation> entities, Collection<TransformOSHNode> nodes,
-      Collection<TransformOSHWay> ways) {
+  public void handleRelationGrid(long cellId, Collection<TransfomRelation> entities,
+      Collection<TransformOSHNode> nodes, Collection<TransformOSHWay> ways) {
   }
 
   @Override

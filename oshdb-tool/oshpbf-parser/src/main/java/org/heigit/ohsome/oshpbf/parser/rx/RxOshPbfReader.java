@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -25,10 +26,13 @@ import org.heigit.ohsome.oshpbf.parser.util.ByteBufferBackedInputStream;
 
 public class RxOshPbfReader {
 
-  private static final byte[] SIGNATURE_OSMDATA   = { /* wire_type */10, /* stringSize */7, 79, 83, 77, 68, 97, 116, 97 };
-  private static final byte[] SIGNATURE_OSMHEADER = { /* wire_type */10, /* stringSize */9, 79, 83, 77, 72, 101, 97, 100, 101, 114 };
+  private static final byte[] SIGNATURE_OSMDATA =
+        { /* wire_type */10, /* stringSize */7, 79, 83, 77, 68, 97, 116, 97};
+  private static final byte[] SIGNATURE_OSMHEADER =
+        { /* wire_type */10, /* stringSize */9, 79, 83, 77, 72, 101, 97, 100, 101, 114};
   private static final int BLOBHEADER_SIZE_BYTES = 4;
-  private static final int SIGNATURE_SIZE_BYTES = Math.max(SIGNATURE_OSMDATA.length, SIGNATURE_OSMHEADER.length);
+  private static final int SIGNATURE_SIZE_BYTES =
+      Math.max(SIGNATURE_OSMDATA.length, SIGNATURE_OSMHEADER.length);
 
   public static class PbfChannel {
     final RandomAccessFile raf;
@@ -40,7 +44,8 @@ public class RxOshPbfReader {
 
     ByteBuffer buffer = ByteBuffer.allocateDirect(0);
 
-    public PbfChannel(RandomAccessFile raf, long softLimit, long hardLimit, boolean foundSignatur) throws IOException {
+    public PbfChannel(RandomAccessFile raf, long softLimit, long hardLimit, boolean foundSignatur)
+        throws IOException {
       this.raf = raf;
       this.softLimit = softLimit;
       this.hardLimit = hardLimit;
@@ -65,41 +70,43 @@ public class RxOshPbfReader {
   }
 
   public static Flowable<PbfBlob> readBlob(Path pbfPath, long pos, long softLimit, long hardLimit) {
-    final Callable<PbfChannel> initialState = openPbfAndSeekFirstBlockStart(pbfPath, pos, softLimit, hardLimit);
+    final Callable<PbfChannel> initialState =
+        openPbfAndSeekFirstBlockStart(pbfPath, pos, softLimit, hardLimit);
     final BiFunction<PbfChannel, Emitter<PbfBlob>, PbfChannel> generator = readBlobFromChannel();
     final Consumer<? super PbfChannel> disposeState = closePbf();
-    Flowable<PbfBlob> blobFlow = Flowable.generate( //
-        initialState, generator, //
-        disposeState); //
+    Flowable<PbfBlob> blobFlow = Flowable.generate(
+        initialState, generator,
+        disposeState);
     return blobFlow.subscribeOn(Schedulers.io());
   }
 
   public static Flowable<Osh> readOsh(Path pbfPath, long pos, long softLimit, long hardLimit) {
-    return readOsh(pbfPath, pos, softLimit, hardLimit, header -> {});
+    return readOsh(pbfPath, pos, softLimit, hardLimit, header -> {
+    });
   }
-  public static Flowable<Osh> readOsh(Path pbfPath, long pos, long softLimit, long hardLimit, Consumer<HeaderBlock> header) {
+
+  public static Flowable<Osh> readOsh(Path pbfPath, long pos, long softLimit, long hardLimit,
+      Consumer<HeaderBlock> header) {
     final int cpus = Runtime.getRuntime().availableProcessors();
     final int maxConcurrency = cpus - 1;
     final int prefetch = 4;
 
-    Flowable<Osh> oshFlow = readBlob(pbfPath, pos, softLimit, hardLimit)
-        .doOnNext(blob -> {
-          if(blob.isHeader())
-            header.accept(blob.getHeaderBlock());
-        })
-        .filter(PbfBlob::isData)
-        .observeOn(Schedulers.computation())
-        .concatMapEager(
-            blob -> Flowable.just(blob).subscribeOn(Schedulers.computation()).map(b -> blobToOSHItr(b, false)),
-            maxConcurrency, prefetch)
+    Flowable<Osh> oshFlow = readBlob(pbfPath, pos, softLimit, hardLimit).doOnNext(blob -> {
+      if (blob.isHeader()) {
+        header.accept(blob.getHeaderBlock());
+      }
+    }).filter(PbfBlob::isData).observeOn(Schedulers.computation())
+        .concatMapEager(blob -> Flowable.just(blob).subscribeOn(Schedulers.computation())
+            .map(b -> blobToOSHItr(b, false)), maxConcurrency, prefetch)
         .flatMap(Flowable::fromIterable);
     oshFlow = new OshMerger(oshFlow);
 
     return oshFlow;
   }
 
-  public static Iterable<Osh> blobToOSHItr(PbfBlob blob, boolean skipFirst) throws InvalidProtocolBufferException {
-    return new Iterable<Osh>() {
+  public static Iterable<Osh> blobToOSHItr(PbfBlob blob, boolean skipFirst)
+      throws InvalidProtocolBufferException {
+    return new Iterable<>() {
       final Osmformat.PrimitiveBlock block = blob.getPrimitivBlock();
 
       @Override
@@ -109,52 +116,58 @@ public class RxOshPbfReader {
     };
   }
 
-  private static Callable<PbfChannel> openPbfAndSeekFirstBlockStart(Path pbfPath, long pos, long softLimit,
-      long hardLimit) {
+  private static Callable<PbfChannel> openPbfAndSeekFirstBlockStart(Path pbfPath, long pos,
+      long softLimit, long hardLimit) {
     return () -> {
       RandomAccessFile raf = new RandomAccessFile(pbfPath.toFile(), "r");
-      final long sl, hl;
+      final long sl;
+      final long hl;
 
-      hl = (hardLimit <= 0) ? raf.getChannel().size() : hardLimit;
-      sl = Math.min(((softLimit <= 0) ? raf.getChannel().size() : softLimit), hl);
+      hl = hardLimit <= 0 ? raf.getChannel().size() : hardLimit;
+      sl = Math.min(softLimit <= 0 ? raf.getChannel().size() : softLimit, hl);
 
-      if (seekStartPos(raf, pos, sl))
+      if (seekStartPos(raf, pos, sl)) {
         return new PbfChannel(raf, sl, hl, true);
+      }
       return new PbfChannel(raf, -1, -1, false);
     };
   }
 
-  private static boolean seekStartPos(RandomAccessFile raf, long pos, long limit) throws IOException {
+  private static boolean seekStartPos(RandomAccessFile raf, long pos, long limit)
+      throws IOException {
     final FileChannel ch = raf.getChannel();
     ch.position(pos);
     final long readUntilHeader = seekBlobHeaderStart(Channels.newInputStream(ch), limit);
-    if (readUntilHeader == -1)
+    if (readUntilHeader == -1) {
       return false;
+    }
 
     final long startPosition = pos + readUntilHeader;
     ch.position(startPosition);
     return true;
   }
 
-  public static long seekBlobHeaderStart(final InputStream is, final long limit) throws IOException {
+  public static long seekBlobHeaderStart(final InputStream is, final long limit)
+      throws IOException {
     long totalBytesRead = 0;
     final byte[] pushBackBytes = new byte[BLOBHEADER_SIZE_BYTES + SIGNATURE_SIZE_BYTES];
-    try(PushbackInputStream pushBackStream = new PushbackInputStream(is, pushBackBytes.length);) {
+    try (PushbackInputStream pushBackStream = new PushbackInputStream(is, pushBackBytes.length);) {
       for (int i = 0; i < BLOBHEADER_SIZE_BYTES; i++) {
         pushBackBytes[i] = (byte) pushBackStream.read();
         totalBytesRead++;
       }
-  
+
       int nextByte = pushBackStream.read();
       totalBytesRead++;
       int val = 0;
       while (nextByte != -1) {
-        if ((val < SIGNATURE_OSMDATA.length && SIGNATURE_OSMDATA[val] == nextByte)
-            || (val < SIGNATURE_OSMHEADER.length && SIGNATURE_OSMHEADER[val] == nextByte)) {
-  
+        if (val < SIGNATURE_OSMDATA.length && SIGNATURE_OSMDATA[val] == nextByte
+            || val < SIGNATURE_OSMHEADER.length && SIGNATURE_OSMHEADER[val] == nextByte) {
+
           pushBackBytes[BLOBHEADER_SIZE_BYTES + val] = (byte) nextByte;
-  
-          if (val == SIGNATURE_OSMDATA.length - 1 || val == SIGNATURE_OSMHEADER.length - 1) {
+
+          if (val == SIGNATURE_OSMDATA.length - 1
+              || val == SIGNATURE_OSMHEADER.length - 1) {
             // Full OSMHeader\Data SIGNATURE is found.
             pushBackStream.unread(pushBackBytes, 0, BLOBHEADER_SIZE_BYTES + val + 1);
             totalBytesRead -= BLOBHEADER_SIZE_BYTES + val + 1;
@@ -166,7 +179,7 @@ public class RxOshPbfReader {
           if (limit > 0 && totalBytesRead > limit) {
             return -1;
           }
-  
+
           val = 0;
           if (SIGNATURE_OSMDATA[val] == nextByte || SIGNATURE_OSMHEADER[val] == nextByte) {
             pushBackBytes[BLOBHEADER_SIZE_BYTES + val] = (byte) nextByte;
@@ -177,18 +190,18 @@ public class RxOshPbfReader {
             }
             pushBackBytes[3] = (byte) nextByte;
           }
-  
+
         } else {
           for (int i = 0; i < 3; i++) {
             pushBackBytes[i] = pushBackBytes[i + 1];
           }
           pushBackBytes[3] = (byte) nextByte;
         }
-  
+
         nextByte = pushBackStream.read();
         totalBytesRead++;
       }
-  
+
       // we reach the end of stream and found no signature
       return -1;
     }
@@ -214,13 +227,15 @@ public class RxOshPbfReader {
         final int headerSize = buffer.getInt();
 
         buffer = pbf.readFully(headerSize);
-        final Fileformat.BlobHeader header = Fileformat.BlobHeader.PARSER
-            .parseFrom(new ByteBufferBackedInputStream(buffer));
+        final Fileformat.BlobHeader header =
+            Fileformat.BlobHeader.PARSER.parseFrom(new ByteBufferBackedInputStream(buffer));
 
         buffer = pbf.readFully(header.getDatasize());
-        final Fileformat.Blob blob = Fileformat.Blob.PARSER.parseFrom(new ByteBufferBackedInputStream(buffer));
+        final Fileformat.Blob blob =
+            Fileformat.Blob.PARSER.parseFrom(new ByteBufferBackedInputStream(buffer));
 
-        PbfBlob pbfBlob = new PbfBlob(blobPos, header, blob, blobPos == pbf.startPos, overSoftlimit);
+        PbfBlob pbfBlob =
+            new PbfBlob(blobPos, header, blob, blobPos == pbf.startPos, overSoftlimit);
         output.onNext(pbfBlob);
         if (overSoftlimit) {
           output.onComplete();
@@ -236,12 +251,13 @@ public class RxOshPbfReader {
     return (input) -> {
       try {
         input.buffer = null;
-        if (input.channel.isOpen())
+        if (input.channel.isOpen()) {
           input.channel.close();
+        }
 
         input.raf.close();
       } catch (IOException io) {
-
+        throw new UncheckedIOException(io);
       }
     };
   }

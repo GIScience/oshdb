@@ -5,13 +5,13 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 public class MutableOSMRelation extends MutableOSMEntity  {
 
   private OSMMember[] members;
-  
+
   public OSMMember[] getMembers() {
     return members;
   }
 
   public void setExtension(OSMMember[] members) {
-    this.members = members; 
+    this.members = members;
   }
 
 }

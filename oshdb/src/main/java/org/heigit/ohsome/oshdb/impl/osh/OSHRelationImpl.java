@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -56,6 +58,9 @@ public class OSHRelationImpl extends OSHEntityImpl
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates an instances of {@code OSHRelationImpl} from the given byte array.
+   */
   public static OSHRelationImpl instance(final byte[] data, final int offset, final int length,
       final long baseId, final long baseTimestamp, final long baseLongitude,
       final long baseLatitude) throws IOException {
@@ -63,34 +68,34 @@ public class OSHRelationImpl extends OSHEntityImpl
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
 
-    final long minLon = baseLongitude + wrapper.readSInt64();
-    final long maxLon = minLon + wrapper.readUInt64();
-    final long minLat = baseLatitude + wrapper.readSInt64();
-    final long maxLat = minLat + wrapper.readUInt64();
+    final long minLon = baseLongitude + wrapper.readS64();
+    final long maxLon = minLon + wrapper.readU64();
+    final long minLat = baseLatitude + wrapper.readS64();
+    final long maxLat = minLat + wrapper.readU64();
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
-      final int size = wrapper.readUInt32();
+      final int size = wrapper.readU32();
       keys = new int[size];
       for (int i = 0; i < size; i++) {
-        keys[i] = wrapper.readUInt32();
+        keys[i] = wrapper.readU32();
       }
     } else {
       keys = new int[0];
     }
 
-    final long id = wrapper.readUInt64() + baseId;
+    final long id = wrapper.readU64() + baseId;
     final int[] nodeIndex;
     final int nodeDataLength;
     if ((header & HEADER_HAS_NODES) != 0) {
-      final int nodeIndexLength = wrapper.readUInt32();
+      final int nodeIndexLength = wrapper.readU32();
       nodeIndex = new int[nodeIndexLength];
       int index = 0;
       for (int i = 0; i < nodeIndexLength; i++) {
-        index = wrapper.readUInt32() + index;
+        index = wrapper.readU32() + index;
         nodeIndex[i] = index;
       }
-      nodeDataLength = wrapper.readUInt32();
+      nodeDataLength = wrapper.readU32();
     } else {
       nodeIndex = new int[0];
       nodeDataLength = 0;
@@ -103,14 +108,14 @@ public class OSHRelationImpl extends OSHEntityImpl
     final int[] wayIndex;
     final int wayDataLength;
     if ((header & HEADER_HAS_WAYS) != 0) {
-      final int wayIndexLength = wrapper.readUInt32();
+      final int wayIndexLength = wrapper.readU32();
       wayIndex = new int[wayIndexLength];
       int index = 0;
       for (int i = 0; i < wayIndexLength; i++) {
-        index = wrapper.readUInt32() + index;
+        index = wrapper.readU32() + index;
         wayIndex[i] = index;
       }
-      wayDataLength = wrapper.readUInt32();
+      wayDataLength = wrapper.readU32();
 
     } else {
       wayIndex = new int[0];
@@ -124,21 +129,21 @@ public class OSHRelationImpl extends OSHEntityImpl
     final int dataOffset = wayDataOffset + wayDataLength;
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHRelationImpl(data, offset, length, //
-        baseId, baseTimestamp, baseLongitude, baseLatitude, //
-        header, id, minLon, minLat, maxLon, maxLat, keys, //
-        dataOffset, dataLength, //
-        nodeIndex, nodeDataOffset, nodeDataLength, //
+    return new OSHRelationImpl(data, offset, length,
+        baseTimestamp, baseLongitude, baseLatitude,
+        header, id, minLon, minLat, maxLon, maxLat, keys,
+        dataOffset, dataLength,
+        nodeIndex, nodeDataOffset, nodeDataLength,
         wayIndex, wayDataOffset, wayDataLength);
   }
 
-  private OSHRelationImpl(final byte[] data, final int offset, final int length, final long baseId,
+  private OSHRelationImpl(final byte[] data, final int offset, final int length,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude, byte header,
       long id, long minLon, long minLat, long maxLon, long maxLat, int[] keys,
       final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
       final int nodeDataLength, final int[] wayIndex, final int wayDataOffset,
       final int wayDataLength) {
-    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+    super(data, offset, length, baseTimestamp, baseLongitude, baseLatitude, header, id,
         minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
@@ -167,7 +172,7 @@ public class OSHRelationImpl extends OSHEntityImpl
       final List<OSHNode> nodes = getNodes();
       final List<OSHWay> ways = getWays();
 
-      return new Iterator<OSMRelation>() {
+      return new Iterator<>() {
         ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
         int version = 0;
@@ -185,28 +190,31 @@ public class OSHRelationImpl extends OSHEntityImpl
 
         @Override
         public OSMRelation next() {
+          if (!hasNext()) {
+            throw new NoSuchElementException();
+          }
           try {
-            version = wrapper.readSInt32() + version;
-            timestamp = wrapper.readSInt64() + timestamp;
-            changeset = wrapper.readSInt64() + changeset;
+            version = wrapper.readS32() + version;
+            timestamp = wrapper.readS64() + timestamp;
+            changeset = wrapper.readS64() + changeset;
 
             byte changed = wrapper.readRawByte();
 
             if ((changed & CHANGED_USER_ID) != 0) {
-              userId = wrapper.readSInt32() + userId;
+              userId = wrapper.readS32() + userId;
             }
 
             if ((changed & CHANGED_TAGS) != 0) {
-              int size = wrapper.readUInt32();
+              int size = wrapper.readU32();
               keyValues = new int[size];
               for (int i = 0; i < size;) {
-                keyValues[i++] = wrapper.readUInt32();
-                keyValues[i++] = wrapper.readUInt32();
+                keyValues[i++] = wrapper.readU32();
+                keyValues[i++] = wrapper.readU32();
               }
             }
 
             if ((changed & CHANGED_MEMBERS) != 0) {
-              int size = wrapper.readUInt32();
+              int size = wrapper.readU32();
               members = new OSMMember[size];
               long memberId = 0;
               int memberOffset = 0;
@@ -214,59 +222,56 @@ public class OSHRelationImpl extends OSHEntityImpl
               int memberRole = 0;
               OSHEntity member = null;
               for (int i = 0; i < size; i++) {
-                memberType = OSMType.fromInt(wrapper.readUInt32());
+                memberType = OSMType.fromInt(wrapper.readU32());
                 switch (memberType) {
                   case NODE: {
-                    memberOffset = wrapper.readUInt32();
+                    memberOffset = wrapper.readU32();
                     if (memberOffset > 0) {
                       member = nodes.get(memberOffset - 1);
                       memberId = member.getId();
 
                     } else {
                       member = null;
-                      memberId = wrapper.readSInt64() + memberId;
+                      memberId = wrapper.readS64() + memberId;
                     }
                     break;
                   }
                   case WAY: {
-                    memberOffset = wrapper.readUInt32();
+                    memberOffset = wrapper.readU32();
                     if (memberOffset > 0) {
                       member = ways.get(memberOffset - 1);
                       memberId = member.getId();
 
                     } else {
                       member = null;
-                      memberId = wrapper.readSInt64() + memberId;
+                      memberId = wrapper.readS64() + memberId;
                     }
                     break;
                   }
                   case RELATION: {
-                    memberId = wrapper.readSInt64() + memberId;
+                    memberId = wrapper.readS64() + memberId;
                     break;
                   }
                   default: {
-                    memberId = wrapper.readSInt64() + memberId;
+                    memberId = wrapper.readS64() + memberId;
                     break;
                   }
                 }
 
-                memberRole = wrapper.readUInt32();
+                memberRole = wrapper.readU32();
                 members[i] = new OSMMember(memberId, memberType, memberRole, member);
               }
             }
-            return new OSMRelation(id, version, (baseTimestamp + timestamp),
+            return new OSMRelation(id, version, baseTimestamp + timestamp,
                 changeset, userId, keyValues, members);
           } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: handle exception(s)
+            throw new UncheckedIOException(e);
           }
-          return null;
         }
       };
-    } catch (IOException e1) {
-      // no-op
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
-    return Collections.emptyIterator();
   }
 
   @Override
@@ -275,7 +280,7 @@ public class OSHRelationImpl extends OSHEntityImpl
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
       int length =
-          ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
+          (index < nodeIndex.length - 1 ? nodeIndex[index + 1] : nodeDataLength) - offset;
       OSHNode n = OSHNodeImpl.instance(data, nodeDataOffset + offset, length, 0, 0, baseLongitude,
           baseLatitude);
       nodes.add(n);
@@ -288,7 +293,7 @@ public class OSHRelationImpl extends OSHEntityImpl
     List<OSHWay> ways = new ArrayList<>(wayIndex.length);
     for (int index = 0; index < wayIndex.length; index++) {
       int offset = wayIndex[index];
-      int length = ((index < wayIndex.length - 1) ? wayIndex[index + 1] : wayDataLength) - offset;
+      int length = (index < wayIndex.length - 1 ? wayIndex[index + 1] : wayDataLength) - offset;
       OSHWay w = OSHWayImpl.instance(data, wayDataOffset + offset, length, 0, 0, baseLongitude,
           baseLatitude);
       ways.add(w);
@@ -302,6 +307,9 @@ public class OSHRelationImpl extends OSHEntityImpl
     return build(versions, nodes, ways, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates a {@code OSHRelation} bases on the given list of relation versions.
+   */
   public static OSHRelationImpl build(final List<OSMRelation> versions,
       final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
@@ -312,16 +320,17 @@ public class OSHRelationImpl extends OSHEntityImpl
         baseLongitude, baseLatitude);
   }
 
+  /**
+   * Creates a {@code OSHRelation} bases on the given list of relation versions,
+   * but returns the underlying ByteBuffer instead of an instance of {@code OSHRelation}.
+   */
   public static ByteBuffer buildRecord(final List<OSMRelation> versions,
       final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
       final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
-    ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
     OSMMember[] lastMembers = new OSMMember[0];
-
-    long id = versions.get(0).getId();
 
     long minLon = Long.MAX_VALUE;
     long maxLon = Long.MIN_VALUE;
@@ -354,8 +363,6 @@ public class OSHRelationImpl extends OSHEntityImpl
         }
       }
 
-
-
       ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(node.getVersions()), 0, 0,
           baseLongitude, baseLatitude);
       nodeOffsets.put(node.getId(), idx);
@@ -385,6 +392,7 @@ public class OSHRelationImpl extends OSHEntityImpl
       wayData.writeByteArray(buffer.array(), 0, buffer.remaining());
     }
 
+    ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
     Builder builder = new Builder(output, baseTimestamp);
     for (int i = 0; i < versions.size(); i++) {
       OSMRelation relation = versions.get(i);
@@ -400,31 +408,31 @@ public class OSHRelationImpl extends OSHEntityImpl
 
       if ((changed & CHANGED_MEMBERS) != 0) {
         long lastMemberId = 0;
-        output.writeUInt32(members.length);
+        output.writeU32(members.length);
         for (OSMMember member : members) {
-          output.writeUInt32(member.getType().intValue());
+          output.writeU32(member.getType().intValue());
           switch (member.getType()) {
             case RELATION: {
-              output.writeSInt64(member.getId() - lastMemberId);
+              output.writeS64(member.getId() - lastMemberId);
               break;
             }
             case NODE: {
               Integer refOffset = nodeOffsets.get(Long.valueOf(member.getId()));
               if (refOffset == null) {
-                output.writeUInt32(0);
-                output.writeSInt64(member.getId() - lastMemberId);
+                output.writeU32(0);
+                output.writeS64(member.getId() - lastMemberId);
               } else {
-                output.writeUInt32(refOffset.intValue() + 1);
+                output.writeU32(refOffset.intValue() + 1);
               }
               break;
             }
             case WAY: {
               Integer refOffset = wayOffsets.get(Long.valueOf(member.getId()));
               if (refOffset == null) {
-                output.writeUInt32(0);
-                output.writeSInt64(member.getId() - lastMemberId);
+                output.writeU32(0);
+                output.writeS64(member.getId() - lastMemberId);
               } else {
-                output.writeUInt32(refOffset.intValue() + 1);
+                output.writeU32(refOffset.intValue() + 1);
               }
               break;
             }
@@ -432,15 +440,11 @@ public class OSHRelationImpl extends OSHEntityImpl
               break;
             }
           }
-
-          output.writeUInt32(member.getRawRoleId());
+          output.writeU32(member.getRawRoleId());
           lastMemberId = member.getId();
         }
       }
-
     }
-
-    ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
 
     byte header = 0;
     if (versions.size() > 1) {
@@ -460,38 +464,40 @@ public class OSHRelationImpl extends OSHEntityImpl
       header |= HEADER_HAS_WAYS;
     }
 
+    ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
     record.writeByte(header);
 
-    record.writeSInt64(minLon - baseLongitude);
-    record.writeUInt64(maxLon - minLon);
-    record.writeSInt64(minLat - baseLatitude);
-    record.writeUInt64(maxLat - minLat);
+    record.writeS64(minLon - baseLongitude);
+    record.writeU64(maxLon - minLon);
+    record.writeS64(minLat - baseLatitude);
+    record.writeU64(maxLat - minLat);
 
     if ((header & HEADER_HAS_TAGS) != 0) {
-      record.writeUInt32(builder.getKeySet().size());
+      record.writeU32(builder.getKeySet().size());
       for (Integer key : builder.getKeySet()) {
-        record.writeUInt32(key.intValue());
+        record.writeU32(key.intValue());
       }
     }
 
-    record.writeUInt64(id - baseId);
+    long id = versions.get(0).getId();
+    record.writeU64(id - baseId);
 
     if (!nodes.isEmpty()) {
-      record.writeUInt32(nodeByteArrayIndex.length);
+      record.writeU32(nodeByteArrayIndex.length);
       for (int i = 0; i < nodeByteArrayIndex.length; i++) {
-        record.writeUInt32(nodeByteArrayIndex[i]);
+        record.writeU32(nodeByteArrayIndex[i]);
       }
-      record.writeUInt32(nodeData.length());
+      record.writeU32(nodeData.length());
       record.writeByteArray(nodeData.array(), 0, nodeData.length());
     }
 
     if (!ways.isEmpty()) {
 
-      record.writeUInt32(wayByteArrayIndex.length);
+      record.writeU32(wayByteArrayIndex.length);
       for (int i = 0; i < wayByteArrayIndex.length; i++) {
-        record.writeUInt32(wayByteArrayIndex[i]);
+        record.writeU32(wayByteArrayIndex[i]);
       }
-      record.writeUInt32(wayData.length());
+      record.writeU32(wayData.length());
       record.writeByteArray(wayData.array(), 0, wayData.length());
     }
 
@@ -542,9 +548,8 @@ public class OSHRelationImpl extends OSHEntityImpl
       try {
         return OSHRelationImpl.instance(data, 0, data.length);
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new UncheckedIOException(e);
       }
-      return null;
     }
   }
 

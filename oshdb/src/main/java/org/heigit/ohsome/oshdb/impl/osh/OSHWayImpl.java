@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
@@ -47,6 +49,9 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
+  /**
+   * Creates an instances of {@code OSHWayImpl} from the given byte array.
+   */
   public static OSHWayImpl instance(final byte[] data, final int offset, final int length,
       final long baseId, final long baseTimestamp, final long baseLongitude,
       final long baseLatitude) throws IOException {
@@ -54,35 +59,35 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
 
-    final long minLon = baseLongitude + wrapper.readSInt64();
-    final long maxLon = minLon + wrapper.readUInt64();
-    final long minLat = baseLatitude + wrapper.readSInt64();
-    final long maxLat = minLat + wrapper.readUInt64();
+    final long minLon = baseLongitude + wrapper.readS64();
+    final long maxLon = minLon + wrapper.readU64();
+    final long minLat = baseLatitude + wrapper.readS64();
+    final long maxLat = minLat + wrapper.readU64();
 
     final int[] keys;
     if ((header & HEADER_HAS_TAGS) != 0) {
-      final int size = wrapper.readUInt32();
+      final int size = wrapper.readU32();
       keys = new int[size];
       for (int i = 0; i < size; i++) {
-        keys[i] = wrapper.readUInt32();
+        keys[i] = wrapper.readU32();
       }
     } else {
       keys = new int[0];
     }
 
-    final long id = wrapper.readUInt64() + baseId;
+    final long id = wrapper.readU64() + baseId;
 
     final int[] nodeIndex;
     final int nodeDataLength;
     if ((header & HEADER_HAS_NO_NODES) == 0) {
-      final int nodeIndexLength = wrapper.readUInt32();
+      final int nodeIndexLength = wrapper.readU32();
       nodeIndex = new int[nodeIndexLength];
       int index = 0;
       for (int i = 0; i < nodeIndexLength; i++) {
-        index = wrapper.readUInt32() + index;
+        index = wrapper.readU32() + index;
         nodeIndex[i] = index;
       }
-      nodeDataLength = wrapper.readUInt32();
+      nodeDataLength = wrapper.readU32();
     } else {
       nodeIndex = new int[0];
       nodeDataLength = 0;
@@ -93,17 +98,17 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     final int dataOffset = nodeDataOffset + nodeDataLength;
     final int dataLength = length - (dataOffset - offset);
 
-    return new OSHWayImpl(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude,
-        header, id, minLon, minLat, maxLon, maxLat, keys, 
-        dataOffset, dataLength, nodeIndex, nodeDataOffset, nodeDataLength);
+    return new OSHWayImpl(data, offset, length, baseTimestamp, baseLongitude, baseLatitude,
+        header, id, minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength, nodeIndex,
+        nodeDataOffset, nodeDataLength);
   }
 
-  private OSHWayImpl(final byte[] data, final int offset, final int length, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      byte header, final long id, long minLon, long minLat, long maxLon, long maxLat, int[] keys,
+  private OSHWayImpl(final byte[] data, final int offset, final int length,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude, byte header,
+      final long id, long minLon, long minLat, long maxLon, long maxLat, int[] keys,
       final int dataOffset, final int dataLength, final int[] nodeIndex, final int nodeDataOffset,
       final int nodeDataLength) {
-    super(data, offset, length, baseId, baseTimestamp, baseLongitude, baseLatitude, header, id,
+    super(data, offset, length, baseTimestamp, baseLongitude, baseLatitude, header, id,
         minLon, minLat, maxLon, maxLat, keys, dataOffset, dataLength);
 
     this.nodeIndex = nodeIndex;
@@ -120,7 +125,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
   public Iterator<OSMWay> iterator() {
     try {
       final List<OSHNode> nodes = this.getNodes();
-      return new Iterator<OSMWay>() {
+      return new Iterator<>() {
         ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, dataOffset, dataLength);
 
         int version = 0;
@@ -138,68 +143,71 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
 
         @Override
         public OSMWay next() {
+          if (!hasNext()) {
+            throw new NoSuchElementException();
+          }
           try {
-            version = wrapper.readSInt32() + version;
-            timestamp = wrapper.readSInt64() + timestamp;
-            changeset = wrapper.readSInt64() + changeset;
+            version = wrapper.readS32() + version;
+            timestamp = wrapper.readS64() + timestamp;
+            changeset = wrapper.readS64() + changeset;
 
             byte changed = wrapper.readRawByte();
 
             if ((changed & CHANGED_USER_ID) != 0) {
-              userId = wrapper.readSInt32() + userId;
+              userId = wrapper.readS32() + userId;
             }
 
             if ((changed & CHANGED_TAGS) != 0) {
-              int size = wrapper.readUInt32();
+              int size = wrapper.readU32();
               keyValues = new int[size];
               for (int i = 0; i < size; i++) {
-                keyValues[i] = wrapper.readUInt32();
+                keyValues[i] = wrapper.readU32();
               }
             }
 
             if ((changed & CHANGED_REFS) != 0) {
-              int size = wrapper.readUInt32();
+              int size = wrapper.readU32();
               members = new OSMMember[size];
               long memberId = 0;
               int memberOffset = 0;
               OSHEntity member = null;
               for (int i = 0; i < size; i++) {
-                memberOffset = wrapper.readUInt32();
+                memberOffset = wrapper.readU32();
                 if (memberOffset > 0) {
                   member = nodes.get(memberOffset - 1);
                   memberId = member.getId();
 
                 } else {
                   member = null;
-                  memberId = wrapper.readSInt64() + memberId;
+                  memberId = wrapper.readS64() + memberId;
                 }
                 members[i] = new OSMMember(memberId, OSMType.NODE, -1, member);
               }
             }
 
-            return new OSMWay(id, version, (baseTimestamp + timestamp), changeset,
-                userId, keyValues, members);
+            return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId,
+                keyValues, members);
 
           } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException(e);
           }
-          return null;
         }
       };
-    } catch (IOException e1) {
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
-    return Collections.emptyIterator();
   }
 
+  @Override
   public List<OSHNode> getNodes() throws IOException {
     List<OSHNode> nodes = new ArrayList<>(nodeIndex.length);
     long lastId = 0;
     for (int index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
       int length =
-          ((index < nodeIndex.length - 1) ? nodeIndex[index + 1] : nodeDataLength) - offset;
-      OSHNode n = OSHNodeImpl.instance(data, nodeDataOffset + offset, length, lastId, 0, baseLongitude,
-          baseLatitude);
+          (index < nodeIndex.length - 1 ? nodeIndex[index + 1] : nodeDataLength) - offset;
+      OSHNode n = OSHNodeImpl.instance(data, nodeDataOffset + offset, length, lastId, 0,
+          baseLongitude, baseLatitude);
       lastId = n.getId();
       nodes.add(n);
     }
@@ -209,22 +217,30 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
   public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes) throws IOException {
     return build(versions, nodes, 0, 0, 0, 0);
   }
-  
-  public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude) throws IOException {
-    ByteBuffer buffer = buildRecord(versions, nodes, baseId, baseTimestamp, baseLongitude, baseLatitude);
-    return OSHWayImpl.instance(buffer.array(), 0, buffer.remaining(), baseId, baseTimestamp, baseLongitude, baseLatitude);
-  }
 
-  public static ByteBuffer buildRecord(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
+  /**
+   * Creates a {@code OSHway} bases on the given list of way versions.
+   */
+  public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude)
       throws IOException {
+    ByteBuffer buffer =
+        buildRecord(versions, nodes, baseId, baseTimestamp, baseLongitude, baseLatitude);
+    return OSHWayImpl.instance(buffer.array(), 0, buffer.remaining(), baseId, baseTimestamp,
+        baseLongitude, baseLatitude);
+  }
+
+  /**
+   * Creates a {@code OSHway} bases on the given list of way versions,
+   * but returns the underlying ByteBuffer instead of an instance of {@code OSHWay}.
+   */
+  public static ByteBuffer buildRecord(List<OSMWay> versions, Collection<OSHNode> nodes,
+      final long baseId, final long baseTimestamp, final long baseLongitude,
+      final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
     OSMMember[] lastRefs = new OSMMember[0];
-
-    long id = versions.get(0).getId();
 
     long minLon = Long.MAX_VALUE;
     long maxLon = Long.MIN_VALUE;
@@ -239,11 +255,11 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     long lastId = 0;
     for (OSHNode node : nodes) {
       final long nodeId = node.getId();
-      
-      ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(node.getVersions()), lastId, 0, baseLongitude, baseLatitude);
-      lastId = nodeId;
+
       nodeOffsets.put(node.getId(), idx);
       nodeByteArrayIndex[idx++] = offset;
+      ByteBuffer buffer = OSHNodeImpl.buildRecord(OSHEntities.toList(node.getVersions()), lastId, 0,
+          baseLongitude, baseLatitude);
       offset = buffer.remaining();
       nodeData.writeByteArray(buffer.array(), 0, buffer.remaining());
 
@@ -258,6 +274,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
           maxLat = Math.max(maxLat, osm.getLat());
         }
       }
+      lastId = nodeId;
     }
 
     Builder builder = new Builder(output, baseTimestamp);
@@ -274,23 +291,20 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
       builder.build(version, changed);
       if ((changed & CHANGED_REFS) != 0) {
         long lastMemberId = 0;
-        output.writeUInt32(refs.length);
+        output.writeU32(refs.length);
         for (OSMMember ref : refs) {
           Integer refOffset = nodeOffsets.get(Long.valueOf(ref.getId()));
           if (refOffset == null) {
-            output.writeUInt32(0);
-            output.writeSInt64(ref.getId() - lastMemberId);
+            output.writeU32(0);
+            output.writeS64(ref.getId() - lastMemberId);
           } else {
-            output.writeUInt32(refOffset.intValue() + 1);
+            output.writeU32(refOffset.intValue() + 1);
           }
           lastMemberId = ref.getId();
         }
         lastRefs = refs;
       }
     }
-
-    // store nodes
-    ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
 
     byte header = 0;
     if (versions.size() > 1) {
@@ -306,34 +320,36 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
       header |= HEADER_HAS_NO_NODES;
     }
 
+    ByteArrayOutputWrapper record = new ByteArrayOutputWrapper();
     record.writeByte(header);
 
-    record.writeSInt64(minLon - baseLongitude);
-    record.writeUInt64(maxLon - minLon);
-    record.writeSInt64(minLat - baseLatitude);
-    record.writeUInt64(maxLat - minLat);
+    record.writeS64(minLon - baseLongitude);
+    record.writeU64(maxLon - minLon);
+    record.writeS64(minLat - baseLatitude);
+    record.writeU64(maxLat - minLat);
 
     if ((header & HEADER_HAS_TAGS) != 0) {
-      record.writeUInt32(builder.getKeySet().size());
+      record.writeU32(builder.getKeySet().size());
       for (Integer key : builder.getKeySet()) {
-        record.writeUInt32(key.intValue());
+        record.writeU32(key.intValue());
       }
     }
 
-    record.writeUInt64(id - baseId);
+    long id = versions.get(0).getId();
+    record.writeU64(id - baseId);
 
     if ((header & HEADER_HAS_NO_NODES) == 0) {
-      record.writeUInt32(nodeByteArrayIndex.length);
+      record.writeU32(nodeByteArrayIndex.length);
       for (int i = 0; i < nodeByteArrayIndex.length; i++) {
-        record.writeUInt32(nodeByteArrayIndex[i]);
+        record.writeU32(nodeByteArrayIndex[i]);
       }
 
-      record.writeUInt32(nodeData.length());
+      record.writeU32(nodeData.length());
       record.writeByteArray(nodeData.array(), 0, nodeData.length());
     }
 
     record.writeByteArray(output.array(), 0, output.length());
-    return ByteBuffer.wrap(record.array(),0,record.length());
+    return ByteBuffer.wrap(record.array(), 0, record.length());
   }
 
   private static boolean memberEquals(OSMMember[] a, OSMMember[] b) {
@@ -387,9 +403,8 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
       try {
         return OSHWayImpl.instance(data, 0, data.length);
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new UncheckedIOException(e);
       }
-      return null;
     }
   }
 }

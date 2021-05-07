@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.Map;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -12,16 +13,17 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 
 public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
 
-  protected OSHWay2(byte[] data, int offset, int length, byte header, long id, OSHDBBoundingBox bbox,
-      long baseTimestamp, long baseLongitude, long baseLatitude, int[] keys, int dataOffset, int dataLength) {
-    super(data, offset, length, header, id, bbox, baseTimestamp, baseLongitude, baseLatitude, keys, dataOffset,dataLength);
+  protected OSHWay2(byte[] data, int offset, int length, byte header, long id,
+      OSHDBBoundingBox bbox, long baseTimestamp, long baseLongitude, long baseLatitude, int[] keys,
+      int dataOffset, int dataLength) {
+    super(data, offset, length, header, id, bbox, baseTimestamp, baseLongitude, baseLatitude, keys,
+        dataOffset, dataLength);
   }
 
   @Override
   public OSMType type() {
     return OSMType.WAY;
   }
-
 
   @Override
   public OSHBuilder builder() {
@@ -32,22 +34,23 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
     private OSMMember[] members = new OSMMember[0];
 
     @Override
-    protected boolean extension(ByteArrayOutputWrapper out,OSMEntity version,long baseLongitude, long baseLatitude, 
-        Map<Long, Integer> nodeOffsets,Map<Long, Integer> wayOffsets, Map<Long, Integer> relationOffsets) throws IOException {
+    protected boolean extension(ByteArrayOutputWrapper out, OSMEntity version, long baseLongitude,
+        long baseLatitude, Map<Long, Integer> nodeOffsets, Map<Long, Integer> wayOffsets,
+        Map<Long, Integer> relationOffsets) throws IOException {
       OSMWay way = (OSMWay) version;
       if (!memberEquals(way.getMembers(), members)) {
         members = way.getMembers();
-        out.writeUInt32(members.length);
+        out.writeU32(members.length);
         long lastId = 0;
         for (OSMMember member : members) {
           final long memId = member.getId();
           final Integer memberOffset = nodeOffsets.get(Long.valueOf(memId));
 
           if (memberOffset == null) {
-            lastId = out.writeSInt64Delta((memId * -1),lastId);
+            lastId = out.writeS64Delta(memId * -1, lastId);
           } else {
             long offset = memberOffset.longValue();
-            lastId = out.writeSInt64Delta(offset,lastId);
+            lastId = out.writeS64Delta(offset, lastId);
           }
         }
         return true;
@@ -67,7 +70,7 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
       return true;
     }
   }
-  
+
   public abstract OSMMember getMember(long memId);
 
   @Override
@@ -76,13 +79,12 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
   }
 
   public static class OSMWayIterator extends OSMIterator<OSMWay> {
-    
-    
+
     public OSMWayIterator(byte[] data, int offset, int length, OSHWay2 way) {
       super(data, offset, length, way);
       this.way = way;
     }
-    
+
     private final OSHWay2 way;
     private OSMMember[] members = new OSMMember[0];
 
@@ -90,18 +92,19 @@ public abstract class OSHWay2 extends OSHEntity2 implements OSH<OSMWay> {
     protected OSMWay extension() {
       try {
         if (changedExtension()) {
-          final int length = in.readUInt32();
+          final int length = in.readU32();
           members = new OSMMember[length];
 
           long memId = 0;
           for (int i = 0; i < length; i++) {
-            memId = in.readSInt64Delta(memId);
+            memId = in.readS64Delta(memId);
             members[i] = way.getMember(memId);
           }
         }
-        return new OSMWay(entity.id, version, (entity.baseTimestamp + timestamp), changeset, userId, keyValues, members);
+        return new OSMWay(entity.id, version, entity.baseTimestamp + timestamp, changeset, userId,
+            keyValues, members);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
   }

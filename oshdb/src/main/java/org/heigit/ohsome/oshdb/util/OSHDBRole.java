@@ -20,7 +20,7 @@ public class OSHDBRole implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof OSHDBRole && ((OSHDBRole)o).role == this.role;
+    return o instanceof OSHDBRole && ((OSHDBRole) o).role == this.role;
   }
 
   @Override

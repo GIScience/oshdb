@@ -17,14 +17,17 @@ public class MergeIterator<T> implements Iterator<T> {
   private final Comparator<T> comparator;
   private final Function<List<T>, T> merge;
 
-  public static <T> Iterator<T> of(List<Iterator<T>> iters, Comparator<T> comparator, Function<List<T>, T> merge) {
-    List<PeekingIterator<T>> peekingIters = iters.stream().map(itr -> Iterators.peekingIterator(itr))
-        .collect(Collectors.toList());
+  public static <T> Iterator<T> of(List<Iterator<T>> iters, Comparator<T> comparator,
+      Function<List<T>, T> merge) {
+    List<PeekingIterator<T>> peekingIters =
+        iters.stream().map(itr -> Iterators.peekingIterator(itr)).collect(Collectors.toList());
     return new MergeIterator<>(peekingIters, comparator, merge);
   }
 
-  private MergeIterator(List<PeekingIterator<T>> peekingIters, Comparator<T> comparator, Function<List<T>, T> merge) {
-    this.queue = new PriorityQueue<>(peekingIters.size(), (a, b) -> comparator.compare(a.peek(), b.peek()));
+  private MergeIterator(List<PeekingIterator<T>> peekingIters, Comparator<T> comparator,
+      Function<List<T>, T> merge) {
+    this.queue =
+        new PriorityQueue<>(peekingIters.size(), (a, b) -> comparator.compare(a.peek(), b.peek()));
     this.peekingIters = peekingIters;
     this.comparator = comparator;
     this.merge = merge;
@@ -37,8 +40,9 @@ public class MergeIterator<T> implements Iterator<T> {
 
   @Override
   public T next() {
-    if (!hasNext())
+    if (!hasNext()) {
       throw new NoSuchElementException();
+    }
 
     queue.addAll(peekingIters);
     peekingIters.clear();
@@ -51,8 +55,9 @@ public class MergeIterator<T> implements Iterator<T> {
     while (!queue.isEmpty() && comparator.compare(t, queue.peek().peek()) == 0) {
       collect.add(poll());
     }
-    if(collect.size() == 1)
+    if (collect.size() == 1) {
       return collect.get(0);
+    }
 
     return merge.apply(collect);
   }
