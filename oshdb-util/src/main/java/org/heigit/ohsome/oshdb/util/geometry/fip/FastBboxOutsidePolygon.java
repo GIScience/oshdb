@@ -18,7 +18,8 @@ import org.locationtech.jts.geom.Polygonal;
 
 /**
  * Fast bounding-box in (multi)polygon test inspired by
- * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
+ * <a href="https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html">
+ * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html</a>.
  */
 public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<OSHDBBoundable>,
     Serializable {

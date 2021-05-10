@@ -26,6 +26,12 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 
+/**
+ * Utility class for working with OSH entities.
+ *
+ * <p>Includes methods like getting all modifications to an entity recursively (unfiltered or
+ * filtered by a given predicate), or getting relevant changeset ids by timestamp.</p>
+ */
 public class OSHEntityTimeUtils {
   private OSHEntityTimeUtils() {
     throw new IllegalStateException("utility class");

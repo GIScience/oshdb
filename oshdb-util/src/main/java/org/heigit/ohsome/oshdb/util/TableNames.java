@@ -4,7 +4,7 @@ import java.util.Optional;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 
 /**
- * Names for JDBC-Tables.
+ * Names for JDBC tables or Ignite caches.
  */
 public enum TableNames {
 

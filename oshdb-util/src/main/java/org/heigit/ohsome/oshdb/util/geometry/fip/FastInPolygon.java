@@ -16,7 +16,8 @@ import org.locationtech.jts.geom.Polygonal;
 
 /**
  * fast *-in-polygon test inspired by
- * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
+ * <a href="https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html">
+ * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html</a>.
  */
 abstract class FastInPolygon implements Serializable {
   private class Segment implements Serializable {

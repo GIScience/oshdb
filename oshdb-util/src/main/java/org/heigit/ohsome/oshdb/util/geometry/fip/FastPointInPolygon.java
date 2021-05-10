@@ -7,7 +7,8 @@ import org.locationtech.jts.geom.Polygonal;
 
 /**
  * Fast point in (multi)polygon test inspired by
- * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html
+ * <a href="https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html">
+ * https://blog.jochentopf.com/2017-02-06-expedicious-and-exact-extracts-with-osmium.html</a>.
  */
 public class FastPointInPolygon extends FastInPolygon implements Predicate<Point> {
   public <P extends Geometry & Polygonal> FastPointInPolygon(P geom) {
