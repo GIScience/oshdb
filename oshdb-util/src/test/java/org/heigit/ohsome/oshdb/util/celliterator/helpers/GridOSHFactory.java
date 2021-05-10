@@ -25,12 +25,10 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
 
-
 /**
  * Helper class to get GridOSHs (Holds the basic information, every OSM-Object has at a
  * specific level) out of osm-xml file.
  */
-
 public class GridOSHFactory {
 
   /**

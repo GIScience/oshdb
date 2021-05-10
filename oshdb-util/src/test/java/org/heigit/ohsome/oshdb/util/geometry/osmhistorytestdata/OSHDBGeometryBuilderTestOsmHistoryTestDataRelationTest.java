@@ -22,7 +22,9 @@ import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class on OSM relations.
+ */
 public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

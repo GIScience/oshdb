@@ -14,6 +14,9 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link Geo} class.
+ */
 public class GeoTest {
   private final GeometryFactory gf = new GeometryFactory();
 

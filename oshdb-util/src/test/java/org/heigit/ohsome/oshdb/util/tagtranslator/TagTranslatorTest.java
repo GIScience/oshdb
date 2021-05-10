@@ -13,6 +13,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * Tests the {@link TagTranslator} class.
+ */
 public class TagTranslatorTest {
   private static Connection conn;
 
@@ -27,11 +30,10 @@ public class TagTranslatorTest {
     // load H2-support
     Class.forName("org.h2.Driver");
 
-    // connect to the "Big"DB
+    // connect to the test data DB
     TagTranslatorTest.conn =
         DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
             "sa", "");
-
   }
 
   @AfterClass

@@ -24,6 +24,11 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class: basic geometry tests.
+ *
+ * @see <a href="https://github.com/osmcode/osm-testdata/tree/master/grid">osm-testdata</a>
+ */
 public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

@@ -14,6 +14,9 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class on OSM nodes.
+ */
 public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

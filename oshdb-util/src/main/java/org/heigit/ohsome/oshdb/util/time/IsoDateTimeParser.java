@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 
+/**
+ * Utility class for parsings ISO-8601 strings into java date time objects.
+ */
 public class IsoDateTimeParser {
   private static final ZoneId UTC = ZoneId.of("Z");
 

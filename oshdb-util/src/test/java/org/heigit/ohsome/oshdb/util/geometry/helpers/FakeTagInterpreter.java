@@ -5,6 +5,9 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 
+/**
+ * A dummy implementation of the {@link TagInterpreter} interface.
+ */
 public abstract class FakeTagInterpreter implements TagInterpreter {
   @Override
   public boolean isArea(OSMEntity entity) {
@@ -13,7 +16,7 @@ public abstract class FakeTagInterpreter implements TagInterpreter {
 
   @Override
   public boolean isLine(OSMEntity entity) {
-    return false;
+    return !isArea(entity);
   }
 
   @Override

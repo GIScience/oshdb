@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHWays;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.helpers.GridOSHFactory;
@@ -20,6 +21,9 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on OSM ways.
+ */
 public class IterateByTimestampsWaysTest {
 
   private final GridOSHWays oshdbDataGridCell;

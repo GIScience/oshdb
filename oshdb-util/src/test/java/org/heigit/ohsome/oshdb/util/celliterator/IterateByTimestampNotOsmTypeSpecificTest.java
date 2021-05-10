@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
@@ -32,6 +33,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on special situations
+ * which are related to OSHDB grid cells.
+ */
 public class IterateByTimestampNotOsmTypeSpecificTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;

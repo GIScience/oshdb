@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.helpers.GridOSHFactory;
@@ -24,6 +25,9 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on OSM relations.
+ */
 public class IterateByTimestampsRelationsTest {
   private final GridOSHRelations oshdbDataGridCell;
   TagInterpreter areaDecider;

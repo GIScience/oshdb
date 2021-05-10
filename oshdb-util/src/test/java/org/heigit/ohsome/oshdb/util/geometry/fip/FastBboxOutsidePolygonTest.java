@@ -8,7 +8,9 @@ import org.junit.Test;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
-
+/**
+ * Tests the {@link FastBboxOutsidePolygon} class.
+ */
 public class FastBboxOutsidePolygonTest {
   @Test
   public void testBboxInPolygon() {

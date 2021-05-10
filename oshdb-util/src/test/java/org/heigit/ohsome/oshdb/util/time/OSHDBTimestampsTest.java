@@ -12,6 +12,9 @@ import java.util.Set;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps.Interval;
 import org.junit.Test;
 
+/**
+ * Tests the {@link OSHDBTimestamps} class.
+ */
 public class OSHDBTimestampsTest {
 
   @Test

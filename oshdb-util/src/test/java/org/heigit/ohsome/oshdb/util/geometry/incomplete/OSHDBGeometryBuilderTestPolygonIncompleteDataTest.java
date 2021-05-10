@@ -17,6 +17,9 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class on incomplete polygons.
+ */
 public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

@@ -23,6 +23,9 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class.
+ */
 public class OSHDBGeometryBuilderTest {
 
   private final OSMXmlReader testData = new OSMXmlReader();

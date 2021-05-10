@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
 import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -25,6 +26,9 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on nodes.
+ */
 public class IterateByContributionNodesTest {
   private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();

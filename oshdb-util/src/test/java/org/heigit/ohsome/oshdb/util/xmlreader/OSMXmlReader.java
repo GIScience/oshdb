@@ -40,39 +40,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * A helper class to load OSM XML data on the fly into OSHDB grid cells.
+ */
 public class OSMXmlReader {
-
-  private static class Test {
-
-    public void run() {
-      OSMXmlReader db = new OSMXmlReader();
-
-      Path testDataDir = Paths.get(getClass().getResource("data").getPath());
-
-      db.add(testDataDir.resolve("relation/r4815251.osh.gz"));
-
-      db.relations().asMap().forEach((id, versions) -> {
-        System.out.println("id:" + id);
-        versions.forEach(osm -> System.out.println("\t" + osm));
-      });
-
-      System.out.println("\n\n");
-      db.ways.get(27913435L).forEach(osm -> System.out.println("\t" + osm));
-
-      int key = 6;
-      System.out.println(db.keys.inverse().get(key));
-      System.out.println(db.keys.get("place"));
-
-      System.out.println(db.keyValues.get(key).inverse().get(2));
-
-    }
-  }
-
-  public static void main(String[] args) {
-    Test t = new Test();
-    t.run();
-  }
-
   BiMap<String, Integer> keys = HashBiMap.create();
   List<BiMap<String, Integer>> keyValues = new ArrayList<>();
 

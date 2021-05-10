@@ -15,6 +15,9 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class on incomplete ways.
+ */
 public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

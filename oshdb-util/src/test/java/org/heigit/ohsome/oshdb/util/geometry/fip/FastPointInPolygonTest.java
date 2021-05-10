@@ -10,7 +10,9 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
-
+/**
+ * Tests the {@link FastPointInPolygon} class.
+ */
 public class FastPointInPolygonTest {
   /**
    * Returns a reversed "Σ"-shaped concave polygon.

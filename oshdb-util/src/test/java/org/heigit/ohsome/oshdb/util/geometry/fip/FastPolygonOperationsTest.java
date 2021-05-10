@@ -12,6 +12,9 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+/**
+ * Tests the {@link FastPolygonOperations} class.
+ */
 public class FastPolygonOperationsTest {
   private final GeometryFactory gf = new GeometryFactory();
 
