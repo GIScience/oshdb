@@ -10,9 +10,8 @@ public class OSHDBCombinedIndex<
         U extends Comparable<U> & Serializable,
         V extends Comparable<V> & Serializable>
     implements Comparable<OSHDBCombinedIndex<U, V>>, Serializable {
-
-  private U index1;
-  private V index2;
+  private final U index1;
+  private final V index2;
 
   public OSHDBCombinedIndex(U index1, V index2) {
     this.index1 = index1;
