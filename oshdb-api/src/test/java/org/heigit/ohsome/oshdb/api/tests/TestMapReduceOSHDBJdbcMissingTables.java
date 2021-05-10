@@ -10,6 +10,7 @@ import org.junit.Test;
 public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
   /**
    * Creates the test runner using an H2 backend.
+   *
    * @throws Exception if something goes wrong
    */
   public TestMapReduceOSHDBJdbcMissingTables() throws Exception {

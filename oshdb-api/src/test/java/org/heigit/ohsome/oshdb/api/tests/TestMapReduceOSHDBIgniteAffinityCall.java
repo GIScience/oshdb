@@ -8,9 +8,15 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
+/**
+ * {@inheritDoc}
+ *
+ * <p>Runs the tests using the "affinity call" Ignite backend.</p>
+ */
 public class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgnite {
   /**
    * Creates the test runner using the ignite affinitycall backend.
+   *
    * @throws Exception if something goes wrong
    */
   public TestMapReduceOSHDBIgniteAffinityCall() throws Exception {

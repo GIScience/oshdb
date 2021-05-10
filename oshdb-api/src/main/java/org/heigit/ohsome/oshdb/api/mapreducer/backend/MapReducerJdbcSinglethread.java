@@ -22,9 +22,13 @@ import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 
+/**
+ * A simple implementation of the OSHDB API using a JDBC database as backend, where calculations
+ * are run sequentially.
+ */
 public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
-  public MapReducerJdbcSinglethread(OSHDBDatabase oshdb,
-      Class<? extends OSHDBMapReducible> forClass) {
+  public MapReducerJdbcSinglethread(
+      OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
 
@@ -77,7 +81,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   private Stream<X> stream(
       CellProcessor<Stream<X>> cellProcessor
-  ) throws ParseException, SQLException, IOException, ClassNotFoundException {
+  ) throws ParseException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(

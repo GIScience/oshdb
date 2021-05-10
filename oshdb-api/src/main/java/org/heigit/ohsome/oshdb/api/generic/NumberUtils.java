@@ -3,6 +3,9 @@ package org.heigit.ohsome.oshdb.api.generic;
 import java.io.Serializable;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A utility class for common numeric operations on arbitrary number types.
+ */
 public class NumberUtils implements Serializable {
   private NumberUtils() {}
 

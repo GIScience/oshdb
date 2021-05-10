@@ -20,10 +20,16 @@ import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 
-
+/**
+ * An implementation of the OSHDB API using a JDBC database as backend, where calculations run in
+ * parallel.
+ *
+ * <p>This implementation uses JAVA's {@link Stream#parallel()} implementation to run some
+ * operations concurrently.</p>
+ */
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
-  public MapReducerJdbcMultithread(OSHDBDatabase oshdb,
-      Class<? extends OSHDBMapReducible> forClass) {
+  public MapReducerJdbcMultithread(
+      OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
 
@@ -47,7 +53,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
       CellProcessor<S> processor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
