@@ -16,8 +16,11 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class for the special case of multipolygons with
+ * split rings.
+ */
 public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
-
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =

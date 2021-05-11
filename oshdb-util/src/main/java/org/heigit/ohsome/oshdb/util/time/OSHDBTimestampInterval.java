@@ -6,6 +6,9 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
+/**
+ * A from-to time interval.
+ */
 public class OSHDBTimestampInterval implements Serializable, Comparable<OSHDBTimestampInterval> {
   private final OSHDBTimestamp fromTimestamp;
   private final OSHDBTimestamp toTimestamp;

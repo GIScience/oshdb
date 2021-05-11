@@ -13,6 +13,10 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiPolygon;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class for the special case of multipolygons with
+ * invalid outer rings.
+ */
 public class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;

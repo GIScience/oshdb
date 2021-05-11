@@ -7,8 +7,10 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
 
+/**
+ * An implementation of the tag interpreter for use with {@link OSMXmlReader}.
+ */
 public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
-
   private final int area;
   private final int areaYes;
   private final int type;

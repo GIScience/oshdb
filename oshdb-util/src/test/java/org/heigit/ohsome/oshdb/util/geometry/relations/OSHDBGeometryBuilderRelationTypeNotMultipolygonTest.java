@@ -17,6 +17,10 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class for the special case of relations which are not
+ * multipolygons (e.g. geometry collections).
+ */
 public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
