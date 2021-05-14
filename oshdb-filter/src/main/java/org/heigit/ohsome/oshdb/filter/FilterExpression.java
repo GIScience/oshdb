@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 
@@ -40,6 +42,7 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   default boolean applyOSH(OSHEntity entity) {
+    // (potentially slow) default implementation tests every version individually
     return Streams.stream(entity.getVersions()).anyMatch(this::applyOSM);
   }
 
@@ -55,6 +58,7 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   default boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+    // dummy implementation for basic filters: ignores the geometry, just looks at the OSM entity
     return applyOSM(entity);
   }
 
@@ -71,6 +75,32 @@ public interface FilterExpression extends Serializable {
   @Contract(pure = true)
   default boolean applyOSMGeometry(OSMEntity entity, Geometry geometry) {
     return applyOSMGeometry(entity, () -> geometry);
+  }
+
+  /**
+   * Apply a filter to a snapshot ({@link OSMEntitySnapshot}) of an OSM entity.
+   *
+   * @param snapshot a snapshot of the OSM entity to check
+   * @return true if the the OSM entity snapshot fulfills the specified filter, otherwise false.
+   */
+  @Contract(pure = true)
+  default boolean applyOSMEntitySnapshot(OSMEntitySnapshot snapshot) {
+    return applyOSMGeometry(snapshot.getEntity(), snapshot::getGeometry);
+  }
+
+  /**
+   * Apply a filter to a contribution ({@link OSMEntitySnapshot}) to an OSM entity.
+   *
+   * <p>A contribution matches the given filter if either the state of the OSM entity before the
+   * modification or the state of it after the modification matches the filter.</p>
+   *
+   * @param contribution a modification of the OSM entity to check
+   * @return true if the the OSM contribution fulfills the specified filter, otherwise false.
+   */
+  @Contract(pure = true)
+  default boolean applyOSMContribution(OSMContribution contribution) {
+    return applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter)
+        || applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore);
   }
 
   /**

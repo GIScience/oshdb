@@ -11,7 +11,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
 /**
- * Tests the parsing of filters and the application to OSM entities.
+ * Tests the application of filters to OSM geometries.
  */
 public class ApplyOSMGeometryTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();

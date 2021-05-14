@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 /**
- * Tests the parsing of filters and the application to OSM entities.
+ * Tests the application of filters to OSM entities.
  */
 public class ApplyOSMTest extends FilterTest {
   @Test

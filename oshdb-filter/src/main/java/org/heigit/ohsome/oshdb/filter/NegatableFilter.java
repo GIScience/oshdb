@@ -4,6 +4,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -42,6 +44,16 @@ class NegatableFilter implements Filter {
   @Override
   public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
     return this.filter.applyOSMGeometry(entity, geometrySupplier) ^ this.negated;
+  }
+
+  @Override
+  public boolean applyOSMEntitySnapshot(OSMEntitySnapshot snapshot) {
+    return this.filter.applyOSMEntitySnapshot(snapshot) ^ this.negated;
+  }
+
+  @Override
+  public boolean applyOSMContribution(OSMContribution contribution) {
+    return this.filter.applyOSMContribution(contribution) ^ this.negated;
   }
 
   @Override
