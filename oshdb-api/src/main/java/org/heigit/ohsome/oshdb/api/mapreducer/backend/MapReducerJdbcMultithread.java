@@ -28,8 +28,8 @@ import org.json.simple.parser.ParseException;
  * operations concurrently.</p>
  */
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
-  public MapReducerJdbcMultithread(
-      OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
+  public MapReducerJdbcMultithread(OSHDBDatabase oshdb,
+      Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
 

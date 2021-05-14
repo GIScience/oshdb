@@ -27,8 +27,8 @@ import org.json.simple.parser.ParseException;
  * are run sequentially.
  */
 public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
-  public MapReducerJdbcSinglethread(
-      OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
+  public MapReducerJdbcSinglethread(OSHDBDatabase oshdb,
+      Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
   }
 
