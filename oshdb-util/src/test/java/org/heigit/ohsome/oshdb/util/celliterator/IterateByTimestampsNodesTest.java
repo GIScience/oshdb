@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
 import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
@@ -22,6 +23,9 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on OSM nodes.
+ */
 public class IterateByTimestampsNodesTest {
   private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();

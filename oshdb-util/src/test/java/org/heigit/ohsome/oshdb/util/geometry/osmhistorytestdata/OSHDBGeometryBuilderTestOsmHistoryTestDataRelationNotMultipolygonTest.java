@@ -20,6 +20,9 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygonal;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class on OSM relations except multipolygon relations.
+ */
 public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

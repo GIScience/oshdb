@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.util.xmlreader;
 
+/**
+ * A mutable OSM node, specifically for use in {@link OSMXmlReader}.
+ */
 public class MutableOSMNode extends MutableOSMEntity  {
   private long longitude;
   private long latitude;
@@ -11,7 +14,6 @@ public class MutableOSMNode extends MutableOSMEntity  {
   public void setLon(long longitude) {
     this.longitude = longitude;
   }
-
 
   public long getLat() {
     return latitude;
@@ -25,5 +27,4 @@ public class MutableOSMNode extends MutableOSMEntity  {
     this.longitude = longitude;
     this.latitude = latitude;
   }
-
 }

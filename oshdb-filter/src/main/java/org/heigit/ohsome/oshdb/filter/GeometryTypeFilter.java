@@ -25,11 +25,19 @@ import org.locationtech.jts.geom.Puntal;
  * A filter which selects OSM features by their geometry type (i.e., point, line or polygon).
  */
 public class GeometryTypeFilter implements Filter {
-
+  /**
+   * Represents a simplified geometry type.
+   *
+   * <p>Combines multi geometries with their respective base geometry types.</p>
+   */
   public enum GeometryType {
+    /** A point geometry (JTS: {@link Puntal}). */
     POINT,
+    /** A line geometry (JTS: {@link Lineal}). */
     LINE,
+    /** A polygon or multipolygon geometry (JTS: {@link Polygonal}). */
     POLYGON,
+    /** A geometry collection which is not a multipolygon. */
     OTHER
   }
 

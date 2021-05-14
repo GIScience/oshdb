@@ -14,6 +14,11 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class: attribute tests.
+ *
+ * @see <a href="https://github.com/osmcode/osm-testdata/tree/master/grid">osm-testdata</a>
+ */
 public class OSHDBGeometryBuilderTestOsmTestData3xxTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

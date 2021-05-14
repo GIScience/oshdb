@@ -605,16 +605,19 @@ public class CellIterator implements Serializable {
         }
 
         if (!timeInterval.includes(timestamp)) {
-          // ignore osm entity because it's outside of the given time interval of interest
-          if (timeInterval.compareAgainstTimestamp(timestamp) > 0) { // timestamp in the future of the interval
-            break; // abort current osmEntityByTimestamps loop, continue with next osh entity
-          } else if (!timeInterval.includes(nextTs)) { // next modification state is also in not in
-            // our time frame of interest
-            continue; // continue with next mod. state of current osh entity
+          // ignoring osm entity because it's outside of the given time interval of interest
+          if (timeInterval.compareAgainstTimestamp(timestamp) > 0) {
+            // timestamp in the future of the interval:
+            // abort current osmEntityByTimestamps loop, continue with next osh entity
+            break;
+          } else if (!timeInterval.includes(nextTs)) {
+            // next modification state is also in not in our time frame of interest:
+            // continue with next mod. state of current osh entity
+            continue;
           } else {
-            // next mod. state of current entity will be in the time range of interest. -> skip it
-            // but we still have to process this entity fully, because we need stuff in `prev` for
-            // previousGeometry, etc. during the next iteration
+            // next mod. state of current entity will be in the time range of interest:
+            // skip it , but we still have to process this entity fully, because we need stuff in
+            // `prev` for previousGeometry, etc. during the next iteration
             skipOutput = true;
           }
         }

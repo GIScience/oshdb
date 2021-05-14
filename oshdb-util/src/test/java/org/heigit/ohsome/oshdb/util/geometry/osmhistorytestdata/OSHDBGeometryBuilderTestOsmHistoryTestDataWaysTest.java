@@ -16,6 +16,9 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class on OSM ways.
+ */
 public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   TagInterpreter areaDecider;

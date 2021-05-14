@@ -10,7 +10,9 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
-
+/**
+ * Tests the {@link FastBboxInPolygon} class.
+ */
 public class FastBboxInPolygonTest {
   /**
    * Returns a {@link MultiPolygon} of four small squares arranged in a square.

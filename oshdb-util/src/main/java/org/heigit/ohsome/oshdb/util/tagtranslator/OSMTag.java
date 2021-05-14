@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
+/**
+ * Represents an OSM tag (which consists of two arbitrary strings forming a key-value pair).
+ */
 public class OSMTag implements OSMTagInterface {
   private String key;
   private String value;

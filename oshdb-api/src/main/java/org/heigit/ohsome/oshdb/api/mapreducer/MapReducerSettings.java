@@ -172,6 +172,7 @@ interface MapReducerSettings<M> {
   M osmTag(Collection<? extends OSMTagInterface> keyValuePairs);
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmType(Set)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -180,6 +181,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmType(OSMType, OSMType...)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -188,6 +190,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmEntityFilter}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -196,6 +199,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmTag(OSMTagInterface)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -204,6 +208,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmTag(String)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -212,6 +217,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmTag(OSMTagInterface)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -220,6 +226,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmTag(String, String)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -228,6 +235,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmTag(String, Collection)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -236,6 +244,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmTag(String, Pattern)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)
@@ -244,6 +253,7 @@ interface MapReducerSettings<M> {
   }
 
   /** deprecated.
+   *
    * @deprecated replaced by {@link #osmTag(Collection)}
    */
   @Deprecated(since = "0.5.0", forRemoval = true)

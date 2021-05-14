@@ -7,6 +7,9 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Tests the {@link IsoDateTimeParser} class.
+ */
 public class IsoDateTimeParserTest {
 
   @Test

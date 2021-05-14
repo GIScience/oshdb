@@ -11,8 +11,13 @@ import org.jetbrains.annotations.Contract;
  * A filter which selects OSM entities by their OSM tags (e.g., key=value, key=*, etc.).
  */
 public interface TagFilter extends Filter {
+  /**
+   * Type of tag filter.
+   */
   enum Type {
+    /** A tag filter which checks for entities which match a key=value (or key=*) filter. */
     EQUALS,
+    /** A tag filter which checks for entities which match a key!=value (or key!=*) filter. */
     NOT_EQUALS
   }
 

@@ -34,6 +34,7 @@ public class TestOSHDBFilter {
 
   /**
    * Creates a test runner using the H2 backend.
+   *
    * @throws Exception if something goes wrong.
    */
   public TestOSHDBFilter() throws Exception {

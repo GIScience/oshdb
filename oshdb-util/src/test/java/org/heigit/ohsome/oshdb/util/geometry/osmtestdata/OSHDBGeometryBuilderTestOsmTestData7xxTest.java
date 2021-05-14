@@ -22,6 +22,11 @@ import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+/**
+ * Tests the {@link OSHDBGeometryBuilder} class: multipolygon geometry tests.
+ *
+ * @see <a href="https://github.com/osmcode/osm-testdata/tree/master/grid">osm-testdata</a>
+ */
 public class OSHDBGeometryBuilderTestOsmTestData7xxTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;

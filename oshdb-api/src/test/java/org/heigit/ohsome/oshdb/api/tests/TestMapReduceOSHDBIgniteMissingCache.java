@@ -10,6 +10,7 @@ import org.junit.Test;
 public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
   /**
    * Creates the test runner using an Ignite backend.
+   *
    * @throws Exception if something goes wrong
    */
   public TestMapReduceOSHDBIgniteMissingCache() throws Exception {

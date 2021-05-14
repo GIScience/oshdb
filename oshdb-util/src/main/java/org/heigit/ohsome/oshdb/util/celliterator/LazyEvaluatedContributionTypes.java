@@ -4,6 +4,14 @@ import java.util.EnumSet;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+/**
+ * An object offering access to lazily evaluated contribution type sets.
+ *
+ * <p>Which is based on a single predicate which if invoked will answer whether a given
+ * contribution type is detected or not.</p>
+ *
+ * @see LazyEvaluatedObject
+ */
 public class LazyEvaluatedContributionTypes implements Supplier<EnumSet<ContributionType>> {
   private EnumSet<ContributionType> values = EnumSet.noneOf(ContributionType.class);
   private EnumSet<ContributionType> evaluated = EnumSet.noneOf(ContributionType.class);

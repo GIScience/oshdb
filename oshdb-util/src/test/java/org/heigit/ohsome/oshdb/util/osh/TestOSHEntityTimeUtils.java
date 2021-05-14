@@ -22,6 +22,9 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.Test;
 
+/**
+ * Tests the {@link OSHEntityTimeUtils} class.
+ */
 public class TestOSHEntityTimeUtils {
   @Test
   public void testGetModificationTimestampsNode() throws IOException {

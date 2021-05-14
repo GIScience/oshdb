@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -21,6 +22,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
+/**
+ * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on special situations
+ * which are related to OSHDB grid cells.
+ */
 public class IterateByContributionNotOsmTypeSpecificTest {
 
   TagInterpreter areaDecider;

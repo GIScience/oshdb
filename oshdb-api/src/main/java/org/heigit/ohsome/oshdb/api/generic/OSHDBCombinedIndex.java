@@ -6,13 +6,18 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A data type for an index ("map key") consisting of two independent variables.
+ *
+ * @param <U> the type of the fist part of the index
+ * @param <V> the type of the second part of the index
+ */
 public class OSHDBCombinedIndex<
         U extends Comparable<U> & Serializable,
         V extends Comparable<V> & Serializable>
     implements Comparable<OSHDBCombinedIndex<U, V>>, Serializable {
-
-  private U index1;
-  private V index2;
+  private final U index1;
+  private final V index2;
 
   public OSHDBCombinedIndex(U index1, V index2) {
     this.index1 = index1;

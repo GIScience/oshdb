@@ -24,7 +24,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class IterateAllTest {
+/**
+ * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method.
+ */
+public class IterateByContributionTest {
   private static Connection conn;
 
   /**
@@ -36,7 +39,7 @@ public class IterateAllTest {
     Class.forName("org.h2.Driver");
 
     // connect to the "Big"DB
-    IterateAllTest.conn = DriverManager.getConnection(
+    IterateByContributionTest.conn = DriverManager.getConnection(
         "jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
         "sa",
         ""
@@ -45,10 +48,10 @@ public class IterateAllTest {
 
   @AfterClass
   public static void breakDownClass() throws SQLException {
-    IterateAllTest.conn.close();
+    IterateByContributionTest.conn.close();
   }
 
-  public IterateAllTest() {
+  public IterateByContributionTest() {
   }
 
   @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})

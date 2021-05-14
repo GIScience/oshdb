@@ -12,6 +12,17 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 
+/**
+ * A class for faster geometry operations which use a common polygon as one of their input.
+ *
+ * <p>Similar to JTS' {@link org.locationtech.jts.geom.prep.PreparedGeometry} construct,
+ * but implements also further operations (including non-boolean ones like
+ * {@link Geometry#intersection(Geometry)}).</p>
+ *
+ * <p>The main speed-up is achieved by splitting the common polygon into smaller chunks with a
+ * "limited" number of vertices, so that operations working on "small" input geometries can
+ * skip many vertices of the original polygon.</p>
+ */
 public class FastPolygonOperations implements Serializable {
   private static final int AVERAGE_VERTICES_PER_BLOCK = 40; // todo: finetune this value
 

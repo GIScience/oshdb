@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
+/**
+ * Represents an OSM role (which can be an arbitrary string).
+ */
 public class OSMRole {
   private String role;
 

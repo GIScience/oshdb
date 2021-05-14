@@ -4,6 +4,11 @@ import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.jetbrains.annotations.Contract;
 
+/**
+ * Interface for common "monadic" methods in {@link MapReducer} and {@link MapAggregator}.
+ *
+ * @param <X> the (arbitrary) data type which is used as the input of the interface's methods.
+ */
 public interface Mappable<X> {
   /**
    * Set an arbitrary `map` transformation function.

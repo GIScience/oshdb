@@ -2,6 +2,9 @@ package org.heigit.ohsome.oshdb.util.xmlreader;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 
+/**
+ * A mutable OSM entity, specifically for use in {@link OSMXmlReader}.
+ */
 public class MutableOSMEntity {
 
   private long id;
