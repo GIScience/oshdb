@@ -1,16 +1,13 @@
 package org.heigit.ohsome.oshdb.util.bytearray;
 
-import com.google.protobuf.CodedOutputStream;
 import java.io.IOException;
 
 public class ByteArrayOutputWrapper {
 
-  final OSHDBByteArrayOutputStream bos;
-  final CodedOutputStream cos;
+  protected final OSHDBByteArrayOutputStream bos;
 
   public ByteArrayOutputWrapper(int bufferSize) {
     bos = new OSHDBByteArrayOutputStream(bufferSize);
-    cos = CodedOutputStream.newInstance(bos, bufferSize);
   }
 
   public ByteArrayOutputWrapper() {
@@ -18,11 +15,15 @@ public class ByteArrayOutputWrapper {
   }
 
   public void writeU32(int value) throws IOException {
-    cos.writeUInt32NoTag(value);
+    while ((value & ~0x7F) != 0) {
+      bos.write(value & 0x7F | 0x80);
+      value >>>= 7;
+    }
+    bos.write(value);
   }
 
   public void writeS32(int value) throws IOException {
-    cos.writeSInt32NoTag(value);
+    writeU32(encodeZigZag32(value));
   }
 
   public int writeS32Delta(int value, int last) throws IOException {
@@ -31,7 +32,11 @@ public class ByteArrayOutputWrapper {
   }
 
   public void writeU64(long value) throws IOException {
-    cos.writeUInt64NoTag(value);
+    while (((int) value & ~0x7FL) != 0) {
+      bos.write((int) value & 0x7F | 0x80);
+      value >>>= 7;
+    }
+    bos.write((int) value);
   }
 
   /**
@@ -49,7 +54,7 @@ public class ByteArrayOutputWrapper {
   }
 
   public void writeS64(long value) throws IOException {
-    cos.writeSInt64NoTag(value);
+    writeU64(encodeZigZag64(value));
   }
 
   public long writeS64Delta(long value, long last) throws IOException {
@@ -57,16 +62,24 @@ public class ByteArrayOutputWrapper {
     return value;
   }
 
-  public void writeByte(byte value) throws IOException {
-    cos.writeRawByte(value);
+  public void writeByte(int value) throws IOException {
+    bos.write(value);
   }
 
   public void writeByteArray(byte[] value) throws IOException {
-    cos.writeRawBytes(value);
+    bos.write(value);
   }
 
   public void writeByteArray(final byte[] value, int offset, int length) throws IOException {
-    cos.writeRawBytes(value, offset, length);
+    bos.write(value, offset, length);
+  }
+
+  private static int encodeZigZag32(final int n) {
+    return n << 1 ^ n >> 31;
+  }
+
+  private static long encodeZigZag64(final long n) {
+    return n << 1 ^ n >> 63;
   }
 
   public void reset() {
@@ -74,17 +87,14 @@ public class ByteArrayOutputWrapper {
   }
 
   public int length() throws IOException {
-    cos.flush();
     return bos.length();
   }
 
   public byte[] array() throws IOException {
-    cos.flush();
     return bos.array();
   }
 
   public OSHDBByteArrayOutputStream getByteArrayStream() throws IOException {
-    cos.flush();
     return bos;
   }
 }
