@@ -9,7 +9,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -155,15 +154,11 @@ public class TransformerTagRoles {
         InputStream in = input.apply(new BufferedInputStream(
             new FileInputStream(workDirectory.resolve("extract_roles").toFile())));
         DataInputStream dataIn = new DataInputStream(new BufferedInputStream(in))) {
-      while (true) {
-        try {
-          final Role role = Role.read(dataIn);
-          final int hash = hashFunction.applyAsInt(role.role);
-          roleHash2Cnt.addTo(hash, 1);
-          roleCount++;
-        } catch (EOFException e) {
-          break;
-        }
+      while (dataIn.available() > 0) {
+        final Role role = Role.read(dataIn);
+        final int hash = hashFunction.applyAsInt(role.role);
+        roleHash2Cnt.addTo(hash, 1);
+        roleCount++;
       }
     }
 

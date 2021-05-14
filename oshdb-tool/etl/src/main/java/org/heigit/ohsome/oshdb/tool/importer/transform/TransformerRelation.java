@@ -94,7 +94,7 @@ public class TransformerRelation extends Transformer {
 
           return record;
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          throw new UncheckedIOException(e);
         }
       };
 

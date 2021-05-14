@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -165,28 +164,24 @@ public abstract class OSHEntity2 {
       if (!hasNext()) {
         throw new NoSuchElementException();
       }
-      try {
-        version = in.readS32Delta(version);
-        timestamp = in.readS64Delta(timestamp);
-        changeset = in.readS64Delta(changeset);
+      version = in.readS32Delta(version);
+      timestamp = in.readS64Delta(timestamp);
+      changeset = in.readS64Delta(changeset);
 
-        changed = in.readRawByte();
+      changed = in.readRawByte();
 
-        if ((changed & CHANGED_USER_ID) != 0) {
-          userId = in.readS32() + userId;
-        }
-
-        if ((changed & CHANGED_TAGS) != 0) {
-          int size = in.readU32();
-          keyValues = new int[size];
-          for (int i = 0; i < size; i++) {
-            keyValues[i] = in.readU32();
-          }
-        }
-        return extension();
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
+      if ((changed & CHANGED_USER_ID) != 0) {
+        userId = in.readS32() + userId;
       }
+
+      if ((changed & CHANGED_TAGS) != 0) {
+        int size = in.readU32();
+        keyValues = new int[size];
+        for (int i = 0; i < size; i++) {
+          keyValues[i] = in.readU32();
+        }
+      }
+      return extension();
     }
 
     protected boolean changedExtension() {

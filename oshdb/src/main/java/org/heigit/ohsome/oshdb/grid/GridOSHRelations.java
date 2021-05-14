@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
@@ -64,12 +63,8 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
-        try {
-          return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp,
-              baseLongitude, baseLatitude);
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
-        }
+        return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
+            baseLatitude);
       }
 
       @Override

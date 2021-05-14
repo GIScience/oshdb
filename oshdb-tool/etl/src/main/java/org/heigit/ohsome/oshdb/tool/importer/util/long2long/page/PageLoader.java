@@ -5,11 +5,9 @@ import it.unimi.dsi.fastutil.ints.Int2LongAVLTreeMap;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -83,12 +81,8 @@ public class PageLoader extends CacheLoader<Integer, Page> {
 
         @Override
         public void accept(int bit) {
-          try {
-            pageContent[bit] = wrapper.readS64() + lastValue;
-            lastValue = pageContent[bit];
-          } catch (IOException e) {
-            throw new UncheckedIOException(e);
-          }
+          pageContent[bit] = wrapper.readS64() + lastValue;
+          lastValue = pageContent[bit];
         }
       });
       return new DensePage(pageContent);
@@ -101,12 +95,8 @@ public class PageLoader extends CacheLoader<Integer, Page> {
 
         @Override
         public void accept(int bit) {
-          try {
-            value = wrapper.readS64() + value;
-            map.put(bit, value);
-          } catch (IOException e) {
-            throw new UncheckedIOException(e);
-          }
+          value = wrapper.readS64() + value;
+          map.put(bit, value);
         }
       });
       return new SparsePage(map);

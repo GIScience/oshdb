@@ -228,11 +228,11 @@ public class RxOshPbfReader {
 
         buffer = pbf.readFully(headerSize);
         final Fileformat.BlobHeader header =
-            Fileformat.BlobHeader.PARSER.parseFrom(new ByteBufferBackedInputStream(buffer));
+            Fileformat.BlobHeader.parseFrom(new ByteBufferBackedInputStream(buffer));
 
         buffer = pbf.readFully(header.getDatasize());
         final Fileformat.Blob blob =
-            Fileformat.Blob.PARSER.parseFrom(new ByteBufferBackedInputStream(buffer));
+            Fileformat.Blob.parseFrom(new ByteBufferBackedInputStream(buffer));
 
         PbfBlob pbfBlob =
             new PbfBlob(blobPos, header, blob, blobPos == pbf.startPos, overSoftlimit);

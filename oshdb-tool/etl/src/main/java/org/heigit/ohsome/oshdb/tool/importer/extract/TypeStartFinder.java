@@ -22,7 +22,7 @@ public class TypeStartFinder {
    * Reads in the metadata.
    *
    * @param pbf Path to the pbf
-   * @throws IOException
+   * @throws IOException if pbf could not be read
    */
   public static OsmPbfMeta getMetaData(Path pbf) throws IOException {
     OsmPbfMeta meta = new OsmPbfMeta();

@@ -27,6 +27,10 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
+/**
+ * An implementation of the {@link OSHWay} interface.
+ *
+ */
 public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay>, Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -44,8 +48,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
   private final int nodeDataOffset;
   private final int nodeDataLength;
 
-  public static OSHWayImpl instance(final byte[] data, final int offset, final int length)
-      throws IOException {
+  public static OSHWayImpl instance(final byte[] data, final int offset, final int length) {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
@@ -54,7 +57,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
    */
   public static OSHWayImpl instance(final byte[] data, final int offset, final int length,
       final long baseId, final long baseTimestamp, final long baseLongitude,
-      final long baseLatitude) throws IOException {
+      final long baseLatitude) {
 
     ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -146,51 +149,46 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
           if (!hasNext()) {
             throw new NoSuchElementException();
           }
-          try {
-            version = wrapper.readS32() + version;
-            timestamp = wrapper.readS64() + timestamp;
-            changeset = wrapper.readS64() + changeset;
+          version = wrapper.readS32() + version;
+          timestamp = wrapper.readS64() + timestamp;
+          changeset = wrapper.readS64() + changeset;
 
-            byte changed = wrapper.readRawByte();
+          byte changed = wrapper.readRawByte();
 
-            if ((changed & CHANGED_USER_ID) != 0) {
-              userId = wrapper.readS32() + userId;
-            }
-
-            if ((changed & CHANGED_TAGS) != 0) {
-              int size = wrapper.readU32();
-              keyValues = new int[size];
-              for (int i = 0; i < size; i++) {
-                keyValues[i] = wrapper.readU32();
-              }
-            }
-
-            if ((changed & CHANGED_REFS) != 0) {
-              int size = wrapper.readU32();
-              members = new OSMMember[size];
-              long memberId = 0;
-              int memberOffset = 0;
-              OSHEntity member = null;
-              for (int i = 0; i < size; i++) {
-                memberOffset = wrapper.readU32();
-                if (memberOffset > 0) {
-                  member = nodes.get(memberOffset - 1);
-                  memberId = member.getId();
-
-                } else {
-                  member = null;
-                  memberId = wrapper.readS64() + memberId;
-                }
-                members[i] = new OSMMember(memberId, OSMType.NODE, -1, member);
-              }
-            }
-
-            return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId,
-                keyValues, members);
-
-          } catch (IOException e) {
-            throw new UncheckedIOException(e);
+          if ((changed & CHANGED_USER_ID) != 0) {
+            userId = wrapper.readS32() + userId;
           }
+
+          if ((changed & CHANGED_TAGS) != 0) {
+            int size = wrapper.readU32();
+            keyValues = new int[size];
+            for (int i = 0; i < size; i++) {
+              keyValues[i] = wrapper.readU32();
+            }
+          }
+
+          if ((changed & CHANGED_REFS) != 0) {
+            int size = wrapper.readU32();
+            members = new OSMMember[size];
+            var memberId = 0L;
+            var memberOffset = 0;
+            OSHEntity member = null;
+            for (int i = 0; i < size; i++) {
+              memberOffset = wrapper.readU32();
+              if (memberOffset > 0) {
+                member = nodes.get(memberOffset - 1);
+                memberId = member.getId();
+
+              } else {
+                member = null;
+                memberId = wrapper.readS64() + memberId;
+              }
+              members[i] = new OSMMember(memberId, OSMType.NODE, -1, member);
+            }
+          }
+
+          return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+              members);
         }
       };
     } catch (IOException e) {
@@ -202,7 +200,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
   public List<OSHNode> getNodes() throws IOException {
     List<OSHNode> nodes = new ArrayList<>(nodeIndex.length);
     long lastId = 0;
-    for (int index = 0; index < nodeIndex.length; index++) {
+    for (var index = 0; index < nodeIndex.length; index++) {
       int offset = nodeIndex[index];
       int length =
           (index < nodeIndex.length - 1 ? nodeIndex[index + 1] : nodeDataLength) - offset;
@@ -400,11 +398,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     }
 
     private Object readResolve() {
-      try {
-        return OSHWayImpl.instance(data, 0, data.length);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      return OSHWayImpl.instance(data, 0, data.length);
     }
   }
 }

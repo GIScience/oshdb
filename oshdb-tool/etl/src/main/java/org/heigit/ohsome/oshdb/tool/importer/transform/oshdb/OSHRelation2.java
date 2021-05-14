@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.Map;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -111,26 +110,21 @@ public abstract class OSHRelation2 extends OSHEntity2 implements OSH<OSMRelation
 
     @Override
     protected OSMRelation extension() {
-      try {
-        if (changedExtension()) {
-          final int length = in.readU32();
-          members = new OSMMember[length];
+      if (changedExtension()) {
+        final int length = in.readU32();
+        members = new OSMMember[length];
 
-          long memId = 0;
-          for (int i = 0; i < length; i++) {
-            final int type = in.readS32();
-            memId = memId + in.readS64();
-            final int role = in.readU32();
+        long memId = 0;
+        for (int i = 0; i < length; i++) {
+          final int type = in.readS32();
+          memId = memId + in.readS64();
+          final int role = in.readU32();
 
-            members[i] = relation.getMember(memId, type, role);
-
-          }
+          members[i] = relation.getMember(memId, type, role);
         }
-        return new OSMRelation(entity.id, version, entity.baseTimestamp + timestamp, changeset,
-            userId, keyValues, members);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
       }
+      return new OSMRelation(entity.id, version, entity.baseTimestamp + timestamp, changeset,
+          userId, keyValues, members);
     }
   }
 
