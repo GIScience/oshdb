@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.Contract;
@@ -99,8 +100,14 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   default boolean applyOSMContribution(OSMContribution contribution) {
-    return applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter)
-        || applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore);
+    if (contribution.is(ContributionType.CREATION)) {
+      return applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter);
+    } else if (contribution.is(ContributionType.DELETION)) {
+      return applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore);
+    } else {
+      return applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore)
+          || applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter);
+    }
   }
 
   /**
