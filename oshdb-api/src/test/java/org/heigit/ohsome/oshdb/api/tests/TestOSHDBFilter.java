@@ -10,10 +10,10 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.api.object.OSMContribution;
-import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.filter.FilterParser;
 import org.heigit.ohsome.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.Test;
 

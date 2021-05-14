@@ -7,89 +7,66 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.locationtech.jts.geom.Geometry;
 
 /**
- * Stores information about a single data entity at a specific time "snapshot".
+ * Information about a single OSM object at a specific point in time ("snapshot").
  *
  * <p>Alongside the entity and the timestamp, also the entity's geometry is provided.</p>
  */
-public class OSMEntitySnapshot implements OSHDBMapReducible, Comparable<OSMEntitySnapshot> {
+public class OSMEntitySnapshotImpl implements
+    org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot {
   private final IterateByTimestampEntry data;
 
-  public OSMEntitySnapshot(IterateByTimestampEntry data) {
+  public OSMEntitySnapshotImpl(IterateByTimestampEntry data) {
     this.data = data;
   }
 
   /**
    * Creates a copy of the given entity snapshot object with an updated geometry.
    */
-  public OSMEntitySnapshot(OSMEntitySnapshot other, Geometry reclippedGeometry) {
+  public OSMEntitySnapshotImpl(OSMEntitySnapshot other, Geometry reclippedGeometry) {
     this(other, new LazyEvaluatedObject<>(reclippedGeometry));
   }
 
   /**
    * Creates a copy of the given entity snapshot object with an updated geometry.
    */
-  public OSMEntitySnapshot(
+  public OSMEntitySnapshotImpl(
       OSMEntitySnapshot other,
       LazyEvaluatedObject<Geometry> reclippedGeometry
   ) {
     this.data = new IterateByTimestampEntry(
-        other.data.timestamp,
-        other.data.osmEntity,
-        other.data.oshEntity,
+        other.getTimestamp(),
+        other.getEntity(),
+        other.getOSHEntity(),
         reclippedGeometry,
-        other.data.unclippedGeometry
+        new LazyEvaluatedObject<>(other::getGeometryUnclipped)
     );
   }
 
-  /**
-   * The timestamp for which the snapshot of this data entity has been obtained.
-   *
-   * @return snapshot timestamp as an OSHDBTimestamp object
-   */
+  @Override
   public OSHDBTimestamp getTimestamp() {
     return data.timestamp;
   }
 
-  /**
-   * The geometry of this entity at the snapshot's timestamp clipped to the requested area of
-   * interest.
-   *
-   * @return the geometry as a JTS Geometry
-   */
+  @Override
   public Geometry getGeometry() {
     return data.geometry.get();
   }
 
-  /**
-   * The geometry of this entity at the snapshot's timestamp. This is the full (unclipped) geometry
-   * of the osm entity.
-   *
-   * @return the unclipped geometry of the osm entity snapshot as a JTS Geometry
-   */
+  @Override
   public Geometry getGeometryUnclipped() {
     return data.unclippedGeometry.get();
   }
 
-  /**
-   * The entity for which the snapshot has been obtained.
-   *
-   * <p>This is the (not deleted) version of a OSHEntity that was valid at the provided snapshot
-   * timestamp.</p>
-   *
-   * @return the OSMEntity object of this snapshot
-   */
+  @Override
   public OSMEntity getEntity() {
     return data.osmEntity;
   }
 
-  /**
-   * The (parent) osh entity of the osm entity for which the snapshot has been obtained.
-   *
-   * @return the OSHEntity object corresponding to this snapshot
-   */
+  @Override
   public OSHEntity getOSHEntity() {
     return data.oshEntity;
   }

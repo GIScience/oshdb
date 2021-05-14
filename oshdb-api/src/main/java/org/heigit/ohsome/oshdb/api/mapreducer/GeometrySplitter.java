@@ -14,14 +14,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.api.object.OSMContribution;
-import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.ohsome.oshdb.api.object.OSMContributionImpl;
+import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshotImpl;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastPolygonOperations;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -124,7 +126,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
               // not actually intersecting -> skip
               return Stream.empty();
             } else {
-              return Stream.of(new IndexData<>(index, new OSMEntitySnapshot(data,
+              return Stream.of(new IndexData<>(index, new OSMEntitySnapshotImpl(data,
                   new LazyEvaluatedObject<>(() ->
                       faultTolerantIntersection(snapshotGeometry, poop))
               )));
@@ -203,7 +205,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
               // not actually intersecting -> skip
               return Stream.empty();
             } else {
-              return Stream.of(new IndexData<>(index, new OSMContribution(data,
+              return Stream.of(new IndexData<>(index, new OSMContributionImpl(data,
                   new LazyEvaluatedObject<>(() ->
                       faultTolerantIntersection(contributionGeometryBefore, poop)),
                   new LazyEvaluatedObject<>(() ->

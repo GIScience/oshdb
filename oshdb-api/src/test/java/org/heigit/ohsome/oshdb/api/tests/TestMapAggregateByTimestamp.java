@@ -13,10 +13,10 @@ import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.api.object.OSMContribution;
-import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 

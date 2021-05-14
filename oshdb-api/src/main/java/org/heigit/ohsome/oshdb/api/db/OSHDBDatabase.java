@@ -3,8 +3,8 @@ package org.heigit.ohsome.oshdb.api.db;
 import java.util.OptionalLong;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
+import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 /**
  * OSHDB database backend connector.

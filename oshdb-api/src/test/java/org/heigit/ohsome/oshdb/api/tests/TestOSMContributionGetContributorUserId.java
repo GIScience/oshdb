@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.api.object.OSMContribution;
+import org.heigit.ohsome.oshdb.api.object.OSMContributionImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -19,6 +19,7 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedContributionTypes;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.junit.Test;
 
 /**
@@ -35,7 +36,7 @@ public class TestOSMContributionGetContributorUserId {
   @Test
   public void node() throws Exception {
     // timestamp match
-    OSMContribution c = new OSMContribution(new IterateAllEntry(
+    OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         new OSMNode(1L, 1, 123L, 1L, 7, new int[]{}, 0, 0), null,
         dummyOshEntity,
@@ -45,7 +46,7 @@ public class TestOSMContributionGetContributorUserId {
     ));
     assertEquals(7, c.getContributorUserId());
     // contribution type match
-    c = new OSMContribution(new IterateAllEntry(
+    c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         new OSMNode(1L, 1, 122L, 1L, 7, new int[] {}, 0, 0), null,
         dummyOshEntity,
@@ -54,7 +55,7 @@ public class TestOSMContributionGetContributorUserId {
         1L
     ));
     assertEquals(7, c.getContributorUserId());
-    c = new OSMContribution(new IterateAllEntry(
+    c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         new OSMNode(1L, 2, 122L, 2L, 7, new int[] { 3, 4 }, 0, 0),
         new OSMNode(1L, 1, 121L, 1L, 6, new int[] { 1, 2 }, 0, 0),
@@ -64,7 +65,7 @@ public class TestOSMContributionGetContributorUserId {
         2L
     ));
     assertEquals(7, c.getContributorUserId());
-    c = new OSMContribution(new IterateAllEntry(
+    c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         // negative version == isVisible = false
         new OSMNode(1L, -2, 122L, 2L, 7, new int[] {}, 0, 0),
@@ -76,7 +77,7 @@ public class TestOSMContributionGetContributorUserId {
     ));
     // non-match
     assertEquals(7, c.getContributorUserId());
-    c = new OSMContribution(new IterateAllEntry(
+    c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         new OSMNode(1L, 1, 122L, 1L, 7, new int[] {}, 0, 0),
         new OSMNode(1L, 1, 122L, 1L, 7, new int[] {}, 0, 0),
@@ -90,7 +91,7 @@ public class TestOSMContributionGetContributorUserId {
 
   @Test
   public void wayDirect() throws Exception {
-    OSMContribution c = new OSMContribution(new IterateAllEntry(
+    OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         new OSMWay(1L, 1, 123L, 1L, 7, new int[] {}, new OSMMember[] {}), null,
         dummyOshEntity,
@@ -112,7 +113,7 @@ public class TestOSMContributionGetContributorUserId {
         1L, 1, 122L, 1L, 1, new int[] {}, new OSMMember[] {
           new OSMMember(3, OSMType.NODE, 0, OSHNodeImpl.build(versions))
         });
-    OSMContribution c = new OSMContribution(new IterateAllEntry(
+    OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         entity, entity,
         dummyOshEntity,
@@ -125,7 +126,7 @@ public class TestOSMContributionGetContributorUserId {
 
   @Test
   public void relationDirect() throws Exception {
-    OSMContribution c = new OSMContribution(new IterateAllEntry(
+    OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         new OSMRelation(1L, 1, 123L, 1L, 7, new int[] {}, new OSMMember[] {}),
         null,
@@ -154,7 +155,7 @@ public class TestOSMContributionGetContributorUserId {
         1L, 1, 122L, 1L, 1, new int[] {}, new OSMMember[] {
           new OSMMember(3, OSMType.WAY, 0, OSHWayImpl.build(versions, Collections.emptyList()))
         });
-    OSMContribution c = new OSMContribution(new IterateAllEntry(
+    OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         entity, entity,
         dummyOshEntity,
@@ -184,7 +185,7 @@ public class TestOSMContributionGetContributorUserId {
               OSHWayImpl.build(versions, Collections.singletonList(OSHNodeImpl.build(nodeVersions)))
           )
         });
-    OSMContribution c = new OSMContribution(new IterateAllEntry(
+    OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         entity, entity,
         dummyOshEntity,

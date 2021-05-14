@@ -13,10 +13,10 @@ import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
-import org.heigit.ohsome.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
+import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 /**
  * OSHDB database backend connector to a Ignite system.

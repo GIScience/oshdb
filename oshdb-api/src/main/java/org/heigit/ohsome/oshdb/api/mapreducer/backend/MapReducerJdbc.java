@@ -17,11 +17,11 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
-import org.heigit.ohsome.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
+import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProcessStatus {
 
