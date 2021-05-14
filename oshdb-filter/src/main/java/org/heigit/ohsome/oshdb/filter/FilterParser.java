@@ -37,6 +37,17 @@ public class FilterParser {
    *           respective OSHDB counterparts.
    */
   public FilterParser(TagTranslator tt) {
+    this(tt, false);
+  }
+
+  /**
+   * Creates a new parser for OSM entity filters.
+   *
+   * @param tt A tagtranslator object, used to transform OSM tags (e.g. "building=yes") to their
+   *           respective OSHDB counterparts.
+   * @param allowContributorFilters if true enables filtering by contributor/user id.
+   */
+  public FilterParser(TagTranslator tt, boolean allowContributorFilters) {
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
     final Parser<String> keystr = Patterns.regex("[a-zA-Z_0-9:-]+")
@@ -84,6 +95,8 @@ public class FilterParser {
         .map(ignored -> "*");
     final Parser<Void> area = Patterns.string("area").toScanner("area");
     final Parser<Void> length = Patterns.string("length").toScanner("length");
+    final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
+    final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 
     final Parser<FilterExpression> tagFilter = Parsers.sequence(
         string,
@@ -200,6 +213,17 @@ public class FilterParser {
         geometryFilterArea,
         geometryFilterLength);
 
+    final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(
+        changeset, colon, number
+    ).map(ChangesetIdFilterEquals::new);
+    Parser<ContributorUserIdFilterEquals> contributorUserIdFilter = Parsers.sequence(
+        contributor, colon, number
+    ).map(ContributorUserIdFilterEquals::new);
+    if (!allowContributorFilters) {
+      contributorUserIdFilter = contributorUserIdFilter.followedBy(
+          Parsers.fail("contributor user id filter not enabled"));
+    }
+
     final Parser<FilterExpression> filter = Parsers.or(
         tagFilter,
         multiTagFilter,
@@ -210,7 +234,9 @@ public class FilterParser {
         rangeIdFilter,
         typeFilter,
         geometryTypeFilter,
-        geometryFilter);
+        geometryFilter,
+        changesetIdFilter,
+        contributorUserIdFilter);
 
     final Parser<Void> parensStart = Patterns.string("(").toScanner("(").followedBy(whitespace);
     final Parser<Void> parensEnd = whitespace.followedBy(Patterns.string(")").toScanner(")"));
