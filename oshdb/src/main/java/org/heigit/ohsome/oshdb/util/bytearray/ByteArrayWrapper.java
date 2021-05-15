@@ -5,14 +5,6 @@ import java.util.Arrays;
 
 public class ByteArrayWrapper {
 
-  public static class InvalidProtocolBufferException extends IOException {
-    private static final long serialVersionUID = 1L;
-
-    public InvalidProtocolBufferException(final String description) {
-      super(description);
-    }
-  }
-
   protected final byte[] buffer;
   private final int offset;
   private final int bufferSize;
@@ -31,7 +23,7 @@ public class ByteArrayWrapper {
    *
    * @param buffer The buffer to be wrapped
    * @param offset The offset within the buffer
-   * @param len    The length of bytes which should be included
+   * @param len The length of bytes which should be included
    */
   public ByteArrayWrapper(final byte[] buffer, final int offset, final int len) {
     this.buffer = buffer;
@@ -62,10 +54,9 @@ public class ByteArrayWrapper {
 
   /**
    * Read an {@code sint32} field value from the stream.
-   *
    */
   public int readS32() throws IOException {
-    return decodeZigZag32(readRawVarint32());
+    return decodeZigZag32(readU32());
   }
 
   public int readS32Delta(int last) throws IOException {
@@ -75,150 +66,58 @@ public class ByteArrayWrapper {
   /**
    * Read a {@code uint32} field value from the stream.
    */
-  public int readU32() throws IOException {
-    return readRawVarint32();
+  public int readU32() {
+    int b = buffer[bufferPos++];
+    if (b >= 0) {
+      return b;
+    }
+
+    int value = b & 0x7F;
+    var i = 7;
+    while (((b = buffer[bufferPos++]) & 0x80) != 0) {
+      value |= (b & 0x7F) << i;
+      i += 7;
+    }
+    return value | b << i;
   }
 
   /**
    * Read an {@code sint64} field value from the stream.
    */
-  public long readS64() throws IOException {
-    return decodeZigZag64(readRawVarint64());
+  public long readS64() {
+    return decodeZigZag64(readU64());
   }
 
-  public long readS64Delta(long last) throws IOException {
+  public long readS64Delta(long last) {
     return readS64() + last;
   }
 
   /**
    * Read a {@code uint64} field value from the stream.
    */
-  public long readU64() throws IOException {
-    return readRawVarint64();
+  public long readU64() {
+    long b = buffer[bufferPos++];
+    if (b >= 0) {
+      return b;
+    }
+    long value = b & 0x7F;
+    var i = 7;
+    while (((b = buffer[bufferPos++]) & 0x80) != 0) {
+      value |= (b & 0x7F) << i;
+      i += 7;
+    }
+    return value | b << i;
   }
 
-  public long readU64Delta(long last) throws IOException {
+  public long readU64Delta(long last) {
     return readU64() + last;
-  }
-
-  /**
-   * Read a raw Varint from the stream. If larger than 32 bits, discard the upper bits.
-   */
-  public int readRawVarint32() throws IOException {
-    // See implementation notes for readRawVarint64
-    fastpath: {
-      int pos = bufferPos;
-
-      if (bufferSize == pos) {
-        break fastpath;
-      }
-
-      final byte[] buffer = this.buffer;
-      int x;
-      if ((x = buffer[pos++]) >= 0) {
-        bufferPos = pos;
-        return x;
-      } else if (bufferSize - pos < 9) {
-        break fastpath;
-      } else if ((x ^= buffer[pos++] << 7) < 0L) {
-        x ^= ~0L << 7;
-      } else if ((x ^= buffer[pos++] << 14) >= 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14;
-      } else if ((x ^= buffer[pos++] << 21) < 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21;
-      } else {
-        int y = buffer[pos++];
-        x ^= y << 28;
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28;
-        if (y < 0 && buffer[pos++] < 0 && buffer[pos++] < 0 && buffer[pos++] < 0
-            && buffer[pos++] < 0 && buffer[pos++] < 0) {
-          break fastpath; // Will throw malformedVarint()
-        }
-      }
-      bufferPos = pos;
-      return x;
-    }
-    return (int) readRawVarint64SlowPath();
-  }
-
-  /** Read a raw Varint from the stream. */
-  public long readRawVarint64() throws IOException {
-    // Implementation notes:
-    // Optimized for one-byte values, expected to be common.
-    // The particular code below was selected from various candidates
-    // empirically, by winning VarintBenchmark.
-    // Sign extension of (signed) Java bytes is usually a nuisance, but
-    // we exploit it here to more easily obtain the sign of bytes read.
-    // Instead of cleaning up the sign extension bits by masking eagerly,
-    // we delay until we find the final (positive) byte, when we clear all
-    // accumulated bits with one xor. We depend on javac to constant fold.
-    fastpath: {
-      int pos = bufferPos;
-
-      if (bufferSize == pos) {
-        break fastpath;
-      }
-
-      final byte[] buffer = this.buffer;
-      long x;
-      int y;
-      if ((y = buffer[pos++]) >= 0) {
-        bufferPos = pos;
-        return y;
-      } else if (bufferSize - pos < 9) {
-        break fastpath;
-      } else if ((x = y ^ buffer[pos++] << 7) < 0L) {
-        x ^= ~0L << 7;
-      } else if ((x ^= buffer[pos++] << 14) >= 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14;
-      } else if ((x ^= buffer[pos++] << 21) < 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21;
-      } else if ((x ^= (long) buffer[pos++] << 28) >= 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28;
-      } else if ((x ^= (long) buffer[pos++] << 35) < 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35;
-      } else if ((x ^= (long) buffer[pos++] << 42) >= 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42;
-      } else if ((x ^= (long) buffer[pos++] << 49) < 0L) {
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42
-            ^ ~0L << 49;
-      } else {
-        x ^= (long) buffer[pos++] << 56;
-        x ^= ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42
-            ^ ~0L << 49 ^ ~0L << 56;
-        if (x < 0L && buffer[pos++] < 0L) {
-          break fastpath; // Will throw malformedVarint()
-        }
-      }
-      bufferPos = pos;
-      return x;
-    }
-    return readRawVarint64SlowPath();
-  }
-
-  /** Variant of readRawVarint64 for when uncomfortably close to the limit. */
-  /* Visible for testing */
-  long readRawVarint64SlowPath() throws IOException {
-    long result = 0;
-    for (int shift = 0; shift < 64; shift += 7) {
-      final byte b = readRawByte();
-      result |= (long) (b & 0x7F) << shift;
-      if ((b & 0x80) == 0) {
-        return result;
-      }
-    }
-    throw malformedVarint();
   }
 
   /**
    * Read one byte from the input.
    *
-   * @throws InvalidProtocolBufferException The end of the stream or the current limit was reached.
    */
-  public byte readRawByte() throws IOException {
-    if (bufferPos == bufferSize) {
-      throw truncatedMessage();
-    }
+  public byte readRawByte() {
     return buffer[bufferPos++];
   }
 
@@ -227,7 +126,7 @@ public class ByteArrayWrapper {
    *
    * @param size Number of bytes to read.
    */
-  public byte[] readByteArray(int size) throws IOException {
+  public byte[] readByteArray(int size) {
     if (size <= this.bufferSize - this.bufferPos && size > 0) {
       byte[] result = Arrays.copyOfRange(this.buffer, this.bufferPos, this.bufferPos + size);
       this.bufferPos += size;
@@ -242,10 +141,10 @@ public class ByteArrayWrapper {
    * to be varint encoded, thus always taking 10 bytes on the wire.)
    *
    * @param n An unsigned 32-bit integer, stored in a signed int because Java has no explicit
-   *          unsigned support.
+   *        unsigned support.
    * @return A signed 32-bit integer.
    */
-  public static int decodeZigZag32(final int n) {
+  private static int decodeZigZag32(final int n) {
     return n >>> 1 ^ -(n & 1);
   }
 
@@ -255,22 +154,10 @@ public class ByteArrayWrapper {
    * to be varint encoded, thus always taking 10 bytes on the wire.)
    *
    * @param n An unsigned 64-bit integer, stored in a signed int because Java has no explicit
-   *          unsigned support.
+   *        unsigned support.
    * @return A signed 64-bit integer.
    */
-  public static long decodeZigZag64(final long n) {
+  private static long decodeZigZag64(final long n) {
     return n >>> 1 ^ -(n & 1);
-  }
-
-  static InvalidProtocolBufferException malformedVarint() {
-    return new InvalidProtocolBufferException("CodedInputStream encountered a malformed varint.");
-  }
-
-  static InvalidProtocolBufferException truncatedMessage() {
-    return new InvalidProtocolBufferException(
-        "While parsing a protocol message, the input ended unexpectedly "
-            + "in the middle of a field.  This could mean either than the "
-            + "input has been truncated or that an embedded message "
-            + "misreported its own length.");
   }
 }

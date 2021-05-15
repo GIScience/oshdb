@@ -9,7 +9,6 @@ import org.junit.Test;
 
 public class ByteArrayOutputWrapperTest {
 
-
   @Test
   public void testWriteU32() throws IOException {
     var bao = new ByteArrayOutputWrapper(1024);
@@ -21,6 +20,17 @@ public class ByteArrayOutputWrapperTest {
     assertWriteU32(bao, bytes(0xff, 0x01), 255);
     assertWriteU32(bao, bytes(0xa2, 0x74), 14882);
     assertWriteU32(bao, bytes(0xff, 0xff, 0xff, 0xff, 0x07), Integer.MAX_VALUE);
+  }
+
+  @Test
+  public void testReadU32() throws IOException {
+    assertReadU32(bytes(0x00), 0);
+    assertReadU32(bytes(0x01), 1);
+    assertReadU32(bytes(0x7f), 127);
+    assertReadU32(bytes(0x80, 0x01), 128);
+    assertReadU32(bytes(0xff, 0x01), 255);
+    assertReadU32(bytes(0xa2, 0x74), 14882);
+    assertReadU32(bytes(0xff, 0xff, 0xff, 0xff, 0x07), Integer.MAX_VALUE);
   }
 
   @Test
@@ -43,6 +53,23 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
+  public void testReadS32() throws IOException {
+    assertReadS32(bytes(0x00), 0);
+    assertReadS32(bytes(0x01), -1);
+    assertReadS32(bytes(0x02), 1);
+    assertReadS32(bytes(0xfe, 0x01), 127);
+    assertReadS32(bytes(0xfd, 0x01), -127);
+    assertReadS32(bytes(0x80, 0x02), 128);
+    assertReadS32(bytes(0xff, 0x01), -128);
+    assertReadS32(bytes(0xfe, 0x03), 255);
+    assertReadS32(bytes(0xfd, 0x03), -255);
+    assertReadS32(bytes(0xc4, 0xe8, 0x01), 14882);
+    assertReadS32(bytes(0xc3, 0xe8, 0x01), -14882);
+    assertReadS32(bytes(0xfe, 0xff, 0xff, 0xff, 0x0f), Integer.MAX_VALUE);
+    assertReadS32(bytes(0xff, 0xff, 0xff, 0xff, 0x0f), Integer.MIN_VALUE);
+  }
+
+  @Test
   public void testWriteU64() throws IOException {
     var bao = new ByteArrayOutputWrapper(1024);
 
@@ -52,9 +79,19 @@ public class ByteArrayOutputWrapperTest {
     assertWriteU64(bao, bytes(0x80, 0x01), 128);
     assertWriteU64(bao, bytes(0xff, 0x01), 255);
     assertWriteU64(bao, bytes(0xa2, 0x74), 14882);
-
     assertWriteU64(bao, bytes(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f),
         Long.MAX_VALUE);
+  }
+
+  @Test
+  public void testReadU64() throws IOException {
+    assertReadU64(bytes(0x00), 0);
+    assertReadU64(bytes(0x01), 1);
+    assertReadU64(bytes(0x7f), 127);
+    assertReadU64(bytes(0x80, 0x01), 128);
+    assertReadU64(bytes(0xff, 0x01), 255);
+    assertReadU64(bytes(0xa2, 0x74), 14882);
+    assertReadU64(bytes(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f), Long.MAX_VALUE);
   }
 
   @Test
@@ -74,13 +111,32 @@ public class ByteArrayOutputWrapperTest {
     assertWriteS64(bao, bytes(0xc3, 0xe8, 0x01), -14882);
     assertWriteS64(bao, bytes(0xfe, 0xff, 0xff, 0xff, 0x0f), Integer.MAX_VALUE);
     assertWriteS64(bao, bytes(0xff, 0xff, 0xff, 0xff, 0x0f), Integer.MIN_VALUE);
-
     assertWriteS64(bao, bytes(0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01),
         Long.MAX_VALUE);
     assertWriteS64(bao, bytes(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01),
         Long.MIN_VALUE);
   }
 
+  @Test
+  public void testReadS64() throws IOException {
+    assertReadS64(bytes(0x00), 0);
+    assertReadS64(bytes(0x01), -1);
+    assertReadS64(bytes(0x02), 1);
+    assertReadS64(bytes(0xfe, 0x01), 127);
+    assertReadS64(bytes(0xfd, 0x01), -127);
+    assertReadS64(bytes(0x80, 0x02), 128);
+    assertReadS64(bytes(0xff, 0x01), -128);
+    assertReadS64(bytes(0xfe, 0x03), 255);
+    assertReadS64(bytes(0xfd, 0x03), -255);
+    assertReadS64(bytes(0xc4, 0xe8, 0x01), 14882);
+    assertReadS64(bytes(0xc3, 0xe8, 0x01), -14882);
+    assertReadS64(bytes(0xfe, 0xff, 0xff, 0xff, 0x0f), Integer.MAX_VALUE);
+    assertReadS64(bytes(0xff, 0xff, 0xff, 0xff, 0x0f), Integer.MIN_VALUE);
+    assertReadS64(bytes(0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01),
+        Long.MAX_VALUE);
+    assertReadS64(bytes(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01),
+        Long.MIN_VALUE);
+  }
 
   private void assertWriteU32(ByteArrayOutputWrapper bao, byte[] bs, int v) throws IOException {
     bao.reset();
@@ -106,14 +162,32 @@ public class ByteArrayOutputWrapperTest {
   private void assertWriteS64(ByteArrayOutputWrapper bao, byte[] bs, long v) throws IOException {
     bao.reset();
     bao.writeS64(v);
-
-    System.out.println("v = " + v);
-    for (int i = 0; i < bao.length(); i++) {
-      System.out.println(i + ": " + Integer.toHexString(bao.array()[i]));
-    }
-
     assertEquals(bs.length, bao.length());
     assertArrayEquals(bs, Arrays.copyOf(bao.array(), bs.length));
+  }
+
+  private void assertReadU32(byte[] bytes, int expect) throws IOException {
+    var baw = new ByteArrayWrapper(bytes, 0, bytes.length);
+    var actual = baw.readU32();
+    assertEquals(expect, actual);
+  }
+
+  private void assertReadS32(byte[] bytes, int expect) throws IOException {
+    var baw = new ByteArrayWrapper(bytes, 0, bytes.length);
+    var actual = baw.readS32();
+    assertEquals(expect, actual);
+  }
+
+  private void assertReadU64(byte[] bytes, long expect) throws IOException {
+    var baw = new ByteArrayWrapper(bytes, 0, bytes.length);
+    var actual = baw.readU64();
+    assertEquals(expect, actual);
+  }
+
+  private void assertReadS64(byte[] bytes, long expect) throws IOException {
+    var baw = new ByteArrayWrapper(bytes, 0, bytes.length);
+    var actual = baw.readS64();
+    assertEquals(expect, actual);
   }
 
   private static byte[] bytes(int... b) {

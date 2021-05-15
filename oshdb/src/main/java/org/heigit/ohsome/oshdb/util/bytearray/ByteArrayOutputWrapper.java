@@ -14,7 +14,7 @@ public class ByteArrayOutputWrapper {
     this(256);
   }
 
-  public void writeU32(int value) throws IOException {
+  public void writeU32(int value) {
     while ((value & ~0x7F) != 0) {
       bos.write(value & 0x7F | 0x80);
       value >>>= 7;
@@ -31,7 +31,7 @@ public class ByteArrayOutputWrapper {
     return value;
   }
 
-  public void writeU64(long value) throws IOException {
+  public void writeU64(long value) {
     while (((int) value & ~0x7FL) != 0) {
       bos.write((int) value & 0x7F | 0x80);
       value >>>= 7;
@@ -62,7 +62,7 @@ public class ByteArrayOutputWrapper {
     return value;
   }
 
-  public void writeByte(int value) throws IOException {
+  public void writeByte(int value) {
     bos.write(value);
   }
 
@@ -70,7 +70,7 @@ public class ByteArrayOutputWrapper {
     bos.write(value);
   }
 
-  public void writeByteArray(final byte[] value, int offset, int length) throws IOException {
+  public void writeByteArray(final byte[] value, int offset, int length) {
     bos.write(value, offset, length);
   }
 
@@ -86,15 +86,15 @@ public class ByteArrayOutputWrapper {
     bos.reset();
   }
 
-  public int length() throws IOException {
+  public int length() {
     return bos.length();
   }
 
-  public byte[] array() throws IOException {
+  public byte[] array() {
     return bos.array();
   }
 
-  public OSHDBByteArrayOutputStream getByteArrayStream() throws IOException {
+  public OSHDBByteArrayOutputStream getByteArrayStream() {
     return bos;
   }
 }
