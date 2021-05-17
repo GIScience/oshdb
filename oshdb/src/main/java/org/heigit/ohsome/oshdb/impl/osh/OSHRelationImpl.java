@@ -32,7 +32,6 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
 /**
  * An implementation of the {@link OSHRelation} interface.
- *
  */
 public class OSHRelationImpl extends OSHEntityImpl
     implements OSHRelation, Iterable<OSMRelation>, Serializable {

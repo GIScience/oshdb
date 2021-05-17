@@ -29,7 +29,6 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
 /**
  * An implementation of the {@link OSHWay} interface.
- *
  */
 public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay>, Serializable {
 

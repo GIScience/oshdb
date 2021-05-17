@@ -4,7 +4,6 @@ import java.io.IOException;
 
 /**
  * A wrapper around {@link OSHDBByteArrayOutputStream} for extending varint encoding methods.
- *
  */
 public class ByteArrayOutputWrapper {
 

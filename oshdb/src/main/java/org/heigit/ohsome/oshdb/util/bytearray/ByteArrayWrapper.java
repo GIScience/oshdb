@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 /**
  * An wrapper class around an byte array, offering various read methods.
- *
  */
 public class ByteArrayWrapper {
 

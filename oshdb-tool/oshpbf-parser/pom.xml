@@ -13,6 +13,10 @@
   <artifactId>oshpbf-parser</artifactId>
   <description>The PBF-Parser that transfers osh.pbf-files into database Objects.</description>
 
+  <properties>
+    <osmpbf.version>1.5.0</osmpbf.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -20,11 +24,11 @@
       <version>${project.version}</version>
     </dependency>
 
-        <dependency>
-            <groupId>org.openstreetmap.pbf</groupId>
-            <artifactId>osmpbf</artifactId>
-            <version>1.5.0</version>
-        </dependency>
+    <dependency>
+        <groupId>org.openstreetmap.pbf</groupId>
+        <artifactId>osmpbf</artifactId>
+        <version>${osmpbf.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>io.reactivex.rxjava2</groupId>

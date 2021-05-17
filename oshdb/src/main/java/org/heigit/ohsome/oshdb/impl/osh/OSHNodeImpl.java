@@ -19,7 +19,6 @@ import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
 /**
  * An implementation of the {@link OSHNode} interface.
- *
  */
 public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMNode>, Serializable {
 
