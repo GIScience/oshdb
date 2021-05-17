@@ -5,12 +5,12 @@
 
   <parent>
     <groupId>org.heigit.ohsome</groupId>
-    <artifactId>oshdb-tool</artifactId>
+    <artifactId>oshdb-parent</artifactId>
     <version>0.7.0-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
 
-  <artifactId>oshpbf-parser</artifactId>
+  <artifactId>oshdb-tool-oshpbf-parser</artifactId>
   <description>The PBF-Parser that transfers osh.pbf-files into database Objects.</description>
 
   <properties>
