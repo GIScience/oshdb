@@ -10,7 +10,7 @@
     <relativePath>../</relativePath>
   </parent>
 
-  <artifactId>oshdb-tool-oshpbf-parser</artifactId>
+  <artifactId>oshdb-oshpbf-parser</artifactId>
   <description>The PBF-Parser that transfers osh.pbf-files into database Objects.</description>
 
   <properties>

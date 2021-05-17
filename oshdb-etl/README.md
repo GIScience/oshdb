@@ -16,7 +16,7 @@ that you are in the base directory of the downloaded
 
 
 ```bash
-cd oshdb-tool/etl
+cd oshdb-etl
 mvn compile
 mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.extract.Extract" -Dexec.args="--pbf /absolute/path/to/file.osh.pbf -tmpDir ./tmpFiles --timevalidity_from YYYY-MM-DD"
 ```
@@ -90,7 +90,7 @@ Apache website.
    the same ignite-config as in the previous step (note that the file extension .mv.db
    has to be omitted):<br>
    ```bash
-   cd oshdb-tool/etl
+   cd oshdb-etl
    mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.util.OSHDB2Ignite" -Dexec.args="-ignite ignite-config.xml -db /absolute/path/to/your-H2-database"
    ```
 
