@@ -1,9 +1,10 @@
 package org.heigit.ohsome.oshdb.grid;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.Iterables;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
@@ -18,80 +19,99 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.Test;
 
+/**
+ * General {@link GridOSHRelations} tests case.
+ *
+ */
 public class GridOSHRelationsTest {
 
-  static OSHNode buildOSHNode(List<OSMNode> versions) {
-    try {
-      return OSHNodeImpl.build(versions);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
-  static OSHWay buildOSHWay(List<OSMWay> versions, List<OSHNode> nodes) {
-    try {
-      return OSHWayImpl.build(versions, nodes);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
   @Test
-  public void testToString() throws IOException {
-    OSHNode node100 = buildOSHNode(
-        Arrays.asList(new OSMNode(100L, 1, 1L, 0L, 123, new int[] {1, 2}, 494094984L, 86809727L)));
-    OSHNode node102 = buildOSHNode(
-        Arrays.asList(new OSMNode(102L, 1, 1L, 0L, 123, new int[] {2, 1}, 494094984L, 86809727L)));
-    OSHNode node104 = buildOSHNode(
-        Arrays.asList(new OSMNode(104L, 1, 1L, 0L, 123, new int[] {2, 4}, 494094984L, 86809727L)));
+  public void test() throws IOException {
+    var node100 = buildOSHNode(node(100L, 1, 1L, 0L, 123, tags(1, 2), 494094984L, 86809727L));
+    var node102 = buildOSHNode(node(102L, 1, 1L, 0L, 123, tags(2, 1), 494094984L, 86809727L));
+    var node104 = buildOSHNode(node(104L, 1, 1L, 0L, 123, tags(2, 4), 494094984L, 86809727L));
 
-    OSHWay way200 =
-        buildOSHWay(
-            Arrays
-                .asList(
-                    new OSMWay(200, 1, 3333L, 4444L, 23, new int[] {1, 2},
-                        new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),
-                            new OSMMember(104, OSMType.NODE, 0)})),
-            Arrays.asList(node100, node104));
-    OSHWay way202 =
-        buildOSHWay(
-            Arrays
-                .asList(
-                    new OSMWay(202, 1, 3333L, 4444L, 23, new int[] {1, 2},
-                        new OSMMember[] {new OSMMember(100, OSMType.NODE, 0),
-                            new OSMMember(102, OSMType.NODE, 0)})),
-            Arrays.asList(node100, node102));
+    var way200 = buildOSHWay(asList(node100, node104),
+            way(200, 1, 3333L, 4444L, 23, tags(1, 2), mn(100, 0), mn(104, 0)));
+    var way202 = buildOSHWay(asList(node100, node102),
+            way(202, 1, 3333L, 4444L, 23, tags(1, 2), mn(100, 0), mn(102, 0)));
 
-    OSHRelation relation300 = OSHRelationImpl.build(Arrays.asList(
-        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[] {},
-            new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null),
-                new OSMMember(102, OSMType.NODE, 0, null)}),
-        new OSMRelation(300, 2, 3333L, 4444L, 23, new int[] {1, 2},
-            new OSMMember[] {new OSMMember(100, OSMType.NODE, 0, null),
-                new OSMMember(102, OSMType.NODE, 0, null)})),
-        Arrays.asList(node100, node102), Arrays.asList());
+    var relation300 = buildOSHRelation(asList(node100, node102), asList(),
+        rel(300, 1, 3333L, 4444L, 23, tags(), mn(100, 0), mn(102, 0)),
+        rel(300, 2, 3333L, 4444L, 23, tags(1, 2), mn(100, 0), mn(102, 0)));
 
-    OSHRelation relation301 = OSHRelationImpl.build(Arrays.asList(
-        new OSMRelation(301, 1, 3333L, 4444L, 23, new int[] {},
-            new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null),
-                new OSMMember(202, OSMType.WAY, 1, null)}),
-        new OSMRelation(301, 2, 3333L, 4444L, 23, new int[] {1, 2},
-            new OSMMember[] {new OSMMember(200, OSMType.WAY, 1, null),
-                new OSMMember(202, OSMType.WAY, 1, null)})),
-        Arrays.asList(), Arrays.asList(way200, way202));
+    var relation301 = buildOSHRelation(asList(), asList(way200, way202),
+        rel(301, 1, 3333L, 4444L, 23, tags(), mw(200, 1), mw(202, 1)),
+        rel(301, 2, 3333L, 4444L, 23, tags(1, 2), mw(200, 1), mw(202, 1)));
 
     long cellId = 2;
     int cellLevel = 2;
-    long baseId = 1234;
+    var grid = GridOSHRelations.compact(cellId, cellLevel, 0, 0, 0, 0,
+        asList(relation300, relation301));
 
-    GridOSHRelations instance = GridOSHRelations.compact(cellId, cellLevel, baseId, 0, 0, 0,
-        Arrays.asList(relation300, relation301));
-
-    String expResult =
+    var expResult =
         "Grid-Cell of OSHRelations ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
-    String result = instance.toString();
-    assertEquals(expResult, result);
+    assertEquals(expResult, grid.toString());
+    assertEquals(cellId, grid.getId());
+    assertEquals(cellLevel, grid.getLevel());
+    assertEquals(2, Iterables.size(grid.getEntities()));
+    var itrExpected = asList(relation300, relation301).iterator();
+    var itrActual = grid.getEntities().iterator();
+    while (itrExpected.hasNext()) {
+      assertEquals(true, itrActual.hasNext());
+      assertEntityEquals(itrExpected.next(), (OSHRelation) itrActual.next());
+    }
+    assertEquals(false, itrActual.hasNext());
+  }
+
+  private static OSMNode node(long id, int version, long timestamp, long changeset,
+      int userId, int[] tags, long longitude, long latitude) {
+    return new OSMNode(id, version, timestamp, changeset, userId, tags, longitude, latitude);
+  }
+
+  private static OSHNode buildOSHNode(OSMNode... versions) throws IOException {
+    return OSHNodeImpl.build(asList(versions));
+  }
+
+  private static OSMWay way(long id, int version, long timestamp, long changeset,
+      int userId, int[] tags, OSMMember... refs) {
+    return new OSMWay(id, version, timestamp, changeset, userId, tags, refs);
+  }
+
+  private static OSHWay buildOSHWay(List<OSHNode> nodes, OSMWay... versions) throws IOException {
+    return OSHWayImpl.build(asList(versions), nodes);
+  }
+
+  private static OSMRelation rel(long id, int version, long timestamp, long changeset,
+      int userId, int[] tags, OSMMember... refs) {
+    return new OSMRelation(id, version, timestamp, changeset, userId, tags, refs);
+  }
+
+  private static OSHRelation buildOSHRelation(List<OSHNode> nodes, List<OSHWay> ways,
+      OSMRelation... versions) throws IOException {
+    return OSHRelationImpl.build(asList(versions), nodes, ways);
+  }
+
+  private static void assertEntityEquals(OSHRelation a, OSHRelation b) {
+    assertEquals(a.getId(), b.getId());
+    var aitr = a.getVersions().iterator();
+    var bitr = b.getVersions().iterator();
+    while (aitr.hasNext()) {
+      assertEquals(true, bitr.hasNext());
+      assertEquals(aitr.next(), bitr.next());
+    }
+    assertEquals(false, bitr.hasNext());
+  }
+
+  private static int[] tags(int... kvs) {
+    return kvs;
+  }
+
+  private static OSMMember mn(long id, int role) {
+    return new OSMMember(id, OSMType.NODE, role);
+  }
+
+  private static OSMMember mw(long id, int role) {
+    return new OSMMember(id, OSMType.WAY, role);
   }
 }

@@ -30,6 +30,9 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
+/**
+ * An implementation of the {@link OSHRelation} interface.
+ */
 public class OSHRelationImpl extends OSHEntityImpl
     implements OSHRelation, Iterable<OSMRelation>, Serializable {
 
@@ -53,8 +56,7 @@ public class OSHRelationImpl extends OSHEntityImpl
   private final int wayDataOffset;
   private final int wayDataLength;
 
-  public static OSHRelationImpl instance(final byte[] data, final int offset, final int length)
-      throws IOException {
+  public static OSHRelationImpl instance(final byte[] data, final int offset, final int length) {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
 
@@ -63,7 +65,7 @@ public class OSHRelationImpl extends OSHEntityImpl
    */
   public static OSHRelationImpl instance(final byte[] data, final int offset, final int length,
       final long baseId, final long baseTimestamp, final long baseLongitude,
-      final long baseLatitude) throws IOException {
+      final long baseLatitude) {
 
     final ByteArrayWrapper wrapper = ByteArrayWrapper.newInstance(data, offset, length);
     final byte header = wrapper.readRawByte();
@@ -193,80 +195,76 @@ public class OSHRelationImpl extends OSHEntityImpl
           if (!hasNext()) {
             throw new NoSuchElementException();
           }
-          try {
-            version = wrapper.readS32() + version;
-            timestamp = wrapper.readS64() + timestamp;
-            changeset = wrapper.readS64() + changeset;
+          version = wrapper.readS32() + version;
+          timestamp = wrapper.readS64() + timestamp;
+          changeset = wrapper.readS64() + changeset;
 
-            byte changed = wrapper.readRawByte();
+          byte changed = wrapper.readRawByte();
 
-            if ((changed & CHANGED_USER_ID) != 0) {
-              userId = wrapper.readS32() + userId;
-            }
-
-            if ((changed & CHANGED_TAGS) != 0) {
-              int size = wrapper.readU32();
-              keyValues = new int[size];
-              for (int i = 0; i < size;) {
-                keyValues[i++] = wrapper.readU32();
-                keyValues[i++] = wrapper.readU32();
-              }
-            }
-
-            if ((changed & CHANGED_MEMBERS) != 0) {
-              int size = wrapper.readU32();
-              members = new OSMMember[size];
-              long memberId = 0;
-              int memberOffset = 0;
-              OSMType memberType;
-              int memberRole = 0;
-              OSHEntity member = null;
-              for (int i = 0; i < size; i++) {
-                memberType = OSMType.fromInt(wrapper.readU32());
-                switch (memberType) {
-                  case NODE: {
-                    memberOffset = wrapper.readU32();
-                    if (memberOffset > 0) {
-                      member = nodes.get(memberOffset - 1);
-                      memberId = member.getId();
-
-                    } else {
-                      member = null;
-                      memberId = wrapper.readS64() + memberId;
-                    }
-                    break;
-                  }
-                  case WAY: {
-                    memberOffset = wrapper.readU32();
-                    if (memberOffset > 0) {
-                      member = ways.get(memberOffset - 1);
-                      memberId = member.getId();
-
-                    } else {
-                      member = null;
-                      memberId = wrapper.readS64() + memberId;
-                    }
-                    break;
-                  }
-                  case RELATION: {
-                    memberId = wrapper.readS64() + memberId;
-                    break;
-                  }
-                  default: {
-                    memberId = wrapper.readS64() + memberId;
-                    break;
-                  }
-                }
-
-                memberRole = wrapper.readU32();
-                members[i] = new OSMMember(memberId, memberType, memberRole, member);
-              }
-            }
-            return new OSMRelation(id, version, baseTimestamp + timestamp,
-                changeset, userId, keyValues, members);
-          } catch (IOException e) {
-            throw new UncheckedIOException(e);
+          if ((changed & CHANGED_USER_ID) != 0) {
+            userId = wrapper.readS32() + userId;
           }
+
+          if ((changed & CHANGED_TAGS) != 0) {
+            var size = wrapper.readU32();
+            keyValues = new int[size];
+            for (var i = 0; i < size; i += 2) {
+              keyValues[i] = wrapper.readU32();
+              keyValues[i + 1] = wrapper.readU32();
+            }
+          }
+
+          if ((changed & CHANGED_MEMBERS) != 0) {
+            int size = wrapper.readU32();
+            members = new OSMMember[size];
+            var memberId = 0L;
+            var memberOffset = 0;
+            OSMType memberType;
+            var memberRole = 0;
+            OSHEntity member = null;
+            for (int i = 0; i < size; i++) {
+              memberType = OSMType.fromInt(wrapper.readU32());
+              switch (memberType) {
+                case NODE: {
+                  memberOffset = wrapper.readU32();
+                  if (memberOffset > 0) {
+                    member = nodes.get(memberOffset - 1);
+                    memberId = member.getId();
+
+                  } else {
+                    member = null;
+                    memberId = wrapper.readS64() + memberId;
+                  }
+                  break;
+                }
+                case WAY: {
+                  memberOffset = wrapper.readU32();
+                  if (memberOffset > 0) {
+                    member = ways.get(memberOffset - 1);
+                    memberId = member.getId();
+
+                  } else {
+                    member = null;
+                    memberId = wrapper.readS64() + memberId;
+                  }
+                  break;
+                }
+                case RELATION: {
+                  memberId = wrapper.readS64() + memberId;
+                  break;
+                }
+                default: {
+                  memberId = wrapper.readS64() + memberId;
+                  break;
+                }
+              }
+
+              memberRole = wrapper.readU32();
+              members[i] = new OSMMember(memberId, memberType, memberRole, member);
+            }
+          }
+          return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId,
+              keyValues, members);
         }
       };
     } catch (IOException e) {
@@ -330,7 +328,7 @@ public class OSHRelationImpl extends OSHEntityImpl
       final long baseLongitude, final long baseLatitude) throws IOException {
     Collections.sort(versions, Collections.reverseOrder());
 
-    OSMMember[] lastMembers = new OSMMember[0];
+    var lastMembers = new OSMMember[0];
 
     long minLon = Long.MAX_VALUE;
     long maxLon = Long.MIN_VALUE;
@@ -505,10 +503,6 @@ public class OSHRelationImpl extends OSHEntityImpl
     return ByteBuffer.wrap(record.array(), 0, record.length());
   }
 
-  public void writeTo(ByteArrayOutputWrapper out) throws IOException {
-    out.writeByteArray(data, offset, length);
-  }
-
   private Object writeReplace() {
     return new SerializationProxy(this);
   }
@@ -545,12 +539,7 @@ public class OSHRelationImpl extends OSHEntityImpl
     }
 
     private Object readResolve() {
-      try {
-        return OSHRelationImpl.instance(data, 0, data.length);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      return OSHRelationImpl.instance(data, 0, data.length);
     }
   }
-
 }
