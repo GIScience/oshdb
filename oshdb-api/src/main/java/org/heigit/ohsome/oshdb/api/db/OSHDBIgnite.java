@@ -26,9 +26,9 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * Specifies which algorithm to use when running OSHDB queries on Ignite.
    *
    * <p>Available computation modes:
-   * <ul> 
-   *   <li>{@link #LOCAL_PEEK} (default) is good for small to medium sized areas 
-   *   <li>{@link #SCAN_QUERY} works best for large to global queries 
+   * <ul>
+   *   <li>{@link #LOCAL_PEEK} (default) is good for small to medium sized areas
+   *   <li>{@link #SCAN_QUERY} works best for large to global queries
    *   <li>{@link #AFFINITY_CALL} is useful for streaming queries
    * </ul>
    */
