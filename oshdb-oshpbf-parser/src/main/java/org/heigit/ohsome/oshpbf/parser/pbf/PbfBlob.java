@@ -91,7 +91,6 @@ public class PbfBlob {
         decompresser.inflate(buf2);
         assert decompresser.finished();
       } catch (DataFormatException e) {
-        e.printStackTrace();
         throw new Error(e);
       } finally {
         decompresser.end();
