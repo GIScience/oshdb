@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.filter;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -66,5 +67,23 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
         createTestOSMEntityNode(), gf.createPoint())));
     assertFalse(expression.applyOSMEntitySnapshot(new TestOSMEntitySnapshot(
         createTestOSMEntityNode(), gf.createLineString())));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  public void testChangesetId() {
+    FilterExpression expression = parser.parse("changeset:42");
+    expression.applyOSMEntitySnapshot(
+        new TestOSMEntitySnapshot(createTestOSMEntityNode(), gf.createPoint()));
+    fail();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  public void testContributorUserId() {
+    FilterExpression expression = (new FilterParser(tagTranslator, true)).parse("contributor:1");
+    expression.applyOSMEntitySnapshot(
+        new TestOSMEntitySnapshot(createTestOSMEntityNode(), gf.createPoint()));
+    fail();
   }
 }
