@@ -21,9 +21,13 @@ import org.locationtech.jts.geom.GeometryFactory;
  */
 public class ApplyOSMContributionTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
+  private final Geometry point = gf.createPoint();
+  private final Geometry line = gf.createLineString();
+  private final OSMEntity entity = createTestOSMEntityNode();
+  private static final Set<ContributionType> NO_TYPE = EnumSet.noneOf(ContributionType.class);
 
-  private class TestOSMContribution implements OSMContribution {
-    public static final String UNSUPPORTED_IN_TEST = "not supported for TestOSMEntitySnapshot";
+  private static class TestOSMContribution implements OSMContribution {
+    private static final String UNSUPPORTED_IN_TEST = "not supported for TestOSMEntitySnapshot";
     private final OSMEntity entityBefore;
     private final Geometry geometryBefore;
     private final OSMEntity entityAfter;
@@ -114,15 +118,39 @@ public class ApplyOSMContributionTest extends FilterTest {
   @Test
   public void testBasicFallback() {
     FilterExpression expression = parser.parse("geometry:point");
-    final Geometry point = gf.createPoint();
-    final Geometry line = gf.createLineString();
-    final OSMEntity entity = createTestOSMEntityNode();
-    final Set<ContributionType> noType = EnumSet.noneOf(ContributionType.class);
+    // expect true if either the "before" state …
     assertTrue(expression.applyOSMContribution(new TestOSMContribution(
-        entity, point, entity, line, 1L, 2, noType
+        entity, point, entity, line, 1L, 2, NO_TYPE
+    )));
+    //  … or the "after" state matches the filter
+    assertTrue(expression.applyOSMContribution(new TestOSMContribution(
+        entity, line, entity, point, 1L, 2, NO_TYPE
+    )));
+    // neither the before nor after geometries match the filter
+    assertFalse(expression.applyOSMContribution(new TestOSMContribution(
+        entity, line, entity, line, 1L, 2, NO_TYPE
+    )));
+  }
+
+  @Test
+  public void testChangesetId() {
+    FilterExpression expression = parser.parse("changeset:42");
+    assertFalse(expression.applyOSMContribution(new TestOSMContribution(
+        entity, point, entity, point, 1L, 1, NO_TYPE
+    )));
+    assertTrue(expression.applyOSMContribution(new TestOSMContribution(
+        entity, point, entity, point, 42L, 2, NO_TYPE
+    )));
+  }
+
+  @Test
+  public void testContributorUserId() {
+    FilterExpression expression = (new FilterParser(tagTranslator, true)).parse("contributor:1");
+    assertTrue(expression.applyOSMContribution(new TestOSMContribution(
+        entity, point, entity, point, 1L, 1, NO_TYPE
     )));
     assertFalse(expression.applyOSMContribution(new TestOSMContribution(
-        entity, line, entity, line, 1L, 2, noType
+        entity, point, entity, point, 1L, 2, NO_TYPE
     )));
   }
 }

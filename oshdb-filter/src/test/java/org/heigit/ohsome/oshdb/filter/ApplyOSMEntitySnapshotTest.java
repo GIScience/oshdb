@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.filter;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -17,8 +18,8 @@ import org.locationtech.jts.geom.GeometryFactory;
 public class ApplyOSMEntitySnapshotTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
 
-  private class TestOSMEntitySnapshot implements OSMEntitySnapshot {
-    public static final String UNSUPPORTED_IN_TEST = "not supported for TestOSMEntitySnapshot";
+  private static class TestOSMEntitySnapshot implements OSMEntitySnapshot {
+    private static final String UNSUPPORTED_IN_TEST = "not supported for TestOSMEntitySnapshot";
     private final OSMEntity entity;
     private final Geometry geometry;
 
@@ -63,5 +64,7 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression.applyOSMEntitySnapshot(new TestOSMEntitySnapshot(
         createTestOSMEntityNode(), gf.createPoint())));
+    assertFalse(expression.applyOSMEntitySnapshot(new TestOSMEntitySnapshot(
+        createTestOSMEntityNode(), gf.createLineString())));
   }
 }
