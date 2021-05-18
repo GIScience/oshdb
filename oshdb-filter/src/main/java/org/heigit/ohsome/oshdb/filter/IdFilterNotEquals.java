@@ -14,11 +14,6 @@ public class IdFilterNotEquals implements Filter {
     this.id = id;
   }
 
-  /**
-   * Returns the OSM type of this filter.
-   *
-   * @return the OSM type of this filter.
-   */
   @Contract(pure = true)
   public long getId() {
     return this.id;

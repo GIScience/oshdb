@@ -31,11 +31,6 @@ public class ContributorUserIdFilterEquals extends NegatableFilter {
     this.userId = userId;
   }
 
-  /**
-   * Returns the OSM type of this filter.
-   *
-   * @return the OSM type of this filter.
-   */
   @Contract(pure = true)
   public long getUserId() {
     return this.userId;

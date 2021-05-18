@@ -31,11 +31,6 @@ public class ChangesetIdFilterEquals extends NegatableFilter {
     this.changesetId = changesetId;
   }
 
-  /**
-   * Returns the OSM type of this filter.
-   *
-   * @return the OSM type of this filter.
-   */
   @Contract(pure = true)
   public long getChangesetId() {
     return this.changesetId;
