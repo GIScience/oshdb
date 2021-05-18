@@ -200,4 +200,16 @@ public class ApplyOSMTest extends FilterTest {
     FilterExpression expression = parser.parse("length:(1..2)");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
   }
+
+  @Test
+  public void testChangesetId() throws IOException {
+    FilterExpression expression = parser.parse("changeset:42");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+  }
+
+  @Test
+  public void testContributorUserId() throws IOException {
+    FilterExpression expression = (new FilterParser(tagTranslator, true)).parse("contributor:1");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+  }
 }
