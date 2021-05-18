@@ -1,21 +1,21 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxLonLatCoordinates;
+
 import java.util.Comparator;
-import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 
 @SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class ZGrid {
-
-  public static OSHDBBoundingBox WORLD = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 180.0);
 
   private static final int DIMENSION = 2;
   private static long ZOOM_FACTOR = 1L << 56;
   private static long ID_MASK = 0x00FFFFFFFFFFFFFFL;
 
-  private static final long space = (long) (360.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+  private static final long space = (long) (360.0 * OSMCoordinates.GEOM_PRECISION_TO_LONG);
   private final int maxZoom;
-  private static final OSHDBBoundingBox zeroBoundingBox = new OSHDBBoundingBox(0, 0, 0, 0);
+  private static final OSHDBBoundingBox zeroBoundingBox = bboxLonLatCoordinates(0.0, 0.0, 0.0, 0.0);
 
   /**
    * Creates a {@code ZGrid} index based on maximal Zoom.
@@ -124,12 +124,12 @@ public class ZGrid {
 
     long[] xy = getXy(id);
 
-    final long minLon = denormalizeLon(xy[0] * cellWidth);
-    final long maxLon = minLon + cellWidth - 1;
-    final long minLat = denormalizeLat(xy[1] * cellWidth);
-    final long maxLat = minLat + cellWidth - 1;
+    final int minLon = (int) denormalizeLon(xy[0] * cellWidth);
+    final int maxLon = (int) (minLon + cellWidth - 1);
+    final int minLat = (int) denormalizeLat(xy[1] * cellWidth);
+    final int maxLat = (int) (minLat + cellWidth - 1);
 
-    return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
+    return OSHDBBoundingBox.bboxOSMCoordinates(minLon, minLat, maxLon, maxLat);
   }
 
   private static long[] getXy(long id) {
@@ -172,19 +172,19 @@ public class ZGrid {
   }
 
   private static long normalizeLon(long lon) {
-    return lon + (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lon + OSMCoordinates.toOSM(180.0);
   }
 
   private static long denormalizeLon(long lon) {
-    return lon - (long) (180.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lon - OSMCoordinates.toOSM(180.0);
   }
 
   private static long normalizeLat(long lat) {
-    return lat + (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lat + OSMCoordinates.toOSM(90.0);
   }
 
   private static long denormalizeLat(long lat) {
-    return lat - (long) (90.0 * OSHDB.GEOM_PRECISION_TO_LONG);
+    return lat - OSMCoordinates.toOSM(90.0);
   }
 
   private static boolean validateLon(long lon) {

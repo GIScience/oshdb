@@ -19,20 +19,15 @@ import org.junit.Test;
 public class GridOSHWaysTest {
 
   static OSHNode buildOSHNode(List<OSMNode> versions) {
-    try {
-      return OSHNodeImpl.build(versions);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
+    return OSHNodeImpl.build(versions);
   }
 
   OSHNode node100 = buildOSHNode(
-      Arrays.asList(new OSMNode(100L, 1, 1L, 0L, 123, new int[] {1, 2}, 494094984L, 86809727L)));
+      Arrays.asList(new OSMNode(100L, 1, 1L, 0L, 123, new int[] {1, 2}, 494094984, 86809727)));
   OSHNode node102 = buildOSHNode(
-      Arrays.asList(new OSMNode(102L, 1, 1L, 0L, 123, new int[] {2, 1}, 494094984L, 86809727L)));
+      Arrays.asList(new OSMNode(102L, 1, 1L, 0L, 123, new int[] {2, 1}, 494094984, 86809727)));
   OSHNode node104 = buildOSHNode(
-      Arrays.asList(new OSMNode(104L, 1, 1L, 0L, 123, new int[] {2, 4}, 494094984L, 86809727L)));
+      Arrays.asList(new OSMNode(104L, 1, 1L, 0L, 123, new int[] {2, 4}, 494094984, 86809727)));
 
   @Test
   public void testToString() throws IOException {

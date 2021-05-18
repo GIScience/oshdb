@@ -1,32 +1,34 @@
 package org.heigit.ohsome.oshdb;
 
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
+
 /**
  * Interface for spatially boundable objects, i.e. objects which have a bounding box.
  */
 public interface OSHDBBoundable {
 
-  long getMinLonLong();
+  int getMinLon();
 
-  long getMinLatLong();
+  int getMinLat();
 
-  long getMaxLonLong();
+  int getMaxLon();
 
-  long getMaxLatLong();
+  int getMaxLat();
 
-  default double getMinLon() {
-    return getMinLonLong() * OSHDB.GEOM_PRECISION;
+  default double getMinLongitude() {
+    return OSMCoordinates.toDouble(getMinLon());
   }
 
-  default double getMinLat() {
-    return getMinLatLong() * OSHDB.GEOM_PRECISION;
+  default double getMinLatitude() {
+    return OSMCoordinates.toDouble(getMinLat());
   }
 
-  default double getMaxLon() {
-    return getMaxLonLong() * OSHDB.GEOM_PRECISION;
+  default double getMaxLongitude() {
+    return OSMCoordinates.toDouble(getMaxLon());
   }
 
-  default double getMaxLat() {
-    return getMaxLatLong() * OSHDB.GEOM_PRECISION;
+  default double getMaxLatitude() {
+    return OSMCoordinates.toDouble(getMaxLat());
   }
 
   /**
@@ -37,10 +39,10 @@ public interface OSHDBBoundable {
    */
   default boolean intersects(OSHDBBoundable other) {
     return other != null
-        && getMaxLatLong() >= other.getMinLatLong()
-        && getMinLatLong() <= other.getMaxLatLong()
-        && getMaxLonLong() >= other.getMinLonLong()
-        && getMinLonLong() <= other.getMaxLonLong();
+        && getMaxLat() >= other.getMinLat()
+        && getMinLat() <= other.getMaxLat()
+        && getMaxLon() >= other.getMinLon()
+        && getMinLon() <= other.getMaxLon();
   }
 
   /**
@@ -52,18 +54,18 @@ public interface OSHDBBoundable {
    */
   default boolean coveredBy(OSHDBBoundable other) {
     return other != null
-        && getMinLatLong() >= other.getMinLatLong()
-        && getMaxLatLong() <= other.getMaxLatLong()
-        && getMinLonLong() >= other.getMinLonLong()
-        && getMaxLonLong() <= other.getMaxLonLong();
+        && getMinLat() >= other.getMinLat()
+        && getMaxLat() <= other.getMaxLat()
+        && getMinLon() >= other.getMinLon()
+        && getMaxLon() <= other.getMaxLon();
   }
 
   default boolean isPoint() {
-    return getMinLonLong() == getMaxLonLong() && getMinLatLong() == getMaxLatLong();
+    return getMinLon() == getMaxLon() && getMinLat() == getMaxLat();
   }
 
   default boolean isValid() {
-    return getMinLonLong() <= getMaxLonLong() && getMinLatLong() <= getMaxLatLong();
+    return getMinLon() <= getMaxLon() && getMinLat() <= getMaxLat();
   }
 
   /**
@@ -73,10 +75,10 @@ public interface OSHDBBoundable {
    * @return the intersection of the two bboxes
    */
   default OSHDBBoundingBox intersection(OSHDBBoundable other) {
-    return new OSHDBBoundingBox(
-        Math.max(getMinLonLong(), other.getMinLonLong()),
-        Math.max(getMinLatLong(), other.getMinLatLong()),
-        Math.min(getMaxLonLong(), other.getMaxLonLong()),
-        Math.min(getMaxLatLong(), other.getMaxLatLong()));
+    return OSHDBBoundingBox.bboxOSMCoordinates(
+        Math.max(getMinLon(), other.getMinLon()),
+        Math.max(getMinLat(), other.getMinLat()),
+        Math.min(getMaxLon(), other.getMaxLon()),
+        Math.min(getMaxLat(), other.getMaxLat()));
   }
 }

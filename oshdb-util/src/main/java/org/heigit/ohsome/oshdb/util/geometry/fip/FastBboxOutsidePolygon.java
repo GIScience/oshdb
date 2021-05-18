@@ -55,13 +55,17 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
   @Override
   public boolean test(OSHDBBoundable boundingBox) {
     GeometryFactory gf = new GeometryFactory();
-    Point p1 = gf.createPoint(new Coordinate(boundingBox.getMinLon(), boundingBox.getMinLat()));
+    Point p1 =
+        gf.createPoint(new Coordinate(boundingBox.getMinLongitude(), boundingBox.getMinLatitude()));
     if (crossingNumber(p1, true) % 2 == 1) {
       return false;
     }
-    Point p2 = gf.createPoint(new Coordinate(boundingBox.getMaxLon(), boundingBox.getMinLat()));
-    Point p3 = gf.createPoint(new Coordinate(boundingBox.getMaxLon(), boundingBox.getMaxLat()));
-    Point p4 = gf.createPoint(new Coordinate(boundingBox.getMinLon(), boundingBox.getMaxLat()));
+    Point p2 =
+        gf.createPoint(new Coordinate(boundingBox.getMaxLongitude(), boundingBox.getMinLatitude()));
+    Point p3 =
+        gf.createPoint(new Coordinate(boundingBox.getMaxLongitude(), boundingBox.getMaxLatitude()));
+    Point p4 =
+        gf.createPoint(new Coordinate(boundingBox.getMinLongitude(), boundingBox.getMaxLatitude()));
     if (crossingNumber(p1, true) != crossingNumber(p2, true)
         || crossingNumber(p3, true) != crossingNumber(p4, true)
         || crossingNumber(p2, false) != crossingNumber(p3, false)
@@ -69,10 +73,10 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
       return false; // at least one of the bbox'es edges crosses the polygon
     }
     for (Envelope innerBbox : outerBboxes) {
-      if (boundingBox.getMinLat() <= innerBbox.getMinY()
-          && boundingBox.getMaxLat() >= innerBbox.getMaxY()
-          && boundingBox.getMinLon() <= innerBbox.getMinX()
-          && boundingBox.getMaxLon() >= innerBbox.getMaxX()) {
+      if (boundingBox.getMinLatitude() <= innerBbox.getMinY()
+          && boundingBox.getMaxLatitude() >= innerBbox.getMaxY()
+          && boundingBox.getMinLongitude() <= innerBbox.getMinX()
+          && boundingBox.getMaxLongitude() >= innerBbox.getMaxX()) {
         // the bounding box fully covers at least one of the (multi)polygon's outer rings
         return false;
       }

@@ -63,12 +63,13 @@ public class ByteArrayOutputWrapper {
    * @param value current value
    * @param last last value or delta encoding
    */
-  public void writeU64Delta(long value, long last) {
+  public long writeU64Delta(long value, long last) {
     final long delta = value - last;
     if (delta < 0) {
       throw new IllegalArgumentException("writeUInt64Delta with negative delta(" + delta + ")");
     }
     writeU64(delta);
+    return value;
   }
 
   /**

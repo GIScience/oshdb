@@ -27,8 +27,9 @@ public abstract class GridOSHEntity
   /**
    * Base constructor {@code GridOSHEntity}.
    */
-  public GridOSHEntity(final long id, final int level, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
+  protected GridOSHEntity(final long id, final int level, final long baseId,
+      final long baseTimestamp, final int baseLongitude, final int baseLatitude, final int[] index,
+      final byte[] data) {
 
     this.id = id;
     this.level = level;
@@ -56,7 +57,8 @@ public abstract class GridOSHEntity
     if (id >= 0) {
       OSHDBBoundingBox bbox = XYGrid.getBoundingBox(new CellId((int) id, level));
       return String.format(Locale.ENGLISH, "ID:%d Level:%d BBox:(%f,%f),(%f,%f)", id, level,
-          bbox.getMinLat(), bbox.getMinLon(), bbox.getMaxLat(), bbox.getMaxLon());
+          bbox.getMinLatitude(), bbox.getMinLongitude(), bbox.getMaxLatitude(),
+          bbox.getMaxLongitude());
     } else {
       return String.format(Locale.ENGLISH, "ID:%d Level:%d", id, level);
     }

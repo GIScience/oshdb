@@ -162,10 +162,10 @@ public class OSHDBGeometryBuilder {
 
     GeometryFactory gf = new GeometryFactory();
 
-    Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
-    Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
-    Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());
-    Coordinate ne = new Coordinate(bbox.getMinLon(), bbox.getMaxLat());
+    Coordinate sw = new Coordinate(bbox.getMinLongitude(), bbox.getMinLatitude());
+    Coordinate se = new Coordinate(bbox.getMaxLongitude(), bbox.getMinLatitude());
+    Coordinate nw = new Coordinate(bbox.getMaxLongitude(), bbox.getMaxLatitude());
+    Coordinate ne = new Coordinate(bbox.getMinLongitude(), bbox.getMaxLatitude());
 
     Coordinate[] cordAr = {sw, se, nw, ne, sw};
 
@@ -592,7 +592,7 @@ public class OSHDBGeometryBuilder {
    * @return the same bounding box as an OSHDBBoundingBox object
    */
   public static OSHDBBoundingBox boundingBoxOf(Envelope envelope) {
-    return new OSHDBBoundingBox(
+    return OSHDBBoundingBox.bboxLonLatCoordinates(
         envelope.getMinX(),
         envelope.getMinY(),
         envelope.getMaxX(),

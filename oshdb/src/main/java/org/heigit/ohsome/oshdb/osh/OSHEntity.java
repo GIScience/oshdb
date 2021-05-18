@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.osh;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
@@ -25,11 +24,11 @@ public interface OSHEntity extends OSHDBBoundable {
 
   Iterable<? extends OSMEntity> getVersions();
 
-  default List<OSHNode> getNodes() throws IOException {
+  default List<OSHNode> getNodes() {
     return Collections.emptyList();
   }
 
-  default List<OSHWay> getWays() throws IOException {
+  default List<OSHWay> getWays() {
     return Collections.emptyList();
   }
 }

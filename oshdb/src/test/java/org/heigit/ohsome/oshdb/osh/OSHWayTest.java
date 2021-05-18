@@ -4,8 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -19,16 +24,16 @@ import org.junit.Test;
 public class OSHWayTest {
 
   OSHNode node100 = OSHNodeTest.buildOSHNode(new OSMNode(
-      100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094984L, 86809727L));
+      100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094984, 86809727));
   OSHNode node102 = OSHNodeTest.buildOSHNode(new OSMNode(
-      102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094984L, 86809727L));
+      102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094984, 86809727));
   OSHNode node104 = OSHNodeTest.buildOSHNode(new OSMNode(
-      104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094984L, 86809727L));
+      104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094984, 86809727));
 
   public OSHWayTest() throws IOException {}
 
   @Test
-  public void testGetNodes() throws IOException {
+  public void testGetNodes() throws IOException, ClassNotFoundException {
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
         new OSMWay(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
@@ -43,6 +48,19 @@ public class OSHWayTest {
 
     List<OSHNode> nodes = hway.getNodes();
     assertEquals(3, nodes.size());
+
+    var baos = new ByteArrayOutputStream();
+    try (var oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(hway);
+    }
+    assertEquals(true, baos.size() > 0);
+    var bais = new ByteArrayInputStream(baos.toByteArray());
+    try (var ois = new ObjectInputStream(bais)) {
+      var newWay = (OSHWay) ois.readObject();
+
+      assertEquals(hway.getId(), newWay.getId());
+      assertEquals(Iterables.size(hway.getVersions()), Iterables.size(newWay.getVersions()));
+    }
   }
 
   @Test

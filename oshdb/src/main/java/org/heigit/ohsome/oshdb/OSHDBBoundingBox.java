@@ -1,87 +1,88 @@
 package org.heigit.ohsome.oshdb;
 
+import static org.heigit.ohsome.oshdb.osm.OSMCoordinates.GEOM_PRECISION_TO_LONG;
+
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Objects;
 
 public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   private static final long serialVersionUID = 1L;
-  public static final OSHDBBoundingBox INVALID = new OSHDBBoundingBox(1L, 1L, -1L, -1L);
+  public static final OSHDBBoundingBox INVALID = bboxOSMCoordinates(1, 1, -1, -1);
 
-  private final long minLon;
-  private final long maxLon;
-  private final long minLat;
-  private final long maxLat;
+  private final int minLon;
+  private final int maxLon;
+  private final int minLat;
+  private final int maxLat;
 
   /**
    * Creates an {@code OSHDBBoundingBox} instance from osm long coordinates.
    */
-  public OSHDBBoundingBox(long minLon, long minLat, long maxLon, long maxLat) {
+  public static OSHDBBoundingBox bboxOSMCoordinates(int minLon, int minLat,
+      int maxLon, int maxLat) {
+    return new OSHDBBoundingBox(minLon, minLat, maxLon, maxLat);
+  }
+
+  private OSHDBBoundingBox(int minLon, int minLat, int maxLon, int maxLat) {
     this.minLon = minLon;
-    this.maxLon = maxLon;
     this.minLat = minLat;
+    this.maxLon = maxLon;
     this.maxLat = maxLat;
   }
 
   /**
    * Create an {@code OSHDBBoudingBox} with standard double longitude/latitude coordinates.
    */
-  public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
-    this.minLon = Math.round(minLon * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.maxLon = Math.round(maxLon * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.minLat = Math.round(minLat * OSHDB.GEOM_PRECISION_TO_LONG);
-    this.maxLat = Math.round(maxLat * OSHDB.GEOM_PRECISION_TO_LONG);
-  }
-
-  public OSHDBBoundingBox(int minLon, int minLat, int maxLon, int maxLat) {
-    this((double) minLon, (double) minLat, (double) maxLon, (double) maxLat);
+  public static OSHDBBoundingBox bboxLonLatCoordinates(double minLon, double minLat, double maxLon,
+      double maxLat) {
+    return bboxOSMCoordinates(
+        Math.toIntExact(Math.round(minLon * GEOM_PRECISION_TO_LONG)),
+        Math.toIntExact(Math.round(minLat * GEOM_PRECISION_TO_LONG)),
+        Math.toIntExact(Math.round(maxLon * GEOM_PRECISION_TO_LONG)),
+        Math.toIntExact(Math.round(maxLat * GEOM_PRECISION_TO_LONG)));
   }
 
   @Override
-  public long getMinLonLong() {
+  public int getMinLon() {
     return minLon;
   }
 
   @Override
-  public long getMaxLonLong() {
+  public int getMaxLon() {
     return maxLon;
   }
 
   @Override
-  public long getMinLatLong() {
+  public int getMinLat() {
     return minLat;
   }
 
   @Override
-  public long getMaxLatLong() {
+  public int getMaxLat() {
     return maxLat;
   }
 
-  public long[] getLon() {
-    return new long[] {minLon, maxLon};
+  public int[] getLon() {
+    return new int[] {minLon, maxLon};
   }
 
-  public long[] getLat() {
-    return new long[] {minLat, maxLat};
+  public int[] getLat() {
+    return new int[] {minLat, maxLat};
   }
 
   @Override
   public String toString() {
     return String.format(Locale.ENGLISH,
         "(%3.7f,%3.7f,%3.7f,%3.7f)",
-        this.getMinLon(),
-        this.getMinLat(),
-        this.getMaxLon(),
-        this.getMaxLat());
+        this.getMinLongitude(),
+        this.getMinLatitude(),
+        this.getMaxLongitude(),
+        this.getMaxLatitude());
   }
 
   @Override
   public int hashCode() {
-    int hash = 7;
-    hash = 79 * hash + (int) (this.minLon ^ this.minLon >>> 32);
-    hash = 79 * hash + (int) (this.maxLon ^ this.maxLon >>> 32);
-    hash = 79 * hash + (int) (this.minLat ^ this.minLat >>> 32);
-    hash = 79 * hash + (int) (this.maxLat ^ this.maxLat >>> 32);
-    return hash;
+    return Objects.hash(maxLat, maxLon, minLat, minLon);
   }
 
   @Override
@@ -89,22 +90,11 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
+    if (!(obj instanceof OSHDBBoundingBox)) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final OSHDBBoundingBox other = (OSHDBBoundingBox) obj;
-    if (this.minLon != other.minLon) {
-      return false;
-    }
-    if (this.maxLon != other.maxLon) {
-      return false;
-    }
-    if (this.minLat != other.minLat) {
-      return false;
-    }
-    return this.maxLat == other.maxLat;
+    OSHDBBoundingBox other = (OSHDBBoundingBox) obj;
+    return maxLat == other.maxLat && maxLon == other.maxLon && minLat == other.minLat
+        && minLon == other.minLon;
   }
 }

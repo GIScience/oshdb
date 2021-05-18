@@ -78,7 +78,7 @@ public class IterateByContributionTest {
 
         List<IterateAllEntry> result = (new CellIterator(
             timestamps,
-            new OSHDBBoundingBox(8, 9, 49, 50),
+            OSHDBBoundingBox.bboxLonLatCoordinates(8.0, 9.0, 49.0, 50.0),
             new DefaultTagInterpreter(tt),
             oshEntity -> oshEntity.getId() == 617308093,
             osmEntity -> true,

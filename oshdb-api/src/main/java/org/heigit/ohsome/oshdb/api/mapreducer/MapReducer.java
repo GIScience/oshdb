@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxLonLatCoordinates;
+
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
@@ -163,7 +165,7 @@ public abstract class MapReducer<X> implements
       TimestampFormatter.getInstance().date(new Date()),
       OSHDBTimestamps.Interval.MONTHLY
       );
-  protected OSHDBBoundingBox bboxFilter = new OSHDBBoundingBox(-180, -90, 180, 90);
+  protected OSHDBBoundingBox bboxFilter = bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0);
   private Geometry polyFilter = null;
   protected EnumSet<OSMType> typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> preFilters = new ArrayList<>();
@@ -218,7 +220,7 @@ public abstract class MapReducer<X> implements
       Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
       boolean oshdbContainsKeytables = true;
       try {
-        (new TagTranslator(c)).close();
+        new TagTranslator(c).close();
       } catch (OSHDBKeytablesNotFoundException e) {
         // this is the expected path -> the oshdb doesn't have the key tables
         oshdbContainsKeytables = false;
@@ -565,7 +567,7 @@ public abstract class MapReducer<X> implements
     int keyId = oshdbKey.toInt();
     if (!oshdbKey.isPresentInKeytables() || values.isEmpty()) {
       LOG.warn(
-          (values.isEmpty() ? EMPTY_TAG_LIST : TAG_KEY_NOT_FOUND),
+          values.isEmpty() ? EMPTY_TAG_LIST : TAG_KEY_NOT_FOUND,
           key
       );
       return osmTagEmptyResult();
@@ -1997,8 +1999,8 @@ public abstract class MapReducer<X> implements
   protected Iterable<CellIdRange> getCellIdRanges() {
     XYGridTree grid = new XYGridTree(OSHDB.MAXZOOM);
     if (this.bboxFilter == null
-        || this.bboxFilter.getMinLon() >= this.bboxFilter.getMaxLon()
-        || this.bboxFilter.getMinLat() >= this.bboxFilter.getMaxLat()) {
+        || this.bboxFilter.getMinLongitude() >= this.bboxFilter.getMaxLongitude()
+        || this.bboxFilter.getMinLatitude() >= this.bboxFilter.getMaxLatitude()) {
       // return an empty iterable if bbox is not set or empty
       LOG.warn("area of interest not set or empty");
       return Collections.emptyList();
@@ -2017,7 +2019,7 @@ public abstract class MapReducer<X> implements
   private SerializableFunction<Object, X> getMapper() {
     // todo: maybe we can somehow optimize this?? at least for special cases like
     // this.mappers.size() == 1
-    return (SerializableFunction<Object, X>) (data -> {
+    return (SerializableFunction<Object, X>) data -> {
       // working with raw Objects since we don't know the actual intermediate types ¯\_(ツ)_/¯
       Object result = data;
       for (MapFunction mapper : this.mappers) {
@@ -2032,14 +2034,14 @@ public abstract class MapReducer<X> implements
       // after applying all mapper functions, the result type is X
       X mappedResult = (X) result;
       return mappedResult;
-    });
+    };
   }
 
   // concatenates all applied `flatMap` and `map` functions
   private SerializableFunction<Object, Iterable<X>> getFlatMapper() {
     // todo: maybe we can somehow optimize this?? at least for special cases like
     // this.mappers.size() == 1
-    return (SerializableFunction<Object, Iterable<X>>) (data -> {
+    return (SerializableFunction<Object, Iterable<X>>) data -> {
       // working with raw objects since we don't know the actual intermediate types ¯\_(ツ)_/¯
       List<Object> results = new LinkedList<>();
       results.add(data);
@@ -2057,7 +2059,7 @@ public abstract class MapReducer<X> implements
       // after applying all mapper functions, the result type is List<X>
       Iterable<X> mappedResults = (Iterable<X>) results;
       return mappedResults;
-    });
+    };
   }
 
   // gets list of timestamps to use for zerofilling

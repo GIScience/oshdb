@@ -31,21 +31,21 @@ public class XYGridTreeTest {
 
   @Test
   public void testGetInsertId() {
-    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, -90.0, 179.0, 90.0);
+    OSHDBBoundingBox bbox = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, -90.0, 179.0, 90.0);
     XYGridTree instance = new XYGridTree(4);
     CellId expResult = new CellId(2, 2L);
     CellId result = instance.getInsertId(bbox);
     assertEquals(expResult.getId(), result.getId());
     assertEquals(expResult.getZoomLevel(), result.getZoomLevel());
 
-    bbox = new OSHDBBoundingBox(0.0, -90.0, 0.1, 90.0);
+    bbox = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, -90.0, 0.1, 90.0);
     instance = new XYGridTree(4);
     expResult = new CellId(2, 2L);
     result = instance.getInsertId(bbox);
     assertEquals(expResult.getId(), result.getId());
     assertEquals(expResult.getZoomLevel(), result.getZoomLevel());
 
-    bbox = new OSHDBBoundingBox(0.0, -90.0, 179.0, -89.9);
+    bbox = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, -90.0, 179.0, -89.9);
     instance = new XYGridTree(4);
     expResult = new CellId(2, 2L);
     result = instance.getInsertId(bbox);
@@ -61,7 +61,7 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(1, 1L));
     expectedCellIds.add(new CellId(0, 0L));
 
-    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, 0.0, 44.9, 44.9);
+    OSHDBBoundingBox bbox = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 0.0, 44.9, 44.9);
     boolean enlarge = false;
     XYGridTree instance = new XYGridTree(3);
     for (CellId now : instance.bbox2CellIds(bbox, enlarge)) {
@@ -90,7 +90,7 @@ public class XYGridTreeTest {
     expectedCellIds.add(new CellId(1, 0L));
     expectedCellIds.add(new CellId(0, 0L));
 
-    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0.0, 0.0, 89, 89);
+    OSHDBBoundingBox bbox = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 0.0, 89, 89);
     boolean enlarge = true;
     XYGridTree instance = new XYGridTree(3);
     for (CellId now : instance.bbox2CellIds(bbox, enlarge)) {

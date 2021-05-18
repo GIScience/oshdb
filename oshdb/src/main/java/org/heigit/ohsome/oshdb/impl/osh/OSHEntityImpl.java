@@ -1,6 +1,8 @@
 package org.heigit.ohsome.oshdb.impl.osh;
 
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -14,13 +16,18 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
+import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
 public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>, Serializable {
 
-  public static class Builder {
+  protected static final int CHANGED_USER_ID = 1 << 0;
+  protected static final int CHANGED_TAGS = 1 << 1;
 
-    private static final int CHANGED_USER_ID = 1 << 0;
-    private static final int CHANGED_TAGS = 1 << 1;
+  protected static final int HEADER_MULTIVERSION = 1 << 0;
+  protected static final int HEADER_TIMESTAMPS_NOT_IN_ORDER = 1 << 1;
+  protected static final int HEADER_HAS_TAGS = 1 << 2;
+
+  public static class Builder {
 
     private final ByteArrayOutputWrapper output;
     private final long baseTimestamp;
@@ -49,7 +56,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
       return keySet;
     }
 
-    protected void build(OSMEntity version, byte changed) throws IOException {
+    protected void build(OSMEntity version, byte changed) {
       int v = version.getVersion() * (!version.isVisible() ? -1 : 1);
       output.writeS32(v - lastVersion);
       lastVersion = v;
@@ -83,7 +90,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
 
       if ((changed & CHANGED_TAGS) != 0) {
         output.writeU32(keyValues.length);
-        for (int kv = 0; kv < keyValues.length; kv++) {
+        for (var kv = 0; kv < keyValues.length; kv++) {
           output.writeU32(keyValues[kv]);
           if (kv % 2 == 0) {
             keySet.add(Integer.valueOf(keyValues[kv]));
@@ -95,47 +102,223 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
       firstVersion = false;
     }
 
+    public byte getHeader(boolean multiVersion) {
+      byte header = 0;
+      if (multiVersion) {
+        header |= HEADER_MULTIVERSION;
+      }
+      if (getTimestampsNotInOrder()) {
+        header |= HEADER_TIMESTAMPS_NOT_IN_ORDER;
+      }
+      if (!getKeySet().isEmpty()) {
+        header |= HEADER_HAS_TAGS;
+      }
+      return header;
+    }
+
+    public ByteArrayOutputWrapper writeCommon(byte header, long id, boolean bbox, int minLon,
+        int minLat, int maxLon, int maxLat) {
+      var buffer = new ByteArrayOutputWrapper();
+      buffer.writeByte(header);
+      if (bbox) {
+        buffer.writeS32(minLon);
+        buffer.writeU64((long) maxLon - minLon);
+        buffer.writeS32(minLat);
+        buffer.writeU64((long) maxLat - minLat);
+      }
+      if ((header & HEADER_HAS_TAGS) != 0) {
+        buffer.writeU32(getKeySet().size());
+        for (Integer key : getKeySet()) {
+          buffer.writeU32(key.intValue());
+        }
+      }
+      buffer.writeU64(id);
+      return buffer;
+    }
   }
 
   protected final byte[] data;
   protected final int offset;
   protected final int length;
+  protected final long baseId;
   protected final long baseTimestamp;
-  protected final long baseLongitude;
-  protected final long baseLatitude;
+  protected final int baseLongitude;
+  protected final int baseLatitude;
 
   protected final long id;
   protected final byte header;
-  protected long minLon;
-  protected long maxLon;
-  protected long minLat;
-  protected long maxLat;
+  protected int minLon;
+  protected int maxLon;
+  protected int minLat;
+  protected int maxLat;
   protected final int[] keys;
   protected final int dataOffset;
   protected final int dataLength;
 
-  protected OSHEntityImpl(final byte[] data, final int offset, final int length,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat,
-      final int[] keys, final int dataOffset, final int dataLength) {
-    this.data = data;
-    this.offset = offset;
-    this.length = length;
+  protected static class CommonEntityProps {
+    private final byte[] data;
+    private final int offset;
+    private final int length;
 
-    this.baseTimestamp = baseTimestamp;
-    this.baseLongitude = baseLongitude;
-    this.baseLatitude = baseLatitude;
+    private long id;
+    private byte header;
+    private long baseId;
+    private long baseTimestamp;
+    private int baseLongitude;
+    private int baseLatitude;
+    private int minLon;
+    private int minLat;
+    private int maxLon;
+    private int maxLat;
+    private int[] keys;
+    private int dataOffset;
+    private int dataLength;
 
-    this.header = header;
-    this.id = id;
-    this.minLon = minLon;
-    this.minLat = minLat;
-    this.maxLon = maxLon;
-    this.maxLat = maxLat;
+    public CommonEntityProps(byte[] data, int offset, int length) {
+      this.data = data;
+      this.offset = offset;
+      this.length = length;
+    }
 
-    this.keys = keys;
-    this.dataOffset = dataOffset;
-    this.dataLength = dataLength;
+    public long getId() {
+      return id;
+    }
+
+    public void setId(long id) {
+      this.id = id;
+    }
+
+    public byte getHeader() {
+      return header;
+    }
+
+    public void setHeader(byte header) {
+      this.header = header;
+    }
+
+    public long getBaseId() {
+      return baseId;
+    }
+
+    public void setBaseId(long baseId) {
+      this.baseId = baseId;
+    }
+
+    public int getBaseLongitude() {
+      return baseLongitude;
+    }
+
+    public void setBaseLongitude(int baseLongitude) {
+      this.baseLongitude = baseLongitude;
+    }
+
+    public long getBaseTimestamp() {
+      return baseTimestamp;
+    }
+
+    public void setBaseTimestamp(long baseTimestamp) {
+      this.baseTimestamp = baseTimestamp;
+    }
+
+    public int getBaseLatitude() {
+      return baseLatitude;
+    }
+
+    public void setBaseLatitude(int baseLatitude) {
+      this.baseLatitude = baseLatitude;
+    }
+
+    public int getMinLon() {
+      return minLon;
+    }
+
+    public void setMinLon(int minLon) {
+      this.minLon = minLon;
+    }
+
+    public int getMinLat() {
+      return minLat;
+    }
+
+    public void setMinLat(int minLat) {
+      this.minLat = minLat;
+    }
+
+    public int getMaxLon() {
+      return maxLon;
+    }
+
+    public void setMaxLon(int maxLon) {
+      this.maxLon = maxLon;
+    }
+
+    public int getMaxLat() {
+      return maxLat;
+    }
+
+    public void setMaxLat(int maxLat) {
+      this.maxLat = maxLat;
+    }
+
+    public int[] getKeys() {
+      return keys;
+    }
+
+    public void setKeys(int[] keys) {
+      this.keys = keys;
+    }
+
+    public int getDataOffset() {
+      return dataOffset;
+    }
+
+    public void setDataOffset(int dataOffset) {
+      this.dataOffset = dataOffset;
+    }
+
+    public int getDataLength() {
+      return dataLength;
+    }
+
+    public void setDataLength(int dataLength) {
+      this.dataLength = dataLength;
+    }
+
+    public byte[] getData() {
+      return data;
+    }
+
+    public int getOffset() {
+      return offset;
+    }
+
+    public int getLength() {
+      return length;
+    }
+
+
+  }
+
+  protected OSHEntityImpl(final CommonEntityProps p) {
+    this.data = p.getData();
+    this.offset = p.getOffset();
+    this.length = p.getLength();
+
+    this.baseId = p.getBaseId();
+    this.baseTimestamp = p.getBaseTimestamp();
+    this.baseLongitude = p.getBaseLongitude();
+    this.baseLatitude = p.getBaseLatitude();
+
+    this.header = p.getHeader();
+    this.id = p.getId();
+    this.minLon = p.getMinLon();
+    this.minLat = p.getMinLat();
+    this.maxLon = p.getMaxLon();
+    this.maxLat = p.getMaxLat();
+
+    this.keys = p.getKeys();
+    this.dataOffset = p.getDataOffset();
+    this.dataLength = p.getDataLength();
   }
 
   /**
@@ -145,7 +328,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     if (offset == 0 && length == data.length) {
       return data;
     }
-    byte[] result = new byte[length];
+    var result = new byte[length];
     System.arraycopy(data, offset, result, 0, length);
     return result;
   }
@@ -160,22 +343,22 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
   }
 
   @Override
-  public long getMinLonLong() {
+  public int getMinLon() {
     return minLon;
   }
 
   @Override
-  public long getMinLatLong() {
+  public int getMinLat() {
     return minLat;
   }
 
   @Override
-  public long getMaxLonLong() {
+  public int getMaxLon() {
     return maxLon;
   }
 
   @Override
-  public long getMaxLatLong() {
+  public int getMaxLat() {
     return maxLat;
   }
 
@@ -218,7 +401,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
   @Override
   public boolean hasTagKey(int key) {
     // todo: replace with binary search (keys are sorted)
-    for (int i = 0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {
       if (keys[i] == key) {
         return true;
       }
@@ -231,11 +414,13 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
 
   @Override
   public int compareTo(OSHEntity o) {
-    int c = Long.compare(getId(), o.getId());
-    return c;
+    return Long.compare(getId(), o.getId());
   }
 
   protected int writeTo(ObjectOutput out) throws IOException {
+    out.writeLong(baseTimestamp);
+    out.writeLong(baseLongitude);
+    out.writeLong(baseLatitude);
     out.write(data, offset, length);
     return length;
   }
@@ -251,8 +436,148 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     }
 
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
-        last.getVersion(), first.getEpochSecond(), getMinLat(), getMinLon(), getMaxLat(),
-        getMaxLon());
+        last.getVersion(), first.getEpochSecond(), getMinLatitude(), getMinLongitude(),
+        getMaxLatitude(), getMaxLongitude());
   }
 
+  protected static void readBbox(ByteArrayWrapper wrapper, CommonEntityProps p, int baseLongitude,
+      int baseLatitude) {
+    p.setMinLon(baseLongitude + wrapper.readS32());
+    p.setMaxLon((int) (p.getMinLon() + wrapper.readU64()));
+    p.setMinLat(baseLatitude + wrapper.readS32());
+    p.setMaxLat((int) (p.getMinLat() + wrapper.readU64()));
+  }
+
+  protected static  void readBaseAndKeys(ByteArrayWrapper wrapper, CommonEntityProps p,
+      final long baseId, final long baseTimestamp, final int baseLongitude,
+      final int baseLatitude) {
+    p.setBaseId(baseId);
+    p.setBaseTimestamp(baseTimestamp);
+    p.setBaseLongitude(baseLongitude);
+    p.setBaseLatitude(baseLatitude);
+
+    final int[] keys;
+    if ((p.getHeader() & HEADER_HAS_TAGS) != 0) {
+      final int size = wrapper.readU32();
+      keys = new int[size];
+      for (var i = 0; i < size; i++) {
+        keys[i] = wrapper.readU32();
+      }
+    } else {
+      keys = new int[0];
+    }
+    p.setKeys(keys);
+    p.setId(wrapper.readU64() + baseId);
+  }
+
+  protected static void readCommon(ByteArrayWrapper wrapper, CommonEntityProps p,
+      final long baseId, final long baseTimestamp, final int baseLongitude,
+      final int baseLatitude) {
+    p.setHeader(wrapper.readRawByte());
+    readBbox(wrapper, p, baseLongitude, baseLatitude);
+    readBaseAndKeys(wrapper, p, baseId, baseTimestamp, baseLongitude, baseLatitude);
+  }
+
+  protected abstract static class EntityVersionIterator<T extends OSMEntity>
+      implements Iterator<T> {
+    protected final ByteArrayWrapper wrapper;
+    protected final long id;
+    protected final long baseTimestamp;
+    protected int version = 0;
+    protected long timestamp = 0;
+    protected long changeset = 0;
+    protected int userId = 0;
+    protected int[] keyValues = new int[0];
+
+    protected  EntityVersionIterator(ByteArrayWrapper wrapper, long id, long baseTimestamp) {
+      this.wrapper = wrapper;
+      this.id = id;
+      this.baseTimestamp = baseTimestamp;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return wrapper.hasLeft() > 0;
+    }
+
+    @Override
+    public T next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+
+      version = wrapper.readS32() + version;
+      timestamp = wrapper.readS64() + timestamp;
+      changeset = wrapper.readS64() + changeset;
+
+      var changed = wrapper.readRawByte();
+
+      if ((changed & CHANGED_USER_ID) != 0) {
+        userId = wrapper.readS32() + userId;
+      }
+
+      if ((changed & CHANGED_TAGS) != 0) {
+        var size = wrapper.readU32();
+        keyValues = new int[size];
+        for (var i = 0; i < size; i += 2) {
+          keyValues[i] = wrapper.readU32();
+          keyValues[i + 1] = wrapper.readU32();
+        }
+      }
+
+      return extension(changed);
+    }
+
+    protected abstract T extension(byte changed);
+  }
+
+  /**
+   * Common serialization proxy for OSH(Node|Way|Relation)Impl.
+   *
+   */
+  protected abstract static class OSHEntitySerializationProxy implements Externalizable {
+    private final OSHEntityImpl osh;
+    private long baseId;
+    private long baseTimestamp;
+    private int baseLongitude;
+    private int baseLatitude;
+    private byte[] data;
+
+    protected OSHEntitySerializationProxy(OSHEntityImpl osh) {
+      this.osh = osh;
+    }
+
+    protected OSHEntitySerializationProxy() {
+      osh = null;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+      out.writeLong(osh.baseId);
+      out.writeLong(osh.baseTimestamp);
+      out.writeInt(osh.baseLongitude);
+      out.writeInt(osh.baseLatitude);
+      data = osh.getData();
+      out.writeInt(data.length);
+      out.write(data);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+      baseId = in.readLong();
+      baseTimestamp = in.readLong();
+      baseLongitude = in.readInt();
+      baseLatitude = in.readInt();
+      var length = in.readInt();
+      data = new byte[length];
+      in.readFully(data);
+    }
+
+    protected Object readResolve() {
+      return newInstance(data, baseId, baseTimestamp, baseLongitude, baseLatitude);
+    }
+
+    protected abstract Object newInstance(byte[] data, long baseId, long baseTimestamp,
+        int baseLongitude, int baseLatitude);
+  }
 }

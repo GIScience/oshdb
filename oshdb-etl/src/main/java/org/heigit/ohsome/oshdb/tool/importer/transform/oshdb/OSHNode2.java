@@ -95,7 +95,8 @@ public class OSHNode2 extends OSHEntity2 implements OSH<OSMNode> {
         latitude = in.readS64Delta(latitude);
       }
       return new OSMNode(entity.id, version, entity.baseTimestamp + timestamp, changeset, userId,
-          keyValues, entity.baseLongitude + longitude, entity.baseLatitude + latitude);
+          keyValues, (int) (entity.baseLongitude + longitude),
+          (int) (entity.baseLatitude + latitude));
     }
   }
 }
