@@ -35,16 +35,16 @@ public interface FilterExpression extends Serializable {
   /**
    * Apply the filter to an OSH entity.
    *
-   * <p>Must return the same as <code>oshEntity.getVersions().….anyMatch(applyOSM)</code>.</p>
+   * <p>Must be compatible with the result of {@link #applyOSM}, e.g. that it must not return false
+   * when <code>oshEntity.getVersions().….anyMatch(applyOSM)</code> would evaluate to true.</p>
    *
    * @param entity the OSH entity to check.
-   * @return true if the at least one of the OSH entity's versions fulfills the specified filter,
-   *         false otherwise.
+   * @return false if the filter knows that none of the versions of the OSH entity can fulfill the
+   *         specified filter, true otherwise.
    */
   @Contract(pure = true)
   default boolean applyOSH(OSHEntity entity) {
-    // (potentially slow) default implementation tests every version individually
-    return Streams.stream(entity.getVersions()).anyMatch(this::applyOSM);
+    return true;
   }
 
   /**
