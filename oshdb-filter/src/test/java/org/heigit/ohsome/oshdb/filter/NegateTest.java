@@ -111,7 +111,7 @@ public class NegateTest extends FilterTest {
 
   @Test
   public void testIdInRangeFilter() {
-    FilterExpression expression = new IdFilterRange(new IdFilterRange.IdRange(1, 3));
+    FilterExpression expression = new IdFilterRange(new IdRange(1, 3));
     FilterExpression negation = expression.negate();
     OSMEntity testEntity = createTestOSMEntityNode();
     assertNotEquals(expression.applyOSM(testEntity), negation.applyOSM(testEntity));

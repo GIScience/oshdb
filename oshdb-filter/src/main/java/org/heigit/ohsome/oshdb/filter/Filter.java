@@ -41,7 +41,7 @@ public interface Filter extends FilterExpression {
    * @return a filter object which filters using the given predicate
    */
   static Filter byOSMEntity(OSMEntityFilter osmCallback) {
-    return new NegatableFilter(osmCallback::test);
+    return by(ignored -> true, osmCallback);
   }
 
   /**

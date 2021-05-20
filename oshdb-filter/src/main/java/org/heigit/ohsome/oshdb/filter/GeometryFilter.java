@@ -58,8 +58,8 @@ public abstract class GeometryFilter extends NegatableFilter {
     }
   }
 
-  interface RangedFilter extends FilterInternal {
-    ValueRange getRange();
+  abstract static class RangedFilter extends FilterInternal {
+    public abstract ValueRange getRange();
   }
 
   protected GeometryFilter(

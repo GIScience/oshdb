@@ -33,6 +33,11 @@ public class ContributorUserIdFilterEquals extends NegatableFilter {
       public boolean applyOSMEntitySnapshot(OSMEntitySnapshot ignored) {
         throw new IllegalStateException("contributor filter is not applicable to entity snapshots");
       }
+
+      @Override
+      public String toString() {
+        return "contributor:" + userId;
+      }
     });
     this.userId = userId;
   }
@@ -40,10 +45,5 @@ public class ContributorUserIdFilterEquals extends NegatableFilter {
   @Contract(pure = true)
   public long getUserId() {
     return this.userId;
-  }
-
-  @Override
-  public String toString() {
-    return "contributor:" + this.userId;
   }
 }

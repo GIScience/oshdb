@@ -4,19 +4,16 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
-import org.jetbrains.annotations.Contract;
 
 /**
- * A filter which selects OSM contributions by a changeset id.
+ * A filter which selects OSM contributions by a range of contributor user ids.
  */
-public class ChangesetIdFilterEquals extends NegatableFilter {
-  final long changesetId;
-
-  ChangesetIdFilterEquals(long changesetId) {
+public class ContributorUserIdFilterRange extends NegatableFilter {
+  ContributorUserIdFilterRange(IdRange contributorUserIdRange) {
     super(new FilterInternal() {
       @Override
       public boolean applyOSH(OSHEntity entity) {
-        return applyToOSHEntityRecursively(entity, v -> v.getChangesetId() == changesetId);
+        return applyToOSHEntityRecursively(entity, v -> contributorUserIdRange.test(v.getUserId()));
       }
 
       @Override
@@ -26,24 +23,18 @@ public class ChangesetIdFilterEquals extends NegatableFilter {
 
       @Override
       public boolean applyOSMContribution(OSMContribution contribution) {
-        return contribution.getChangesetId() == changesetId;
+        return contributorUserIdRange.test(contribution.getContributorUserId());
       }
 
       @Override
       public boolean applyOSMEntitySnapshot(OSMEntitySnapshot ignored) {
-        throw new IllegalStateException("changeset filter is not applicable to entity snapshots");
+        throw new IllegalStateException("contributor filter is not applicable to entity snapshots");
       }
 
       @Override
       public String toString() {
-        return "changeset:" + changesetId;
+        return "contributor:in-range" + contributorUserIdRange;
       }
     });
-    this.changesetId = changesetId;
-  }
-
-  @Contract(pure = true)
-  public long getChangesetId() {
-    return this.changesetId;
   }
 }

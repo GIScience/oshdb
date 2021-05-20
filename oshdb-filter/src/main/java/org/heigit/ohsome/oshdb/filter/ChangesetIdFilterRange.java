@@ -4,19 +4,16 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
-import org.jetbrains.annotations.Contract;
 
 /**
- * A filter which selects OSM contributions by a changeset id.
+ * A filter which selects OSM contributions by matching to a range of changeset ids.
  */
-public class ChangesetIdFilterEquals extends NegatableFilter {
-  final long changesetId;
-
-  ChangesetIdFilterEquals(long changesetId) {
+public class ChangesetIdFilterRange extends NegatableFilter {
+  ChangesetIdFilterRange(IdRange changesetIdRange) {
     super(new FilterInternal() {
       @Override
       public boolean applyOSH(OSHEntity entity) {
-        return applyToOSHEntityRecursively(entity, v -> v.getChangesetId() == changesetId);
+        return applyToOSHEntityRecursively(entity, v -> changesetIdRange.test(v.getChangesetId()));
       }
 
       @Override
@@ -26,7 +23,7 @@ public class ChangesetIdFilterEquals extends NegatableFilter {
 
       @Override
       public boolean applyOSMContribution(OSMContribution contribution) {
-        return contribution.getChangesetId() == changesetId;
+        return changesetIdRange.test(contribution.getChangesetId());
       }
 
       @Override
@@ -36,14 +33,8 @@ public class ChangesetIdFilterEquals extends NegatableFilter {
 
       @Override
       public String toString() {
-        return "changeset:" + changesetId;
+        return "changeset:in-range" + changesetIdRange;
       }
     });
-    this.changesetId = changesetId;
-  }
-
-  @Contract(pure = true)
-  public long getChangesetId() {
-    return this.changesetId;
   }
 }

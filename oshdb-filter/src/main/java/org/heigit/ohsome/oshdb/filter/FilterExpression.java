@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -4,9 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
 import org.heigit.ohsome.oshdb.osm.OSMType;
@@ -336,6 +338,22 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testChangesetIdListFilter() {
+    FilterExpression expression = parser.parse("changeset:(1,2,3)");
+    assertTrue(expression instanceof ChangesetIdFilterEqualsAnyOf);
+    assertEquals(List.of(1L, 2L, 3L), new ArrayList<>(
+        ((ChangesetIdFilterEqualsAnyOf) expression).getChangesetIdList()));
+    assertEquals("changeset:in(1,2,3)", expression.toString());
+  }
+
+  @Test
+  public void testChangesetIdRangeFilter() {
+    FilterExpression expression = parser.parse("changeset:(10..12)");
+    assertTrue(expression instanceof ChangesetIdFilterRange);
+    assertEquals("changeset:in-range10..12", expression.toString());
+  }
+
+  @Test
   public void testContributorIdFilterEnabled() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:1" /* Steve <3 */);
@@ -344,9 +362,28 @@ public class ParseTest extends FilterTest {
     assertEquals("contributor:1", expression.toString());
   }
 
+  @Test
+  public void testContributorUserIdListFilter() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    FilterExpression expression = parser.parse("contributor:(1,2,3)");
+    assertTrue(expression instanceof ContributorUserIdFilterEqualsAnyOf);
+    assertEquals(List.of(1, 2, 3),  new ArrayList<>(
+        ((ContributorUserIdFilterEqualsAnyOf) expression).getContributorUserIdList()));
+    assertEquals("contributor:in(1,2,3)", expression.toString());
+  }
+
+  @Test
+  public void testContributorUserIdRangeFilter() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    FilterExpression expression = parser.parse("contributor:(10..12)");
+    assertTrue(expression instanceof ContributorUserIdFilterRange);
+    assertEquals("contributor:in-range10..12", expression.toString());
+  }
+
   @Test(expected = ParserException.class)
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   public void testContributorIdFilterNotEnabled() {
-    FilterExpression expression = parser.parse("contributor:0");
+    parser.parse("contributor:0");
     fail();
   }
 }
