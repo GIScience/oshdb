@@ -29,8 +29,6 @@ import org.heigit.ohsome.oshdb.api.generic.NumberUtils;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer.Grouping;
-import org.heigit.ohsome.oshdb.api.object.OSMContributionImpl;
-import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshotImpl;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
@@ -42,11 +40,12 @@ import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
-
 
 /**
  * A MapReducer with built-in aggregation by an arbitrary index.
@@ -220,11 +219,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       );
     } else {
       MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
-      if (mapReducer.isContributionViewQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContributionImpl) x).entrySet())
+      if (mapReducer.isOSMContributionViewQuery()) {
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
             .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else if (mapReducer.isOSMEntitySnapshotQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshotImpl) x).entrySet())
+      } else if (mapReducer.isOSMEntitySnapshotViewQuery()) {
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
             .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
         throw new UnsupportedOperationException(String.format(

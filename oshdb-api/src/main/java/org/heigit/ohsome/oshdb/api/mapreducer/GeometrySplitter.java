@@ -24,7 +24,6 @@ import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastPolygonOperations;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygonal;
@@ -104,7 +103,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
           }
 
           // now we can check against the actual contribution geometry
-          Geometry snapshotGeometry = data.getGeometry();
+          var snapshotGeometry = data.getGeometry();
           OSHDBBoundingBox snapshotBbox = OSHDBGeometryBuilder.boundingBoxOf(
               snapshotGeometry.getEnvelopeInternal()
           );
@@ -168,8 +167,8 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
           }
 
           // now we can check against the actual contribution geometry
-          Geometry contributionGeometryBefore = data.getGeometryBefore();
-          Geometry contributionGeometryAfter = data.getGeometryAfter();
+          var contributionGeometryBefore = data.getGeometryBefore();
+          var contributionGeometryAfter = data.getGeometryAfter();
           OSHDBBoundingBox contributionGeometryBbox;
           if (data.is(ContributionType.CREATION)) {
             contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(
@@ -180,7 +179,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
                 contributionGeometryBefore.getEnvelopeInternal()
             );
           } else {
-            Envelope env = contributionGeometryBefore.getEnvelopeInternal();
+            var env = contributionGeometryBefore.getEnvelopeInternal();
             env.expandToInclude(contributionGeometryAfter.getEnvelopeInternal());
             contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(env);
           }

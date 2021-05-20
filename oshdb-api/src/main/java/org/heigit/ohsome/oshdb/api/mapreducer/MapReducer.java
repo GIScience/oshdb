@@ -33,8 +33,6 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.generic.NumberUtils;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
-import org.heigit.ohsome.oshdb.api.object.OSMContributionImpl;
-import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshotImpl;
 import org.heigit.ohsome.oshdb.filter.AndOperator;
 import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
@@ -49,7 +47,6 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
-import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
@@ -357,7 +354,7 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public MapReducer<X> timestamps(String isoDate) {
-    if (isContributionViewQuery()) {
+    if (isOSMContributionViewQuery()) {
       LOG.warn("OSMContributionView requires two or more timestamps, but only one was supplied.");
     }
     return this.timestamps(isoDate, isoDate, new String[] {});
@@ -793,12 +790,12 @@ public abstract class MapReducer<X> implements
     ret.mappers.clear();
     if (this.grouping == Grouping.NONE) {
       // no grouping -> directly filter using the geometries of the snapshot / contribution
-      if (isOSMEntitySnapshotQuery()) {
+      if (isOSMEntitySnapshotViewQuery()) {
         ret = ret.filter(x -> {
           OSMEntitySnapshot s = (OSMEntitySnapshot) x;
           return f.applyOSMEntitySnapshot(s);
         });
-      } else if (isContributionViewQuery()) {
+      } else if (isOSMContributionViewQuery()) {
         ret = ret.filter(x -> {
           OSMContribution c = (OSMContribution) x;
           return f.applyOSMContribution(c);
@@ -806,7 +803,7 @@ public abstract class MapReducer<X> implements
       }
     } else if (this.grouping == Grouping.BY_ID) {
       // grouping by entity -> filter each list entry individually
-      if (isOSMEntitySnapshotQuery()) {
+      if (isOSMEntitySnapshotViewQuery()) {
         @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
             ret.map(x -> (Collection<OSMEntitySnapshot>) x)
                 .map(snapshots -> snapshots.stream()
@@ -814,7 +811,7 @@ public abstract class MapReducer<X> implements
                     .collect(Collectors.toCollection(ArrayList::new)))
                 .filter(snapshots -> !snapshots.isEmpty());
         ret = filteredListMapper;
-      } else if (isContributionViewQuery()) {
+      } else if (isOSMContributionViewQuery()) {
         @SuppressWarnings("unchecked") MapReducer<X> filteredListMapper = (MapReducer<X>)
             ret.map(x -> (Collection<OSMContribution>) x)
                 .map(contributions -> contributions.stream()
@@ -951,10 +948,10 @@ public abstract class MapReducer<X> implements
 
     // by timestamp indexing function -> for some views we need to match the input data to the list
     SerializableFunction<X, OSHDBTimestamp> indexer;
-    if (isContributionViewQuery()) {
+    if (isOSMContributionViewQuery()) {
       final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
       indexer = data -> timestamps.floor(((OSMContribution) data).getTimestamp());
-    } else if (isOSMEntitySnapshotQuery()) {
+    } else if (isOSMEntitySnapshotViewQuery()) {
       indexer = data -> ((OSMEntitySnapshot) data).getTimestamp();
     } else {
       throw new UnsupportedOperationException(
@@ -1049,11 +1046,11 @@ public abstract class MapReducer<X> implements
           "please call aggregateByGeometry before setting any map or flatMap functions");
     } else {
       MapAggregator<U, ? extends OSHDBMapReducible> ret;
-      if (isContributionViewQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContributionImpl) x).entrySet())
+      if (isOSMContributionViewQuery()) {
+        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
             .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else if (isOSMEntitySnapshotQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshotImpl) x).entrySet())
+      } else if (isOSMEntitySnapshotViewQuery()) {
+        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
             .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
         throw new UnsupportedOperationException(String.format(
@@ -1123,7 +1120,7 @@ public abstract class MapReducer<X> implements
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this.getMapper();
-          if (isContributionViewQuery()) {
+          if (isOSMContributionViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
@@ -1134,7 +1131,7 @@ public abstract class MapReducer<X> implements
                 accumulator,
                 combiner
             );
-          } else if (isOSMEntitySnapshotQuery()) {
+          } else if (isOSMEntitySnapshotViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
@@ -1151,7 +1148,7 @@ public abstract class MapReducer<X> implements
           }
         } else {
           final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
-          if (isContributionViewQuery()) {
+          if (isOSMContributionViewQuery()) {
             return this.flatMapReduceCellsOSMContributionGroupedById(
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
@@ -1160,7 +1157,7 @@ public abstract class MapReducer<X> implements
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
-          } else if (isOSMEntitySnapshotQuery()) {
+          } else if (isOSMEntitySnapshotViewQuery()) {
             return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
@@ -1184,7 +1181,7 @@ public abstract class MapReducer<X> implements
         } else {
           flatMapper = this.getFlatMapper();
         }
-        if (isContributionViewQuery()) {
+        if (isOSMContributionViewQuery()) {
           @SuppressWarnings("Convert2MethodRef")
           // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
@@ -1195,7 +1192,7 @@ public abstract class MapReducer<X> implements
               accumulator,
               combiner
           );
-        } else if (isOSMEntitySnapshotQuery()) {
+        } else if (isOSMEntitySnapshotViewQuery()) {
           @SuppressWarnings("Convert2MethodRef")
           // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
@@ -1639,13 +1636,13 @@ public abstract class MapReducer<X> implements
       case NONE:
         if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
           final SerializableFunction<Object, X> mapper = this.getMapper();
-          if (isContributionViewQuery()) {
+          if (isOSMContributionViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMContribution, X> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMContribution(contributionMapper);
-          } else if (isOSMEntitySnapshotQuery()) {
+          } else if (isOSMEntitySnapshotViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
             final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
@@ -1657,7 +1654,7 @@ public abstract class MapReducer<X> implements
           }
         } else {
           final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
-          if (isContributionViewQuery()) {
+          if (isOSMContributionViewQuery()) {
             return this.flatMapStreamCellsOSMContributionGroupedById(
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
@@ -1666,7 +1663,7 @@ public abstract class MapReducer<X> implements
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 });
-          } else if (isOSMEntitySnapshotQuery()) {
+          } else if (isOSMEntitySnapshotViewQuery()) {
             return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
@@ -1690,13 +1687,13 @@ public abstract class MapReducer<X> implements
         } else {
           flatMapper = this.getFlatMapper();
         }
-        if (isContributionViewQuery()) {
+        if (isOSMContributionViewQuery()) {
           @SuppressWarnings("Convert2MethodRef")
           // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
               data -> flatMapper.apply(data);
           return this.flatMapStreamCellsOSMContributionGroupedById(contributionFlatMapper);
-        } else if (isOSMEntitySnapshotQuery()) {
+        } else if (isOSMEntitySnapshotViewQuery()) {
           @SuppressWarnings("Convert2MethodRef")
           // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
           final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
@@ -1938,11 +1935,11 @@ public abstract class MapReducer<X> implements
   // Some helper methods for internal use in the mapReduce functions
   // -----------------------------------------------------------------------------------------------
 
-  protected boolean isContributionViewQuery() {
+  protected boolean isOSMContributionViewQuery() {
     return OSMContribution.class.isAssignableFrom(this.viewClass);
   }
 
-  protected boolean isOSMEntitySnapshotQuery() {
+  protected boolean isOSMEntitySnapshotViewQuery() {
     return OSMEntitySnapshot.class.isAssignableFrom(this.viewClass);
   }
 
@@ -2065,7 +2062,7 @@ public abstract class MapReducer<X> implements
 
   // gets list of timestamps to use for zerofilling
   Collection<OSHDBTimestamp> getZerofillTimestamps() {
-    if (isOSMEntitySnapshotQuery()) {
+    if (isOSMEntitySnapshotViewQuery()) {
       return this.tstamps.get();
     } else {
       SortedSet<OSHDBTimestamp> result = new TreeSet<>(this.tstamps.get());
