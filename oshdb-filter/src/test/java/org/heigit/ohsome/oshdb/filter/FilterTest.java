@@ -56,19 +56,33 @@ abstract class FilterTest {
   }
 
   protected OSMNode createTestOSMEntityNode(String... keyValues) {
-    return new OSMNode(1, 1, 0L, 1, 1, createTestTags(keyValues), 0, 0);
+    return createTestOSMEntityNode(1, 1, keyValues);
+  }
+
+  protected OSMNode createTestOSMEntityNode(long changesetId, int userId, String... keyValues) {
+    return new OSMNode(1, 1, 0L, changesetId, userId, createTestTags(keyValues), 0, 0);
   }
 
   protected OSMWay createTestOSMEntityWay(long[] nodeIds, String... keyValues) {
+    return createTestOSMEntityWay(1, 1, nodeIds, keyValues);
+  }
+
+  protected OSMWay createTestOSMEntityWay(
+      long changesetId, int userId, long[] nodeIds, String... keyValues) {
     OSMMember[] refs = new OSMMember[nodeIds.length];
     for (int i = 0; i < refs.length; i++) {
       refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
     }
-    return new OSMWay(1, 1, 0L, 1, 1, createTestTags(keyValues), refs);
+    return new OSMWay(1, 1, 0L, changesetId, userId, createTestTags(keyValues), refs);
   }
 
   protected OSMRelation createTestOSMEntityRelation(String... keyValues) {
-    return new OSMRelation(1, 1, 0L, 1, 1, createTestTags(keyValues),
+    return createTestOSMEntityRelation(1, 1, keyValues);
+  }
+
+  protected OSMRelation createTestOSMEntityRelation(
+      long changesetId, int userId, String... keyValues) {
+    return new OSMRelation(1, 1, 0L, changesetId, userId, createTestTags(keyValues),
         new OSMMember[] {});
   }
 
@@ -77,11 +91,21 @@ abstract class FilterTest {
   }
 
   protected OSHWay createTestOSHEntityWay(OSMWay...versions) throws IOException {
-    return OSHWayImpl.build(Arrays.asList(versions), Collections.emptyList());
+    return createTestOSHEntityWay(versions, new OSHNode[] {});
+  }
+
+  protected OSHWay createTestOSHEntityWay(
+      OSMWay[] versions, OSHNode[] referencedNodes) throws IOException {
+    return OSHWayImpl.build(Arrays.asList(versions), Arrays.asList(referencedNodes));
   }
 
   protected OSHRelation createTestOSHEntityRelation(OSMRelation... versions) throws IOException {
-    return OSHRelationImpl.build(Arrays.asList(versions), Collections.emptyList(),
-        Collections.emptyList());
+    return createTestOSHEntityRelation(versions, new OSHNode[] {}, new OSHWay[] {});
+  }
+
+  protected OSHRelation createTestOSHEntityRelation(
+      OSMRelation[] versions, OSHNode[] nodes, OSHWay[] ways) throws IOException {
+    return OSHRelationImpl.build(Arrays.asList(versions), Arrays.asList(nodes),
+        Arrays.asList(ways));
   }
 }

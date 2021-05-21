@@ -69,21 +69,43 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
         createTestOSMEntityNode(), gf.createLineString())));
   }
 
-  @Test(expected = IllegalStateException.class)
   @SuppressWarnings("ResultOfMethodCallIgnored")
-  public void testChangesetId() {
-    FilterExpression expression = parser.parse("changeset:42");
+  private void testFailWithSnapshot(FilterExpression expression) {
     expression.applyOSMEntitySnapshot(
         new TestOSMEntitySnapshot(createTestOSMEntityNode(), gf.createPoint()));
     fail();
   }
 
   @Test(expected = IllegalStateException.class)
-  @SuppressWarnings("ResultOfMethodCallIgnored")
+  public void testChangesetId() {
+    testFailWithSnapshot(parser.parse("changeset:42"));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testChangesetIdList() {
+    testFailWithSnapshot(parser.parse("changeset:(41,42,43)"));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testChangesetIdRange() {
+    testFailWithSnapshot(parser.parse("changeset:(41..43)"));
+  }
+
+  @Test(expected = IllegalStateException.class)
   public void testContributorUserId() {
-    FilterExpression expression = (new FilterParser(tagTranslator, true)).parse("contributor:1");
-    expression.applyOSMEntitySnapshot(
-        new TestOSMEntitySnapshot(createTestOSMEntityNode(), gf.createPoint()));
-    fail();
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testFailWithSnapshot(parser.parse("contributor:1"));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testContributorUserIdList() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testFailWithSnapshot(parser.parse("contributor:(1,2,3)"));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testContributorUserIdRange() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testFailWithSnapshot(parser.parse("contributor:(1..3)"));
   }
 }

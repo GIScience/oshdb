@@ -10,7 +10,6 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
-import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
@@ -132,25 +131,45 @@ public class ApplyOSMContributionTest extends FilterTest {
     )));
   }
 
-  @Test
-  public void testChangesetId() {
-    FilterExpression expression = parser.parse("changeset:42");
+  private void testContribution(FilterExpression expression) {
     assertFalse(expression.applyOSMContribution(new TestOSMContribution(
-        entity, point, entity, point, 1L, 1, NO_TYPE
+        entity, point, entity, point, 1L, 10, NO_TYPE
     )));
     assertTrue(expression.applyOSMContribution(new TestOSMContribution(
-        entity, point, entity, point, 42L, 2, NO_TYPE
+        entity, point, entity, point, 42L, 1, NO_TYPE
     )));
   }
 
   @Test
+  public void testChangesetId() {
+    testContribution(parser.parse("changeset:42"));
+  }
+
+  @Test
+  public void testChangesetIdList() {
+    testContribution(parser.parse("changeset:(41,42,43)"));
+  }
+
+  @Test
+  public void testChangesetIdRange() {
+    testContribution(parser.parse("changeset:(41..43)"));
+  }
+
+  @Test
   public void testContributorUserId() {
-    FilterExpression expression = (new FilterParser(tagTranslator, true)).parse("contributor:1");
-    assertTrue(expression.applyOSMContribution(new TestOSMContribution(
-        entity, point, entity, point, 1L, 1, NO_TYPE
-    )));
-    assertFalse(expression.applyOSMContribution(new TestOSMContribution(
-        entity, point, entity, point, 1L, 2, NO_TYPE
-    )));
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testContribution(parser.parse("contributor:1"));
+  }
+
+  @Test
+  public void testContributorUserIdList() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testContribution(parser.parse("contributor:(1,2,3)"));
+  }
+
+  @Test
+  public void testContributorUserIdRange() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testContribution(parser.parse("contributor:(1..2)"));
   }
 }

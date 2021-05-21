@@ -4,6 +4,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import org.heigit.ohsome.oshdb.osh.OSHNode;
+import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSMNode;
+import org.heigit.ohsome.oshdb.osm.OSMRelation;
+import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.Test;
 
 /**
@@ -328,5 +333,81 @@ public class ApplyOSHTest extends FilterTest {
   public void testGeometryFilterLength() throws IOException {
     FilterExpression expression = parser.parse("length:(1..2)");
     assertTrue(expression.applyOSH(createTestOSHEntityWay(createTestOSMEntityWay(new long[] {}))));
+  }
+
+  private void testOSHEntityWithMetadata(FilterExpression expression) throws IOException {
+    // a node
+    assertTrue(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(1, 1),
+        createTestOSMEntityNode(42, 4),
+        createTestOSMEntityNode(100, 10)
+    )));
+    assertFalse(expression.applyOSH(createTestOSHEntityNode(
+        createTestOSMEntityNode(1, 1),
+        createTestOSMEntityNode(100, 10)
+    )));
+    // a way
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(new OSMWay[] {
+        createTestOSMEntityWay(42, 4, new long[] {})
+    }, new OSHNode[] {})));
+    assertTrue(expression.applyOSH(createTestOSHEntityWay(new OSMWay[] {
+        createTestOSMEntityWay(1, 1, new long[] {})
+    }, new OSHNode[] { createTestOSHEntityNode(
+        createTestOSMEntityNode(42, 4)
+    )})));
+    // a relation
+    assertTrue(expression.applyOSH(createTestOSHEntityRelation(new OSMRelation[] {
+        createTestOSMEntityRelation(42, 4)
+    }, new OSHNode[] {}, new OSHWay[] {})));
+    assertTrue(expression.applyOSH(createTestOSHEntityRelation(new OSMRelation[] {
+        createTestOSMEntityRelation(1, 1)
+    }, new OSHNode[] { createTestOSHEntityNode(
+        createTestOSMEntityNode(42, 4)
+    )}, new OSHWay[] {})));
+    assertTrue(expression.applyOSH(createTestOSHEntityRelation(new OSMRelation[] {
+        createTestOSMEntityRelation(1, 1)
+    }, new OSHNode[] {}, new OSHWay[] { createTestOSHEntityWay(
+        createTestOSMEntityWay(42, 4, new long[] {})
+    )})));
+    assertTrue(expression.applyOSH(createTestOSHEntityRelation(new OSMRelation[] {
+        createTestOSMEntityRelation(1, 1)
+    }, new OSHNode[] {createTestOSHEntityNode(
+        createTestOSMEntityNode(42, 4)
+    )}, new OSHWay[] { createTestOSHEntityWay(
+        createTestOSMEntityWay(1, 1, new long[] {})
+    )})));
+  }
+
+  @Test
+  public void testChangesetId() throws IOException {
+    testOSHEntityWithMetadata(parser.parse("changeset:42"));
+  }
+
+  @Test
+  public void testChangesetIdList() throws IOException {
+    testOSHEntityWithMetadata(parser.parse("changeset:(41,42,43)"));
+  }
+
+  @Test
+  public void testChangesetIdRange() throws IOException {
+    testOSHEntityWithMetadata(parser.parse("changeset:(41..43)"));
+  }
+
+  @Test
+  public void testContributorUserId() throws IOException {
+    var parser = new FilterParser(tagTranslator, true);
+    testOSHEntityWithMetadata(parser.parse("contributor:4"));
+  }
+
+  @Test
+  public void testContributorUserIdList() throws IOException {
+    var parser = new FilterParser(tagTranslator, true);
+    testOSHEntityWithMetadata(parser.parse("contributor:(3,4,5)"));
+  }
+
+  @Test
+  public void testContributorUserIdRange() throws IOException {
+    var parser = new FilterParser(tagTranslator, true);
+    testOSHEntityWithMetadata(parser.parse("contributor:(3..5)"));
   }
 }
