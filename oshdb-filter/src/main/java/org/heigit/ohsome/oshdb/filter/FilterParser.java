@@ -206,37 +206,37 @@ public class FilterParser {
         ),
         Scanners.isChar(')')
     );
-    final Parser<GeometryFilter> geometryFilterArea = Parsers.sequence(
+    final Parser<FilterExpression> geometryFilterArea = Parsers.sequence(
         area, colon, floatingRange
-    ).map(GeometryFilterArea::new);
-    final Parser<GeometryFilter> geometryFilterLength = Parsers.sequence(
+    ).map(GeometryFilter::area);
+    final Parser<FilterExpression> geometryFilterLength = Parsers.sequence(
         length, colon, floatingRange
-    ).map(GeometryFilterLength::new);
-    final Parser<GeometryFilter> geometryFilter = Parsers.or(
+    ).map(GeometryFilter::length);
+    final Parser<FilterExpression> geometryFilter = Parsers.or(
         geometryFilterArea,
         geometryFilterLength);
 
     // changeset id filters
-    final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(
+    final Parser<FilterExpression> changesetIdFilter = Parsers.sequence(
         changeset, colon, number
-    ).map(ChangesetIdFilterEquals::new);
-    final Parser<ChangesetIdFilterEqualsAnyOf> multiChangesetIdFilter = Parsers.sequence(
+    ).map(ContributionFilter::changesetIdEquals);
+    final Parser<FilterExpression> multiChangesetIdFilter = Parsers.sequence(
         changeset, colon, numberSequence
-    ).map(ChangesetIdFilterEqualsAnyOf::new);
-    final Parser<ChangesetIdFilterRange> rangeChangesetIdFilter = Parsers.sequence(
+    ).map(ContributionFilter::changesetIdEqualsAnyOf);
+    final Parser<FilterExpression> rangeChangesetIdFilter = Parsers.sequence(
         changeset, colon, range
-    ).map(ChangesetIdFilterRange::new);
+    ).map(ContributionFilter::changesetIdRange);
     // contributor user id filters
-    Parser<ContributorUserIdFilterEquals> contributorUserIdFilter = Parsers.sequence(
+    Parser<FilterExpression> contributorUserIdFilter = Parsers.sequence(
         contributor, colon, number
-    ).map(ContributorUserIdFilterEquals::new);
-    Parser<ContributorUserIdFilterEqualsAnyOf> multiContributorUserIdFilter = Parsers.sequence(
+    ).map(ContributionFilter::contributorUserIdEquals);
+    Parser<FilterExpression> multiContributorUserIdFilter = Parsers.sequence(
         contributor, colon, numberSequence
     ).map(ids -> ids.stream().map(Number::intValue).collect(Collectors.toList())
-    ).map(ContributorUserIdFilterEqualsAnyOf::new);
-    Parser<ContributorUserIdFilterRange> rangeContributorUserIdFilter = Parsers.sequence(
+    ).map(ContributionFilter::contributorUserIdEqualsAnyOf);
+    Parser<FilterExpression> rangeContributorUserIdFilter = Parsers.sequence(
         contributor, colon, range
-    ).map(ContributorUserIdFilterRange::new);
+    ).map(ContributionFilter::contributorUserIdRange);
     if (!allowContributorFilters) {
       final var contributorFilterDisabled = Parsers.fail("contributor user id filter not enabled");
       contributorUserIdFilter = contributorUserIdFilter.followedBy(contributorFilterDisabled);
@@ -298,4 +298,5 @@ public class FilterParser {
   public FilterExpression parse(String str) {
     return this.parser.parse(str.strip());
   }
+
 }

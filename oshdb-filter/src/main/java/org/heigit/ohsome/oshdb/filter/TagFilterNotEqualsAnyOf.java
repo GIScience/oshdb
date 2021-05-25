@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBTag;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 
 /**
@@ -12,6 +13,11 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 public class TagFilterNotEqualsAnyOf extends TagFilterAnyOf {
   TagFilterNotEqualsAnyOf(@Nonnull Collection<OSHDBTag> tags) {
     super(tags);
+  }
+
+  @Override
+  public boolean applyOSH(OSHEntity entity) {
+    return true;
   }
 
   @Override

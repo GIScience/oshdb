@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Contract;
 /**
  * A filter which selects OSM entities by their id.
  */
-public class IdFilterEquals implements Filter {
+public class IdFilterEquals implements FilterExpression {
   private final long id;
 
   IdFilterEquals(long id) {

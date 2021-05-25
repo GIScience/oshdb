@@ -4,12 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBTag;
+import org.heigit.ohsome.oshdb.filter.ContributionFilter.ChangesetIdFilter;
 import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
@@ -303,53 +302,51 @@ public class ParseTest extends FilterTest {
   @Test
   public void testGeometryFilterArea() {
     FilterExpression expression = parser.parse("area:(1..10)");
-    assertTrue(expression instanceof GeometryFilterArea);
-    assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
-    assertEquals(10.0, ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
+    assertTrue(expression instanceof GeometryFilter);
+    assertEquals(1.0, ((GeometryFilter) expression).getRange().getFromValue(), 1E-10);
+    assertEquals(10.0, ((GeometryFilter) expression).getRange().getToValue(), 1E-10);
     assertEquals("area:1.0..10.0", expression.toString());
     expression = parser.parse("area:(1.1..10.0)");
-    assertTrue(expression instanceof GeometryFilterArea);
+    assertTrue(expression instanceof GeometryFilter);
     expression = parser.parse("area:(1.E-6..10.0)");
-    assertTrue(expression instanceof GeometryFilterArea);
+    assertTrue(expression instanceof GeometryFilter);
     expression = parser.parse("area:(1..)");
-    assertTrue(expression instanceof GeometryFilterArea);
-    assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
+    assertTrue(expression instanceof GeometryFilter);
+    assertEquals(1.0, ((GeometryFilter) expression).getRange().getFromValue(), 1E-10);
     assertEquals(Double.POSITIVE_INFINITY,
-        ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
+        ((GeometryFilter) expression).getRange().getToValue(), 1E-10);
     expression = parser.parse("area:(..1)");
-    assertTrue(expression instanceof GeometryFilterArea);
+    assertTrue(expression instanceof GeometryFilter);
     assertEquals(Double.NEGATIVE_INFINITY,
-        ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
-    assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getToValue(), 1E-10);
+        ((GeometryFilter) expression).getRange().getFromValue(), 1E-10);
+    assertEquals(1.0, ((GeometryFilter) expression).getRange().getToValue(), 1E-10);
   }
 
   @Test
   public void testGeometryFilterLength() {
     FilterExpression expression = parser.parse("length:(1..10)");
-    assertTrue(expression instanceof GeometryFilterLength);
+    assertTrue(expression instanceof GeometryFilter);
+    assertEquals("length:1.0..10.0", expression.toString());
   }
 
   @Test
   public void testChangesetIdFilter() {
     FilterExpression expression = parser.parse("changeset:42");
-    assertTrue(expression instanceof ChangesetIdFilterEquals);
-    assertEquals(42, ((ChangesetIdFilterEquals) expression).getChangesetId());
+    assertTrue(expression instanceof ChangesetIdFilter);
     assertEquals("changeset:42", expression.toString());
   }
 
   @Test
   public void testChangesetIdListFilter() {
     FilterExpression expression = parser.parse("changeset:(1,2,3)");
-    assertTrue(expression instanceof ChangesetIdFilterEqualsAnyOf);
-    assertEquals(List.of(1L, 2L, 3L), new ArrayList<>(
-        ((ChangesetIdFilterEqualsAnyOf) expression).getChangesetIdList()));
+    assertTrue(expression instanceof ChangesetIdFilter);
     assertEquals("changeset:in(1,2,3)", expression.toString());
   }
 
   @Test
   public void testChangesetIdRangeFilter() {
     FilterExpression expression = parser.parse("changeset:(10..12)");
-    assertTrue(expression instanceof ChangesetIdFilterRange);
+    assertTrue(expression instanceof ChangesetIdFilter);
     assertEquals("changeset:in-range10..12", expression.toString());
   }
 
@@ -357,8 +354,7 @@ public class ParseTest extends FilterTest {
   public void testContributorIdFilterEnabled() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:1" /* Steve <3 */);
-    assertTrue(expression instanceof ContributorUserIdFilterEquals);
-    assertEquals(1, ((ContributorUserIdFilterEquals) expression).getUserId());
+    assertTrue(expression instanceof ContributionFilter);
     assertEquals("contributor:1", expression.toString());
   }
 
@@ -366,9 +362,7 @@ public class ParseTest extends FilterTest {
   public void testContributorUserIdListFilter() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:(1,2,3)");
-    assertTrue(expression instanceof ContributorUserIdFilterEqualsAnyOf);
-    assertEquals(List.of(1, 2, 3),  new ArrayList<>(
-        ((ContributorUserIdFilterEqualsAnyOf) expression).getContributorUserIdList()));
+    assertTrue(expression instanceof ContributionFilter);
     assertEquals("contributor:in(1,2,3)", expression.toString());
   }
 
@@ -376,7 +370,7 @@ public class ParseTest extends FilterTest {
   public void testContributorUserIdRangeFilter() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:(10..12)");
-    assertTrue(expression instanceof ContributorUserIdFilterRange);
+    assertTrue(expression instanceof ContributionFilter);
     assertEquals("contributor:in-range10..12", expression.toString());
   }
 

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Contract;
 /**
  * A filter which selects OSM entities by their OSM tags (e.g., key=value, key=*, etc.).
  */
-public interface TagFilter extends Filter {
+public interface TagFilter extends FilterExpression {
   /**
    * Type of tag filter.
    */

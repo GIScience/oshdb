@@ -42,9 +42,7 @@ public interface FilterExpression extends Serializable {
    *         specified filter, true otherwise.
    */
   @Contract(pure = true)
-  default boolean applyOSH(OSHEntity entity) {
-    return true;
-  }
+  boolean applyOSH(OSHEntity entity);
 
   /**
    * Apply the filter to an "OSM feature" (i.e. an entity with a geometry).
@@ -115,7 +113,9 @@ public interface FilterExpression extends Serializable {
    * @return the opposite of the current filter expression.
    */
   @Contract(pure = true)
-  FilterExpression negate();
+  default FilterExpression negate() {
+    throw new IllegalStateException("Invalid call of inner negate() on a negatable filter");
+  }
 
   /**
    * Converts a random boolean expression into a disjunctive normal form.
@@ -125,17 +125,15 @@ public interface FilterExpression extends Serializable {
    * @return a disjunction of conjunctions of filter expressions: A∧B∧… ∨ C∧D∧… ∨ …
    */
   @Contract(pure = true)
-  default List<List<Filter>> normalize() {
-    if (this instanceof Filter) {
-      return Collections.singletonList(Collections.singletonList((Filter) this));
-    } else if (this instanceof AndOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
+  default List<List<FilterExpression>> normalize() {
+    if (this instanceof AndOperator) {
+      List<List<FilterExpression>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
+      List<List<FilterExpression>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
       // return cross product of exp1 and exp2
-      List<List<Filter>> combined = new LinkedList<>();
-      for (List<Filter> e1 : exp1) {
-        for (List<Filter> e2 : exp2) {
-          List<Filter> crossProduct = new ArrayList<>(e1.size() + e2.size());
+      List<List<FilterExpression>> combined = new LinkedList<>();
+      for (List<FilterExpression> e1 : exp1) {
+        for (List<FilterExpression> e2 : exp2) {
+          List<FilterExpression> crossProduct = new ArrayList<>(e1.size() + e2.size());
           crossProduct.addAll(e1);
           crossProduct.addAll(e2);
           combined.add(crossProduct);
@@ -143,12 +141,14 @@ public interface FilterExpression extends Serializable {
       }
       return combined;
     } else if (this instanceof OrOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
-      List<List<Filter>> combined = new ArrayList<>(exp1.size() + exp2.size());
+      List<List<FilterExpression>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
+      List<List<FilterExpression>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
+      List<List<FilterExpression>> combined = new ArrayList<>(exp1.size() + exp2.size());
       combined.addAll(exp1);
       combined.addAll(exp2);
       return combined;
+    } else if (this instanceof FilterExpression) {
+      return Collections.singletonList(Collections.singletonList(this));
     } else {
       String error = "unsupported state during filter normalization";
       assert false : error;

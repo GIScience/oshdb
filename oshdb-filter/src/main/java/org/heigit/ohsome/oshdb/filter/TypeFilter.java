@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Contract;
 /**
  * A filter which selects OSM entities by their OSM type (i.e., node, way or relation).
  */
-public class TypeFilter implements Filter {
+public class TypeFilter implements FilterExpression {
   private final OSMType type;
 
   TypeFilter(OSMType type) {

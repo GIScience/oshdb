@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Contract;
 /**
  * A filter which always evaluates to true or false. Used internally to represent empty filters.
  */
-public class ConstantFilter implements Filter {
+public class ConstantFilter implements FilterExpression {
   private final boolean state;
 
   ConstantFilter(boolean state) {

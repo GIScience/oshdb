@@ -10,7 +10,7 @@ import org.heigit.ohsome.oshdb.OSHDBTag;
 /**
  * A tag filter which executes a "key [not] in (value1, value2, …)" check.
  */
-abstract class TagFilterAnyOf implements Filter {
+abstract class TagFilterAnyOf implements FilterExpression {
   final int keyId;
   final Set<OSHDBTag> tags;
 

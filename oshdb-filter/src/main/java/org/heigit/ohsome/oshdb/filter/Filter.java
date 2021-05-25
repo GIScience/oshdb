@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import java.util.function.Supplier;
-import org.heigit.ohsome.oshdb.filter.NegatableFilter.FilterInternal;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
@@ -12,7 +11,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * A filter condition which can be applied to an OSM entity.
  */
-public interface Filter extends FilterExpression {
+public abstract class Filter {
 
   /**
    * Constructs a simple filter based on a predicate on OSH entities.
@@ -25,7 +24,7 @@ public interface Filter extends FilterExpression {
    * @param oshCallback predicate which tests osh entities
    * @return a filter object which filters using the given predicate
    */
-  static Filter byOSHEntity(OSHEntityFilter oshCallback) {
+  public static FilterExpression byOSHEntity(OSHEntityFilter oshCallback) {
     return by(oshCallback, ignored -> true);
   }
 
@@ -40,7 +39,7 @@ public interface Filter extends FilterExpression {
    * @param osmCallback predicate which tests osm entities
    * @return a filter object which filters using the given predicate
    */
-  static Filter byOSMEntity(OSMEntityFilter osmCallback) {
+  public static FilterExpression byOSMEntity(OSMEntityFilter osmCallback) {
     return by(ignored -> true, osmCallback);
   }
 
@@ -56,7 +55,7 @@ public interface Filter extends FilterExpression {
    * @param osmCallback predicate which tests osm entities
    * @return a filter object which filters using the given predicates
    */
-  static Filter by(
+  public static FilterExpression by(
       OSHEntityFilter oshCallback,
       OSMEntityFilter osmCallback) {
     return by(oshCallback, osmCallback, (ignored, ignored2) -> true);
@@ -78,12 +77,12 @@ public interface Filter extends FilterExpression {
    *                     filtering on the whole "OSM Feature" (metadata + tags + geometry).
    * @return a filter object which filters using the given predicates
    */
-  static Filter by(
+  public static FilterExpression by(
       OSHEntityFilter oshCallback,
       OSMEntityFilter osmCallback,
       SerializableBiPredicate<OSMEntity, Supplier<Geometry>> geomCallback
   ) {
-    return new NegatableFilter(new FilterInternal() {
+    return new NegatableFilter(new FilterExpression() {
       @Override
       public boolean applyOSM(OSMEntity entity) {
         return osmCallback.test(entity);
@@ -99,5 +98,9 @@ public interface Filter extends FilterExpression {
         return geomCallback.test(entity, geometrySupplier);
       }
     });
+  }
+
+  private Filter() {
+    // utility class
   }
 }

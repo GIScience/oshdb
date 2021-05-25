@@ -9,7 +9,7 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
  */
 public class IdFilterRange extends NegatableFilter {
   IdFilterRange(@Nonnull IdRange range) {
-    super(new FilterInternal() {
+    super(new FilterExpression() {
       @Override
       public boolean applyOSH(OSHEntity entity) {
         return range.test(entity.getId());

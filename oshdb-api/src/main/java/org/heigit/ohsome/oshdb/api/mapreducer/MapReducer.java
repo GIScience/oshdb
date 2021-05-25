@@ -2194,12 +2194,12 @@ public abstract class MapReducer<X> implements
 
   private <O> MapReducer<O> optimizeFilters1(MapReducer<O> mapRed, FilterExpression filter) {
     // more advanced optimizations that rely on analyzing the DNF of a filter expression
-    List<List<Filter>> filterNormalized = filter.normalize();
+    List<List<FilterExpression>> filterNormalized = filter.normalize();
     // collect all OSMTypes in all of the clauses
     EnumSet<OSMType> allTypes = EnumSet.noneOf(OSMType.class);
-    for (List<Filter> andSubFilter : filterNormalized) {
+    for (List<FilterExpression> andSubFilter : filterNormalized) {
       EnumSet<OSMType> subTypes = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
-      for (Filter subFilter : andSubFilter) {
+      for (FilterExpression subFilter : andSubFilter) {
         if (subFilter instanceof TypeFilter) {
           subTypes.retainAll(EnumSet.of(((TypeFilter) subFilter).getType()));
         } else if (subFilter instanceof GeometryTypeFilter) {
