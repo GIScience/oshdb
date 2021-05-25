@@ -68,11 +68,6 @@ public abstract class GeometryFilter extends NegatableFilter {
   ) {
     super(new RangedFilter() {
       @Override
-      public boolean applyOSH(OSHEntity entity) {
-        return true;
-      }
-
-      @Override
       public boolean applyOSM(OSMEntity entity) {
         return true;
       }
