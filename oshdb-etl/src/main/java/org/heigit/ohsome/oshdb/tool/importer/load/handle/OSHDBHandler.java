@@ -98,8 +98,8 @@ public abstract class OSHDBHandler extends LoaderHandler {
 
   private <T> T grid(long zid, GridInstance<T> newInstance) {
     OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
-    int longitude = bbox.getMinLon() + (bbox.getMaxLon() - bbox.getMinLon()) / 2;
-    int latitude = bbox.getMinLat() + (bbox.getMaxLat() - bbox.getMinLat()) / 2;
+    int longitude = bbox.getMinLongitude() + (bbox.getMaxLongitude() - bbox.getMinLongitude()) / 2;
+    int latitude = bbox.getMinLatitude() + (bbox.getMaxLatitude() - bbox.getMinLatitude()) / 2;
     int zoom = ZGrid.getZoom(zid);
     var xyGrid = new XYGrid(zoom);
     long xyId = xyGrid.getId(longitude, latitude);

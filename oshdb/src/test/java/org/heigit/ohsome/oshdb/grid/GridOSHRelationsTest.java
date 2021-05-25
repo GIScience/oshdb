@@ -47,11 +47,7 @@ public class GridOSHRelationsTest {
     long cellId = 2;
     int cellLevel = 2;
     var grid = GridOSHRelations.compact(cellId, cellLevel, 0, 0, 0, 0,
-        asList(relation300, relation301));
-
-    var expResult =
-        "Grid-Cell of OSHRelations ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
-    assertEquals(expResult, grid.toString());
+        asList(relation300, relation301));;
     assertEquals(cellId, grid.getId());
     assertEquals(cellLevel, grid.getLevel());
     assertEquals(2, Iterables.size(grid.getEntities()));

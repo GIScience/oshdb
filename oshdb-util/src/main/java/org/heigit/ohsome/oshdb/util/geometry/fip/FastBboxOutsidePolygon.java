@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.util.geometry.fip;
 
+import static org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder.getCoordinate;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
-import org.locationtech.jts.geom.Coordinate;
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -24,7 +26,6 @@ import org.locationtech.jts.geom.Polygonal;
 public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<OSHDBBoundable>,
     Serializable {
   private Collection<Envelope> outerBboxes = new ArrayList<>();
-
 
   /**
    * Constructor using a given geometry {@code geom} and geometry type {@code P}.
@@ -56,16 +57,16 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
   public boolean test(OSHDBBoundable boundingBox) {
     GeometryFactory gf = new GeometryFactory();
     Point p1 =
-        gf.createPoint(new Coordinate(boundingBox.getMinLongitude(), boundingBox.getMinLatitude()));
+        gf.createPoint(getCoordinate(boundingBox.getMinLongitude(), boundingBox.getMinLatitude()));
     if (crossingNumber(p1, true) % 2 == 1) {
       return false;
     }
     Point p2 =
-        gf.createPoint(new Coordinate(boundingBox.getMaxLongitude(), boundingBox.getMinLatitude()));
+        gf.createPoint(getCoordinate(boundingBox.getMaxLongitude(), boundingBox.getMinLatitude()));
     Point p3 =
-        gf.createPoint(new Coordinate(boundingBox.getMaxLongitude(), boundingBox.getMaxLatitude()));
+        gf.createPoint(getCoordinate(boundingBox.getMaxLongitude(), boundingBox.getMaxLatitude()));
     Point p4 =
-        gf.createPoint(new Coordinate(boundingBox.getMinLongitude(), boundingBox.getMaxLatitude()));
+        gf.createPoint(getCoordinate(boundingBox.getMinLongitude(), boundingBox.getMaxLatitude()));
     if (crossingNumber(p1, true) != crossingNumber(p2, true)
         || crossingNumber(p3, true) != crossingNumber(p4, true)
         || crossingNumber(p2, false) != crossingNumber(p3, false)
@@ -73,10 +74,10 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
       return false; // at least one of the bbox'es edges crosses the polygon
     }
     for (Envelope innerBbox : outerBboxes) {
-      if (boundingBox.getMinLatitude() <= innerBbox.getMinY()
-          && boundingBox.getMaxLatitude() >= innerBbox.getMaxY()
-          && boundingBox.getMinLongitude() <= innerBbox.getMinX()
-          && boundingBox.getMaxLongitude() >= innerBbox.getMaxX()) {
+      if (OSMCoordinates.toDouble(boundingBox.getMinLatitude()) <= innerBbox.getMinY()
+          && OSMCoordinates.toDouble(boundingBox.getMaxLatitude()) >= innerBbox.getMaxY()
+          && OSMCoordinates.toDouble(boundingBox.getMinLongitude()) <= innerBbox.getMinX()
+          && OSMCoordinates.toDouble(boundingBox.getMaxLongitude()) >= innerBbox.getMaxX()) {
         // the bounding box fully covers at least one of the (multi)polygon's outer rings
         return false;
       }

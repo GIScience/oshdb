@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.util;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -32,49 +31,33 @@ public class OSHDBBoundingBoxTest {
   @Test
   public void testGetMinLon() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 89.0, 1.0, 90.0);
-    double expResult = 0.0;
-    double result = instance.getMinLongitude();
-    assertEquals(expResult, result, 0.0);
+    int expResult = 0;
+    int result = instance.getMinLongitude();
+    assertEquals(expResult, result);
   }
 
   @Test
   public void testGetMaxLon() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 89.0, 1.0, 90.0);
-    double expResult = 1.0;
-    double result = instance.getMaxLongitude();
-    assertEquals(expResult, result, 0.0);
+    int expResult = 1_0000000;
+    int result = instance.getMaxLongitude();
+    assertEquals(expResult, result);
   }
 
   @Test
   public void testGetMinLat() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 89.0, 1.0, 90.0);
-    double expResult = 89.0;
-    double result = instance.getMinLatitude();
-    assertEquals(expResult, result, 0.0);
+    int expResult = 89_0000000;
+    int result = instance.getMinLatitude();
+    assertEquals(expResult, result);
   }
 
   @Test
   public void testGetMaxLat() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 89.0, 1.0, 90.0);
-    double expResult = 90.0;
-    double result = instance.getMaxLatitude();
-    assertEquals(expResult, result, 0.0);
-  }
-
-  @Test
-  public void testGetLon() {
-    OSHDBBoundingBox instance = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 89.0, 1.0, 90.0);
-    int[] expResult = new int[]{0, 10000000};
-    int[] result = instance.getLon();
-    assertArrayEquals(expResult, result);
-  }
-
-  @Test
-  public void testGetLat() {
-    OSHDBBoundingBox instance = OSHDBBoundingBox.bboxLonLatCoordinates(0.0, 89.0, 1.0, 90.0);
-    int[] expResult = new int[]{890000000, 900000000};
-    int[] result = instance.getLat();
-    assertArrayEquals(expResult, result);
+    int expResult = 90_0000000;
+    int result = instance.getMaxLatitude();
+    assertEquals(expResult, result);
   }
 
   @Test

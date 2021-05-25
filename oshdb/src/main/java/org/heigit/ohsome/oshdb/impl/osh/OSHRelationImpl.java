@@ -207,10 +207,10 @@ public class OSHRelationImpl extends OSHEntityImpl
     for (OSHNode node : nodes) {
       OSHDBBoundable bbox = node;
       if (bbox.isValid()) {
-        minLon = Math.min(minLon, bbox.getMinLon());
-        maxLon = Math.max(maxLon, bbox.getMaxLon());
-        minLat = Math.min(minLat, bbox.getMinLat());
-        maxLat = Math.max(maxLat, bbox.getMaxLat());
+        minLon = Math.min(minLon, bbox.getMinLongitude());
+        maxLon = Math.max(maxLon, bbox.getMaxLongitude());
+        minLat = Math.min(minLat, bbox.getMinLatitude());
+        maxLat = Math.max(maxLat, bbox.getMaxLatitude());
       } else {
         Iterator<OSMNode> osmItr = node.getVersions().iterator();
         while (osmItr.hasNext()) {
@@ -241,10 +241,10 @@ public class OSHRelationImpl extends OSHEntityImpl
     offset = 0;
     for (OSHWay way : ways) {
       OSHDBBoundable bbox = way;
-      minLon = Math.min(minLon, bbox.getMinLon());
-      maxLon = Math.max(maxLon, bbox.getMaxLon());
-      minLat = Math.min(minLat, bbox.getMinLat());
-      maxLat = Math.max(maxLat, bbox.getMaxLat());
+      minLon = Math.min(minLon, bbox.getMinLongitude());
+      maxLon = Math.max(maxLon, bbox.getMaxLongitude());
+      minLat = Math.min(minLat, bbox.getMinLatitude());
+      maxLat = Math.max(maxLat, bbox.getMaxLatitude());
 
       ByteBuffer buffer = OSHWayImpl.buildRecord(OSHEntities.toList(way.getVersions()),
           way.getNodes(), 0, 0, baseLongitude, baseLatitude);

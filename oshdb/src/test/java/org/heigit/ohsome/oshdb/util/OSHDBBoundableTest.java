@@ -42,9 +42,9 @@ public class OSHDBBoundableTest {
   public void testIntersection() {
     OSHDBBoundable box2 = OSHDBBoundingBox.bboxOSMCoordinates(0, 0, 2, 2);
     OSHDBBoundable intersection = box2.intersection(box);
-    assertEquals(0, intersection.getMinLon());
-    assertEquals(0, intersection.getMinLat());
-    assertEquals(1, intersection.getMaxLon());
-    assertEquals(1, intersection.getMaxLat());
+    assertEquals(0, intersection.getMinLongitude());
+    assertEquals(0, intersection.getMinLatitude());
+    assertEquals(1, intersection.getMaxLongitude());
+    assertEquals(1, intersection.getMaxLatitude());
   }
 }

@@ -83,10 +83,10 @@ public class XYGrid implements Serializable {
     }
     OSHDBBoundingBox bbox = grid.getCellDimensions(id);
     OSHDBBoundingBox topRight = grid.getCellDimensions(topRightId);
-    return bboxOSMCoordinates(Math.min(bbox.getMinLon(), topRight.getMinLon()),
-        Math.min(bbox.getMinLat(), topRight.getMinLat()),
-        Math.max(bbox.getMaxLon(), topRight.getMaxLon()),
-        Math.max(bbox.getMaxLat(), topRight.getMaxLat()));
+    return bboxOSMCoordinates(Math.min(bbox.getMinLongitude(), topRight.getMinLongitude()),
+        Math.min(bbox.getMinLatitude(), topRight.getMinLatitude()),
+        Math.max(bbox.getMaxLongitude(), topRight.getMaxLongitude()),
+        Math.max(bbox.getMaxLatitude(), topRight.getMaxLatitude()));
   }
 
   private final int zoom;
@@ -175,7 +175,7 @@ public class XYGrid implements Serializable {
    * @return south-western cellId of given BBOX
    */
   public long getId(OSHDBBoundingBox bbox) {
-    return getId(bbox.getMinLon(), bbox.getMinLat());
+    return getId(bbox.getMinLongitude(), bbox.getMinLatitude());
   }
 
   /**
@@ -229,10 +229,10 @@ public class XYGrid implements Serializable {
   public long getEstimatedIdCount(final OSHDBBoundingBox data) {
     // number of Cells in x * number of cells in y
     return Math.max(
-        (long) Math.ceil(data.getMaxLon() / cellWidth)
-            - (long) Math.floor(data.getMinLon() / cellWidth),
-        (long) Math.ceil(data.getMaxLat() / cellWidth)
-            - (long) Math.floor(data.getMinLat() / cellWidth));
+        (long) Math.ceil(data.getMaxLongitude() / cellWidth)
+            - (long) Math.floor(data.getMinLongitude() / cellWidth),
+        (long) Math.ceil(data.getMaxLatitude() / cellWidth)
+            - (long) Math.floor(data.getMinLatitude() / cellWidth));
   }
 
   /**
@@ -317,8 +317,8 @@ public class XYGrid implements Serializable {
     // initialise basic variables
     Set<IdRange> result = new TreeSet<>();
 
-    int minlat = bbox.getMinLat();
-    int maxlat = bbox.getMaxLat();
+    int minlat = bbox.getMinLatitude();
+    int maxlat = bbox.getMaxLatitude();
 
     if (minlat > maxlat) {
       LOG.warn("The minimum values are not smaller than the maximum values. "
@@ -326,8 +326,8 @@ public class XYGrid implements Serializable {
       return Collections.emptySet();
     }
 
-    int minlong = bbox.getMinLon();
-    int maxlong = bbox.getMaxLon();
+    int minlong = bbox.getMinLongitude();
+    int maxlong = bbox.getMaxLongitude();
 
     IdRange outofboundsCell = IdRange.INVALID;
     // test if bbox is on earth or extends further
@@ -413,10 +413,10 @@ public class XYGrid implements Serializable {
     }
 
     OSHDBBoundingBox bbox = this.getCellDimensions(center.getId());
-    int minlong = bbox.getMinLon() - 1;
-    int minlat = bbox.getMinLat() - 1;
-    int maxlong = bbox.getMaxLon() + 1;
-    int maxlat = bbox.getMaxLat() + 1;
+    int minlong = bbox.getMinLongitude() - 1;
+    int minlat = bbox.getMinLatitude() - 1;
+    int maxlong = bbox.getMaxLongitude() + 1;
+    int maxlat = bbox.getMaxLatitude() + 1;
     OSHDBBoundingBox newbbox = bboxOSMCoordinates(minlong, minlat, maxlong, maxlat);
 
     return this.bbox2CellIdRanges(newbbox, false);

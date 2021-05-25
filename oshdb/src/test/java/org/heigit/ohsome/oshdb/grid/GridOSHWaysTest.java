@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.grid;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +31,7 @@ public class GridOSHWaysTest {
       Arrays.asList(new OSMNode(104L, 1, 1L, 0L, 123, new int[] {2, 4}, 494094984, 86809727)));
 
   @Test
-  public void testToString() throws IOException {
+  public void testGrid() throws IOException {
     List<OSHWay> hosmWays = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMWay> versions = new ArrayList<>();
@@ -42,9 +43,7 @@ public class GridOSHWaysTest {
     }
 
     GridOSHWays instance = GridOSHWays.compact(2, 2, 100, 100000L, 86000000, 490000000, hosmWays);
-    String expResult =
-        "Grid-Cell of OSHWays ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
-    String result = instance.toString();
-    assertEquals(expResult, result);
+    var entities = instance.getEntities();
+    assertEquals(hosmWays.size(), Iterables.size(entities));
   }
 }

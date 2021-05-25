@@ -5,9 +5,17 @@ import static org.heigit.ohsome.oshdb.osm.OSMCoordinates.GEOM_PRECISION_TO_LONG;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 
+/**
+ * This class describes a BoundingBox with min/max longitude/latitude.
+ */
 public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   private static final long serialVersionUID = 1L;
+
+  /**
+   * Singleton invalid bounding box.
+   */
   public static final OSHDBBoundingBox INVALID = bboxOSMCoordinates(1, 1, -1, -1);
 
   private final int minLon;
@@ -16,7 +24,13 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   private final int maxLat;
 
   /**
-   * Creates an {@code OSHDBBoundingBox} instance from osm long coordinates.
+   * Creates an {@code OSHDBBoundingBox} instance from osm int coordinates.
+   *
+   * @param minLon minimum longitude in osm-coordinate system
+   * @param minLat minimum latitude in osm-coordinate system
+   * @param maxLon maximum longitude in osm-coordinate system
+   * @param maxLat maximum latitude in osm-coordinate system
+   * @return new instance of {@link OSHDBBoundingBox}
    */
   public static OSHDBBoundingBox bboxOSMCoordinates(int minLon, int minLat,
       int maxLon, int maxLat) {
@@ -31,7 +45,13 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   }
 
   /**
-   * Create an {@code OSHDBBoudingBox} with standard double longitude/latitude coordinates.
+   * Creates an {@code OSHDBBoundingBox} with wgs84 coordinates.
+   *
+   * @param minLon minimum longitude in wgs84 coordinate system
+   * @param minLat minimum latitude in wgs84 coordinate system
+   * @param maxLon maximum longitude in wgs84 coordinate system
+   * @param maxLat maximum latitude in wgs84 coordinate system
+   * @return new instance of {@link OSHDBBoundingBox}
    */
   public static OSHDBBoundingBox bboxLonLatCoordinates(double minLon, double minLat, double maxLon,
       double maxLat) {
@@ -43,41 +63,33 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   }
 
   @Override
-  public int getMinLon() {
+  public int getMinLongitude() {
     return minLon;
   }
 
   @Override
-  public int getMaxLon() {
+  public int getMaxLongitude() {
     return maxLon;
   }
 
   @Override
-  public int getMinLat() {
+  public int getMinLatitude() {
     return minLat;
   }
 
   @Override
-  public int getMaxLat() {
+  public int getMaxLatitude() {
     return maxLat;
-  }
-
-  public int[] getLon() {
-    return new int[] {minLon, maxLon};
-  }
-
-  public int[] getLat() {
-    return new int[] {minLat, maxLat};
   }
 
   @Override
   public String toString() {
     return String.format(Locale.ENGLISH,
         "(%3.7f,%3.7f,%3.7f,%3.7f)",
-        this.getMinLongitude(),
-        this.getMinLatitude(),
-        this.getMaxLongitude(),
-        this.getMaxLatitude());
+        OSMCoordinates.toDouble(minLon),
+        OSMCoordinates.toDouble(minLat),
+        OSMCoordinates.toDouble(maxLon),
+        OSMCoordinates.toDouble(maxLat));
   }
 
   @Override

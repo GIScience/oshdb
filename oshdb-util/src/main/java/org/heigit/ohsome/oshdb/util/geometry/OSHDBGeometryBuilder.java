@@ -20,6 +20,7 @@ import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -162,14 +163,22 @@ public class OSHDBGeometryBuilder {
 
     GeometryFactory gf = new GeometryFactory();
 
-    Coordinate sw = new Coordinate(bbox.getMinLongitude(), bbox.getMinLatitude());
-    Coordinate se = new Coordinate(bbox.getMaxLongitude(), bbox.getMinLatitude());
-    Coordinate nw = new Coordinate(bbox.getMaxLongitude(), bbox.getMaxLatitude());
-    Coordinate ne = new Coordinate(bbox.getMinLongitude(), bbox.getMaxLatitude());
+    Coordinate sw = getCoordinate(bbox.getMinLongitude(), bbox.getMinLatitude());
+    Coordinate se = getCoordinate(bbox.getMaxLongitude(), bbox.getMinLatitude());
+    Coordinate nw = getCoordinate(bbox.getMaxLongitude(), bbox.getMaxLatitude());
+    Coordinate ne = getCoordinate(bbox.getMinLongitude(), bbox.getMaxLatitude());
 
     Coordinate[] cordAr = {sw, se, nw, ne, sw};
 
     return gf.createPolygon(cordAr);
+  }
+
+  public static Coordinate getCoordinate(OSMNode node) {
+    return getCoordinate(node.getLon(), node.getLat());
+  }
+
+  public static Coordinate getCoordinate(int lon, int lat) {
+    return new Coordinate(OSMCoordinates.toDouble(lon), OSMCoordinates.toDouble(lat));
   }
 
   private static Geometry getGeometryCollectionGeometry(
@@ -622,7 +631,7 @@ public class OSHDBGeometryBuilder {
 
     @Override
     public int hashCode() {
-      return ((int) this.id1) + ((int) this.id2);
+      return (int) this.id1 + (int) this.id2;
     }
   }
 }

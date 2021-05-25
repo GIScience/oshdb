@@ -13,6 +13,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
@@ -343,22 +344,22 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
   }
 
   @Override
-  public int getMinLon() {
+  public int getMinLongitude() {
     return minLon;
   }
 
   @Override
-  public int getMinLat() {
+  public int getMinLatitude() {
     return minLat;
   }
 
   @Override
-  public int getMaxLon() {
+  public int getMaxLongitude() {
     return maxLon;
   }
 
   @Override
-  public int getMaxLat() {
+  public int getMaxLatitude() {
     return maxLat;
   }
 
@@ -436,8 +437,11 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     }
 
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
-        last.getVersion(), first.getEpochSecond(), getMinLatitude(), getMinLongitude(),
-        getMaxLatitude(), getMaxLongitude());
+        last.getVersion(), first.getEpochSecond(),
+        OSMCoordinates.toDouble(minLat),
+        OSMCoordinates.toDouble(minLon),
+        OSMCoordinates.toDouble(maxLat),
+        OSMCoordinates.toDouble(maxLon));
   }
 
   protected static void readBbox(ByteArrayWrapper wrapper, CommonEntityProps p, int baseLongitude,

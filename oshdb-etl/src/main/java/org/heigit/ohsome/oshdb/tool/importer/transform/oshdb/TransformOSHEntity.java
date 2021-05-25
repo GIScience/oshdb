@@ -9,8 +9,8 @@ public abstract class TransformOSHEntity extends OSHEntityImpl {
       long baseLongitude, long baseLatitude, byte header, long id, OSHDBBoundingBox bbox,
       int[] keys, int dataOffset, int dataLength) {
     super(props(data, offset, length, 0, baseTimestamp, Math.toIntExact(baseLongitude),
-        Math.toIntExact(baseLatitude), header, id, bbox.getMinLon(), bbox.getMinLat(),
-        bbox.getMaxLon(), bbox.getMaxLat(), keys, dataOffset, dataLength));
+        Math.toIntExact(baseLatitude), header, id, bbox.getMinLongitude(), bbox.getMinLatitude(),
+        bbox.getMaxLongitude(), bbox.getMaxLatitude(), keys, dataOffset, dataLength));
   }
 
   private static CommonEntityProps props(byte[] data, int offset, int length, long baseId,

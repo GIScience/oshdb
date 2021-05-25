@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.grid;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,8 @@ public class GridOSHNodesTest {
     }
 
     GridOSHNodes instance = GridOSHNodes.rebase(2, 2, 100, 100000L, 86000000, 490000000, hosmNodes);
-    String expResult =
-        "Grid-Cell of OSHNodes ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
-    String result = instance.toString();
-    assertEquals(expResult, result);
+    var entities = instance.getEntities();
+    assertEquals(hosmNodes.size(), Iterables.size(entities));
   }
 
 }
