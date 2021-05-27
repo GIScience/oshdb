@@ -20,13 +20,8 @@ class IdRange implements Serializable {
    * @param toId upper limit of the range.
    */
   IdRange(long fromId, long toId) {
-    if (toId < fromId) {
-      long buffer = toId;
-      toId = fromId;
-      fromId = buffer;
-    }
-    this.fromId = fromId;
-    this.toId = toId;
+    this.fromId = Math.min(fromId, toId);
+    this.toId = Math.max(fromId, toId);
   }
 
   /** Checks if the given id falls into the id range. */
