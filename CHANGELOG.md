@@ -14,7 +14,7 @@ Changelog
 
 ### new features
 
-* enhance functionality of oshdb-filter: add new `changeset: <id>` and (optional) `contributor: <id>` filters ([#380])
+* enhance functionality of oshdb-filter: add new `changeset: <id|(ids)>` and (optional) `contributor: <id|(ids)>` filters ([#380])
 
 ### performance improvements
 
