@@ -21,16 +21,6 @@ import org.locationtech.jts.geom.Geometry;
  * of boolean operators, parentheses, tag filters and/or other filters.</p>
  */
 public interface FilterExpression extends Serializable {
-
-  /**
-   * Apply the filter to an OSM entity.
-   *
-   * @param entity the OSM entity to check.
-   * @return true if the entity fulfills the specified filter, otherwise false.
-   */
-  @Contract(pure = true)
-  boolean applyOSM(OSMEntity entity);
-
   /**
    * Apply the filter to an OSH entity.
    *
@@ -43,8 +33,18 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   default boolean applyOSH(OSHEntity entity) {
+    // dummy implementation for basic filters: pass all OSH entities -> check its versions instead
     return true;
   }
+
+  /**
+   * Apply the filter to an OSM entity.
+   *
+   * @param entity the OSM entity to check.
+   * @return true if the entity fulfills the specified filter, otherwise false.
+   */
+  @Contract(pure = true)
+  boolean applyOSM(OSMEntity entity);
 
   /**
    * Apply the filter to an "OSM feature" (i.e. an entity with a geometry).

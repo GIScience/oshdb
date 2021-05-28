@@ -16,8 +16,18 @@ public class IdFilterRange extends NegatableFilter {
       }
 
       @Override
+      boolean applyOSHNegated(OSHEntity entity) {
+        return !this.applyOSH(entity);
+      }
+
+      @Override
       public boolean applyOSM(OSMEntity entity) {
         return range.test(entity.getId());
+      }
+
+      @Override
+      boolean applyOSMNegated(OSMEntity entity) {
+        return !this.applyOSM(entity);
       }
 
       @Override

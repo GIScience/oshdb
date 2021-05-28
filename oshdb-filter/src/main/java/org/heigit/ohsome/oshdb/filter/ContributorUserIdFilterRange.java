@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
-import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 
@@ -14,11 +13,6 @@ public class ContributorUserIdFilterRange extends NegatableFilter {
       @Override
       public boolean applyOSH(OSHEntity entity) {
         return applyToOSHEntityRecursively(entity, v -> contributorUserIdRange.test(v.getUserId()));
-      }
-
-      @Override
-      public boolean applyOSM(OSMEntity entity) {
-        return true;
       }
 
       @Override

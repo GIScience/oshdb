@@ -25,6 +25,11 @@ public class ChangesetIdFilterEquals extends NegatableFilter {
       }
 
       @Override
+      boolean applyOSMNegated(OSMEntity entity) {
+        return true;
+      }
+
+      @Override
       public boolean applyOSMContribution(OSMContribution contribution) {
         return contribution.getChangesetId() == changesetId;
       }

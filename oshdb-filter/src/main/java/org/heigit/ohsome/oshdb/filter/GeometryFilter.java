@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nonnull;
-import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.locationtech.jts.geom.Geometry;
 
@@ -73,8 +72,18 @@ public abstract class GeometryFilter extends NegatableFilter {
       }
 
       @Override
+      boolean applyOSMNegated(OSMEntity entity) {
+        return true;
+      }
+
+      @Override
       public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
         return valueRange.test(metricEvaluator.applyAsDouble(geometrySupplier.get()));
+      }
+
+      @Override
+      boolean applyOSMGeometryNegated(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+        return !applyOSMGeometry(entity, geometrySupplier);
       }
 
       @Override

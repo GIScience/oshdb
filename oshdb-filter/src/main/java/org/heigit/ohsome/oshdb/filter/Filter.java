@@ -41,11 +41,21 @@ public interface Filter extends FilterExpression {
    * @return a filter object which filters using the given predicate
    */
   static Filter byOSMEntity(OSMEntityFilter osmCallback) {
-    return by(ignored -> true, osmCallback);
+    return new NegatableFilter(new FilterInternal() {
+      @Override
+      public boolean applyOSM(OSMEntity entity) {
+        return osmCallback.test(entity);
+      }
+
+      @Override
+      boolean applyOSMNegated(OSMEntity entity) {
+        return !osmCallback.test(entity);
+      }
+    });
   }
 
   /**
-   * Constructs a simple filter based on two predicates.
+   * Constructs a custom filter based on OSH &amp; OSM predicates.
    *
    * <p>The callbacks are called for each OSH/OSM entity and decide whether the OSH/OSM object
    * should be kept (by returning true) or discarded (by returning false).</p>
@@ -59,11 +69,26 @@ public interface Filter extends FilterExpression {
   static Filter by(
       OSHEntityFilter oshCallback,
       OSMEntityFilter osmCallback) {
-    return by(oshCallback, osmCallback, (ignored, ignored2) -> true);
+    return new NegatableFilter(new FilterInternal() {
+      @Override
+      public boolean applyOSH(OSHEntity entity) {
+        return oshCallback.test(entity);
+      }
+
+      @Override
+      public boolean applyOSM(OSMEntity entity) {
+        return osmCallback.test(entity);
+      }
+
+      @Override
+      boolean applyOSMNegated(OSMEntity entity) {
+        return !osmCallback.test(entity);
+      }
+    });
   }
 
   /**
-   * Constructs a simple filter based on two predicates and a geometry test.
+   * Constructs a custom filter based on OSH &amp; OSM predicates and a geometry test.
    *
    * <p>The callbacks are called for each OSM feature and decide whether the feature
    * should be kept (by returning true) or discarded (by returning false).</p>
@@ -85,18 +110,23 @@ public interface Filter extends FilterExpression {
   ) {
     return new NegatableFilter(new FilterInternal() {
       @Override
-      public boolean applyOSM(OSMEntity entity) {
-        return osmCallback.test(entity);
-      }
-
-      @Override
       public boolean applyOSH(OSHEntity entity) {
         return oshCallback.test(entity);
       }
 
       @Override
+      public boolean applyOSM(OSMEntity entity) {
+        return osmCallback.test(entity);
+      }
+
+      @Override
       public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
         return geomCallback.test(entity, geometrySupplier);
+      }
+
+      @Override
+      boolean applyOSMGeometryNegated(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+        return !geomCallback.test(entity, geometrySupplier);
       }
     });
   }

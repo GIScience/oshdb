@@ -10,6 +10,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
+import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -20,6 +21,35 @@ class NegatableFilter implements Filter {
     @Override
     public FilterExpression negate() {
       throw new IllegalStateException("Invalid call of inner negate() on a negatable filter");
+    }
+
+    @Override
+    public boolean applyOSH(OSHEntity entity) {
+      return true;
+    }
+
+    /** Inverse of {@link FilterExpression#applyOSH(OSHEntity)} */
+    @Contract(pure = true)
+    boolean applyOSHNegated(OSHEntity entity) {
+      return true;
+    }
+
+    @Override
+    public boolean applyOSM(OSMEntity entity) {
+      return true;
+    }
+
+    /** Inverse of {@link FilterExpression#applyOSM(OSMEntity)} */
+    @Contract(pure = true)
+    boolean applyOSMNegated(OSMEntity entity) {
+      return true;
+    }
+
+    /** Inverse of {@link FilterExpression#applyOSMGeometry(OSMEntity, Supplier)}. */
+    @Contract(pure = true)
+    boolean applyOSMGeometryNegated(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+      // dummy implementation for basic filters: ignores the geometry, just looks at the OSM entity
+      return applyOSMNegated(entity);
     }
 
     /**
@@ -77,17 +107,23 @@ class NegatableFilter implements Filter {
 
   @Override
   public boolean applyOSH(OSHEntity entity) {
-    return this.filter.applyOSH(entity) ^ this.negated;
+    return negated
+        ? this.filter.applyOSHNegated(entity)
+        : this.filter.applyOSH(entity);
   }
 
   @Override
   public boolean applyOSM(OSMEntity entity) {
-    return this.filter.applyOSM(entity) ^ this.negated;
+    return negated
+        ? this.filter.applyOSMNegated(entity)
+        : this.filter.applyOSM(entity);
   }
 
   @Override
   public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
-    return this.filter.applyOSMGeometry(entity, geometrySupplier) ^ this.negated;
+    return negated
+        ? this.filter.applyOSMGeometryNegated(entity, geometrySupplier)
+        : this.filter.applyOSMGeometry(entity, geometrySupplier);
   }
 
   @Override
