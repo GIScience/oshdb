@@ -26,7 +26,22 @@ public interface Filter extends FilterExpression {
    * @return a filter object which filters using the given predicate
    */
   static Filter byOSHEntity(OSHEntityFilter oshCallback) {
-    return by(oshCallback, ignored -> true);
+    return new NegatableFilter(new FilterInternal() {
+      @Override
+      public boolean applyOSM(OSMEntity entity) {
+        return true;
+      }
+
+      @Override
+      public boolean applyOSH(OSHEntity entity) {
+        return oshCallback.test(entity);
+      }
+
+      @Override
+      boolean applyOSHNegated(OSHEntity entity) {
+        return !oshCallback.test(entity);
+      }
+    });
   }
 
   /**
