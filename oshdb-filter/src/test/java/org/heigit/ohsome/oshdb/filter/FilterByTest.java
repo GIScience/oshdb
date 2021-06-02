@@ -7,11 +7,7 @@ import java.io.IOException;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.junit.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
 /**
  * Tests helper methods for creating filters from lambda functions.
@@ -29,7 +25,7 @@ public class FilterByTest extends FilterTest {
     FilterExpression expression;
     expression = Filter.byOSMEntity(e -> e.getVersion() == 1);
     assertTrue(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
-    expression = Filter.byOSMEntity(e -> e.getVersion() != 1);
+    expression = expression.negate();
     assertFalse(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
   }
 
@@ -38,30 +34,7 @@ public class FilterByTest extends FilterTest {
     FilterExpression expression;
     expression = Filter.byOSHEntity(e -> e.getId() == 1);
     assertTrue(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
-    expression = Filter.byOSHEntity(e -> e.getId() != 1);
+    expression = expression.negate();
     assertFalse(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
-  }
-
-  @Test
-  public void testFilterByCombined() {
-    FilterExpression expression;
-    expression = Filter.by(e -> e.getId() == 1, e -> e.getVersion() == 1);
-    assertTrue(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
-    expression = Filter.by(e -> e.getId() != 1, e -> e.getVersion() == 1);
-    assertFalse(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
-    expression = Filter.by(e -> e.getId() == 1, e -> e.getVersion() != 1);
-    assertFalse(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
-  }
-
-  @Test
-  public void testFilterByCombinedWithGeom() {
-    final Geometry emptyPoint = gf.createPoint(new Coordinate(0, 0));
-    FilterExpression expression;
-    expression = Filter.by(e -> true, e -> true, (e, g) -> g.get() instanceof Point);
-    assertTrue(expression.applyOSMGeometry(testOSMEntity, () -> emptyPoint));
-    assertTrue(expression.applyOSMGeometry(testOSMEntity, emptyPoint));
-    expression = Filter.by(e -> true, e -> true, (e, g) -> g.get() instanceof Polygon);
-    assertFalse(expression.applyOSMGeometry(testOSMEntity, () -> emptyPoint));
-    assertFalse(expression.applyOSMGeometry(testOSMEntity, emptyPoint));
   }
 }

@@ -6,7 +6,7 @@ Changelog
 ### breaking changes
 
 * reorganize java packages, moving them from `org/heigit/bigspatialdata` to `org/heigit/ohsome`
-* integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter` ([#306]), and enhance filtering capabilities ([#380])
+* integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter` ([#306])
 * rename and move submodules of `oshdb-tool` ([#384])
 * rename some classes, methods and enum constants; move some classes/interfaces ([#369], [#374])
 
