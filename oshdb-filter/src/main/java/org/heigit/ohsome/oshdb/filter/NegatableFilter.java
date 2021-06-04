@@ -23,11 +23,6 @@ class NegatableFilter implements Filter {
       throw new IllegalStateException("Invalid call of inner negate() on a negatable filter");
     }
 
-    @Override
-    public boolean applyOSH(OSHEntity entity) {
-      return true;
-    }
-
     /** Inverse of {@link FilterExpression#applyOSH(OSHEntity)} */
     @Contract(pure = true)
     boolean applyOSHNegated(OSHEntity entity) {
