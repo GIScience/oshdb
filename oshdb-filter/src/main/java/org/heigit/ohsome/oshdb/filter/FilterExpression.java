@@ -123,6 +123,9 @@ public interface FilterExpression extends Serializable {
    * <p>for example: A∧(B∨C) ⇔ (A∧B)∨(A∧C)</p>
    *
    * @return a disjunction of conjunctions of filter expressions: A∧B∧… ∨ C∧D∧… ∨ …
+   * @throws IllegalStateException if the filter cannot be normalized (all filters provided by the
+   *                               oshdb-filter module are normalizable, but this can occur for
+   *                               user defined filter expressions)
    */
   @Contract(pure = true)
   default List<List<Filter>> normalize() {
@@ -150,9 +153,7 @@ public interface FilterExpression extends Serializable {
       combined.addAll(exp2);
       return combined;
     } else {
-      String error = "unsupported state during filter normalization";
-      assert false : error;
-      throw new IllegalStateException(error);
+      throw new IllegalStateException("unsupported state during filter normalization");
     }
   }
 }

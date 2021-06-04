@@ -2170,7 +2170,11 @@ public abstract class MapReducer<X> implements
     // basic optimizations
     mapRed = optimizeFilters0(mapRed, filter);
     // more advanced optimizations that rely on analyzing the DNF of a filter expression
-    mapRed = optimizeFilters1(mapRed, filter);
+    try {
+      mapRed = optimizeFilters1(mapRed, filter);
+    } catch (IllegalStateException ignored) {
+      // if a filter cannot be normalized -> just don't perform this optimization step
+    }
     return mapRed;
   }
 
