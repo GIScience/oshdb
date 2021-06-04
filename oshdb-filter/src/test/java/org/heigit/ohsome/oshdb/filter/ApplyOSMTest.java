@@ -204,6 +204,7 @@ public class ApplyOSMTest extends FilterTest {
   public void testChangesetId() {
     FilterExpression expression = parser.parse("changeset:42");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+    assertTrue(expression.negate().applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
@@ -223,6 +224,7 @@ public class ApplyOSMTest extends FilterTest {
     var parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:1");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+    assertTrue(expression.negate().applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
