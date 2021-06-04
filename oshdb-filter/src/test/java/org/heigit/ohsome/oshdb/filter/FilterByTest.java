@@ -7,13 +7,11 @@ import java.io.IOException;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.junit.Test;
-import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Tests helper methods for creating filters from lambda functions.
  */
 public class FilterByTest extends FilterTest {
-  private final GeometryFactory gf = new GeometryFactory();
   private final OSMNode testOSMEntity = createTestOSMEntityNode();
   private final OSHNode testOSHEntity = createTestOSHEntityNode(testOSMEntity);
 
