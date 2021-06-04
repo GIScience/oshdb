@@ -370,11 +370,11 @@ public class ApplyOSHTest extends FilterTest {
     )})));
     assertTrue(expression.applyOSH(createTestOSHEntityRelation(new OSMRelation[] {
         createTestOSMEntityRelation(1, 1)
+    }, new OSHNode[] {}, new OSHWay[] { createTestOSHEntityWay(new OSMWay[]{
+        createTestOSMEntityWay(1, 1, new long[]{1})
     }, new OSHNode[] {createTestOSHEntityNode(
         createTestOSMEntityNode(42, 4)
-    )}, new OSHWay[] { createTestOSHEntityWay(
-        createTestOSMEntityWay(1, 1, new long[] {})
-    )})));
+    )})})));
   }
 
   @Test
