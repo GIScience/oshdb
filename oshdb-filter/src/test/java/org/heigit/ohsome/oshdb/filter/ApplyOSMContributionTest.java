@@ -131,6 +131,16 @@ public class ApplyOSMContributionTest extends FilterTest {
     )));
   }
 
+  @Test
+  public void testNegatableFilter() {
+    FilterExpression expression = parser.parse("id:(1,2)");
+    var testObject = new TestOSMContribution(
+        entity, point, entity, point, 1L, 2, NO_TYPE
+    );
+    assertTrue(expression.applyOSMContribution(testObject));
+    assertFalse(expression.negate().applyOSMContribution(testObject));
+  }
+
   private void testContribution(FilterExpression expression) {
     assertFalse(expression.applyOSMContribution(new TestOSMContribution(
         entity, point, entity, point, 1L, 10, NO_TYPE

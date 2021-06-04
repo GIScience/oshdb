@@ -67,6 +67,16 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
         createTestOSMEntityNode(), gf.createPoint())));
     assertFalse(expression.applyOSMEntitySnapshot(new TestOSMEntitySnapshot(
         createTestOSMEntityNode(), gf.createLineString())));
+    assertFalse(expression.negate().applyOSMEntitySnapshot(new TestOSMEntitySnapshot(
+        createTestOSMEntityNode(), gf.createPoint())));
+  }
+
+  @Test
+  public void testNegatableFilter() {
+    FilterExpression expression = parser.parse("id:(1,2)");
+    var testObject = new TestOSMEntitySnapshot(createTestOSMEntityNode(), gf.createPoint());
+    assertTrue(expression.applyOSMEntitySnapshot(testObject));
+    assertFalse(expression.negate().applyOSMEntitySnapshot(testObject));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
