@@ -20,6 +20,8 @@ public class ApplyOSMGeometryTest extends FilterTest {
   public void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression.applyOSMGeometry(createTestOSMEntityNode(), gf.createPoint()));
+    // negated
+    assertFalse(expression.negate().applyOSMGeometry(createTestOSMEntityNode(), gf.createPoint()));
   }
 
   @Test
@@ -113,6 +115,11 @@ public class ApplyOSMGeometryTest extends FilterTest {
         // approx 4.9m²
         OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 2E-5, 2E-5))
     ));
+    // negated
+    assertTrue(expression.negate().applyOSMGeometry(entity,
+        // approx 0.3m²
+        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 5E-6, 5E-6))
+    ));
   }
 
   @Test
@@ -138,6 +145,14 @@ public class ApplyOSMGeometryTest extends FilterTest {
         gf.createLineString(new Coordinate[] {
             new Coordinate(0, 0),
             new Coordinate(2E-5, 0)
+        })
+    ));
+    // negated
+    assertTrue(expression.negate().applyOSMGeometry(entity,
+        // approx 0.6m
+        gf.createLineString(new Coordinate[] {
+            new Coordinate(0, 0),
+            new Coordinate(5E-6, 0)
         })
     ));
   }

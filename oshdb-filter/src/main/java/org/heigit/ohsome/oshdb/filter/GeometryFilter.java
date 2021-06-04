@@ -72,11 +72,6 @@ public abstract class GeometryFilter extends NegatableFilter {
       }
 
       @Override
-      boolean applyOSMNegated(OSMEntity entity) {
-        return true;
-      }
-
-      @Override
       public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
         return valueRange.test(metricEvaluator.applyAsDouble(geometrySupplier.get()));
       }
