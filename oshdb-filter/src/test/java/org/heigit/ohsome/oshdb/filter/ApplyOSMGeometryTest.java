@@ -116,6 +116,10 @@ public class ApplyOSMGeometryTest extends FilterTest {
         OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 2E-5, 2E-5))
     ));
     // negated
+    assertFalse(expression.negate().applyOSMGeometry(entity,
+        // approx 1.2m²
+        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 1E-5, 1E-5))
+    ));
     assertTrue(expression.negate().applyOSMGeometry(entity,
         // approx 0.3m²
         OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 5E-6, 5E-6))
