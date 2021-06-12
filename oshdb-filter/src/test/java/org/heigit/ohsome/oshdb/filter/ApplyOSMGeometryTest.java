@@ -11,7 +11,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
 /**
- * Tests the parsing of filters and the application to OSM entities.
+ * Tests the application of filters to OSM geometries.
  */
 public class ApplyOSMGeometryTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
@@ -20,6 +20,8 @@ public class ApplyOSMGeometryTest extends FilterTest {
   public void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression.applyOSMGeometry(createTestOSMEntityNode(), gf.createPoint()));
+    // negated
+    assertFalse(expression.negate().applyOSMGeometry(createTestOSMEntityNode(), gf.createPoint()));
   }
 
   @Test
@@ -113,6 +115,15 @@ public class ApplyOSMGeometryTest extends FilterTest {
         // approx 4.9m²
         OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 2E-5, 2E-5))
     ));
+    // negated
+    assertFalse(expression.negate().applyOSMGeometry(entity,
+        // approx 1.2m²
+        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 1E-5, 1E-5))
+    ));
+    assertTrue(expression.negate().applyOSMGeometry(entity,
+        // approx 0.3m²
+        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 5E-6, 5E-6))
+    ));
   }
 
   @Test
@@ -138,6 +149,14 @@ public class ApplyOSMGeometryTest extends FilterTest {
         gf.createLineString(new Coordinate[] {
             new Coordinate(0, 0),
             new Coordinate(2E-5, 0)
+        })
+    ));
+    // negated
+    assertTrue(expression.negate().applyOSMGeometry(entity,
+        // approx 0.6m
+        gf.createLineString(new Coordinate[] {
+            new Coordinate(0, 0),
+            new Coordinate(5E-6, 0)
         })
     ));
   }

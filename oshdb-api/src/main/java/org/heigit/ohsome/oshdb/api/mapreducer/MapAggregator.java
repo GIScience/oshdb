@@ -29,9 +29,6 @@ import org.heigit.ohsome.oshdb.api.generic.NumberUtils;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer.Grouping;
-import org.heigit.ohsome.oshdb.api.object.OSHDBMapReducible;
-import org.heigit.ohsome.oshdb.api.object.OSMContribution;
-import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
@@ -42,11 +39,13 @@ import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
+import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
-
 
 /**
  * A MapReducer with built-in aggregation by an arbitrary index.
@@ -220,17 +219,15 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
       );
     } else {
       MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
-      if (this.mapReducer.forClass.equals(OSMContribution.class)) {
+      if (mapReducer.isOSMContributionViewQuery()) {
         ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
             .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else if (this.mapReducer.forClass.equals(OSMEntitySnapshot.class)) {
+      } else if (mapReducer.isOSMEntitySnapshotViewQuery()) {
         ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
             .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
       } else {
-        throw new UnsupportedOperationException(
-            "aggregateByGeometry not implemented for objects of type: "
-                + this.mapReducer.forClass.toString()
-        );
+        throw new UnsupportedOperationException(String.format(
+            MapReducer.UNIMPLEMENTED_DATA_VIEW, this.mapReducer.viewClass));
       }
       @SuppressWarnings("unchecked") // no mapper functions have been applied -> the type is still X
       MapAggregator<OSHDBCombinedIndex<U, V>, X> result =

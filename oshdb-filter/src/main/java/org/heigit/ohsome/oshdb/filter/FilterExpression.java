@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +8,9 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 
@@ -19,6 +21,21 @@ import org.locationtech.jts.geom.Geometry;
  * of boolean operators, parentheses, tag filters and/or other filters.</p>
  */
 public interface FilterExpression extends Serializable {
+  /**
+   * Apply the filter to an OSH entity.
+   *
+   * <p>Must be compatible with the result of {@link #applyOSM}, e.g. that it must not return false
+   * when <code>oshEntity.getVersions().….anyMatch(applyOSM)</code> would evaluate to true.</p>
+   *
+   * @param entity the OSH entity to check.
+   * @return false if the filter knows that none of the versions of the OSH entity can fulfill the
+   *         specified filter, true otherwise.
+   */
+  @Contract(pure = true)
+  default boolean applyOSH(OSHEntity entity) {
+    // dummy implementation for basic filters: pass all OSH entities -> check its versions instead
+    return true;
+  }
 
   /**
    * Apply the filter to an OSM entity.
@@ -28,20 +45,6 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   boolean applyOSM(OSMEntity entity);
-
-  /**
-   * Apply the filter to an OSH entity.
-   *
-   * <p>Must return the same as <code>oshEntity.getVersions().….anyMatch(applyOSM)</code>.</p>
-   *
-   * @param entity the OSH entity to check.
-   * @return true if the at least one of the OSH entity's versions fulfills the specified filter,
-   *         false otherwise.
-   */
-  @Contract(pure = true)
-  default boolean applyOSH(OSHEntity entity) {
-    return Streams.stream(entity.getVersions()).anyMatch(this::applyOSM);
-  }
 
   /**
    * Apply the filter to an "OSM feature" (i.e. an entity with a geometry).
@@ -55,6 +58,7 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   default boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+    // dummy implementation for basic filters: ignores the geometry, just looks at the OSM entity
     return applyOSM(entity);
   }
 
@@ -74,6 +78,38 @@ public interface FilterExpression extends Serializable {
   }
 
   /**
+   * Apply a filter to a snapshot ({@link OSMEntitySnapshot}) of an OSM entity.
+   *
+   * @param snapshot a snapshot of the OSM entity to check
+   * @return true if the the OSM entity snapshot fulfills the specified filter, otherwise false.
+   */
+  @Contract(pure = true)
+  default boolean applyOSMEntitySnapshot(OSMEntitySnapshot snapshot) {
+    return applyOSMGeometry(snapshot.getEntity(), snapshot::getGeometry);
+  }
+
+  /**
+   * Apply a filter to a contribution ({@link OSMEntitySnapshot}) to an OSM entity.
+   *
+   * <p>A contribution matches the given filter if either the state of the OSM entity before the
+   * modification or the state of it after the modification matches the filter.</p>
+   *
+   * @param contribution a modification of the OSM entity to check
+   * @return true if the the OSM contribution fulfills the specified filter, otherwise false.
+   */
+  @Contract(pure = true)
+  default boolean applyOSMContribution(OSMContribution contribution) {
+    if (contribution.is(ContributionType.CREATION)) {
+      return applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter);
+    } else if (contribution.is(ContributionType.DELETION)) {
+      return applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore);
+    } else {
+      return applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore)
+          || applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter);
+    }
+  }
+
+  /**
    * Returns the opposite of the current filter expression.
    *
    * @return the opposite of the current filter expression.
@@ -87,6 +123,9 @@ public interface FilterExpression extends Serializable {
    * <p>for example: A∧(B∨C) ⇔ (A∧B)∨(A∧C)</p>
    *
    * @return a disjunction of conjunctions of filter expressions: A∧B∧… ∨ C∧D∧… ∨ …
+   * @throws IllegalStateException if the filter cannot be normalized (all filters provided by the
+   *                               oshdb-filter module are normalizable, but this can occur for
+   *                               user defined filter expressions)
    */
   @Contract(pure = true)
   default List<List<Filter>> normalize() {
@@ -114,9 +153,7 @@ public interface FilterExpression extends Serializable {
       combined.addAll(exp2);
       return combined;
     } else {
-      String error = "unsupported state during filter normalization";
-      assert false : error;
-      throw new IllegalStateException(error);
+      throw new IllegalStateException("unsupported state during filter normalization");
     }
   }
 }

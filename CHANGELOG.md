@@ -12,6 +12,10 @@ Changelog
 
 > See the _upgrading from 0.6_ section below for instructions how to update your code according to these breaking changes.
 
+### new features
+
+* enhance functionality of oshdb-filter: add new `changeset: <id|(ids)>` and (optional) `contributor: <id|(ids)>` filters ([#380])
+
 ### performance improvements
 
 * replace an unnecessarily used Map with a more lightweight implementation using a List. ([#352])
@@ -60,6 +64,7 @@ Changelog
 [#369]: https://github.com/GIScience/oshdb/pull/369
 [#374]: https://github.com/GIScience/oshdb/pull/374
 [#375]: https://github.com/GIScience/oshdb/pull/375
+[#384]: https://github.com/GIScience/oshdb/pull/380
 [#384]: https://github.com/GIScience/oshdb/pull/384
 
 

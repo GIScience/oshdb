@@ -14,11 +14,7 @@ public class ConstantFilter implements Filter {
     this.state = state;
   }
 
-  /**
-   * Returns the state of this filter.
-   *
-   * @return the state of this filter.
-   */
+  /** Returns the true/false state of this filter. */
   @Contract(pure = true)
   public boolean getState() {
     return this.state;

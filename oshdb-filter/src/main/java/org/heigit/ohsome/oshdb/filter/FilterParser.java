@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.filter.GeometryFilter.ValueRange;
 import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
@@ -22,7 +23,7 @@ import org.jparsec.pattern.Patterns;
 /**
  * A parser for OSM entity filters.
  *
- * <p>Such filters can select OSM entites by their tags, their type or other attributes. Filters
+ * <p>Such filters can select OSM entities by their tags, their type or other attributes. Filters
  * can contain boolean operators (and/or/not) and parentheses can be used.</p>
  *
  * <p>Example: "type:way and highway=residential and not (lit=yes or lit=automatic)"</p>
@@ -37,6 +38,17 @@ public class FilterParser {
    *           respective OSHDB counterparts.
    */
   public FilterParser(TagTranslator tt) {
+    this(tt, false);
+  }
+
+  /**
+   * Creates a new parser for OSM entity filters.
+   *
+   * @param tt A tagtranslator object, used to transform OSM tags (e.g. "building=yes") to their
+   *           respective OSHDB counterparts.
+   * @param allowContributorFilters if true enables filtering by contributor/user id.
+   */
+  public FilterParser(TagTranslator tt, boolean allowContributorFilters) {
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
     final Parser<String> keystr = Patterns.regex("[a-zA-Z_0-9:-]+")
@@ -84,6 +96,8 @@ public class FilterParser {
         .map(ignored -> "*");
     final Parser<Void> area = Patterns.string("area").toScanner("area");
     final Parser<Void> length = Patterns.string("length").toScanner("length");
+    final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
+    final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 
     final Parser<FilterExpression> tagFilter = Parsers.sequence(
         string,
@@ -153,19 +167,21 @@ public class FilterParser {
     final Parser<Void> dotdot = whitespace
         .followedBy(Patterns.string("..").toScanner("DOT-DOT (..)"))
         .followedBy(whitespace);
-    final Parser<FilterExpression> rangeIdFilter = Parsers.sequence(
-        id,
-        colon,
+    final Parser<IdRange> range = Parsers.sequence(
         Scanners.isChar('('),
         whitespace,
         Parsers.or(
             Parsers.sequence(number, dotdot, number,
-                (min, ignored, max) -> new IdFilterRange.IdRange(min, max)),
+                (min, ignored, max) -> new IdRange(min, max)),
             number.followedBy(dotdot).map(
-                min -> new IdFilterRange.IdRange(min, Long.MAX_VALUE)),
+                min -> new IdRange(min, Long.MAX_VALUE)),
             Parsers.sequence(dotdot, number).map(
-                max -> new IdFilterRange.IdRange(Long.MIN_VALUE, max))
-        ).followedBy(whitespace).followedBy(Scanners.isChar(')')))
+                max -> new IdRange(Long.MIN_VALUE, max))
+        ).followedBy(whitespace).followedBy(Scanners.isChar(')')));
+    final Parser<FilterExpression> rangeIdFilter = Parsers.sequence(
+        id,
+        colon,
+        range)
         .map(IdFilterRange::new);
     final Parser<FilterExpression> typeFilter = Parsers.sequence(
         type,
@@ -200,6 +216,36 @@ public class FilterParser {
         geometryFilterArea,
         geometryFilterLength);
 
+    // changeset id filters
+    final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(
+        changeset, colon, number
+    ).map(ChangesetIdFilterEquals::new);
+    final Parser<ChangesetIdFilterEqualsAnyOf> multiChangesetIdFilter = Parsers.sequence(
+        changeset, colon, numberSequence
+    ).map(ChangesetIdFilterEqualsAnyOf::new);
+    final Parser<ChangesetIdFilterRange> rangeChangesetIdFilter = Parsers.sequence(
+        changeset, colon, range
+    ).map(ChangesetIdFilterRange::new);
+    // contributor user id filters
+    Parser<ContributorUserIdFilterEquals> contributorUserIdFilter = Parsers.sequence(
+        contributor, colon, number
+    ).map(ContributorUserIdFilterEquals::new);
+    Parser<ContributorUserIdFilterEqualsAnyOf> multiContributorUserIdFilter = Parsers.sequence(
+        contributor, colon, numberSequence
+    ).map(ids -> ids.stream().map(Number::intValue).collect(Collectors.toList())
+    ).map(ContributorUserIdFilterEqualsAnyOf::new);
+    Parser<ContributorUserIdFilterRange> rangeContributorUserIdFilter = Parsers.sequence(
+        contributor, colon, range
+    ).map(ContributorUserIdFilterRange::new);
+    if (!allowContributorFilters) {
+      final var contributorFilterDisabled = Parsers.fail("contributor user id filter not enabled");
+      contributorUserIdFilter = contributorUserIdFilter.followedBy(contributorFilterDisabled);
+      multiContributorUserIdFilter =
+          multiContributorUserIdFilter.followedBy(contributorFilterDisabled);
+      rangeContributorUserIdFilter =
+          rangeContributorUserIdFilter.followedBy(contributorFilterDisabled);
+    }
+
     final Parser<FilterExpression> filter = Parsers.or(
         tagFilter,
         multiTagFilter,
@@ -210,7 +256,13 @@ public class FilterParser {
         rangeIdFilter,
         typeFilter,
         geometryTypeFilter,
-        geometryFilter);
+        geometryFilter,
+        changesetIdFilter,
+        multiChangesetIdFilter,
+        rangeChangesetIdFilter,
+        contributorUserIdFilter,
+        multiContributorUserIdFilter,
+        rangeContributorUserIdFilter);
 
     final Parser<Void> parensStart = Patterns.string("(").toScanner("(").followedBy(whitespace);
     final Parser<Void> parensEnd = whitespace.followedBy(Patterns.string(")").toScanner(")"));

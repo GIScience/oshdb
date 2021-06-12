@@ -1,6 +1,8 @@
 package org.heigit.ohsome.oshdb.filter;
 
+import com.google.common.collect.Streams;
 import org.heigit.ohsome.oshdb.OSHDBTag;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 
 /**
@@ -16,6 +18,11 @@ public class TagFilterNotEquals implements TagFilter {
   @Override
   public OSHDBTag getTag() {
     return this.tag;
+  }
+
+  @Override
+  public boolean applyOSH(OSHEntity entity) {
+    return Streams.stream(entity.getVersions()).anyMatch(this::applyOSM);
   }
 
   @Override

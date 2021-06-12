@@ -17,13 +17,23 @@ public class IdFilterEqualsAnyOf extends NegatableFilter {
       private final Set<Long> ids = new HashSet<>(idList);
 
       @Override
+      public boolean applyOSH(OSHEntity entity) {
+        return this.ids.contains(entity.getId());
+      }
+
+      @Override
+      boolean applyOSHNegated(OSHEntity entity) {
+        return !this.applyOSH(entity);
+      }
+
+      @Override
       public boolean applyOSM(OSMEntity entity) {
         return this.ids.contains(entity.getId());
       }
 
       @Override
-      public boolean applyOSH(OSHEntity entity) {
-        return this.ids.contains(entity.getId());
+      boolean applyOSMNegated(OSMEntity entity) {
+        return !this.applyOSM(entity);
       }
 
       @Override

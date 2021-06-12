@@ -3,11 +3,10 @@ package org.heigit.ohsome.oshdb.filter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import org.junit.Test;
 
 /**
- * Tests the parsing of filters and the application to OSM entities.
+ * Tests the application of filters to OSM entities.
  */
 public class ApplyOSMTest extends FilterTest {
   @Test
@@ -190,14 +189,55 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterArea() throws IOException {
+  public void testGeometryFilterArea() {
     FilterExpression expression = parser.parse("area:(1..2)");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
   }
 
   @Test
-  public void testGeometryFilterLength() throws IOException {
+  public void testGeometryFilterLength() {
     FilterExpression expression = parser.parse("length:(1..2)");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
+  }
+
+  @Test
+  public void testChangesetId() {
+    FilterExpression expression = parser.parse("changeset:42");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+    assertTrue(expression.negate().applyOSM(createTestOSMEntityNode()));
+  }
+
+  @Test
+  public void testChangesetIdList() {
+    FilterExpression expression = parser.parse("changeset:(1,2,3)");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+  }
+
+  @Test
+  public void testChangesetIdRange() {
+    FilterExpression expression = parser.parse("changeset:(10..12)");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+  }
+
+  @Test
+  public void testContributorUserId() {
+    var parser = new FilterParser(tagTranslator, true);
+    FilterExpression expression = parser.parse("contributor:1");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+    assertTrue(expression.negate().applyOSM(createTestOSMEntityNode()));
+  }
+
+  @Test
+  public void testContributorUserIdList() {
+    var parser = new FilterParser(tagTranslator, true);
+    FilterExpression expression = parser.parse("contributor:(1,2,3)");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
+  }
+
+  @Test
+  public void testContributorUserIdRange() {
+    var parser = new FilterParser(tagTranslator, true);
+    FilterExpression expression = parser.parse("contributor:(10..12)");
+    assertTrue(expression.applyOSM(createTestOSMEntityNode()));
   }
 }

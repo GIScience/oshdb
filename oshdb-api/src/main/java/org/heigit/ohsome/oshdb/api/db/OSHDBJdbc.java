@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcMultithread;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcSinglethread;
-import org.heigit.ohsome.oshdb.api.object.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
+import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 /**
  * OSHDB database backend connector to a JDBC database file.

@@ -73,6 +73,12 @@ Filters are defined in textual form. A filter expression can be composed out of 
 | `geometry:geom-type` | matches anything which has a geometry of the given type (_point_, _line_, _polygon_, or _other_) | `geometry:polygon` |
 | `area:(from..to-range)` | matches all features with an area that falls into the given range/interval given as two numbers in decimal or scientific notation separated by `..`. The values are  interpreted as square meters (`m²`). The lower or upper limit of the interval may be omitted to select features having an area up to or starting from the given value, respectively. | `area:(123.4..1E6)` |
 | `length:(from..to-range)` | matches all features with a length that falls into the given range/interval given as two numbers in decimal or scientific notation separated by `..`. The values are  interpreted as meters (`m`). The lower or upper limit of the interval may be omitted to select features having an area up to or starting from the given value, respectively. | `length:(100..)` |
+| `changeset:id` | matches OSM contributions performed in the given OSM changeset. Can only be used in queries using the `OSMContributionView`. | `changeset:42` |
+| `changeset:(list,of,ids)` | matches OSM contributions performed in one of the given OSM changeset ids. Can only be used in queries using the `OSMContributionView`. | `changeset:(1,42,100)` |
+| `changeset:(from..to-range)` | matches OSM contributions performed in an OSM changeset falling into the given range of changeset ids. Can only be used in queries using the `OSMContributionView`. | `changeset:(100..200)` |
+| `contributor:uid` | matches OSM contributions performed by a given OSM user (specified by their `uid`). Can only be used in queries using the `OSMContributionView`. | `contributor:1` |
+| `contributor:(list,of,uids)` | matches OSM contributions performed by a given OSM user (specified as a list of `uid`s). Can only be used in queries using the `OSMContributionView`. | `contributor:(1,107037)` |
+| `contributor:(from..to-range)` | matches OSM contributions performed by a given OSM user (specified as a range of `uid`s). Can only be used in queries using the `OSMContributionView`. | `contributor:(32..63)` |
 
 ### Operators
 

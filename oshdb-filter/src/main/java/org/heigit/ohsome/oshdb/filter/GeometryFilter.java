@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nonnull;
-import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.locationtech.jts.geom.Geometry;
 
@@ -58,8 +57,8 @@ public abstract class GeometryFilter extends NegatableFilter {
     }
   }
 
-  interface RangedFilter extends FilterInternal {
-    ValueRange getRange();
+  abstract static class RangedFilter extends FilterInternal {
+    public abstract ValueRange getRange();
   }
 
   protected GeometryFilter(
@@ -68,11 +67,6 @@ public abstract class GeometryFilter extends NegatableFilter {
   ) {
     super(new RangedFilter() {
       @Override
-      public boolean applyOSH(OSHEntity entity) {
-        return true;
-      }
-
-      @Override
       public boolean applyOSM(OSMEntity entity) {
         return true;
       }
@@ -80,6 +74,11 @@ public abstract class GeometryFilter extends NegatableFilter {
       @Override
       public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
         return valueRange.test(metricEvaluator.applyAsDouble(geometrySupplier.get()));
+      }
+
+      @Override
+      boolean applyOSMGeometryNegated(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
+        return !applyOSMGeometry(entity, geometrySupplier);
       }
 
       @Override

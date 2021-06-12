@@ -18,11 +18,6 @@ public class TypeFilter implements Filter {
     this.type = type;
   }
 
-  /**
-   * Returns the OSM type of this filter.
-   *
-   * @return the OSM type of this filter.
-   */
   @Contract(pure = true)
   public OSMType getType() {
     return this.type;

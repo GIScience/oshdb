@@ -11,11 +11,13 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
+import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedContributionTypes;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.locationtech.jts.geom.Geometry;
 
 /**
- * Holds information about a single modification ("contribution") of a single entity in database.
+ * Information about a single modification ("contribution") of a single OSM object.
  *
  * <p>
  * It holds the information about:
@@ -28,17 +30,17 @@ import org.locationtech.jts.geom.Geometry;
  *   modification of a geometry, altering of the tag list, etc.)</li>
  * </ul>
  */
-public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContribution> {
+public class OSMContributionImpl implements OSMContribution {
   private final IterateAllEntry data;
 
-  public OSMContribution(IterateAllEntry data) {
+  public OSMContributionImpl(IterateAllEntry data) {
     this.data = data;
   }
 
   /**
    * Creates a copy of the given contribution object with an updated before/after geometry.
    */
-  public OSMContribution(
+  public OSMContributionImpl(
       OSMContribution other,
       Geometry reclippedGeometryBefore,
       Geometry reclippedGeometryAfter
@@ -52,178 +54,77 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
   /**
    * Creates a copy of the given contribution object with an updated before/after geometry.
    */
-  public OSMContribution(
+  public OSMContributionImpl(
       OSMContribution other,
       LazyEvaluatedObject<Geometry> reclippedGeometryBefore,
       LazyEvaluatedObject<Geometry> reclippedGeometryAfter
   ) {
     this.data = new IterateAllEntry(
-        other.data.timestamp,
-        other.data.osmEntity,
-        other.data.previousOsmEntity,
-        other.data.oshEntity,
+        other.getTimestamp(),
+        other.getEntityAfter(),
+        other.getEntityBefore(),
+        other.getOSHEntity(),
         reclippedGeometryAfter,
         reclippedGeometryBefore,
-        other.data.unclippedGeometry,
-        other.data.unclippedPreviousGeometry,
-        other.data.activities,
-        other.data.changeset
+        new LazyEvaluatedObject<>(other::getGeometryUnclippedAfter),
+        new LazyEvaluatedObject<>(other::getGeometryUnclippedBefore),
+        new LazyEvaluatedContributionTypes(other::is),
+        other.getChangesetId()
     );
   }
 
-  /**
-   * Returns the timestamp at which this data modification has happened.
-   *
-   * @return the modification timestamp as a OSHDBTimestamp object
-   */
+  @Override
   public OSHDBTimestamp getTimestamp() {
     return data.timestamp;
   }
 
-  /**
-   * Returns the geometry of the entity before this modification clipped to the requested area of
-   * interest. May be `null` if this is an entity creation.
-   *
-   * @return a JTS Geometry object representing the entity's state before the modification (clipped
-   *         to the respective area of interest)
-   */
+  @Override
   public Geometry getGeometryBefore() {
     return data.previousGeometry.get();
   }
 
-  /**
-   * Returns the geometry of the entity before this modification. This is the full (unclipped)
-   * geometry of the entity. May be `null` if this is an entity creation.
-   *
-   * @return a JTS Geometry object representing the entity's state before the modification (not
-   *         clipped to the respective area of interest)
-   */
+  @Override
   public Geometry getGeometryUnclippedBefore() {
     return data.unclippedPreviousGeometry.get();
   }
 
-  /**
-   * Returns the geometry of the entity after this modification clipped to the requested area of
-   * interest. May be `null` if this is an entity deletion.
-   *
-   * @return a JTS Geometry object representing the entity's state after the modification (clipped
-   *         to the respective area of interest)
-   */
+  @Override
   public Geometry getGeometryAfter() {
     return data.geometry.get();
   }
 
-  /**
-   * Returns the geometry of the entity after this modification. This is the full (unclipped)
-   * geometry of the entity. May be `null` if this is an entity deletion.
-   *
-   * @return a JTS Geometry object representing the entity's state after the modification (not
-   *         clipped to the respective area of interest)
-   */
+  @Override
   public Geometry getGeometryUnclippedAfter() {
     return data.unclippedGeometry.get();
   }
 
-  /**
-   * Returns the entity object in its state before this modification.
-   * Is `null` if this is a entity creation.
-   *
-   * @return the entity object as it was before this modification
-   */
+  @Override
   public OSMEntity getEntityBefore() {
     return data.previousOsmEntity;
   }
 
-  /**
-   * Returns the entity object in its state after this modification.
-   *
-   * <p>
-   * If this is a entity deletion, the returned entity will have the visible flag set to false:
-   * `entity.getEntityAfter().isVisible == false`
-   * </p>
-   *
-   * @return the entity object as it was after this modification
-   */
+  @Override
   public OSMEntity getEntityAfter() {
     return data.osmEntity;
   }
 
-  /**
-   * The (parent) osh entity of the osm entities involved in this contribution.
-   *
-   * @return the OSHEntity object of this contribution
-   */
+  @Override
   public OSHEntity getOSHEntity() {
     return data.oshEntity;
   }
 
-  /**
-   * Checks if this contribution is of the given contribution type.
-   *
-   * <p>
-   * It can be one or more of:
-   * </p>
-   * <ul>
-   *   <li>CREATION</li>
-   *   <li>DELETION</li>
-   *   <li>TAG_CHANGE</li>
-   *   <li>GEOMETRY_CHANGE</li>
-   * </ul>
-   *
-   * <p>
-   * If this is a entity creation or deletion, the other flags are not set (even though one might
-   * argue that a just created object clearly has a different geometry than before, for example).
-   * </p>
-   *
-   * @return a set of modification type this contribution made on the underlying data
-   */
+  @Override
   public boolean is(ContributionType contributionType) {
     return data.activities.contains(contributionType);
   }
 
-  /**
-   * Determined the type of modification this contribution has made.
-   *
-   * <p>
-   * Can be one or more of:
-   * </p>
-   * <ul>
-   *   <li>CREATION</li>
-   *   <li>DELETION</li>
-   *   <li>TAG_CHANGE</li>
-   *   <li>GEOMETRY_CHANGE</li>
-   * </ul>
-   *
-   * <p>
-   * If this is a entity creation or deletion, the other flags are not set (even though one might
-   * argue that a just created object clearly has a different geometry than before, for example).
-   * </p>
-   *
-   * @return a set of modification type this contribution made on the underlying data
-   */
+  @Override
   public EnumSet<ContributionType> getContributionTypes() {
     return data.activities.get();
   }
 
 
-  /**
-   * Returns the user id of the osm contributor responsible for this data modification.
-   *
-   * <p>
-   * This user id can be different from what one gets by calling `.getEntityAfter().getUserId()`
-   * if the contribution is a pure geometry change (i.e. the entity itself has not ben modified,
-   * but one or more of its child entities):
-   * </p>
-   *
-   * <p>
-   * If the entity is a way or relation, and in a contribution *"only"* the geometry has been
-   * changed, we can't find out the respective contributor's user id only by looking at the
-   * entity alone – instead, we need to iterate over all the entity's children to find the actual
-   * contributor's user id.
-   * </p>
-   *
-   * @return returns the user id of the contributor who made this modification
-   */
+  @Override
   public int getContributorUserId() {
     // todo: optimizable if done directly in CellIterator??
     OSMEntity entity = this.getEntityAfter();
@@ -272,20 +173,11 @@ public class OSMContribution implements OSHDBMapReducible, Comparable<OSMContrib
     return userId;
   }
 
-  /**
-   * Returns the osm changeset id of the contribution.
-   *
-   * @return the id of the osm changeset represented by the current contribution object
-   */
+  @Override
   public long getChangesetId() {
     return data.changeset;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Note: this class has a natural ordering that is inconsistent with equals.</p>
-   */
   @Override
   public int compareTo(@Nonnull OSMContribution other) {
     return ComparisonChain.start()

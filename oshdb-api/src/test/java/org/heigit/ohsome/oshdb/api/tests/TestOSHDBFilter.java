@@ -10,10 +10,12 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.api.object.OSMContribution;
-import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot;
+import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.filter.FilterParser;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.Test;
 
@@ -132,5 +134,22 @@ public class TestOSHDBFilter {
     } catch (Exception e) {
       fail("should not crash on non-existent tags");
     }
+  }
+
+  @Test
+  public void testFilterNotCrashDuringNormalize() throws Exception {
+    var mr = createMapReducerOSMContribution();
+    mr = mr.filter(new FilterExpression() {
+      @Override
+      public boolean applyOSM(OSMEntity entity) {
+        return false;
+      }
+
+      @Override
+      public FilterExpression negate() {
+        throw new RuntimeException("not implemented");
+      }
+    });
+    assertEquals(0, (long) mr.count());
   }
 }
