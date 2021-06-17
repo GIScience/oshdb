@@ -15,7 +15,7 @@ public class TestMapReduceOSHDBH2Singlethread extends TestMapReduce {
    */
   public TestMapReduceOSHDBH2Singlethread() throws Exception {
     super(
-        (new OSHDBH2("./src/test/resources/test-data")).multithreading(false)
+        (new OSHDBH2("../oshdb-api/src/test/resources/test-data")).multithreading(false)
     );
   }
 }

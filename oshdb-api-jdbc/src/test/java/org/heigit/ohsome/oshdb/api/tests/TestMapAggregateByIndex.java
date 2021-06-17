@@ -34,7 +34,7 @@ public class TestMapAggregateByIndex {
   private static final double DELTA = 1e-8;
 
   public TestMapAggregateByIndex() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../oshdb-api/src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {

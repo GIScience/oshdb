@@ -25,7 +25,7 @@ public class TestForEach {
       OSHDBTimestamps.Interval.MONTHLY);
 
   public TestForEach() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../oshdb-api/src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {

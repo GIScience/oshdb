@@ -33,7 +33,7 @@ public class TestQuantiles {
   private static final double REQUIRED_ACCURACY = 1E-4;
 
   public TestQuantiles() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../oshdb-api/src/test/resources/test-data");
   }
 
   private void assertApproximateQuantiles(

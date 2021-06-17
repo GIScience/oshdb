@@ -30,7 +30,7 @@ public class TestCollect {
       OSHDBTimestamps.Interval.MONTHLY);
 
   public TestCollect() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../oshdb-api/src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {

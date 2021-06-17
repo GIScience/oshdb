@@ -30,7 +30,7 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
+import org.heigit.ohsome.oshdb.api.db.OSHDBKeytablesConnection;
 import org.heigit.ohsome.oshdb.api.generic.NumberUtils;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.filter.AndOperator;
@@ -132,7 +132,7 @@ public abstract class MapReducer<X> implements
   protected static final String UNSUPPORTED_GROUPING = "Unsupported grouping: %s";
 
   protected transient OSHDBDatabase oshdb;
-  protected transient OSHDBJdbc keytables;
+  protected transient OSHDBKeytablesConnection keytables;
 
   protected Long timeout = null;
 
@@ -213,9 +213,9 @@ public abstract class MapReducer<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Contract(pure = true)
-  public MapReducer<X> keytables(OSHDBJdbc keytables) {
-    if (keytables != this.oshdb && this.oshdb instanceof OSHDBJdbc) {
-      Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
+  public MapReducer<X> keytables(OSHDBKeytablesConnection keytables) {
+    if (keytables != this.oshdb && this.oshdb instanceof OSHDBKeytablesConnection) {
+      Connection c = ((OSHDBKeytablesConnection) this.oshdb).getConnection();
       boolean oshdbContainsKeytables = true;
       try {
         (new TagTranslator(c)).close();

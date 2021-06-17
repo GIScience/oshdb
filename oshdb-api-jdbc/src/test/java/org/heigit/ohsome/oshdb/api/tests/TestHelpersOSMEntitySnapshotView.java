@@ -31,7 +31,7 @@ public class TestHelpersOSMEntitySnapshotView {
   private static final double DELTA = 1e-8;
 
   public TestHelpersOSMEntitySnapshotView() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../oshdb-api/src/test/resources/test-data");
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducer() throws Exception {

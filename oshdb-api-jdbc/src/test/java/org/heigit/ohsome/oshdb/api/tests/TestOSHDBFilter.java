@@ -40,7 +40,7 @@ public class TestOSHDBFilter {
    * @throws Exception if something goes wrong.
    */
   public TestOSHDBFilter() throws Exception {
-    OSHDBH2 oshdb = new OSHDBH2("./src/test/resources/test-data");
+    OSHDBH2 oshdb = new OSHDBH2("../oshdb-api/src/test/resources/test-data");
     filterParser = new FilterParser(new TagTranslator(oshdb.getConnection()));
     this.oshdb = oshdb;
   }

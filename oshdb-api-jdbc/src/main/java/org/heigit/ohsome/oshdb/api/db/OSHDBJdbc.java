@@ -23,8 +23,7 @@ import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 /**
  * OSHDB database backend connector to a JDBC database file.
  */
-public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
-
+public class OSHDBJdbc extends OSHDBDatabase implements OSHDBKeytablesConnection, AutoCloseable {
   protected Connection connection;
   private boolean useMultithreading = true;
 

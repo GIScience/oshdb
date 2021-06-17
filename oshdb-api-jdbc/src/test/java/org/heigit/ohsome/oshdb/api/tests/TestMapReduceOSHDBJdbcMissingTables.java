@@ -14,7 +14,7 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
    * @throws Exception if something goes wrong
    */
   public TestMapReduceOSHDBJdbcMissingTables() throws Exception {
-    super((new OSHDBH2("./src/test/resources/test-data"))
+    super((new OSHDBH2("../oshdb-api/src/test/resources/test-data"))
         .prefix("<test tables not present>")
     );
   }
