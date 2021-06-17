@@ -51,24 +51,6 @@
       <artifactId>postgresql</artifactId>
       <version>${postgresql.version}</version>
     </dependency>
-    
-    <dependency>
-      <groupId>org.apache.ignite</groupId>
-      <artifactId>ignite-core</artifactId>
-      <version>${ignite.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.ignite</groupId>
-      <artifactId>ignite-spring</artifactId>
-      <version>${ignite.version}</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.apache.ignite</groupId>
-      <artifactId>ignite-slf4j</artifactId>
-      <version>${ignite.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -107,4 +89,20 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
