@@ -26,6 +26,7 @@
     <module>oshdb-etl</module>
     <module>oshdb-oshpbf-parser</module>
     <module>oshdb-util</module>
+    <module>oshdb-backend-ignite</module>
   </modules>
 
   <properties>
