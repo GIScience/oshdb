@@ -9,6 +9,7 @@ Changelog
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter` ([#306])
 * rename and move submodules of `oshdb-tool` ([#384])
 * rename some classes, methods and enum constants; move some classes/interfaces ([#369], [#374])
+* move ignite backend implementation into its own submodule
 
 > See the _upgrading from 0.6_ section below for instructions how to update your code according to these breaking changes.
 
@@ -27,6 +28,7 @@ Changelog
 * reorganize and update ohsome parent module, requires maven version 3.6 or higher ([#360], [#375])
 * add new interfaces `OSHDBTemporal` and `OSHDBBoundable` ([#369])
 * major improvements to code style guide adherence; fix some potential bugs found in static code analyis ([#374])
+* upgrade apache ignite to version 2.10.0 ([#386])
 
 ### bugfixes
 
@@ -53,6 +55,14 @@ Changelog
   | moved class | `CellIterator.OSMEntityFilter` | `oshdb-util/oshdb.osm.OSMEntityFilter` |
   | moved class | `oshdb-api.generic.function` | `oshdb-util/oshdb.util.function` |
   | renamed enum constants | `ComputeMode.LocalPeek`, `….ScanQuery`, `….AffinityCall` | `ComputeMode.LOCAL_PEEK`, `….SCAN_QUERY`, `….AFFINITY_CALL` |
+* if you are using the ignite backend, you need to add the following dependency to your project:
+  ```xml
+    <dependency>
+      <groupId>org.heigit.ohsome</groupId>
+      <artifactId>oshdb-backend-ignite</artifactId>
+      <version>0.7.0</version>
+    </dependency>
+  ```
 
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
@@ -66,6 +76,7 @@ Changelog
 [#375]: https://github.com/GIScience/oshdb/pull/375
 [#380]: https://github.com/GIScience/oshdb/pull/380
 [#384]: https://github.com/GIScience/oshdb/pull/384
+[#386]: https://github.com/GIScience/oshdb/pull/386
 
 
 ## 0.6.4
