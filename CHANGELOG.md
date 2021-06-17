@@ -9,7 +9,7 @@ Changelog
 * integrate [ohsome-filter](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter) module fully into this repository, renaming it to `oshdb-filter` ([#306])
 * rename and move submodules of `oshdb-tool` ([#384])
 * rename some classes, methods and enum constants; move some classes/interfaces ([#369], [#374])
-* move ignite backend implementation into its own submodule
+* move ignite backend implementation into its own submodule ([#387])
 
 > See the _upgrading from 0.6_ section below for instructions how to update your code according to these breaking changes.
 
@@ -77,6 +77,7 @@ Changelog
 [#384]: https://github.com/GIScience/oshdb/pull/380
 [#384]: https://github.com/GIScience/oshdb/pull/384
 [#386]: https://github.com/GIScience/oshdb/pull/386
+[#387]: https://github.com/GIScience/oshdb/pull/387
 
 
 ## 0.6.4
