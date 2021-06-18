@@ -59,7 +59,7 @@ Changelog
   ```xml
     <dependency>
       <groupId>org.heigit.ohsome</groupId>
-      <artifactId>oshdb-backend-ignite</artifactId>
+      <artifactId>oshdb-api-ignite</artifactId>
       <version>0.7.0</version>
     </dependency>
   ```
