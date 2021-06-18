@@ -9,6 +9,8 @@
   </parent>
 
   <artifactId>oshdb-api-ignite</artifactId>
+  <name>OSHDB API – Ignite backend</name>
+  <description>Backend implementation of the OSHDB API which runs queries on an Apache Ignite cluster.</description>
 
   <dependencies>
     <dependency>
