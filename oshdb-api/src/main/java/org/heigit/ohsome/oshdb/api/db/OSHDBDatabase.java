@@ -46,7 +46,7 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
   }
 
   /**
-   * Set a timeout for queries on this ignite oshdb backend.
+   * Set a timeout for queries on this oshdb backend.
    *
    * <p>If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be
    * thrown.</p>
@@ -59,7 +59,7 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
   }
 
   /**
-   * Clears a previously set timeout for queries on this ignite oshdb backend.
+   * Clears a previously set timeout for queries on this oshdb backend.
    *
    * @return the current oshdb object
    */
@@ -69,7 +69,7 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
   }
 
   /**
-   * Set a timeout for queries on this ignite oshdb backend.
+   * Set a timeout for queries on this oshdb backend.
    *
    * <p>If a query takes longer than the given time limit, a {@link OSHDBTimeoutException} will be
    * thrown.</p>
@@ -83,7 +83,7 @@ public abstract class OSHDBDatabase extends OSHDB implements AutoCloseable {
   }
 
   /**
-   * Gets the timeout for queries on this ignite oshdb backend, if present.
+   * Gets the timeout for queries on this oshdb backend, if present.
    *
    * @return the currently set query timeout in milliseconds
    */

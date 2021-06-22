@@ -20,7 +20,7 @@ import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.Test;
 
 /**
- * Test basic map-reduce method of the OSHDB API.
+ * Base class for testing the map-reducer backend implementations of the OSHDB API.
  */
 abstract class TestMapReduce {
   final OSHDBDatabase oshdb;
