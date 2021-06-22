@@ -76,7 +76,7 @@ Changelog
 [#375]: https://github.com/GIScience/oshdb/pull/375
 [#380]: https://github.com/GIScience/oshdb/pull/380
 [#384]: https://github.com/GIScience/oshdb/pull/384
-[#386]: https://github.com/GIScience/oshdb/pull/386
+[#386]: https://github.com/GIScience/oshdb/issues/386
 [#387]: https://github.com/GIScience/oshdb/pull/387
 
 
