@@ -190,7 +190,7 @@ public class RxOshPbfReader {
       nextByte = pushBackStream.read();
       totalBytesRead++;
     }
-// we reach the end of stream and found no signature
+    // we reach the end of stream and found no signature
     return -1;
   }
 
