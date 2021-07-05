@@ -10,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -104,29 +103,27 @@ public class TransformerTagRoles {
     final Int2IntAVLTreeMap valueHash2Cnt = new Int2IntAVLTreeMap();
 
     channel.position(kvp.valuesOffset);
-    try(DataInputStream valueStream = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel),1024*1024));){
-      for (int j = 0; j < kvp.valuesNumber; j++) {
-        final VF vf = VF.read(valueStream);
-        final int hash = hashFunction.applyAsInt(vf.value);
-        valueHash2Cnt.addTo(hash, 1);
-      }
+    DataInputStream valueStream = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel),1024*1024));
+    for (int j = 0; j < kvp.valuesNumber; j++) {
+      final VF vf = VF.read(valueStream);
+      final int hash = hashFunction.applyAsInt(vf.value);
+      valueHash2Cnt.addTo(hash, 1);
     }
 
     final Int2IntMap uniqueValues = new Int2IntAVLTreeMap();
     final Object2IntMap<String> notUniqueValues = new Object2IntAVLTreeMap<String>();
     long estimatedSize = 0;
     channel.position(kvp.valuesOffset);
-    try(DataInputStream valueStream = new DataInputStream(Channels.newInputStream(channel));){
-      for (int j = 0; j < kvp.valuesNumber; j++) {
-        final VF vf = VF.read(valueStream);
-        final int hash = hashFunction.applyAsInt(vf.value);
-        if (valueHash2Cnt.get(hash) > 1) {
-          notUniqueValues.put(vf.value, j);
-          estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue(kvp.key)+4;
-        } else {
-          uniqueValues.put(hash, j);
-          estimatedSize += SizeEstimator.avlTreeEntry() + 8;
-        }
+    valueStream = new DataInputStream(Channels.newInputStream(channel));
+    for (int j = 0; j < kvp.valuesNumber; j++) {
+      final VF vf = VF.read(valueStream);
+      final int hash = hashFunction.applyAsInt(vf.value);
+      if (valueHash2Cnt.get(hash) > 1) {
+        notUniqueValues.put(vf.value, j);
+        estimatedSize += SizeEstimator.estimatedSizeOfAVLEntryValue(kvp.key)+4;
+      } else {
+        uniqueValues.put(hash, j);
+        estimatedSize += SizeEstimator.avlTreeEntry() + 8;
       }
     }
 

@@ -142,59 +142,56 @@ public class RxOshPbfReader {
   public static long seekBlobHeaderStart(final InputStream is, final long limit) throws IOException {
     long totalBytesRead = 0;
     final byte[] pushBackBytes = new byte[BLOBHEADER_SIZE_BYTES + SIGNATURE_SIZE_BYTES];
-    try(PushbackInputStream pushBackStream = new PushbackInputStream(is, pushBackBytes.length);) {
-      for (int i = 0; i < BLOBHEADER_SIZE_BYTES; i++) {
-        pushBackBytes[i] = (byte) pushBackStream.read();
-        totalBytesRead++;
-      }
-  
-      int nextByte = pushBackStream.read();
+    PushbackInputStream pushBackStream = new PushbackInputStream(is, pushBackBytes.length);
+    for (int i = 0; i < BLOBHEADER_SIZE_BYTES; i++) {
+      pushBackBytes[i] = (byte) pushBackStream.read();
       totalBytesRead++;
-      int val = 0;
-      while (nextByte != -1) {
-        if ((val < SIGNATURE_OSMDATA.length && SIGNATURE_OSMDATA[val] == nextByte)
-            || (val < SIGNATURE_OSMHEADER.length && SIGNATURE_OSMHEADER[val] == nextByte)) {
-  
+    }
+
+    int nextByte = pushBackStream.read();
+    totalBytesRead++;
+    int val = 0;
+    while (nextByte != -1) {
+      if ((val < SIGNATURE_OSMDATA.length && SIGNATURE_OSMDATA[val] == nextByte)
+          || (val < SIGNATURE_OSMHEADER.length && SIGNATURE_OSMHEADER[val] == nextByte)) {
+    
+        pushBackBytes[BLOBHEADER_SIZE_BYTES + val] = (byte) nextByte;
+    
+        if (val == SIGNATURE_OSMDATA.length - 1 || val == SIGNATURE_OSMHEADER.length - 1) {
+          // Full OSMHeader\Data SIGNATURE is found.
+          pushBackStream.unread(pushBackBytes, 0, BLOBHEADER_SIZE_BYTES + val + 1);
+          totalBytesRead -= BLOBHEADER_SIZE_BYTES + val + 1;
+          return totalBytesRead;
+        }
+        val++;
+      } else if (val != 0) {
+        // break
+        if (limit > 0 && totalBytesRead > limit) {
+          return -1;
+        }
+    
+        val = 0;
+        if (SIGNATURE_OSMDATA[val] == nextByte || SIGNATURE_OSMHEADER[val] == nextByte) {
           pushBackBytes[BLOBHEADER_SIZE_BYTES + val] = (byte) nextByte;
-  
-          if (val == SIGNATURE_OSMDATA.length - 1 || val == SIGNATURE_OSMHEADER.length - 1) {
-            // Full OSMHeader\Data SIGNATURE is found.
-            pushBackStream.unread(pushBackBytes, 0, BLOBHEADER_SIZE_BYTES + val + 1);
-            totalBytesRead -= BLOBHEADER_SIZE_BYTES + val + 1;
-            return totalBytesRead;
-          }
           val++;
-        } else if (val != 0) {
-          // break
-          if (limit > 0 && totalBytesRead > limit) {
-            return -1;
-          }
-  
-          val = 0;
-          if (SIGNATURE_OSMDATA[val] == nextByte || SIGNATURE_OSMHEADER[val] == nextByte) {
-            pushBackBytes[BLOBHEADER_SIZE_BYTES + val] = (byte) nextByte;
-            val++;
-          } else {
-            for (int i = 0; i < 3; i++) {
-              pushBackBytes[i] = pushBackBytes[i + 1];
-            }
-            pushBackBytes[3] = (byte) nextByte;
-          }
-  
         } else {
           for (int i = 0; i < 3; i++) {
             pushBackBytes[i] = pushBackBytes[i + 1];
           }
           pushBackBytes[3] = (byte) nextByte;
         }
-  
-        nextByte = pushBackStream.read();
-        totalBytesRead++;
+    
+      } else {
+        for (int i = 0; i < 3; i++) {
+          pushBackBytes[i] = pushBackBytes[i + 1];
+        }
+        pushBackBytes[3] = (byte) nextByte;
       }
-  
-      // we reach the end of stream and found no signature
-      return -1;
+      nextByte = pushBackStream.read();
+      totalBytesRead++;
     }
+    // we reach the end of stream and found no signature
+    return -1;
   }
 
   private static BiFunction<PbfChannel, Emitter<PbfBlob>, PbfChannel> readBlobFromChannel() {
