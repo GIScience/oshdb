@@ -187,7 +187,6 @@ public class RxOshPbfReader {
         }
         pushBackBytes[3] = (byte) nextByte;
       }
-    
       nextByte = pushBackStream.read();
       totalBytesRead++;
     }
