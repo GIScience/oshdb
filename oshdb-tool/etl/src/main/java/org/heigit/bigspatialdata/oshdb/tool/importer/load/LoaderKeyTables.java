@@ -60,11 +60,10 @@ public class LoaderKeyTables {
         values = new ArrayList<>(kvp.valuesNumber);
 
         valuesChannel.position(kvp.valuesOffset);
-        try(DataInputStream valueStream = new DataInputStream(Channels.newInputStream(valuesChannel));){
-          for (int j = 0; j < kvp.valuesNumber; j++) {
-            final VF vf = VF.read(valueStream);
-            values.add(vf.value);
-          }
+        DataInputStream valueStream = new DataInputStream(Channels.newInputStream(valuesChannel));
+        for (int j = 0; j < kvp.valuesNumber; j++) {
+          final VF vf = VF.read(valueStream);
+          values.add(vf.value);
         }
 
         handler.loadKeyValues(i, key, values);
