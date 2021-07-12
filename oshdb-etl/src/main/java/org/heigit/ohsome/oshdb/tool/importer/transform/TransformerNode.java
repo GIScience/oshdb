@@ -85,6 +85,6 @@ public class TransformerNode extends Transformer {
         entity.getChangeset(),
         entity.getUserId(),
         getKeyValue(entity.getTags()),
-        (int) entity.getLongitude(), (int) entity.getLatitude());
+        entity.getLongitude(), entity.getLatitude());
   }
 }

@@ -68,8 +68,8 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
-        return OSHWayImpl.instance(data, offset, length, baseId, baseTimestamp,
-            (int) baseLongitude, (int) baseLatitude);
+        return OSHWayImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
+            baseLatitude);
       }
 
       @Override

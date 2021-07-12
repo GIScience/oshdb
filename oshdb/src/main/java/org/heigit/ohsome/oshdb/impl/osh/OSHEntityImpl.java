@@ -321,6 +321,32 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     this.dataOffset = p.getDataOffset();
     this.dataLength = p.getDataLength();
   }
+  
+  @Deprecated
+  protected OSHEntityImpl(final byte[] data, final int offset, final int length,
+      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final byte header, final long id, long minLon, long minLat, long maxLon, long maxLat,
+      final int[] keys, final int dataOffset, final int dataLength) {
+    this.data = data;
+    this.offset = offset;
+    this.length = length;
+
+    this.baseId = 0;
+    this.baseTimestamp = baseTimestamp;
+    this.baseLongitude = Math.toIntExact(baseLongitude);
+    this.baseLatitude = Math.toIntExact(baseLatitude);
+
+    this.header = header;
+    this.id = id;
+    this.minLon = Math.toIntExact(minLon);
+    this.minLat = Math.toIntExact(minLat);
+    this.maxLon = Math.toIntExact(maxLon);
+    this.maxLat = Math.toIntExact(maxLat);
+
+    this.keys = keys;
+    this.dataOffset = dataOffset;
+    this.dataLength = dataLength;
+  }
 
   /**
    * Return the underlying data/byte array and creates a copy if necessary.

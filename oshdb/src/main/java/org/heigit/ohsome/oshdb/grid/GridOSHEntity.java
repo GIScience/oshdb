@@ -16,8 +16,8 @@ public abstract class GridOSHEntity
 
   protected final long baseTimestamp;
 
-  protected final long baseLongitude;
-  protected final long baseLatitude;
+  protected final int baseLongitude;
+  protected final int baseLatitude;
 
   protected final long baseId;
 

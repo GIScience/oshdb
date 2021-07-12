@@ -21,6 +21,14 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
     this.latitude = latitude;
   }
 
+  @Deprecated
+  public OSMNode(final long id, final int version, final long timestamp, final long changeset,
+      final int userId, final int[] tags, final long longitude, final long latitude) {
+    super(id, version, timestamp, changeset, userId, tags);
+    this.longitude = Math.toIntExact(longitude);
+    this.latitude = Math.toIntExact(latitude);
+  }
+
   @Override
   public OSMType getType() {
     return OSMType.NODE;

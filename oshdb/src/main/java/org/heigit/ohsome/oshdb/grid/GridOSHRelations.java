@@ -70,8 +70,8 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
-        return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp,
-            (int) baseLongitude, (int) baseLatitude);
+        return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
+            baseLatitude);
       }
 
       @Override
