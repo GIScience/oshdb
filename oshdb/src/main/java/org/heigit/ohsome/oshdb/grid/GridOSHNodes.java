@@ -69,8 +69,8 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
-        return OSHNodeImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-            baseLatitude);
+        return OSHNodeImpl.instance(data, offset, length, baseId, baseTimestamp,
+            (int) baseLongitude, (int) baseLatitude);
       }
 
       @Override
