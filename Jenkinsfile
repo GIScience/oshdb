@@ -86,8 +86,9 @@ pipeline {
           if (env.BRANCH_NAME ==~ INFER_BRANCH_REGEX) {
             report_dir = report_basedir + "/infer/"
             sh "mvn --batch-mode clean"
+            sh "rm -r infer-out"
             sh "infer run --pmd-xml -r -- mvn --batch-mode compile"
-            sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && cp -R ./infer-out/{report.json,report.xml,costs-report.json,proc_stats.json} ${report_dir}"
+            sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && cp -R ./infer-out/{report.json,report.xml,costs-report.json} ${report_dir}"
           }
 
           // warnings plugin
