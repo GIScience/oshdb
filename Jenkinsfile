@@ -87,7 +87,7 @@ pipeline {
             report_dir = report_basedir + "/infer/"
             sh "mvn --batch-mode clean"
             sh "infer run --pmd-xml -r -- mvn --batch-mode compile"
-            sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && cp -R ./infer-out/* ${report_dir}"
+            sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && cp -R ./infer-out/{report.json,report.xml,costs-report.json,proc_stats.json} ${report_dir}"
           }
 
           // warnings plugin
