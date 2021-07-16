@@ -53,7 +53,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 500,
         osmEntity -> true,
@@ -93,7 +93,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 501,
         osmEntity -> true,
@@ -127,7 +127,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
           ).get(),
-          new OSHDBBoundingBox(-180, -90, 180, 90),
+          OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
           areaDecider,
           oshEntity -> oshEntity.getId() == 502,
           osmEntity -> true,
@@ -149,7 +149,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 503,
         osmEntity -> true,
@@ -183,7 +183,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 504,
         osmEntity -> true,
@@ -223,7 +223,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 505,
         osmEntity -> true,
@@ -263,7 +263,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 506,
         osmEntity -> true,
@@ -302,7 +302,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 507,
         osmEntity -> true,
@@ -336,7 +336,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
           ).get(),
-          new OSHDBBoundingBox(-180, -90, 180, 90),
+          OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
           areaDecider,
           oshEntity -> oshEntity.getId() == 508,
           osmEntity -> true,
@@ -358,7 +358,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 509,
         osmEntity -> true,
@@ -415,7 +415,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 510,
         osmEntity -> true,
@@ -442,7 +442,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 511,
         osmEntity -> true,
@@ -470,7 +470,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 512,
         osmEntity -> true,
@@ -504,7 +504,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 513,
         osmEntity -> true,
@@ -534,7 +534,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 514,
         osmEntity -> true,
@@ -569,7 +569,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 515,
         osmEntity -> true,
@@ -696,7 +696,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2019-08-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
+        OSHDBBoundingBox.bboxWgs84Coordinates(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -753,7 +753,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2016-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8, 10.3, 52.7, 52.7),
+        OSHDBBoundingBox.bboxWgs84Coordinates(10.8, 10.3, 52.7, 52.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 517,
         osmEntity -> true,
@@ -774,7 +774,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(50, 50, 52, 52),
+        OSHDBBoundingBox.bboxWgs84Coordinates(50.0, 50.0, 52.0, 52.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 516,
         osmEntity -> true,
@@ -824,7 +824,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2000-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
+        OSHDBBoundingBox.bboxWgs84Coordinates(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 521,
         osmEntity -> true,
@@ -849,7 +849,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
             "2012-01-01T00:00:00Z",
             "2020-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(10.8, 10.3, 22.7, 22.7),
+        OSHDBBoundingBox.bboxWgs84Coordinates(10.8, 10.3, 22.7, 22.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 522,
         osmEntity -> true,

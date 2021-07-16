@@ -5,8 +5,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -22,11 +27,11 @@ import org.junit.Test;
 public class OSHRelationTest {
 
   OSHNode node100 = OSHNodeTest.buildOSHNode(new OSMNode(
-      100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094980L, 86809720L));
+      100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094980, 86809720));
   OSHNode node102 = OSHNodeTest.buildOSHNode(new OSMNode(
-      102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094970L, 86809730L));
+      102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094970, 86809730));
   OSHNode node104 = OSHNodeTest.buildOSHNode(new OSMNode(
-      104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094960L, 86809740L));
+      104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094960, 86809740));
 
   OSHWay way200 = OSHWayImpl.build(Lists.newArrayList(
       new OSMWay(200, 1, 3333L, 4444L, 23, new int[]{1, 2}, new OSMMember[]{
@@ -92,8 +97,8 @@ public class OSHRelationTest {
     ), Collections.emptyList(), List.of(way200, way202),
         200L,
         1000L,
-        1000L,
-        1000L
+        1000,
+        1000
     );
 
     List<OSHWay> ways = hrelation.getWays();
@@ -101,7 +106,7 @@ public class OSHRelationTest {
   }
 
   @Test
-  public void testCompact() throws IOException {
+  public void testCompactAndSerialize() throws IOException, ClassNotFoundException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
         new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
@@ -112,8 +117,8 @@ public class OSHRelationTest {
     ), List.of(node100, node102, node104), List.of(way200, way202),
         200L,
         1000L,
-        1000L,
-        1000L
+        1000,
+        1000
     );
 
     List<OSHNode> nodes = hrelation.getNodes();
@@ -146,6 +151,20 @@ public class OSHRelationTest {
     assertEquals(
         way.getNodes().get(0).getVersions().iterator().next().getLon(),
         way200.getNodes().get(0).getVersions().iterator().next().getLon());
+
+    var baos = new ByteArrayOutputStream();
+    try (var oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(hrelation);
+    }
+    assertEquals(true, baos.size() > 0);
+    var bais = new ByteArrayInputStream(baos.toByteArray());
+    try (var ois = new ObjectInputStream(bais)) {
+      var newRelation = (OSHRelation) ois.readObject();
+
+      assertEquals(hrelation.getId(), newRelation.getId());
+      assertEquals(Iterables.size(hrelation.getVersions()),
+          Iterables.size(newRelation.getVersions()));
+    }
   }
 
   @Test

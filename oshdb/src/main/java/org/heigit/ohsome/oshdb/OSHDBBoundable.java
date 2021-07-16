@@ -5,29 +5,33 @@ package org.heigit.ohsome.oshdb;
  */
 public interface OSHDBBoundable {
 
-  long getMinLonLong();
+  /**
+   * Returns the minimum longitude in osm-coordinate-system.
+   *
+   * @return minimum longitude
+   */
+  int getMinLongitude();
 
-  long getMinLatLong();
+  /**
+   * Returns the minimum latitude in osm-coordinate-system.
+   *
+   * @return minimum latitude
+   */
+  int getMinLatitude();
 
-  long getMaxLonLong();
+  /**
+   * Returns the maximum longitude in osm-coordinate-system.
+   *
+   * @return maximum longitude
+   */
+  int getMaxLongitude();
 
-  long getMaxLatLong();
-
-  default double getMinLon() {
-    return getMinLonLong() * OSHDB.GEOM_PRECISION;
-  }
-
-  default double getMinLat() {
-    return getMinLatLong() * OSHDB.GEOM_PRECISION;
-  }
-
-  default double getMaxLon() {
-    return getMaxLonLong() * OSHDB.GEOM_PRECISION;
-  }
-
-  default double getMaxLat() {
-    return getMaxLatLong() * OSHDB.GEOM_PRECISION;
-  }
+  /**
+   * Returns the maximum latitude in osm-coordinate-system.
+   *
+   * @return maximum latitude
+   */
+  int getMaxLatitude();
 
   /**
    * Calculates the intersection between this and {@code other} {@code OSHDBBoundable}.
@@ -37,33 +41,43 @@ public interface OSHDBBoundable {
    */
   default boolean intersects(OSHDBBoundable other) {
     return other != null
-        && getMaxLatLong() >= other.getMinLatLong()
-        && getMinLatLong() <= other.getMaxLatLong()
-        && getMaxLonLong() >= other.getMinLonLong()
-        && getMinLonLong() <= other.getMaxLonLong();
+        && getMaxLatitude() >= other.getMinLatitude()
+        && getMinLatitude() <= other.getMaxLatitude()
+        && getMaxLongitude() >= other.getMinLongitude()
+        && getMinLongitude() <= other.getMaxLongitude();
   }
 
   /**
    * Returns true if this {@code OSHDBBoundable} is inside/coveredBy the {@code other} object.
    *
-   * @param other the {@code OSHDBBoundable} which is being checked for inside/coveredBy
-   *          this {@code OSHDBBoundable}
+   * @param other the {@code OSHDBBoundable} which is being checked for inside/coveredBy this
+   *        {@code OSHDBBoundable}
    * @return {@code true} if the {@code OSHDBBoundable} is inside
    */
   default boolean coveredBy(OSHDBBoundable other) {
     return other != null
-        && getMinLatLong() >= other.getMinLatLong()
-        && getMaxLatLong() <= other.getMaxLatLong()
-        && getMinLonLong() >= other.getMinLonLong()
-        && getMaxLonLong() <= other.getMaxLonLong();
+        && getMinLatitude() >= other.getMinLatitude()
+        && getMaxLatitude() <= other.getMaxLatitude()
+        && getMinLongitude() >= other.getMinLongitude()
+        && getMaxLongitude() <= other.getMaxLongitude();
   }
 
+  /**
+   * Checks if this {@link OSHDBBoundable} collapsed to a single point.
+   *
+   * @return true if collapsed to a single point
+   */
   default boolean isPoint() {
-    return getMinLonLong() == getMaxLonLong() && getMinLatLong() == getMaxLatLong();
+    return getMinLongitude() == getMaxLongitude() && getMinLatitude() == getMaxLatitude();
   }
 
+  /**
+   * Checks if this {@link OSHDBBoundable} describes a valid boundable.
+   *
+   * @return true, if this {@link OSHDBBoundable} is valid
+   */
   default boolean isValid() {
-    return getMinLonLong() <= getMaxLonLong() && getMinLatLong() <= getMaxLatLong();
+    return getMinLongitude() <= getMaxLongitude() && getMinLatitude() <= getMaxLatitude();
   }
 
   /**
@@ -73,10 +87,10 @@ public interface OSHDBBoundable {
    * @return the intersection of the two bboxes
    */
   default OSHDBBoundingBox intersection(OSHDBBoundable other) {
-    return new OSHDBBoundingBox(
-        Math.max(getMinLonLong(), other.getMinLonLong()),
-        Math.max(getMinLatLong(), other.getMinLatLong()),
-        Math.min(getMaxLonLong(), other.getMaxLonLong()),
-        Math.min(getMaxLatLong(), other.getMaxLatLong()));
+    return OSHDBBoundingBox.bboxOSMCoordinates(
+        Math.max(getMinLongitude(), other.getMinLongitude()),
+        Math.max(getMinLatitude(), other.getMinLatitude()),
+        Math.min(getMaxLongitude(), other.getMaxLongitude()),
+        Math.min(getMaxLatitude(), other.getMaxLatitude()));
   }
 }

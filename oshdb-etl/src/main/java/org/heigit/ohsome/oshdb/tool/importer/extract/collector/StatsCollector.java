@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.extract.collector;
 
+import static org.heigit.ohsome.oshdb.osm.OSMCoordinates.GEOM_PRECISION;
+
 import crosby.binary.Osmformat.HeaderBBox;
 import crosby.binary.Osmformat.HeaderBlock;
 import java.io.PrintStream;
@@ -9,7 +11,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshpbf.parser.osm.v06.Entity;
 import org.heigit.ohsome.oshpbf.parser.osm.v06.Node;
@@ -139,9 +140,9 @@ public class StatsCollector {
     }
 
     if (minLon != Integer.MAX_VALUE) {
-      out.printf("data.bbox=%.7f,%.7f,%.7f,%.7f%n", minLon * OSHDB.GEOM_PRECISION,
-          minLat * OSHDB.GEOM_PRECISION, maxLon * OSHDB.GEOM_PRECISION,
-          maxLat * OSHDB.GEOM_PRECISION);
+      out.printf("data.bbox=%.7f,%.7f,%.7f,%.7f%n", minLon * GEOM_PRECISION,
+          minLat * GEOM_PRECISION, maxLon * GEOM_PRECISION,
+          maxLat * GEOM_PRECISION);
     }
 
     out.printf("data.timerange=%s,%s%n",

@@ -1,8 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.load.handle;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,36 +45,16 @@ public abstract class OSHDBHandler extends LoaderHandler {
     if (zid < 0) {
       return;
     }
-    int zoom = ZGrid.getZoom(zid);
-    XYGrid xyGrid = new XYGrid(zoom);
-
-    OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
-    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
-    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
-    long xyId = xyGrid.getId(longitude, latitude);
-
-    List<OSHNode> gridNodes = nodes.stream().map(osh2 -> {
+    List<OSHNode> entries = nodes.stream().map(osh2 -> {
       List<OSMNode> versions = osh2.stream().collect(Collectors.toList());
-      try {
-        OSHNode osh = OSHNodeImpl.build(versions);
-        return osh;
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      return OSHNodeImpl.build(versions);
     }).collect(Collectors.toList());
 
-    try {
-      if (gridNodes.size() != 0) {
-
-        GridOSHNodes grid = GridOSHNodes.rebase(xyId, zoom, gridNodes.get(0).getId(), 0, longitude,
-            latitude, gridNodes);
-        handleNodeGrid(grid);
-      } else {
-        System.out.println("no noded at " + xyId);
-      }
-
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+    if (!entries.isEmpty()) {
+      entries.sort((a, b) -> Long.compare(a.getId(), b.getId()));
+      var grid = grid(zid, (xyId, zoom, lon, lat) ->
+          GridOSHNodes.rebase(xyId, zoom, entries.get(0).getId(), 0, lon, lat, entries));
+      handleNodeGrid(grid);
     }
   }
 
@@ -90,28 +68,9 @@ public abstract class OSHDBHandler extends LoaderHandler {
     if (zid < 0) {
       return;
     }
-    int zoom = ZGrid.getZoom(zid);
-    XYGrid xyGrid = new XYGrid(zoom);
+    var idOshMap = mapNodes(nodes);
 
-    OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
-    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
-    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
-    long xyId = xyGrid.getId(longitude, latitude);
-
-    Map<Long, OSHNode> idOshMap = new HashMap<>(nodes.size());
-    nodes.forEach(osh2 -> {
-      Long id = osh2.getId();
-      List<OSMNode> versions = osh2.stream().collect(Collectors.toList());
-      OSHNode osh;
-      try {
-        osh = OSHNodeImpl.build(versions);
-        idOshMap.put(id, osh);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    });
-
-    List<OSHWay> gridWays = ways.stream().map(tosh -> {
+    List<OSHWay> entities = ways.stream().map(tosh -> {
       List<OSMWay> versions = tosh.stream().collect(Collectors.toList());
 
       List<OSHNode> nodesForThisWay = new ArrayList<>(tosh.getNodeIds().length);
@@ -122,60 +81,58 @@ public abstract class OSHDBHandler extends LoaderHandler {
         nodesForThisWay.add(idOshMap.get(id));
       }
 
-      try {
-        OSHWay osh = OSHWayImpl.build(versions, nodesForThisWay);
-        if (bitmapWayRelation.contains(osh.getId())) {
-          waysForRelation.put(osh.getId(), osh);
-        }
-        return osh;
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
+      var osh = OSHWayImpl.build(versions, nodesForThisWay);
+      if (bitmapWayRelation.contains(osh.getId())) {
+        waysForRelation.put(osh.getId(), osh);
       }
+      return osh;
     }).collect(Collectors.toList());
 
-    gridWays.sort((a, b) -> Long.compare(a.getId(), b.getId()));
-
-    try {
-      if (gridWays.size() != 0) {
-        GridOSHWays grid = GridOSHWays.compact(xyId, zoom, gridWays.get(0).getId(), 0, longitude,
-            latitude, gridWays);
-        handleWayGrid(grid);
-      }
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+    if (!entities.isEmpty()) {
+      entities.sort((a, b) -> Long.compare(a.getId(), b.getId()));
+      var grid = grid(zid, (xyId, zoom, lon, lat) ->
+          GridOSHWays.compact(xyId, zoom, entities.get(0).getId(), 0, lon, lat, entities));
+      handleWayGrid(grid);
     }
+  }
+
+  private <T> T grid(long zid, GridInstance<T> newInstance) {
+    OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
+    int longitude = bbox.getMinLongitude() + (bbox.getMaxLongitude() - bbox.getMinLongitude()) / 2;
+    int latitude = bbox.getMinLatitude() + (bbox.getMaxLatitude() - bbox.getMinLatitude()) / 2;
+    int zoom = ZGrid.getZoom(zid);
+    var xyGrid = new XYGrid(zoom);
+    long xyId = xyGrid.getId(longitude, latitude);
+    return newInstance.newGrid(xyId, zoom, longitude, latitude);
+  }
+
+  @FunctionalInterface
+  private interface GridInstance<T> {
+    T newGrid(long xyId, int zoom, int longitude, int latitude);
+  }
+
+  private Map<Long, OSHNode> mapNodes(Collection<TransformOSHNode> nodes) {
+    Map<Long, OSHNode> idOshMap = new HashMap<>(nodes.size());
+    nodes.forEach(osh2 -> {
+      Long id = osh2.getId();
+      List<OSMNode> versions = osh2.stream().collect(Collectors.toList());
+      OSHNode osh = OSHNodeImpl.build(versions);
+      idOshMap.put(id, osh);
+    });
+    return idOshMap;
   }
 
   public abstract void handleRelationsGrid(GridOSHRelations grid);
 
   @Override
-  public void handleRelationGrid(long zid, Collection<TransfomRelation> entities,
+  public void handleRelationGrid(long zid, Collection<TransfomRelation> relations,
       Collection<TransformOSHNode> nodes, Collection<TransformOSHWay> ways) {
     if (zid < 0) {
       return;
     }
-    int zoom = ZGrid.getZoom(zid);
-    XYGrid xyGrid = new XYGrid(zoom);
 
-    OSHDBBoundingBox bbox = ZGrid.getBoundingBox(zid);
-    long longitude = bbox.getMinLonLong() + (bbox.getMaxLonLong() - bbox.getMinLonLong()) / 2;
-    long latitude = bbox.getMinLatLong() + (bbox.getMaxLatLong() - bbox.getMinLatLong()) / 2;
-    long xyId = xyGrid.getId(longitude, latitude);
-
-    Map<Long, OSHNode> idOshMap = new HashMap<>(nodes.size());
-    nodes.forEach(osh2 -> {
-      Long id = osh2.getId();
-      List<OSMNode> versions = osh2.stream().collect(Collectors.toList());
-      OSHNode osh;
-      try {
-        osh = OSHNodeImpl.build(versions);
-        idOshMap.put(id, osh);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    });
-
-    List<OSHRelation> gridRelation = entities.stream().map(osh2 -> {
+    Map<Long, OSHNode> idOshMap = mapNodes(nodes);
+    List<OSHRelation> entities = relations.stream().map(osh2 -> {
       List<OSMRelation> versions = osh2.stream().collect(Collectors.toList());
 
       List<OSHNode> nodesForThisRelation = new ArrayList<>(osh2.getNodeIds().length);
@@ -184,7 +141,6 @@ public abstract class OSHDBHandler extends LoaderHandler {
         if (node != null) {
           nodesForThisRelation.add(node);
         }
-
       }
 
       List<OSHWay> waysForThisRelation = new ArrayList<>(osh2.getWayIds().length);
@@ -195,21 +151,14 @@ public abstract class OSHDBHandler extends LoaderHandler {
         }
       }
 
-      try {
-        OSHRelation ret =
-            OSHRelationImpl.build(versions, nodesForThisRelation, waysForThisRelation);
-        return ret;
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      return OSHRelationImpl.build(versions, nodesForThisRelation, waysForThisRelation);
     }).collect(Collectors.toList());
 
-    try {
-      GridOSHRelations grid = GridOSHRelations.compact(xyId, zoom, gridRelation.get(0).getId(), 0,
-          longitude, latitude, gridRelation);
+    if (!entities.isEmpty()) {
+      entities.sort((a, b) -> Long.compare(a.getId(), b.getId()));
+      var grid = grid(zid, (xyId, zoom, lon, lat) ->
+          GridOSHRelations.compact(xyId, zoom, entities.get(0).getId(), 0, lon, lat, entities));
       handleRelationsGrid(grid);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
     }
   }
 }

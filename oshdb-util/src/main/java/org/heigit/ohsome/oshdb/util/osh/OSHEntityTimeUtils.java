@@ -3,8 +3,6 @@ package org.heigit.ohsome.oshdb.util.osh;
 import static java.lang.String.format;
 
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,11 +66,7 @@ public class OSHEntityTimeUtils {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
     putChangesetTimestamps(osh, result);
     // recurse way nodes
-    try {
-      putChangesetTimestamps(osh.getNodes(), result);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    putChangesetTimestamps(osh.getNodes(), result);
     return result;
   }
 
@@ -80,12 +74,8 @@ public class OSHEntityTimeUtils {
     Map<OSHDBTimestamp, Long> result = new TreeMap<>();
     putChangesetTimestamps(osh, result);
     // recurse rel members
-    try {
-      putChangesetTimestamps(osh.getNodes(), result);
-      putChangesetTimestampsRecurse(osh.getWays(), result);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    putChangesetTimestamps(osh.getNodes(), result);
+    putChangesetTimestampsRecurse(osh.getWays(), result);
     return result;
   }
 
@@ -274,7 +264,7 @@ public class OSHEntityTimeUtils {
     for (OSMEntity osm : osh.getVersions()) {
       OSHDBTimestamp thisT = new OSHDBTimestamp(osm);
       // skip versions which are deleted or don't match the given filter
-      if (!osm.isVisible() || (osmEntityFilter != null && !osmEntityFilter.test(osm))) {
+      if (!osm.isVisible() || osmEntityFilter != null && !osmEntityFilter.test(osm)) {
         // remember "valid-to" time
         nextT = thisT;
         continue;

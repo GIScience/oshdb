@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,33 +48,33 @@ public class TransformerNode extends Transformer {
       }
       nodes.add(getNode(node));
     }
-    final long cellId = cellIds.size() > 0 ? findBestFittingCellId(cellIds) : -1;
+    final long cellId = !cellIds.isEmpty() ? findBestFittingCellId(cellIds) : -1;
 
     try {
 
       final OSHDBBoundingBox bbox = getCellBounce(cellId);
 
-      final long baseLongitude = bbox.getMinLonLong();
-      final long baseLatitude = bbox.getMinLatLong();
+      final long baseLongitude = bbox.getMinLongitude();
+      final long baseLatitude = bbox.getMinLatitude();
 
       final LongFunction<byte[]> toByteArray = baseId -> {
         try {
           TransformOSHNode.build(baData, baRecord, baAux, nodes,
               baseId, 0L, baseLongitude, baseLatitude);
 
-          final byte[] record = new byte[baRecord.length()];
-          System.arraycopy(baRecord.array(), 0, record, 0, record.length);
+          final byte[] bytes = new byte[baRecord.length()];
+          System.arraycopy(baRecord.array(), 0, bytes, 0, bytes.length);
 
-          return record;
+          return bytes;
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          throw new UncheckedIOException(e);
         }
       };
 
       store(cellId, id, toByteArray);
       addIdToCell(id, cellId);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 

@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
@@ -17,15 +16,23 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
 
   /**
    * Creates a new {@code GridOSHRelations} while rebase/compacting the input relations.
+   *
+   * @param id the grid id
+   * @param level zoom level
+   * @param baseId base of id for compact entities
+   * @param baseTimestamp base of timemstamps for compact entities
+   * @param baseLongitude base of longitude for compact entities
+   * @param baseLatitude base of latitued for compact entities
+   * @param list list of entities
+   * @return new instance of this grid
    */
   public static GridOSHRelations compact(final long id, final int level, final long baseId,
-          final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-          final List<OSHRelation> list) throws IOException {
+          final long baseTimestamp, final int baseLongitude, final int baseLatitude,
+          final List<OSHRelation> list) {
 
     int offset = 0;
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final int[] index = new int[list.size()];
-    // TODO user iterator!!
     for (int i = 0; i < index.length; i++) {
       final OSHRelation osh = list.get(i);
       final ByteBuffer buffer = OSHRelationImpl.buildRecord(OSHEntities.toList(osh.getVersions()),
@@ -40,7 +47,7 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
   }
 
   private GridOSHRelations(final long id, final int level, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
+      final long baseTimestamp, final int baseLongitude, final int baseLatitude,
       final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
@@ -63,8 +70,8 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
-        return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-            baseLatitude);
+        return OSHRelationImpl.instance(data, offset, length, baseId, baseTimestamp,
+            (int) baseLongitude, (int) baseLatitude);
       }
 
       @Override

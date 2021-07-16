@@ -51,7 +51,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 100,
         osmEntity -> true,
@@ -86,7 +86,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 101,
         osmEntity -> true,
@@ -117,7 +117,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 102,
         osmEntity -> true,
@@ -141,7 +141,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 103,
         osmEntity -> true,
@@ -179,7 +179,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 104,
         osmEntity -> true,
@@ -207,7 +207,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 105,
         osmEntity -> true,
@@ -233,7 +233,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 106,
         osmEntity -> true,
@@ -263,7 +263,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 107,
         osmEntity -> true,
@@ -293,7 +293,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 108,
         osmEntity -> true,
@@ -314,7 +314,7 @@ public class IterateByTimestampsWaysTest {
             "2010-02-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
+        OSHDBBoundingBox.bboxWgs84Coordinates(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
@@ -339,7 +339,7 @@ public class IterateByTimestampsWaysTest {
             "2012-08-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(1.8, 1.3, 2.7, 2.7),
+        OSHDBBoundingBox.bboxWgs84Coordinates(1.8, 1.3, 2.7, 2.7),
         areaDecider,
         oshEntity -> oshEntity.getId() == 110,
         osmEntity -> true,
@@ -363,7 +363,7 @@ public class IterateByTimestampsWaysTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 112,
         osmEntity -> true,

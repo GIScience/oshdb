@@ -93,8 +93,8 @@ public abstract class TransformReader<T extends OSHEntity2> implements Closeable
       data.flip();
 
       final OSHDBBoundingBox bbox = ZGrid.getBoundingBox(cellId);
-      final long baseLongitude = bbox.getMinLonLong();
-      final long baseLatitude = bbox.getMinLatLong();
+      final long baseLongitude = bbox.getMinLongitude();
+      final long baseLatitude = bbox.getMinLatitude();
 
       final Set<T> ret = new TreeSet<>((a, b) -> Long.compare(a.getId(), b.getId()));
       long id = 0;

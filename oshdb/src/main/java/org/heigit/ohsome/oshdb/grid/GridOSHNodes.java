@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
@@ -17,10 +16,19 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
 
   /**
    * Create a new {@code GridOSHNode} while rebasing the input nodes.
+   *
+   * @param id the grid id
+   * @param level zoom level
+   * @param baseId base of id for compact entities
+   * @param baseTimestamp base of timemstamps for compact entities
+   * @param baseLongitude base of longitude for compact entities
+   * @param baseLatitude base of latitued for compact entities
+   * @param list list of entities
+   * @return new instance of this grid
    */
   public static GridOSHNodes rebase(final long id, final int level, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final List<OSHNode> list) throws IOException {
+      final long baseTimestamp, final int baseLongitude, final int baseLatitude,
+      final List<OSHNode> list) {
 
     int offset = 0;
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -39,7 +47,7 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
   }
 
   private GridOSHNodes(final long id, final int level, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
+      final int baseLongitude, final int baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
 
@@ -61,8 +69,8 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
-        return OSHNodeImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-            baseLatitude);
+        return OSHNodeImpl.instance(data, offset, length, baseId, baseTimestamp,
+            (int) baseLongitude, (int) baseLatitude);
       }
 
       @Override

@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -50,17 +51,18 @@ public class OSHDBGeometryBuilderTest {
     OSMEntity entity = testData.nodes().get(1L).get(1);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     // by bbox
-    OSHDBBoundingBox clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 180.0, 90.0);
+    OSHDBBoundingBox clipBbox = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
     Geometry result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipBbox);
     assertFalse(result.isEmpty());
-    clipBbox = new OSHDBBoundingBox(-180.0, -90.0, 0.0, 0.0);
+    clipBbox = bboxWgs84Coordinates(-180.0, -90.0, 0.0, 0.0);
     result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipBbox);
     assertTrue(result.isEmpty());
     // by poly
-    Polygon clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
+    Polygon clipPoly =
+        OSHDBGeometryBuilder.getGeometry(bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0));
     result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipPoly);
     assertFalse(result.isEmpty());
-    clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-1, -1, 1, 1));
+    clipPoly = OSHDBGeometryBuilder.getGeometry(bboxWgs84Coordinates(-1.0, -1.0, 1.0, 1.0));
     result = OSHDBGeometryBuilder.getGeometryClipped(entity, timestamp, null, clipPoly);
     assertTrue(result.isEmpty());
   }
@@ -161,8 +163,9 @@ public class OSHDBGeometryBuilderTest {
 
   @Test
   public void testBoundingGetGeometry() throws ParseException {
-    Polygon clipPoly = OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(-180, -90, 180, 90));
-    Geometry expectedPolygon = (new WKTReader()).read(
+    Polygon clipPoly =
+        OSHDBGeometryBuilder.getGeometry(bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0));
+    Geometry expectedPolygon = new WKTReader().read(
         "POLYGON((-180.0 -90.0, 180.0 -90.0, 180.0 90.0, -180.0 90.0, -180.0 -90.0))"
     );
     assertEquals(expectedPolygon, clipPoly);
@@ -177,7 +180,7 @@ public class OSHDBGeometryBuilderTest {
   @Test
   public void testBoundingBoxGetGeometry() {
     // regular bbox
-    OSHDBBoundingBox bbox = new OSHDBBoundingBox(0, 0, 1, 1);
+    OSHDBBoundingBox bbox = bboxWgs84Coordinates(0.0, 0.0, 1.0, 1.0);
     Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbox);
     Coordinate[] test = {
       new Coordinate(0, 0),
@@ -188,7 +191,7 @@ public class OSHDBGeometryBuilderTest {
     Assert.assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: point
-    bbox = new OSHDBBoundingBox(0, 0, 0, 0);
+    bbox = bboxWgs84Coordinates(0.0, 0.0, 0.0, 0.0);
     geometry = OSHDBGeometryBuilder.getGeometry(bbox);
     test = new Coordinate[]{
       new Coordinate(0, 0),
@@ -199,7 +202,7 @@ public class OSHDBGeometryBuilderTest {
     Assert.assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: line
-    bbox = new OSHDBBoundingBox(0, 0, 0, 1);
+    bbox = bboxWgs84Coordinates(0.0, 0.0, 0.0, 1.0);
     geometry = OSHDBGeometryBuilder.getGeometry(bbox);
     test = new Coordinate[]{
       new Coordinate(0, 0),

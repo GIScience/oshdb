@@ -30,9 +30,9 @@ public class TestOSHEntityTimeUtils {
   public void testGetModificationTimestampsNode() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(123L, 2, 2L, 0L, 1, new int[] {1, 1},
-            86756350L, 494186210L),
+            86756350, 494186210),
         new OSMNode(123L, 1, 1L, 0L, 1, new int[] {1, 1},
-            86756350L, 494186210L)
+            86756350, 494186210)
     ));
 
     List<OSHDBTimestamp> tss = OSHEntityTimeUtils.getModificationTimestamps(hnode);
@@ -51,11 +51,11 @@ public class TestOSHEntityTimeUtils {
   public void testGetModificationTimestampsNodeWithFilter() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(123L, 3, 3L, 3L, 1, new int[] {1, 2},
-            86756350L, 494186210L),
+            86756350, 494186210),
         new OSMNode(123L, 2, 2L, 2L, 1, new int[] {1, 2},
-            86756350L, 494186210L),
+            86756350, 494186210),
         new OSMNode(123L, 1, 1L, 1L, 1, new int[] {1, 1},
-            86756350L, 494186210L)
+            86756350, 494186210)
     ));
 
     List<OSHDBTimestamp> tss =
@@ -334,9 +334,9 @@ public class TestOSHEntityTimeUtils {
   public void testGetChangesetTimestampsNode() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(123L, 2, 2L, 8L, 1, new int[] {1, 1},
-            86756350L, 494186210L),
+            86756350, 494186210),
         new OSMNode(123L, 1, 1L, 1L, 1, new int[] {1, 2},
-            86756350L, 494186210L)
+            86756350, 494186210)
     ));
 
     var tss = OSHEntityTimeUtils.getChangesetTimestamps(hnode);
@@ -350,19 +350,19 @@ public class TestOSHEntityTimeUtils {
   public void testGetChangesetTimestampsWay() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(1L, 3, 5L, 5L, 1, new int[] {},
-            86756340L, 494186210L),
+            86756340, 494186210),
         new OSMNode(1L, 2, 3L, 3L, 1, new int[] {},
-            86756340L, 494186210L),
+            86756340, 494186210),
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {},
-            86756340L, 494186200L)
+            86756340, 494186200)
     ));
     OSHNode hnode2 = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(2L, 1, 1L, 1L, 1, new int[] {},
-            86756380L, 494186210L)
+            86756380, 494186210)
     ));
     OSHNode hnode3 = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(3L, 1, 4L, 4L, 1, new int[] {},
-            86756390L, 494186210L)
+            86756390, 494186210)
     ));
 
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
@@ -401,25 +401,25 @@ public class TestOSHEntityTimeUtils {
   public void testGetChangesetTimestampsRelation() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(1L, 2, 3L, 3L, 1, new int[] {},
-            86756340L, 494186210L),
+            86756340, 494186210),
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {},
-            86756340L, 494186200L)
+            86756340, 494186200)
     ));
     OSHNode hnode2 = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(2L, 1, 1L, 1L, 1, new int[] {},
-            86756380L, 494186210L)
+            86756380, 494186210)
     ));
     OSHNode hnode3 = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(3L, 1, 4L, 4L, 1, new int[] {},
-            86756390L, 494186210L)
+            86756390, 494186210)
     ));
     OSHNode hnode4 = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(4L, 3, 8L, 8L, 1, new int[] {1, 1},
-            86756340L, 494186210L),
+            86756340, 494186210),
         new OSMNode(4L, 2, 6L, 6L, 1, new int[] {2, 2},
-            86756340L, 494186210L),
+            86756340, 494186210),
         new OSMNode(4L, 1, 1L, 1L, 1, new int[] {1, 1},
-            86756390L, 494186210L)
+            86756390, 494186210)
     ));
 
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
@@ -479,7 +479,7 @@ public class TestOSHEntityTimeUtils {
     // missing way node reference
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {},
-            86756380L, 494186210L)
+            86756380, 494186210)
     ));
 
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
@@ -510,7 +510,7 @@ public class TestOSHEntityTimeUtils {
     // broken reference (potentially due to data redaction)
     hnode = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {},
-            86756380L, 494186210L)
+            86756380, 494186210)
     ));
   }
 
@@ -519,7 +519,7 @@ public class TestOSHEntityTimeUtils {
     // missing way node reference
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {},
-            86756380L, 494186210L)
+            86756380, 494186210)
     ));
 
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
@@ -552,7 +552,7 @@ public class TestOSHEntityTimeUtils {
   public void testGetModificationTimestampsNestedRelations() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {},
-            86756380L, 494186210L)
+            86756380, 494186210)
     ));
     OSHRelation hrel = OSHRelationImpl.build(Lists.newArrayList(
         new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {1, 1}, new OSMMember[] {

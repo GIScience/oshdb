@@ -53,7 +53,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
@@ -93,7 +93,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 2,
         osmEntity -> true,
@@ -129,7 +129,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 3,
         osmEntity -> true,
@@ -176,7 +176,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 4,
         osmEntity -> true,
@@ -226,7 +226,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(8, 9, 49, 50),
+        OSHDBBoundingBox.bboxWgs84Coordinates(8.0, 9.0, 49.0, 50.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
@@ -246,7 +246,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(1.42, 1.22, 1.3, 1.1),
+        OSHDBBoundingBox.bboxWgs84Coordinates(1.42, 1.22, 1.3, 1.1),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
@@ -266,7 +266,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(3.2, 3.3, 1.425, 1.23),
+        OSHDBBoundingBox.bboxWgs84Coordinates(3.2, 3.3, 1.425, 1.23),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
@@ -286,7 +286,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(1.42, 1.22, 1.425, 1.23),
+        OSHDBBoundingBox.bboxWgs84Coordinates(1.42, 1.22, 1.425, 1.23),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
@@ -306,7 +306,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
@@ -342,7 +342,7 @@ public class IterateByContributionNodesTest {
             "2007-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 7,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("disused:shop")),
@@ -374,7 +374,7 @@ public class IterateByContributionNodesTest {
             "2007-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(0, 0, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 0.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 8,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
@@ -407,7 +407,7 @@ public class IterateByContributionNodesTest {
             "2000-01-01T00:00:00Z",
             "2018-01-01T00:00:00Z"
         ).get(),
-        new OSHDBBoundingBox(-180, -90, 180, 90),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),

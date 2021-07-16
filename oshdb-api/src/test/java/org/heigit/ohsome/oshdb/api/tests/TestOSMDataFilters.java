@@ -34,7 +34,7 @@ public class TestOSMDataFilters {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
-      new OSHDBBoundingBox(8.651133, 49.387611, 8.6561, 49.390513);
+      OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
 
   public TestOSMDataFilters() throws Exception {

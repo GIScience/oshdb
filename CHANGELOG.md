@@ -10,6 +10,7 @@ Changelog
 * rename and move submodules of `oshdb-tool` ([#384])
 * rename some classes, methods and enum constants; move some classes/interfaces ([#369], [#374])
 * move the oshdb-api's ignite backend implementation into its own submodule `oshdb-api-ignite` ([#387])
+* refactoring of internal coordinate representation form long to int, mainly `OSHDBBoundingBox`, `OSMNode`, `OSHEntity` ([#395])
 
 > See the _upgrading from 0.6_ section below for instructions how to update your code according to these breaking changes.
 
@@ -50,6 +51,9 @@ Changelog
   | renamed method | `OSMWay.getRef()` | `OSMWay.getMember()` |
   | renamed method | `OSHDBTimestamp.getRawUnixTimestamp()` | `OSHDBTimestamp.getEpochSecond()` |
   | moved class | `oshdb.util.OSHDBTimestamp` | `oshdb.OSHDBTimestamp` |
+  | moved class | `oshdb.util.OSHDBBoundingBox` | `oshdb.OSHDBBoundingBox` |
+  | deprecated method | `new OSHDBBoundingBox(double, double, double, double)` | replaced by `OSHDBBoundingBox.bboxWgs84Coordinates(...)`|
+  | renamed method | `OSHDBBoundingBox.get(Max/Min)(Lon/Lat)Long()` | `OSHDBBoundingBox.get(Max/Min)(Longitude/Latitude)()` |
   | moved class | `oshdb.util.OSHDBTag` | `oshdb.OSHDBTag` |
   | moved class | `CellIterator.OSHEntityFilter` | `oshdb-util/oshdb.osh.OSHEntityFilter` |
   | moved class | `CellIterator.OSMEntityFilter` | `oshdb-util/oshdb.osm.OSMEntityFilter` |
@@ -78,6 +82,7 @@ Changelog
 [#384]: https://github.com/GIScience/oshdb/pull/384
 [#386]: https://github.com/GIScience/oshdb/issues/386
 [#387]: https://github.com/GIScience/oshdb/pull/387
+[#395]: https://github.com/GIScience/oshdb/pull/395
 
 
 ## 0.6.4

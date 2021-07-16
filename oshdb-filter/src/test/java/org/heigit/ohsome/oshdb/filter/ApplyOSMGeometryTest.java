@@ -105,24 +105,25 @@ public class ApplyOSMGeometryTest extends FilterTest {
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
         // approx 0.3m²
-        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 5E-6, 5E-6))
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
     ));
     assertTrue(expression.applyOSMGeometry(entity,
         // approx 1.2m²
-        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 1E-5, 1E-5))
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1E-5, 1E-5))
     ));
     assertFalse(expression.applyOSMGeometry(entity,
         // approx 4.9m²
-        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 2E-5, 2E-5))
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 2E-5, 2E-5))
     ));
     // negated
     assertFalse(expression.negate().applyOSMGeometry(entity,
         // approx 1.2m²
-        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 1E-5, 1E-5))
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1E-5, 1E-5))
     ));
     assertTrue(expression.negate().applyOSMGeometry(entity,
         // approx 0.3m²
-        OSHDBGeometryBuilder.getGeometry(new OSHDBBoundingBox(0, 0, 5E-6, 5E-6))
+        OSHDBGeometryBuilder
+            .getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
     ));
   }
 

@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.index;
 
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
+import static org.heigit.ohsome.oshdb.osm.OSMCoordinates.GEOM_PRECISION;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
@@ -100,7 +102,7 @@ public class XYGridTest {
   @Test
   public void test179_90_2() {
     // Testing Coordinates: 179, 90, zoom 2
-    double longitude = 180.0 - OSHDB.GEOM_PRECISION;
+    double longitude = 180.0 - GEOM_PRECISION;
     double latitude = 90.0;
 
     Long expResult = (long) 7;
@@ -161,7 +163,7 @@ public class XYGridTest {
   @Test
   public void test179_90_30() {
     // Testing Coordinates: 179, 90, zoom 30
-    double longitude = 180.0 - OSHDB.GEOM_PRECISION;
+    double longitude = 180.0 - GEOM_PRECISION;
     double latitude = 90.0;
 
     Long expResult = 576460752303423487L;
@@ -171,13 +173,13 @@ public class XYGridTest {
 
   @Test
   public void testGetId_BoundingBox() {
-    OSHDBBoundingBox bbx = new OSHDBBoundingBox(-10.0, -10.0, 10.0, 10.0);
+    OSHDBBoundingBox bbx = bboxWgs84Coordinates(-10.0, -10.0, 10.0, 10.0);
     XYGrid instance = new XYGrid(2);
     long expResult = 1L;
     long result = instance.getId(bbx);
     assertEquals(expResult, result);
 
-    OSHDBBoundingBox bbx2 = new OSHDBBoundingBox(10.0, -10.0, -9.0, 10.0);
+    OSHDBBoundingBox bbx2 = bboxWgs84Coordinates(10.0, -10.0, -9.0, 10.0);
     instance = new XYGrid(2);
     expResult = 2L;
     result = instance.getId(bbx2);
@@ -195,28 +197,28 @@ public class XYGridTest {
   @Test
   public void testGetCellDimensions() {
     long cellId = 0L;
-    OSHDBBoundingBox expResult = new OSHDBBoundingBox(-180.0, -90.0, -90.0 - OSHDB.GEOM_PRECISION,
-        0.0 - OSHDB.GEOM_PRECISION);
+    OSHDBBoundingBox expResult = bboxWgs84Coordinates(-180.0, -90.0, -90.0 - GEOM_PRECISION,
+        0.0 - GEOM_PRECISION);
     OSHDBBoundingBox result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 6L;
-    expResult = new OSHDBBoundingBox(0.0, 0.0, 90.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = bboxWgs84Coordinates(0.0, 0.0, 90.0 - GEOM_PRECISION, 90.0);
     result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 7L;
-    expResult = new OSHDBBoundingBox(90.0, 0.0, 180.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = bboxWgs84Coordinates(90.0, 0.0, 180.0 - GEOM_PRECISION, 90.0);
     result = two.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new OSHDBBoundingBox(-180.0, -90.0, 180.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = bboxWgs84Coordinates(-180.0, -90.0, 180.0 - GEOM_PRECISION, 90.0);
     result = zero.getCellDimensions(cellId);
     assertEquals(expResult, result);
 
     cellId = 0L;
-    expResult = new OSHDBBoundingBox(-180.0, -90.0, 0.0 - OSHDB.GEOM_PRECISION, 90.0);
+    expResult = bboxWgs84Coordinates(-180.0, -90.0, 0.0 - GEOM_PRECISION, 90.0);
     XYGrid instance = new XYGrid(1);
     result = instance.getCellDimensions(cellId);
     assertEquals(expResult, result);
@@ -224,23 +226,23 @@ public class XYGridTest {
 
   @Test
   public void testGetEstimatedIdCount() {
-    OSHDBBoundingBox data = new OSHDBBoundingBox(0, 0, 89, 89);
+    OSHDBBoundingBox data = bboxWgs84Coordinates(0.0, 0.0, 89.0, 89.0);
     long expResult = 1L;
     long result = two.getEstimatedIdCount(data);
     assertEquals(expResult, result);
 
-    data = new OSHDBBoundingBox(-89.0, -90.0, 89.0, 90.0);
+    data = bboxWgs84Coordinates(-89.0, -90.0, 89.0, 90.0);
     expResult = 2L;
     result = two.getEstimatedIdCount(data);
     assertEquals(expResult, result);
 
-    data = new OSHDBBoundingBox(0.0, 0.0, 0.0000053, 0.0000053);
+    data = bboxWgs84Coordinates(0.0, 0.0, 0.0000053, 0.0000053);
     expResult = 16L;
     result = thirty.getEstimatedIdCount(data);
     assertEquals(expResult, result);
 
     // "just" touching three cells, see https://github.com/GIScience/oshdb/pull/183
-    data = new OSHDBBoundingBox(-0.1, 0, 90.1, 89);
+    data = bboxWgs84Coordinates(-0.1, 0, 90.1, 89);
     expResult = 3L;
     result = two.getEstimatedIdCount(data);
     assertEquals(expResult, result);
@@ -255,7 +257,7 @@ public class XYGridTest {
 
   @Test
   public void testBbox2Ids() {
-    OSHDBBoundingBox bbox = new OSHDBBoundingBox(-180, -90, 180, 90);
+    OSHDBBoundingBox bbox = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
     Set<IdRange> result = zero.bbox2CellIdRanges(bbox, false);
 
     assertEquals(1, result.size());
@@ -264,7 +266,7 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(0, interval.getEnd());
 
-    bbox = new OSHDBBoundingBox(-180, -90, 180, 90);
+    bbox = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
     result = two.bbox2CellIdRanges(bbox, false);
 
     assertEquals(2, result.size());
@@ -273,7 +275,7 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(3, interval.getEnd());
 
-    bbox = new OSHDBBoundingBox(-10, -10, 10, 10);
+    bbox = bboxWgs84Coordinates(-10.0, -10.0, 10.0, 10.0);
     result = zero.bbox2CellIdRanges(bbox, false);
 
     assertEquals(1, result.size());
@@ -282,7 +284,7 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(0, interval.getEnd());
 
-    bbox = new OSHDBBoundingBox(179, 0, 89, 5);
+    bbox = bboxWgs84Coordinates(179.0, 0.0, 89.0, 5.0);
     result = zero.bbox2CellIdRanges(bbox, false);
 
     assertEquals(1, result.size());
@@ -291,7 +293,7 @@ public class XYGridTest {
     assertEquals(0, interval.getStart());
     assertEquals(0, interval.getEnd());
 
-    bbox = new OSHDBBoundingBox(-10, -10, 10, 10);
+    bbox = bboxWgs84Coordinates(-10.0, -10.0, 10.0, 10.0);
     TreeSet<Long> expectedCellIds = new TreeSet<>();
     expectedCellIds.add(1L);
     expectedCellIds.add(2L);
@@ -305,7 +307,7 @@ public class XYGridTest {
     }
     assertEquals(0, expectedCellIds.size());
 
-    bbox = new OSHDBBoundingBox(-180, 0, 89, 5);
+    bbox = bboxWgs84Coordinates(-180.0, 0.0, 89.0, 5.0);
     expectedCellIds = new TreeSet<>();
     expectedCellIds.add(4L);
     expectedCellIds.add(5L);
@@ -319,7 +321,7 @@ public class XYGridTest {
     }
     assertEquals(0, expectedCellIds.size());
 
-    bbox = new OSHDBBoundingBox(90, -90, 89, -1);
+    bbox = bboxWgs84Coordinates(90.0, -90.0, 89.0, -1.0);
     expectedCellIds = new TreeSet<>();
     expectedCellIds.add(0L);
     expectedCellIds.add(1L);
@@ -341,7 +343,7 @@ public class XYGridTest {
     assertEquals(0, interval.getEnd());
 
     // test performance for maximum sized BBOX
-    bbox = new OSHDBBoundingBox(-180, -90, 180, 90);
+    bbox = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
     int expResult = (int) Math.pow(2, MAXZOOM) / 2;
     LOG.info("If this throws a warning because of the maximum zoomlevel, "
         + "we have to change XYGrid-Code:");
@@ -367,7 +369,11 @@ public class XYGridTest {
   public void testGetBoundingBox() {
     OSHDBBoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
     OSHDBBoundingBox expResult =
-        new OSHDBBoundingBox(0.0, -90.0, 90.0 - OSHDB.GEOM_PRECISION, 0.0 - OSHDB.GEOM_PRECISION);
+        bboxWgs84Coordinates(0.0, -90.0, 90.0 - GEOM_PRECISION, 0.0 - GEOM_PRECISION);
     assertEquals(expResult, result);
+
+    OSHDBBoundingBox enlarged = XYGrid.getBoundingBox(new CellId(2, 2), true);
+    expResult = bboxWgs84Coordinates(0.0, -90.0, 180.0 - GEOM_PRECISION, 90.0);
+    assertEquals(expResult, enlarged);
   }
 }

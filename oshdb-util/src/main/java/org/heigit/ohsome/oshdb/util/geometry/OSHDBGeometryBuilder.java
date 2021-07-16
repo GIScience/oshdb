@@ -20,6 +20,7 @@ import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -162,14 +163,29 @@ public class OSHDBGeometryBuilder {
 
     GeometryFactory gf = new GeometryFactory();
 
-    Coordinate sw = new Coordinate(bbox.getMinLon(), bbox.getMinLat());
-    Coordinate se = new Coordinate(bbox.getMaxLon(), bbox.getMinLat());
-    Coordinate nw = new Coordinate(bbox.getMaxLon(), bbox.getMaxLat());
-    Coordinate ne = new Coordinate(bbox.getMinLon(), bbox.getMaxLat());
+    Coordinate sw = getCoordinate(bbox.getMinLongitude(), bbox.getMinLatitude());
+    Coordinate se = getCoordinate(bbox.getMaxLongitude(), bbox.getMinLatitude());
+    Coordinate nw = getCoordinate(bbox.getMaxLongitude(), bbox.getMaxLatitude());
+    Coordinate ne = getCoordinate(bbox.getMinLongitude(), bbox.getMaxLatitude());
 
     Coordinate[] cordAr = {sw, se, nw, ne, sw};
 
     return gf.createPolygon(cordAr);
+  }
+
+  public static Coordinate getCoordinate(OSMNode node) {
+    return getCoordinate(node.getLon(), node.getLat());
+  }
+
+  /**
+   * Creates a new instance of jts Coordinate from lon, lat in osm-coordinate system.
+   *
+   * @param osmLon Longitude in osm-coordinate system
+   * @param osmLat Latitude in osm-coordinate system
+   * @return new Coordinate instance
+   */
+  public static Coordinate getCoordinate(int osmLon, int osmLat) {
+    return new Coordinate(OSMCoordinates.toWgs84(osmLon), OSMCoordinates.toWgs84(osmLat));
   }
 
   private static Geometry getGeometryCollectionGeometry(
@@ -592,7 +608,7 @@ public class OSHDBGeometryBuilder {
    * @return the same bounding box as an OSHDBBoundingBox object
    */
   public static OSHDBBoundingBox boundingBoxOf(Envelope envelope) {
-    return new OSHDBBoundingBox(
+    return OSHDBBoundingBox.bboxWgs84Coordinates(
         envelope.getMinX(),
         envelope.getMinY(),
         envelope.getMaxX(),
@@ -622,7 +638,7 @@ public class OSHDBGeometryBuilder {
 
     @Override
     public int hashCode() {
-      return ((int) this.id1) + ((int) this.id2);
+      return (int) this.id1 + (int) this.id2;
     }
   }
 }

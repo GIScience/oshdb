@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.grid;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
@@ -17,10 +16,19 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
 
   /**
    * Creates a new {@code GridOSHWays} while rebase/compacting the input ways.
+   *
+   * @param id the grid id
+   * @param level zoom level
+   * @param baseId base of id for compact entities
+   * @param baseTimestamp base of timemstamps for compact entities
+   * @param baseLongitude base of longitude for compact entities
+   * @param baseLatitude base of latitued for compact entities
+   * @param list list of entities
+   * @return new instance of this grid
    */
   public static GridOSHWays compact(final long id, final int level, final long baseId,
-      final long baseTimestamp, final long baseLongitude, final long baseLatitude,
-      final List<OSHWay> list) throws IOException {
+      final long baseTimestamp, final int baseLongitude, final int baseLatitude,
+      final List<OSHWay> list) {
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final int[] index = new int[list.size()];
     int offset = 0;
@@ -38,7 +46,7 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
   }
 
   public GridOSHWays(final long id, final int level, final long baseId, final long baseTimestamp,
-      final long baseLongitude, final long baseLatitude, final int[] index, final byte[] data) {
+      final int baseLongitude, final int baseLatitude, final int[] index, final byte[] data) {
     super(id, level, baseId, baseTimestamp, baseLongitude, baseLatitude, index, data);
   }
 
@@ -60,8 +68,8 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
         int offset = index[pos];
         int length = (pos < index.length - 1 ? index[pos + 1] : data.length) - offset;
         pos++;
-        return OSHWayImpl.instance(data, offset, length, baseId, baseTimestamp, baseLongitude,
-            baseLatitude);
+        return OSHWayImpl.instance(data, offset, length, baseId, baseTimestamp, (int) baseLongitude,
+            (int) baseLatitude);
       }
 
       @Override

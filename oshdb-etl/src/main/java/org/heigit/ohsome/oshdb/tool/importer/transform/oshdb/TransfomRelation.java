@@ -49,7 +49,7 @@ public class TransfomRelation extends OSHRelation2 {
     long nodeId = 0;
     LongIterator itr = ids.iterator();
     for (int i = 0; itr.hasNext(); i++) {
-      out.writeU64Delta(itr.nextLong(), nodeId);
+      nodeId = out.writeU64Delta(itr.nextLong(), nodeId);
       offsets.put(nodeId, i);
     }
     return offsets;

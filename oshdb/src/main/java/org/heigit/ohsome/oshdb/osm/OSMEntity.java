@@ -31,7 +31,7 @@ public abstract class OSMEntity implements OSHDBTemporal, Serializable {
    * @param userId UserID
    * @param tags An array of OSHDB key-value ids. The format is [KID1,VID1,KID2,VID2...KIDn,VIDn].
    */
-  public OSMEntity(final long id, final int version, final long timestamp,
+  protected OSMEntity(final long id, final int version, final long timestamp,
       final long changesetId, final int userId, final int[] tags) {
     this.id = id;
     this.version = version;

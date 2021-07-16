@@ -58,17 +58,19 @@ public class ByteArrayOutputWrapper {
   }
 
   /**
-   * Write a delta encoded value to the stream.
+   * Write a delta encoded unsigned 64 bit value to the stream.
    *
    * @param value current value
    * @param last last value or delta encoding
+   * @return current value
    */
-  public void writeU64Delta(long value, long last) {
+  public long writeU64Delta(long value, long last) {
     final long delta = value - last;
     if (delta < 0) {
       throw new IllegalArgumentException("writeUInt64Delta with negative delta(" + delta + ")");
     }
     writeU64(delta);
+    return value;
   }
 
   /**
@@ -80,6 +82,13 @@ public class ByteArrayOutputWrapper {
     writeU64(encodeZigZag64(value));
   }
 
+  /**
+   * Write a delta encoded signed 64 bit value to the stream.
+   *
+   * @param value current value
+   * @param last last value or delta encoding
+   * @return current value
+   */
   public long writeS64Delta(long value, long last) {
     writeS64(value - last);
     return value;

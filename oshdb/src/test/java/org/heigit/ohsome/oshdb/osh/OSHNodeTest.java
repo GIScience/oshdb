@@ -3,8 +3,13 @@ package org.heigit.ohsome.oshdb.osh;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -13,11 +18,11 @@ import org.junit.Test;
 public class OSHNodeTest {
   private static final int USER_A = 1;
   private static final int[] TAGS_A = new int[] {1, 1};
-  private static final long[] LONLAT_A = new long[] {86756350L, 494186210L};
-  private static final long[] LONLAT_B = new long[] {87153340L, 494102830L};
+  private static final int[] LONLAT_A = new int[] {86756350, 494186210};
+  private static final int[] LONLAT_B = new int[] {87153340, 494102830};
 
   @Test
-  public void testBuild() throws IOException {
+  public void testBuildAndSerialize() throws IOException, ClassNotFoundException {
     OSHNode hnode = buildOSHNode(
         new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
         new OSMNode(123L, -2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1])
@@ -28,38 +33,20 @@ public class OSHNodeTest {
     List<OSMNode> v = OSHEntities.toList(hnode.getVersions());
     assertNotNull(v);
     assertEquals(2, v.size());
+
+    var baos = new ByteArrayOutputStream();
+    try (var oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(hnode);
+    }
+    assertEquals(true, baos.size() > 0);
+    var bais = new ByteArrayInputStream(baos.toByteArray());
+    try (var ois = new ObjectInputStream(bais)) {
+      var newNode = (OSHNode) ois.readObject();
+
+      assertEquals(hnode.getId(), newNode.getId());
+      assertEquals(Iterables.size(hnode.getVersions()), Iterables.size(newNode.getVersions()));
+    }
   }
-
-  /*
-  @Test public void testCompact() { fail("Not yet implemented"); }
-  @Test
-  public void testRebase() throws IOException {
-
-    long baseLongitude = 85341796875L / 100;
-    long baseLatitude = 27597656250L / 100;
-
-    List<OSMNode> versions = new ArrayList<>();
-    // NODE: ID:3718143950 V:+2+ TS:1480304071000 CS:43996323 VIS:true USER:4803525 TAGS:[]
-    // 85391383800:27676689900
-    // NODE: ID:3718143950 V:+1+ TS:1440747974000 CS:33637224 VIS:true USER:3191558 TAGS:[]
-    // 85391416000:27676640000
-
-    // NODE: ID:3718143950 V:+2+ TS:1480304071000 CS:43996323 VIS:true USER:4803525 TAGS:[]
-    // 85391383800:27676689900
-    // NODE: ID:3718143950 V:+1+ TS:1440747974000 CS:33637224 VIS:true USER:3191558 TAGS:[]
-    // 49619125:78983750
-    versions.add(new OSMNode(3718143950L, 2, 1480304071000L / 1000,
-        43996323L, 4803525, new int[0], 85391383800L / 100, 27676689900L / 100));
-    versions.add(new OSMNode(3718143950L, 1, 1440747974000L / 1000,
-        33637224, 3191558, new int[0], 85391416000L / 100, 27676640000L / 100));
-
-    OSHNode hosm = OSHNodeImpl.build(versions);
-
-    // System.out.println("Datasize:" + hosm.getData().length);
-    // hosm = hosm.rebase(0, 0, baseLongitude, baseLatitude); System.out.println("Datasize:" +
-    // hosm.getData().length); for (OSMNode osm : hosm) { System.out.println(osm); }
-    // todo: actually assert something in this test
-  }*/
 
   @Test
   public void testToString() throws IOException {

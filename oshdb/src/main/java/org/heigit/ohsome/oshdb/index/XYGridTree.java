@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.index.XYGrid.IdRange;
+import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 import org.heigit.ohsome.oshdb.util.CellId;
 
 /**
@@ -43,13 +44,8 @@ public class XYGridTree implements Serializable {
    * @param latitude Latitude for the given point
    * @return An iterator over the cellIds in all zoomlevel
    */
-  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
-    return new Iterable<>() {
-
-      @Override
-      public Iterator<CellId> iterator() {
-        Iterator<CellId> result = new Iterator<>() {
+    return () -> new Iterator<>() {
           private int level = -1;
 
           @Override
@@ -66,10 +62,6 @@ public class XYGridTree implements Serializable {
             return new CellId(gridMap.get(level).getLevel(),
                 gridMap.get(level).getId(longitude, latitude));
           }
-        };
-
-        return result;
-      }
     };
   }
 
@@ -81,8 +73,8 @@ public class XYGridTree implements Serializable {
    * @return An iterator over the cellIds in all zoomlevel
    */
   public Iterable<CellId> getIds(double longitude, double latitude) {
-    return this.getIds((long) longitude * OSHDB.GEOM_PRECISION_TO_LONG,
-        (long) latitude * OSHDB.GEOM_PRECISION_TO_LONG);
+    return this.getIds(OSMCoordinates.toOSM(longitude),
+        OSMCoordinates.toOSM(latitude));
 
   }
 
@@ -95,7 +87,7 @@ public class XYGridTree implements Serializable {
   public CellId getInsertId(OSHDBBoundingBox bbox) {
     for (int i = maxLevel; i >= 0; i--) {
       if (gridMap.get(i).getEstimatedIdCount(bbox) <= 2) {
-        return new CellId(i, gridMap.get(i).getId(bbox.getMinLonLong(), bbox.getMinLatLong()));
+        return new CellId(i, gridMap.get(i).getId(bbox.getMinLongitude(), bbox.getMinLatitude()));
       }
     }
     return null;
@@ -117,12 +109,8 @@ public class XYGridTree implements Serializable {
    * @param bbox {@code OSHDBBoundingBox} for the query
    * @param enlarge {@code true} if the query should include enlarged bboxes
    */
-  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox bbox, final boolean enlarge) {
-    return new Iterable<>() {
-      @Override
-      public Iterator<CellId> iterator() {
-        return new Iterator<>() {
+    return () -> new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
@@ -160,8 +148,6 @@ public class XYGridTree implements Serializable {
             maxId = row.getEnd();
             return new CellId(level, currId);
           }
-        };
-      }
     };
   }
 
@@ -217,13 +203,9 @@ public class XYGridTree implements Serializable {
    * @param enlarge {@code true} to include enlarged bboxes
    * @return List of {@code CellIdRanges} which are covered by the given bbox
    */
-  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
       final boolean enlarge) {
-    return new Iterable<>() {
-      @Override
-      public Iterator<CellIdRange> iterator() {
-        return new Iterator<>() {
+    return () -> new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
@@ -243,8 +225,6 @@ public class XYGridTree implements Serializable {
             return CellIdRange.of(new CellId(level, row.getStart()),
                 new CellId(level, row.getEnd()));
           }
-        };
-      }
     };
   }
 

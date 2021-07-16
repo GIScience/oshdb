@@ -9,8 +9,8 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.junit.Test;
 
 public class OSHDBBoundableTest {
-  private OSHDBBoundable point = new OSHDBBoundingBox(0L, 0L, 0L, 0L);
-  private OSHDBBoundable box = new OSHDBBoundingBox(-1L, -1L, 1L, 1L);
+  private OSHDBBoundable point = OSHDBBoundingBox.bboxOSMCoordinates(0, 0, 0, 0);
+  private OSHDBBoundable box = OSHDBBoundingBox.bboxOSMCoordinates(-1, -1, 1, 1);
 
   @Test
   public void testPoint() {
@@ -22,7 +22,7 @@ public class OSHDBBoundableTest {
   public void testValid() {
     assertTrue(point.isValid());
     assertTrue(box.isValid());
-    OSHDBBoundable invalid = new OSHDBBoundingBox(1L, 1L, -1L, -1L);
+    OSHDBBoundable invalid = OSHDBBoundingBox.bboxOSMCoordinates(1, 1, -1, -1);
     assertFalse(invalid.isValid());
   }
 
@@ -40,11 +40,11 @@ public class OSHDBBoundableTest {
 
   @Test
   public void testIntersection() {
-    OSHDBBoundable box2 = new OSHDBBoundingBox(0L, 0L, 2L, 2L);
+    OSHDBBoundable box2 = OSHDBBoundingBox.bboxOSMCoordinates(0, 0, 2, 2);
     OSHDBBoundable intersection = box2.intersection(box);
-    assertEquals(0, intersection.getMinLonLong());
-    assertEquals(0, intersection.getMinLatLong());
-    assertEquals(1, intersection.getMaxLonLong());
-    assertEquals(1, intersection.getMaxLatLong());
+    assertEquals(0, intersection.getMinLongitude());
+    assertEquals(0, intersection.getMinLatitude());
+    assertEquals(1, intersection.getMaxLongitude());
+    assertEquals(1, intersection.getMaxLatitude());
   }
 }

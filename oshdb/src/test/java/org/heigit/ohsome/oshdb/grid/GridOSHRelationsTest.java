@@ -27,9 +27,9 @@ public class GridOSHRelationsTest {
 
   @Test
   public void test() throws IOException {
-    var node100 = buildOSHNode(node(100L, 1, 1L, 0L, 123, tags(1, 2), 494094984L, 86809727L));
-    var node102 = buildOSHNode(node(102L, 1, 1L, 0L, 123, tags(2, 1), 494094984L, 86809727L));
-    var node104 = buildOSHNode(node(104L, 1, 1L, 0L, 123, tags(2, 4), 494094984L, 86809727L));
+    var node100 = buildOSHNode(node(100L, 1, 1L, 0L, 123, tags(1, 2), 494094984, 86809727));
+    var node102 = buildOSHNode(node(102L, 1, 1L, 0L, 123, tags(2, 1), 494094984, 86809727));
+    var node104 = buildOSHNode(node(104L, 1, 1L, 0L, 123, tags(2, 4), 494094984, 86809727));
 
     var way200 = buildOSHWay(asList(node100, node104),
             way(200, 1, 3333L, 4444L, 23, tags(1, 2), mn(100, 0), mn(104, 0)));
@@ -47,11 +47,7 @@ public class GridOSHRelationsTest {
     long cellId = 2;
     int cellLevel = 2;
     var grid = GridOSHRelations.compact(cellId, cellLevel, 0, 0, 0, 0,
-        asList(relation300, relation301));
-
-    var expResult =
-        "Grid-Cell of OSHRelations ID:2 Level:2 BBox:(-90.000000,0.000000),(-0.000000,90.000000)";
-    assertEquals(expResult, grid.toString());
+        asList(relation300, relation301));;
     assertEquals(cellId, grid.getId());
     assertEquals(cellLevel, grid.getLevel());
     assertEquals(2, Iterables.size(grid.getEntities()));
@@ -65,7 +61,7 @@ public class GridOSHRelationsTest {
   }
 
   private static OSMNode node(long id, int version, long timestamp, long changeset,
-      int userId, int[] tags, long longitude, long latitude) {
+      int userId, int[] tags, int longitude, int latitude) {
     return new OSMNode(id, version, timestamp, changeset, userId, tags, longitude, latitude);
   }
 

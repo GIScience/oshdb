@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.tool.importer.load;
 import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,7 +49,7 @@ public class LoaderNode extends Loader {
       files = StreamSupport.stream(stream.spliterator(), false).collect(Collectors.toList())
           .toArray(new Path[0]);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
 
     reader = new TransfromNodeReaders(files);
