@@ -86,10 +86,10 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   public String toString() {
     return String.format(Locale.ENGLISH,
         "(%3.7f,%3.7f,%3.7f,%3.7f)",
-        OSMCoordinates.toDouble(minLon),
-        OSMCoordinates.toDouble(minLat),
-        OSMCoordinates.toDouble(maxLon),
-        OSMCoordinates.toDouble(maxLat));
+        OSMCoordinates.toWgs84(minLon),
+        OSMCoordinates.toWgs84(minLat),
+        OSMCoordinates.toWgs84(maxLon),
+        OSMCoordinates.toWgs84(maxLat));
   }
 
   @Override

@@ -14,15 +14,7 @@ public class OSMCoordinates {
     return (int) (value * GEOM_PRECISION_TO_LONG);
   }
 
-  public static double toDouble(int value) {
-    return value * GEOM_PRECISION;
-  }
-
-  public static double toDouble(long value) {
-    return value * GEOM_PRECISION;
-  }
-
-  public static double toDouble(double value) {
+  public static double toWgs84(int value) {
     return value * GEOM_PRECISION;
   }
 

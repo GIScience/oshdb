@@ -185,7 +185,7 @@ public class OSHDBGeometryBuilder {
    * @return new Coordinate instance
    */
   public static Coordinate getCoordinate(int osmLon, int osmLat) {
-    return new Coordinate(OSMCoordinates.toDouble(osmLon), OSMCoordinates.toDouble(osmLat));
+    return new Coordinate(OSMCoordinates.toWgs84(osmLon), OSMCoordinates.toWgs84(osmLat));
   }
 
   private static Geometry getGeometryCollectionGeometry(

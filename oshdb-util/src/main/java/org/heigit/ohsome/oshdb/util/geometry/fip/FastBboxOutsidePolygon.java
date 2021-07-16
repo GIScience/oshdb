@@ -74,10 +74,10 @@ public class FastBboxOutsidePolygon extends FastInPolygon implements Predicate<O
       return false; // at least one of the bbox'es edges crosses the polygon
     }
     for (Envelope innerBbox : outerBboxes) {
-      if (OSMCoordinates.toDouble(boundingBox.getMinLatitude()) <= innerBbox.getMinY()
-          && OSMCoordinates.toDouble(boundingBox.getMaxLatitude()) >= innerBbox.getMaxY()
-          && OSMCoordinates.toDouble(boundingBox.getMinLongitude()) <= innerBbox.getMinX()
-          && OSMCoordinates.toDouble(boundingBox.getMaxLongitude()) >= innerBbox.getMaxX()) {
+      if (OSMCoordinates.toWgs84(boundingBox.getMinLatitude()) <= innerBbox.getMinY()
+          && OSMCoordinates.toWgs84(boundingBox.getMaxLatitude()) >= innerBbox.getMaxY()
+          && OSMCoordinates.toWgs84(boundingBox.getMinLongitude()) <= innerBbox.getMinX()
+          && OSMCoordinates.toWgs84(boundingBox.getMaxLongitude()) >= innerBbox.getMaxX()) {
         // the bounding box fully covers at least one of the (multi)polygon's outer rings
         return false;
       }

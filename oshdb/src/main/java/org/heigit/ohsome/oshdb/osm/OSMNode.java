@@ -35,11 +35,11 @@ public class OSMNode extends OSMEntity implements Comparable<OSMNode>, Serializa
   }
 
   public double getLongitude() {
-    return OSMCoordinates.toDouble(longitude);
+    return OSMCoordinates.toWgs84(longitude);
   }
 
   public double getLatitude() {
-    return OSMCoordinates.toDouble(latitude);
+    return OSMCoordinates.toWgs84(latitude);
   }
 
   public int getLon() {

@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.osm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Assert;
 import org.junit.Test;
 

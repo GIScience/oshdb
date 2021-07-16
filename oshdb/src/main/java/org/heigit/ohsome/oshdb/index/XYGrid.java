@@ -184,7 +184,7 @@ public class XYGrid implements Serializable {
    * @return length in degree of borders of cells
    */
   public double getCellWidth() {
-    return OSMCoordinates.toDouble(cellWidth);
+    return cellWidth * OSMCoordinates.GEOM_PRECISION;
   }
 
   /**

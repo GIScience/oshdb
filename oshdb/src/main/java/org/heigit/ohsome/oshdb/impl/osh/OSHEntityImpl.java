@@ -28,7 +28,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
   protected static final int HEADER_TIMESTAMPS_NOT_IN_ORDER = 1 << 1;
   protected static final int HEADER_HAS_TAGS = 1 << 2;
 
-  public static class Builder {
+  protected static class Builder {
 
     private final ByteArrayOutputWrapper output;
     private final long baseTimestamp;
@@ -103,7 +103,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
       firstVersion = false;
     }
 
-    public byte getHeader(boolean multiVersion) {
+    protected byte getHeader(boolean multiVersion) {
       byte header = 0;
       if (multiVersion) {
         header |= HEADER_MULTIVERSION;
@@ -117,7 +117,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
       return header;
     }
 
-    public ByteArrayOutputWrapper writeCommon(byte header, long id, boolean bbox, int minLon,
+    protected ByteArrayOutputWrapper writeCommon(byte header, long id, boolean bbox, int minLon,
         int minLat, int maxLon, int maxLat) {
       var buffer = new ByteArrayOutputWrapper();
       buffer.writeByte(header);
@@ -321,6 +321,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     this.dataOffset = p.getDataOffset();
     this.dataLength = p.getDataLength();
   }
+
   @Deprecated
   protected OSHEntityImpl(final byte[] data, final int offset, final int length,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
@@ -463,10 +464,10 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
 
     return String.format(Locale.ENGLISH, "ID:%d Vmax:+%d+ Creation:%d BBox:(%f,%f),(%f,%f)", id,
         last.getVersion(), first.getEpochSecond(),
-        OSMCoordinates.toDouble(minLat),
-        OSMCoordinates.toDouble(minLon),
-        OSMCoordinates.toDouble(maxLat),
-        OSMCoordinates.toDouble(maxLon));
+        OSMCoordinates.toWgs84(minLat),
+        OSMCoordinates.toWgs84(minLon),
+        OSMCoordinates.toWgs84(maxLat),
+        OSMCoordinates.toWgs84(maxLon));
   }
 
   protected static void readBbox(ByteArrayWrapper wrapper, CommonEntityProps p, int baseLongitude,
