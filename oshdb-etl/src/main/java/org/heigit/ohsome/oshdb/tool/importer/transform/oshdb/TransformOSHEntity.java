@@ -9,7 +9,7 @@ public abstract class TransformOSHEntity extends OSHEntityImpl {
       long baseLongitude, long baseLatitude, byte header, long id, OSHDBBoundingBox bbox,
       int[] keys, int dataOffset, int dataLength) {
     super(data, offset, length, baseTimestamp, baseLongitude, baseLatitude, header, id,
-        bbox.getMinLongitude(), bbox.getMinLatitude(), bbox.getMaxLongitude(), bbox.getMaxLatitude(),
-        keys, dataOffset, dataLength);
+        bbox.getMinLongitude(), bbox.getMinLatitude(), bbox.getMaxLongitude(),
+        bbox.getMaxLatitude(), keys, dataOffset, dataLength);
   }
 }
