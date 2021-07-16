@@ -321,7 +321,6 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     this.dataOffset = p.getDataOffset();
     this.dataLength = p.getDataLength();
   }
-  
   @Deprecated
   protected OSHEntityImpl(final byte[] data, final int offset, final int length,
       final long baseTimestamp, final long baseLongitude, final long baseLatitude,
