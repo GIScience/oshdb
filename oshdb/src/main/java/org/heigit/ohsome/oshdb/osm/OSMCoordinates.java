@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.osm;
 /**
  * Helper class for converting double precision floating point lon/lat to
  * osm-coordinate fix presision 7 decimal integer system.
- *
  */
 public class OSMCoordinates {
 
