@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.osm;
 
 import static org.junit.Assert.assertEquals;
-
+import static org.junit.Assert.assertTrue;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -239,7 +239,7 @@ public class OSMNodeTest {
 
     b = new OSMNode(id, version + 2, timestamp, changeset, userId, tags, longitude, latitude);
 
-    assertEquals(true, a.compareTo(b) < 0);
+    assertTrue(a.compareTo(b) < 0);
   }
 
 }

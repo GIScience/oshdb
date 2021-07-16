@@ -14,7 +14,7 @@ import org.junit.Test;
 public class GridOSHNodesTest {
 
   @Test
-  public void testToString() throws IOException {
+  public void testRebaseEntities() throws IOException {
     List<OSHNode> hosmNodes = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>();

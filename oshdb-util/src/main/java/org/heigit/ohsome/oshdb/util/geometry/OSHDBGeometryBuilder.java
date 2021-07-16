@@ -177,8 +177,15 @@ public class OSHDBGeometryBuilder {
     return getCoordinate(node.getLon(), node.getLat());
   }
 
-  public static Coordinate getCoordinate(int lon, int lat) {
-    return new Coordinate(OSMCoordinates.toDouble(lon), OSMCoordinates.toDouble(lat));
+  /**
+   * Creates a new instance of jts Coordinate from lon, lat in osm-coordinate system.
+   *
+   * @param osmLon Longitude in osm-coordinate system
+   * @param osmLat Latitude in osm-coordinate system
+   * @return new Coordinate instance
+   */
+  public static Coordinate getCoordinate(int osmLon, int osmLat) {
+    return new Coordinate(OSMCoordinates.toDouble(osmLon), OSMCoordinates.toDouble(osmLat));
   }
 
   private static Geometry getGeometryCollectionGeometry(
