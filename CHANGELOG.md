@@ -51,6 +51,9 @@ Changelog
   | renamed method | `OSMWay.getRef()` | `OSMWay.getMember()` |
   | renamed method | `OSHDBTimestamp.getRawUnixTimestamp()` | `OSHDBTimestamp.getEpochSecond()` |
   | moved class | `oshdb.util.OSHDBTimestamp` | `oshdb.OSHDBTimestamp` |
+  | moved class | `oshdb.util.OSHDBBoundingBox` | `oshdb.OSHDBBoundingBox` |
+  | deprecated method | `new OSHDBBoundingBox(double, double, double, double)` | replaced by `OSHDBBoundingBox.bboxWgs84Coordinates(...)`|
+  | renamed method | `OSHDBBoundingBox.get(Max/Min)(Lon/Lat)Long()` | `OSHDBBoundingBox.get(Max/Min)(Longitude/Latitude)()` |
   | moved class | `oshdb.util.OSHDBTag` | `oshdb.OSHDBTag` |
   | moved class | `CellIterator.OSHEntityFilter` | `oshdb-util/oshdb.osh.OSHEntityFilter` |
   | moved class | `CellIterator.OSMEntityFilter` | `oshdb-util/oshdb.osm.OSMEntityFilter` |
