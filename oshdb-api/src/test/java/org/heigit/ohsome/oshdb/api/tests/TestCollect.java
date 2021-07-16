@@ -25,7 +25,7 @@ public class TestCollect {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
-      OSHDBBoundingBox.bboxLonLatCoordinates(8.651133, 49.387611, 8.6561, 49.390513);
+      OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 

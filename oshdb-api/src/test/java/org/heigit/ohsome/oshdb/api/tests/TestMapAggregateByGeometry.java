@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxLonLatCoordinates;
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -33,7 +33,7 @@ import org.locationtech.jts.geom.Polygon;
 public class TestMapAggregateByGeometry {
   private final OSHDBDatabase oshdb;
 
-  private final OSHDBBoundingBox bbox = bboxLonLatCoordinates(8.0, 49.0, 9.0, 50.0);
+  private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-12-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2010-01-01", "2015-12-01");
 
@@ -62,16 +62,16 @@ public class TestMapAggregateByGeometry {
   private Map<String, Polygon> getSubRegions() {
     Map<String, Polygon> res = new TreeMap<>();
     res.put("left", OSHDBGeometryBuilder.getGeometry(
-        bboxLonLatCoordinates(8, 49, 8.66128, 50)
+        bboxWgs84Coordinates(8, 49, 8.66128, 50)
     ));
     res.put("right", OSHDBGeometryBuilder.getGeometry(
-        bboxLonLatCoordinates(8.66128 + 1E-8, 49, 9, 50)
+        bboxWgs84Coordinates(8.66128 + 1E-8, 49, 9, 50)
     ));
     res.put("total", OSHDBGeometryBuilder.getGeometry(
         bbox
     ));
     res.put("null island", OSHDBGeometryBuilder.getGeometry(
-        bboxLonLatCoordinates(-1.0, -1.0, 1.0, 1.0)
+        bboxWgs84Coordinates(-1.0, -1.0, 1.0, 1.0)
     ));
     return res;
   }

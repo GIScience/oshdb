@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxLonLatCoordinates;
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
@@ -26,7 +26,7 @@ import org.junit.Test;
 public class TestMapAggregateByIndex {
   private final OSHDBDatabase oshdb;
 
-  private final OSHDBBoundingBox bbox = bboxLonLatCoordinates(8.0, 49.0, 9.0, 50.0);
+  private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-12-01");
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2010-01-01", "2015-12-01");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",

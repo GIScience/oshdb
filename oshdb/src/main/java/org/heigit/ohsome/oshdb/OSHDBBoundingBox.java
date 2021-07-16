@@ -53,10 +53,29 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
    * @param maxLat maximum latitude in wgs84 coordinate system
    * @return new instance of {@link OSHDBBoundingBox}
    */
-  public static OSHDBBoundingBox bboxLonLatCoordinates(double minLon, double minLat, double maxLon,
+  public static OSHDBBoundingBox bboxWgs84Coordinates(double minLon, double minLat, double maxLon,
       double maxLat) {
     return bboxOSMCoordinates(
         Math.toIntExact(Math.round(minLon * GEOM_PRECISION_TO_LONG)),
+        Math.toIntExact(Math.round(minLat * GEOM_PRECISION_TO_LONG)),
+        Math.toIntExact(Math.round(maxLon * GEOM_PRECISION_TO_LONG)),
+        Math.toIntExact(Math.round(maxLat * GEOM_PRECISION_TO_LONG)));
+  }
+
+  /**
+   * Creates an {@code OSHDBBoundingBox} with wgs84 coordinates.
+   *
+   * @param minLon minimum longitude in wgs84 coordinate system
+   * @param minLat minimum latitude in wgs84 coordinate system
+   * @param maxLon maximum longitude in wgs84 coordinate system
+   * @param maxLat maximum latitude in wgs84 coordinate system
+   *
+   * @deprecated use {@link #bboxWgs84Coordinates(double, double, double, double)
+   *             bboxWgs84Coordinates} instead
+   */
+  @Deprecated(forRemoval = true, since = "0.7")
+  public OSHDBBoundingBox(double minLon, double minLat, double maxLon, double maxLat) {
+    this(Math.toIntExact(Math.round(minLon * GEOM_PRECISION_TO_LONG)),
         Math.toIntExact(Math.round(minLat * GEOM_PRECISION_TO_LONG)),
         Math.toIntExact(Math.round(maxLon * GEOM_PRECISION_TO_LONG)),
         Math.toIntExact(Math.round(maxLat * GEOM_PRECISION_TO_LONG)));

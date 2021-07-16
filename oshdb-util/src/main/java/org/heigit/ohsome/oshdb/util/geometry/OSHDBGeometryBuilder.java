@@ -608,7 +608,7 @@ public class OSHDBGeometryBuilder {
    * @return the same bounding box as an OSHDBBoundingBox object
    */
   public static OSHDBBoundingBox boundingBoxOf(Envelope envelope) {
-    return OSHDBBoundingBox.bboxLonLatCoordinates(
+    return OSHDBBoundingBox.bboxWgs84Coordinates(
         envelope.getMinX(),
         envelope.getMinY(),
         envelope.getMaxX(),

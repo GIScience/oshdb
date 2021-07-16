@@ -52,7 +52,7 @@ public class IterateByTimestampsNodesTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        OSHDBBoundingBox.bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 1,
         osmEntity -> true,
@@ -78,7 +78,7 @@ public class IterateByTimestampsNodesTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        OSHDBBoundingBox.bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 2,
         osmEntity -> true,
@@ -110,7 +110,7 @@ public class IterateByTimestampsNodesTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        OSHDBBoundingBox.bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 3,
         osmEntity -> true,
@@ -136,7 +136,7 @@ public class IterateByTimestampsNodesTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        OSHDBBoundingBox.bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 4,
         osmEntity -> true,
@@ -179,7 +179,7 @@ public class IterateByTimestampsNodesTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        OSHDBBoundingBox.bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
@@ -199,7 +199,7 @@ public class IterateByTimestampsNodesTest {
             "2018-01-01T00:00:00Z",
             "P1Y"
         ).get(),
-        OSHDBBoundingBox.bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
         osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),

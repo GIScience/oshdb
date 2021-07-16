@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
-import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxLonLatCoordinates;
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -165,7 +165,7 @@ public abstract class MapReducer<X> implements
       TimestampFormatter.getInstance().date(new Date()),
       OSHDBTimestamps.Interval.MONTHLY
       );
-  protected OSHDBBoundingBox bboxFilter = bboxLonLatCoordinates(-180.0, -90.0, 180.0, 90.0);
+  protected OSHDBBoundingBox bboxFilter = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
   private Geometry polyFilter = null;
   protected EnumSet<OSMType> typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   private final List<SerializablePredicate<OSHEntity>> preFilters = new ArrayList<>();

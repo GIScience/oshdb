@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.util;
 
-import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxLonLatCoordinates;
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 
 import java.util.Comparator;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -15,7 +15,7 @@ public class ZGrid {
 
   private static final long space = (long) (360.0 * OSMCoordinates.GEOM_PRECISION_TO_LONG);
   private final int maxZoom;
-  private static final OSHDBBoundingBox zeroBoundingBox = bboxLonLatCoordinates(0.0, 0.0, 0.0, 0.0);
+  private static final OSHDBBoundingBox zeroBoundingBox = bboxWgs84Coordinates(0.0, 0.0, 0.0, 0.0);
 
   /**
    * Creates a {@code ZGrid} index based on maximal Zoom.
