@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -296,8 +297,6 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     public int getLength() {
       return length;
     }
-
-
   }
 
   protected OSHEntityImpl(final CommonEntityProps p) {
@@ -346,6 +345,23 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     this.keys = keys;
     this.dataOffset = dataOffset;
     this.dataLength = dataLength;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getType(), id);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof OSHEntity)) {
+      return false;
+    }
+    OSHEntity other = (OSHEntity) obj;
+    return getType() == other.getType() && id == other.getId();
   }
 
   /**
