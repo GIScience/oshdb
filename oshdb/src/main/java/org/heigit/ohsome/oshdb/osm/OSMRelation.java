@@ -34,6 +34,12 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
         .filter(Objects::nonNull).map(entity -> OSHEntities.getByTimestamp(entity, timestamp));
   }
 
+  /**
+   * Returns a stream of all member entities (OSM) for the given timestamp.
+   *
+   * @param timestamp the timestamp for the osm member entity
+   * @return stream of member entities (OSM)
+   */
   public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp) {
     return this.getMemberEntities(timestamp, osmMember -> true);
   }

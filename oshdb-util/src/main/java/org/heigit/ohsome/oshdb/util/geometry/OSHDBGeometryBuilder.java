@@ -95,7 +95,7 @@ public class OSHDBGeometryBuilder {
       }
       // todo: handle old-style multipolygons here???
       Coordinate[] coords =
-          way.getRefEntities(timestamp)
+          way.getMemberEntities(timestamp)
               .filter(Objects::nonNull)
               .filter(OSMEntity::isVisible)
               .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
@@ -316,7 +316,7 @@ public class OSHDBGeometryBuilder {
         .map(osm -> (OSMWay) osm)
         .filter(Objects::nonNull)
         .filter(OSMEntity::isVisible)
-        .map(way -> way.getRefEntities(timestamp)
+        .map(way -> way.getMemberEntities(timestamp)
             .filter(Objects::nonNull)
             .filter(OSMEntity::isVisible)
         );
