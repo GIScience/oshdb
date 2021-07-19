@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.osh;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -116,5 +117,26 @@ public class OSHWayTest {
         "OSHWay ID:123 Vmax:+3+ Creation:3333 BBox:(8.680973,49.409498),(8.680973,49.409498)";
     String result = instance.toString();
     assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testHashCodeEquals() throws IOException {
+    var expected = OSHWayImpl.build(Lists.newArrayList(
+        new OSMWay(123L, 1, 3333L, 4444L, 23, new int[]{},
+            new OSMMember[]{})), Arrays.asList());
+
+    var a = OSHWayImpl.build(Lists.newArrayList(
+        new OSMWay(123L, 1, 3333L, 4444L, 23, new int[]{},
+            new OSMMember[]{})), Arrays.asList());
+
+    var b = OSHWayImpl.build(Lists.newArrayList(
+        new OSMWay(444L, 1, 3333L, 4444L, 23, new int[]{},
+            new OSMMember[]{})), Arrays.asList());
+
+    assertEquals(expected.hashCode(), a.hashCode());
+    assertNotEquals(expected.hashCode(), b.hashCode());
+
+    assertEquals(expected, a);
+    assertNotEquals(expected, b);
   }
 }

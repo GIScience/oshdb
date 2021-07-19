@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.osh;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.google.common.collect.Iterables;
@@ -59,6 +60,27 @@ public class OSHNodeTest {
         "OSHNode ID:123 Vmax:+2+ Creation:1 BBox:(49.410283,8.675635),(49.418621,8.715334)";
     String result = instance.toString();
     assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testHashCodeEquals() throws IOException {
+    var expected = buildOSHNode(
+        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, 0, 0)
+    );
+
+    var a = buildOSHNode(
+        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, 0, 0)
+    );
+
+    var b = buildOSHNode(
+        new OSMNode(444L, 1, 2L, 0L, USER_A, TAGS_A, 0, 0)
+    );
+
+    assertEquals(expected.hashCode(), a.hashCode());
+    assertNotEquals(expected.hashCode(), b.hashCode());
+
+    assertEquals(expected, a);
+    assertNotEquals(expected, b);
   }
 
   static OSHNode buildOSHNode(OSMNode... versions) throws IOException {
