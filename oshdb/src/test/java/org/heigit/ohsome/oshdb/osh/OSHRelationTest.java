@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.osh;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -179,5 +180,26 @@ public class OSHRelationTest {
         "OSHRelation ID:300 Vmax:+1+ Creation:3333 BBox:(8.680972,49.409496),(8.680974,49.409498)";
     String result = instance.toString();
     assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testHashCodeEquals() throws IOException {
+    var expected = OSHRelationImpl.build(Lists.newArrayList(
+        new OSMRelation(123L, 1, 3333L, 4444L, 23, new int[]{},
+            new OSMMember[]{})), Collections.emptyList(), Collections.emptyList());
+
+    var a = OSHRelationImpl.build(Lists.newArrayList(
+        new OSMRelation(123L, 1, 3333L, 4444L, 23, new int[]{},
+            new OSMMember[]{})), Collections.emptyList(), Collections.emptyList());
+
+    var b = OSHRelationImpl.build(Lists.newArrayList(
+        new OSMRelation(444L, 1, 3333L, 4444L, 23, new int[]{},
+            new OSMMember[]{})), Collections.emptyList(), Collections.emptyList());
+
+    assertEquals(expected.hashCode(), a.hashCode());
+    assertNotEquals(expected.hashCode(), b.hashCode());
+
+    assertEquals(expected, a);
+    assertNotEquals(expected, b);
   }
 }
