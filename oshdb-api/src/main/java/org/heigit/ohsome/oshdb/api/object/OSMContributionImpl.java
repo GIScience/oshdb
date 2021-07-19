@@ -140,7 +140,7 @@ public class OSMContributionImpl implements OSMContribution {
     int userId = -1;
     // search children for actual contributor's userId
     if (entity instanceof OSMWay) {
-      userId = ((OSMWay) entity).getRefEntities(contributionTimestamp)
+      userId = ((OSMWay) entity).getMemberEntities(contributionTimestamp)
           .filter(Objects::nonNull)
           .filter(n -> n.getEpochSecond() == contributionTimestamp.getEpochSecond())
           .findFirst()
@@ -160,7 +160,7 @@ public class OSMContributionImpl implements OSMContribution {
                   // todo: what to do with rel->node member changes or rel->rel[->*] changes?
                   .filter(e -> e instanceof OSMWay)
                   .map(e -> (OSMWay) e)
-                  .flatMap(w -> w.getRefEntities(contributionTimestamp))
+                  .flatMap(w -> w.getMemberEntities(contributionTimestamp))
                   .filter(Objects::nonNull)
                   .filter(n -> n.getEpochSecond() == contributionTimestamp.getEpochSecond())
                   .findFirst()

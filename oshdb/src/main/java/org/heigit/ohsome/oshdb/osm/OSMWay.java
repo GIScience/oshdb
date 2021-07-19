@@ -32,7 +32,13 @@ public class OSMWay extends OSMEntity implements Comparable<OSMWay>, Serializabl
     return members;
   }
 
-  public Stream<OSMNode> getRefEntities(OSHDBTimestamp timestamp) {
+  /**
+   * Returns a stream of all member entities (OSM) for the given timestamp.
+   *
+   * @param timestamp the timestamp for the osm member entity
+   * @return stream of member entities (OSM)
+   */
+  public Stream<OSMNode> getMemberEntities(OSHDBTimestamp timestamp) {
     return Arrays.stream(this.getMembers())
         .map(OSMMember::getEntity)
         .filter(Objects::nonNull)
