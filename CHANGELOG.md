@@ -49,6 +49,7 @@ Changelog
   | moved and renamed module | `oshdb-tool/etl` | `oshdb-etl` |
   | moved and renamed module | `oshdb-tool/oshpbf-parser` | `oshdb-oshpbf-parser` |
   | renamed method | `OSMWay.getRef()` | `OSMWay.getMember()` |
+  | renamed method | `OSMWay.getRefEntities(long)` | `OSMWay.getMemberEntities(long)` |
   | renamed method | `OSHDBTimestamp.getRawUnixTimestamp()` | `OSHDBTimestamp.getEpochSecond()` |
   | moved class | `oshdb.util.OSHDBTimestamp` | `oshdb.OSHDBTimestamp` |
   | moved class | `oshdb.util.OSHDBBoundingBox` | `oshdb.OSHDBBoundingBox` |
