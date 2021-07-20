@@ -97,7 +97,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
 
   private void checkStateActive() {
     var cluster = ignite.cluster();
-    if (cluster.state().active()) {
+    if (!cluster.state().active()) {
       throw new OSHDBException("cluster not in state active!");
     }
   }
