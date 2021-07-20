@@ -31,6 +31,7 @@ Changelog
 * major improvements to code style guide adherence; fix some potential bugs found in static code analyis ([#374])
 * upgrade apache ignite to version 2.10.0 ([#386])
 * drop deprecated oshdb-api methods `where` and `osmTypes` ([#308])
+* clarify documentation of OSMContributionView results ([#292])
 
 ### bugfixes
 
@@ -71,6 +72,7 @@ Changelog
   ```
 
 
+[#292]: https://github.com/GIScience/oshdb/issues/292
 [#306]: https://github.com/GIScience/oshdb/pull/306
 [#308]: https://github.com/GIScience/oshdb/issues/308
 [#327]: https://github.com/GIScience/oshdb/issues/327
