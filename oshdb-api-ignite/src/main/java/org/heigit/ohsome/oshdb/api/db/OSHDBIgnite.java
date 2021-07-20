@@ -15,6 +15,7 @@ import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.TableNames;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
@@ -39,18 +40,36 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   }
 
   private final Ignite ignite;
+  private final boolean owner;
   private ComputeMode computeMode = ComputeMode.LOCAL_PEEK;
 
   private IgniteRunnable onCloseCallback = null;
 
+  /**
+   * Create a new OSHDBDatabase based on default ("ignite-config.xml") configuration.
+   *
+   * @throws OSHDBException if cluster state is not active.
+   */
   public OSHDBIgnite() {
     this(new File("ignite-config.xml"));
   }
 
+  /**
+   * Creates a new OSHDBDatabase using the given Ignite instance.
+   *
+   * @param ignite Ignite instance to use.
+   * @throws OSHDBException if cluster state is not active.
+   */
   public OSHDBIgnite(Ignite ignite) {
-    this.ignite = ignite;
+    this(ignite, false);
   }
 
+  /**
+   * Opens a connection to oshdb data stored on an Ignite cluster.
+   *
+   * @param igniteConfigFilePath ignite configuration file
+   * @throws OSHDBException if cluster state is not active.
+   */
   public OSHDBIgnite(String igniteConfigFilePath) {
     this(new File(igniteConfigFilePath));
   }
@@ -59,10 +78,28 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * Opens a connection to oshdb data stored on an Ignite cluster.
    *
    * @param igniteConfig ignite configuration file
+   * @throws OSHDBException if cluster state is not active.
    */
   public OSHDBIgnite(File igniteConfig) {
+    this(startClient(igniteConfig), true);
+  }
+
+  private OSHDBIgnite(Ignite ignite, boolean owner) {
+    this.ignite = ignite;
+    this.owner = owner;
+    checkStateActive();
+  }
+
+  private static Ignite startClient(File igniteConfig) {
     Ignition.setClientMode(true);
-    this.ignite = Ignition.start(igniteConfig.toString());
+    return Ignition.start(igniteConfig.toString());
+  }
+
+  private void checkStateActive() {
+    var cluster = ignite.cluster();
+    if (!cluster.state().active()) {
+      throw new OSHDBException("cluster not in state active!");
+    }
   }
 
   @Override
@@ -103,12 +140,20 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     return null;
   }
 
+  /**
+   * Returns the actual Ignite instance.
+   *
+   * @return Ignite instance
+   */
   public Ignite getIgnite() {
     return this.ignite;
   }
 
+  @Override
   public void close() {
-    this.ignite.close();
+    if (owner) {
+      this.ignite.close();
+    }
   }
 
   /**
@@ -144,7 +189,6 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     this.onCloseCallback = action;
     return this;
   }
-
 
   /**
    * Gets the onClose callback.

@@ -32,6 +32,7 @@ Changelog
 * upgrade apache ignite to version 2.10.0 ([#386])
 * drop deprecated oshdb-api methods `where` and `osmTypes` ([#308])
 * clarify documentation of OSMContributionView results ([#292])
+* if cluster state is not active an exception will thrown ([#337])
 
 ### bugfixes
 
@@ -76,6 +77,7 @@ Changelog
 [#306]: https://github.com/GIScience/oshdb/pull/306
 [#308]: https://github.com/GIScience/oshdb/issues/308
 [#327]: https://github.com/GIScience/oshdb/issues/327
+[#337]: https://github.com/GIScience/oshdb/issues/337
 [#338]: https://github.com/GIScience/oshdb/issues/338
 [#352]: https://github.com/GIScience/oshdb/pull/352
 [#353]: https://github.com/GIScience/oshdb/pull/353
