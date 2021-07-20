@@ -36,6 +36,8 @@ The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/or
 
 The [`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/bigspatialdata/oshdb/api/mapreducer/OSMContributionView.html) returns all modifications to matching OSM entities. This is in general more computationally intensive than using the snapshot view, but allows to inspect the OSM data in more detail, especially if one is interested in how the OSM data is modified by the contributors to the OSM project.
 
+Specifically, the OSHDB API considers all modifications to [semantic OSM elements](https://wiki.openstreetmap.org/wiki/Semantic_elements) as a contribution: This includes both direct edits (e.g. tag changes) as well as changes which are based in changes of referenced OSM objects (e.g. certain geometry changes). When OSM entities are changed multiple times in a single [OSM changeset](https://wiki.openstreetmap.org/wiki/Changeset), these are squashed into one single contribution result.
+
 Through the returned [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html) objects, one has access to the following properties:
 
 * the [timestamp](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/bigspatialdata/oshdb/api/object/OSMContribution.html#getTimestamp()) of the contribution
