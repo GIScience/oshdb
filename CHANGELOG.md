@@ -30,6 +30,7 @@ Changelog
 * add new interfaces `OSHDBTemporal` and `OSHDBBoundable` ([#369])
 * major improvements to code style guide adherence; fix some potential bugs found in static code analyis ([#374])
 * upgrade apache ignite to version 2.10.0 ([#386])
+* if cluster state is not active an exception will thrown ([#337])
 
 ### bugfixes
 
@@ -72,6 +73,7 @@ Changelog
 
 [#306]: https://github.com/GIScience/oshdb/pull/306
 [#327]: https://github.com/GIScience/oshdb/issues/327
+[#337]: https://github.com/GIScience/oshdb/issues/337
 [#338]: https://github.com/GIScience/oshdb/issues/338
 [#352]: https://github.com/GIScience/oshdb/pull/352
 [#353]: https://github.com/GIScience/oshdb/pull/353
