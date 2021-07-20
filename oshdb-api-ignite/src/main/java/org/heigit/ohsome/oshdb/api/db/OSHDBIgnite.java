@@ -47,6 +47,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
 
   /**
    * Create a new OSHDBDatabase based on default ("ignite-config.xml") configuration.
+   *
+   * @throws OSHDBException if cluster state is not active.
    */
   public OSHDBIgnite() {
     this(new File("ignite-config.xml"));
@@ -56,6 +58,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * Creates a new OSHDBDatabase using the given Ignite instance.
    *
    * @param ignite Ignite instance to use.
+   * @throws OSHDBException if cluster state is not active.
    */
   public OSHDBIgnite(Ignite ignite) {
     this(ignite, false);
@@ -65,6 +68,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * Opens a connection to oshdb data stored on an Ignite cluster.
    *
    * @param igniteConfigFilePath ignite configuration file
+   * @throws OSHDBException if cluster state is not active.
    */
   public OSHDBIgnite(String igniteConfigFilePath) {
     this(new File(igniteConfigFilePath));
@@ -74,6 +78,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * Opens a connection to oshdb data stored on an Ignite cluster.
    *
    * @param igniteConfig ignite configuration file
+   * @throws OSHDBException if cluster state is not active.
    */
   public OSHDBIgnite(File igniteConfig) {
     this(startClient(igniteConfig), true);
