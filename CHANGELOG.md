@@ -63,6 +63,8 @@ Changelog
   | moved class | `CellIterator.OSMEntityFilter` | `oshdb-util/oshdb.osm.OSMEntityFilter` |
   | moved class | `oshdb-api.generic.function` | `oshdb-util/oshdb.util.function` |
   | renamed enum constants | `ComputeMode.LocalPeek`, `….ScanQuery`, `….AffinityCall` | `ComputeMode.LOCAL_PEEK`, `….SCAN_QUERY`, `….AFFINITY_CALL` |
+  | moved class | `org.heigit.ohsome.oshdb.api.object.OSMContribution` | `org.heigit.ohsome.oshdb.util.mappable.OSMContribution` |
+  | moved class | `org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshot` | `org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot` |
 * if you are using the ignite backend, you need to add the following dependency to your project:
   ```xml
     <dependency>
