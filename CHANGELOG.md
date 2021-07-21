@@ -1,7 +1,7 @@
 Changelog
 =========
 
-## 0.7.0-SNAPSHOT (current master)
+## 0.7.0
 
 ### breaking changes
 
