@@ -13,7 +13,7 @@ The snapshot view is particularly useful for analysing how the amount of OSM dat
 Using OSHDB Views
 -----------------
 
-Both views can be used in the OSHDB API in very similar ways and only differ in the type of data that is returned by the [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html) object that is returned when calling the [`on`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html#on(org.heigit.ohsome.oshdb.api.db.OSHDBDatabase)) method of the respective view: The `OSMEntitySnapshotView` returns a MapReducer of [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMEntitySnapshot.html) objects, while the `OSMContributionView` returns a MapReducer of [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMContribution.html) objects.
+Both views can be used in the OSHDB API in very similar ways and only differ in the type of data that is returned by the [`MapReducer`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html) object that is returned when calling the [`on`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html#on(org.heigit.ohsome.oshdb.api.db.OSHDBDatabase)) method of the respective view: The `OSMEntitySnapshotView` returns a MapReducer of [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) objects, while the `OSMContributionView` returns a MapReducer of [`OSMContribution`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMContribution.html) objects.
 
 ```java
 OSHDBDatabase oshdb = …;
@@ -26,11 +26,11 @@ A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/
 
 ### Snapshot View
 
-The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMEntitySnapshot.html) is quite simple: it returns the state of the OSM data at a given point in time, or at multiple given points in time. In the OSHDB API, these are called snapshots and are represented by [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMEntitySnapshot.html) objects. They allow access to the following properties:
+The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) is quite simple: it returns the state of the OSM data at a given point in time, or at multiple given points in time. In the OSHDB API, these are called snapshots and are represented by [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) objects. They allow access to the following properties:
 
-* the [timestamp](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMEntitySnapshot.html#getTimestamp()) of the snapshot
-* the [geometry](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMEntitySnapshot.html#getGeometry()) of the queried OSM feature
-* the [OSM entity](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/object/OSMEntitySnapshot.html#getEntity()) of this snapshot
+* the [timestamp](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getTimestamp()) of the snapshot
+* the [geometry](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getGeometry()) of the queried OSM feature
+* the [OSM entity](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getEntity()) of this snapshot
 
 ### Contribution View
 
