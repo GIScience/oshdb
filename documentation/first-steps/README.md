@@ -71,14 +71,13 @@ For now, we only define a single timestamp in our query. The OSHDB also supports
 
 ## 6. Filtering OSM data
 
-There are several ways to select a specific subset of the OSM dataset. In our example, we only want to look at OSM way objects which have the `building` tag. To filter these objects for our query, we add the following statements to our query:
+In our example, we only want to look at OSM way objects which have the `building` tag. To filter these objects for our query, we add the following statements to our query:
 
 ```java
-    .osmType(OSMType.WAY)
-    .osmTag("building")
+    .filter("type:way and building = *")
 ```
 
-There are other variants of these methods and a few more, all work similarly: one specifies which OSM objects should be kept. Multiple filters can be specified one after each other, resulting in the set of OSM objects that match all selectors (i.e. an **and** operation). 
+There are a variety of available filter selectors which can be combined into a [filter](https://github.com/GIScience/oshdb/tree/0.7.0/documentation/first-steps) string: each one specifies a property which OSM objects can have. These selectors can be combined into a filter string using boolean operators and parentheses. If multiple `filter`s are set, the result will contain only the OSM objects which match all given filters.
 
 ## 7. Calculating intermediate results
 
@@ -117,8 +116,7 @@ OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
 Number result = OSMEntitySnapshotView.on(oshdb)
     .areaOfInterest(new OSHDBBoundingBox(8.6634,49.3965,8.7245,49.4268))
     .timestamps("2019-01-01")
-    .osmType(OSMType.WAY)
-    .osmTag("building")
+    .filter("type:way and building=*")
     .map(snapshot -> Geo.areaOf(snapshot.getGeometry()))
     .filter(area -> area < 1000.0)
     .sum();
@@ -136,8 +134,7 @@ OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
 SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotView.on(oshdb)
     .areaOfInterest(new OSHDBBoundingBox(8.6634,49.3965,8.7245,49.4268))
     .timestamps("2012-01-01", "2019-01-01", Interval.YEARLY)
-    .osmType(OSMType.WAY)
-    .osmTag("building")
+    .filter("type:way and building=*")
     .map(snapshot -> Geo.areaOf(snapshot.getGeometry()))
     .filter(area -> area < 1000.0)
     .aggregateByTimestamp()
