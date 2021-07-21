@@ -23,3 +23,12 @@ There are currently three different [compute modes](https://docs.ohsome.org/java
 * *ScanQuery* - works better for large scale (e.g. global) analysis queries.
 * *AffinityCall* - is generally slower than the other two compute modes, but supports [streaming](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#stream()) of results.
 
+In order to use the OSHDB Ignite backend, it is necessary to add the maven module `oshdb-api-ignite` to your project's maven dependencies:
+
+```xml
+<dependency>
+  <groupId>org.heigit.ohsome</groupId>
+  <artifactId>oshdb-api-ignite</artifactId>
+  <version>0.7.0</version>
+</dependency>
+```
