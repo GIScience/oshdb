@@ -19,9 +19,9 @@ The [`OSHDBIgnite`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heig
 
 There are currently three different [compute modes](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/db/OSHDBIgnite.html#computeMode()) available in the OSHDBIgnite backend:
 
-* *LocalPeek* - (default) is optimized for small to mid scale queries.
-* *ScanQuery* - works better for large scale (e.g. global) analysis queries.
-* *AffinityCall* - is generally slower than the other two compute modes, but supports [streaming](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#stream()) of results.
+* *LOCAL_PEEK* - (default) is optimized for small to mid scale queries.
+* *SCAN_QUERY* - works better for large scale (e.g. global) analysis queries.
+* *AFFINITY_CALL* - is generally slower than the other two compute modes, but supports [streaming](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#stream()) of results.
 
 In order to use the OSHDB Ignite backend, it is necessary to add the maven module `oshdb-api-ignite` to your project's maven dependencies:
 
