@@ -5,7 +5,7 @@ The _OSHDB-API_ is a Java-API that allows one to run queries on the OSM history 
 The programming interface is based on the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model which divides any analysis into different steps:
 
 * OSM data is searched spatially, temporally and by its attributes.
-  <br><i>example: return all OSM ways which are tagged as “building” in a specific area in yearly steps between 2012 and 2019</i>
+  <br><i>example: return all OSM ways which are tagged as “building” in a specific area in yearly steps between 2012 and 2021</i>
 * Intermediate results are calculated for each OSM entity at each requested timestamp
   <br><i>example: return the building's footprint area</i>
 * The final result is calculated by combining the intermediate results together using one of the aggregation methods provided by the OSHDB-API.
@@ -61,13 +61,13 @@ Note that this is not a complete JAVA code line yet. It will be extended in the 
 Every query must specify a spatial extent and a timestamp (or time range) for which the OSM data should be analyzed. This can be done by calling the methods `areaOfInterest` and `timestamps` on the object we got from the View in the previous step. The spatial extent can either be defined as a rectangular bounding box, or as an arbitrary polygonal [JTS](https://projects.eclipse.org/projects/locationtech.jts) geometry object. In our example, we will use a simple bounding box. The timestamp can be defined by providing a date-time string.
 
 ```java
-    .areaOfInterest(new OSHDBBoundingBox(8.6634, 49.3965, 8.7245, 49.4268))
-    .timestamps("2019-01-01")
+    .areaOfInterest(OSHDBBoundingBox.bboxWgs84Coordinates(8.6634, 49.3965, 8.7245, 49.4268))
+    .timestamps("2021-01-01")
 ```
 
 Note that the OSHDB expects (and returns) coordinates in the cartesian XY order: longitude first, then latitude. So, the parameters for specifying a bounding box in the OSHDB are in the following order: left, bottom, right, top (or: west, south, east, north). Just like the OpenStreetMap data, the OSHDB also works directly with coordinates in WGS84 coordinates ([EPSG:4326](https://epsg.io/4326)) of longitude and latitude. To quickly get the coordinates of a bounding box in this format, we recommend the following online tool: http://norbertrenner.de/osm/bbox.html
 
-For now, we only define a single timestamp in our query. The OSHDB also supports querying the OSM history data for multiple timestamps at once. For example, one can analyze the data in yearly steps between 2012 and 2019. At the end of this tutorial we will show what (few) changes are necessary to let our query generate the results for many timestamps at once.
+For now, we only define a single timestamp in our query. The OSHDB also supports querying the OSM history data for multiple timestamps at once. For example, one can analyze the data in yearly steps between 2012 and 2021. At the end of this tutorial we will show what (few) changes are necessary to let our query generate the results for many timestamps at once.
 
 ## 6. Filtering OSM data
 
@@ -114,8 +114,8 @@ To summarize, here is the code of our first query:
 ```java
 OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
 Number result = OSMEntitySnapshotView.on(oshdb)
-    .areaOfInterest(new OSHDBBoundingBox(8.6634,49.3965,8.7245,49.4268))
-    .timestamps("2019-01-01")
+    .areaOfInterest(OSHDBBoundingBox.bboxWgs84Coordinates(8.6634,49.3965,8.7245,49.4268))
+    .timestamps("2021-01-01")
     .filter("type:way and building=*")
     .map(snapshot -> Geo.areaOf(snapshot.getGeometry()))
     .filter(area -> area < 1000.0)
@@ -127,13 +127,13 @@ This example prints the result (approximately `1360069.5`) to the terminal conso
 
 ## 11. Multiple Timestamps
 
-As mentioned earlier in this tutorial, the OSHDB also allows one to generate results for multiple timestamps at once. To achieve this, a few changes are necessary to our query: First, we have to actually tell the OSHDB to query more than one timestamp. One can for example specify a start and end date with regular time interval: `.timestamps("2012-01-01", "2019-01-01", Interval.YEARLY)`. Then, we have to tell the OSHDB that we want our result for each timestamp individually. We do this by calling `.aggregateByTimestamp()` at some point in our query, before the final reduce operation is executed. This will change the data type of the result of our query from being a single number, to an object that contains an individual number result for each timestamp:
+As mentioned earlier in this tutorial, the OSHDB also allows one to generate results for multiple timestamps at once. To achieve this, a few changes are necessary to our query: First, we have to actually tell the OSHDB to query more than one timestamp. One can for example specify a start and end date with regular time interval: `.timestamps("2012-01-01", "2021-01-01", Interval.YEARLY)`. Then, we have to tell the OSHDB that we want our result for each timestamp individually. We do this by calling `.aggregateByTimestamp()` at some point in our query, before the final reduce operation is executed. This will change the data type of the result of our query from being a single number, to an object that contains an individual number result for each timestamp:
 
 ```java
 OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
 SortedMap<OSHDBTimestamp, Number> result = OSMEntitySnapshotView.on(oshdb)
-    .areaOfInterest(new OSHDBBoundingBox(8.6634,49.3965,8.7245,49.4268))
-    .timestamps("2012-01-01", "2019-01-01", Interval.YEARLY)
+    .areaOfInterest(OSHDBBoundingBox.bboxWgs84Coordinates(8.6634,49.3965,8.7245,49.4268))
+    .timestamps("2012-01-01", "2021-01-01", Interval.YEARLY)
     .filter("type:way and building=*")
     .map(snapshot -> Geo.areaOf(snapshot.getGeometry()))
     .filter(area -> area < 1000.0)
