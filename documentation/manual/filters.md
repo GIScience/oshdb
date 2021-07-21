@@ -28,30 +28,18 @@ This specifies the time range and time subdivisions for the OSHDB query. Accepts
 
 There exists also a [method](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#timestamps(java.lang.String,java.lang.String,org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps.Interval)) to define common regularly spaced time intervals within a time range, e.g. a monthly time interval between two dates.
 
-osmType
--------
-
-Filters OSM entities by their OSM data type. These types are: node, way and relation, represented in the OSHDB by the enumeration [OSMType](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/osm/OSMType.html). In a MapReducer, the [method](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#osmType(java.util.Set)) [`osmType`](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#osmType(org.heigit.ohsome.oshdb.osm.OSMType,org.heigit.ohsome.oshdb.osm.OSMType...)) allows to filter objects that are of a specific OSM data type.
-
-osmTag
-------
-
-This is the most commonly used filter to select a certain subset of OSM data. It returns only OSM entities that match a given OSM tag. Elements can be filtered by either the presence of a tag [key](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#osmTag(java.lang.String)), the presence of an [exact tag](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#osmTag(java.lang.String,java.lang.String)), or other matching condition that tests the presence of specific tags or tag combinations.
-<!-- list and document all versions: collection(tag), key+collection(values), etc. -->
-
-osmEntityFilter
+_oshdb_ filter
 ---------------
 
-It is possible to [define custom filtering functions](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#osmEntityFilter(org.heigit.ohsome.oshdb.api.generic.function.SerializablePredicate)), that take an OSM entity object as input and decide whether each individual entity should be included in the result or not by returning a boolean value.
+An easy way to provide [`filter`s](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#filter(java.lang.String)) is through the functionality of [ohsome filters](https://github.com/GIScience/oshdb/blob/0.7.0/oshdb-filter/README.md), which allow one to define osm data filters in a human-readable syntax. With these one can combine several tag-, type- and geometry-filters with arbitrary boolean operators.
 
-_ohsome_ filter
----------------
+Simple examples of filters are `type:node and natural=tree` to select trees, or `geometry:polygon and building=*` to filter for buildings. More examples and can be found on the [dedicated filter documentation page](https://github.com/GIScience/oshdb/blob/0.7.0/oshdb-filter/README.md#examples).
 
-An easy way to provide complex [`filter`s](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#filter(java.lang.String)) is through the functionality of [ohsome filters](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/libs/ohsome-filter#readme), which allow one to define osm data filter in a human-readable syntax. With these one can combine several tag-, type- and geometry-filters with arbitrary boolean operators.
+By using the methods [`Filter.byOSMEntity`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/filter/Filter.html#byOSMEntity(org.heigit.ohsome.oshdb.util.function.OSMEntityFilter)) and [`Filter.byOSHEntity`](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/filter/Filter.html#byOSMEntity(org.heigit.ohsome.oshdb.util.function.OSHEntityFilter)) one can define arbitrary callback functions to filter OSM or OSH entities, respectively.
 
 _lambda_ filter
 ---------------
 
 It is possible to define [`filter` functions](https://docs.ohsome.org/java/oshdb/0.6.4/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#filter(org.heigit.ohsome.oshdb.api.generic.function.SerializablePredicate)) that can sort out values after they already have been transformed in a [map](map-reduce.md#map) step.
 
-Note that it is usually best to use the less flexible, but more performant OSM data filters described above wherever possible, as they can reduce the amount of data to be iterated over right from the start of the query. This is because while the basic filters are applied at the beginning of each query on the full OSM history data directly, the filter lambda functions are only executed after the data has already been computed and transformed.
+Note that it is usually best to use the _ohsome_ filters described above wherever possible, as they can reduce the amount of data to be iterated over right from the start of the query. Lambda filter functions are only executed after the OSM data has already been computed and transformed.
