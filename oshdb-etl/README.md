@@ -2,7 +2,7 @@
 
 In order to create a local database instance of the OSHDB yourself, you
 need an .osh.pbf-file of your area of interest. You can get one, e.g., from
-[Geofabrik](http://download.geofabrik.de/). The OSHDB instance may then
+[Geofabrik](https://download.geofabrik.de/). The OSHDB instance may then
 be created by the steps extract, transform and load as follows:
 
 ## Extract

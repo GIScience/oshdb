@@ -5,7 +5,7 @@ Installation
 
 Compiling software that includes the OSHDB currently requires Java 11 (i.e., version 11) or newer. Because maven projects use Java 1.5 by default, it is necessary to either configure your IDE accordingly or add the following compiler version to the properties section of your pom.xml file:
 
-```
+```xml
 <properties>
   <maven.compiler.source>11</maven.compiler.source>
   <maven.compiler.target>11</maven.compiler.target>
@@ -21,7 +21,7 @@ Simply add the OSHDB as a dependency to your `pom.xml` file. For most use cases 
   <dependency>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-api</artifactId>
-    <version>0.6.4</version>
+    <version>0.7.0</version>
   </dependency>
 </dependencies>
 ```
