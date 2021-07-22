@@ -40,6 +40,6 @@ By using the methods [`Filter.byOSMEntity`](https://docs.ohsome.org/java/oshdb/0
 _lambda_ filter
 ---------------
 
-It is possible to define [`filter` functions](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#filter(org.heigit.ohsome.oshdb.api.generic.function.SerializablePredicate)) that can sort out values after they already have been transformed in a [map](map-reduce.md#map) step.
+It is possible to define [`filter` functions](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#filter(org.heigit.ohsome.oshdb.util.function.SerializablePredicate)) that can sort out values after they already have been transformed in a [map](map-reduce.md#map) step.
 
 Note that it is usually best to use the _OSHDB_ filters described above wherever possible, as they can reduce the amount of data to be iterated over right from the start of the query. Lambda filter functions are only executed after the OSM data has already been computed and transformed.
