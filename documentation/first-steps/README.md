@@ -74,7 +74,7 @@ For now, we only define a single timestamp in our query. The OSHDB also supports
 In our example, we only want to look at OSM way objects which have the `building` tag. To filter these objects for our query, we add the following statements to our query:
 
 ```java
-    .filter("type:way and building = *")
+    .filter("type:way and building=*")
 ```
 
 There are a variety of available filter selectors which can be combined into a [filter](https://github.com/GIScience/oshdb/tree/0.7.0/documentation/first-steps) string: each one specifies a property which OSM objects can have. These selectors can be combined into a filter string using boolean operators and parentheses. If multiple `filter`s are set, the result will contain only the OSM objects which match all given filters.
