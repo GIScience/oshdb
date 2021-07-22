@@ -20,7 +20,7 @@ The OSHDB allows to investigate the evolution of the amount of data and the cont
 
     Integer numberOfUsersEditingHighways = OSMContributionView.on(oshdb)
         .timestamps("2007-10-07", "2009-04-09")
-        .osmTag("highway")
+        .filter("type:way and highway=*")
         .map(contribution -> contribution.getContributorUserId())
         .countUniq();
 
