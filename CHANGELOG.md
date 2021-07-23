@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## 0.8.0-SNAPSHOT (current master)
+
+
 ## 0.7.0
 
 ### breaking changes
