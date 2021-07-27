@@ -55,7 +55,7 @@ public abstract class GridOSHEntity
   @Override
   public String toString() {
     if (id >= 0) {
-      OSHDBBoundingBox bbox = XYGrid.getBoundingBox(new CellId((int) id, level));
+      OSHDBBoundingBox bbox = XYGrid.getBoundingBox(new CellId(level, id));
       return String.format(Locale.ENGLISH, "ID:%d Level:%d %s", id, level, bbox);
     } else {
       return String.format(Locale.ENGLISH, "ID:%d Level:%d", id, level);
