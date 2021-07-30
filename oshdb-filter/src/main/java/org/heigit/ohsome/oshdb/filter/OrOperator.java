@@ -3,6 +3,8 @@ package org.heigit.ohsome.oshdb.filter;
 import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
+import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -27,6 +29,17 @@ public class OrOperator extends BinaryOperator {
   public boolean applyOSMGeometry(OSMEntity entity, Supplier<Geometry> geometrySupplier) {
     return op1.applyOSMGeometry(entity, geometrySupplier)
         || op2.applyOSMGeometry(entity, geometrySupplier);
+  }
+
+
+  @Override
+  public boolean applyOSMEntitySnapshot(OSMEntitySnapshot snapshot) {
+    return op1.applyOSMEntitySnapshot(snapshot) || op2.applyOSMEntitySnapshot(snapshot);
+  }
+
+  @Override
+  public boolean applyOSMContribution(OSMContribution contribution) {
+    return op1.applyOSMContribution(contribution) || op2.applyOSMContribution(contribution);
   }
 
   @Override
