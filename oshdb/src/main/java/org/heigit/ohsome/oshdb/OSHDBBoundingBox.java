@@ -24,7 +24,14 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   private final int maxLat;
 
   /**
-   * Creates an {@code OSHDBBoundingBox} instance from osm int coordinates.
+   * Creates an {@code OSHDBBoundingBox} instance from scaled coordinates.
+   * 
+   * <p>This method is mainly for internal usage.<br>
+   * OSM stores coordinates with a fixed precision of
+   * <a href="https://wiki.openstreetmap.org/wiki/Node#Structure">7 decimal
+   * digits</a> and stores them internally as integers. You can use this method
+   * to create a bounding box from such (scaled and rounded) coordinates. <br>
+   * See {@code bboxWgs84Coordinates} for a wgs84 alternative.</p>
    *
    * @param minLon minimum longitude in osm-coordinate system
    * @param minLat minimum latitude in osm-coordinate system
@@ -45,7 +52,7 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
   }
 
   /**
-   * Creates an {@code OSHDBBoundingBox} with wgs84 coordinates.
+   * Creates an {@code OSHDBBoundingBox} from wgs84 coordinates.
    *
    * @param minLon minimum longitude in wgs84 coordinate system
    * @param minLat minimum latitude in wgs84 coordinate system
