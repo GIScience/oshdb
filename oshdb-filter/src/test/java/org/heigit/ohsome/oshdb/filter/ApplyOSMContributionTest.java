@@ -182,4 +182,16 @@ public class ApplyOSMContributionTest extends FilterTest {
     FilterParser parser = new FilterParser(tagTranslator, true);
     testContribution(parser.parse("contributor:(1..2)"));
   }
+
+  @Test
+  public void testAndOperator() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testContribution(parser.parse("contributor:1 and type:node"));
+  }
+
+  @Test
+  public void testOrOperator() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testContribution(parser.parse("contributor:1 or foo=doesntexist"));
+  }
 }
