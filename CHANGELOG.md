@@ -3,6 +3,10 @@ Changelog
 
 ## 0.8.0-SNAPSHOT (current master)
 
+* fix a bug where contribution-based filters are not applied when used in an and/or operation. ([#409])
+
+[#409]: https://github.com/GIScience/oshdb/issues/409
+
 
 ## 0.7.0
 
