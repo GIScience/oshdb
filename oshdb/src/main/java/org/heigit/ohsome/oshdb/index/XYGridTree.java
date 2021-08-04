@@ -45,7 +45,7 @@ public class XYGridTree implements Serializable {
    * @return An iterator over the cellIds in all zoomlevel
    */
   public Iterable<CellId> getIds(long longitude, long latitude) {
-    return () -> new Iterator<>() {
+    return (Iterable<CellId> & Serializable) () -> new Iterator<>() {
           private int level = -1;
 
           @Override
@@ -240,7 +240,7 @@ public class XYGridTree implements Serializable {
    */
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
       final boolean enlarge) {
-    return () -> new Iterator<>() {
+    return (Iterable<CellId> & Serializable) () -> new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
