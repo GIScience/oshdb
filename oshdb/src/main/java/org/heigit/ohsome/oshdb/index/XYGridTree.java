@@ -44,6 +44,7 @@ public class XYGridTree implements Serializable {
    * @param latitude Latitude for the given point
    * @return An iterator over the cellIds in all zoomlevel
    */
+  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
     return new Iterable<>() {
         @Override
@@ -244,6 +245,7 @@ public class XYGridTree implements Serializable {
    * @param enlarge {@code true} to include enlarged bboxes
    * @return List of {@code CellIdRanges} which are covered by the given bbox
    */
+  @SuppressWarnings("Convert2Lambda")
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
       final boolean enlarge) {
     return new Iterable<>() {
