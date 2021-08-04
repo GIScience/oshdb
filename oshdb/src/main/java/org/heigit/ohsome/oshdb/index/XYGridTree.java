@@ -110,45 +110,80 @@ public class XYGridTree implements Serializable {
    * @param enlarge {@code true} if the query should include enlarged bboxes
    */
   public Iterable<CellId> bbox2CellIds(final OSHDBBoundingBox bbox, final boolean enlarge) {
-    return () -> new Iterator<>() {
-          private int level = 0;
-          private Iterator<IdRange> rows =
-              gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
-          private IdRange row = rows.next();
-          private long maxId = row.getEnd();
-          private long currId = row.getStart() - 1;
+    return new CellIdIterable(gridMap, bbox, enlarge, maxLevel);
+  }
 
-          @Override
-          public boolean hasNext() {
-            if (level < maxLevel) {
-              return true;
-            }
-            if (rows.hasNext()) {
-              return true;
-            }
-            return currId < maxId;
-          }
+  private static class CellIdIterable implements Iterable<CellId>, Serializable {
+    private final Map<Integer, XYGrid> gridMap;
+    private final OSHDBBoundingBox bbox;
+    private final boolean enlarge;
+    private final int maxLevel;
 
-          @Override
-          public CellId next() {
-            if (currId < maxId) {
-              currId++;
-              return new CellId(level, currId);
-            }
-            if (rows.hasNext()) {
-              row = rows.next();
-              currId = row.getStart();
-              maxId = row.getEnd();
-              return new CellId(level, currId);
-            }
-            level++;
-            rows = gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
-            row = rows.next();
-            currId = row.getStart();
-            maxId = row.getEnd();
-            return new CellId(level, currId);
-          }
-    };
+    private CellIdIterable(Map<Integer, XYGrid> gridMap, OSHDBBoundingBox bbox, boolean enlarge,
+        int maxLevel) {
+      this.gridMap = gridMap;
+      this.bbox = bbox;
+      this.enlarge = enlarge;
+      this.maxLevel = maxLevel;
+    }
+
+    @Override
+    public Iterator<CellId> iterator() {
+      return new CellIdIterator();
+    }
+
+    private class CellIdIterator implements Iterator<CellId>, Serializable {
+      private Iterator<IdRange> rows;
+      private int level;
+      private IdRange row;
+      private long maxId;
+      private long currId;
+
+
+      private CellIdIterator() {
+        this.level = 0;
+        this.rows = gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
+        this.row = rows.next();
+        this.maxId = row.getEnd();
+        this.currId = row.getStart() - 1;
+      }
+
+      @Override
+      public boolean hasNext() {
+        if (level < maxLevel) {
+          return true;
+        }
+        if (rows.hasNext()) {
+          return true;
+        }
+        return currId < maxId;
+      }
+
+      @Override
+      public CellId next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+
+        if (currId < maxId) {
+          currId++;
+          return new CellId(level, currId);
+        }
+
+        if (rows.hasNext()) {
+          row = rows.next();
+          currId = row.getStart();
+          maxId = row.getEnd();
+          return new CellId(level, currId);
+        }
+        level++;
+        rows = gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
+        row = rows.next();
+        currId = row.getStart();
+        maxId = row.getEnd();
+        return new CellId(level, currId);
+      }
+    }
   }
 
   public static class CellIdRange implements Serializable {
