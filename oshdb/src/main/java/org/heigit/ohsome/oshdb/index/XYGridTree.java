@@ -240,7 +240,7 @@ public class XYGridTree implements Serializable {
    */
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
       final boolean enlarge) {
-    return (Iterable<CellId> & Serializable) () -> new Iterator<>() {
+    return (Iterable<CellIdRange> & Serializable) () -> new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
