@@ -45,23 +45,29 @@ public class XYGridTree implements Serializable {
    * @return An iterator over the cellIds in all zoomlevel
    */
   public Iterable<CellId> getIds(long longitude, long latitude) {
-    return (Iterable<CellId> & Serializable) () -> new Iterator<>() {
-          private int level = -1;
+    return new Iterable<>() {
+        @Override
+        public Iterator<CellId> iterator() {
+          Iterator<CellId> result = new Iterator<>() {
+            private int level = -1;
 
-          @Override
-          public boolean hasNext() {
-            return level < maxLevel;
-          }
-
-          @Override
-          public CellId next() {
-            if (!hasNext()) {
-              throw new NoSuchElementException();
+            @Override
+            public boolean hasNext() {
+              return level < maxLevel;
             }
-            level++;
-            return new CellId(gridMap.get(level).getLevel(),
-                gridMap.get(level).getId(longitude, latitude));
-          }
+
+            @Override
+            public CellId next() {
+              if (!hasNext()) {
+                throw new NoSuchElementException();
+              }
+              level++;
+              return new CellId(gridMap.get(level).getLevel(),
+                  gridMap.get(level).getId(longitude, latitude));
+            }
+        };
+        return result;
+      }
     };
   }
 
@@ -240,7 +246,10 @@ public class XYGridTree implements Serializable {
    */
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
       final boolean enlarge) {
-    return (Iterable<CellIdRange> & Serializable) () -> new Iterator<>() {
+    return new Iterable<>() {
+      @Override
+      public Iterator<CellIdRange> iterator() {
+        return new Iterator<>() {
           private int level = 0;
           private Iterator<IdRange> rows =
               gridMap.get(level).bbox2CellIdRanges(bbox, enlarge).iterator();
@@ -260,6 +269,8 @@ public class XYGridTree implements Serializable {
             return CellIdRange.of(new CellId(level, row.getStart()),
                 new CellId(level, row.getEnd()));
           }
+        };
+      }
     };
   }
 
