@@ -95,7 +95,7 @@ public class TestHelpersOSMContributionView {
   @Test
   public void testCount() throws Exception {
     // single timestamp
-    SortedMap<OSHDBTimestamp, Integer> result1 = this.createMapReducer()
+    SortedMap<OSHDBTimestamp, Long> result1 = this.createMapReducer()
         .timestamps(timestamps2)
         .aggregateByTimestamp()
         .count();
@@ -104,7 +104,7 @@ public class TestHelpersOSMContributionView {
     assertEquals(14, result1.get(result1.firstKey()).intValue());
 
     // many timestamps
-    SortedMap<OSHDBTimestamp, Integer> result2 = this.createMapReducer()
+    SortedMap<OSHDBTimestamp, Long> result2 = this.createMapReducer()
         .timestamps(timestamps72)
         .aggregateByTimestamp()
         .count();
@@ -114,14 +114,14 @@ public class TestHelpersOSMContributionView {
     assertEquals(0, result2.get(result2.lastKey()).intValue());
 
     // total
-    Integer result3 = this.createMapReducer()
+    Long result3 = this.createMapReducer()
         .timestamps(timestamps72)
         .count();
 
-    assertEquals(70, result3.intValue());
+    assertEquals(70L, result3.intValue());
 
     // custom aggregation identifier
-    SortedMap<Boolean, Integer> result4 = this.createMapReducer()
+    SortedMap<Boolean, Long> result4 = this.createMapReducer()
         .timestamps(timestamps2)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
         .count();

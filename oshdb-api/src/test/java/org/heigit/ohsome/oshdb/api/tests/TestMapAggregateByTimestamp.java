@@ -225,7 +225,7 @@ public class TestMapAggregateByTimestamp {
 
   @Test
   public void testCombinedWithAggregateByIndex() throws Exception {
-    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, Integer> result =
+    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, Long> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
             .aggregateByTimestamp()
@@ -235,11 +235,11 @@ public class TestMapAggregateByTimestamp {
     assertEquals(1, result.entrySet().size());
     assertEquals(timestamps1.get().first(), result.firstKey().getFirstIndex());
     assertEquals(OSMType.WAY, result.firstKey().getSecondIndex());
-    assertEquals(42, (int) result.values().toArray(new Integer[] {})[0]);
+    assertEquals(42, result.values().toArray(Long[]::new)[0].intValue());
 
-    SortedMap<OSHDBTimestamp, SortedMap<OSMType, Integer>> nestedResult1 = OSHDBCombinedIndex
+    SortedMap<OSHDBTimestamp, SortedMap<OSMType, Long>> nestedResult1 = OSHDBCombinedIndex
         .nest(result);
-    assertEquals(42, (int) nestedResult1.get(timestamps1.get().first()).get(OSMType.WAY));
+    assertEquals(42, nestedResult1.get(timestamps1.get().first()).get(OSMType.WAY).intValue());
   }
 
   @Test

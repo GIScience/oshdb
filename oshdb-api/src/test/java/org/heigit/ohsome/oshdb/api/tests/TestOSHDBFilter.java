@@ -85,7 +85,7 @@ public class TestOSHDBFilter {
 
   @Test
   public void testAggregateFilter() throws Exception {
-    SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
+    SortedMap<OSMType, Long> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter("(geometry:polygon or geometry:other) and building=*")
         .count();
@@ -97,7 +97,7 @@ public class TestOSHDBFilter {
 
   @Test
   public void testAggregateFilterObject() throws Exception {
-    SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
+    SortedMap<OSMType, Long> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter(filterParser.parse("(geometry:polygon or geometry:other) and building=*"))
         .count();
