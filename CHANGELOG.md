@@ -104,7 +104,7 @@ Changelog
 ## 0.6.4
 
 * make `aggregateByGeometry` robust against broken geometries causing topology exceptions (regression in version 0.6) ([#362])
-* fix a crash caused by the use of non-existent tags in oshdb filters ([#363])
+* fix a crash caused by the use of non-existent tags in OSHDB filters ([#363])
 
 [#362]: https://github.com/GIScience/oshdb/pull/362
 [#363]: https://github.com/GIScience/oshdb/pull/363
@@ -200,7 +200,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 ## 0.5.8
 
-* fix a regression in 0.5.7 when using oshdb on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. ([#235])
+* fix a regression in 0.5.7 when using OSHDB on Ignite, restoring binary compatibility when running clients with different oshdb 0.5 versions in parallel. ([#235])
 * fix a bug in the geometry builder utility causing exceptions to be thrown for certain invalid OSM multipolygons. ([#231])
 
 [#231]: https://github.com/GIScience/oshdb/issues/231
@@ -349,15 +349,15 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * renamed bounding box class to `OSHDBBoundingBox` and change order of constructor parameters to `minLon, minLat, maxLon, maxLat` (was `minLon, maxLon, minLat, maxLat`), for example:
   * ~~`new BoundingBox(9.4,17.5,46.4,49.1)`~~ (0.3 code)
   * `new OSHDBBoundingBox(9.4,46.4,17.5,49.1)` (0.4)
-* fixed naming scheme of oshdb related classes: `OSHDB` (as well as `OSM`, `OSH`) are written in upper case:
+* fixed naming scheme of OSHDB related classes: `OSHDB` (as well as `OSM`, `OSH`) are written in upper case:
   * ~~`OSHDB_Ignite`~~ is now `OSHDBIgnite`
   * ~~`OSHDbGeometryBuilder`~~ is now `OSHDBGeometryBuilder`
 * re-introduced `oshdb-util` module
   * some classes/packages have been moved to this module (e.g. the `geometry` and `time` helpers, as well as `tagInterpreter`, `tagTranslator`, `cellIterator`, `export`, …)
   * moved some functionality from `OSM`, `OSH` and `Grid` classes into the oshdb-util package (these methods are now found in more specific classes like the `OSHDBGeometryBuilder`)
-* all timestamps related to oshdb objects (osm entities, etc.) return `OSHDBTimestamp` objects
+* all timestamps related to OSHDB objects (osm entities, etc.) return `OSHDBTimestamp` objects
   * if you need to access the raw unix timestamp (`long`) value, use `….getTimestamp().getRawUnixTimestamp()`
-* introduce specific classes for osm tags (`OSMTag`), tag-keys (`OSMTagKey`), roles (`OSMRole`) and their oshdb counterparts (`OSHDBTag`, …)
+* introduce specific classes for osm tags (`OSMTag`), tag-keys (`OSMTagKey`), roles (`OSMRole`) and their OSHDB counterparts (`OSHDBTag`, …)
   * these will be returned e.g. by `OSMEntity.getTags()` instead of the raw tag (`int`) ids – if you need these, use `OSMEntity.getRawTags()` or the appropriate getter function of the new objects (e.g. `OSHDBTag.getKey()`)
 * the celliterator is now a (reusable) object instead of a set of static functions
 * drop ~~`MEMBERLIST_CHANGE`~~ from analyzed contribution types of `OSMContribution`s
@@ -370,7 +370,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
   * higher max-zoom level (up to level 15 instead of 12)
   * move content from almost empty cells to higher zoom levels
   * store objects in cells where they fit fully
-  * (note: oshdb database files created with this format are backwards compatible with oshdb version 0.3.1 as long as the max-zoom parameter is kept at `12`)
+  * (note: OSHDB database files created with this format are backwards compatible with oshdb version 0.3.1 as long as the max-zoom parameter is kept at `12`)
 
 #### oshdb-api
 
@@ -383,7 +383,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 #### oshdb-tool
 
 * rewritten importer (.osh.pbf → .oshdb) etl toolchain
-* generated oshdb files include metadata about the included (osm) data
+* generated OSHDB files include metadata about the included (osm) data
 
 ### performance
 
@@ -407,13 +407,13 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 ## 0.3.1
 
-* make java API methods work with updated “0.4” oshdb schema
+* make java API methods work with updated “0.4” OSHDB schema
 * mark some methods as deprecated that are removed in 0.4
 
 
 ## 0.3.0
 
-* added a new easy to use _“functional programming style”_ API abstraction level that works on local oshdb files as well as on an Ignite cluster
+* added a new easy to use _“functional programming style”_ API abstraction level that works on local OSHDB files as well as on an Ignite cluster
 	* OSMEntitySnapshotMapper – iterates over entity “snapshots” at given timestamps
 	* OSMContributionMapper – iterates over all OSM contributions for each entity (i.e. creation, modifications, deletion)
 * (breaking) renamed properties of `CellIterator.iterateAll`'s results
