@@ -1305,8 +1305,8 @@ public abstract class MapReducer<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Integer count() throws Exception {
-    return this.sum(ignored -> 1);
+  public Long count() throws Exception {
+    return this.map(x -> 1L).reduce(() -> 0L, Long::sum);
   }
 
   /**

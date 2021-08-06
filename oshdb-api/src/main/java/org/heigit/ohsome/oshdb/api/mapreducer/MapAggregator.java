@@ -451,8 +451,8 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    */
   @Override
   @Contract(pure = true)
-  public SortedMap<U, Integer> count() throws Exception {
-    return this.sum(ignored -> 1);
+  public SortedMap<U, Long> count() throws Exception {
+    return this.map(x -> 1L).reduce(() -> 0L, Long::sum);
   }
 
   /**
