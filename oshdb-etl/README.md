@@ -48,15 +48,15 @@ and do not use too large files.
 
 ### Load into an H2 Database
 
-The transformed data has to be loaded into a database to which the oshdb will interface.
-In order to enable the oshdb to provide a proper attribution of the imported data, you
+The transformed data has to be loaded into a database to which the OSHDB will interface.
+In order to enable the OSHDB to provide a proper attribution of the imported data, you
 have to set an attribution text and an attribution url
 
 ```bash
 mvn exec:java -Dexec.mainClass="org.heigit.ohsome.oshdb.tool.importer.load.handle.OSHDB2H2Handler" -Dexec.args="-tmpDir ./tmpFiles --out /absolute/path/to/your-H2-database --attribution '© OpenStreetMap contributors' --attribution-url 'https://www.openstreetmap.org/copyright'"
 ```
 
-You now have a ready-to-use oshdb named **your-H2-database.mv.db** in the specified
+You now have a ready-to-use OSHDB named **your-H2-database.mv.db** in the specified
 output directory (the file extension .mv.db is appended automatically).
 
 
@@ -67,7 +67,7 @@ the previously created H2 database has to be loaded into ignite. You can
 [download ignite](https://ignite.apache.org/download.cgi#binaries) from the
 Apache website.
 
-1. In order to deploy the oshdb dependencies to ignite,
+1. In order to deploy the OSHDB dependencies to ignite,
    change back to the base directory and let maven copy all dependencies to
    your ignite installation. It assumes this is at /opt/ignite. If it is not,
    you may place a link to the actual location there.<br>

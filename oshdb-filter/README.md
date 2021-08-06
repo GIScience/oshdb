@@ -1,4 +1,4 @@
-oshdb filter
+OSHDB filter
 ============
 
 A parser and interpreter for filters which can be applied on OSM entities. It allows, for example, to filter by various combinations of OSM tags.

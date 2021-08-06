@@ -30,7 +30,7 @@ Advanced users may also be interested in other packages like the `oshdb` package
 
 ## Option 2: Building from Source
 
-Alternatively, you may build oshdb from source using maven. This option is more involved and requires more knowledge of building software with maven.
+Alternatively, you may build OSHDB from source using maven. This option is more involved and requires more knowledge of building software with maven.
 
 The basic steps are to clone this repository:
 
