@@ -47,25 +47,25 @@ public class XYGridTree implements Serializable {
   @SuppressWarnings("Convert2Lambda")
   public Iterable<CellId> getIds(long longitude, long latitude) {
     return new Iterable<>() {
-        @Override
-        public Iterator<CellId> iterator() {
-          Iterator<CellId> result = new Iterator<>() {
-            private int level = -1;
+      @Override
+      public Iterator<CellId> iterator() {
+        Iterator<CellId> result = new Iterator<>() {
+          private int level = -1;
 
-            @Override
-            public boolean hasNext() {
-              return level < maxLevel;
-            }
+          @Override
+          public boolean hasNext() {
+            return level < maxLevel;
+          }
 
-            @Override
-            public CellId next() {
-              if (!hasNext()) {
-                throw new NoSuchElementException();
-              }
-              level++;
-              return new CellId(gridMap.get(level).getLevel(),
-                  gridMap.get(level).getId(longitude, latitude));
+          @Override
+          public CellId next() {
+            if (!hasNext()) {
+              throw new NoSuchElementException();
             }
+            level++;
+            return new CellId(gridMap.get(level).getLevel(),
+                gridMap.get(level).getId(longitude, latitude));
+          }
         };
         return result;
       }

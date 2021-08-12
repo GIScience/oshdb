@@ -25,7 +25,7 @@ public class OSHDBBoundingBox implements OSHDBBoundable, Serializable {
 
   /**
    * Creates an {@code OSHDBBoundingBox} instance from scaled coordinates.
-   * 
+   *
    * <p>This method is mainly for internal usage.<br>
    * OSM stores coordinates with a fixed precision of
    * <a href="https://wiki.openstreetmap.org/wiki/Node#Structure">7 decimal
