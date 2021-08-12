@@ -2,11 +2,10 @@ package org.heigit.ohsome.oshdb.api.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -80,26 +79,19 @@ public class OSHDBH2 extends OSHDBJdbc {
       }
 
       Consumer<String> copyData = tablename -> {
-        try (Statement srcStmt = src.createStatement()) {
-          ResultSet rs = srcStmt.executeQuery("show columns from " + tablename);
-          List<String> columnNames = new LinkedList<>();
-          while (rs.next()) {
-            columnNames.add(rs.getString(1));
-          }
+        try (Statement srcStmt = src.createStatement();) {
+          List<String> columnNames = columnNames(tablename, srcStmt);
           String columns = columnNames.stream().collect(Collectors.joining(", "));
-          String placeholders = columnNames.stream()
-              .map(ignored -> "?")
-              .collect(Collectors.joining(", "));
-
-          PreparedStatement destStmt = this.connection.prepareStatement(
-              "insert into " + tablename + "(" + columns + ") values (" + placeholders + ")"
-          );
-          rs = srcStmt.executeQuery("select " + columns + " from " + tablename);
-          while (rs.next()) {
-            for (int i = 1; i <= columnNames.size(); i++) {
-              destStmt.setObject(i, rs.getObject(i));
+          String insertSql = insertSql(tablename, columnNames, columns);
+          String querySql = String.format("select %s from %s", columns, tablename);
+          try (var destStmt = this.connection.prepareStatement(insertSql);
+              var rs = srcStmt.executeQuery(querySql);) {
+            while (rs.next()) {
+              for (int i = 1; i <= columnNames.size(); i++) {
+                destStmt.setObject(i, rs.getObject(i));
+              }
+              destStmt.execute();
             }
-            destStmt.execute();
           }
         } catch (SQLException e) {
           e.printStackTrace();
@@ -122,5 +114,23 @@ public class OSHDBH2 extends OSHDBJdbc {
       }
     }
     return this;
+  }
+
+  private String insertSql(String tablename, List<String> columnNames, String columns) {
+    String placeholders = columnNames.stream()
+        .map(ignored -> "?")
+        .collect(Collectors.joining(", "));
+    return "insert into " + tablename + "(" + columns + ") values (" + placeholders + ")";
+  }
+
+  private List<String> columnNames(String tablename, Statement srcStmt) throws SQLException {
+    var columnNames = new ArrayList<String>();
+    var query = String.format("show columns from %s", tablename);
+    try (var rs = srcStmt.executeQuery(query)) {
+      while (rs.next()) {
+        columnNames.add(rs.getString(1));
+      }
+    }
+    return columnNames;
   }
 }

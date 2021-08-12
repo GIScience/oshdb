@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -17,6 +16,7 @@ import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcMultithread;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcSinglethread;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.TableNames;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
@@ -56,17 +56,17 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
           .map(t -> t.toString(this.prefix()).toLowerCase())
           .collect(Collectors.toList());
       List<String> allTables = new LinkedList<>();
-      ResultSet rs = this.getConnection().getMetaData().getTables(null, null,
-          "%", new String[]{"TABLE"}
-      );
-      while (rs.next()) {
-        allTables.add(rs.getString("TABLE_NAME").toLowerCase());
-      }
-      if (!allTables.containsAll(expectedTables)) {
-        throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedTables));
+      var metaData = getConnection().getMetaData();
+      try (var rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
+        while (rs.next()) {
+          allTables.add(rs.getString("TABLE_NAME").toLowerCase());
+        }
+        if (!allTables.containsAll(expectedTables)) {
+          throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedTables));
+        }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new OSHDBException(e);
     }
     MapReducer<X> mapReducer;
     if (this.useMultithreading) {
@@ -80,19 +80,19 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
 
   @Override
   public String metadata(String property) {
-    try (PreparedStatement stmt = connection.prepareStatement(
-        "SELECT value from " + TableNames.T_METADATA.toString(this.prefix()) + " where key=?"
-    )) {
+    var table = TableNames.T_METADATA.toString(this.prefix());
+    var select = String.format("select value from %s where key=?", table);
+    try (PreparedStatement stmt = connection.prepareStatement(select)) {
       stmt.setString(1, property);
-      ResultSet result = stmt.executeQuery();
-      if (result.next()) {
-        return result.getString(1);
-      } else {
-        return null;
+      try (var result = stmt.executeQuery()) {
+        if (result.next()) {
+          return result.getString(1);
+        }
       }
     } catch (SQLException ignored) {
-      return null;
+      // ignored
     }
+    return null;
   }
 
   public Connection getConnection() {
