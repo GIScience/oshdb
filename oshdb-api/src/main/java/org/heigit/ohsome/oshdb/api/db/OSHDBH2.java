@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.util.TableNames;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 
 /**
  * OSHDB database backend connector to a H2 database.
@@ -94,7 +95,7 @@ public class OSHDBH2 extends OSHDBJdbc {
             }
           }
         } catch (SQLException e) {
-          e.printStackTrace();
+          throw new OSHDBException(e);
         }
       };
 
