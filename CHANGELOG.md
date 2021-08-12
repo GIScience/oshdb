@@ -3,6 +3,9 @@ Changelog
 
 ## 0.8.0-SNAPSHOT (current master)
 
+
+## 0.7.1
+
 * fix a bug where contribution-based filters are not applied when used in an and/or operation. ([#409])
 * fix a regression in `0.7.0` which prevents queries from being executed on an ignite cluster backend ([#417])
 
