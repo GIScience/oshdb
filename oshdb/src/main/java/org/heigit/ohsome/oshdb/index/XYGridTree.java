@@ -139,7 +139,7 @@ public class XYGridTree implements Serializable {
     }
 
     @SuppressWarnings("SE_INNER_CLASS")
-    private class CellIdIterator implements Iterator<CellId>, Serializable {
+    private class CellIdIterator implements Iterator<CellId> {
       private Iterator<IdRange> rows;
       private int level;
       private IdRange row;
