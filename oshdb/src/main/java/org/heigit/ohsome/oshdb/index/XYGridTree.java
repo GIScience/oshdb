@@ -139,6 +139,7 @@ public class XYGridTree implements Serializable {
       return new CellIdIterator();
     }
 
+    @SuppressWarnings("SE_INNER_CLASS")
     private class CellIdIterator implements Iterator<CellId>, Serializable {
       private Iterator<IdRange> rows;
       private int level;
@@ -194,9 +195,6 @@ public class XYGridTree implements Serializable {
   }
 
   public static class CellIdRange implements Serializable {
-
-    private static final long serialVersionUID = -8704075537597232890L;
-
     private final CellId start;
     private final CellId end;
 
