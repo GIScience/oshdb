@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-parent</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
   </parent>
 
   <artifactId>oshdb</artifactId>
@@ -58,7 +58,6 @@
               <descriptorRefs>
                 <descriptorRef>jar-with-dependencies</descriptorRef>
               </descriptorRefs>
-              <outputDirectory>${project.basedir}</outputDirectory>
             </configuration>
             <executions>
               <execution>

@@ -118,4 +118,16 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
     FilterParser parser = new FilterParser(tagTranslator, true);
     testFailWithSnapshot(parser.parse("contributor:(1..3)"));
   }
+
+  @Test(expected = IllegalStateException.class)
+  public void testAndOperator() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testFailWithSnapshot(parser.parse("contributor:1 and type:node"));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testOrOperator() {
+    FilterParser parser = new FilterParser(tagTranslator, true);
+    testFailWithSnapshot(parser.parse("contributor:1 or foo=doesntexist"));
+  }
 }

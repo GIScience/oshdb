@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Raifer"
+  given-names: "Martin"
+  orcid: "https://orcid.org/0000-0002-2106-8560"
+- family-names: "Troilo"
+  given-names: "Rafael"
+- family-names: "Mocnik"
+  given-names: "Franz-Benjamin"
+  orcid: "https://orcid.org/0000-0002-1759-6336"
+- family-names: "Schott"
+  given-names: "Moritz"
+title: "OSHDB - OpenStreetMap History Data Analysis"
+version: 0.7.1
+doi: 10.5281/zenodo.4146990
+date-released: 2021-07-22
+url: "https://github.com/GIScience/oshdb"

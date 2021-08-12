@@ -21,7 +21,7 @@ Simply add the OSHDB as a dependency to your `pom.xml` file. For most use cases 
   <dependency>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-api</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
   </dependency>
 </dependencies>
 ```
@@ -30,7 +30,7 @@ Advanced users may also be interested in other packages like the `oshdb` package
 
 ## Option 2: Building from Source
 
-Alternatively, you may build oshdb from source using maven. This option is more involved and requires more knowledge of building software with maven.
+Alternatively, you may build OSHDB from source using maven. This option is more involved and requires more knowledge of building software with maven.
 
 The basic steps are to clone this repository:
 

@@ -20,7 +20,7 @@ The OSHDB allows to investigate the evolution of the amount of data and the cont
 
     Integer numberOfUsersEditingHighways = OSMContributionView.on(oshdb)
         .timestamps("2007-10-07", "2009-04-09")
-        .osmTag("highway")
+        .filter("type:way and highway=*")
         .map(contribution -> contribution.getContributorUserId())
         .countUniq();
 
@@ -65,14 +65,14 @@ The API is based on the MapReduce programming model and offers powerful methods 
 Installation
 ------------
 
-The OSHDB is available as a pre-compiled maven library and can be incorporated easily in any maven project. If you're starting a new project, take a look at how your IDE handles maven projects (for example, here you find instructions how to create a new maven project using [IntelliJ](https://www.jetbrains.com/help/idea/maven-support.html#maven_create_project)). Our [first steps tutorial](https://github.com/GIScience/oshdb/tree/0.7.0/documentation/first-steps#2-add-maven-dependency) includes further information about how to add the OSHDB as a maven dependency to your projects.
+The OSHDB is available as a pre-compiled maven library and can be incorporated easily in any maven project. If you're starting a new project, take a look at how your IDE handles maven projects (for example, here you find instructions how to create a new maven project using [IntelliJ](https://www.jetbrains.com/help/idea/maven-support.html#maven_create_project)). Our [first steps tutorial](https://github.com/GIScience/oshdb/tree/0.7.1/documentation/first-steps#2-add-maven-dependency) includes further information about how to add the OSHDB as a maven dependency to your projects.
 
 Documentation
 -------------
 
 * [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
-* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/0.7.0/aggregated/)
+* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/0.7.1/aggregated/)
 
 Examples
 --------
