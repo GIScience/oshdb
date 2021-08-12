@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Streams;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
@@ -52,7 +51,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException, ClassNotFoundException {
+  ) throws ParseException, SQLException, IOException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(

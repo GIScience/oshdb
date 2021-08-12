@@ -307,7 +307,6 @@ public class Extract {
         var kvp = sort.next();
         kvp.write(keyValuesDataOutput);
       }
-      System.out.println(sort);
     }
   }
 
@@ -331,7 +330,6 @@ public class Extract {
       while (sort.hasNext()) {
         var r = sort.next();
         r.write(rolesDataOutput);
-
       }
     }
   }
