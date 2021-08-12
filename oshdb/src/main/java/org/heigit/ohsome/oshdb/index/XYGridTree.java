@@ -44,12 +44,12 @@ public class XYGridTree implements Serializable {
    * @param latitude Latitude for the given point
    * @return An iterator over the cellIds in all zoomlevel
    */
-  @SuppressWarnings("Convert2Lambda")
+  @SuppressWarnings({"Convert2Lambda", "java:S1604"})
   public Iterable<CellId> getIds(long longitude, long latitude) {
     return new Iterable<>() {
       @Override
       public Iterator<CellId> iterator() {
-        Iterator<CellId> result = new Iterator<>() {
+        return new Iterator<>() {
           private int level = -1;
 
           @Override
@@ -67,7 +67,6 @@ public class XYGridTree implements Serializable {
                 gridMap.get(level).getId(longitude, latitude));
           }
         };
-        return result;
       }
     };
   }
@@ -243,7 +242,7 @@ public class XYGridTree implements Serializable {
    * @param enlarge {@code true} to include enlarged bboxes
    * @return List of {@code CellIdRanges} which are covered by the given bbox
    */
-  @SuppressWarnings("Convert2Lambda")
+  @SuppressWarnings({"Convert2Lambda", "java:S1604"})
   public Iterable<CellIdRange> bbox2CellIdRanges(final OSHDBBoundingBox bbox,
       final boolean enlarge) {
     return new Iterable<>() {
