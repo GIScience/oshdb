@@ -71,9 +71,9 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   }
 
   /**
-   * Returns data of one cell from the raw data stream.
+   * Returns data of one cell.
    */
-  protected GridOSHEntity readOshCellRawData(Map.Entry<String, CellId> entry) {
+  protected GridOSHEntity readOneGridCell(Map.Entry<String, CellId> entry) {
     var table = entry.getKey();
     var cellId = entry.getValue();
     var sqlQuery = String.format("select data from %s where level = ? and id = ?", table);
@@ -104,7 +104,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
       if (oshCellIds.isEmpty()) {
         return Stream.empty();
       }
-      return oshCellIds.stream().map(this::readOshCellRawData);
+      return oshCellIds.stream().map(this::readOneGridCell);
     } catch (SQLException e) {
       throw new OSHDBException(e);
     }

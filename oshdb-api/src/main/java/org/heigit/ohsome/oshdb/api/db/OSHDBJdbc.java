@@ -81,8 +81,8 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
   @Override
   public String metadata(String property) {
     var table = TableNames.T_METADATA.toString(this.prefix());
-    var select = String.format("select value from %s where key=?", table);
-    try (PreparedStatement stmt = connection.prepareStatement(select)) {
+    var selectSql = String.format("select value from %s where key=?", table);
+    try (PreparedStatement stmt = connection.prepareStatement(selectSql)) {
       stmt.setString(1, property);
       try (var result = stmt.executeQuery()) {
         if (result.next()) {

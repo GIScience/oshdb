@@ -68,7 +68,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       var cellIds = getOshTableCellIds(cellIdRange);
 
       for (var cellId : cellIds)  {
-        GridOSHEntity oshCellRawData = readOshCellRawData(cellId);
+        GridOSHEntity oshCellRawData = readOneGridCell(cellId);
         result = combiner.apply(
             result,
             cellProcessor.apply(oshCellRawData, cellIterator)

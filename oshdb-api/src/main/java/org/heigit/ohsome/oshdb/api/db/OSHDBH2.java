@@ -80,13 +80,13 @@ public class OSHDBH2 extends OSHDBJdbc {
       }
 
       Consumer<String> copyData = tablename -> {
-        try (Statement srcStmt = src.createStatement();) {
+        try (Statement srcStmt = src.createStatement()) {
           List<String> columnNames = columnNames(tablename, srcStmt);
           String columns = columnNames.stream().collect(Collectors.joining(", "));
           String insertSql = insertSql(tablename, columnNames, columns);
           String querySql = String.format("select %s from %s", columns, tablename);
           try (var destStmt = this.connection.prepareStatement(insertSql);
-              var rs = srcStmt.executeQuery(querySql);) {
+              var rs = srcStmt.executeQuery(querySql)) {
             while (rs.next()) {
               for (int i = 1; i <= columnNames.size(); i++) {
                 destStmt.setObject(i, rs.getObject(i));

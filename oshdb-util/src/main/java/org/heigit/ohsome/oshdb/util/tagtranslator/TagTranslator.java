@@ -81,8 +81,8 @@ public class TagTranslator implements AutoCloseable {
         EnumSet.of(E_KEY, E_KEYVALUE, E_ROLE);
     for (TableNames table : keyTables) {
       try (Statement testTablePresentQuery = this.conn.createStatement()) {
-        var select = format("select 1 from %s limit 1", table);
-        testTablePresentQuery.execute(select);
+        var selectSql = format("select 1 from %s limit 1", table);
+        testTablePresentQuery.execute(selectSql);
       } catch (SQLException e) {
         throw new OSHDBKeytablesNotFoundException();
       }
