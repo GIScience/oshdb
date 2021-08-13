@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.regex.Pattern;
@@ -73,7 +75,6 @@ import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.heigit.ohsome.oshdb.util.time.TimestampFormatter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
@@ -162,7 +163,7 @@ public abstract class MapReducer<X> implements
   // settings and filters
   protected OSHDBTimestampList tstamps = new OSHDBTimestamps(
       "2008-01-01",
-      TimestampFormatter.getInstance().date(new Date()),
+      currentDate(),
       OSHDBTimestamps.Interval.MONTHLY
       );
   protected OSHDBBoundingBox bboxFilter = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
@@ -171,7 +172,6 @@ public abstract class MapReducer<X> implements
   private final List<SerializablePredicate<OSHEntity>> preFilters = new ArrayList<>();
   private final List<SerializablePredicate<OSMEntity>> filters = new ArrayList<>();
   final LinkedList<MapFunction> mappers = new LinkedList<>();
-
 
   // basic constructor
   protected MapReducer(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> viewClass) {
@@ -2223,5 +2223,11 @@ public abstract class MapReducer<X> implements
      * TagFilterEquals or TagFilterEqualsAny) related: https://github.com/GIScience/oshdb/pull/210
      */
     return mapRed;
+  }
+
+  private String currentDate() {
+    var formatter = new SimpleDateFormat("yyyy-MM-dd");
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return formatter.format(new Date());
   }
 }
