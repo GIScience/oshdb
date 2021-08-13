@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Streams;
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
@@ -51,7 +52,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException {
+  ) throws ParseException, SQLException, IOException, ClassNotFoundException {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -65,10 +66,10 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       return result;
     }
     for (CellIdRange cellIdRange : this.getCellIdRanges()) {
-      var cellIds = getOshTableCellIds(cellIdRange);
+      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
 
-      for (var cellId : cellIds)  {
-        GridOSHEntity oshCellRawData = readOneGridCell(cellId);
+      while (oshCellsRawData.next()) {
+        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
         result = combiner.apply(
             result,
             cellProcessor.apply(oshCellRawData, cellIterator)
