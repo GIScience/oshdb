@@ -89,8 +89,8 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
           return result.getString(1);
         }
       }
-    } catch (SQLException ignored) {
-      // ignored
+    } catch (SQLException e) {
+      throw new OSHDBException(e);
     }
     return null;
   }
