@@ -162,7 +162,7 @@ public class IsoDateTimeParser {
           + " (Format: P[yY][mM][dD][T[hH][mM][sS]])");
     }
 
-    boolean hasDateAndTimeComponent = Pattern.matches("P.+T.+", isoPeriodString);
+    boolean hasDateAndTimeComponent = Pattern.matches("P[^T]+T.+", isoPeriodString);
     boolean hasOnlyTimeComponent = isoPeriodString.startsWith("PT");
 
     if (hasDateAndTimeComponent) {

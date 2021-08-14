@@ -3,6 +3,12 @@ Changelog
 
 ## 0.8.0-SNAPSHOT (current master)
 
+### breaking changes
+
+ * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
+
+[#419]: https://github.com/GIScience/oshdb/pull/419
+
 
 ## 0.7.1
 

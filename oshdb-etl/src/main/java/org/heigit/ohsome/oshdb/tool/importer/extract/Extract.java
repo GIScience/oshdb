@@ -294,20 +294,19 @@ public class Extract {
         OutputStream os = output.apply(fs);
         DataOutputStream keyValuesDataOutput = new DataOutputStream(os)) {
       keyValuesDataOutput.writeInt(keys.size());
-      Streams.stream(ExternalSort.of((a, b) -> {
+      var sort = ExternalSort.of((a, b) -> {
         final int c = Integer.compare(a.freq, b.freq);
         if (c != 0) {
           return c * -1; // reverse order
         }
         return a.key.compareTo(b.key);
-      }, maxSize, KeyValuePointer::estimateSize).with(KeyValuePointer::write, KeyValuePointer::read)
-          .sort(keys.iterator())).peek(kvp -> {
-            try {
-              kvp.write(keyValuesDataOutput);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-          }).count();
+      }, maxSize, KeyValuePointer::estimateSize)
+          .with(KeyValuePointer::write, KeyValuePointer::read)
+          .sort(keys.iterator());
+      while (sort.hasNext()) {
+        var kvp = sort.next();
+        kvp.write(keyValuesDataOutput);
+      }
     }
   }
 
@@ -321,20 +320,17 @@ public class Extract {
         BufferedOutputStream bout = new BufferedOutputStream(fout);
         OutputStream os = output.apply(bout);
         DataOutputStream rolesDataOutput = new DataOutputStream(os)) {
-      Streams.stream(ExternalSort.of((a, b) -> {
+      var sort = ExternalSort.of((a, b) -> {
         final int c = Integer.compare(a.freq, b.freq);
         if (c != 0) {
           return c * -1; // reverse order
         }
         return a.role.compareTo(b.role);
-      }, maxSize, Role::estimateSize).with(Role::write, Role::read).sort(roleFrequency.iterator()))
-          .peek(r -> {
-            try {
-              r.write(rolesDataOutput);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-          }).count();
+      }, maxSize, Role::estimateSize).with(Role::write, Role::read).sort(roleFrequency.iterator());
+      while (sort.hasNext()) {
+        var r = sort.next();
+        r.write(rolesDataOutput);
+      }
     }
   }
 

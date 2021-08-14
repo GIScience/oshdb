@@ -1,5 +1,10 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
+import static java.lang.String.format;
+import static org.heigit.ohsome.oshdb.util.TableNames.E_KEY;
+import static org.heigit.ohsome.oshdb.util.TableNames.E_KEYVALUE;
+import static org.heigit.ohsome.oshdb.util.TableNames.E_ROLE;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +16,7 @@ import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBRole;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.TableNames;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 import org.slf4j.Logger;
@@ -72,10 +78,11 @@ public class TagTranslator implements AutoCloseable {
 
     // test connection for presence of actual "keytables" tables
     EnumSet<TableNames> keyTables =
-        EnumSet.of(TableNames.E_KEY, TableNames.E_KEYVALUE, TableNames.E_ROLE);
+        EnumSet.of(E_KEY, E_KEYVALUE, E_ROLE);
     for (TableNames table : keyTables) {
       try (Statement testTablePresentQuery = this.conn.createStatement()) {
-        testTablePresentQuery.execute("select 1 from " + table.toString() + " LIMIT 1");
+        var selectSql = format("select 1 from %s limit 1", table);
+        testTablePresentQuery.execute(selectSql);
       } catch (SQLException e) {
         throw new OSHDBKeytablesNotFoundException();
       }
@@ -83,22 +90,18 @@ public class TagTranslator implements AutoCloseable {
 
     // create prepared statements for querying tags from keytables
     try {
-      keyIdQuery = conn.prepareStatement(
-          "select ID from " + TableNames.E_KEY.toString() + " where KEY.TXT = ?;");
-      keyTxtQuery = conn.prepareStatement(
-          "select TXT from " + TableNames.E_KEY.toString() + " where KEY.ID = ?;");
-      valueIdQuery = conn.prepareStatement("select k.ID as KEYID,kv.VALUEID as VALUEID"
-          + " from " + TableNames.E_KEYVALUE.toString() + " kv"
-          + " inner join " + TableNames.E_KEY.toString() + " k on k.ID = kv.KEYID"
-          + " where k.TXT = ? and kv.TXT = ?;");
-      valueTxtQuery = conn.prepareStatement("select k.TXT as KEYTXT,kv.TXT as VALUETXT"
-          + " from " + TableNames.E_KEYVALUE.toString() + " kv"
-          + " inner join " + TableNames.E_KEY.toString() + " k on k.ID = kv.KEYID"
-          + " where k.ID = ? and kv.VALUEID = ?;");
-      roleIdQuery = conn
-          .prepareStatement("select ID from " + TableNames.E_ROLE.toString() + " where TXT = ?;");
-      roleTxtQuery = conn
-          .prepareStatement("select TXT from " + TableNames.E_ROLE.toString() + " where ID = ?;");
+      keyIdQuery = conn.prepareStatement(format("select ID from %s where KEY.TXT = ?;", E_KEY));
+      keyTxtQuery = conn.prepareStatement(format("select TXT from %s where KEY.ID = ?;", E_KEY));
+      valueIdQuery = conn.prepareStatement(format("select k.ID as KEYID,kv.VALUEID as VALUEID"
+          + " from %s kv"
+          + " inner join %s k on k.ID = kv.KEYID"
+          + " where k.TXT = ? and kv.TXT = ?;", E_KEYVALUE, E_KEY));
+      valueTxtQuery = conn.prepareStatement(format("select k.TXT as KEYTXT,kv.TXT as VALUETXT"
+          + " from %s kv"
+          + " inner join %s k on k.ID = kv.KEYID"
+          + " where k.ID = ? and kv.VALUEID = ?;", E_KEYVALUE, E_KEY));
+      roleIdQuery = conn.prepareStatement(format("select ID from %s where TXT = ?;", E_ROLE));
+      roleTxtQuery = conn.prepareStatement(format("select TXT from %s where ID = ?;", E_ROLE));
     } catch (SQLException e) {
       throw new OSHDBKeytablesNotFoundException();
     }
@@ -149,7 +152,7 @@ public class TagTranslator implements AutoCloseable {
       }
     } catch (SQLException ex) {
       LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
-      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new OSHDBException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.keyToString.put(keyInt, key);
     this.keyToInt.put(key, keyInt);
@@ -184,7 +187,7 @@ public class TagTranslator implements AutoCloseable {
         keyTxtQuery.setInt(1, key.toInt());
         try (ResultSet keys = keyTxtQuery.executeQuery()) {
           if (!keys.next()) {
-            throw new OSHDBTagOrRoleNotFoundException(String.format(
+            throw new OSHDBTagOrRoleNotFoundException(format(
                 "Unable to find tag key id %d in keytables.", key.toInt()
             ));
           } else {
@@ -195,7 +198,7 @@ public class TagTranslator implements AutoCloseable {
       }
     } catch (SQLException ex) {
       LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
-      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new OSHDBException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.keyToString.put(key, keyString);
     return keyString;
@@ -241,7 +244,7 @@ public class TagTranslator implements AutoCloseable {
       }
     } catch (SQLException ex) {
       LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
-      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new OSHDBException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.tagToString.put(tagInt, tag);
     this.tagToInt.put(tag, tagInt);
@@ -281,7 +284,7 @@ public class TagTranslator implements AutoCloseable {
         valueTxtQuery.setInt(2, tag.getValue());
         try (ResultSet values = valueTxtQuery.executeQuery()) {
           if (!values.next()) {
-            throw new OSHDBTagOrRoleNotFoundException(String.format(
+            throw new OSHDBTagOrRoleNotFoundException(format(
                 "Unable to find tag id %d=%d in keytables.",
                 tag.getKey(), tag.getValue()
             ));
@@ -292,7 +295,7 @@ public class TagTranslator implements AutoCloseable {
       }
     } catch (SQLException ex) {
       LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
-      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new OSHDBException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     // put it in caches
     this.tagToInt.put(tagString, tag);
@@ -335,7 +338,7 @@ public class TagTranslator implements AutoCloseable {
       }
     } catch (SQLException ex) {
       LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
-      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new OSHDBException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.roleToString.put(roleInt, role);
     this.roleToInt.put(role, roleInt);
@@ -370,7 +373,7 @@ public class TagTranslator implements AutoCloseable {
         roleTxtQuery.setInt(1, role.toInt());
         try (ResultSet roles = roleTxtQuery.executeQuery()) {
           if (!roles.next()) {
-            throw new OSHDBTagOrRoleNotFoundException(String.format(
+            throw new OSHDBTagOrRoleNotFoundException(format(
                 "Unable to find role id %d in keytables.", role.toInt()
             ));
           } else {
@@ -380,7 +383,7 @@ public class TagTranslator implements AutoCloseable {
       }
     } catch (SQLException ex) {
       LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
-      throw new RuntimeException(UNABLE_TO_ACCESS_KEYTABLES);
+      throw new OSHDBException(UNABLE_TO_ACCESS_KEYTABLES);
     }
     this.roleToInt.put(roleString, role);
     this.roleToString.put(role, roleString);
