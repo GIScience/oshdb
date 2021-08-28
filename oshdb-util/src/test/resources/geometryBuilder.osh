@@ -4,7 +4,17 @@
   <node id="2" lat="80.1" lon="110" visible="true" version="1" uid="0" user="" changeset="1" timestamp="2000-01-01T00:00:00Z" />
   <node id="3" lat="81.1" lon="110" visible="true" version="1" uid="0" user="" changeset="1" timestamp="2000-01-01T00:00:00Z" />
   <node id="4" lat="81.1" lon="100" visible="true" version="1" uid="0" user="" changeset="1" timestamp="2000-01-01T00:00:00Z" />
-
+  
+  <!-- >> testMultipolygonShellsShareNode -->
+  <node id="100" lat="4" lon="0" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="101" lat="2" lon="0" visible="true" version="1" uid="0" user="b" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="102" lat="2" lon="3" visible="true" version="1" uid="0" user="c" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="103" lat="4" lon="3" visible="true" version="1" uid="0" user="d" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="104" lat="2" lon="6" visible="true" version="1" uid="0" user="e" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="105" lat="0" lon="6" visible="true" version="1" uid="0" user="f" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="106" lat="0" lon="3" visible="true" version="1" uid="0" user="g" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <!-- << testMultipolygonShellsShareNode -->
+  
   <way id="1" visible="true" version="1" uid="0" user="" changeset="1" timestamp="2000-01-01T00:00:00Z">
     <nd ref="1" />
     <nd ref="2" />
@@ -27,6 +37,29 @@
   <way id="5" visible="true" version="1" uid="0" user="" changeset="1" timestamp="2000-01-01T00:00:00Z">
     <nd ref="13" />
   </way>
+  
+  <!-- >> testMultipolygonShellsShareNode -->
+  <way id="100" visible="true" version="1" uid="0" user="A" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <nd ref="100" />
+    <nd ref="101" />
+    <nd ref="102" />
+  </way>
+  <way id="101" visible="true" version="1" uid="0" user="B" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <nd ref="102" />
+    <nd ref="103" />
+    <nd ref="100" />
+  </way>
+  <way id="102" visible="true" version="1" uid="0" user="C" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <nd ref="102" />
+    <nd ref="104" />
+    <nd ref="105" />
+  </way>
+  <way id="103" visible="true" version="1" uid="0" user="D" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <nd ref="105" />
+    <nd ref="106" />
+    <nd ref="102" />
+  </way>
+  <!-- << testMultipolygonShellsShareNode -->
 
   <relation id="1" visible="true" version="1" uid="0" user="" changeset="1" timestamp="2000-01-01T00:00:00Z">
     <member type="way" ref="2" role="outer" />
@@ -39,4 +72,13 @@
     <member type="way" ref="1" role="outer" />
     <member type="way" ref="13" role="outer" />
   </relation>
+  
+  <!-- >> testMultipolygonShellsShareNode -->
+  <relation id="100" visible="true" version="1" uid="0" user="ABCD" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <member type="way" ref="100" role="outer" />
+    <member type="way" ref="101" role="outer" />
+    <member type="way" ref="102" role="outer" />
+    <member type="way" ref="103" role="outer" />
+  </relation>
+  <!-- << testMultipolygonShellsShareNode -->
 </osm>
