@@ -533,25 +533,32 @@ public class OSHDBGeometryBuilder {
             what.removeFirst();
             current.addAll(what);
             waysIterator.remove();
+            lastId = current.getLast().getId();
             joinable = true;
           } else if (firstId == what.getLast().getId()) {
             // start of partial ring matches end of current line
             what.removeLast();
             current.addAll(0, what);
             waysIterator.remove();
+            firstId = current.getFirst().getId();
             joinable = true;
           } else if (lastId == what.getLast().getId()) {
             // end of partial ring matches end of current line
             what.removeLast();
             current.addAll(Lists.reverse(what));
             waysIterator.remove();
+            lastId = current.getLast().getId();
             joinable = true;
           } else if (firstId == what.getFirst().getId()) {
             // start of partial ring matches start of current line
             what.removeFirst();
             current.addAll(0, Lists.reverse(what));
             waysIterator.remove();
+            firstId = current.getFirst().getId();
             joinable = true;
+          }
+          if (firstId == lastId) {
+            break;
           }
         }
         // joinable==false for invalid geometries (dangling way, unclosed ring)
