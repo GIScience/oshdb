@@ -5,10 +5,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaAlways;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaMultipolygonAllOuters;
@@ -24,6 +27,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -37,6 +41,7 @@ public class OSHDBGeometryBuilderTest {
 
   public OSHDBGeometryBuilderTest() {
     testData.add("./src/test/resources/geometryBuilder.osh");
+    testData.add("./src/test/resources/relations/multipolygonShellsShareNode.osm");
   }
 
   @Test
@@ -216,7 +221,9 @@ public class OSHDBGeometryBuilderTest {
     Assert.assertArrayEquals(test, geometry.getCoordinates());
   }
 
-  /**
+  /** Test building of multipolygons with self-touching outer rings.
+   *
+   * <p>Example:
    * <pre>
    * lat
    *  ^
@@ -226,7 +233,7 @@ public class OSHDBGeometryBuilderTest {
    *  2 b--c--e
    *  1    |  |
    *  0    g--f
-   *    0123456 -> lon
+   *    0 1 2 3456 -> lon
    *
    * A: (a,b,c)\
    *            one shell (a,b,c,d,a)
@@ -235,25 +242,39 @@ public class OSHDBGeometryBuilderTest {
    * C: (c,e,f)\
    *            one shell (c,e,f,g,c)
    * D: (f,g,c)/
+   * </pre></p>
    *
-   * expected:
+   * <p>Expected:
+   * <pre>
    * - MULTIPOLYGON (((0 4, 0 2, 3 2, 3 4, 0 4)), ((3 2, 6 2, 6 0, 3 0, 3 2)))
    * - MULTIPOLYGON (((3 2, 6 2, 6 0, 3 0, 3 2)), ((0 4, 0 2, 3 2, 3 4, 0 4)))
    * - or similar
-   * </pre>
+   * </pre></p>
    */
   @Test
   public void testMultipolygonShellsShareNode() {
+    // single figure-8
+    var members = testData.relations().get(100L).get(0).getMembers();
+    getMultipolygonSharedNodeCheck(2).accept(members);
+    // all permutations of relation members should lead to the same result
+    members = testData.relations().get(101L).get(0).getMembers();
+    permutations(members.length, members, getMultipolygonSharedNodeCheck(2));
+    // double loop
+    members = testData.relations().get(102L).get(0).getMembers();
+    getMultipolygonSharedNodeCheck(3).accept(members);
+    // todo: second loop forming whole
+  }
+
+  private Consumer<OSMMember[]> getMultipolygonSharedNodeCheck(int expectedParts) {
     var areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     var timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
-    var members = testData.relations().get(100L).get(0).getMembers();
-    permutations(members.length, members, mems -> {
-      var relation = new OSMRelation(1, 1, timestamp.getEpochSecond(), 0, 0, null, mems);
+    return relMembers -> {
+      var relation = new OSMRelation(1, 1, timestamp.getEpochSecond(), 0, 0, null, relMembers);
       var geom = OSHDBGeometryBuilder.getGeometry(relation, timestamp, areaDecider);
-      assertEquals(true, geom instanceof MultiPolygon);
-      var mp = (MultiPolygon) geom;
-      assertEquals(2, mp.getNumGeometries());
-    });
+      assertTrue(geom.isValid());
+      assertTrue(geom instanceof MultiPolygon);
+      assertEquals(expectedParts, geom.getNumGeometries());
+    };
   }
 
   private static <T> void permutations(int n, T[] elements, Consumer<T[]> consumer) {
@@ -261,14 +282,14 @@ public class OSHDBGeometryBuilderTest {
       consumer.accept(elements);
     } else {
       for (int i = 0; i < n - 1; i++) {
-        permutations(n-1, elements, consumer);
+        permutations(n - 1, elements, consumer);
         if (n % 2 == 0) {
           swap(elements, i, n - 1);
         } else {
           swap(elements, 0, n - 1);
         }
       }
-      permutations(n-1, elements, consumer);
+      permutations(n - 1, elements, consumer);
     }
   }
 

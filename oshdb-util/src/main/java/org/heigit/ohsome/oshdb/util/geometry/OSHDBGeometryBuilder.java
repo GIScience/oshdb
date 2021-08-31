@@ -6,11 +6,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -251,16 +253,20 @@ public class OSHDBGeometryBuilder {
         timestamp
     );
 
-    // construct rings from polygons
-    List<LinearRing> outerRings = OSHDBGeometryBuilder.buildRings(outerLines).stream()
+    // construct inner and outer rings
+    List<LinkedList<OSMNode>> outerRingsNodes = OSHDBGeometryBuilder.buildRings(outerLines);
+    List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
+    // check if there are any pinched off sections in outer rings
+    splitPinchedOuterRings(outerRingsNodes);
+    // check if there are any touching inner/outer rings, merge any
+    mergeTouchingRings(innerRingsNodes);
+    // create JTS rings for non-degenerate rings only
+
+    List<LinearRing> outerRings = outerRingsNodes.stream()
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
-    List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
-    // check if there are any touching inner/outer rings, merge any
-    mergeTouchingRings(innerRingsNodes);
-    // create JTS rings for non-degenerate rings only
     List<LinearRing> innerRings = innerRingsNodes.stream()
         .filter(ring -> ring.size() >= LinearRing.MINIMUM_VALID_SIZE)
         .map(ring -> geometryFactory.createLinearRing(
@@ -332,7 +338,7 @@ public class OSHDBGeometryBuilder {
    *   Touching rings are defined as rings which share at least one segment (a segment is formed by
    *   two consecutive ring nodes, regardless of their order). An example is:
    *   [r1 = (A,B,C,D,E,F,A); r2 = (X,Y,B,C,D,E,X)].
-   *   The result would be: [r1 = (B,A,F,E,X,Y,B)] "or any equivalent representation of this ring
+   *   The result would be: [r1 = (B,A,F,E,X,Y,B)] "or any equivalent representation of this ring"
    * </p>
    *
    * <pre>
@@ -343,7 +349,7 @@ public class OSHDBGeometryBuilder {
    * A----B--Y       A----B--Y
    * </pre>
    *
-   * @param ringsNodes a collection of node-lists, each forming a ring closed linestring
+   * @param ringsNodes a collection of node-lists, each forming a ring (i.e. a closed linestring)
    */
   private static void mergeTouchingRings(Collection<LinkedList<OSMNode>> ringsNodes) {
     // ringSegments will hold a reference of which ring a particular segment is part of.
@@ -398,6 +404,65 @@ public class OSHDBGeometryBuilder {
         ringSegments.put(mergedRingSegment, ringNodes);
       }
     }
+  }
+
+
+
+  /**
+   * Search and split pinched (figure-8) rings.
+   *
+   * <p>Attention: modifies the input data, such that there are no more figure-8 rings.</p>
+   *
+   * <p>
+   *   A pinched ring forms a figure-8 configuration where the ring touches itself in a single
+   *   point. An example is: [r = (A,B,C,D,E,F,C,G,A)].
+   *   The result would be: [r1 = (C,D,E,G,C); r2 = (A,B,C,G,A)].
+   * </p>
+   *
+   * <pre>
+   *  A--B
+   *  |  |
+   *  G--C--D
+   *     |  |
+   *     F--E
+   * </pre>
+   *
+   * @param ringsNodes a collection of node-lists, each forming a ring (i.e. a closed linestring)
+   */
+  private static void splitPinchedOuterRings(Collection<LinkedList<OSMNode>> ringsNodes) {
+    Map<Long, Integer> nodeIds = new HashMap<>();
+    Collection<LinkedList<OSMNode>> additionalRings = new LinkedList<>();
+    for (LinkedList<OSMNode> ringNodes : ringsNodes) {
+      boolean wasSplittable;
+      do {
+        wasSplittable = false;
+        nodeIds.clear();
+        int pos = 0;
+        for (OSMNode ringNode : ringNodes) {
+          long nodeId = ringNode.getId();
+          if (nodeIds.containsKey(nodeId)) {
+            // split off ring between previous and current ring position
+            int nodePos = nodeIds.get(nodeId);
+            var newRing1 = new LinkedList<>(ringNodes.subList(nodePos, pos + 1));
+            var newRing2 = new LinkedList<OSMNode>();
+            newRing2.addAll(ringNodes.subList(0, nodePos));
+            newRing2.addAll(ringNodes.subList(pos, ringNodes.size()));
+            ringNodes.clear();
+            ringNodes.addAll(newRing2);
+            additionalRings.add(newRing1);
+            wasSplittable = true;
+            break;
+          }
+          if (pos > 0) {
+            // don't memorize start node, since it is repeated at the end of the ring
+            nodeIds.put(nodeId, pos);
+          }
+          pos++;
+        }
+      } while (wasSplittable);
+    }
+    ringsNodes.addAll(additionalRings);
+    // todo: if newRing1/2 is inside newRing2/1 -> move to inner rings
   }
 
   /**
