@@ -257,7 +257,7 @@ public class OSHDBGeometryBuilder {
     List<LinkedList<OSMNode>> outerRingsNodes = OSHDBGeometryBuilder.buildRings(outerLines);
     List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
     // check if there are any pinched off sections in outer rings
-    splitPinchedOuterRings(outerRingsNodes);
+    splitPinchedOuterRings(outerRingsNodes);//, innerRingsNodes);
     // check if there are any touching inner/outer rings, merge any
     mergeTouchingRings(innerRingsNodes);
     // create JTS rings for non-degenerate rings only

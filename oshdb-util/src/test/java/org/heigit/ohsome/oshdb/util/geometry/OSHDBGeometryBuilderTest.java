@@ -262,7 +262,9 @@ public class OSHDBGeometryBuilderTest {
     // double loop
     members = testData.relations().get(102L).get(0).getMembers();
     getMultipolygonSharedNodeCheck(3).accept(members);
-    // todo: second loop forming whole
+    // second loop forming whole
+    members = testData.relations().get(103L).get(0).getMembers();
+    getMultipolygonSharedNodeCheck(2).accept(members);
   }
 
   private Consumer<OSMMember[]> getMultipolygonSharedNodeCheck(int expectedParts) {
