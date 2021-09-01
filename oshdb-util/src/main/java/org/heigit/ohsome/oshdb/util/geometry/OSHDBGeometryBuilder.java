@@ -263,6 +263,7 @@ public class OSHDBGeometryBuilder {
     // create JTS rings for non-degenerate rings only
 
     List<LinearRing> outerRings = outerRingsNodes.stream()
+        .filter(ring -> ring.size() >= LinearRing.MINIMUM_VALID_SIZE)
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
