@@ -1,12 +1,12 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
 import com.google.common.collect.Lists;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -257,7 +257,7 @@ public class OSHDBGeometryBuilder {
     List<LinkedList<OSMNode>> outerRingsNodes = OSHDBGeometryBuilder.buildRings(outerLines);
     List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
     // check if there are any pinched off sections in outer rings
-    splitPinchedOuterRings(outerRingsNodes);//, innerRingsNodes);
+    splitPinchedRings(outerRingsNodes, innerRingsNodes, geometryFactory);
     // check if there are any touching inner/outer rings, merge any
     mergeTouchingRings(innerRingsNodes);
     // create JTS rings for non-degenerate rings only
@@ -429,41 +429,87 @@ public class OSHDBGeometryBuilder {
    * </pre>
    *
    * @param ringsNodes a collection of node-lists, each forming a ring (i.e. a closed linestring)
+   * @param holeRingsNodes a collection where holes formed by "upended" figure-8's should be stored
+   * @param geometryFactory a {@link GeometryFactory} object to create temporary features
    */
-  private static void splitPinchedOuterRings(Collection<LinkedList<OSMNode>> ringsNodes) {
+  private static void splitPinchedRings(
+      Collection<LinkedList<OSMNode>> ringsNodes,
+      Collection<LinkedList<OSMNode>> holeRingsNodes,
+      GeometryFactory geometryFactory
+  ) {
     Map<Long, Integer> nodeIds = new HashMap<>();
     Collection<LinkedList<OSMNode>> additionalRings = new LinkedList<>();
     for (LinkedList<OSMNode> ringNodes : ringsNodes) {
-      boolean wasSplittable;
-      do {
-        wasSplittable = false;
-        nodeIds.clear();
-        int pos = 0;
-        for (OSMNode ringNode : ringNodes) {
-          long nodeId = ringNode.getId();
-          if (nodeIds.containsKey(nodeId)) {
-            // split off ring between previous and current ring position
-            int nodePos = nodeIds.get(nodeId);
-            var newRing1 = new LinkedList<>(ringNodes.subList(nodePos, pos + 1));
-            var newRing2 = new LinkedList<OSMNode>();
-            newRing2.addAll(ringNodes.subList(0, nodePos));
-            newRing2.addAll(ringNodes.subList(pos, ringNodes.size()));
-            ringNodes.clear();
-            ringNodes.addAll(newRing2);
-            additionalRings.add(newRing1);
-            wasSplittable = true;
-            break;
+      var splitRings = splitPinchedRing(ringNodes, nodeIds);
+      if (splitRings != null) {
+        splitRings.add(new LinkedList<>(ringNodes));
+        ringNodes.clear();
+        var splitRingsGeoms = splitRings.stream().map(ring ->
+            geometryFactory.createPolygon(ring.stream().map(node ->
+                new Coordinate(node.getLongitude(), node.getLatitude()))
+                .toArray(Coordinate[]::new)))
+            .collect(Collectors.toList());
+        var nestingNumbers = Collections.nCopies(splitRingsGeoms.size(), 0)
+            .toArray(new Integer [] {});
+        for (var i = 0; i < splitRingsGeoms.size(); i++) {
+          for (var j = 0; j < splitRingsGeoms.size(); j++) {
+            if (i == j) {
+              continue;
+            }
+            if (splitRingsGeoms.get(i).coveredBy(splitRingsGeoms.get(j))) {
+              nestingNumbers[i]++;
+            }
           }
-          if (pos > 0) {
-            // don't memorize start node, since it is repeated at the end of the ring
-            nodeIds.put(nodeId, pos);
-          }
-          pos++;
         }
-      } while (wasSplittable);
+        for (var i = 0; i < splitRingsGeoms.size(); i++) {
+          if (nestingNumbers[i] % 2 == 0) {
+            additionalRings.add(splitRings.get(i));
+          } else {
+            holeRingsNodes.add(splitRings.get(i));
+          }
+        }
+      }
     }
     ringsNodes.addAll(additionalRings);
-    // todo: if newRing1/2 is inside newRing2/1 -> move to inner rings
+  }
+
+  private static List<LinkedList<OSMNode>> splitPinchedRing(
+      LinkedList<OSMNode> ringNodes,
+      Map<Long, Integer> nodeIds
+  ) {
+    List<LinkedList<OSMNode>> result = null;
+    boolean wasSplittable;
+    do {
+      wasSplittable = false;
+      nodeIds.clear();
+      var pos = 0;
+      for (OSMNode ringNode : ringNodes) {
+        long nodeId = ringNode.getId();
+        if (nodeIds.containsKey(nodeId)) {
+          // split off ring between previous and current ring position
+          int nodePos = nodeIds.get(nodeId);
+          var newRing1 = new LinkedList<>(ringNodes.subList(nodePos, pos + 1));
+          var newRing2 = new LinkedList<OSMNode>();
+          newRing2.addAll(ringNodes.subList(0, nodePos));
+          newRing2.addAll(ringNodes.subList(pos, ringNodes.size()));
+          wasSplittable = true;
+          // add to results
+          ringNodes.clear();
+          ringNodes.addAll(newRing2);
+          if (result == null) {
+            result = new ArrayList<>();
+          }
+          result.add(newRing1);
+          break;
+        }
+        if (pos > 0) {
+          // don't memorize start node, since it is repeated at the end of the ring
+          nodeIds.put(nodeId, pos);
+        }
+        pos++;
+      }
+    } while (wasSplittable);
+    return result;
   }
 
   /**
