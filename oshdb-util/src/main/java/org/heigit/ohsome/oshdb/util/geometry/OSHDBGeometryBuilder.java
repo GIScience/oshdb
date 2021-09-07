@@ -444,10 +444,16 @@ public class OSHDBGeometryBuilder {
       if (splitRings != null) {
         splitRings.add(new LinkedList<>(ringNodes));
         ringNodes.clear();
-        var splitRingsGeoms = splitRings.stream().map(ring ->
-            geometryFactory.createPolygon(ring.stream().map(node ->
-                new Coordinate(node.getLongitude(), node.getLatitude()))
-                .toArray(Coordinate[]::new)))
+        var splitRingsGeoms = splitRings.stream()
+            .map(ring -> {
+              if (ring.size() >= LinearRing.MINIMUM_VALID_SIZE) {
+                return geometryFactory.createPolygon(ring.stream()
+                    .map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
+                    .toArray(Coordinate[]::new));
+              } else {
+                return geometryFactory.createPolygon();
+              }
+            })
             .collect(Collectors.toList());
         var nestingNumbers = Collections.nCopies(splitRingsGeoms.size(), 0)
             .toArray(new Integer [] {});
