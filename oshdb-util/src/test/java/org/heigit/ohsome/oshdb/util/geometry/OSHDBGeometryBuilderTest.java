@@ -5,9 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -27,7 +25,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.Polygonal;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -255,44 +252,70 @@ public class OSHDBGeometryBuilderTest {
   public void testMultipolygonShellsShareNode() {
     // single figure-8
     var members = testData.relations().get(100L).get(0).getMembers();
-    getMultipolygonSharedNodeCheck(2).accept(members);
+    getMultipolygonSharedNodeCheck(geom -> {
+      assertTrue(geom instanceof MultiPolygon);
+      assertEquals(2, geom.getNumGeometries());
+    }).accept(members);
     // all permutations of relation members should lead to the same result
     members = testData.relations().get(101L).get(0).getMembers();
-    permutations(members.length, members, getMultipolygonSharedNodeCheck(2));
+    checkAllMemberPermutations(members.length, members, getMultipolygonSharedNodeCheck(geom -> {
+      assertTrue(geom instanceof MultiPolygon);
+      assertEquals(2, geom.getNumGeometries());
+    }));
     // double loop
     members = testData.relations().get(102L).get(0).getMembers();
-    getMultipolygonSharedNodeCheck(3).accept(members);
+    getMultipolygonSharedNodeCheck(geom -> {
+      assertTrue(geom instanceof MultiPolygon);
+      assertEquals(3, geom.getNumGeometries());
+    }).accept(members);
     // second loop forming whole
     members = testData.relations().get(103L).get(0).getMembers();
-    getMultipolygonSharedNodeCheck(2).accept(members);
-    // todo: more complex cases: * multiple holes, hole in hole
+    getMultipolygonSharedNodeCheck(geom -> {
+      assertTrue(geom instanceof Polygon);
+      assertEquals(1, ((Polygon) geom).getNumInteriorRing());
+    }).accept(members);
+    // multiple holes
+    members = testData.relations().get(104L).get(0).getMembers();
+    getMultipolygonSharedNodeCheck(geom -> {
+      assertTrue(geom instanceof Polygon);
+      assertEquals(2, ((Polygon) geom).getNumInteriorRing());
+    }).accept(members);
+    // hole in hole
+    members = testData.relations().get(105L).get(0).getMembers();
+    checkAllMemberPermutations(members.length, members, getMultipolygonSharedNodeCheck(geom -> {
+      assertTrue(geom instanceof MultiPolygon);
+      assertEquals(2, geom.getNumGeometries());
+      assertEquals(1,
+          ((Polygon) geom.getGeometryN(0)).getNumInteriorRing()
+              + ((Polygon) geom.getGeometryN(1)).getNumInteriorRing()
+      );
+    }));
   }
 
-  private Consumer<OSMMember[]> getMultipolygonSharedNodeCheck(int expectedParts) {
+  private Consumer<OSMMember[]> getMultipolygonSharedNodeCheck(Consumer<Geometry> tester) {
     var areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     var timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     return relMembers -> {
       var relation = new OSMRelation(1, 1, timestamp.getEpochSecond(), 0, 0, null, relMembers);
       var geom = OSHDBGeometryBuilder.getGeometry(relation, timestamp, areaDecider);
       assertTrue(geom.isValid());
-      assertTrue(geom instanceof MultiPolygon);
-      assertEquals(expectedParts, geom.getNumGeometries());
+      tester.accept(geom);
     };
   }
 
-  private static <T> void permutations(int n, T[] elements, Consumer<T[]> consumer) {
+  private static <T> void checkAllMemberPermutations(int n, T[] elements, Consumer<T[]> consumer) {
     if (n == 1) {
       consumer.accept(elements);
     } else {
       for (int i = 0; i < n - 1; i++) {
-        permutations(n - 1, elements, consumer);
+        checkAllMemberPermutations(n - 1, elements, consumer);
         if (n % 2 == 0) {
           swap(elements, i, n - 1);
         } else {
           swap(elements, 0, n - 1);
         }
       }
-      permutations(n - 1, elements, consumer);
+      checkAllMemberPermutations(n - 1, elements, consumer);
     }
   }
 

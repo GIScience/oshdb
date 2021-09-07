@@ -16,6 +16,11 @@
   <node id="114" lat="1" lon="13" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
   <node id="115" lat="4" lon="14" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
   <node id="116" lat="4" lon="10" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="117" lat="2" lon="12" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="118" lat="1" lon="11" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="119" lat="3" lon="11" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="120" lat="2.5" lon="13" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
+  <node id="121" lat="1.5" lon="13" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z" />
 
   <way id="100" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z">
     <nd ref="100" />
@@ -74,6 +79,36 @@
     <nd ref="116" />
     <nd ref="110" />
   </way>
+  <way id="107" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <nd ref="110" />
+    <nd ref="111" />
+    <nd ref="112" />
+    <nd ref="113" />
+    <nd ref="117" />
+    <nd ref="118" />
+    <nd ref="119" />
+    <nd ref="117" />
+    <nd ref="114" />
+    <nd ref="112" />
+    <nd ref="115" />
+    <nd ref="116" />
+    <nd ref="110" />
+  </way>
+  <way id="108" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <nd ref="110" />
+    <nd ref="111" />
+    <nd ref="112" />
+    <nd ref="113" />
+    <nd ref="117" />
+    <nd ref="120" />
+    <nd ref="121" />
+    <nd ref="117" />
+    <nd ref="114" />
+    <nd ref="112" />
+    <nd ref="115" />
+    <nd ref="116" />
+    <nd ref="110" />
+  </way>
 
   <relation id="100" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z">
     <member type="way" ref="100" role="outer" />
@@ -88,8 +123,12 @@
     <member type="way" ref="105" role="outer" />
   </relation>
   <relation id="103" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z">
-    <member type="way" ref="101" role="outer" />
-    <member type="way" ref="102" role="outer" />
     <member type="way" ref="106" role="outer" />
+  </relation>
+  <relation id="104" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <member type="way" ref="107" role="outer" />
+  </relation>
+  <relation id="105" visible="true" version="1" uid="0" user="a" changeset="1" timestamp="2000-01-01T00:00:00Z">
+    <member type="way" ref="108" role="outer" />
   </relation>
 </osm>
