@@ -39,10 +39,13 @@ public abstract class GeometryFilter extends NegatableFilter {
     }
   }
 
-  interface GeometryMetricEvaluator extends ToDoubleFunction<Geometry>, Serializable {
+  interface SerializableToDoubleFunction<X> extends ToDoubleFunction<X>, Serializable {}
+
+  interface GeometryMetricEvaluator extends SerializableToDoubleFunction<Geometry>, Serializable {
     double applyAsDouble(Geometry geometry);
 
-    static GeometryMetricEvaluator fromLambda(ToDoubleFunction<Geometry> func, String name) {
+    static GeometryMetricEvaluator fromLambda(
+        SerializableToDoubleFunction<Geometry> func, String name) {
       return new GeometryMetricEvaluator() {
         @Override
         public double applyAsDouble(Geometry geometry) {
