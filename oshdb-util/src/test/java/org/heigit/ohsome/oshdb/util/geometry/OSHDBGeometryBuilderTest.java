@@ -280,7 +280,7 @@ public class OSHDBGeometryBuilderTest {
       assertTrue(geom instanceof Polygon);
       assertEquals(2, ((Polygon) geom).getNumInteriorRing());
     }).accept(members);
-    // hole in hole
+    // hole in hole = additional outer
     members = testData.relations().get(105L).get(0).getMembers();
     checkAllMemberPermutations(members.length, members, getMultipolygonSharedNodeCheck(geom -> {
       assertTrue(geom instanceof MultiPolygon);

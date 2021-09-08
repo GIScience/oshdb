@@ -408,7 +408,7 @@ public class OSHDBGeometryBuilder {
 
 
   /**
-   * Search and split pinched (figure-8) rings.
+   * Search and split self-intersecting/pinched/figure-8 rings.
    *
    * <p>Attention: modifies the input data, such that there are no more figure-8 rings.</p>
    *
@@ -440,6 +440,8 @@ public class OSHDBGeometryBuilder {
     for (LinkedList<OSMNode> ringNodes : ringsNodes) {
       var splitRings = splitPinchedRing(ringNodes, nodeIds);
       if (splitRings != null) {
+        // if self-intersection(s) were found, we need to check whether these are next to or
+        // overlapping each other. to do this, we convert the rings to polygon geometries first
         splitRings.add(new LinkedList<>(ringNodes));
         ringNodes.clear();
         var splitRingsGeoms = splitRings.stream()
@@ -453,6 +455,7 @@ public class OSHDBGeometryBuilder {
               }
             })
             .collect(Collectors.toList());
+        // determine which of the rings is "coveredBy" how many of the others
         var nestingNumbers = Collections.nCopies(splitRingsGeoms.size(), 0)
             .toArray(new Integer [] {});
         for (var i = 0; i < splitRingsGeoms.size(); i++) {
@@ -465,6 +468,7 @@ public class OSHDBGeometryBuilder {
             }
           }
         }
+        // sort result into (additional) rings and holes
         for (var i = 0; i < splitRingsGeoms.size(); i++) {
           if (nestingNumbers[i] % 2 == 0) {
             additionalRings.add(splitRings.get(i));
@@ -477,6 +481,12 @@ public class OSHDBGeometryBuilder {
     ringsNodes.addAll(additionalRings);
   }
 
+  /**
+   * Search and split pinched (figure-8) rings.
+   *
+   * @return null if no self-intersection is found,
+   *         otherwise a collection containing additional split-off rings
+   */
   private static List<LinkedList<OSMNode>> splitPinchedRing(
       LinkedList<OSMNode> ringNodes,
       Map<Long, Integer> nodeIds
@@ -486,32 +496,33 @@ public class OSHDBGeometryBuilder {
     do {
       wasSplittable = false;
       nodeIds.clear();
-      var pos = 0;
+      var currentNodePos = 0;
       for (OSMNode ringNode : ringNodes) {
         long nodeId = ringNode.getId();
         if (nodeIds.containsKey(nodeId)) {
           // split off ring between previous and current ring position
           int nodePos = nodeIds.get(nodeId);
-          final var newRing1 = new LinkedList<>(ringNodes.subList(nodePos, pos + 1));
-          final var newRing2 = new LinkedList<OSMNode>();
-          newRing2.addAll(ringNodes.subList(0, nodePos));
-          newRing2.addAll(ringNodes.subList(pos, ringNodes.size()));
+          final var additionalRing = new LinkedList<>(ringNodes.subList(nodePos, currentNodePos + 1));
+          final var remainingRing = new LinkedList<OSMNode>();
+          remainingRing.addAll(ringNodes.subList(0, nodePos));
+          remainingRing.addAll(ringNodes.subList(currentNodePos, ringNodes.size()));
           wasSplittable = true;
           // add to results
           ringNodes.clear();
-          ringNodes.addAll(newRing2);
+          ringNodes.addAll(remainingRing);
           if (result == null) {
             result = new ArrayList<>();
           }
-          result.add(newRing1);
+          result.add(additionalRing);
           break;
         }
-        if (pos > 0) {
-          // don't memorize start node, since it is repeated at the end of the ring
-          nodeIds.put(nodeId, pos);
+        if (currentNodePos > 0) {
+          // don't memorize start node, since it is always repeated at the end of the ring
+          nodeIds.put(nodeId, currentNodePos);
         }
-        pos++;
+        currentNodePos++;
       }
+      // repeat until the ring doesn't have any more self intersections
     } while (wasSplittable);
     return result;
   }
