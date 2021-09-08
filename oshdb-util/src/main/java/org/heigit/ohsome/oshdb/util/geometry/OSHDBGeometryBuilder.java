@@ -492,8 +492,8 @@ public class OSHDBGeometryBuilder {
         if (nodeIds.containsKey(nodeId)) {
           // split off ring between previous and current ring position
           int nodePos = nodeIds.get(nodeId);
-          var newRing1 = new LinkedList<>(ringNodes.subList(nodePos, pos + 1));
-          var newRing2 = new LinkedList<OSMNode>();
+          final var newRing1 = new LinkedList<>(ringNodes.subList(nodePos, pos + 1));
+          final var newRing2 = new LinkedList<OSMNode>();
           newRing2.addAll(ringNodes.subList(0, nodePos));
           newRing2.addAll(ringNodes.subList(pos, ringNodes.size()));
           wasSplittable = true;
