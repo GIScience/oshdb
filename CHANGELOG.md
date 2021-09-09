@@ -7,7 +7,12 @@ Changelog
 
  * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
 
+### bugfixes
+
+* fix a bug which causes queries using the geometry filters `length:` and `area:` to fail when executed on an ignite cluster ([#426])
+
 [#419]: https://github.com/GIScience/oshdb/pull/419
+[#426]: https://github.com/GIScience/oshdb/pull/426
 
 
 ## 0.7.1
