@@ -7,7 +7,12 @@ Changelog
 
  * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
 
+### bugfixes
+
+* fix building valid geometries for multipolygons with shells which share a single point ([#424])
+
 [#419]: https://github.com/GIScience/oshdb/pull/419
+[#424]: https://github.com/GIScience/oshdb/pull/424
 
 ### other changes
 
