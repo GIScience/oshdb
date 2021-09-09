@@ -39,7 +39,7 @@ public abstract class GeometryFilter extends NegatableFilter {
     }
   }
 
-  interface GeometryMetricEvaluator extends SerializableToDoubleFunction<Geometry>, Serializable {
+  interface GeometryMetricEvaluator extends SerializableToDoubleFunction<Geometry> {
     double applyAsDouble(Geometry geometry);
 
     static GeometryMetricEvaluator fromLambda(
