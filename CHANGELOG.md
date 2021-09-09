@@ -1,7 +1,13 @@
 Changelog
 =========
 
-## 0.8.0-SNAPSHOT (current master)
+## 0.7.2
+
+### bugfixes
+
+* fix a bug which causes queries using the geometry filters `length:` and `area:` to fail when executed on an ignite cluster ([#426])
+
+[#426]: https://github.com/GIScience/oshdb/pull/426
 
 
 ## 0.7.1

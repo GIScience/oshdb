@@ -2,9 +2,9 @@ package org.heigit.ohsome.oshdb.filter;
 
 import java.io.Serializable;
 import java.util.function.Supplier;
-import java.util.function.ToDoubleFunction;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.function.SerializableToDoubleFunction;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -39,10 +39,11 @@ public abstract class GeometryFilter extends NegatableFilter {
     }
   }
 
-  interface GeometryMetricEvaluator extends ToDoubleFunction<Geometry>, Serializable {
+  interface GeometryMetricEvaluator extends SerializableToDoubleFunction<Geometry> {
     double applyAsDouble(Geometry geometry);
 
-    static GeometryMetricEvaluator fromLambda(ToDoubleFunction<Geometry> func, String name) {
+    static GeometryMetricEvaluator fromLambda(
+        SerializableToDoubleFunction<Geometry> func, String name) {
       return new GeometryMetricEvaluator() {
         @Override
         public double applyAsDouble(Geometry geometry) {
