@@ -2,9 +2,9 @@ package org.heigit.ohsome.oshdb.filter;
 
 import java.io.Serializable;
 import java.util.function.Supplier;
-import java.util.function.ToDoubleFunction;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
+import org.heigit.ohsome.oshdb.util.function.SerializableToDoubleFunction;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -38,8 +38,6 @@ public abstract class GeometryFilter extends NegatableFilter {
       return toValue;
     }
   }
-
-  interface SerializableToDoubleFunction<X> extends ToDoubleFunction<X>, Serializable {}
 
   interface GeometryMetricEvaluator extends SerializableToDoubleFunction<Geometry>, Serializable {
     double applyAsDouble(Geometry geometry);
