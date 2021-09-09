@@ -22,6 +22,10 @@ class Kernels implements Serializable {
   interface CellProcessor<S> extends SerializableBiFunction<GridOSHEntity, CellIterator, S> {}
 
   interface CancelableProcessStatus {
+    default <T> boolean isActive(T ignored) {
+      return isActive();
+    }
+
     boolean isActive();
   }
 
@@ -57,7 +61,7 @@ class Kernels implements Serializable {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       cellIterator.iterateByContribution(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .forEach(contribution -> {
             OSMContribution osmContribution = new OSMContributionImpl(contribution);
             accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
@@ -87,7 +91,7 @@ class Kernels implements Serializable {
       // iterate over the history of all OSM objects in the current cell
       List<OSMContribution> contributions = new ArrayList<>();
       cellIterator.iterateByContribution(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .forEach(contribution -> {
             OSMContribution thisContribution = new OSMContributionImpl(contribution);
             if (contributions.size() > 0
@@ -131,7 +135,7 @@ class Kernels implements Serializable {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       cellIterator.iterateByTimestamps(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .forEach(data -> {
             OSMEntitySnapshot snapshot = new OSMEntitySnapshotImpl(data);
             // immediately fold the result
@@ -162,7 +166,7 @@ class Kernels implements Serializable {
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
       cellIterator.iterateByTimestamps(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .forEach(data -> {
             OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshotImpl(data);
             if (osmEntitySnapshots.size() > 0
@@ -203,7 +207,7 @@ class Kernels implements Serializable {
     return (oshEntityCell, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       return cellIterator.iterateByContribution(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .map(OSMContributionImpl::new)
           .map(mapper);
     };
@@ -226,7 +230,7 @@ class Kernels implements Serializable {
       List<OSMContribution> contributions = new ArrayList<>();
       List<S> result = new LinkedList<>();
       cellIterator.iterateByContribution(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .map(OSMContributionImpl::new)
           .forEach(contribution -> {
             if (contributions.size() > 0 && contribution.getEntityAfter().getId()
@@ -260,7 +264,7 @@ class Kernels implements Serializable {
     return (oshEntityCell, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       return cellIterator.iterateByTimestamps(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .map(OSMEntitySnapshotImpl::new)
           .map(mapper);
     };
@@ -283,7 +287,7 @@ class Kernels implements Serializable {
       List<OSMEntitySnapshot> snapshots = new ArrayList<>();
       List<S> result = new LinkedList<>();
       cellIterator.iterateByTimestamps(oshEntityCell)
-          .filter(ignored -> process.isActive())
+          .takeWhile(process::isActive)
           .map(OSMEntitySnapshotImpl::new)
           .forEach(contribution -> {
             if (snapshots.size() > 0 && contribution.getEntity().getId()
