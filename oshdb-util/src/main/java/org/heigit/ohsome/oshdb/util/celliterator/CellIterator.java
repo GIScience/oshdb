@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
@@ -18,6 +17,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -66,6 +66,7 @@ public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
 
   private final TreeSet<OSHDBTimestamp> timestamps;
+  private final OSHDBTimestampInterval timeInterval;
   private final OSHDBBoundingBox boundingBox;
   private boolean isBoundByPolygon;
   private FastBboxInPolygon bboxInPolygon;
@@ -75,6 +76,7 @@ public class CellIterator implements Serializable {
   private final OSHEntityFilter oshEntityPreFilter;
   private final OSMEntityFilter osmEntityFilter;
   private final boolean includeOldStyleMultipolygons;
+
 
   /**
    * Creates a cell iterator from a bounding box and a bounding polygon.
@@ -193,6 +195,7 @@ public class CellIterator implements Serializable {
       boolean includeOldStyleMultipolygons
   ) {
     this.timestamps = new TreeSet<>(timestamps);
+    this.timeInterval = new OSHDBTimestampInterval(this.timestamps);
     this.boundingBox = boundingBox;
     this.isBoundByPolygon = false; // todo: maybe replace this with a "dummy" polygonClipper?
     this.bboxInPolygon = null;
@@ -250,19 +253,10 @@ public class CellIterator implements Serializable {
    *         geometries later on in the code.
    */
   public Stream<IterateByTimestampEntry> iterateByTimestamps(GridOSHEntity cell) {
-    final boolean allFullyInside;
-    if (isBoundByPolygon) {
-      // if cell is fully inside bounding box/polygon we can skip all entity-based inclusion checks
-      OSHDBBoundingBox cellBoundingBox = XYGrid.getBoundingBox(new CellId(
-          cell.getLevel(),
-          cell.getId()
-      ), true);
-      if (bboxOutsidePolygon.test(cellBoundingBox)) {
-        return Stream.empty();
-      }
-      allFullyInside = bboxInPolygon.test(cellBoundingBox);
-    } else {
-      allFullyInside = false;
+    var cellBoundingBox = XYGrid.getBoundingBox(new CellId(cell.getLevel(), cell.getId()), true);
+    final boolean allFullyInside = fullyInside(cellBoundingBox);
+    if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
+      return Stream.empty();
     }
     return iterateByTimestamps(cell.getEntities(), allFullyInside);
   }
@@ -272,7 +266,7 @@ public class CellIterator implements Serializable {
    * as they existed at the given timestamps.
    *
    * @param cellData the entities to iterate through
-   * @param allFullyInside
+   * @param allFullyInside indicator that exact geometry inclusion checks can be skipped
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries at each
    *         timestamp. If an object has not been modified between timestamps, the output may
@@ -296,10 +290,7 @@ public class CellIterator implements Serializable {
         // none of this osh entity's versions matches the filter -> skip it
         return Stream.empty();
       }
-      boolean fullyInside = allFullyInside || (
-          oshEntity.coveredBy(boundingBox)
-          && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
-      );
+      boolean fullyInside = allFullyInside || fullyInside(oshEntity);
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
@@ -545,18 +536,10 @@ public class CellIterator implements Serializable {
    *         intervals.
    */
   public Stream<IterateAllEntry> iterateByContribution(GridOSHEntity cell) {
-    var cellBoundingBox = XYGrid.getBoundingBox(new CellId(
-        cell.getLevel(),
-        cell.getId()
-    ), true);
-    final boolean allFullyInside;
-    if (isBoundByPolygon) {
-      if (bboxOutsidePolygon.test(cellBoundingBox)) {
-        return Stream.empty();
-      }
-      allFullyInside = bboxInPolygon.test(cellBoundingBox);
-    } else {
-      allFullyInside = false;
+    var cellBoundingBox = XYGrid.getBoundingBox(new CellId(cell.getLevel(), cell.getId()), true);
+    final boolean allFullyInside = fullyInside(cellBoundingBox);
+    if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
+      return Stream.empty();
     }
     return iterateByContribution(cell.getEntities(), allFullyInside);
   }
@@ -566,36 +549,31 @@ public class CellIterator implements Serializable {
    * condition/filter.
    *
    * @param cellData the entities to iterate through
-   * @param allFullyInside
+   * @param allFullyInside indicator that exact geometry inclusion checks can be skipped
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
   public Stream<IterateAllEntry> iterateByContribution(Iterable<? extends OSHEntity> cellData,
       boolean allFullyInside) {
-    OSHDBTimestampInterval timeInterval = new OSHDBTimestampInterval(timestamps);
-
     if (includeOldStyleMultipolygons) {
       //todo: remove this by finishing the functionality below
       throw new UnsupportedOperationException("this is not yet properly implemented (probably)");
     }
     return Streams.stream(cellData)
-        .filter(oshEntity -> allFullyInside || (oshEntity.intersects(boundingBox)
-            && !(isBoundByPolygon && bboxOutsidePolygon.test(oshEntity))))
+        .filter(oshEntity -> allFullyInside || oshEntity.intersects(boundingBox))
         .filter(oshEntityPreFilter)
+        .filter(
+            oshEntity -> allFullyInside || !isBoundByPolygon || !bboxOutsidePolygon.test(oshEntity))
         .flatMap(oshEntity -> {
-          var fullyInside = allFullyInside || (
-              oshEntity.coveredBy(boundingBox)
-              && (!isBoundByPolygon || bboxInPolygon.test(oshEntity))
-          );
-          var contribs = new ContributionIterator(oshEntity, timeInterval, fullyInside);
+          var fullyInside = allFullyInside || fullyInside(oshEntity);
+          var contribs = new ContributionIterator(oshEntity, fullyInside);
           return Streams.stream(contribs);
         });
   }
 
   private class ContributionIterator implements Iterator<IterateAllEntry> {
     private final OSHEntity oshEntity;
-    private final OSHDBTimestampInterval timeInterval;
     private final boolean fullyInside;
     private final Map<OSHDBTimestamp, Long> changesetTs;
     private final List<OSHDBTimestamp> modTs;
@@ -605,10 +583,8 @@ public class CellIterator implements Serializable {
     private IterateAllEntry prev;
     private IterateAllEntry next;
 
-    private ContributionIterator(OSHEntity oshEntity, OSHDBTimestampInterval timeInterval,
-        boolean fullyInside) {
+    private ContributionIterator(OSHEntity oshEntity, boolean fullyInside) {
       this.oshEntity = oshEntity;
-      this.timeInterval = timeInterval;
       this.fullyInside = fullyInside;
       this.changesetTs = OSHEntityTimeUtils.getChangesetTimestamps(oshEntity);
       this.modTs =
@@ -626,7 +602,11 @@ public class CellIterator implements Serializable {
 
     @Override
     public boolean hasNext() {
-      return next != null || (next = getNext()) != null;
+      if (next != null) {
+        return true;
+      }
+      next = getNext();
+      return next != null;
     }
 
     @Override
@@ -803,6 +783,14 @@ public class CellIterator implements Serializable {
         }
       }
       return null;
+    }
+  }
+
+  private boolean fullyInside(OSHDBBoundable bbox) {
+    if (isBoundByPolygon) {
+      return bboxInPolygon.test(bbox);
+    } else {
+      return bbox.coveredBy(boundingBox);
     }
   }
 

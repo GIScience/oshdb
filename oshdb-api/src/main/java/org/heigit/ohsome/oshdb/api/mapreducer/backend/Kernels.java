@@ -22,7 +22,7 @@ class Kernels implements Serializable {
   interface CellProcessor<S> extends SerializableBiFunction<GridOSHEntity, CellIterator, S> {}
 
   interface CancelableProcessStatus {
-    default <T> boolean isActive(T ignore) {
+    default <T> boolean isActive(T ignored) {
       return isActive();
     }
 
