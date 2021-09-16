@@ -176,6 +176,9 @@ public class OSHEntityTimeUtils {
       OSHEntity osh, boolean recurse, Predicate<OSMEntity> osmEntityFilter) {
     // first, store this ways direct modifications (i.e. the "major" versions' timestamps)
     var entityTimestamps = getModificationTimestampsReverseNonRecursed(osh, osmEntityFilter);
+    if (entityTimestamps.isEmpty()) {
+      return entityTimestamps;
+    }
     if (!recurse || osh instanceof OSHNode) {
       return Lists.reverse(entityTimestamps);
     }

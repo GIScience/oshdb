@@ -10,9 +10,11 @@ Changelog
 ### bugfixes
 
 * fix a bug which causes queries using the geometry filters `length:` and `area:` to fail when executed on an ignite cluster ([#426])
+* fix a bug which cause ComputeJobs to keep processing for a while despite they are already canceled ([#428])
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#426]: https://github.com/GIScience/oshdb/pull/426
+[#428]: https://github.com/GIScience/oshdb/pull/428
 
 
 ## 0.7.1
