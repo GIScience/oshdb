@@ -10,6 +10,7 @@ pipeline {
     LATEST_AUTHOR = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
     LATEST_COMMIT_ID = sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
 
+    MAVEN_GENERAL_OPTIONS = '--batch-mode --update-snapshots'
     MAVEN_TEST_OPTIONS = ' '
     SNAPSHOT_BRANCH_REGEX = /(^master$)/
     // START CUSTOM oshdb
@@ -49,7 +50,7 @@ pipeline {
           rtMaven.deployer.deployArtifacts = false
 
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            buildInfo = rtMaven.run pom: 'pom.xml', goals: '--batch-mode clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
           }
         }
       }
@@ -65,7 +66,7 @@ pipeline {
         script {
           // START CUSTOM oshdb
           withSonarQubeEnv('sonarcloud GIScience/ohsome') {
-            sh "mvn --batch-mode sonar:sonar -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.projectName=OSHDB"
+            sh "mvn $MAVEN_GENERAL_OPTIONS sonar:sonar -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.projectName=OSHDB"
           }
           // END CUSTOM oshdb
           report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
@@ -82,7 +83,10 @@ pipeline {
           sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
 
           // warnings plugin
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode -V -e test-compile checkstyle:checkstyle pmd:pmd pmd:cpd spotbugs:spotbugs -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
+          // START CUSTOM oshdb
+          // CUSTOM: use test-compile
+          rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS -V -e test-compile checkstyle:checkstyle pmd:pmd pmd:cpd spotbugs:spotbugs -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
+          // END CUSTOM oshdb
 
           recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
           recordIssues enabledForFailure: true, tool: checkStyle()
@@ -109,7 +113,7 @@ pipeline {
           // START CUSTOM oshdb
           // CUSTOM: added withDep profile
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            buildInfo = rtMaven.run pom: 'pom.xml', goals: '--batch-mode clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
           }
           // END CUSTOM oshdb
           rtMaven.deployer.deployArtifacts buildInfo
@@ -135,7 +139,7 @@ pipeline {
           // START CUSTOM oshdb
           // CUSTOM: added withDep profile
           withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            buildInfo = rtMaven.run pom: 'pom.xml', goals: '--batch-mode clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+            buildInfo = rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar install -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
           }
           // END CUSTOM oshdb
           rtMaven.deployer.deployArtifacts buildInfo
@@ -146,7 +150,7 @@ pipeline {
             file(credentialsId: 'ossrh-settings', variable: 'settingsFile'),
             string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')
         ]) {
-          sh 'mvn --batch-mode clean compile -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
+          sh 'mvn $MAVEN_GENERAL_OPTIONS clean compile -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
         }
       }
       post {
@@ -207,12 +211,12 @@ pipeline {
       steps {
         script {
           // load dependencies to artifactory
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
+          rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
 
           javadc_dir = "/srv/javadoc/java/" + REPO_NAME + "/" + VERSION + "/"
           echo javadc_dir
 
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode clean javadoc:javadoc -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
+          rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS clean javadoc:javadoc -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
           sh "echo ${javadc_dir}"
           // make sure jenkins uses bash not dash!
           sh "mkdir -p ${javadc_dir} && rm -Rf ${javadc_dir}* && find . -path '*/target/site/apidocs' -exec cp -R --parents {} ${javadc_dir} \\; && find ${javadc_dir} -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find ${javadc_dir} -type d -empty -delete"
@@ -221,7 +225,7 @@ pipeline {
         // START CUSTOM oshdb
         script {
           javadc_dir = javadc_dir + "aggregated/"
-          rtMaven.run pom: 'pom.xml', goals: '--batch-mode clean javadoc:aggregate -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
+          rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS --update-snapshots clean javadoc:aggregate -Dadditionalparam=-Xdoclint:none -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
           sh "mkdir -p ${javadc_dir} && rm -Rf ${javadc_dir}* && find . -path './target/site/apidocs' -exec cp -R --parents {} ${javadc_dir} \\; && find ${javadc_dir} -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find ${javadc_dir} -type d -empty -delete"
         }
         // END CUSTOM oshdb
@@ -249,7 +253,7 @@ pipeline {
       steps {
         script {
           try {
-            update_notify = sh(returnStdout: true, script: 'mvn --batch-mode versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies([^\\n]*\\S\\n)*[^\\n]*\\s\\n"').trim()
+            update_notify = sh(returnStdout: true, script: 'mvn $MAVEN_GENERAL_OPTIONS versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies([^\\n]*\\S\\n)*[^\\n]*\\s\\n"').trim()
             echo update_notify
             rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "Check your dependencies in *${REPO_NAME}*. You might have updates: ${update_notify}" , rawMessage: true
           } catch (err) {
@@ -258,7 +262,7 @@ pipeline {
         }
         script {
           try {
-            update_notify = sh(returnStdout: true, script: 'mvn --batch-mode versions:display-plugin-updates | grep -Pzo "(?s)The following plugin update([^\\n]*\\S\\n)*[^\\n]*\\s\\n"').trim()
+            update_notify = sh(returnStdout: true, script: 'mvn $MAVEN_GENERAL_OPTIONS versions:display-plugin-updates | grep -Pzo "(?s)The following plugin update([^\\n]*\\S\\n)*[^\\n]*\\s\\n"').trim()
             echo update_notify
             rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "Check your maven plugins in *${REPO_NAME}*. You might have updates: ${update_notify}" , rawMessage: true
           } catch (err) {
