@@ -30,29 +30,19 @@
   </modules>
 
   <properties>
-    <apachecommons.version>3.1</apachecommons.version>
-    <commonsio.version>2.5</commonsio.version>
-    <fastutil.version>8.1.1</fastutil.version>
-    <gitcommitplugin.version>2.2.6</gitcommitplugin.version>
-    <glassfish.version>1.1</glassfish.version>
-    <googlejson.version>1.1.1</googlejson.version>
-    <guava.version>29.0-jre</guava.version>
-    <h2.version>1.4.197</h2.version>
+    <guava.version>30.1.1-jre</guava.version>
+    <jts.version>1.18.2</jts.version>
+    <wololo.version>0.16.1</wololo.version>
     <ignite.version>2.10.0</ignite.version>
-    <jcommander.version>1.72</jcommander.version>
-    <jetbrainsannotations.version>13.0</jetbrainsannotations.version>
-    <jts.version>1.16.1</jts.version>
-    <junit.version>4.13.1</junit.version>
-    <mavenassembly.version>3.1.1</mavenassembly.version>
-    <orgjson.version>20160810</orgjson.version>
-    <osmosis.version>0.45</osmosis.version>
+    <h2.version>1.4.197</h2.version>
     <postgresql.version>42.1.4</postgresql.version>
-    <roaringbitmap.version>0.6.59</roaringbitmap.version>
+    <slf4j.version>1.7.32</slf4j.version>
+    <junit.version>4.13.1</junit.version>
     <rxjava2.version>2.1.9</rxjava2.version>
-    <slf4j.version>1.7.25</slf4j.version>
+    <jetbrainsannotations.version>13.0</jetbrainsannotations.version>
+    
     <sonar.moduleKey>${project.artifactId}</sonar.moduleKey>
     <sonar.projectKey>${project.groupId}:oshdb</sonar.projectKey>
-    <wololo.version>0.13.0</wololo.version>
   </properties>
 
   <dependencyManagement>
