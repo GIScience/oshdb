@@ -9,6 +9,9 @@ Changelog
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
 
+### other changes
+
+ * update jts dependency to version 1.18.2
 
 ## 0.7.2
 
