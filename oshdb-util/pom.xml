@@ -11,6 +11,10 @@
   <artifactId>oshdb-util</artifactId>
   <name>OSHDB utilities</name>
   <description>A collection of utilities for accessing to the OSHDB data and for performing computations on top of these.</description>
+  
+  <properties>
+    <googlejson.version>1.1.1</googlejson.version>
+  </properties>
 
   <dependencies>
     <dependency>
