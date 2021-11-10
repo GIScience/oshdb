@@ -5,13 +5,18 @@ Changelog
 
 ### breaking changes
 
- * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
+* remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
 
-[#419]: https://github.com/GIScience/oshdb/pull/419
+### bugfixes
+
+* change geometry filters to be based on full (unclipped) geometries ([#433])
 
 ### other changes
 
  * update jts dependency to version 1.18.2
+
+[#419]: https://github.com/GIScience/oshdb/pull/419
+[#433]: https://github.com/GIScience/oshdb/issues/433
 
 ## 0.7.2
 
