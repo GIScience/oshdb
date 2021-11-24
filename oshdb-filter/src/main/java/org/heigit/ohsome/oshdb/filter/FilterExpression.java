@@ -85,7 +85,7 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   default boolean applyOSMEntitySnapshot(OSMEntitySnapshot snapshot) {
-    return applyOSMGeometry(snapshot.getEntity(), snapshot::getGeometry);
+    return applyOSMGeometry(snapshot.getEntity(), snapshot::getGeometryUnclipped);
   }
 
   /**
@@ -100,12 +100,16 @@ public interface FilterExpression extends Serializable {
   @Contract(pure = true)
   default boolean applyOSMContribution(OSMContribution contribution) {
     if (contribution.is(ContributionType.CREATION)) {
-      return applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter);
+      return applyOSMGeometry(contribution.getEntityAfter(),
+          contribution::getGeometryUnclippedAfter);
     } else if (contribution.is(ContributionType.DELETION)) {
-      return applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore);
+      return applyOSMGeometry(contribution.getEntityBefore(),
+          contribution::getGeometryUnclippedBefore);
     } else {
-      return applyOSMGeometry(contribution.getEntityBefore(), contribution::getGeometryBefore)
-          || applyOSMGeometry(contribution.getEntityAfter(), contribution::getGeometryAfter);
+      return applyOSMGeometry(contribution.getEntityBefore(),
+          contribution::getGeometryUnclippedBefore)
+          || applyOSMGeometry(contribution.getEntityAfter(),
+          contribution::getGeometryUnclippedAfter);
     }
   }
 
