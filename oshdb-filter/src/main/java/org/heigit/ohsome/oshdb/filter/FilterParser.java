@@ -98,6 +98,8 @@ public class FilterParser {
     final Parser<Void> length = Patterns.string("length").toScanner("length");
     final Parser<Void> perimeter = Patterns.string("perimeter").toScanner("perimeter");
     final Parser<Void> vertices = Patterns.string("vertices").toScanner("vertices");
+    final Parser<Void> outers = Patterns.string("outers").toScanner("outers");
+    final Parser<Void> inners = Patterns.string("inners").toScanner("inners");
     final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
     final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 
@@ -208,7 +210,7 @@ public class FilterParser {
         ),
         Scanners.isChar(')')
     );
-    final Parser<ValueRange> decimalRange = Parsers.between(
+    final Parser<ValueRange> positiveIntegerRange = Parsers.between(
         Scanners.isChar('('),
         Parsers.or(
             Parsers.sequence(number, dotdot, number,
@@ -216,7 +218,7 @@ public class FilterParser {
             number.followedBy(dotdot).map(
                 min -> new ValueRange(min, Double.POSITIVE_INFINITY)),
             Parsers.sequence(dotdot, number).map(
-                max -> new ValueRange(Double.NEGATIVE_INFINITY, max))
+                max -> new ValueRange(0, max))
         ),
         Scanners.isChar(')')
     );
@@ -230,13 +232,21 @@ public class FilterParser {
         perimeter, colon, floatingRange
     ).map(GeometryFilterPerimeter::new);
     final Parser<GeometryFilter> geometryFilterVertices = Parsers.sequence(
-        vertices, colon, decimalRange
+        vertices, colon, positiveIntegerRange
     ).map(GeometryFilterVertices::new);
+    final Parser<GeometryFilter> geometryFilterOuters = Parsers.sequence(
+        outers, colon, Parsers.or(positiveIntegerRange, number.map(n -> new ValueRange(n, n)))
+    ).map(GeometryFilterOuterRings::new);
+    final Parser<GeometryFilter> geometryFilterInners = Parsers.sequence(
+        inners, colon, Parsers.or(positiveIntegerRange, number.map(n -> new ValueRange(n, n)))
+    ).map(GeometryFilterInnerRings::new);
     final Parser<GeometryFilter> geometryFilter = Parsers.or(
         geometryFilterArea,
         geometryFilterLength,
         geometryFilterPerimeter,
-        geometryFilterVertices);
+        geometryFilterVertices,
+        geometryFilterOuters,
+        geometryFilterInners);
 
     // changeset id filters
     final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(

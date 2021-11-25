@@ -196,6 +196,10 @@ public class ApplyOSMGeometryTest extends FilterTest {
   @Test
   public void testGeometryFilterVertices() {
     FilterExpression expression = parser.parse("vertices:(11..13)");
+    // point
+    assertFalse(expression.applyOSMGeometry(
+        createTestOSMEntityNode("natural", "tree"),
+        gf.createPoint(new Coordinate(0, 0))));
     // lines
     BiConsumer<Integer, Consumer<Boolean>> testLineN = (n, tester) -> {
       var entity = createTestOSMEntityWay(LongStream.rangeClosed(1, n).toArray());
@@ -261,6 +265,61 @@ public class ApplyOSMGeometryTest extends FilterTest {
     testMultiPolyonN.accept(12, Assert::assertTrue);
     testMultiPolyonN.accept(13, Assert::assertTrue);
     testMultiPolyonN.accept(14, Assert::assertFalse);
+  }
 
+  @Test
+  public void testGeometryFilterOuters() {
+    FilterExpression expression = parser.parse("outers:1");
+    OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
+    assertFalse(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)),
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(3, 3, 4, 4))
+    })));
+    assertTrue(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+    })));
+    assertTrue(expression.applyOSMGeometry(entity,
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+    ));
+    // range
+    expression = parser.parse("outers:(2..)");
+    assertTrue(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)),
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(3, 3, 4, 4))
+    })));
+  }
+
+  @Test
+  public void testGeometryFilterInners() {
+    FilterExpression expression = parser.parse("inners:0");
+    OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
+    assertTrue(expression.applyOSMGeometry(entity,
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+    ));
+    assertFalse(expression.applyOSMGeometry(entity, gf.createPolygon(
+        OSHDBGeometryBuilder.getGeometry(
+            OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 10, 10)).getExteriorRing(),
+        new LinearRing[] { OSHDBGeometryBuilder.getGeometry(
+            OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)).getExteriorRing()
+        })));
+    assertTrue(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+    })));
+    assertFalse(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
+        gf.createPolygon(
+            OSHDBGeometryBuilder.getGeometry(
+                OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 10, 10)).getExteriorRing(),
+            new LinearRing[] { OSHDBGeometryBuilder.getGeometry(
+                OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)).getExteriorRing()
+            })
+    })));
+    // range
+    expression = parser.parse("inners:(1..)");
+    assertTrue(expression.applyOSMGeometry(entity, gf.createPolygon(
+        OSHDBGeometryBuilder.getGeometry(
+            OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 10, 10)).getExteriorRing(),
+        new LinearRing[] { OSHDBGeometryBuilder.getGeometry(
+            OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)).getExteriorRing()
+        })));
   }
 }
