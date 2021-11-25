@@ -3,12 +3,20 @@ package org.heigit.ohsome.oshdb.filter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Streams;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.junit.Assert;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * Tests the application of filters to OSM geometries.
@@ -183,5 +191,76 @@ public class ApplyOSMGeometryTest extends FilterTest {
         // approx 4 x 0.6m
         OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
     ));
+  }
+
+  @Test
+  public void testGeometryFilterVertices() {
+    FilterExpression expression = parser.parse("vertices:(11..13)");
+    // lines
+    BiConsumer<Integer, Consumer<Boolean>> testLineN = (n, tester) -> {
+      var entity = createTestOSMEntityWay(LongStream.rangeClosed(1, n).toArray());
+      var coords = LongStream.rangeClosed(1, n)
+          .mapToObj(i -> new Coordinate(i, i)).toArray(Coordinate[]::new);
+      var geometry = gf.createLineString(coords);
+      tester.accept(expression.applyOSMGeometry(entity, geometry));
+    };
+    testLineN.accept(10, Assert::assertFalse);
+    testLineN.accept(11, Assert::assertTrue);
+    testLineN.accept(12, Assert::assertTrue);
+    testLineN.accept(13, Assert::assertTrue);
+    testLineN.accept(14, Assert::assertFalse);
+    // polygons
+    BiConsumer<Integer, Consumer<Boolean>> testPolyonN = (n, tester) -> {
+      var entity = createTestOSMEntityWay(LongStream.rangeClosed(1, n).toArray());
+      var coords = Streams.concat(
+          LongStream.rangeClosed(1, n - 1).mapToObj(i -> new Coordinate(i, Math.pow(i, 2))),
+          Stream.of(new Coordinate(1, 1))
+      ).toArray(Coordinate[]::new);
+      var geometry = gf.createPolygon(coords);
+      tester.accept(expression.applyOSMGeometry(entity, geometry));
+    };
+    testPolyonN.accept(10, Assert::assertFalse);
+    testPolyonN.accept(11, Assert::assertTrue);
+    testPolyonN.accept(12, Assert::assertTrue);
+    testPolyonN.accept(13, Assert::assertTrue);
+    testPolyonN.accept(14, Assert::assertFalse);
+    // polygon with hole
+    BiConsumer<Integer, Consumer<Boolean>> testPolyonWithHoleN = (n, tester) -> {
+      var entity = createTestOSMEntityRelation("type", "multipolygon");
+      n -= 5; // outer shell is a simple bbox with 5 points
+      var innerCoords = gf.createLinearRing(Streams.concat(
+          LongStream.rangeClosed(1, n - 1).mapToObj(i -> new Coordinate(i, Math.pow(i, 2))),
+          Stream.of(new Coordinate(1, 1))
+      ).toArray(Coordinate[]::new));
+      var geometry = gf.createPolygon(
+          OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox
+              .bboxWgs84Coordinates(-80, -80, 80, 80)).getExteriorRing(),
+          new LinearRing[] { innerCoords });
+      tester.accept(expression.applyOSMGeometry(entity, geometry));
+    };
+    testPolyonWithHoleN.accept(10, Assert::assertFalse);
+    testPolyonWithHoleN.accept(11, Assert::assertTrue);
+    testPolyonWithHoleN.accept(12, Assert::assertTrue);
+    testPolyonWithHoleN.accept(13, Assert::assertTrue);
+    testPolyonWithHoleN.accept(14, Assert::assertFalse);
+    // multi polygon
+    BiConsumer<Integer, Consumer<Boolean>> testMultiPolyonN = (n, tester) -> {
+      var entity = createTestOSMEntityRelation("type", "multipolygon");
+      n -= 5; // outer shell 2 is a simple bbox with 5 points
+      var coords = Streams.concat(
+          LongStream.rangeClosed(1, n - 1).mapToObj(i -> new Coordinate(i, Math.pow(i, 2))),
+          Stream.of(new Coordinate(1, 1))
+      ).toArray(Coordinate[]::new);
+      var geometry = gf.createMultiPolygon(new Polygon[] {
+          OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(-2, -2, -1, -1)),
+          gf.createPolygon(coords) });
+      tester.accept(expression.applyOSMGeometry(entity, geometry));
+    };
+    testMultiPolyonN.accept(10, Assert::assertFalse);
+    testMultiPolyonN.accept(11, Assert::assertTrue);
+    testMultiPolyonN.accept(12, Assert::assertTrue);
+    testMultiPolyonN.accept(13, Assert::assertTrue);
+    testMultiPolyonN.accept(14, Assert::assertFalse);
+
   }
 }

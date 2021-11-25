@@ -97,6 +97,7 @@ public class FilterParser {
     final Parser<Void> area = Patterns.string("area").toScanner("area");
     final Parser<Void> length = Patterns.string("length").toScanner("length");
     final Parser<Void> perimeter = Patterns.string("perimeter").toScanner("perimeter");
+    final Parser<Void> vertices = Patterns.string("vertices").toScanner("vertices");
     final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
     final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 
@@ -207,6 +208,18 @@ public class FilterParser {
         ),
         Scanners.isChar(')')
     );
+    final Parser<ValueRange> decimalRange = Parsers.between(
+        Scanners.isChar('('),
+        Parsers.or(
+            Parsers.sequence(number, dotdot, number,
+                (min, ignored, max) -> new ValueRange(min, max)),
+            number.followedBy(dotdot).map(
+                min -> new ValueRange(min, Double.POSITIVE_INFINITY)),
+            Parsers.sequence(dotdot, number).map(
+                max -> new ValueRange(Double.NEGATIVE_INFINITY, max))
+        ),
+        Scanners.isChar(')')
+    );
     final Parser<GeometryFilter> geometryFilterArea = Parsers.sequence(
         area, colon, floatingRange
     ).map(GeometryFilterArea::new);
@@ -216,10 +229,14 @@ public class FilterParser {
     final Parser<GeometryFilter> geometryFilterPerimeter = Parsers.sequence(
         perimeter, colon, floatingRange
     ).map(GeometryFilterPerimeter::new);
+    final Parser<GeometryFilter> geometryFilterVertices = Parsers.sequence(
+        vertices, colon, decimalRange
+    ).map(GeometryFilterVertices::new);
     final Parser<GeometryFilter> geometryFilter = Parsers.or(
         geometryFilterArea,
         geometryFilterLength,
-        geometryFilterPerimeter);
+        geometryFilterPerimeter,
+        geometryFilterVertices);
 
     // changeset id filters
     final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(
