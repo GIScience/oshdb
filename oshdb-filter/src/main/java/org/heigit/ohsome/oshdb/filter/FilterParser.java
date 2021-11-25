@@ -96,6 +96,7 @@ public class FilterParser {
         .map(ignored -> "*");
     final Parser<Void> area = Patterns.string("area").toScanner("area");
     final Parser<Void> length = Patterns.string("length").toScanner("length");
+    final Parser<Void> perimeter = Patterns.string("perimeter").toScanner("perimeter");
     final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
     final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 
@@ -212,9 +213,13 @@ public class FilterParser {
     final Parser<GeometryFilter> geometryFilterLength = Parsers.sequence(
         length, colon, floatingRange
     ).map(GeometryFilterLength::new);
+    final Parser<GeometryFilter> geometryFilterPerimeter = Parsers.sequence(
+        perimeter, colon, floatingRange
+    ).map(GeometryFilterPerimeter::new);
     final Parser<GeometryFilter> geometryFilter = Parsers.or(
         geometryFilterArea,
-        geometryFilterLength);
+        geometryFilterLength,
+        geometryFilterPerimeter);
 
     // changeset id filters
     final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(

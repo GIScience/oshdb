@@ -161,4 +161,27 @@ public class ApplyOSMGeometryTest extends FilterTest {
         })
     ));
   }
+
+  @Test
+  public void testGeometryFilterPerimeter() {
+    FilterExpression expression = parser.parse("perimeter:(4..5)");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
+    assertFalse(expression.applyOSMGeometry(entity,
+        // approx 4 x 0.6m
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
+    ));
+    assertTrue(expression.applyOSMGeometry(entity,
+        // approx 4 x 1.1m
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1E-5, 1E-5))
+    ));
+    assertFalse(expression.applyOSMGeometry(entity,
+        // approx 4 x 2.2m
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 2E-5, 2E-5))
+    ));
+    // negated
+    assertTrue(expression.negate().applyOSMGeometry(entity,
+        // approx 4 x 0.6m
+        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
+    ));
+  }
 }

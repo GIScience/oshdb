@@ -330,6 +330,12 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testGeometryFilterPerimeter() {
+    FilterExpression expression = parser.parse("perimeter:(1..10)");
+    assertTrue(expression instanceof GeometryFilterPerimeter);
+  }
+
+  @Test
   public void testChangesetIdFilter() {
     FilterExpression expression = parser.parse("changeset:42");
     assertTrue(expression instanceof ChangesetIdFilterEquals);
