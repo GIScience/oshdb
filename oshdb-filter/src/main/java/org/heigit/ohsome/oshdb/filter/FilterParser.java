@@ -97,9 +97,10 @@ public class FilterParser {
     final Parser<Void> area = Patterns.string("area").toScanner("area");
     final Parser<Void> length = Patterns.string("length").toScanner("length");
     final Parser<Void> perimeter = Patterns.string("perimeter").toScanner("perimeter");
-    final Parser<Void> vertices = Patterns.string("vertices").toScanner("vertices");
-    final Parser<Void> outers = Patterns.string("outers").toScanner("outers");
-    final Parser<Void> inners = Patterns.string("inners").toScanner("inners");
+    final Parser<Void> vertices = Patterns.string("geometry.vertices")
+        .toScanner("geometry.vertices");
+    final Parser<Void> outers = Patterns.string("geometry.outers").toScanner("geometry.outers");
+    final Parser<Void> inners = Patterns.string("geometry.inners").toScanner("geometry.inners");
     final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
     final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 

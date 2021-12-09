@@ -8,6 +8,6 @@ import org.locationtech.jts.geom.Geometry;
  */
 public class GeometryFilterVertices extends GeometryFilter {
   public GeometryFilterVertices(@Nonnull ValueRange range) {
-    super(range, GeometryMetricEvaluator.fromLambda(Geometry::getNumPoints, "vertices"));
+    super(range, GeometryMetricEvaluator.fromLambda(Geometry::getNumPoints, "geometry.vertices"));
   }
 }

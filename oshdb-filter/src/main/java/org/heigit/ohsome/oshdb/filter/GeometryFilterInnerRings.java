@@ -26,6 +26,6 @@ public class GeometryFilterInnerRings extends GeometryFilter {
       } else {
         return -1;
       }
-    }, "outers"));
+    }, "geometry.outers"));
   }
 }

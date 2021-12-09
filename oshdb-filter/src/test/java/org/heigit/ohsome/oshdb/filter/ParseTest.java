@@ -337,23 +337,23 @@ public class ParseTest extends FilterTest {
 
   @Test
   public void testGeometryFilterVertices() {
-    FilterExpression expression = parser.parse("vertices:(1..10)");
+    FilterExpression expression = parser.parse("geometry.vertices:(1..10)");
     assertTrue(expression instanceof GeometryFilterVertices);
   }
 
   @Test
   public void testGeometryFilterOuters() {
-    FilterExpression expression = parser.parse("outers:2");
+    FilterExpression expression = parser.parse("geometry.outers:2");
     assertTrue(expression instanceof GeometryFilterOuterRings);
-    expression = parser.parse("outers:(1..10)");
+    expression = parser.parse("geometry.outers:(1..10)");
     assertTrue(expression instanceof GeometryFilterOuterRings);
   }
 
   @Test
   public void testGeometryFilterInners() {
-    FilterExpression expression = parser.parse("inners:0");
+    FilterExpression expression = parser.parse("geometry.inners:0");
     assertTrue(expression instanceof GeometryFilterInnerRings);
-    expression = parser.parse("inners:(1..10)");
+    expression = parser.parse("geometry.inners:(1..10)");
     assertTrue(expression instanceof GeometryFilterInnerRings);
   }
 

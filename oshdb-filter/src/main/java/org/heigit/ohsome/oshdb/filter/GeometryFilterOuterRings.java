@@ -15,6 +15,6 @@ public class GeometryFilterOuterRings extends GeometryFilter {
   public GeometryFilterOuterRings(@Nonnull ValueRange range) {
     super(range, GeometryMetricEvaluator.fromLambda(geometry ->
             geometry instanceof Polygonal ? geometry.getNumGeometries() : -1,
-        "outers"));
+        "geometry.outers"));
   }
 }
