@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
+import java.util.ArrayList;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -32,6 +33,38 @@ public class Geo {
   // =====================
 
   /**
+   * Calculate the approximate distance between two coordinates.
+   *
+   * <p>
+   * Uses an equirectangular distance approximation, which works well assuming segments are short.
+   * </p>
+   *
+   * <p>
+   * Adjusted to partially account for the spheroidal shape of the earth (WGS84 coordinates).
+   * See https://gis.stackexchange.com/a/63047/41632
+   * </p>
+   *
+   * <p>
+   * For typical features present in OpenStreetMap data, the relative error introduced by
+   * this approximation is below 0.1%
+   * </p>
+   *
+   * @param c1 one of the two coordinates defining the line segment
+   * @param c2 the ther coordinate defining the line segment
+   * @return The approximate geodesic length of the line segment in meters.
+   */
+  public static double distanceBetween(Coordinate c1, Coordinate c2) {
+    double c1Lon = Math.toRadians(c1.x);
+    double c1Lat = Math.atan(sphereFact * Math.tan(Math.toRadians(c1.y)));
+    double c2Lon = Math.toRadians(c2.x);
+    double c2Lat = Math.atan(sphereFact * Math.tan(Math.toRadians(c2.y)));
+    double deltaLon = c2Lon - c1Lon;
+    double deltaLat = c2Lat - c1Lat;
+    deltaLon *= Math.cos((c2Lat + c1Lat) / 2);
+    return Math.sqrt(deltaLon * deltaLon + deltaLat * deltaLat) * earthRadiusMean;
+  }
+
+  /**
    * Calculate the approximate length of a line string.
    *
    * <p>
@@ -52,8 +85,11 @@ public class Geo {
    * @return The approximate geodesic length of the line string in meters.
    */
   public static double lengthOf(LineString line) {
+    return lengthOf(line.getCoordinates());
+  }
+
+  private static double lengthOf(Coordinate[] coords) {
     double dist = 0.0;
-    Coordinate[] coords = line.getCoordinates();
 
     if (coords.length > 1) {
       double prevLon = Math.toRadians(coords[0].x);
@@ -321,6 +357,163 @@ public class Geo {
       return 0;
     }
     return 4 * Math.PI * Geo.areaOf(geom) / (boundaryLength * boundaryLength);
+  }
+
+  // ======================
+  // = angle calculations =
+  // ======================
+
+  public static double bearing(Coordinate from, Coordinate to) {
+    return bearingRadians(from, to) * 180 / Math.PI;
+  }
+
+  public static double bearingRadians(Coordinate from, Coordinate to) {
+    var y = Math.sin(to.x - from.x) * Math.cos(to.y);
+    var x = Math.cos(from.y) * Math.sin(to.y)
+        - Math.sin(from.y) * Math.cos(to.y) * Math.cos(to.x - from.x);
+    return (Math.atan2(y, x) + 2 * Math.PI) % (2 * Math.PI);
+  }
+
+  /**
+   * Returns a measure for the rectilinearity (or squareness) of a geometry.
+   *
+   * <p>Adapted from "A Rectilinearity Measurement for Polygons" by Joviša Žunić and Paul L. Rosin:
+   * DOI:10.1007/3-540-47967-8_50
+   * https://link.springer.com/chapter/10.1007%2F3-540-47967-8_50
+   * https://www.researchgate.net/publication/221304067_A_Rectilinearity_Measurement_for_Polygons
+   *
+   * Žunić J., Rosin P.L. (2002) A Rectilinearity Measurement for Polygons. In: Heyden A., Sparr G.,
+   * Nielsen M., Johansen P. (eds) Computer Vision — ECCV 2002. ECCV 2002. Lecture Notes in Computer
+   * Science, vol 2351. Springer, Berlin, Heidelberg. https://doi.org/10.1007/3-540-47967-8_50
+   * </p>
+   *
+   * <p>Adjusted to work directly on geographic coordinates. Implementation works on a few
+   * assumptions: input geometries are "small"; spherical globe approximation.</p>
+   *
+   * @param geom a Polygon, MultiPolygon and LineString for which the squareness is to be evaluated.
+   * @return returns the rectilinearity value of the input geometry, or zero if the geometry type
+   *         isn't supported
+   */
+  public static double rectilinearity(Geometry geom) {
+    LineString[] lines;
+    if (geom instanceof Polygon) {
+      var poly = (Polygon) geom;
+      var rings = new ArrayList<LinearRing>(poly.getNumInteriorRing() + 1);
+      rings.add(poly.getExteriorRing());
+      for (var i = 0; i < poly.getNumInteriorRing(); i++) {
+        rings.add(poly.getInteriorRingN(i));
+      }
+      lines = rings.toArray(new LineString[] {});
+    } else if (geom instanceof MultiPolygon) {
+      var multiPoly = (MultiPolygon) geom;
+      var rings = new ArrayList<LinearRing>();
+      for (var i = 0; i < multiPoly.getNumGeometries(); i++) {
+        var poly = (Polygon) geom.getGeometryN(i);
+        rings.add(poly.getExteriorRing());
+        for (var j = 0; j < poly.getNumInteriorRing(); j++) {
+          rings.add(poly.getInteriorRingN(j));
+        }
+      }
+      lines = rings.toArray(new LineString[] {});
+    } else if (geom instanceof LineString) {
+      lines = new LineString[] { (LineString) geom };
+    } else {
+      // other geometry types: return 0
+      return 0;
+    }
+    return rectilinearity(lines);
+  }
+
+  private static double rectilinearity(LineString[] lines) {
+    var minLengthL1 = Double.MAX_VALUE;
+    for (LineString line : lines) {
+      var coords = line.getCoordinates();
+      for (var j = 1; j < coords.length; j++) {
+        var angle = bearingRadians(coords[j - 1], coords[j]);
+        var lengthL1 = 0.0;
+        for (LineString lineAgain : lines) {
+          lengthL1 += gridAlignedLengthL1(lineAgain, angle);
+        }
+        if (lengthL1 < minLengthL1) {
+          minLengthL1 = lengthL1;
+        }
+      }
+    }
+    var lengthL2 = 0.0;
+    for (LineString line : lines) {
+      lengthL2 += lengthOfL2(line.getCoordinates());
+    }
+    if (minLengthL1 == 0) {
+      return 0;
+    }
+    return 4 / (4 - Math.PI) * (lengthL2 / minLengthL1 - Math.PI / 4);
+  }
+
+  private static double gridAlignedLengthL1(LineString line, double angle) {
+    var cosA = Math.cos(angle);
+    var sinA = Math.sin(angle);
+    var centroid = line.getCentroid().getCoordinate();
+    var cosCentroidY = Math.cos(centroid.y);
+    var inverseCosCentroidY = 1 / cosCentroidY;
+    var coords = line.getCoordinates();
+    var modifiedCoords = new Coordinate[coords.length];
+    // shift to origin
+    for (var i = 0; i < coords.length; i++) {
+      modifiedCoords[i] = new Coordinate(
+          (coords[i].x - centroid.x) * cosCentroidY,
+          coords[i].y - centroid.y
+      );
+    }
+    // rotate
+    for (Coordinate modifiedCoord : modifiedCoords) {
+      var newX = modifiedCoord.x * cosA - modifiedCoord.y * sinA;
+      modifiedCoord.y = modifiedCoord.x * sinA + modifiedCoord.y * cosA;
+      modifiedCoord.x = newX;
+    }
+    // shift back to original location
+    for (Coordinate modifiedCoord : modifiedCoords) {
+      modifiedCoord.x = modifiedCoord.x * inverseCosCentroidY + centroid.x;
+      modifiedCoord.y += centroid.y;
+    }
+    return lengthOfL1(modifiedCoords);
+  }
+
+  private static double lengthOfL1(Coordinate[] coords) {
+    var dist = 0.0;
+    if (coords.length > 1) {
+      double prevLon = Math.toRadians(coords[0].x);
+      double prevLat = Math.toRadians(coords[0].y);
+      for (var i = 1; i < coords.length; i++) {
+        double thisLon = Math.toRadians(coords[i].x);
+        double thisLat = Math.toRadians(coords[i].y);
+        double deltaLon = thisLon - prevLon;
+        double deltaLat = thisLat - prevLat;
+        deltaLon *= Math.cos((thisLat + prevLat) / 2);
+        dist += Math.abs(deltaLon) + Math.abs(deltaLat);
+        prevLon = thisLon;
+        prevLat = thisLat;
+      }
+    }
+    return dist;
+  }
+
+  private static double lengthOfL2(Coordinate[] coords) {
+    var dist = 0.0;
+    if (coords.length > 1) {
+      double prevLon = Math.toRadians(coords[0].x);
+      double prevLat = Math.toRadians(coords[0].y);
+      for (var i = 1; i < coords.length; i++) {
+        double thisLon = Math.toRadians(coords[i].x);
+        double thisLat = Math.toRadians(coords[i].y);
+        double deltaLon = thisLon - prevLon;
+        double deltaLat = thisLat - prevLat;
+        deltaLon *= Math.cos((thisLat + prevLat) / 2);
+        dist += Math.sqrt(deltaLon * deltaLon + deltaLat * deltaLat);
+        prevLon = thisLon;
+        prevLat = thisLat;
+      }
+    }
+    return dist;
   }
 
   // =====================

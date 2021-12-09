@@ -364,6 +364,12 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testGeometryFilterSquareness() {
+    FilterExpression expression = parser.parse("geometry.squareness:(0.8..)");
+    assertTrue(expression instanceof GeometryFilterSquareness);
+  }
+
+  @Test
   public void testChangesetIdFilter() {
     FilterExpression expression = parser.parse("changeset:42");
     assertTrue(expression instanceof ChangesetIdFilterEquals);

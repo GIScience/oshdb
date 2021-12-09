@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -13,6 +14,8 @@ import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 /**
  * Tests the {@link Geo} class.
@@ -254,6 +257,96 @@ public class GeoTest {
     expectedResult = 2525.821; // calculated with QGIS
     line = gf.createLineString(featurePole);
     assertEquals(1.0, Geo.lengthOf(line) / expectedResult, relativeDelta);
+  }
+
+  @Test
+  public void testRectilinearity() throws ParseException {
+    final double L = 1E-4;
+    final double D = 10;
+    // square
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(0, 0),
+        new Coordinate(L, 0),
+        new Coordinate(L, L),
+        new Coordinate(0, L),
+        new Coordinate(0, 0)
+    })), 0.01);
+    // square tilted
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(L, 0),
+        new Coordinate(0, L),
+        new Coordinate(-L, 0),
+        new Coordinate(0, -L),
+        new Coordinate(L, 0)
+    })), 0.01);
+    // square tilted and shifted
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(L, D),
+        new Coordinate(0, D + L),
+        new Coordinate(-L, D),
+        new Coordinate(0, D - L),
+        new Coordinate(L, D)
+    })), 0.01);
+    // triangle
+    assertEquals(0.3, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(0, 0),
+        new Coordinate(L, 0),
+        new Coordinate(L, L),
+        new Coordinate(0, 0)
+    })), 0.1);
+    // circle
+    var regular32gon = "POLYGON ((1.0000003577924967 0, 0.9807856313208454 0.19509039181797777, "
+        + "0.9238798630684528 0.382683569286347, 0.8314699097961358 0.5555704317984601, "
+        + "0.7071070341840506 0.7071070341840459, 0.5555704317984657 0.831469909796132, "
+        + "0.38268356928635316 0.9238798630684503, 0.19509039181798432 0.9807856313208441, "
+        + "2.4808391268535802e-15 1.0000003577924967, -0.19509039181797946 0.9807856313208451, "
+        + "-0.3826835692863486 0.9238798630684522, -0.5555704317984616 0.8314699097961348, "
+        + "-0.7071070341840471 0.7071070341840494, -0.831469909796133 0.5555704317984642, "
+        + "-0.9238798630684509 0.3826835692863516, -0.9807856313208444 0.19509039181798263, "
+        + "-1.0000003577924967 7.657140137520206e-16, -0.9807856313208447 -0.19509039181798113, "
+        + "-0.9238798630684515 -0.38268356928635017, -0.8314699097961339 -0.555570431798463, "
+        + "-0.7071070341840482 -0.7071070341840483, -0.5555704317984628 -0.831469909796134, "
+        + "-0.38268356928635044 -0.9238798630684514, -0.1950903918179816 -0.9807856313208446, "
+        + "6.123236186583946e-17 -1.0000003577924967, 0.19509039181798174 -0.9807856313208446, "
+        + "0.38268356928635056 -0.9238798630684514, 0.5555704317984631 -0.8314699097961338, "
+        + "0.7071070341840483 -0.7071070341840482, 0.8314699097961338 -0.555570431798463, "
+        + "0.9238798630684514 -0.3826835692863505, 0.9807856313208446 -0.19509039181798166, "
+        + "1.0000003577924967 0))";
+    var reader = new WKTReader();
+    assertEquals(0.0, Geo.rectilinearity(gf.createLinearRing(
+        reader.read(regular32gon).getCoordinates())), 0.1);
+
+    // line
+    assertEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+        new Coordinate(0, 0),
+        new Coordinate(L, 0)
+    })), 0.01);
+    // line, slanted
+    assertEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+        new Coordinate(0, 0),
+        new Coordinate(L, L)
+    })), 0.01);
+    // line, right angle
+    assertEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+        new Coordinate(0, 0),
+        new Coordinate(L, 0),
+        new Coordinate(L, L)
+    })), 0.01);
+    // line, not right angle
+    assertNotEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+        new Coordinate(0, 0),
+        new Coordinate(L, 0),
+        new Coordinate(0, L)
+    })), 0.1);
+
+    // multipolygon: squares aligned
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(L, D),
+        new Coordinate(0, D + L),
+        new Coordinate(-L, D),
+        new Coordinate(0, D - L),
+        new Coordinate(L, D)
+    })), 0.01);
   }
 
   // real world test geometries
