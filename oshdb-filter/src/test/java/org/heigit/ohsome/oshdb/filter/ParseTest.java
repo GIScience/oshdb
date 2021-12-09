@@ -358,6 +358,12 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
+  public void testGeometryFilterRoundness() {
+    FilterExpression expression = parser.parse("geometry.roundness:(0.8..)");
+    assertTrue(expression instanceof GeometryFilterRoundness);
+  }
+
+  @Test
   public void testChangesetIdFilter() {
     FilterExpression expression = parser.parse("changeset:42");
     assertTrue(expression instanceof ChangesetIdFilterEquals);

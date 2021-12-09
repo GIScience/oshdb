@@ -101,6 +101,8 @@ public class FilterParser {
         .toScanner("geometry.vertices");
     final Parser<Void> outers = Patterns.string("geometry.outers").toScanner("geometry.outers");
     final Parser<Void> inners = Patterns.string("geometry.inners").toScanner("geometry.inners");
+    final Parser<Void> roundness = Patterns.string("geometry.roundness")
+        .toScanner("geometry.roundness");
     final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
     final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 
@@ -241,13 +243,17 @@ public class FilterParser {
     final Parser<GeometryFilter> geometryFilterInners = Parsers.sequence(
         inners, colon, Parsers.or(positiveIntegerRange, number.map(n -> new ValueRange(n, n)))
     ).map(GeometryFilterInnerRings::new);
+    final Parser<GeometryFilter> geometryFilterRoundness = Parsers.sequence(
+        roundness, colon, floatingRange
+    ).map(GeometryFilterRoundness::new);
     final Parser<GeometryFilter> geometryFilter = Parsers.or(
         geometryFilterArea,
         geometryFilterLength,
         geometryFilterPerimeter,
         geometryFilterVertices,
         geometryFilterOuters,
-        geometryFilterInners);
+        geometryFilterInners,
+        geometryFilterRoundness);
 
     // changeset id filters
     final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(

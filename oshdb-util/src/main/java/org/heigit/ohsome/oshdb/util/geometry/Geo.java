@@ -295,6 +295,34 @@ public class Geo {
     return area;
   }
 
+  // ======================
+  // = shape calculations =
+  // ======================
+
+  /**
+   * Calculates the "Polsby–Popper test" score of a polygonal geometry.
+   *
+   * <p>
+   * If the shape is not polygonal, zero is returned. If a shape constitues of multiple parts (a
+   * MultiPolygon geometry), the result is the weighted sum of the individual parts' scores.
+   * See <a href="https://en.wikipedia.org/wiki/Polsby%E2%80%93Popper_test">wikipedia</a> for info.
+   * </p>
+   *
+   * @param geom the geometry for which to calculate the PP score of.
+   * @return the compaceness measure of the input shape. A score of 1 indicates maximum compactness
+   *         (i.e. a circle)
+   */
+  public static double compactness(Geometry geom) {
+    if (!(geom instanceof Polygonal)) {
+      return 0;
+    }
+    var boundaryLength = Geo.lengthOf(geom.getBoundary());
+    if (boundaryLength == 0) {
+      return 0;
+    }
+    return 4 * Math.PI * Geo.areaOf(geom) / (boundaryLength * boundaryLength);
+  }
+
   // =====================
   // = geometry clipping =
   // =====================
