@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -151,6 +152,25 @@ public class GeoTest {
     expectedResult = 410425.251; // calculated with QGIS
     polygon = gf.createPolygon(featurePole);
     assertEquals(1.0, Geo.areaOf(polygon) / expectedResult, relativeDelta);
+  }
+
+  @Test
+  public void testAreaNotNegative() {
+    Polygon poly = gf.createPolygon(constructRing(
+        0, 0,
+        0, 1,
+        1, 1,
+        1, 0,
+        0, 0
+    ), new LinearRing[] { constructRing(
+        0, 0,
+        0, 3,
+        3, 3,
+        3, 0,
+        0, 0
+    )});
+    // check that area is not negative
+    assertFalse(Geo.areaOf(poly) < 0);
   }
 
 
