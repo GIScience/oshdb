@@ -16,6 +16,7 @@ Contents
 * [OSHDB API Manual](api.md) <br>
   Shows the different features of the OSHDB API and how they can be used to efficiently query the OSM history data.
   * [Data Views](views.md)
+  * [OSM Feature Geometries](geometries.md)
   * [Filtering of OSM data](filters.md)
   * [Map and Reduce](map-reduce.md)
   * [Data Aggregation](aggregation.md)
