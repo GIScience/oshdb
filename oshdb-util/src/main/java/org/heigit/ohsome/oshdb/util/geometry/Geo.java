@@ -164,7 +164,7 @@ public class Geo {
     for (int i = 0; i < poly.getNumInteriorRing(); i++) {
       area -= Math.abs(ringArea((LinearRing) poly.getInteriorRingN(i)));
     }
-    return area;
+    return Math.max(0, area);
   }
 
   /**
