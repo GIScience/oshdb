@@ -10,6 +10,7 @@ Changelog
 ### bugfixes
 
 * change geometry filters to be based on full (unclipped) geometries ([#433])
+* make sure area computation never returns negative results (instead zero is returned for the invalid geometries which previously resulted in negative values) ([#438])
 
 ### other changes
 
@@ -17,6 +18,7 @@ Changelog
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#433]: https://github.com/GIScience/oshdb/issues/433
+[#438]: https://github.com/GIScience/oshdb/pull/438
 
 ## 0.7.2
 
