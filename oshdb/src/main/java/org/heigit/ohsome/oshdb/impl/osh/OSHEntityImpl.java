@@ -432,11 +432,6 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
   }
 
   @Override
-  public int[] getRawTagKeys() {
-    return keys;
-  }
-
-  @Override
   public boolean hasTagKey(OSHDBTagKey tag) {
     return this.hasTagKey(tag.toInt());
   }

@@ -13,9 +13,6 @@ public interface OSHEntity extends OSHDBBoundable {
 
   OSMType getType();
 
-  @Deprecated(since = "0.7.0", forRemoval = true)
-  int[] getRawTagKeys();
-
   Iterable<OSHDBTagKey> getTagKeys();
 
   boolean hasTagKey(OSHDBTagKey tag);
