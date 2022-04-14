@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
 /**
- *
+ * Collection class for OSHDBTag.
  *
  */
 public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements Serializable {
@@ -65,7 +65,12 @@ public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements 
     return !(e1.hasNext() || e2.hasNext());
   }
 
-
+  /**
+   * KV based OSHDBTags.
+   *
+   * @param tags kv based array
+   * @return OSHDBTags instance
+   */
   public static OSHDBTags of(int[] tags) {
     return new IntArrayOSHDBTags(tags);
   }
@@ -74,7 +79,7 @@ public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements 
 
     private final int[] tags;
 
-    public IntArrayOSHDBTags(int[] tags) {
+    private IntArrayOSHDBTags(int[] tags) {
       this.tags = tags;
     }
 
