@@ -584,13 +584,10 @@ public abstract class MapReducer<X> implements
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(keyId));
     ret.filters.add(osmEntity -> {
-      int[] tags = osmEntity.getRawTags();
-      for (int i = 0; i < tags.length; i += 2) {
-        if (tags[i] > keyId) {
-          break;
-        }
-        if (tags[i] == keyId) {
-          return valueIds.contains(tags[i + 1]);
+      var tags = osmEntity.getTags();
+      for (var tag : tags) {
+        if (tag.getKey() == keyId) {
+          return valueIds.contains(tag.getValue());
         }
       }
       return false;
@@ -618,13 +615,10 @@ public abstract class MapReducer<X> implements
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(keyId));
     ret.filters.add(osmEntity -> {
-      int[] tags = osmEntity.getRawTags();
-      for (int i = 0; i < tags.length; i += 2) {
-        if (tags[i] > keyId) {
-          return false;
-        }
-        if (tags[i] == keyId) {
-          String value = this.getTagTranslator().getOSMTagOf(keyId, tags[i + 1]).getValue();
+      var tags = osmEntity.getTags();
+      for (var tag : tags) {
+        if (tag.getKey() == keyId) {
+          String value = this.getTagTranslator().getOSMTagOf(keyId, tag.getValue()).getValue();
           return valuePattern.matcher(value).matches();
         }
       }
@@ -695,7 +689,7 @@ public abstract class MapReducer<X> implements
   private MapReducer<X> osmTag(OSHDBTag tag) {
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tag.getKey()));
-    ret.filters.add(osmEntity -> osmEntity.hasTagValue(tag.getKey(), tag.getValue()));
+    ret.filters.add(osmEntity -> osmEntity.getTags().hasTagValue(tag.getKey(), tag.getValue()));
     return ret;
   }
 
@@ -703,7 +697,7 @@ public abstract class MapReducer<X> implements
   private MapReducer<X> osmTag(OSHDBTagKey tagKey) {
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tagKey));
-    ret.filters.add(osmEntity -> osmEntity.hasTagKey(tagKey));
+    ret.filters.add(osmEntity -> osmEntity.getTags().hasTagKey(tagKey));
     return ret;
   }
 

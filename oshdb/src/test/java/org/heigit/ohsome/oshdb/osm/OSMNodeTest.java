@@ -2,7 +2,7 @@ package org.heigit.ohsome.oshdb.osm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
+import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -156,39 +156,39 @@ public class OSMNodeTest {
   @Test
   public void testGetTags() {
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
-    int[] expResult = new int[] {};
-    int[] result = instance.getRawTags();
-    Assert.assertArrayEquals(expResult, result);
+    var expResult = OSHDBTags.empty();
+    var result = instance.getTags();
+    Assert.assertEquals(expResult, result);
   }
 
   @Test
   public void testHasTagKey() {
     OSMNode instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     boolean expResult = false;
-    boolean result = instance.hasTagKey(1);
+    boolean result = instance.getTags().hasTagKey(1);
     assertEquals(expResult, result);
 
     instance =
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
     expResult = true;
-    result = instance.hasTagKey(1);
+    result = instance.getTags().hasTagKey(1);
     assertEquals(expResult, result);
 
     instance =
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 2, 3, 3}, 1000000000, 1000000000);
     expResult = false;
-    result = instance.hasTagKeyExcluding(1, new int[] {2, 3});
+    result = instance.getTags().hasTagKeyExcluding(1, new int[] {2, 3});
     assertEquals(expResult, result);
 
     instance =
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
     expResult = true;
-    result = instance.hasTagKeyExcluding(1, new int[] {2, 3});
+    result = instance.getTags().hasTagKeyExcluding(1, new int[] {2, 3});
     assertEquals(expResult, result);
 
     instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[] {2, 1, 3, 3}, 1000000000, 1000000000);
     expResult = false;
-    result = instance.hasTagKeyExcluding(1, new int[] {1, 3});
+    result = instance.getTags().hasTagKeyExcluding(1, new int[] {1, 3});
     assertEquals(expResult, result);
   }
 
@@ -197,12 +197,12 @@ public class OSMNodeTest {
     OSMNode instance =
         new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, 1000000000, 1000000000);
     boolean expResult = false;
-    boolean result = instance.hasTagValue(1, 1);
+    boolean result = instance.getTags().hasTagValue(1, 1);
     assertEquals(expResult, result);
 
     instance = new OSMNode(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 3}, 1000000000, 1000000000);
     expResult = true;
-    result = instance.hasTagValue(1, 1);
+    result = instance.getTags().hasTagValue(1, 1);
     assertEquals(expResult, result);
   }
 

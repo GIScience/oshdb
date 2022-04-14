@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -13,6 +12,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -38,7 +38,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     long lastTimestamp = 0;
     long lastChangeset = 0;
     int lastUserId = 0;
-    int[] lastKeyValues = new int[0];
+    OSHDBTags lastKeyValues = null; //new int[0];
 
     SortedSet<Integer> keySet = new TreeSet<>();
 
@@ -77,9 +77,9 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
         changed |= CHANGED_USER_ID;
       }
 
-      int[] keyValues = version.getRawTags();
+      var keyValues = version.getTags();
 
-      if (version.isVisible() && !Arrays.equals(keyValues, lastKeyValues)) {
+      if (version.isVisible() && !keyValues.equals(lastKeyValues)) {
         changed |= CHANGED_TAGS;
       }
 
@@ -91,12 +91,11 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
       }
 
       if ((changed & CHANGED_TAGS) != 0) {
-        output.writeU32(keyValues.length);
-        for (var kv = 0; kv < keyValues.length; kv++) {
-          output.writeU32(keyValues[kv]);
-          if (kv % 2 == 0) {
-            keySet.add(Integer.valueOf(keyValues[kv]));
-          }
+        output.writeU32(keyValues.size() * 2);
+        for (var kv : keyValues) {
+          output.writeU32(kv.getKey());
+          output.writeU32(kv.getValue());
+          keySet.add(Integer.valueOf(kv.getKey()));
         }
         lastKeyValues = keyValues;
       }

@@ -87,17 +87,17 @@ public class IterateByTimestampsNodesTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertEquals(12, result.size());
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
-    assertEquals(result.get(3).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
-    assertEquals(result.get(4).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
-    assertEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
-    assertEquals(result.get(6).osmEntity.getRawTags(), result.get(5).osmEntity.getRawTags());
-    assertNotEquals(result.get(7).osmEntity.getRawTags(), result.get(6).osmEntity.getRawTags());
-    assertEquals(result.get(8).osmEntity.getRawTags(), result.get(7).osmEntity.getRawTags());
-    assertEquals(result.get(9).osmEntity.getRawTags(), result.get(8).osmEntity.getRawTags());
-    assertEquals(result.get(10).osmEntity.getRawTags(), result.get(9).osmEntity.getRawTags());
-    assertEquals(result.get(11).osmEntity.getRawTags(), result.get(10).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertEquals(result.get(2).osmEntity.getTags(), result.get(1).osmEntity.getTags());
+    assertEquals(result.get(3).osmEntity.getTags(), result.get(2).osmEntity.getTags());
+    assertEquals(result.get(4).osmEntity.getTags(), result.get(3).osmEntity.getTags());
+    assertEquals(result.get(5).osmEntity.getTags(), result.get(4).osmEntity.getTags());
+    assertEquals(result.get(6).osmEntity.getTags(), result.get(5).osmEntity.getTags());
+    assertNotEquals(result.get(7).osmEntity.getTags(), result.get(6).osmEntity.getTags());
+    assertEquals(result.get(8).osmEntity.getTags(), result.get(7).osmEntity.getTags());
+    assertEquals(result.get(9).osmEntity.getTags(), result.get(8).osmEntity.getTags());
+    assertEquals(result.get(10).osmEntity.getTags(), result.get(9).osmEntity.getTags());
+    assertEquals(result.get(11).osmEntity.getTags(), result.get(10).osmEntity.getTags());
   }
 
   @Test
@@ -158,16 +158,16 @@ public class IterateByTimestampsNodesTest {
         result.get(3).geometry.get().getCoordinates());
     assertArrayEquals(result.get(9).geometry.get().getCoordinates(),
         result.get(6).geometry.get().getCoordinates());
-    assertNotEquals(result.get(1).osmEntity.getRawTags(),
-        result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(2).osmEntity.getRawTags(),
-        result.get(1).osmEntity.getRawTags());
-    assertNotEquals(result.get(3).osmEntity.getRawTags(),
-        result.get(2).osmEntity.getRawTags());
-    assertEquals(result.get(5).osmEntity.getRawTags(),
-        result.get(4).osmEntity.getRawTags());
-    assertNotEquals(result.get(9).osmEntity.getRawTags(),
-        result.get(6).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).osmEntity.getTags(),
+        result.get(0).osmEntity.getTags());
+    assertEquals(result.get(2).osmEntity.getTags(),
+        result.get(1).osmEntity.getTags());
+    assertNotEquals(result.get(3).osmEntity.getTags(),
+        result.get(2).osmEntity.getTags());
+    assertEquals(result.get(5).osmEntity.getTags(),
+        result.get(4).osmEntity.getTags());
+    assertNotEquals(result.get(9).osmEntity.getTags(),
+        result.get(6).osmEntity.getTags());
   }
 
   @Test
@@ -182,7 +182,7 @@ public class IterateByTimestampsNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
@@ -202,7 +202,7 @@ public class IterateByTimestampsNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
@@ -231,7 +231,7 @@ public class IterateByTimestampsNodesTest {
         polygonFromCoordinates,
         areaDecider,
         oshEntity -> oshEntity.getId() == 6,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByTimestamps(
         oshdbDataGridCell

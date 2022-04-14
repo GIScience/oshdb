@@ -60,7 +60,7 @@ public class IterateByTimestampsWaysTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertEquals(10, result.size());
-    assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
     assertEquals(4, result.get(0).geometry.get().getNumPoints());
     assertEquals(8, result.get(1).geometry.get().getNumPoints());
     assertEquals(9, result.get(2).geometry.get().getNumPoints());
@@ -161,8 +161,8 @@ public class IterateByTimestampsWaysTest {
     assertTrue(geom2 instanceof LineString);
     Geometry geom3 = result.get(10).geometry.get();
     assertTrue(geom3 instanceof LineString);
-    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertNotEquals(result.get(10).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
+    assertNotEquals(result.get(2).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertNotEquals(result.get(10).osmEntity.getTags(), result.get(2).osmEntity.getTags());
     assertNotEquals(result.get(2).geometry.get(), result.get(0).geometry.get());
     assertEquals(result.get(10).geometry.get(), result.get(2).geometry.get());
   }
@@ -217,8 +217,8 @@ public class IterateByTimestampsWaysTest {
     ).collect(Collectors.toList());
     assertEquals(7, result.size());
 
-    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(6).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
+    assertNotEquals(result.get(2).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertEquals(result.get(6).osmEntity.getTags(), result.get(2).osmEntity.getTags());
     assertEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(3).geometry.get(), result.get(1).geometry.get());
     assertNotEquals(result.get(6).geometry.get(), result.get(3).geometry.get());
@@ -250,7 +250,7 @@ public class IterateByTimestampsWaysTest {
     assertTrue(geom instanceof Polygon);
     Geometry geom2 = result.get(8).geometry.get();
     assertTrue(geom2 instanceof LineString);
-    assertNotEquals(result.get(8).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertNotEquals(result.get(8).osmEntity.getTags(), result.get(0).osmEntity.getTags());
     assertNotEquals(result.get(8).geometry.get(), result.get(0).geometry.get());
   }
 
@@ -279,7 +279,7 @@ public class IterateByTimestampsWaysTest {
     assertTrue(geom instanceof Polygon);
     Geometry geom2 = result.get(8).geometry.get();
     assertTrue(geom2 instanceof LineString);
-    assertEquals(result.get(8).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertEquals(result.get(8).osmEntity.getTags(), result.get(0).osmEntity.getTags());
     assertNotEquals(result.get(8).geometry.get(), result.get(0).geometry.get());
   }
 

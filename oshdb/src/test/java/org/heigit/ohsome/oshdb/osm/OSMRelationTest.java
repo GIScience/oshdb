@@ -3,7 +3,7 @@ package org.heigit.ohsome.oshdb.osm;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
+import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -117,9 +117,9 @@ public class OSMRelationTest {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         new OSMRelation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
-    int[] expResult = new int[] {1, 1, 2, 2};
-    int[] result = instance.getRawTags();
-    Assert.assertArrayEquals(expResult, result);
+    var expResult = OSHDBTags.of(new int[] {1, 1, 2, 2});
+    var result = instance.getTags();
+    Assert.assertEquals(expResult, result);
   }
 
   @Test
@@ -128,35 +128,35 @@ public class OSMRelationTest {
     OSMRelation instance =
         new OSMRelation(1L, 2, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     boolean expResult = false;
-    boolean result = instance.hasTagKey(1);
+    boolean result = instance.getTags().hasTagKey(1);
     assertEquals(expResult, result);
 
     part = new OSMMember(1L, OSMType.WAY, 1);
     instance = new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3},
         new OSMMember[] {part, part});
     expResult = true;
-    result = instance.hasTagKey(1);
+    result = instance.getTags().hasTagKey(1);
     assertEquals(expResult, result);
 
     part = new OSMMember(1L, OSMType.WAY, 1);
     instance = new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 2, 3, 3},
         new OSMMember[] {part, part});
     expResult = false;
-    result = instance.hasTagKeyExcluding(1, new int[] {2, 3});
+    result = instance.getTags().hasTagKeyExcluding(1, new int[] {2, 3});
     assertEquals(expResult, result);
 
     part = new OSMMember(1L, OSMType.WAY, 1);
     instance = new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3},
         new OSMMember[] {part, part});
     expResult = true;
-    result = instance.hasTagKeyExcluding(1, new int[] {2, 3});
+    result = instance.getTags().hasTagKeyExcluding(1, new int[] {2, 3});
     assertEquals(expResult, result);
 
     part = new OSMMember(1L, OSMType.WAY, 1);
     instance =
         new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {2, 1, 3, 3}, new OSMMember[] {part, part});
     expResult = false;
-    result = instance.hasTagKeyExcluding(1, new int[] {1, 3});
+    result = instance.getTags().hasTagKeyExcluding(1, new int[] {1, 3});
     assertEquals(expResult, result);
   }
 
@@ -166,7 +166,7 @@ public class OSMRelationTest {
     OSMRelation instance =
         new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, new OSMMember[] {part, part});
     boolean expResult = false;
-    boolean result = instance.hasTagValue(1, 1);
+    boolean result = instance.getTags().hasTagValue(1, 1);
     assertEquals(expResult, result);
   }
 
@@ -176,19 +176,7 @@ public class OSMRelationTest {
     OSMRelation instance =
         new OSMRelation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 3}, new OSMMember[] {part, part});
     boolean expResult = true;
-    boolean result = instance.hasTagValue(1, 1);
+    boolean result = instance.getTags().hasTagValue(1, 1);
     assertEquals(expResult, result);
   }
-
-  @Test
-  public void testToString() {
-    OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
-    OSMRelation instance =
-        new OSMRelation(1L, 2, 1L, 1L, 1, new int[] {1, 2}, new OSMMember[] {part, part});
-    String expResult = "Relation-> ID:1 V:+2+ TS:1 CS:1 VIS:true UID:1 TAGS:[1, 2] "
-        + "Mem:[T:WAY ID:1 R:1, T:WAY ID:1 R:1]";
-    String result = instance.toString();
-    assertEquals(expResult, result);
-  }
-
 }

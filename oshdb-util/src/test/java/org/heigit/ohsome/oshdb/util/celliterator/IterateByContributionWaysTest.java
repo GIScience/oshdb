@@ -312,8 +312,8 @@ public class IterateByContributionWaysTest {
     );
 
     assertEquals(44, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(5).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertEquals(result.get(5).osmEntity.getTags(), result.get(3).osmEntity.getTags());
   }
 
   @Test
