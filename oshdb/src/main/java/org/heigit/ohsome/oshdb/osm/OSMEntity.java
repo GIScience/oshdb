@@ -1,17 +1,9 @@
 package org.heigit.ohsome.oshdb.osm;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.stream.IntStream;
-import javax.annotation.Nonnull;
-import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.heigit.ohsome.oshdb.OSHDBTemporal;
-import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
 public abstract class OSMEntity implements OSHDBTemporal, Serializable {
 
