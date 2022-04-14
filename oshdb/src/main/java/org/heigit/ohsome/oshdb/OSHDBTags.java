@@ -105,10 +105,7 @@ public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements 
 
     @Override
     public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + Arrays.hashCode(tags);
-      return result;
+      return Arrays.hashCode(tags);
     }
 
     @Override
