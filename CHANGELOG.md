@@ -13,8 +13,9 @@ Changelog
 * make sure area computation never returns negative results (instead zero is returned for the invalid geometries which previously resulted in negative values) ([#438])
 
 ### other changes
- * remove deprecated method `OSHEntity.getRawTagKeys` ([#441])
- * update jts dependency to version 1.18.2
+
+* remove deprecated method `OSHEntity.getRawTagKeys` ([#441])
+* update jts dependency to version 1.18.2
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#433]: https://github.com/GIScience/oshdb/issues/433
