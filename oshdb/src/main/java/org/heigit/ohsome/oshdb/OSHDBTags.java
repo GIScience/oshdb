@@ -65,6 +65,15 @@ public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements 
     return !(e1.hasNext() || e2.hasNext());
   }
 
+  @Override
+  public int hashCode() {
+    int hashCode = 1;
+    for (var e : this) {
+      hashCode = 31 * hashCode + (e == null ? 0 : e.hashCode());
+    }
+    return hashCode;
+  }
+
   /**
    * KV based OSHDBTags.
    *
@@ -90,10 +99,8 @@ public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements 
 
     @Override
     public Iterator<OSHDBTag> iterator() {
-      return IntStream.range(0, tags.length / 2)
-          .map(i -> i * 2)
-          .mapToObj(i -> new OSHDBTag(tags[i], tags[i + 1]))
-          .iterator();
+      return IntStream.range(0, tags.length / 2).map(i -> i * 2)
+          .mapToObj(i -> new OSHDBTag(tags[i], tags[i + 1])).iterator();
     }
 
     @Override
