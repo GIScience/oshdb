@@ -14,11 +14,13 @@ Changelog
 
 ### other changes
 
- * update jts dependency to version 1.18.2
+* remove deprecated method `OSHEntity.getRawTagKeys` ([#441])
+* update jts dependency to version 1.18.2
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#433]: https://github.com/GIScience/oshdb/issues/433
 [#438]: https://github.com/GIScience/oshdb/pull/438
+[#441]: https://github.com/GIScience/oshdb/pull/441
 
 ## 0.7.2
 

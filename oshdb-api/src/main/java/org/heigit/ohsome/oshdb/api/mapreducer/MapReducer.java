@@ -673,8 +673,8 @@ public abstract class MapReducer<X> implements
     }
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> {
-      for (int key : oshEntity.getRawTagKeys()) {
-        if (preKeyIds.contains(key)) {
+      for (var key : oshEntity.getTagKeys()) {
+        if (preKeyIds.contains(key.toInt())) {
           return true;
         }
       }
