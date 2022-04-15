@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb;
 
 import java.io.Serializable;
-import java.util.AbstractCollection;
+import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.IntStream;
@@ -11,7 +11,7 @@ import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
  * Collection class for OSHDBTag.
  *
  */
-public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements Serializable {
+public abstract class OSHDBTags extends AbstractSet<OSHDBTag> implements Serializable {
   private static final OSHDBTags EMPTY = new IntArrayOSHDBTags(new int[0]);
 
   public static OSHDBTags empty() {
@@ -43,36 +43,6 @@ public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements 
    * Test for a certain key/value combination.
    */
   public abstract boolean hasTagValue(int key, int value);
-
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof OSHDBTags)) {
-      return false;
-    }
-    var other = (OSHDBTags) obj;
-    if (size() != other.size()) {
-      return false;
-    }
-    var e1 = iterator();
-    var e2 = other.iterator();
-    while (e1.hasNext() && e2.hasNext()) {
-      var o1 = e1.next();
-      var o2 = e2.next();
-      if (!(o1 == null ? o2 == null : o1.equals(o2))) {
-        return false;
-      }
-    }
-    return !(e1.hasNext() || e2.hasNext());
-  }
-
-  @Override
-  public int hashCode() {
-    int hashCode = 1;
-    for (var e : this) {
-      hashCode = 31 * hashCode + (e == null ? 0 : e.hashCode());
-    }
-    return hashCode;
-  }
 
   /**
    * KV based OSHDBTags.
@@ -116,9 +86,6 @@ public abstract class OSHDBTags extends AbstractCollection<OSHDBTag> implements 
       if (obj instanceof IntArrayOSHDBTags) {
         var other = (IntArrayOSHDBTags) obj;
         return Arrays.equals(tags, other.tags);
-      }
-      if (!(obj instanceof OSHDBTags)) {
-        return false;
       }
       return super.equals(obj);
     }

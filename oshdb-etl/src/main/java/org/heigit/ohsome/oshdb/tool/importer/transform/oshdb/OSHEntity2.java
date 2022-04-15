@@ -90,8 +90,7 @@ public abstract class OSHEntity2 {
       long timestamp = 0;
       long changeset = 0;
       int userId = -1;
-      OSHDBTags tags = null; // new int[0];
-
+      var tags = OSHDBTags.empty();
       for (OSMEntity version : versions) {
         final int visible = version.isVisible() ? 1 : -1;
 

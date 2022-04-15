@@ -38,7 +38,7 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
     long lastTimestamp = 0;
     long lastChangeset = 0;
     int lastUserId = 0;
-    OSHDBTags lastKeyValues = null; //new int[0];
+    OSHDBTags lastKeyValues = OSHDBTags.empty();
 
     SortedSet<Integer> keySet = new TreeSet<>();
 
