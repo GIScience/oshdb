@@ -13,7 +13,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntities;
 /**
  * Factory utility class for single version osm-elements.
  */
-
+@SuppressWarnings("squid:S107")
 public class OSM {
 
   /**
