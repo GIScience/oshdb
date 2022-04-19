@@ -7,6 +7,7 @@ Changelog
 
 * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
 * drop "old" etl module ([#447])
+* remove Comparable interface from OSMEntity ([#449])
 
 ### bugfixes
 
@@ -25,6 +26,7 @@ Changelog
 [#441]: https://github.com/GIScience/oshdb/pull/441
 [#443]: https://github.com/GIScience/oshdb/pull/443
 [#447]: https://github.com/GIScience/oshdb/pull/447
+[#449]: https://github.com/GIScience/oshdb/pull/449
 
 ## 0.7.2
 
