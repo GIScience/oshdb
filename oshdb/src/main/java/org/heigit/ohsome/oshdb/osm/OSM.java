@@ -42,7 +42,7 @@ public class OSM {
     return new Relation(id, version, timestamp, changeset, userId, tags, members);
   }
 
-  private abstract static class Entity implements OSMEntity, Comparable<OSMEntity> {
+  private abstract static class Entity implements OSMEntity {
 
     protected final long id;
 
@@ -120,18 +120,6 @@ public class OSM {
       OSMEntity other = (OSMEntity) obj;
       return getType() == other.getType() && id == other.getId()
           && getVersion() == other.getVersion();
-    }
-
-    @Override
-    public int compareTo(OSMEntity o) {
-      int c = Long.compare(id, o.getId());
-      if (c == 0) {
-        c = Integer.compare(getVersion(), o.getVersion());
-      }
-      if (c == 0) {
-        c = Long.compare(getEpochSecond(), o.getEpochSecond());
-      }
-      return c;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.osm;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.Assert;
@@ -71,30 +70,6 @@ public class OSMNodeTest {
     boolean expResult = false;
     boolean result = instance.equals(o);
     assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testCompareTo() {
-    OSMNode o =
-        OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    OSMNode instance =
-        OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    assertEquals(true, instance.compareTo(o) == 0);
-
-    o = OSM.node(1L, 3, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    instance =
-        OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    assertEquals(true, instance.compareTo(o) < 0);
-
-    o = OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    instance =
-        OSM.node(1L, 3, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    assertEquals(true, instance.compareTo(o) > 0);
-
-    o = OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    instance =
-        OSM.node(1L, -6, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
-    assertEquals(true, instance.compareTo(o) > 0);
   }
 
   // -------------------
@@ -222,26 +197,6 @@ public class OSMNodeTest {
     OSMNode a = OSM.node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
     OSMNode b = OSM.node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
     assertEquals(true, a.equals(b));
-  }
-
-  @Test
-  public void testCompareToV() {
-    long id = 123;
-    int version = 1;
-    long timestamp = 310172400000L;
-    long changeset = 4444;
-    int userId = 23;
-    int[] tags = new int[] {1, 1, 2, 2, 3, 3};
-    int longitude = 86809727;
-    int latitude = 494094984;
-
-    OSMNode a = OSM.node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
-
-    OSMNode b;
-
-    b = OSM.node(id, version + 2, timestamp, changeset, userId, tags, longitude, latitude);
-
-    assertTrue(a.compareTo(b) < 0);
   }
 
 }

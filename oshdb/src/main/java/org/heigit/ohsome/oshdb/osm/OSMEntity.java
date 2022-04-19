@@ -8,7 +8,7 @@ import org.heigit.ohsome.oshdb.OSHDBTemporal;
  * Base interface for single version osm-elements.
  *
  */
-public interface OSMEntity extends OSHDBTemporal, Comparable<OSMEntity>, Serializable {
+public interface OSMEntity extends OSHDBTemporal, Serializable {
 
 
   OSMType getType();

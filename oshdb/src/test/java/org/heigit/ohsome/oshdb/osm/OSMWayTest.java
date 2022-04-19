@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.osm;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.Assert;
@@ -29,24 +28,6 @@ public class OSMWayTest {
     expResult = null;
     result = instance.getMembers();
     assertArrayEquals(expResult, result);
-  }
-
-  @Test
-  public void testCompareTo() {
-    OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
-    OSMWay o = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part});
-    OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part});
-    assertTrue(instance.compareTo(o) == 0);
-
-    part = new OSMMember(1L, OSMType.NODE, 1);
-    o = OSM.way(1L, 3, 1L, 1L, 1, new int[] {}, new OSMMember[] {part});
-    instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part});
-    assertTrue(instance.compareTo(o) < 0);
-
-    part = new OSMMember(1L, OSMType.NODE, 1);
-    o = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part});
-    instance = OSM.way(1L, 3, 1L, 1L, 1, new int[] {}, new OSMMember[] {part});
-    assertTrue(instance.compareTo(o) > 0);
   }
 
   // ---------------

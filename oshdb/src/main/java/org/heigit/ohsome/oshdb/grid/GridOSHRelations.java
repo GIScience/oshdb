@@ -9,7 +9,6 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
-import org.heigit.ohsome.oshdb.osm.OSMRelation;
 
 public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelation> {
 
@@ -37,7 +36,7 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
     for (int i = 0; i < index.length; i++) {
       final OSHRelation osh = list.get(i);
       final ByteBuffer buffer =
-          OSHRelationImpl.<OSMRelation>buildRecord(OSHEntities.toList(osh.getVersions()),
+          OSHRelationImpl.buildRecord(OSHEntities.toList(osh.getVersions()),
               osh.getNodes(), osh.getWays(), baseId, baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
       out.write(buffer.array(), 0, buffer.remaining());

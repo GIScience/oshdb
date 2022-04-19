@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.osm;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.Assert;
@@ -21,28 +20,6 @@ public class OSMRelationTest {
     OSMMember[] expResult = new OSMMember[] {part, part};
     OSMMember[] result = instance.getMembers();
     assertArrayEquals(expResult, result);
-  }
-
-  @Test
-  public void testCompareTo() {
-    OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
-    OSMRelation instance =
-        OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
-    OSMRelation o =
-        OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
-    assertTrue(instance.compareTo(o) < 0);
-
-    part = new OSMMember(1L, OSMType.WAY, 1);
-    instance =
-        OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
-    o = OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
-    assertTrue(instance.compareTo(o) == 0);
-
-    part = new OSMMember(1L, OSMType.WAY, 1);
-    instance =
-        OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
-    o = OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
-    assertTrue(instance.compareTo(o) > 0);
   }
 
   // -----------------------
