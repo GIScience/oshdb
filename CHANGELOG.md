@@ -6,7 +6,7 @@ Changelog
 ### breaking changes
 
 * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
-* drop module "old" etl module ([#447])
+* drop "old" etl module ([#447])
 
 ### bugfixes
 
