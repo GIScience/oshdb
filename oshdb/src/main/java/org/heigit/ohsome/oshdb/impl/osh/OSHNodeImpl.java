@@ -23,6 +23,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
   private static final int CHANGED_LOCATION = 1 << 2;
   private static final int HEADER_HAS_BOUNDINGBOX = 1 << 3;
 
+
   public static OSHNodeImpl instance(final byte[] data, final int offset, final int length) {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
@@ -112,7 +113,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
    */
   public static ByteBuffer buildRecord(List<OSMNode> versions, final long baseId,
       final long baseTimestamp, final int baseLongitude, final int baseLatitude) {
-    Collections.sort(versions, Collections.reverseOrder());
+    Collections.sort(versions, VERSION_REVERSE_ORDER);
 
     int lastLongitude = baseLongitude;
     int lastLatitude = baseLatitude;

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -28,6 +29,11 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
   protected static final int HEADER_MULTIVERSION = 1 << 0;
   protected static final int HEADER_TIMESTAMPS_NOT_IN_ORDER = 1 << 1;
   protected static final int HEADER_HAS_TAGS = 1 << 2;
+
+  protected static final Comparator<OSMEntity> VERSION_REVERSE_ORDER = Comparator
+      .comparingLong(OSMEntity::getId)
+      .thenComparing(OSMEntity::getVersion)
+      .reversed();
 
   protected static class Builder {
 

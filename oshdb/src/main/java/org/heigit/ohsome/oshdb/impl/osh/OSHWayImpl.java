@@ -134,7 +134,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
   public static ByteBuffer buildRecord(List<OSMWay> versions, Collection<OSHNode> nodes,
       final long baseId, final long baseTimestamp, final int baseLongitude,
       final int baseLatitude) {
-    Collections.sort(versions, Collections.reverseOrder());
+    Collections.sort(versions, VERSION_REVERSE_ORDER);
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
     OSMMember[] lastRefs = new OSMMember[0];

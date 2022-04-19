@@ -191,7 +191,7 @@ public class OSHRelationImpl extends OSHEntityImpl
       final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
       final int baseLongitude, final int baseLatitude) {
-    Collections.sort(versions, Collections.reverseOrder());
+    Collections.sort(versions, VERSION_REVERSE_ORDER);
 
     var lastMembers = new OSMMember[0];
 
