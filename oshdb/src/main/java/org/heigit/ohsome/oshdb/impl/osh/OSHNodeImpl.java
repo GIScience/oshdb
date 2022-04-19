@@ -23,7 +23,6 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
   private static final int CHANGED_LOCATION = 1 << 2;
   private static final int HEADER_HAS_BOUNDINGBOX = 1 << 3;
 
-
   public static OSHNodeImpl instance(final byte[] data, final int offset, final int length) {
     return instance(data, offset, length, 0, 0, 0, 0);
   }
