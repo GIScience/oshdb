@@ -13,6 +13,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -133,7 +134,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
   public static ByteBuffer buildRecord(List<OSMWay> versions, Collection<OSHNode> nodes,
       final long baseId, final long baseTimestamp, final int baseLongitude,
       final int baseLatitude) {
-    Collections.sort(versions, Collections.reverseOrder());
+    Collections.sort(versions, VERSION_REVERSE_ORDER);
     ByteArrayOutputWrapper output = new ByteArrayOutputWrapper();
 
     OSMMember[] lastRefs = new OSMMember[0];
@@ -279,7 +280,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
         }
       }
 
-      return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+      return OSM.way(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
           members);
     }
   }

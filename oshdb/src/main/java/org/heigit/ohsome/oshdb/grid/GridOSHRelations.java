@@ -35,8 +35,9 @@ public class GridOSHRelations extends GridOSHEntity implements Iterable<OSHRelat
     final int[] index = new int[list.size()];
     for (int i = 0; i < index.length; i++) {
       final OSHRelation osh = list.get(i);
-      final ByteBuffer buffer = OSHRelationImpl.buildRecord(OSHEntities.toList(osh.getVersions()),
-          osh.getNodes(), osh.getWays(), baseId, baseTimestamp, baseLongitude, baseLatitude);
+      final ByteBuffer buffer =
+          OSHRelationImpl.buildRecord(OSHEntities.toList(osh.getVersions()),
+              osh.getNodes(), osh.getWays(), baseId, baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
       out.write(buffer.array(), 0, buffer.remaining());
       offset += buffer.remaining();

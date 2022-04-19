@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.util.taginterpreter;
 
 import static java.util.Collections.emptySet;
+
 import java.util.Map;
 import java.util.Set;
-import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
@@ -98,7 +98,7 @@ class BaseTagInterpreter implements TagInterpreter {
 
   @Override
   public boolean hasInterestingTagKey(OSMEntity osm) {
-    for(var tag : osm.getTags()) {
+    for (var tag : osm.getTags()) {
       if (!uninterestingTagKeys.contains(tag.getKey())) {
         return true;
       }

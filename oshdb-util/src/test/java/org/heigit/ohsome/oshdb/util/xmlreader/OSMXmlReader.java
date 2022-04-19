@@ -29,6 +29,7 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
@@ -100,7 +101,7 @@ public class OSMXmlReader {
 
         osm.setExtension(longitude, latitude);
 
-        OSMNode oldOSM = new OSMNode(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
+        var oldOSM = OSM.node(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), osm.getLon(),
             osm.getLat());
         nodes.put(id, oldOSM);
@@ -121,7 +122,7 @@ public class OSMXmlReader {
 
       if (skipId != id) {
         NodeList ndList = e.getElementsByTagName("nd");
-        OSMMember[] members = new OSMMember[ndList.getLength()];
+        var members = new OSMMember[ndList.getLength()];
         int idx = 0;
         for (Element m : iterableOf(ndList)) {
           long memId = attrAsLong(m, "ref");
@@ -133,7 +134,7 @@ public class OSMXmlReader {
           members[idx++] = new OSMMember(memId, OSMType.NODE, 0, data);
         }
         // osm.setExtension(members);
-        OSMWay oldOSM = new OSMWay(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
+        var oldOSM = OSM.way(osm.getId(), osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         ways.put(id, oldOSM);
       }
@@ -201,7 +202,7 @@ public class OSMXmlReader {
           members[idx++] = new OSMMember(memId, t, r, data);
         }
         // osm.setExtension(members);
-        OSMRelation oldOSM = new OSMRelation(osm.getId(),
+        var oldOSM = OSM.relation(osm.getId(),
             osm.getVersion() * (osm.isVisible() ? 1 : -1),
             osm.getEpochSecond(), osm.getChangeset(), osm.getUserId(), osm.getTags(), members);
         relations.put(id, oldOSM);

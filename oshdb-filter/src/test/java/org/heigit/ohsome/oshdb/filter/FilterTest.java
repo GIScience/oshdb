@@ -12,6 +12,7 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
@@ -59,7 +60,7 @@ abstract class FilterTest {
   }
 
   protected OSMNode createTestOSMEntityNode(long changesetId, int userId, String... keyValues) {
-    return new OSMNode(1, 1, 0L, changesetId, userId, createTestTags(keyValues), 0, 0);
+    return OSM.node(1, 1, 0L, changesetId, userId, createTestTags(keyValues), 0, 0);
   }
 
   protected OSMWay createTestOSMEntityWay(long[] nodeIds, String... keyValues) {
@@ -72,7 +73,7 @@ abstract class FilterTest {
     for (int i = 0; i < refs.length; i++) {
       refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
     }
-    return new OSMWay(1, 1, 0L, changesetId, userId, createTestTags(keyValues), refs);
+    return OSM.way(1, 1, 0L, changesetId, userId, createTestTags(keyValues), refs);
   }
 
   protected OSMRelation createTestOSMEntityRelation(String... keyValues) {
@@ -81,7 +82,7 @@ abstract class FilterTest {
 
   protected OSMRelation createTestOSMEntityRelation(
       long changesetId, int userId, String... keyValues) {
-    return new OSMRelation(1, 1, 0L, changesetId, userId, createTestTags(keyValues),
+    return OSM.relation(1, 1, 0L, changesetId, userId, createTestTags(keyValues),
         new OSMMember[] {});
   }
 

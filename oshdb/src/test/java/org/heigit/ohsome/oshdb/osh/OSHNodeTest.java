@@ -13,9 +13,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.junit.Test;
 
+@SuppressWarnings("javadoc")
 public class OSHNodeTest {
   private static final int USER_A = 1;
   private static final int[] TAGS_A = new int[] {1, 1};
@@ -25,8 +27,8 @@ public class OSHNodeTest {
   @Test
   public void testBuildAndSerialize() throws IOException, ClassNotFoundException {
     OSHNode hnode = buildOSHNode(
-        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
-        new OSMNode(123L, -2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1])
+        OSM.node(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
+        OSM.node(123L, -2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1])
     );
 
     assertNotNull(hnode);
@@ -52,8 +54,8 @@ public class OSHNodeTest {
   @Test
   public void testToString() throws IOException {
     OSHNode instance = buildOSHNode(
-        new OSMNode(123L, 2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
-        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1])
+        OSM.node(123L, 2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
+        OSM.node(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1])
     );
 
     String expResult =
@@ -65,15 +67,15 @@ public class OSHNodeTest {
   @Test
   public void testHashCodeEquals() throws IOException {
     var expected = buildOSHNode(
-        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, 0, 0)
+        OSM.node(123L, 1, 1L, 0L, USER_A, TAGS_A, 0, 0)
     );
 
     var a = buildOSHNode(
-        new OSMNode(123L, 1, 1L, 0L, USER_A, TAGS_A, 0, 0)
+        OSM.node(123L, 1, 1L, 0L, USER_A, TAGS_A, 0, 0)
     );
 
     var b = buildOSHNode(
-        new OSMNode(444L, 1, 2L, 0L, USER_A, TAGS_A, 0, 0)
+        OSM.node(444L, 1, 2L, 0L, USER_A, TAGS_A, 0, 0)
     );
 
     assertEquals(expected.hashCode(), a.hashCode());

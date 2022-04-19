@@ -18,29 +18,29 @@ import java.util.Iterator;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
-import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.Test;
 
+@SuppressWarnings("javadoc")
 public class OSHRelationTest {
 
-  OSHNode node100 = OSHNodeTest.buildOSHNode(new OSMNode(
+  OSHNode node100 = OSHNodeTest.buildOSHNode(OSM.node(
       100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094980, 86809720));
-  OSHNode node102 = OSHNodeTest.buildOSHNode(new OSMNode(
+  OSHNode node102 = OSHNodeTest.buildOSHNode(OSM.node(
       102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094970, 86809730));
-  OSHNode node104 = OSHNodeTest.buildOSHNode(new OSMNode(
+  OSHNode node104 = OSHNodeTest.buildOSHNode(OSM.node(
       104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094960, 86809740));
 
   OSHWay way200 = OSHWayImpl.build(Lists.newArrayList(
-      new OSMWay(200, 1, 3333L, 4444L, 23, new int[]{1, 2}, new OSMMember[]{
+      OSM.way(200, 1, 3333L, 4444L, 23, new int[]{1, 2}, new OSMMember[]{
           new OSMMember(100, OSMType.NODE, 0),
           new OSMMember(104, OSMType.NODE, 0)})
   ), List.of(node100, node104));
   OSHWay way202 = OSHWayImpl.build(Lists.newArrayList(
-      new OSMWay(202, 1, 3333L, 4444L, 23, new int[]{1, 2}, new OSMMember[]{
+      OSM.way(202, 1, 3333L, 4444L, 23, new int[]{1, 2}, new OSMMember[]{
           new OSMMember(100, OSMType.NODE, 0),
           new OSMMember(102, OSMType.NODE, 0)})
   ), List.of(node100, node102));
@@ -50,7 +50,7 @@ public class OSHRelationTest {
   @Test
   public void testGetNodes() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
+        OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0)})
@@ -63,7 +63,7 @@ public class OSHRelationTest {
   @Test
   public void testWithMissingNode() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
+        OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0)})
@@ -92,7 +92,7 @@ public class OSHRelationTest {
   @Test
   public void testGetWays() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
+        OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(200, OSMType.WAY, 0),
             new OSMMember(202, OSMType.WAY, 0)})
     ), Collections.emptyList(), List.of(way200, way202),
@@ -109,7 +109,7 @@ public class OSHRelationTest {
   @Test
   public void testCompactAndSerialize() throws IOException, ClassNotFoundException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
+        OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0),
@@ -171,7 +171,7 @@ public class OSHRelationTest {
   @Test
   public void testToString() throws IOException {
     OSHRelation instance = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
+        OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
             new OSMMember(102, OSMType.NODE, 0),
             new OSMMember(104, OSMType.NODE, 0)})
@@ -185,15 +185,15 @@ public class OSHRelationTest {
   @Test
   public void testHashCodeEquals() throws IOException {
     var expected = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(123L, 1, 3333L, 4444L, 23, new int[]{},
+        OSM.relation(123L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Collections.emptyList(), Collections.emptyList());
 
     var a = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(123L, 1, 3333L, 4444L, 23, new int[]{},
+        OSM.relation(123L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Collections.emptyList(), Collections.emptyList());
 
     var b = OSHRelationImpl.build(Lists.newArrayList(
-        new OSMRelation(444L, 1, 3333L, 4444L, 23, new int[]{},
+        OSM.relation(444L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Collections.emptyList(), Collections.emptyList());
 
     assertEquals(expected.hashCode(), a.hashCode());

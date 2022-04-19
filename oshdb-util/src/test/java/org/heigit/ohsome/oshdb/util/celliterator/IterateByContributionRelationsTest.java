@@ -29,6 +29,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on relations.
  */
+@SuppressWarnings("javadoc")
 public class IterateByContributionRelationsTest {
   private GridOSHRelations oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
@@ -134,7 +135,7 @@ public class IterateByContributionRelationsTest {
   public void testWaysNotExistent() {
     // relation with two ways, both missing
     try {
-      List<IterateAllEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
@@ -342,7 +343,7 @@ public class IterateByContributionRelationsTest {
   public void testNodesOfWaysNotExistent() {
     // relation 2 way members nodes do not exist
     try {
-      List<IterateAllEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"

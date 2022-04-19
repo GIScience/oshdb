@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.junit.Test;
 
+@SuppressWarnings("javadoc")
 public class GridOSHNodesTest {
 
   @Test
@@ -18,9 +20,9 @@ public class GridOSHNodesTest {
     List<OSHNode> hosmNodes = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>();
-      versions.add(new OSMNode(123L + 10 * i, 1, 123001L + 10 * i, 0L, 123, new int[] {},
+      versions.add(OSM.node(123L + 10 * i, 1, 123001L + 10 * i, 0L, 123, new int[] {},
           86809727 - 1000000 * i, 494094984 - 1000000 * i));
-      versions.add(new OSMNode(123L + 10 * i, 2, 123002L + 10 * i, 0L, 123, new int[] {},
+      versions.add(OSM.node(123L + 10 * i, 2, 123002L + 10 * i, 0L, 123, new int[] {},
           86809727 - 1000000 * i, 494094984 - 1000000 * i));
       hosmNodes.add(OSHNodeImpl.build(versions));
     }
