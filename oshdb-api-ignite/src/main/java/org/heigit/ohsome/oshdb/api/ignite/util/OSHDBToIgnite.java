@@ -1,13 +1,9 @@
-package org.heigit.ohsome.oshdb.tool.importer.util;
+package org.heigit.ohsome.oshdb.api.ignite.util;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -30,7 +26,13 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class for loading oshdb h2 file into ignite cluster.
+ *
+ */
 public class OSHDBToIgnite {
+  private OSHDBToIgnite() {}
+
 
   private static final Logger LOG = LoggerFactory.getLogger(OSHDBToIgnite.class);
 
@@ -120,45 +122,6 @@ public class OSHDBToIgnite {
       if (pers) {
         ignite.cluster().enableWal(cacheWithPrefix);
       }
-    }
-  }
-
-  private static class Config {
-    @Parameter(names = {"-ignite", "-igniteConfig", "-icfg"},
-        description = "Path ot ignite-config.xml", required = true, order = 1)
-    public File ignitexml;
-
-    @Parameter(names = {"--prefix"}, description = "cache table prefix", required = false)
-    public String prefix;
-
-    @Parameter(names = {"-db", "-oshdb", "-outputDb"}, description = "Path to output H2",
-        required = true, order = 2)
-    public File oshdb;
-
-    @Parameter(names = {"-help", "--help", "-h", "--h"}, help = true, order = 0)
-    public boolean help = false;
-  }
-
-  public static void main(String[] args) throws SQLException, IgniteCheckedException {
-    Config largs = new Config();
-    JCommander jcom = JCommander.newBuilder().addObject(largs).build();
-    try {
-      jcom.parse(args);
-    } catch (ParameterException e) {
-      System.out.println("");
-      LOG.error(e.getLocalizedMessage());
-      System.out.println("");
-      jcom.usage();
-
-      return;
-    }
-
-    if (largs.help) {
-      jcom.usage();
-      return;
-    }
-    try (Connection con = DriverManager.getConnection("jdbc:h2:" + largs.oshdb, "sa", null)) {
-      OSHDBToIgnite.load(largs.ignitexml, con, largs.prefix);
     }
   }
 }
