@@ -81,7 +81,7 @@ public class IterateByContributionNodesTest {
     assertTrue(geom instanceof Point);
     assertEquals(result.get(0).geometry.get(), result.get(1).previousGeometry.get());
     assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
-    assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
   }
 
   @Test
@@ -116,8 +116,8 @@ public class IterateByContributionNodesTest {
         result.get(2).activities.get()
     );
     assertEquals(3, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertNotEquals(result.get(2).osmEntity.getTags(), result.get(1).osmEntity.getTags());
   }
 
   @Test
@@ -211,10 +211,10 @@ public class IterateByContributionNodesTest {
         result.get(5).activities.get()
     );
     assertEquals(11, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertNotEquals(result.get(3).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
-    assertEquals(result.get(4).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
-    assertNotEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertNotEquals(result.get(3).osmEntity.getTags(), result.get(1).osmEntity.getTags());
+    assertEquals(result.get(4).osmEntity.getTags(), result.get(3).osmEntity.getTags());
+    assertNotEquals(result.get(5).osmEntity.getTags(), result.get(4).osmEntity.getTags());
   }
 
   @Test
@@ -309,7 +309,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -345,7 +345,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 7,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("disused:shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("disused:shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -377,7 +377,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 0.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 8,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -410,7 +410,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -468,7 +468,7 @@ public class IterateByContributionNodesTest {
         areaDecider,
         oshEntity -> oshEntity.getId() == 6,
         // filter entity for tag = shop
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell

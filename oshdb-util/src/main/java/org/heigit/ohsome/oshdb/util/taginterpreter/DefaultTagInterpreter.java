@@ -176,14 +176,14 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   // checks if the relation has the tag "type=multipolygon"
   @Override
   protected boolean evaluateRelationForArea(OSMRelation entity) {
-    int[] tags = entity.getRawTags();
+    var tags = entity.getTags();
     // skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
     // the following is slightly faster than running
     // `return entity.hasTagValue(k1,v1) || entity.hasTagValue(k2,v2);`
-    for (int i = 0; i < tags.length; i += 2) {
-      if (tags[i] == typeKey) {
-        return tags[i + 1] == typeMultipolygonValue || tags[i + 1] == typeBoundaryValue;
-      } else if (tags[i] > typeKey) {
+    for (var tag : tags) {
+      if (tag.getKey() == typeKey) {
+        return tag.getValue() == typeMultipolygonValue || tag.getValue() == typeBoundaryValue;
+      } else if (tag.getKey() > typeKey) {
         return false;
       }
     }
@@ -192,6 +192,6 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
 
   // checks if the relation has the tag "type=route"
   private boolean evaluateRelationForLine(OSMRelation entity) {
-    return entity.hasTagValue(typeKey, typeRouteValue);
+    return entity.getTags().hasTagValue(typeKey, typeRouteValue);
   }
 }

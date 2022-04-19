@@ -59,7 +59,7 @@ public class TestOSHEntityTimeUtils {
     ));
 
     List<OSHDBTimestamp> tss =
-        OSHEntityTimeUtils.getModificationTimestamps(hnode, e -> e.hasTagValue(1, 1));
+        OSHEntityTimeUtils.getModificationTimestamps(hnode, e -> e.getTags().hasTagValue(1, 1));
 
     assertNotNull(tss);
     assertEquals(2, tss.size());
@@ -177,7 +177,7 @@ public class TestOSHEntityTimeUtils {
 
     tss = OSHEntityTimeUtils.getModificationTimestamps(
         hway,
-        osmEntity -> osmEntity.hasTagValue(2, 1)
+        osmEntity -> osmEntity.getTags().hasTagValue(2, 1)
     );
     assertNotNull(tss);
     assertEquals(5, tss.size());

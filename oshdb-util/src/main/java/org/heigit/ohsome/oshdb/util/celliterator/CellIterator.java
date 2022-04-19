@@ -724,18 +724,7 @@ public class CellIterator implements Serializable {
               switch (contributionType) {
                 case TAG_CHANGE:
                   // look if tags have been changed between versions
-                  boolean tagsChange = false;
-                  if (prevEntity.getRawTags().length != osmEntity.getRawTags().length) {
-                    tagsChange = true;
-                  } else {
-                    for (int i = 0; i < prevEntity.getRawTags().length; i++) {
-                      if (prevEntity.getRawTags()[i] != osmEntity.getRawTags()[i]) {
-                        tagsChange = true;
-                        break;
-                      }
-                    }
-                  }
-                  return tagsChange;
+                  return !prevEntity.getTags().equals(osmEntity.getTags());
                 case GEOMETRY_CHANGE:
                   // look if geometry has been changed between versions
                   return !prevGeometry.equals(geom);

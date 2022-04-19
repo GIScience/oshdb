@@ -1,7 +1,9 @@
 package org.heigit.ohsome.oshdb.util.taginterpreter;
 
+import static java.util.Collections.emptySet;
 import java.util.Map;
 import java.util.Set;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
@@ -45,13 +47,13 @@ class BaseTagInterpreter implements TagInterpreter {
   }
 
   private boolean evaluateWayForArea(OSMWay entity) {
-    int[] tags = entity.getRawTags();
-    if (entity.hasTagValue(areaNoTagKeyId, areaNoTagValueId)) {
+    var tags = entity.getTags();
+    if (tags.hasTagValue(areaNoTagKeyId, areaNoTagValueId)) {
       return false;
     }
-    for (int i = 0; i < tags.length; i += 2) {
-      if (wayAreaTags.containsKey(tags[i])
-          && wayAreaTags.get(tags[i]).contains(tags[i + 1])) {
+    for (var tag : entity.getTags()) {
+      if (wayAreaTags.getOrDefault(tag.getKey(), emptySet())
+          .contains(tag.getValue())) {
         return true;
       }
     }
@@ -59,11 +61,10 @@ class BaseTagInterpreter implements TagInterpreter {
   }
 
   protected boolean evaluateRelationForArea(OSMRelation entity) {
-    int[] tags = entity.getRawTags();
     // skip area=no check, since that doesn't make much sense for multipolygon relations (does it??)
-    for (int i = 0; i < tags.length; i += 2) {
-      if (relationAreaTags.containsKey(tags[i])
-          && relationAreaTags.get(tags[i]).contains(tags[i + 1])) {
+    for (var tag : entity.getTags()) {
+      if (relationAreaTags.getOrDefault(tag.getKey(), emptySet())
+          .contains(tag.getValue())) {
         return true;
       }
     }
@@ -97,9 +98,8 @@ class BaseTagInterpreter implements TagInterpreter {
 
   @Override
   public boolean hasInterestingTagKey(OSMEntity osm) {
-    int[] tags = osm.getRawTags();
-    for (int i = 0; i < tags.length; i += 2) {
-      if (!uninterestingTagKeys.contains(tags[i])) {
+    for(var tag : osm.getTags()) {
+      if (!uninterestingTagKeys.contains(tag.getKey())) {
         return true;
       }
     }
@@ -121,13 +121,13 @@ class BaseTagInterpreter implements TagInterpreter {
     if (outerWayCount != 1) {
       return false;
     }
-    int[] tags = osmRelation.getRawTags();
-    for (int i = 0; i < tags.length; i += 2) {
-      if (relationAreaTags.containsKey(tags[i])
-          && relationAreaTags.get(tags[i]).contains(tags[i + 1])) {
+    var tags = osmRelation.getTags();
+    for (var tag : tags) {
+      if (relationAreaTags.getOrDefault(tag.getKey(), emptySet())
+          .contains(tag.getValue())) {
         continue;
       }
-      if (!uninterestingTagKeys.contains(tags[i])) {
+      if (!uninterestingTagKeys.contains(tag.getKey())) {
         return false;
       }
     }

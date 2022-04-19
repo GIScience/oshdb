@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.tool.importer.transform.oshdb;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +8,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
+import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
@@ -90,8 +90,7 @@ public abstract class OSHEntity2 {
       long timestamp = 0;
       long changeset = 0;
       int userId = -1;
-      int[] tags = new int[0];
-
+      var tags = OSHDBTags.empty();
       for (OSMEntity version : versions) {
         final int visible = version.isVisible() ? 1 : -1;
 
@@ -106,15 +105,14 @@ public abstract class OSHEntity2 {
             changed |= CHANGED_USER_ID;
             userId = aux.writeS32Delta(version.getUserId(), userId);
           }
-          if (!Arrays.equals(version.getRawTags(), tags)) {
+          if (!version.getTags().equals(tags)) {
             changed |= CHANGED_TAGS;
-            tags = version.getRawTags();
-            aux.writeU32(tags.length);
-            for (int i = 0; i < tags.length; i++) {
-              aux.writeU32(tags[i]);
-              if (i % 2 == 0) {
-                keySet.add(Integer.valueOf(tags[i]));
-              }
+            tags = version.getTags();
+            aux.writeU32(tags.size() * 2);
+            for (var tag : tags) {
+              aux.writeU32(tag.getKey());
+              aux.writeU32(tag.getValue());
+              keySet.add(tag.getKey());
             }
           }
           if (extension(aux, version, baseLongitude, baseLatitude, nodeOffsets, wayOffsets,
