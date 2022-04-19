@@ -9,6 +9,7 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
+import org.heigit.ohsome.oshdb.osm.OSMNode;
 
 public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
 
@@ -35,7 +36,7 @@ public class GridOSHNodes extends GridOSHEntity implements Iterable<OSHNode> {
     final int[] index = new int[list.size()];
     for (int i = 0; i < index.length; i++) {
       final ByteBuffer buffer =
-          OSHNodeImpl.buildRecord(OSHEntities.toList(list.get(i).getVersions()), baseId,
+          OSHNodeImpl.buildRecord(OSHEntities.<OSMNode>toList(list.get(i).getVersions()), baseId,
               baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
       out.write(buffer.array(), 0, buffer.remaining());

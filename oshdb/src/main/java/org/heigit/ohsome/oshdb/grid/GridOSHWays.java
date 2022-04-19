@@ -9,6 +9,7 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSMWay;
 
 public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
 
@@ -34,8 +35,9 @@ public class GridOSHWays extends GridOSHEntity implements Iterable<OSHWay> {
     int offset = 0;
     for (int i = 0; i < index.length; i++) {
       final OSHWay osh = list.get(i);
-      final ByteBuffer buffer = OSHWayImpl.buildRecord(OSHEntities.toList(osh.getVersions()),
-          osh.getNodes(), baseId, baseTimestamp, baseLongitude, baseLatitude);
+      final ByteBuffer buffer =
+          OSHWayImpl.<OSMWay>buildRecord(OSHEntities.toList(osh.getVersions()), osh.getNodes(),
+              baseId, baseTimestamp, baseLongitude, baseLatitude);
       index[i] = offset;
       out.write(buffer.array(), 0, buffer.remaining());
       offset += buffer.remaining();

@@ -16,6 +16,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -377,7 +378,7 @@ public class OSHRelationImpl extends OSHEntityImpl
           members[i] = member;
         }
       }
-      return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId,
+      return OSM.relation(id, version, baseTimestamp + timestamp, changeset, userId,
           keyValues, members);
     }
 

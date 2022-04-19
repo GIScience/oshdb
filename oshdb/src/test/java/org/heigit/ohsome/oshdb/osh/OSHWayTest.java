@@ -13,22 +13,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
-import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.Test;
 
+@SuppressWarnings("javadoc")
 public class OSHWayTest {
 
-  OSHNode node100 = OSHNodeTest.buildOSHNode(new OSMNode(
+  OSHNode node100 = OSHNodeTest.buildOSHNode(OSM.node(
       100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094984, 86809727));
-  OSHNode node102 = OSHNodeTest.buildOSHNode(new OSMNode(
+  OSHNode node102 = OSHNodeTest.buildOSHNode(OSM.node(
       102L, 1, 1L, 0L, 123, new int[]{2, 1}, 494094984, 86809727));
-  OSHNode node104 = OSHNodeTest.buildOSHNode(new OSMNode(
+  OSHNode node104 = OSHNodeTest.buildOSHNode(OSM.node(
       104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094984, 86809727));
 
   public OSHWayTest() throws IOException {}
@@ -36,11 +35,11 @@ public class OSHWayTest {
   @Test
   public void testGetNodes() throws IOException, ClassNotFoundException {
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
+        OSM.way(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
                 new OSMMember(102, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)}),
-        new OSMWay(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
+        OSM.way(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
             new OSMMember[]{
                 new OSMMember(100, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)})
@@ -67,11 +66,11 @@ public class OSHWayTest {
   @Test
   public void testWithMissingNode() throws IOException {
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
+        OSM.way(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
             new OSMMember[]{
                 new OSMMember(100, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)}),
-        new OSMWay(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
+        OSM.way(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
                 new OSMMember(102, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)})
@@ -81,12 +80,10 @@ public class OSHWayTest {
     List<OSHNode> nodes = hway.getNodes();
     assertEquals(2, nodes.size());
 
-    OSMWay way;
-    OSMMember[] members;
-    Iterator<OSMWay> itr = hway.getVersions().iterator();
+    var itr = hway.getVersions().iterator();
     assertTrue(itr.hasNext());
-    way = itr.next();
-    members = way.getMembers();
+    var way = itr.next();
+    var members = way.getMembers();
     assertEquals(2, members.length);
     assertEquals(100, members[0].getId());
     assertEquals(104, members[1].getId());
@@ -103,11 +100,11 @@ public class OSHWayTest {
   @Test
   public void testToString() throws IOException {
     OSHWay instance = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
+        OSM.way(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
                 new OSMMember(102, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)}),
-        new OSMWay(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
+        OSM.way(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
             new OSMMember[]{
                 new OSMMember(100, OSMType.NODE, 0),
                 new OSMMember(104, OSMType.NODE, 0)})
@@ -122,15 +119,15 @@ public class OSHWayTest {
   @Test
   public void testHashCodeEquals() throws IOException {
     var expected = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123L, 1, 3333L, 4444L, 23, new int[]{},
+        OSM.way(123L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Arrays.asList());
 
     var a = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(123L, 1, 3333L, 4444L, 23, new int[]{},
+        OSM.way(123L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Arrays.asList());
 
     var b = OSHWayImpl.build(Lists.newArrayList(
-        new OSMWay(444L, 1, 3333L, 4444L, 23, new int[]{},
+        OSM.way(444L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Arrays.asList());
 
     assertEquals(expected.hashCode(), a.hashCode());

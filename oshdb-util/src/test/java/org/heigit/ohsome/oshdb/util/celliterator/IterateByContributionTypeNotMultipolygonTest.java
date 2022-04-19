@@ -122,7 +122,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
   public void testWaysNotExistent() {
     // relation with two ways, both missing
     try {
-      List<IterateAllEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
@@ -331,7 +331,7 @@ public class IterateByContributionTypeNotMultipolygonTest {
   public void testNodesOfWaysNotExistent() {
     // relation 2 way members nodes do not exist
     try {
-      List<IterateAllEntry> result = (new CellIterator(
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"

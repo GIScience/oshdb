@@ -12,6 +12,7 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
@@ -62,7 +63,7 @@ public class GridOSHRelationsTest {
 
   private static OSMNode node(long id, int version, long timestamp, long changeset,
       int userId, int[] tags, int longitude, int latitude) {
-    return new OSMNode(id, version, timestamp, changeset, userId, tags, longitude, latitude);
+    return OSM.node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
   }
 
   private static OSHNode buildOSHNode(OSMNode... versions) throws IOException {
@@ -71,7 +72,7 @@ public class GridOSHRelationsTest {
 
   private static OSMWay way(long id, int version, long timestamp, long changeset,
       int userId, int[] tags, OSMMember... refs) {
-    return new OSMWay(id, version, timestamp, changeset, userId, tags, refs);
+    return OSM.way(id, version, timestamp, changeset, userId, tags, refs);
   }
 
   private static OSHWay buildOSHWay(List<OSHNode> nodes, OSMWay... versions) throws IOException {
@@ -80,7 +81,7 @@ public class GridOSHRelationsTest {
 
   private static OSMRelation rel(long id, int version, long timestamp, long changeset,
       int userId, int[] tags, OSMMember... refs) {
-    return new OSMRelation(id, version, timestamp, changeset, userId, tags, refs);
+    return OSM.relation(id, version, timestamp, changeset, userId, tags, refs);
   }
 
   private static OSHRelation buildOSHRelation(List<OSHNode> nodes, List<OSHWay> ways,

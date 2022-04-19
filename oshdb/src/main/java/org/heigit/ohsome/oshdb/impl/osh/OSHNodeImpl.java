@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.impl.osh;
 
+import static org.heigit.ohsome.oshdb.osm.OSM.node;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -191,7 +193,7 @@ public class OSHNodeImpl extends OSHEntityImpl implements OSHNode, Iterable<OSMN
         latitude = wrapper.readS32() + latitude;
       }
 
-      return new OSMNode(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+      return node(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
           version > 0 ? baseLongitude + longitude : 0, version > 0 ? baseLatitude + latitude : 0);
     }
   }

@@ -13,6 +13,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -279,7 +280,7 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
         }
       }
 
-      return new OSMWay(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
+      return OSM.way(id, version, baseTimestamp + timestamp, changeset, userId, keyValues,
           members);
     }
   }
