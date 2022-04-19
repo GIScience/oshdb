@@ -1,8 +1,5 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.heigit.ohsome.oshdb.osm.OSM.node;
-import static org.heigit.ohsome.oshdb.osm.OSM.way;
-
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -63,7 +60,7 @@ abstract class FilterTest {
   }
 
   protected OSMNode createTestOSMEntityNode(long changesetId, int userId, String... keyValues) {
-    return node(1, 1, 0L, changesetId, userId, createTestTags(keyValues), 0, 0);
+    return OSM.node(1, 1, 0L, changesetId, userId, createTestTags(keyValues), 0, 0);
   }
 
   protected OSMWay createTestOSMEntityWay(long[] nodeIds, String... keyValues) {
@@ -76,7 +73,7 @@ abstract class FilterTest {
     for (int i = 0; i < refs.length; i++) {
       refs[i] = new OSMMember(nodeIds[i], OSMType.NODE, 0);
     }
-    return way(1, 1, 0L, changesetId, userId, createTestTags(keyValues), refs);
+    return OSM.way(1, 1, 0L, changesetId, userId, createTestTags(keyValues), refs);
   }
 
   protected OSMRelation createTestOSMEntityRelation(String... keyValues) {

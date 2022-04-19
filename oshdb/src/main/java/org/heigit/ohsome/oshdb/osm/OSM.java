@@ -15,6 +15,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntities;
  */
 @SuppressWarnings("squid:S107")
 public class OSM {
+  private OSM() {}
 
   /**
    * Creates a new {@code OSMNode} instance.
@@ -22,13 +23,6 @@ public class OSM {
   public static OSMNode node(final long id, final int version, final long timestamp,
       final long changeset, final int userId, final int[] tags, final int longitude,
       final int latitude) {
-    return new Node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
-  }
-
-  @Deprecated
-  public static OSMNode node(final long id, final int version, final long timestamp,
-      final long changeset, final int userId, final int[] tags, final long longitude,
-      final long latitude) {
     return new Node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
   }
 
@@ -162,14 +156,6 @@ public class OSM {
       super(id, version, timestamp, changeset, userId, tags);
       this.longitude = longitude;
       this.latitude = latitude;
-    }
-
-    @Deprecated
-    public Node(final long id, final int version, final long timestamp, final long changeset,
-        final int userId, final int[] tags, final long longitude, final long latitude) {
-      super(id, version, timestamp, changeset, userId, tags);
-      this.longitude = Math.toIntExact(longitude);
-      this.latitude = Math.toIntExact(latitude);
     }
 
     public double getLongitude() {
