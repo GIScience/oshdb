@@ -209,7 +209,7 @@ public class OSM {
     private static final long serialVersionUID = 1L;
     private final OSMMember[] members;
 
-    public Way(final long id, final int version, final long timestamp, final long changeset,
+    private Way(final long id, final int version, final long timestamp, final long changeset,
         final int userId, final int[] tags, final OSMMember[] refs) {
       super(id, version, timestamp, changeset, userId, tags);
       this.members = refs;
