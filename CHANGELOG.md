@@ -6,6 +6,7 @@ Changelog
 ### breaking changes
 
 * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
+* drop "old" etl module ([#447])
 
 ### bugfixes
 
@@ -23,6 +24,7 @@ Changelog
 [#438]: https://github.com/GIScience/oshdb/pull/438
 [#441]: https://github.com/GIScience/oshdb/pull/441
 [#443]: https://github.com/GIScience/oshdb/pull/443
+[#447]: https://github.com/GIScience/oshdb/pull/447
 
 ## 0.7.2
 

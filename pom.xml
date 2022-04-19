@@ -23,7 +23,6 @@
     <module>oshdb</module>
     <module>oshdb-util</module>
     <module>oshdb-oshpbf-parser</module>
-    <module>oshdb-etl</module>
     <module>oshdb-filter</module>
     <module>oshdb-api</module>
     <module>oshdb-api-ignite</module>
