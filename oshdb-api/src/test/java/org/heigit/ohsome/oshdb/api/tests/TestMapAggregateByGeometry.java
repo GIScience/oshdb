@@ -1,8 +1,9 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Polygon;
 
 /**
@@ -181,23 +182,27 @@ public class TestMapAggregateByGeometry {
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
-  @Test(expected = UnsupportedOperationException.class)
+  @Test()
   public void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps1)
-        .map(ignored -> null)
-        .aggregateByTimestamp()
-        .aggregateByGeometry(getSubRegions())
-        .collect();
+    assertThrows(UnsupportedOperationException.class, () -> {
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps1)
+          .map(ignored -> null)
+          .aggregateByTimestamp()
+          .aggregateByGeometry(getSubRegions())
+          .collect();
+    });
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
-  @Test(expected = UnsupportedOperationException.class)
+  @Test()
   public void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps1)
-        .groupByEntity()
-        .aggregateByGeometry(getSubRegions())
-        .collect();
+    assertThrows(UnsupportedOperationException.class, () -> {
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps1)
+          .groupByEntity()
+          .aggregateByGeometry(getSubRegions())
+          .collect();
+    });
   }
 }

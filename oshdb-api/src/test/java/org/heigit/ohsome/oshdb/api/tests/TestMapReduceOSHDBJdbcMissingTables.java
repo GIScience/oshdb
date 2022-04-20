@@ -1,8 +1,10 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for proper error messages if tables are not present on H2.
@@ -20,38 +22,46 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMContributionView() throws Exception {
-    super.testOSMContributionView();
+  @Test()
+  public void testOSMContributionView() {
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      super.testOSMContributionView();
+    });
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMEntitySnapshotView() throws Exception {
-    super.testOSMEntitySnapshotView();
+  @Test()
+  public void testOSMEntitySnapshotView() {
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      super.testOSMEntitySnapshotView();
+    });
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMContributionViewStream() throws Exception {
-    super.testOSMEntitySnapshotView();
+  @Test()
+  public void testOSMContributionViewStream() {
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      super.testOSMEntitySnapshotView();
+    });
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMEntitySnapshotViewStream() throws Exception {
-    super.testOSMEntitySnapshotView();
+  @Test()
+  public void testOSMEntitySnapshotViewStream() {
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      super.testOSMEntitySnapshotView();
+    });
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testTimeoutMapReduce() throws Exception {
-    super.testTimeoutMapReduce();
+  @Test()
+  public void testTimeoutMapReduce() {
+    // no-op no test for timeout if we got a missing table!
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testTimeoutStream() throws Exception {
-    super.testTimeoutStream();
+  @Test()
+  public void testTimeoutStream() {
+    // no-op no test for timeout if we got a missing table!
   }
 }

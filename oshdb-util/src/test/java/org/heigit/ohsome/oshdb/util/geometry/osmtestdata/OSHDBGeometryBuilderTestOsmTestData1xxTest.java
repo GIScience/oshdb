@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.util.geometry.osmtestdata;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -17,7 +17,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -175,60 +175,45 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   public void test120() {
     // Way without any nodes
     OSMEntity entity1 = testData.ways().get(120800L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
   public void test121() {
     // Way with a single node
     OSMEntity entity1 = testData.ways().get(121800L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
   public void test122() {
     // Same node twice in way
     OSMEntity entity1 = testData.ways().get(122800L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
   public void test123() {
     // Way with two nodes at same position
     OSMEntity entity1 = testData.ways().get(123800L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
   public void test124() {
     // Way with three nodes, first two nodes have the same position
     OSMEntity entity1 = testData.ways().get(124800L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test

@@ -2,7 +2,7 @@ package org.heigit.ohsome.oshdb.index;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.heigit.ohsome.oshdb.osm.OSMCoordinates.GEOM_PRECISION;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,7 +10,7 @@ import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.index.XYGrid.IdRange;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,10 +1,9 @@
 package org.heigit.ohsome.oshdb.osm;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.heigit.ohsome.oshdb.OSHDBTags;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class OSMNodeTest {
 
@@ -134,7 +133,7 @@ public class OSMNodeTest {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     var expResult = OSHDBTags.empty();
     var result = instance.getTags();
-    Assert.assertEquals(expResult, result);
+    assertEquals(expResult, result);
   }
 
   @Test

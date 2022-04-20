@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for normalization of filters.

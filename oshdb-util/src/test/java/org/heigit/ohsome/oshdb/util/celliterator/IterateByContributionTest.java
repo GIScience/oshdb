@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,9 +20,9 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.json.simple.parser.ParseException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method.
@@ -33,7 +33,7 @@ public class IterateByContributionTest {
   /**
    * Set up of test framework, loading H2 driver and connection via jdbc.
    */
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() throws ClassNotFoundException, SQLException {
     // load H2-support
     Class.forName("org.h2.Driver");
@@ -46,7 +46,7 @@ public class IterateByContributionTest {
     );
   }
 
-  @AfterClass
+  @AfterAll
   public static void breakDownClass() throws SQLException {
     IterateByContributionTest.conn.close();
   }

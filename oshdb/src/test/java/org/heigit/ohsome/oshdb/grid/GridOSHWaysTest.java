@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.grid;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GridOSHWaysTest {
 

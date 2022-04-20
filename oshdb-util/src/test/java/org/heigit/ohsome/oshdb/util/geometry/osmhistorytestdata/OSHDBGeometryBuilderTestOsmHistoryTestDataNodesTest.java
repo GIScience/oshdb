@@ -1,7 +1,8 @@
 package org.heigit.ohsome.oshdb.util.geometry.osmhistorytestdata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -10,7 +11,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
@@ -60,13 +61,15 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest {
     assertEquals(1.23, ((Point) resultAfter).getY(), DELTA);
   }
 
-  @Test(expected = AssertionError.class)
+  @Test()
   public void testInvalidAccess() {
     // A single node, lat lon changed over time
     OSMEntity entity = testData.nodes().get(1L).get(0);
     // timestamp before oldest timestamp
     OSHDBTimestamp timestampBefore =  TimestampParser.toOSHDBTimestamp("2007-01-01T00:00:00Z");
-    OSHDBGeometryBuilder.getGeometry(entity, timestampBefore, areaDecider);
+    assertThrows(AssertionError.class, () -> {
+      OSHDBGeometryBuilder.getGeometry(entity, timestampBefore, areaDecider);
+    });
   }
 
   @Test

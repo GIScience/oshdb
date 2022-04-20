@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,9 +9,9 @@ import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBRole;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the {@link TagTranslator} class.
@@ -25,7 +25,7 @@ public class TagTranslatorTest {
    * @throws ClassNotFoundException gets thrown if H2 driver class cannot be found
    * @throws SQLException is thrown if the connection fails
    */
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() throws ClassNotFoundException, SQLException {
     // load H2-support
     Class.forName("org.h2.Driver");
@@ -36,7 +36,7 @@ public class TagTranslatorTest {
             "sa", "");
   }
 
-  @AfterClass
+  @AfterAll
   public static void breakDownClass() throws SQLException {
     TagTranslatorTest.conn.close();
   }

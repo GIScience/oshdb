@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.util.time;
 
 import static java.lang.Integer.signum;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test Suite for {@code OSHDBTimestampInterval}.

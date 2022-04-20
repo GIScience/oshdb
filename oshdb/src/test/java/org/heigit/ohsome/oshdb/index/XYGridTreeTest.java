@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Sets;
 import java.util.HashSet;
@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.Set;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class XYGridTreeTest {

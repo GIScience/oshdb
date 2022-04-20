@@ -44,5 +44,12 @@
       <artifactId>ignite-slf4j</artifactId>
       <version>${ignite.version}</version>
     </dependency>
+    
+    <!-- TEST dependencies -->
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

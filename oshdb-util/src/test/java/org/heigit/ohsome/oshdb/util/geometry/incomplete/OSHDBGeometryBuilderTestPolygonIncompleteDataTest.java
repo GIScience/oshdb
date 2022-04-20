@@ -1,8 +1,8 @@
 package org.heigit.ohsome.oshdb.util.geometry.incomplete;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -11,7 +11,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -76,11 +76,8 @@ public class OSHDBGeometryBuilderTestPolygonIncompleteDataTest {
   public void testAllNodesOfWayNotExistent() {
     // relation with one way with two nodes, both missing
     OSMEntity entity1 = testData.relations().get(502L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 }

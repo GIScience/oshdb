@@ -1,9 +1,8 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,7 +13,7 @@ import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter.GeometryType;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.jparsec.error.ParserException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the parsing of filters and the application to OSM entities.
@@ -93,30 +92,38 @@ public class ParseTest extends FilterTest {
     ));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testTagFilterEqualsAnyOfCheckEmpty() {
-    new TagFilterEqualsAnyOf(Collections.emptyList());
+    assertThrows(IllegalStateException.class, () -> {
+      new TagFilterEqualsAnyOf(Collections.emptyList());
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testTagFilterNotEqualsAnyOfCheckEmpty() {
-    new TagFilterNotEqualsAnyOf(Collections.emptyList());
+    assertThrows(IllegalStateException.class, () -> {
+      new TagFilterNotEqualsAnyOf(Collections.emptyList());
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testTagFilterEqualsAnyOfCheckMixed() {
-    new TagFilterEqualsAnyOf(Arrays.asList(
-        tagTranslator.getOSHDBTagOf("highway", "residential"),
-        tagTranslator.getOSHDBTagOf("building", "yes")
-    ));
+    assertThrows(IllegalStateException.class, () -> {
+      new TagFilterEqualsAnyOf(Arrays.asList(
+          tagTranslator.getOSHDBTagOf("highway", "residential"),
+          tagTranslator.getOSHDBTagOf("building", "yes")
+      ));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testTagFilterNotEqualsAnyOfCheckMixed() {
-    new TagFilterNotEqualsAnyOf(Arrays.asList(
-        tagTranslator.getOSHDBTagOf("highway", "residential"),
-        tagTranslator.getOSHDBTagOf("building", "yes")
-    ));
+    assertThrows(IllegalStateException.class, () -> {
+      new TagFilterNotEqualsAnyOf(Arrays.asList(
+          tagTranslator.getOSHDBTagOf("highway", "residential"),
+          tagTranslator.getOSHDBTagOf("building", "yes")
+      ));
+    });
   }
 
   @Test
@@ -161,9 +168,11 @@ public class ParseTest extends FilterTest {
     assertEquals("type:node and id:1 or type:way and id:2", expression.toString());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testIdFilterEqualsAnyOfCheckEmpty() {
-    new IdFilterEqualsAnyOf(Collections.emptyList());
+    assertThrows(IllegalStateException.class, () -> {
+      new IdFilterEqualsAnyOf(Collections.emptyList());
+    });
   }
 
   @Test
@@ -380,10 +389,11 @@ public class ParseTest extends FilterTest {
     assertEquals("contributor:in-range10..12", expression.toString());
   }
 
-  @Test(expected = ParserException.class)
   @SuppressWarnings("ResultOfMethodCallIgnored")
+  @Test()
   public void testContributorIdFilterNotEnabled() {
-    parser.parse("contributor:0");
-    fail();
+    assertThrows(ParserException.class, () -> {
+      parser.parse("contributor:0");
+    });
   }
 }

@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.util.geometry.osmhistorytestdata;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -13,7 +13,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.MultiPolygon;
@@ -67,14 +67,11 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     // third version
     OSMEntity entity2 = testData.relations().get(500L).get(2);
     OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
-    try {
+    assertDoesNotThrow(() -> {
       Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp2, areaDecider);
       assertTrue(result2 instanceof GeometryCollection || result2 instanceof Polygonal);
       assertEquals(3, result2.getNumGeometries());
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
@@ -116,13 +113,10 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
   public void testWaysNotExistent() {
     // relation with two ways, both missing
     OSMEntity entity = testData.relations().get(502L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
       OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
@@ -272,29 +266,23 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest {
     // relation, not valid, should be a not empty geometryCollection
     // https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb/issues/143
     OSMEntity entity = testData.relations().get(507L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
       Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
       assertTrue(result instanceof GeometryCollection);
       assertEquals(6, result.getNumGeometries());
       assertFalse(result instanceof MultiPolygon);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
   public void testNodesOfWaysNotExistent() {
     // relation with two ways, all nodes not existing
     OSMEntity entity = testData.relations().get(508L).get(0);
-    try {
+    assertDoesNotThrow(() -> {
       OSHDBTimestamp timestamp = new OSHDBTimestamp(entity);
       OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test

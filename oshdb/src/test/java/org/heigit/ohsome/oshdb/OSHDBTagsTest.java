@@ -1,14 +1,15 @@
 package org.heigit.ohsome.oshdb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Set;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for OSHDBTags interface.
@@ -25,9 +26,10 @@ public class OSHDBTagsTest {
     var tagKey2 = new OSHDBTagKey(2);
     var tagKey3 = new OSHDBTagKey(3);
 
-    assertTrue("tag key should exist", tags.hasTagKey(tagKey2));
-    assertFalse("tag key should not exist", tags.hasTagKey(tagKey3));
-    assertFalse("tag key should not exist", tags.hasTagKey(5));
+
+    assertTrue(tags.hasTagKey(tagKey2), "tag key should exist");
+    assertFalse(tags.hasTagKey(tagKey3), "tag key should not exist");
+    assertFalse(tags.hasTagKey(5), "tag key should not exist");
   }
 
   @Test
@@ -53,18 +55,20 @@ public class OSHDBTagsTest {
     assertFalse(tags.hasTagValue(5, 6));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test()
   public void testImmutableAdd() {
     var tags = OSHDBTags.of(kvs);
-
-    tags.add(new OSHDBTag(5, 6));
+    assertThrows(UnsupportedOperationException.class, () -> {
+      tags.add(new OSHDBTag(5, 6));
+    });
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test()
   public void testImmutableRemove() {
     var tags = OSHDBTags.of(kvs);
-
-    tags.removeIf(tag -> tag.getKey() == 2);
+    assertThrows(UnsupportedOperationException.class, () -> {
+      tags.removeIf(tag -> tag.getKey() == 2);
+    });
   }
 
   @Test

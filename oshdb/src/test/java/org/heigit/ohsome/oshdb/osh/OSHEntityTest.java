@@ -1,8 +1,8 @@
 package org.heigit.ohsome.oshdb.osh;
 
 import static org.heigit.ohsome.oshdb.osh.OSHNodeTest.buildOSHNode;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.util.Collections;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
 import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("javadoc")
 public class OSHEntityTest {

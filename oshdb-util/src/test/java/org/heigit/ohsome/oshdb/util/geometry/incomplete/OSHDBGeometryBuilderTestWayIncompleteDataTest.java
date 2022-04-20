@@ -1,8 +1,8 @@
 package org.heigit.ohsome.oshdb.util.geometry.incomplete;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -11,7 +11,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 
@@ -34,13 +34,9 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
   public void testOneOfNodesNotExistent() {
     // Way with four node references, one node missing
     OSMEntity entity1 = testData.ways().get(100L).get(0);
-    Geometry result1 = null;
-    try {
-      result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    Geometry result1 = assertDoesNotThrow(() -> {
+      return OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+    });
     assertTrue(result1 instanceof LineString);
     assertTrue(result1.isValid());
     assertTrue(result1.getCoordinates().length >= 3);
@@ -50,13 +46,9 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
   public void testWayAreaYes() {
     // Way with four nodes, area = yes
     OSMEntity entity1 = testData.ways().get(101L).get(0);
-    Geometry result1 = null;
-    try {
-      result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    Geometry result1 = assertDoesNotThrow(() -> {
+      return OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+    });
     assertTrue(result1 instanceof LineString);
     assertTrue(result1.isValid());
     assertTrue(result1.getCoordinates().length >= 3);
@@ -66,14 +58,10 @@ public class OSHDBGeometryBuilderTestWayIncompleteDataTest {
   public void testAllNodesNotExistent() {
     // Way with two nodes, both missing
     OSMEntity entity1 = testData.ways().get(102L).get(0);
-    Geometry result1 = null;
-    try {
-      result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-      assertEquals(0, result1.getCoordinates().length);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    Geometry result1 = assertDoesNotThrow(() -> {
+      return OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
+    });
+    assertEquals(0, result1.getCoordinates().length);
     assertTrue(result1.isValid());
   }
 

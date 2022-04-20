@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,7 +17,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -100,7 +100,7 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testWaysNotExistent() {
     // relation with two ways, both missing
-    try {
+    assertDoesNotThrow(() -> {
       (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
@@ -115,10 +115,7 @@ public class IterateByTimestampsRelationsTest {
       )).iterateByTimestamps(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
@@ -263,7 +260,7 @@ public class IterateByTimestampsRelationsTest {
   @Test
   public void testNodesOfWaysNotExistent() {
     // relation 2 way members nodes do not exist
-    try {
+    assertDoesNotThrow(() -> {
       (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
@@ -278,10 +275,7 @@ public class IterateByTimestampsRelationsTest {
       )).iterateByTimestamps(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test

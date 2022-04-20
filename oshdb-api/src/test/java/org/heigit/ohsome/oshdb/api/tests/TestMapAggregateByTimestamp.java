@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test aggregate by timestamp method of the OSHDB API.
@@ -179,25 +180,30 @@ public class TestMapAggregateByTimestamp {
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we test for a thrown exception here
-  @Test(expected = OSHDBInvalidTimestampException.class)
+  @Test()
   public void testInvalidUsage() throws Exception {
-    // indexing function returns a timestamp outside the requested time range -> should throw
-    createMapReducerOSMContribution()
-        .timestamps(timestamps2)
-        .groupByEntity()
-        .aggregateByTimestamp(ignored -> timestamps72.get().first())
-        .collect();
+    assertThrows(OSHDBInvalidTimestampException.class, () -> {
+      // indexing function returns a timestamp outside the requested time range -> should throw
+      createMapReducerOSMContribution()
+          .timestamps(timestamps2)
+          .groupByEntity()
+          .aggregateByTimestamp(ignored -> timestamps72.get().first())
+          .collect();
+    });
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we test for a thrown exception here
-  @Test(expected = UnsupportedOperationException.class)
+  @Test()
   public void testUnsupportedUsage() throws Exception {
-    createMapReducerOSMContribution()
-        .timestamps(timestamps72)
-        .groupByEntity()
-        .aggregateByTimestamp()
-        .collect();
+    assertThrows(UnsupportedOperationException.class, () -> {
+      createMapReducerOSMContribution()
+          .timestamps(timestamps72)
+          .groupByEntity()
+          .aggregateByTimestamp()
+          .collect();
+    });
   }
+
 
   @Test
   public void testMapperFunctions() throws Exception {

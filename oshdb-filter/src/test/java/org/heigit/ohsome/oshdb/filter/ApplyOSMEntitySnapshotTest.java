@@ -1,15 +1,16 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
@@ -86,48 +87,64 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
     fail();
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testChangesetId() {
-    testFailWithSnapshot(parser.parse("changeset:42"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("changeset:42"));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testChangesetIdList() {
-    testFailWithSnapshot(parser.parse("changeset:(41,42,43)"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("changeset:(41,42,43)"));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testChangesetIdRange() {
-    testFailWithSnapshot(parser.parse("changeset:(41..43)"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("changeset:(41..43)"));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testContributorUserId() {
     FilterParser parser = new FilterParser(tagTranslator, true);
-    testFailWithSnapshot(parser.parse("contributor:1"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("contributor:1"));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testContributorUserIdList() {
     FilterParser parser = new FilterParser(tagTranslator, true);
-    testFailWithSnapshot(parser.parse("contributor:(1,2,3)"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("contributor:(1,2,3)"));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testContributorUserIdRange() {
     FilterParser parser = new FilterParser(tagTranslator, true);
-    testFailWithSnapshot(parser.parse("contributor:(1..3)"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("contributor:(1..3)"));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testAndOperator() {
     FilterParser parser = new FilterParser(tagTranslator, true);
-    testFailWithSnapshot(parser.parse("contributor:1 and type:node"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("contributor:1 and type:node"));
+    });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test()
   public void testOrOperator() {
     FilterParser parser = new FilterParser(tagTranslator, true);
-    testFailWithSnapshot(parser.parse("contributor:1 or foo=doesntexist"));
+    assertThrows(IllegalStateException.class, () -> {
+      testFailWithSnapshot(parser.parse("contributor:1 or foo=doesntexist"));
+    });
   }
 }

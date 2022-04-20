@@ -1,7 +1,8 @@
 package org.heigit.ohsome.oshdb.util.geometry.osmtestdata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -10,7 +11,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
@@ -44,10 +45,12 @@ public class OSHDBGeometryBuilderTestOsmTestData3xxTest {
     assertEquals(1, entityUid);
   }
 
-  @Test(expected = Test.None.class /* no exception expected */)
+  @Test()
   public void test301() {
-    // Empty username on node should not happen
-    buildEntityGeometry(201000L);
+    assertDoesNotThrow(() -> {
+      // Empty username on node should not happen
+      buildEntityGeometry(201000L);
+    });
   }
 
   @Test
@@ -65,28 +68,37 @@ public class OSHDBGeometryBuilderTestOsmTestData3xxTest {
     assertEquals(0, entityUid);
   }
 
-  @Test(expected = Test.None.class /* no exception expected */)
+  @Test()
   public void test304() {
-    // negative user ids are not allowed (but -1 could have been meant as anonymous user)
-    buildEntityGeometry(204000L);
+    assertDoesNotThrow(() -> {
+      // negative user ids are not allowed (but -1 could have been meant as anonymous user)
+      buildEntityGeometry(204000L);
+    });
   }
 
-  @Test(expected = Test.None.class /* no exception expected */)
+  @Test()
   public void test305() {
-    // uid < 0 and username is inconsistent and definitely wrong
-    buildEntityGeometry(205000L);
+    assertDoesNotThrow(() -> {
+      // uid < 0 and username is inconsistent and definitely wrong
+      buildEntityGeometry(205000L);
+    });
+
   }
 
-  @Test(expected = Test.None.class /* no exception expected */)
+  @Test()
   public void test306() {
-    // 250 characters in username is okay
-    // user name is not priority
-    buildEntityGeometry(206000L);
+    assertDoesNotThrow(() -> {
+      // 250 characters in username is okay
+      // user name is not priority
+      buildEntityGeometry(206000L);
+    });
   }
 
-  @Test(expected = Test.None.class /* no exception expected */)
+  @Test()
   public void test307() {
-    // 260 characters in username is too long
-    buildEntityGeometry(207000L);
+    assertDoesNotThrow(() -> {
+      // 260 characters in username is too long
+      buildEntityGeometry(207000L);
+    });
   }
 }

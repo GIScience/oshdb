@@ -1,9 +1,10 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -14,8 +15,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaNever
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -188,7 +188,7 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(1, 1),
       new Coordinate(0, 1),
       new Coordinate(0, 0)};
-    Assert.assertArrayEquals(test, geometry.getCoordinates());
+    assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: point
     bbox = bboxWgs84Coordinates(0.0, 0.0, 0.0, 0.0);
@@ -199,7 +199,7 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(0, 0),
       new Coordinate(0, 0),
       new Coordinate(0, 0)};
-    Assert.assertArrayEquals(test, geometry.getCoordinates());
+    assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: line
     bbox = bboxWgs84Coordinates(0.0, 0.0, 0.0, 1.0);
@@ -210,6 +210,6 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(0, 1),
       new Coordinate(0, 1),
       new Coordinate(0, 0)};
-    Assert.assertArrayEquals(test, geometry.getCoordinates());
+    assertArrayEquals(test, geometry.getCoordinates());
   }
 }
