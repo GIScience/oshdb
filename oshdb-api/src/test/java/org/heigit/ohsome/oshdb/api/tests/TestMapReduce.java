@@ -12,7 +12,6 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
@@ -42,7 +41,9 @@ abstract class TestMapReduce {
     if (this.keytables != null) {
       mapRed = mapRed.keytables(this.keytables);
     }
-    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return mapRed
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   protected MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
@@ -50,7 +51,9 @@ abstract class TestMapReduce {
     if (this.keytables != null) {
       mapRed = mapRed.keytables(this.keytables);
     }
-    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return mapRed
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   @Test
@@ -58,7 +61,7 @@ abstract class TestMapReduce {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .uniq();
 
@@ -69,7 +72,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
         .uniq();
@@ -81,7 +84,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(7, createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .sum()
@@ -93,7 +96,7 @@ abstract class TestMapReduce {
     // simple query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .uniq();
 
@@ -102,7 +105,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .filter(uid -> uid > 0)
         .uniq();
@@ -112,7 +115,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(5, createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .sum()
@@ -124,7 +127,7 @@ abstract class TestMapReduce {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .stream()
         .collect(Collectors.toSet());
@@ -136,7 +139,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
         .stream()
@@ -149,7 +152,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(7, createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .stream()
@@ -163,7 +166,7 @@ abstract class TestMapReduce {
     // simple stream query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .stream()
         .collect(Collectors.toSet());
@@ -173,7 +176,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .filter(uid -> uid > 0)
         .stream()
@@ -184,7 +187,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(5, createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .stream()
@@ -207,7 +210,7 @@ abstract class TestMapReduce {
       // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps6)
-          .osmEntityFilter(entity -> entity.getId() == 617308093)
+          .filter("id:617308093")
           .map(delay(100))
           .count();
     } finally {
@@ -230,7 +233,7 @@ abstract class TestMapReduce {
       // simple query
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps6)
-          .osmEntityFilter(entity -> entity.getId() == 617308093)
+          .filter("id:617308093")
           .map(snapshot -> snapshot.getEntity().getId())
           .map(delay(100))
           .stream()

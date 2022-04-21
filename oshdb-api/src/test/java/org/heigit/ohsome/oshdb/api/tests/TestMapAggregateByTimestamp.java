@@ -41,17 +41,15 @@ class TestMapAggregateByTimestamp {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and building=yes");
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     return OSMEntitySnapshotView
         .on(oshdb)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and building=yes");
   }
 
   @Test

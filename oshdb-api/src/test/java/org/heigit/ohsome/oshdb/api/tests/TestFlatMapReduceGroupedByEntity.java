@@ -10,7 +10,6 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
@@ -36,17 +35,15 @@ abstract class TestFlatMapReduceGroupedByEntity {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.NODE)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     return OSMEntitySnapshotView
         .on(oshdb)
-        .osmType(OSMType.NODE)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   @Test

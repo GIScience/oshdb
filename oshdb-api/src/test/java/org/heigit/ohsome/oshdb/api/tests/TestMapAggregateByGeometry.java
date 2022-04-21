@@ -19,7 +19,6 @@ import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
@@ -47,17 +46,15 @@ class TestMapAggregateByGeometry {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.WAY)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and highway=*");
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     return OSMEntitySnapshotView
         .on(oshdb)
-        .osmType(OSMType.WAY)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and highway=*");
   }
 
   private Map<String, Polygon> getSubRegions() {
@@ -139,16 +136,16 @@ class TestMapAggregateByGeometry {
 
   @Test
   void testCombinedWithAggregateByTimestamp() throws Exception {
-    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result =
+    SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
-            .aggregateByTimestamp()
             .aggregateByGeometry(getSubRegions())
+            .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
     assertEquals(4, result.entrySet().size());
     Set<String> keys = result.keySet().stream()
-        .map(OSHDBCombinedIndex::getSecondIndex)
+        .map(OSHDBCombinedIndex::getFirstIndex)
         .collect(Collectors.toSet());
     assertTrue(keys.contains("left"));
     assertTrue(keys.contains("right"));
@@ -159,17 +156,23 @@ class TestMapAggregateByGeometry {
   @Test
   void testCombinedWithAggregateByTimestampOrder() throws Exception {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, List<Long>> resultGeomTime =
-        createMapReducerOSMEntitySnapshot()
+        OSMEntitySnapshotView
+            .on(oshdb)
+            .areaOfInterest(bbox)
             .timestamps(timestamps2)
             .aggregateByGeometry(getSubRegions())
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+            .filter("type:way and highway=*")
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, List<Long>> resultTimeGeom =
-        createMapReducerOSMEntitySnapshot()
+        OSMEntitySnapshotView
+            .on(oshdb)
+            .areaOfInterest(bbox)
             .timestamps(timestamps2)
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .aggregateByGeometry(getSubRegions())
+            .filter("type:way and highway=*")
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
     assertEquals(resultGeomTime.entrySet().size(), resultTimeGeom.entrySet().size());

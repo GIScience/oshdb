@@ -41,24 +41,22 @@ class TestMapAggregateByIndex {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.NODE)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
     return OSMEntitySnapshotView
         .on(oshdb)
-        .osmType(OSMType.NODE)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   @Test
   void testOSMContribution() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps2)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .map(OSMContribution::getContributorUserId)
         .reduce(
@@ -84,7 +82,7 @@ class TestMapAggregateByIndex {
   void testOSMEntitySnapshot() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .aggregateBy(snapshot -> snapshot.getEntity().getId())
         .map(snapshot -> snapshot.getEntity().getUserId())
         .reduce(
@@ -111,7 +109,7 @@ class TestMapAggregateByIndex {
     // partially empty result
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .aggregateBy(
             contribution -> contribution.getEntityAfter().getId(),
             Collections.singletonList(-1L)
@@ -126,7 +124,7 @@ class TestMapAggregateByIndex {
     // totally empty result
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> false)
+        .filter(x -> false)
         .aggregateBy(
             contribution -> contribution.getEntityAfter().getId(),
             Collections.singletonList(-1L)
@@ -143,7 +141,7 @@ class TestMapAggregateByIndex {
     SortedMap<OSHDBCombinedIndex<Long, OSMType>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
-            .osmEntityFilter(entity -> entity.getId() == 617308093)
+            .filter("id:617308093")
             .aggregateBy(snapshot -> snapshot.getEntity().getId())
             .aggregateBy(snapshot -> snapshot.getEntity().getType())
             .count();
@@ -159,7 +157,7 @@ class TestMapAggregateByIndex {
     SortedMap<OSHDBCombinedIndex<OSHDBCombinedIndex<Long, OSMType>, Integer>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
-            .osmEntityFilter(entity -> entity.getId() == 617308093)
+            .filter("id:617308093")
             .aggregateBy(snapshot -> snapshot.getEntity().getId())
             .aggregateBy(snapshot -> snapshot.getEntity().getType())
             .aggregateBy(snapshot -> snapshot.getEntity().getUserId())

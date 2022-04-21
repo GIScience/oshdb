@@ -20,7 +20,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -30,9 +29,7 @@ import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer.Grouping;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
-import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiConsumer;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
@@ -42,7 +39,6 @@ import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
-import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
 import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
@@ -213,9 +209,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
 
     GeometrySplitter<V> gs = new GeometrySplitter<>(geometries);
     if (this.mapReducer.mappers.size() > 1) {
-      // todo: fix
       throw new UnsupportedOperationException(
-          "please call aggregateByGeometry before setting any map or flatMap functions"
+          "please call aggregateByGeometry before setting any filter, map or flatMap function"
+              + " or alternatively before invoking any other aggregateBy* method"
       );
     } else {
       MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
@@ -268,130 +264,6 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   @Contract(pure = true)
   public <P extends Geometry & Polygonal> MapAggregator<U, X> areaOfInterest(P polygonFilter) {
     return this.copyTransform(this.mapReducer.areaOfInterest(polygonFilter));
-  }
-
-  /**
-   * Limits the analysis to the given osm entity types.
-   *
-   * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmType(Set<OSMType> typeFilter) {
-    return this.copyTransform(this.mapReducer.osmType(typeFilter));
-  }
-
-  /**
-   * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it
-   * should be considered for this analyis or not.
-   *
-   * @param f the filter function to call for each osm entity
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with {@link
-   *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(OSMEntityFilter)}
-   *             instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmEntityFilter(OSMEntityFilter f) {
-    return this.copyTransform(this.mapReducer.osmEntityFilter(f));
-  }
-
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value), or this tag key and value.
-   *
-   * @param tag the tag (key, or key and value) to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(OSMTagInterface tag) {
-    return this.copyTransform(this.mapReducer.osmTag(tag));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value).
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(String key) {
-    return this.copyTransform(this.mapReducer.osmTag(key));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * and value.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @param value the tag value to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(String key, String value) {
-    return this.copyTransform(this.mapReducer.osmTag(key, value));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * and one of the
-   * given values.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @param values an array of tag values to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(String key, Collection<String> values) {
-    return this.copyTransform(this.mapReducer.osmTag(key, values));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have a tag with
-   * the given key and whose value matches the given regular expression pattern.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @param valuePattern a regular expression which the tag value of the osm entity must match
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(String key, Pattern valuePattern) {
-    return this.copyTransform(this.mapReducer.osmTag(key, valuePattern));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
-   * of the supplied tags (key=value pairs or key=*).
-   *
-   * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapAggregator<U, X> osmTag(Collection<? extends OSMTagInterface> tags) {
-    return this.copyTransform(this.mapReducer.osmTag(tags));
   }
 
   // -----------------------------------------------------------------------------------------------
