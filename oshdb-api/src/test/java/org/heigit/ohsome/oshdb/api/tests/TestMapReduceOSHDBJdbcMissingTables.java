@@ -55,13 +55,17 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
 
   @Override
   @Test()
-  public void testTimeoutMapReduce() {
-    // no-op no test for timeout if we got a missing table!
+  public void testTimeoutMapReduce() throws Exception {
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      timeoutMapReduce();
+    });
   }
 
   @Override
   @Test()
   public void testTimeoutStream() {
-    // no-op no test for timeout if we got a missing table!
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      timeoutStream();
+    });
   }
 }

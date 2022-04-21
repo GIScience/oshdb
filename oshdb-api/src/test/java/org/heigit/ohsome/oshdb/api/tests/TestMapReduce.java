@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -194,28 +193,44 @@ abstract class TestMapReduce {
     );
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
-  @Test()
+  @Test
   public void testTimeoutMapReduce() throws Exception {
+    assertThrows(OSHDBTimeoutException.class, () -> {
+      timeoutMapReduce();
+    });
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
+  protected void timeoutMapReduce() throws Exception {
     // set short timeout -> query should fail
     oshdb.timeoutInMilliseconds(30);
-    assertThrows(OSHDBTimeoutException.class, () -> {
+
+    try {
       // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps6)
           .osmEntityFilter(entity -> entity.getId() == 617308093)
           .map(delay(100))
           .count();
+    } finally {
+      // reset timeout
+      oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    }
+  }
+
+  @Test
+  public void testTimeoutStream() throws Exception {
+    assertThrows(OSHDBTimeoutException.class, () -> {
+      timeoutStream();
     });
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
-  @Test()
-  public void testTimeoutStream() throws Exception {
+  protected void timeoutStream() throws Exception {
     // set super short timeout -> all queries should fail
     oshdb.timeoutInMilliseconds(30);
 
-    assertThrows(OSHDBTimeoutException.class, () -> {
+    try {
       // simple query
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps6)
@@ -224,10 +239,10 @@ abstract class TestMapReduce {
           .map(delay(100))
           .stream()
           .count();
-    });
-
-    // reset timeout
-    oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    } finally {
+      // reset timeout
+      oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    }
   }
 
   private static <T> SerializableFunction<T, T> delay(int ms) {

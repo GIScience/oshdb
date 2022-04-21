@@ -55,12 +55,16 @@ public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgni
   @Override
   @Test()
   public void testTimeoutMapReduce() throws Exception {
-    // no-op no test for timeout if we got a missing table!
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      timeoutMapReduce();
+    });
   }
 
   @Override
   @Test()
-  public void testTimeoutStream() throws Exception {
-    // no-op no test for timeout if we got a missing table!
+  public void testTimeoutStream() {
+    assertThrows(OSHDBTableNotFoundException.class, () -> {
+      timeoutStream();
+    });
   }
 }
