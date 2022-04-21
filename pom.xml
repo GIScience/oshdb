@@ -63,9 +63,18 @@
         <version>${junit.version}</version>
         <type>pom</type>
         <scope>import</scope>
-    </dependency>
+      </dependency>
     </dependencies>
   </dependencyManagement>
+  
+  <dependencies>
+    <!-- TEST dependencies -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <repositories>
     <repository>
