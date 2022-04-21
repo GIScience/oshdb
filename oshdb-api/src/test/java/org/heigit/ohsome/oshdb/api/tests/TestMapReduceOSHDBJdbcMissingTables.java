@@ -23,7 +23,7 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
 
   @Override
   @Test()
-  public void testOSMContributionView() {
+  void testOSMContributionView() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMContributionView();
     });
@@ -31,7 +31,7 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
 
   @Override
   @Test()
-  public void testOSMEntitySnapshotView() {
+  void testOSMEntitySnapshotView() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMEntitySnapshotView();
     });
@@ -39,7 +39,7 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
 
   @Override
   @Test()
-  public void testOSMContributionViewStream() {
+  void testOSMContributionViewStream() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMEntitySnapshotView();
     });
@@ -47,7 +47,7 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
 
   @Override
   @Test()
-  public void testOSMEntitySnapshotViewStream() {
+  void testOSMEntitySnapshotViewStream() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMEntitySnapshotView();
     });
@@ -55,7 +55,7 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
 
   @Override
   @Test()
-  public void testTimeoutMapReduce() throws Exception {
+  void testTimeoutMapReduce() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       timeoutMapReduce();
     });
@@ -63,7 +63,7 @@ public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
 
   @Override
   @Test()
-  public void testTimeoutStream() {
+  void testTimeoutStream() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       timeoutStream();
     });

@@ -54,7 +54,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMContributionView() throws Exception {
+  void testOSMContributionView() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -89,7 +89,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMEntitySnapshotView() throws Exception {
+  void testOSMEntitySnapshotView() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
@@ -120,7 +120,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMContributionViewStream() throws Exception {
+  void testOSMContributionViewStream() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -159,7 +159,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMEntitySnapshotViewStream() throws Exception {
+  void testOSMEntitySnapshotViewStream() throws Exception {
     // simple stream query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
@@ -194,7 +194,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testTimeoutMapReduce() throws Exception {
+  void testTimeoutMapReduce() throws Exception {
     assertThrows(OSHDBTimeoutException.class, () -> {
       timeoutMapReduce();
     });
@@ -219,7 +219,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testTimeoutStream() throws Exception {
+  void testTimeoutStream() throws Exception {
     assertThrows(OSHDBTimeoutException.class, () -> {
       timeoutStream();
     });

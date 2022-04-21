@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the stream method of the OSHDB API.
  */
-public class TestStream {
+class TestStream {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -37,7 +37,7 @@ public class TestStream {
   }
 
   @Test
-  public void testForEach() throws Exception {
+  void testForEach() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -49,7 +49,7 @@ public class TestStream {
   }
 
   @Test
-  public void testForEachGroupedById() throws Exception {
+  void testForEachGroupedById() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -61,7 +61,7 @@ public class TestStream {
   }
 
   @Test
-  public void testForEachAggregatedByTimestamp() throws Exception {
+  void testForEachAggregatedByTimestamp() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)

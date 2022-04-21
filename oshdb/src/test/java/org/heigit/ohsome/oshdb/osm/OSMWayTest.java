@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.jupiter.api.Test;
 
-public class OSMWayTest {
+class OSMWayTest {
 
   public OSMWayTest() {}
 
   @Test
-  public void testGetRefs() {
+  void testGetRefs() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     OSMMember[] expResult = new OSMMember[] {part, part};
@@ -31,7 +31,7 @@ public class OSMWayTest {
 
   // ---------------
   @Test
-  public void testGetId() {
+  void testGetId() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     long expResult = 1L;
@@ -40,7 +40,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testGetVersion() {
+  void testGetVersion() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     int expResult = 1;
@@ -49,7 +49,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testGetTimestamp() {
+  void testGetTimestamp() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     long expResult = 1L;
@@ -58,7 +58,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testGetChangeset() {
+  void testGetChangeset() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     long expResult = 1L;
@@ -67,7 +67,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testGetUserId() {
+  void testGetUserId() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     int expResult = 1;
@@ -76,7 +76,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testisVisible() {
+  void testisVisible() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     boolean expResult = true;
@@ -91,7 +91,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testGetTags() {
+  void testGetTags() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {1, 1}, new OSMMember[] {part, part});
     var expResult = OSHDBTags.of(new int[] {1, 1});
@@ -100,7 +100,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testHasTagKey() {
+  void testHasTagKey() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
     boolean expResult = false;
@@ -136,7 +136,7 @@ public class OSMWayTest {
   }
 
   @Test
-  public void testHasTagValue() {
+  void testHasTagValue() {
     OSMMember part = new OSMMember(1L, OSMType.NODE, 1);
     OSMWay instance =
         OSM.way(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, new OSMMember[] {part, part});

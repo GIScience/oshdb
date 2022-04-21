@@ -20,7 +20,7 @@ import org.locationtech.jts.geom.GeometryFactory;
  */
 public class NegateTest extends FilterTest {
   @Test
-  public void testTagFilterEquals() {
+  void testTagFilterEquals() {
     FilterExpression expression = TagFilter.fromSelector(
         TagFilter.Type.EQUALS,
         new OSMTag("highway", "residential"),
@@ -32,7 +32,7 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEquals() {
+  void testTagFilterNotEquals() {
     FilterExpression expression = TagFilter.fromSelector(
         TagFilter.Type.NOT_EQUALS,
         new OSMTag("highway", "residential"),
@@ -44,7 +44,7 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterEqualsAny() {
+  void testTagFilterEqualsAny() {
     FilterExpression expression = TagFilter.fromSelector(
         TagFilter.Type.EQUALS,
         new OSMTagKey("highway"),
@@ -56,7 +56,7 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEqualsAny() {
+  void testTagFilterNotEqualsAny() {
     FilterExpression expression = TagFilter.fromSelector(
         TagFilter.Type.NOT_EQUALS,
         new OSMTagKey("highway"),
@@ -68,7 +68,7 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterEqualsAnyOf() {
+  void testTagFilterEqualsAnyOf() {
     OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
     OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
     FilterExpression expression = new TagFilterEqualsAnyOf(Arrays.asList(tag1, tag2));
@@ -77,7 +77,7 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEqualsAnyOf() {
+  void testTagFilterNotEqualsAnyOf() {
     OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
     OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
     FilterExpression expression = new TagFilterNotEqualsAnyOf(Arrays.asList(tag1, tag2));
@@ -86,21 +86,21 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testIdEqualsFilter() {
+  void testIdEqualsFilter() {
     FilterExpression expression = new IdFilterEquals(1);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof IdFilterNotEquals);
   }
 
   @Test
-  public void testIdNotEqualsFilter() {
+  void testIdNotEqualsFilter() {
     FilterExpression expression = new IdFilterNotEquals(1);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof IdFilterEquals);
   }
 
   @Test
-  public void testIdEqualsAnyOfFilter() {
+  void testIdEqualsAnyOfFilter() {
     FilterExpression expression = new IdFilterEqualsAnyOf(Collections.singletonList(1L));
     FilterExpression negation = expression.negate();
     OSMEntity testEntity = createTestOSMEntityNode();
@@ -110,7 +110,7 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testIdInRangeFilter() {
+  void testIdInRangeFilter() {
     FilterExpression expression = new IdFilterRange(new IdRange(1, 3));
     FilterExpression negation = expression.negate();
     OSMEntity testEntity = createTestOSMEntityNode();
@@ -129,14 +129,14 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testTypeFilter() {
+  void testTypeFilter() {
     FilterExpression expression = new TypeFilter(OSMType.NODE);
     FilterExpression negation = expression.negate();
     testAllOSMTypes(expression, negation);
   }
 
   @Test
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
     FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.AND, sub2);
@@ -148,7 +148,7 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
     FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.OR, sub2);
@@ -177,35 +177,35 @@ public class NegateTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypePoint() {
+  void testGeometryTypePoint() {
     GeometryTypeFilter expression = new GeometryTypeFilter(GeometryType.POINT, tagTranslator);
     FilterExpression negation = expression.negate();
     testAllGeometryTypes(expression, negation);
   }
 
   @Test
-  public void testGeometryTypeLine() {
+  void testGeometryTypeLine() {
     GeometryTypeFilter expression = new GeometryTypeFilter(GeometryType.LINE, tagTranslator);
     FilterExpression negation = expression.negate();
     testAllGeometryTypes(expression, negation);
   }
 
   @Test
-  public void testGeometryTypePolygon() {
+  void testGeometryTypePolygon() {
     GeometryTypeFilter expression = new GeometryTypeFilter(GeometryType.POLYGON, tagTranslator);
     FilterExpression negation = expression.negate();
     testAllGeometryTypes(expression, negation);
   }
 
   @Test
-  public void testGeometryTypeOther() {
+  void testGeometryTypeOther() {
     GeometryTypeFilter expression = new GeometryTypeFilter(GeometryType.OTHER, tagTranslator);
     FilterExpression negation = expression.negate();
     testAllGeometryTypes(expression, negation);
   }
 
   @Test
-  public void testConstant() {
+  void testConstant() {
     ConstantFilter expression = new ConstantFilter(true);
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof ConstantFilter);

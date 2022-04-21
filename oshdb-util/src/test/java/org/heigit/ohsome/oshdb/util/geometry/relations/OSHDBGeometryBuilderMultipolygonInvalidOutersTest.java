@@ -17,7 +17,7 @@ import org.locationtech.jts.geom.MultiPolygon;
  * Tests the {@link OSHDBGeometryBuilder} class for the special case of multipolygons with
  * invalid outer rings.
  */
-public class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
+class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
@@ -29,7 +29,7 @@ public class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
   }
 
   @Test
-  public void test() {
+  void test() {
     // data has invalid (self-intersecting) outer ring
     OSMEntity entity = testData.relations().get(1L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);

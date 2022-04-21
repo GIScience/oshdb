@@ -24,10 +24,10 @@ import org.junit.jupiter.api.Test;
  * General {@link GridOSHRelations} tests case.
  *
  */
-public class GridOSHRelationsTest {
+class GridOSHRelationsTest {
 
   @Test
-  public void test() throws IOException {
+  void test() throws IOException {
     var node100 = buildOSHNode(node(100L, 1, 1L, 0L, 123, tags(1, 2), 494094984, 86809727));
     var node102 = buildOSHNode(node(102L, 1, 1L, 0L, 123, tags(2, 1), 494094984, 86809727));
     var node104 = buildOSHNode(node(104L, 1, 1L, 0L, 123, tags(2, 4), 494094984, 86809727));

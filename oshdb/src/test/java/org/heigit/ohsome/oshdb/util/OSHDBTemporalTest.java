@@ -7,9 +7,9 @@ import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.junit.jupiter.api.Test;
 
-public class OSHDBTemporalTest {
+class OSHDBTemporalTest {
   @Test
-  public void testBeforeAfter() {
+  void testBeforeAfter() {
     OSHDBTemporal t1 = new OSHDBTimestamp(0);
     OSHDBTemporal t2 = new OSHDBTimestamp(1);
     assertTrue(t1.isBefore(t2));

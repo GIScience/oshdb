@@ -21,7 +21,7 @@ import org.locationtech.jts.geom.Point;
  * Tests the {@link OSHDBGeometryBuilder} class for the special case of relations which are not
  * multipolygons (e.g. geometry collections).
  */
-public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
+class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
@@ -33,7 +33,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   }
 
   @Test
-  public void testTypeRestriction() {
+  void testTypeRestriction() {
     // relation type restriction
     OSMEntity entity1 = testData.relations().get(710900L).get(0);
     Geometry result = assertDoesNotThrow(() -> {
@@ -47,7 +47,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   }
 
   @Test
-  public void testTypeAssociatedStreet() {
+  void testTypeAssociatedStreet() {
     // relation type associatedStreet
     OSMEntity entity1 = testData.relations().get(710901L).get(0);
     Geometry result = assertDoesNotThrow(() -> {
@@ -61,7 +61,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   }
 
   @Test
-  public void testTypePublicTransport() {
+  void testTypePublicTransport() {
     // relation type public_transport
     OSMEntity entity1 = testData.relations().get(710902L).get(0);
     Geometry result = assertDoesNotThrow(() -> {
@@ -76,7 +76,7 @@ public class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   }
 
   @Test
-  public void testTypeBuilding() {
+  void testTypeBuilding() {
     // relation type building
     OSMEntity entity1 = testData.relations().get(710903L).get(0);
     Geometry result = assertDoesNotThrow(() -> {

@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.jupiter.api.Test;
 
-public class OSMNodeTest {
+class OSMNodeTest {
 
   public OSMNodeTest() {}
 
   @Test
-  public void testGetLongitude() {
+  void testGetLongitude() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1);
     double expResult = 100.0;
     double result = instance.getLongitude();
@@ -18,7 +18,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetLatitude() {
+  void testGetLatitude() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     double expResult = 100.0;
     double result = instance.getLatitude();
@@ -26,7 +26,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetLon() {
+  void testGetLon() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     long expResult = 1000000000L;
     long result = instance.getLon();
@@ -34,7 +34,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetLat() {
+  void testGetLat() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     long expResult = 1000000000L;
     long result = instance.getLat();
@@ -42,7 +42,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1100000000, 100000000);
     String expResult = "NODE: ID:1 V:+1+ TS:1 CS:1 VIS:true UID:1 TAGS:[] 110.0000000:10.0000000";
     String result = instance.toString();
@@ -50,7 +50,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     OSMNode o =
         OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
     OSMNode instance =
@@ -61,7 +61,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testEquals2() {
+  void testEquals2() {
     OSMNode o =
         OSM.node(2L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2, 3, 3}, 1000000000, 1000000000);
     OSMNode instance =
@@ -73,7 +73,7 @@ public class OSMNodeTest {
 
   // -------------------
   @Test
-  public void testGetId() {
+  void testGetId() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     long expResult = 1L;
     long result = instance.getId();
@@ -81,7 +81,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetVersion() {
+  void testGetVersion() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     int expResult = 1;
     int result = instance.getVersion();
@@ -89,7 +89,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetTimestamp() {
+  void testGetTimestamp() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     long expResult = 1L;
     long result = instance.getEpochSecond();
@@ -97,7 +97,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetChangeset() {
+  void testGetChangeset() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     long expResult = 1L;
     long result = instance.getChangesetId();
@@ -105,7 +105,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetUserId() {
+  void testGetUserId() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     int expResult = 1;
     int result = instance.getUserId();
@@ -113,7 +113,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testisVisible() {
+  void testisVisible() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     boolean expResult = true;
     boolean result = instance.isVisible();
@@ -121,7 +121,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testisVisible2() {
+  void testisVisible2() {
     OSMNode instance = OSM.node(1L, -1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     boolean expResult = false;
     boolean result = instance.isVisible();
@@ -129,7 +129,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testGetTags() {
+  void testGetTags() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     var expResult = OSHDBTags.empty();
     var result = instance.getTags();
@@ -137,7 +137,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testHasTagKey() {
+  void testHasTagKey() {
     OSMNode instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {}, 1000000000, 1000000000);
     boolean expResult = false;
     boolean result = instance.getTags().hasTagKey(1);
@@ -168,7 +168,7 @@ public class OSMNodeTest {
   }
 
   @Test
-  public void testHasTagValue() {
+  void testHasTagValue() {
     OSMNode instance =
         OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, 1000000000, 1000000000);
     boolean expResult = false;
@@ -183,7 +183,7 @@ public class OSMNodeTest {
 
   // --------------------
   @Test
-  public void testEqualsToOSMNode() {
+  void testEqualsToOSMNode() {
     long id = 123;
     int version = 1;
     long timestamp = 310172400000L;
@@ -197,5 +197,4 @@ public class OSMNodeTest {
     OSMNode b = OSM.node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
     assertEquals(true, a.equals(b));
   }
-
 }

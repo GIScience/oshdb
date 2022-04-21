@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 /**
  *  General {@link ByteArrayOutputWrapper} test case.
  */
-public class ByteArrayOutputWrapperTest {
+class ByteArrayOutputWrapperTest {
 
   @Test
-  public void testWriteU32() throws IOException {
+  void testWriteU32() throws IOException {
     var bao = new ByteArrayOutputWrapper(1024);
 
     assertWriteU32(bao, bytes(0x00), 0);
@@ -26,7 +26,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testReadU32() throws IOException {
+  void testReadU32() throws IOException {
     assertReadU32(bytes(0x00), 0);
     assertReadU32(bytes(0x01), 1);
     assertReadU32(bytes(0x7f), 127);
@@ -37,7 +37,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testWriteS32() throws IOException {
+  void testWriteS32() throws IOException {
     var bao = new ByteArrayOutputWrapper(1024);
 
     assertWriteS32(bao, bytes(0x00), 0);
@@ -56,7 +56,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testReadS32() throws IOException {
+  void testReadS32() throws IOException {
     assertReadS32(bytes(0x00), 0);
     assertReadS32(bytes(0x01), -1);
     assertReadS32(bytes(0x02), 1);
@@ -73,7 +73,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testWriteU64() throws IOException {
+  void testWriteU64() throws IOException {
     var bao = new ByteArrayOutputWrapper(1024);
 
     assertWriteU64(bao, bytes(0x00), 0);
@@ -87,7 +87,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testReadU64() throws IOException {
+  void testReadU64() throws IOException {
     assertReadU64(bytes(0x00), 0);
     assertReadU64(bytes(0x01), 1);
     assertReadU64(bytes(0x7f), 127);
@@ -98,7 +98,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testWriteS64() throws IOException {
+  void testWriteS64() throws IOException {
     var bao = new ByteArrayOutputWrapper(1024);
 
     assertWriteS64(bao, bytes(0x00), 0);
@@ -121,7 +121,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testReadS64() throws IOException {
+  void testReadS64() throws IOException {
     assertReadS64(bytes(0x00), 0);
     assertReadS64(bytes(0x01), -1);
     assertReadS64(bytes(0x02), 1);
@@ -142,7 +142,7 @@ public class ByteArrayOutputWrapperTest {
   }
 
   @Test
-  public void testWriteByteArray() throws IOException {
+  void testWriteByteArray() throws IOException {
     var bao = new ByteArrayOutputWrapper(1024);
     var bytes = bytes(0xc4, 0xe8, 0x01);
     bao.writeByteArray(bytes);

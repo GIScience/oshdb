@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test flat map method of the MapAggregator class of the OSHDB API.
  */
-public class TestFlatMapAggregate {
+class TestFlatMapAggregate {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -46,7 +46,7 @@ public class TestFlatMapAggregate {
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     SortedMap<Long, Set<Entry<Integer, Integer>>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(

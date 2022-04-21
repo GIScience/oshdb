@@ -12,11 +12,10 @@ import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("javadoc")
-public class OSHEntityTest {
+class OSHEntityTest {
 
   @Test
-  public void testHashCodeEquals() throws IOException {
+  void testHashCodeEquals() throws IOException {
     var expected = buildOSHNode(
         OSM.node(123L, 1, 1L, 0L, 1, new int[0], 0, 0)
     );
@@ -35,5 +34,4 @@ public class OSHEntityTest {
     assertEquals(expected, a);
     assertNotEquals(expected, b);
   }
-
 }

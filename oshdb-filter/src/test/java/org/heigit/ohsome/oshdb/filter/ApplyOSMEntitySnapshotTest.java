@@ -17,7 +17,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 /**
  * Tests the parsing of filters and the application to OSM entity snapshots.
  */
-public class ApplyOSMEntitySnapshotTest extends FilterTest {
+class ApplyOSMEntitySnapshotTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
 
   private static class TestOSMEntitySnapshot implements OSMEntitySnapshot {
@@ -62,7 +62,7 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
   }
 
   @Test
-  public void testBasicFallback() {
+  void testBasicFallback() {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression.applyOSMEntitySnapshot(new TestOSMEntitySnapshot(
         createTestOSMEntityNode(), gf.createPoint())));
@@ -73,7 +73,7 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
   }
 
   @Test
-  public void testNegatableFilter() {
+  void testNegatableFilter() {
     FilterExpression expression = parser.parse("id:(1,2)");
     var testObject = new TestOSMEntitySnapshot(createTestOSMEntityNode(), gf.createPoint());
     assertTrue(expression.applyOSMEntitySnapshot(testObject));
@@ -88,28 +88,28 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
   }
 
   @Test()
-  public void testChangesetId() {
+  void testChangesetId() {
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("changeset:42"));
     });
   }
 
   @Test()
-  public void testChangesetIdList() {
+  void testChangesetIdList() {
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("changeset:(41,42,43)"));
     });
   }
 
   @Test()
-  public void testChangesetIdRange() {
+  void testChangesetIdRange() {
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("changeset:(41..43)"));
     });
   }
 
   @Test()
-  public void testContributorUserId() {
+  void testContributorUserId() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("contributor:1"));
@@ -117,7 +117,7 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
   }
 
   @Test()
-  public void testContributorUserIdList() {
+  void testContributorUserIdList() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("contributor:(1,2,3)"));
@@ -125,7 +125,7 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
   }
 
   @Test()
-  public void testContributorUserIdRange() {
+  void testContributorUserIdRange() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("contributor:(1..3)"));
@@ -133,7 +133,7 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
   }
 
   @Test()
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("contributor:1 and type:node"));
@@ -141,7 +141,7 @@ public class ApplyOSMEntitySnapshotTest extends FilterTest {
   }
 
   @Test()
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     assertThrows(IllegalStateException.class, () -> {
       testFailWithSnapshot(parser.parse("contributor:1 or foo=doesntexist"));

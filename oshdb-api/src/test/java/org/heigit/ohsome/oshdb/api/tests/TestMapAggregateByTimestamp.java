@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test aggregate by timestamp method of the OSHDB API.
  */
-public class TestMapAggregateByTimestamp {
+class TestMapAggregateByTimestamp {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -33,8 +33,6 @@ public class TestMapAggregateByTimestamp {
   private final OSHDBTimestamps timestamps2 = new OSHDBTimestamps("2014-01-01", "2014-12-30");
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
-
-  private static final double DELTA = 1e-8;
 
   public TestMapAggregateByTimestamp() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
@@ -57,7 +55,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testOSMContribution() throws Exception {
+  void testOSMContribution() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = createMapReducerOSMContribution()
         .timestamps(timestamps2)
@@ -84,7 +82,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testOSMContributionCustomDefault() throws Exception {
+  void testOSMContributionCustomDefault() throws Exception {
     // check if it produces the same result as the automatic aggregateByTimestamp()
     SortedMap<OSHDBTimestamp, Integer> resultAuto = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -105,7 +103,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testOSMContributionCustom() throws Exception {
+  void testOSMContributionCustom() throws Exception {
     // most basic custom timestamp index possible -> map all to one single timestamp
     SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -117,7 +115,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testOSMEntitySnapshot() throws Exception {
+  void testOSMEntitySnapshot() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
@@ -147,7 +145,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testOSMEntitySnapshotCustomDefault() throws Exception {
+  void testOSMEntitySnapshotCustomDefault() throws Exception {
     // check if it produces the same result as the automatic aggregateByTimestamp()
     SortedMap<OSHDBTimestamp, Integer> resultAuto = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
@@ -168,7 +166,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testOSMEntitySnapshotCustom() throws Exception {
+  void testOSMEntitySnapshotCustom() throws Exception {
     // most basic custom timestamp index possible -> map all to one single timestamp
     SortedMap<OSHDBTimestamp, Integer> resultCustom = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
@@ -181,7 +179,7 @@ public class TestMapAggregateByTimestamp {
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we test for a thrown exception here
   @Test()
-  public void testInvalidUsage() throws Exception {
+  void testInvalidUsage() throws Exception {
     assertThrows(OSHDBInvalidTimestampException.class, () -> {
       // indexing function returns a timestamp outside the requested time range -> should throw
       createMapReducerOSMContribution()
@@ -194,7 +192,7 @@ public class TestMapAggregateByTimestamp {
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we test for a thrown exception here
   @Test()
-  public void testUnsupportedUsage() throws Exception {
+  void testUnsupportedUsage() throws Exception {
     assertThrows(UnsupportedOperationException.class, () -> {
       createMapReducerOSMContribution()
           .timestamps(timestamps72)
@@ -204,9 +202,8 @@ public class TestMapAggregateByTimestamp {
     });
   }
 
-
   @Test
-  public void testMapperFunctions() throws Exception {
+  void testMapperFunctions() throws Exception {
     // check if it produces the same result whether the map function was set before or after aggr.
     SortedMap<OSHDBTimestamp, Number> result1 = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -230,7 +227,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testCombinedWithAggregateByIndex() throws Exception {
+  void testCombinedWithAggregateByIndex() throws Exception {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
@@ -249,7 +246,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testCombinedWithAggregateByIndexAuto() throws Exception {
+  void testCombinedWithAggregateByIndexAuto() throws Exception {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, List<Long>> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
@@ -268,7 +265,7 @@ public class TestMapAggregateByTimestamp {
   }
 
   @Test
-  public void testCombinedWithAggregateByIndexOrder() throws Exception {
+  void testCombinedWithAggregateByIndexOrder() throws Exception {
     SortedMap<OSHDBCombinedIndex<OSMType, OSHDBTimestamp>, List<Long>> resultIndexTime =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)

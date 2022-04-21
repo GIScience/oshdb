@@ -20,7 +20,7 @@ import org.locationtech.jts.io.WKTReader;
  * Tests the {@link OSHDBGeometryBuilder} class for the special case of multipolygons with
  * split rings.
  */
-public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
+class OSHDBGeometryBuilderRelationOuterDirectionsTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
@@ -34,7 +34,7 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
 
 
   @Test
-  public void testFromPointTwoWaysGoingToDiffDirections() throws ParseException {
+  void testFromPointTwoWaysGoingToDiffDirections() throws ParseException {
     // start of partial ring matches start of current line
     // from one point in outer ring two ways are going to different directions
     OSMEntity entity = testData.relations().get(1L).get(0);
@@ -53,7 +53,7 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
   }
 
   @Test
-  public void testToPointTwoWaysPointingFromDiffDirections() throws ParseException {
+  void testToPointTwoWaysPointingFromDiffDirections() throws ParseException {
     // end of partial ring matches end of current line
     // to one point in outer ring two ways are pointing from different directions
     OSMEntity entity = testData.relations().get(2L).get(0);
@@ -72,7 +72,7 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
   }
 
   @Test
-  public void testStartMatchesEnd() throws ParseException {
+  void testStartMatchesEnd() throws ParseException {
     // start of partial ring matches end of current line
     //
     OSMEntity entity = testData.relations().get(3L).get(0);
@@ -91,7 +91,7 @@ public class OSHDBGeometryBuilderRelationOuterDirectionsTest {
   }
 
   @Test
-  public void testEndMatchesStart() throws ParseException {
+  void testEndMatchesStart() throws ParseException {
     // end of partial ring matches to start of current line
     //
     OSMEntity entity = testData.relations().get(4L).get(0);

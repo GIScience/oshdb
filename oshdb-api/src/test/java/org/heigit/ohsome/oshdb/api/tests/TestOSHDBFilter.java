@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
  *   of unit tests.
  * </p>
  */
-public class TestOSHDBFilter {
+class TestOSHDBFilter {
   private final OSHDBJdbc oshdb;
   private final FilterParser filterParser;
 
@@ -58,7 +58,7 @@ public class TestOSHDBFilter {
   }
 
   @Test
-  public void testFilterString() throws Exception {
+  void testFilterString() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
         .map(x -> 1)
         .filter("type:way and geometry:polygon and building=*")
@@ -75,7 +75,7 @@ public class TestOSHDBFilter {
   }
 
   @Test
-  public void testFilterObject() throws Exception {
+  void testFilterObject() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
         .filter(filterParser.parse("type:way and geometry:polygon and building=*"))
         .count();
@@ -84,7 +84,7 @@ public class TestOSHDBFilter {
   }
 
   @Test
-  public void testAggregateFilter() throws Exception {
+  void testAggregateFilter() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter("(geometry:polygon or geometry:other) and building=*")
@@ -96,7 +96,7 @@ public class TestOSHDBFilter {
   }
 
   @Test
-  public void testAggregateFilterObject() throws Exception {
+  void testAggregateFilterObject() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter(filterParser.parse("(geometry:polygon or geometry:other) and building=*"))
@@ -106,7 +106,7 @@ public class TestOSHDBFilter {
   }
 
   @Test
-  public void testFilterGroupByEntity() throws Exception {
+  void testFilterGroupByEntity() throws Exception {
     MapReducer<?> mr = createMapReducerOSMEntitySnapshot();
     Number osmTypeFilterResult = mr.groupByEntity().osmType(OSMType.WAY).count();
     Number stringFilterResult = mr.groupByEntity().filter("type:way").count();
@@ -122,7 +122,7 @@ public class TestOSHDBFilter {
 
   @Test
   @SuppressWarnings("ResultOfMethodCallIgnored")
-  public void testFilterNonExistentTag() throws Exception {
+  void testFilterNonExistentTag() throws Exception {
     FilterParser parser = new FilterParser(new TagTranslator(oshdb.getConnection()));
     try {
       createMapReducerOSMEntitySnapshot()
@@ -137,7 +137,7 @@ public class TestOSHDBFilter {
   }
 
   @Test
-  public void testFilterNotCrashDuringNormalize() throws Exception {
+  void testFilterNotCrashDuringNormalize() throws Exception {
     var mr = createMapReducerOSMContribution();
     mr = mr.filter(new FilterExpression() {
       @Override

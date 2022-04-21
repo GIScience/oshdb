@@ -21,7 +21,7 @@ public class FilterByTest extends FilterTest {
   }
 
   @Test
-  public void testFilterByOSHEntity() {
+  void testFilterByOSHEntity() {
     FilterExpression expression;
     expression = Filter.byOSHEntity(e -> e.getId() == 1);
     assertTrue(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
@@ -30,7 +30,7 @@ public class FilterByTest extends FilterTest {
   }
 
   @Test
-  public void testFilterByOSMEntity() {
+  void testFilterByOSMEntity() {
     FilterExpression expression;
     expression = Filter.byOSMEntity(e -> e.getVersion() == 1);
     assertTrue(expression.applyOSH(testOSHEntity) && expression.applyOSM(testOSMEntity));
@@ -39,7 +39,7 @@ public class FilterByTest extends FilterTest {
   }
 
   @Test
-  public void testFilterByOSMEntityApplyGeometryFallback() {
+  void testFilterByOSMEntityApplyGeometryFallback() {
     FilterExpression expression = Filter.byOSMEntity(e -> e.getVersion() == 1);
     assertTrue(expression.applyOSMGeometry(testOSMEntity, gf.createPoint()));
     assertFalse(expression.negate().applyOSMGeometry(testOSMEntity, gf.createPoint()));

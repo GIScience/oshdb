@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests osm data filters.
  */
-public class TestOSMDataFilters {
+class TestOSMDataFilters {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -49,7 +49,7 @@ public class TestOSMDataFilters {
   // filter: osm type
 
   @Test
-  public void bbox() throws Exception {
+  void bbox() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmType(OSMType.NODE)
         .areaOfInterest(bbox)
@@ -59,7 +59,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void polygon() throws Exception {
+  void polygon() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmType(OSMType.NODE)
         .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
@@ -69,7 +69,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void multiPolygon() throws Exception {
+  void multiPolygon() throws Exception {
     GeometryFactory gf = new GeometryFactory();
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmType(OSMType.NODE)
@@ -82,7 +82,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void types() throws Exception {
+  void types() throws Exception {
     Set<OSMType> result;
     // single type
     result = createMapReducerOSMEntitySnapshot()
@@ -130,7 +130,7 @@ public class TestOSMDataFilters {
   // filter: osm tags
 
   @Test
-  public void tagKey() throws Exception {
+  void tagKey() throws Exception {
     SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
         .osmTag("building")
         .areaOfInterest(bbox)
@@ -142,7 +142,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void tagKeyValue() throws Exception {
+  void tagKeyValue() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag("highway", "residential")
         .osmType(OSMType.WAY)
@@ -153,7 +153,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void tagKeyValues() throws Exception {
+  void tagKeyValues() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag("highway", Arrays.asList("residential", "unclassified"))
         .osmType(OSMType.WAY)
@@ -164,7 +164,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void tagKeyValueRegexp() throws Exception {
+  void tagKeyValueRegexp() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag("highway", Pattern.compile("residential|unclassified"))
         .osmType(OSMType.WAY)
@@ -175,7 +175,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void tagList() throws Exception {
+  void tagList() throws Exception {
     // only tags
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag(Arrays.asList(
@@ -202,7 +202,7 @@ public class TestOSMDataFilters {
   }
 
   @Test
-  public void tagMultiple() throws Exception {
+  void tagMultiple() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .osmTag("name")
         .osmTag("highway")
@@ -224,7 +224,7 @@ public class TestOSMDataFilters {
 
 
   @Test
-  public void tagNotExists() throws Exception {
+  void tagNotExists() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .osmTag("buildingsss")
         .areaOfInterest(bbox)
@@ -250,7 +250,7 @@ public class TestOSMDataFilters {
   // custom filter
 
   @Test
-  public void custom() throws Exception {
+  void custom() throws Exception {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .osmEntityFilter(entity -> entity.getVersion() > 2)
         .osmType(OSMType.WAY)

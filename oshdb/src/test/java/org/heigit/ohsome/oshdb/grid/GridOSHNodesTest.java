@@ -12,11 +12,10 @@ import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("javadoc")
-public class GridOSHNodesTest {
+class GridOSHNodesTest {
 
   @Test
-  public void testRebaseEntities() throws IOException {
+  void testRebaseEntities() throws IOException {
     List<OSHNode> hosmNodes = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>();

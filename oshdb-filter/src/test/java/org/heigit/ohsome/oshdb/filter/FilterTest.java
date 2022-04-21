@@ -23,7 +23,6 @@ import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-
 /**
  * Tests the parsing of filters and the application to OSM entities.
  */
@@ -32,7 +31,7 @@ abstract class FilterTest {
   protected TagTranslator tagTranslator;
 
   @BeforeEach
-  public void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
+  void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
     Class.forName("org.h2.Driver");
     this.tagTranslator = new TagTranslator(DriverManager.getConnection(
         "jdbc:h2:./src/test/resources/keytables;ACCESS_MODE_DATA=r",
@@ -42,7 +41,7 @@ abstract class FilterTest {
   }
 
   @AfterEach
-  public void teardown() throws SQLException {
+  void teardown() throws SQLException {
     this.tagTranslator.getConnection().close();
   }
 

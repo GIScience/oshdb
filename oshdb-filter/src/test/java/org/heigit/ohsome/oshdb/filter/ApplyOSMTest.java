@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the application of filters to OSM entities.
  */
-public class ApplyOSMTest extends FilterTest {
+class ApplyOSMTest extends FilterTest {
   @Test
-  public void testTagFilterEquals() {
+  void testTagFilterEquals() {
     FilterExpression expression = parser.parse("highway=residential");
     assertTrue(expression.applyOSM(createTestOSMEntityNode("highway", "residential")));
     assertFalse(expression.applyOSM(createTestOSMEntityNode("highway", "track")));
@@ -18,14 +18,14 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterEqualsAny() {
+  void testTagFilterEqualsAny() {
     FilterExpression expression = parser.parse("highway=*");
     assertTrue(expression.applyOSM(createTestOSMEntityNode("highway", "residential")));
     assertFalse(expression.applyOSM(createTestOSMEntityNode("building", "yes")));
   }
 
   @Test
-  public void testTagFilterNotEquals() {
+  void testTagFilterNotEquals() {
     FilterExpression expression = parser.parse("highway!=residential");
     assertFalse(expression.applyOSM(createTestOSMEntityNode("highway", "residential")));
     assertTrue(expression.applyOSM(createTestOSMEntityNode("highway", "track")));
@@ -33,14 +33,14 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEqualsAny() {
+  void testTagFilterNotEqualsAny() {
     FilterExpression expression = parser.parse("highway!=*");
     assertFalse(expression.applyOSM(createTestOSMEntityNode("highway", "track")));
     assertTrue(expression.applyOSM(createTestOSMEntityNode("building", "yes")));
   }
 
   @Test
-  public void testTagFilterEqualsAnyOf() {
+  void testTagFilterEqualsAnyOf() {
     FilterExpression expression = parser.parse("highway in (residential, track)");
     assertTrue(expression.applyOSM(createTestOSMEntityNode("highway", "residential")));
     assertTrue(expression.applyOSM(createTestOSMEntityNode("highway", "track")));
@@ -56,7 +56,7 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEqualsAnyOf() {
+  void testTagFilterNotEqualsAnyOf() {
     FilterExpression expression = parser.parse("highway in (residential, track)").negate();
     assertFalse(expression.applyOSM(createTestOSMEntityNode("highway", "residential")));
     assertFalse(expression.applyOSM(createTestOSMEntityNode("highway", "track")));
@@ -72,31 +72,31 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterEquals() {
+  void testIdFilterEquals() {
     assertTrue(parser.parse("id:1").applyOSM(createTestOSMEntityNode()));
     assertFalse(parser.parse("id:2").applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testIdFilterNotEquals() {
+  void testIdFilterNotEquals() {
     assertFalse(parser.parse("id:1").negate().applyOSM(createTestOSMEntityNode()));
     assertTrue(parser.parse("id:2").negate().applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testIdFilterEqualsAnyOf() {
+  void testIdFilterEqualsAnyOf() {
     assertTrue(parser.parse("id:(1,2,3)").applyOSM(createTestOSMEntityNode()));
     assertFalse(parser.parse("id:(2,3)").applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testIdFilterNotEqualsAnyOf() {
+  void testIdFilterNotEqualsAnyOf() {
     assertFalse(parser.parse("id:(1,2,3)").negate().applyOSM(createTestOSMEntityNode()));
     assertTrue(parser.parse("id:(2,3)").negate().applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testIdFilterInRange() {
+  void testIdFilterInRange() {
     assertTrue(parser.parse("id:(1..3)").applyOSM(createTestOSMEntityNode()));
     assertFalse(parser.parse("id:(2..3)").applyOSM(createTestOSMEntityNode()));
     assertTrue(parser.parse("id:(1..)").applyOSM(createTestOSMEntityNode()));
@@ -106,7 +106,7 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterNotInRange() {
+  void testIdFilterNotInRange() {
     assertFalse(parser.parse("id:(1..3)").negate().applyOSM(createTestOSMEntityNode()));
     assertTrue(parser.parse("id:(2..3)").negate().applyOSM(createTestOSMEntityNode()));
     assertFalse(parser.parse("id:(1..)").negate().applyOSM(createTestOSMEntityNode()));
@@ -116,13 +116,13 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testTypeFilter() {
+  void testTypeFilter() {
     assertTrue(parser.parse("type:node").applyOSM(createTestOSMEntityNode()));
     assertFalse(parser.parse("type:way").applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterExpression expression = parser.parse("highway=residential and name=*");
     assertTrue(expression.applyOSM(createTestOSMEntityNode(
         "highway", "residential",
@@ -138,7 +138,7 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterExpression expression = parser.parse("highway=residential or name=*");
     assertTrue(expression.applyOSM(createTestOSMEntityNode("highway", "residential")));
     assertTrue(expression.applyOSM(createTestOSMEntityNode("name", "FIXME")));
@@ -146,7 +146,7 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterPoint() {
+  void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
     assertFalse(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
@@ -154,7 +154,7 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterLine() {
+  void testGeometryTypeFilterLine() {
     FilterExpression expression = parser.parse("geometry:line");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1})));
@@ -163,7 +163,7 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterPolygon() {
+  void testGeometryTypeFilterPolygon() {
     FilterExpression expression = parser.parse("geometry:polygon");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {1, 2, 3, 1})));
     assertFalse(expression.applyOSM(createTestOSMEntityWay(new long[] {1, 2, 3, 4})));
@@ -175,7 +175,7 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterOther() {
+  void testGeometryTypeFilterOther() {
     FilterExpression expression = parser.parse("geometry:other");
     assertFalse(expression.applyOSM(createTestOSMEntityNode()));
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
@@ -183,44 +183,44 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testConstant() {
+  void testConstant() {
     FilterExpression expression = parser.parse("");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testGeometryFilterArea() {
+  void testGeometryFilterArea() {
     FilterExpression expression = parser.parse("area:(1..2)");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
   }
 
   @Test
-  public void testGeometryFilterLength() {
+  void testGeometryFilterLength() {
     FilterExpression expression = parser.parse("length:(1..2)");
     assertTrue(expression.applyOSM(createTestOSMEntityWay(new long[] {})));
   }
 
   @Test
-  public void testChangesetId() {
+  void testChangesetId() {
     FilterExpression expression = parser.parse("changeset:42");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
     assertTrue(expression.negate().applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testChangesetIdList() {
+  void testChangesetIdList() {
     FilterExpression expression = parser.parse("changeset:(1,2,3)");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testChangesetIdRange() {
+  void testChangesetIdRange() {
     FilterExpression expression = parser.parse("changeset:(10..12)");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testContributorUserId() {
+  void testContributorUserId() {
     var parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:1");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
@@ -228,14 +228,14 @@ public class ApplyOSMTest extends FilterTest {
   }
 
   @Test
-  public void testContributorUserIdList() {
+  void testContributorUserIdList() {
     var parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:(1,2,3)");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));
   }
 
   @Test
-  public void testContributorUserIdRange() {
+  void testContributorUserIdRange() {
     var parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:(10..12)");
     assertTrue(expression.applyOSM(createTestOSMEntityNode()));

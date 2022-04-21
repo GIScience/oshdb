@@ -1,22 +1,20 @@
 package org.heigit.ohsome.oshdb.util.geometry.osmtestdata;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
+import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryTest;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaMultipolygonAllOuters;
-import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -29,24 +27,19 @@ import org.locationtech.jts.geom.Point;
  *
  * @see <a href="https://github.com/osmcode/osm-testdata/tree/master/grid">osm-testdata</a>
  */
-public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
-  private final OSMXmlReader testData = new OSMXmlReader();
-  TagInterpreter areaDecider;
+class OSHDBGeometryBuilderTestOsmTestData1xxTest extends OSHDBGeometryTest {
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTestOsmTestData1xxTest() {
-    testData.add("./src/test/resources/osm-testdata/all.osm");
-    areaDecider = new OSMXmlReaderTagInterpreter(testData);
+    super("./src/test/resources/osm-testdata/all.osm");
   }
 
-
   @Test
-  public void test100() {
+  void test100() {
     // A single node
-    OSMEntity entity = testData.nodes().get(100000L).get(0);
-    Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    Geometry result = buildGeometry(nodes(100000L, 0), timestamp);
     assertTrue(result instanceof Point);
     assertEquals(1.02, ((Point) result).getX(), DELTA);
     assertEquals(1.02, ((Point) result).getY(), DELTA);
@@ -59,12 +52,10 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   } */
 
   @Test
-  public void test102() {
+  void test102() {
     // Two nodes at same location
-    OSMEntity entity1 = testData.nodes().get(102000L).get(0);
-    OSMEntity entity2 = testData.nodes().get(102001L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
+    Geometry result1 = buildGeometry(nodes(102000L, 0), timestamp);
+    Geometry result2 = buildGeometry(nodes(102001L, 0), timestamp);
     assertTrue(result1 instanceof Point);
     assertTrue(result2 instanceof Point);
     assertEquals(((Point) result2).getX(), ((Point) result1).getX(), DELTA);
@@ -72,12 +63,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   }
 
   @Test
-  public void test110() {
+  void test110() {
     // Way with two nodes
-    OSMEntity entity1 = testData.ways().get(110800L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(2, result1.getCoordinates().length);
+    Geometry result = buildGeometry(ways(110800L, 0), timestamp);
+    assertTrue(result instanceof LineString);
+    assertEquals(2, result.getCoordinates().length);
   }
 
   /* @Test
@@ -87,38 +77,33 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   } */
 
   @Test
-  public void test112() {
+  void test112() {
     // Closed way with four nodes
-    OSMEntity entity1 = testData.ways().get(112800L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(5, result1.getCoordinates().length);
+    Geometry result = buildGeometry(ways(112800L, 0), timestamp);
+    assertTrue(result instanceof LineString);
+    assertEquals(5, result.getCoordinates().length);
     assertEquals(
-        ((LineString) result1).getCoordinateN(result1.getNumPoints() - 1),
-        ((LineString) result1).getCoordinateN(0)
+        ((LineString) result).getCoordinateN(result.getNumPoints() - 1),
+        ((LineString) result).getCoordinateN(0)
     );
   }
 
   @Test
-  public void test113() {
+  void test113() {
     // Two separate ways
-    OSMEntity entity1 = testData.ways().get(113800L).get(0);
-    OSMEntity entity2 = testData.ways().get(113801L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
+    Geometry result1 = buildGeometry(ways(113800L, 0), timestamp);
+    Geometry result2 = buildGeometry(ways(113801L, 0), timestamp);
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertFalse(result1.crosses(result2));
   }
 
   @Test
-  public void test114() {
+  void test114() {
     // Two ways connected end-to-beginning
-    OSMEntity entity1 = testData.ways().get(114800L).get(0);
-    OSMEntity entity2 = testData.ways().get(114801L).get(0);
     TagInterpreter areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
+    Geometry result1 = OSHDBGeometryBuilder.getGeometry(ways(114800L, 0), timestamp, areaDecider);
+    Geometry result2 = OSHDBGeometryBuilder.getGeometry(ways(114801L, 0), timestamp, areaDecider);
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertEquals(
@@ -128,12 +113,10 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   }
 
   @Test
-  public void test115() {
+  void test115() {
     // Two ways connected end-to-end
-    OSMEntity entity1 = testData.ways().get(115800L).get(0);
-    OSMEntity entity2 = testData.ways().get(115801L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
+    Geometry result1 = buildGeometry(ways(115800L, 0), timestamp);
+    Geometry result2 = buildGeometry(ways(115801L, 0), timestamp);
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertEquals(
@@ -143,14 +126,11 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   }
 
   @Test
-  public void test116() {
+  void test116() {
     // Three ways connected in a closed loop
-    OSMEntity entity1 = testData.ways().get(116800L).get(0);
-    OSMEntity entity2 = testData.ways().get(116801L).get(0);
-    OSMEntity entity3 = testData.ways().get(116802L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
-    Geometry result3 = OSHDBGeometryBuilder.getGeometry(entity3, timestamp, areaDecider);
+    Geometry result1 = buildGeometry(ways(116800L, 0), timestamp);
+    Geometry result2 = buildGeometry(ways(116801L, 0), timestamp);
+    Geometry result3 = buildGeometry(ways(116802L, 0), timestamp);
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result3 instanceof LineString);
@@ -172,57 +152,45 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   }
 
   @Test
-  public void test120() {
+  void test120() {
     // Way without any nodes
-    OSMEntity entity1 = testData.ways().get(120800L).get(0);
-    assertDoesNotThrow(() -> {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    });
+    Geometry result = buildGeometry(ways(120800L, 0), timestamp);
+    assertNotNull(result);
   }
 
   @Test
-  public void test121() {
+  void test121() {
     // Way with a single node
-    OSMEntity entity1 = testData.ways().get(121800L).get(0);
-    assertDoesNotThrow(() -> {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    });
+    Geometry result = buildGeometry(ways(121800L, 0), timestamp);
+    assertNotNull(result);
   }
 
   @Test
-  public void test122() {
+  void test122() {
     // Same node twice in way
-    OSMEntity entity1 = testData.ways().get(122800L).get(0);
-    assertDoesNotThrow(() -> {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    });
+    Geometry result = buildGeometry(ways(122800L, 0), timestamp);
+    assertNotNull(result);
   }
 
   @Test
-  public void test123() {
+  void test123() {
     // Way with two nodes at same position
-    OSMEntity entity1 = testData.ways().get(123800L).get(0);
-    assertDoesNotThrow(() -> {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    });
+    Geometry result = buildGeometry(ways(123800L, 0), timestamp);
+    assertNotNull(result);
   }
 
   @Test
-  public void test124() {
+  void test124() {
     // Way with three nodes, first two nodes have the same position
-    OSMEntity entity1 = testData.ways().get(124800L).get(0);
-    assertDoesNotThrow(() -> {
-      OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    });
+    Geometry result = buildGeometry(ways(124800L, 0), timestamp);
+    assertNotNull(result);
   }
 
   @Test
-  public void test130() {
+  void test130() {
     // Crossing ways without common node
-    OSMEntity entity1 = testData.ways().get(130800L).get(0);
-    OSMEntity entity2 = testData.ways().get(130801L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
+    Geometry result1 = buildGeometry(ways(130800L, 0), timestamp);
+    Geometry result2 = buildGeometry(ways(130801L, 0), timestamp);
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.crosses(result2));
@@ -235,12 +203,10 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   }
 
   @Test
-  public void test131() {
+  void test131() {
     // Crossing ways with common node
-    OSMEntity entity1 = testData.ways().get(131800L).get(0);
-    OSMEntity entity2 = testData.ways().get(131801L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
+    Geometry result1 = buildGeometry(ways(131800L, 0), timestamp);
+    Geometry result2 = buildGeometry(ways(131801L, 0), timestamp);
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.intersects(result2));
@@ -253,12 +219,10 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   }
 
   @Test
-  public void test132() {
+  void test132() {
     // Crossing ways without common node, but crossing node at same position
-    OSMEntity entity1 = testData.ways().get(132800L).get(0);
-    OSMEntity entity2 = testData.ways().get(132801L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp, areaDecider);
+    Geometry result1 = buildGeometry(ways(132800L, 0), timestamp);
+    Geometry result2 = buildGeometry(ways(132801L, 0), timestamp);
     assertTrue(result1 instanceof LineString);
     assertTrue(result2 instanceof LineString);
     assertTrue(result1.crosses(result2));
@@ -272,44 +236,40 @@ public class OSHDBGeometryBuilderTestOsmTestData1xxTest {
   }
 
   @Test
-  public void test133() {
+  void test133() {
     // Self-crossing way without common node
-    OSMEntity entity1 = testData.ways().get(133800L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
+    Geometry result = buildGeometry(ways(133800L, 0), timestamp);
+    assertTrue(result instanceof LineString);
     // If a LineString intersects like that, isSimple() will return false as self-intersection is
     // not allowed for Simple Geometries.
-    assertFalse(result1.isSimple());
+    assertFalse(result.isSimple());
     // punkt mit punkt, linie bilden, crosses
     GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] xy1 = new Coordinate[]{(((LineString) result1).getCoordinateN(0)),
-        (((LineString) result1).getCoordinateN(1))};
+    Coordinate[] xy1 = new Coordinate[]{(((LineString) result).getCoordinateN(0)),
+        (((LineString) result).getCoordinateN(1))};
     LineString lineString1 = geometryFactory.createLineString(xy1);
-    Coordinate[] xy2 = new Coordinate[]{(((LineString) result1).getCoordinateN(2)),
-        (((LineString) result1).getCoordinateN(3))};
+    Coordinate[] xy2 = new Coordinate[]{(((LineString) result).getCoordinateN(2)),
+        (((LineString) result).getCoordinateN(3))};
     LineString lineString2 = geometryFactory.createLineString(xy2);
     assertTrue(lineString1.crosses(lineString2));
-    assertEquals(4, result1.getCoordinates().length);
+    assertEquals(4, result.getCoordinates().length);
   }
 
   @Test
-  public void test134() {
+  void test134() {
     // Self-crossing way with common node
-    OSMEntity entity1 = testData.ways().get(134800L).get(0);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertFalse(result1.isSimple());
+    Geometry result = buildGeometry(ways(134800L, 0), timestamp);
+    assertTrue(result instanceof LineString);
+    assertFalse(result.isSimple());
     // punkt mit punkt, linie bilden, crosses
     GeometryFactory geometryFactory = new GeometryFactory();
-    Coordinate[] xy1 = new Coordinate[]{(((LineString) result1).getCoordinateN(0)),
-        (((LineString) result1).getCoordinateN(2))};
+    Coordinate[] xy1 = new Coordinate[]{(((LineString) result).getCoordinateN(0)),
+        (((LineString) result).getCoordinateN(2))};
     LineString lineString1 = geometryFactory.createLineString(xy1);
-    Coordinate[] xy2 = new Coordinate[]{(((LineString) result1).getCoordinateN(3)),
-        (((LineString) result1).getCoordinateN(5))};
+    Coordinate[] xy2 = new Coordinate[]{(((LineString) result).getCoordinateN(3)),
+        (((LineString) result).getCoordinateN(5))};
     LineString lineString2 = geometryFactory.createLineString(xy2);
     assertTrue(lineString1.intersects(lineString2));
-    assertEquals(6, result1.getCoordinates().length);
+    assertEquals(6, result.getCoordinates().length);
   }
-
-
 }

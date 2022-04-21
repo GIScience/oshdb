@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Runs the tests using the "affinity call" Ignite backend.</p>
  */
-public class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgnite {
+class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgnite {
   /**
    * Creates the test runner using the ignite affinitycall backend.
    *
@@ -24,7 +24,7 @@ public class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgni
   }
 
   @Test
-  public void testOSMEntitySnapshotViewStreamNullValues() throws Exception {
+  void testOSMEntitySnapshotViewStreamNullValues() throws Exception {
     // simple stream query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(

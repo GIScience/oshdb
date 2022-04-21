@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
  */
 public class NormalizeTest {
   @Test
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
     FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.AND, sub2);
@@ -21,7 +21,7 @@ public class NormalizeTest {
   }
 
   @Test
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
     FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.OR, sub2);

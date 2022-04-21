@@ -24,8 +24,7 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("javadoc")
-public class OSHRelationTest {
+class OSHRelationTest {
 
   OSHNode node100 = OSHNodeTest.buildOSHNode(OSM.node(
       100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094980, 86809720));
@@ -48,7 +47,7 @@ public class OSHRelationTest {
   public OSHRelationTest() throws IOException {}
 
   @Test
-  public void testGetNodes() throws IOException {
+  void testGetNodes() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
         OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
@@ -61,7 +60,7 @@ public class OSHRelationTest {
   }
 
   @Test
-  public void testWithMissingNode() throws IOException {
+  void testWithMissingNode() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
         OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
@@ -90,7 +89,7 @@ public class OSHRelationTest {
   }
 
   @Test
-  public void testGetWays() throws IOException {
+  void testGetWays() throws IOException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
         OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(200, OSMType.WAY, 0),
@@ -107,7 +106,7 @@ public class OSHRelationTest {
   }
 
   @Test
-  public void testCompactAndSerialize() throws IOException, ClassNotFoundException {
+  void testCompactAndSerialize() throws IOException, ClassNotFoundException {
     OSHRelation hrelation = OSHRelationImpl.build(Lists.newArrayList(
         OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
@@ -169,7 +168,7 @@ public class OSHRelationTest {
   }
 
   @Test
-  public void testToString() throws IOException {
+  void testToString() throws IOException {
     OSHRelation instance = OSHRelationImpl.build(Lists.newArrayList(
         OSM.relation(300, 1, 3333L, 4444L, 23, new int[]{}, new OSMMember[]{
             new OSMMember(100, OSMType.NODE, 0),
@@ -183,7 +182,7 @@ public class OSHRelationTest {
   }
 
   @Test
-  public void testHashCodeEquals() throws IOException {
+  void testHashCodeEquals() throws IOException {
     var expected = OSHRelationImpl.build(Lists.newArrayList(
         OSM.relation(123L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Collections.emptyList(), Collections.emptyList());

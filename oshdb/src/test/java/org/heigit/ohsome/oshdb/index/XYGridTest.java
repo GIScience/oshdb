@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("checkstyle:abbreviationAsWordInName")
-public class XYGridTest {
+class XYGridTest {
 
   private static final int MAXZOOM = OSHDB.MAXZOOM;
   private static final Logger LOG = LoggerFactory.getLogger(XYGridTest.class);
@@ -24,7 +24,7 @@ public class XYGridTest {
   private final XYGrid thirty = new XYGrid(30);
 
   @Test
-  public void testGetId_double_double() {
+  void testGetId_double_double() {
     double longitude = 0.0;
     double latitude = 0.0;
     XYGrid instance = new XYGrid(2);
@@ -34,7 +34,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testnegneg181_neg91_2() {
+  void testnegneg181_neg91_2() {
     // Testing Coordinates: -181, -91, zoom 2
     double longitude = -181.0;
     double latitude = -91.0;
@@ -45,7 +45,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testneg180_neg90_0() {
+  void testneg180_neg90_0() {
     // Testing Coordinates: -180, -90, zoom 0
     double longitude = -180.0;
     double latitude = -90.0;
@@ -56,7 +56,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void test180_90_0() {
+  void test180_90_0() {
     // Testing Coordinates: 180, 90, zoom 0
     double longitude = 180.0;
     double latitude = 90.0;
@@ -67,7 +67,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void test179_90_0() {
+  void test179_90_0() {
     // Testing Coordinates: 179, 90, zoom 0
     double longitude = 179.0;
     double latitude = 90.0;
@@ -78,7 +78,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testneg180_neg90_2() {
+  void testneg180_neg90_2() {
     // Testing Coordinates: -180, -90, zoom 2
     double longitude = -180.0;
     double latitude = -90.0;
@@ -89,7 +89,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void test180_90_2() {
+  void test180_90_2() {
     // Testing Coordinates: 180, 90, zoom 2
     double longitude = 180.0;
     double latitude = 90.0;
@@ -100,7 +100,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void test179_90_2() {
+  void test179_90_2() {
     // Testing Coordinates: 179, 90, zoom 2
     double longitude = 180.0 - GEOM_PRECISION;
     double latitude = 90.0;
@@ -111,7 +111,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testneg180_neg90_31() {
+  void testneg180_neg90_31() {
     // Testing Coordinates: -180, -90, zoom 31
     double longitude = -180.0;
     double latitude = -90.0;
@@ -125,7 +125,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void test180_90_neg1() {
+  void test180_90_neg1() {
     // Testing Coordinates: 180, 90, zoom -1
     double longitude = 180.0;
     double latitude = 90.0;
@@ -139,7 +139,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testneg180_neg90_30() {
+  void testneg180_neg90_30() {
     // Testing Coordinates: -180, -90, zoom 30
     double longitude = -180.0;
     double latitude = -90.0;
@@ -150,7 +150,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void test180_90_30() {
+  void test180_90_30() {
     // Testing Coordinates: 180, 90, zoom 30
     double longitude = 180.0;
     double latitude = 90.0;
@@ -161,7 +161,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void test179_90_30() {
+  void test179_90_30() {
     // Testing Coordinates: 179, 90, zoom 30
     double longitude = 180.0 - GEOM_PRECISION;
     double latitude = 90.0;
@@ -172,7 +172,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetId_BoundingBox() {
+  void testGetId_BoundingBox() {
     OSHDBBoundingBox bbx = bboxWgs84Coordinates(-10.0, -10.0, 10.0, 10.0);
     XYGrid instance = new XYGrid(2);
     long expResult = 1L;
@@ -187,7 +187,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetCellWidth() {
+  void testGetCellWidth() {
     double expResult = 90;
 
     double result = two.getCellWidth();
@@ -195,7 +195,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetCellDimensions() {
+  void testGetCellDimensions() {
     long cellId = 0L;
     OSHDBBoundingBox expResult = bboxWgs84Coordinates(-180.0, -90.0, -90.0 - GEOM_PRECISION,
         0.0 - GEOM_PRECISION);
@@ -225,7 +225,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetEstimatedIdCount() {
+  void testGetEstimatedIdCount() {
     OSHDBBoundingBox data = bboxWgs84Coordinates(0.0, 0.0, 89.0, 89.0);
     long expResult = 1L;
     long result = two.getEstimatedIdCount(data);
@@ -249,14 +249,14 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetLevel() {
+  void testGetLevel() {
     int expResult = 2;
     int result = two.getLevel();
     assertEquals(expResult, result);
   }
 
   @Test
-  public void testBbox2Ids() {
+  void testBbox2Ids() {
     OSHDBBoundingBox bbox = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
     Set<IdRange> result = zero.bbox2CellIdRanges(bbox, false);
 
@@ -355,7 +355,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetNeighbours() {
+  void testGetNeighbours() {
     CellId center = new CellId(2, 6L);
     Set<IdRange> expResult = new TreeSet<>();
     expResult.add(IdRange.of(1L, 3L));
@@ -366,7 +366,7 @@ public class XYGridTest {
   }
 
   @Test
-  public void testGetBoundingBox() {
+  void testGetBoundingBox() {
     OSHDBBoundingBox result = XYGrid.getBoundingBox(new CellId(2, 2));
     OSHDBBoundingBox expResult =
         bboxWgs84Coordinates(0.0, -90.0, 90.0 - GEOM_PRECISION, 0.0 - GEOM_PRECISION);

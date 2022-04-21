@@ -31,7 +31,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Test aggregate by geometry method of the OSHDB API.
  */
-public class TestMapAggregateByGeometry {
+class TestMapAggregateByGeometry {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -78,7 +78,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testOSMContribution() throws Exception {
+  void testOSMContribution() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .aggregateByGeometry(getSubRegions())
@@ -103,7 +103,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testOSMEntitySnapshot() throws Exception {
+  void testOSMEntitySnapshot() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .aggregateByGeometry(getSubRegions())
@@ -128,7 +128,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testZerofill() throws Exception {
+  void testZerofill() throws Exception {
     SortedMap<String, Integer> resultZerofilled = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .aggregateByGeometry(getSubRegions())
@@ -138,7 +138,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testCombinedWithAggregateByTimestamp() throws Exception {
+  void testCombinedWithAggregateByTimestamp() throws Exception {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
@@ -157,7 +157,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testCombinedWithAggregateByTimestampOrder() throws Exception {
+  void testCombinedWithAggregateByTimestampOrder() throws Exception {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, List<Long>> resultGeomTime =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
@@ -183,7 +183,7 @@ public class TestMapAggregateByGeometry {
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
   @Test()
-  public void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
+  void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
     assertThrows(UnsupportedOperationException.class, () -> {
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps1)
@@ -196,7 +196,7 @@ public class TestMapAggregateByGeometry {
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
   @Test()
-  public void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
+  void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
     assertThrows(UnsupportedOperationException.class, () -> {
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps1)

@@ -27,7 +27,7 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Tests the {@link OSHDBGeometryBuilder} class.
  */
-public class OSHDBGeometryBuilderTest {
+class OSHDBGeometryBuilderTest {
 
   private final OSMXmlReader testData = new OSMXmlReader();
   private static final double DELTA = 1E-6;
@@ -37,7 +37,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testPointGetGeometry() {
+  void testPointGetGeometry() {
     OSMEntity entity = testData.nodes().get(1L).get(1);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, null);
@@ -47,7 +47,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testPointGetGeometryClipped() {
+  void testPointGetGeometryClipped() {
     OSMEntity entity = testData.nodes().get(1L).get(1);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     // by bbox
@@ -68,7 +68,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testWayGetGeometry() {
+  void testWayGetGeometry() {
     // linestring
     OSMEntity entity = testData.ways().get(1L).get(0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
@@ -99,7 +99,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testWayGetGeometryIncomplete() {
+  void testWayGetGeometryIncomplete() {
     // linestring with 3 node references, only 2 present
     OSMEntity entity = testData.ways().get(3L).get(0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
@@ -121,7 +121,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testRelationGetGeometry() {
+  void testRelationGetGeometry() {
     // simplest multipolygon
     OSMEntity entity = testData.relations().get(1L).get(0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
@@ -139,7 +139,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testRelationGetGeometryIncomplete() {
+  void testRelationGetGeometryIncomplete() {
     // multipolygon, missing ring
     OSMEntity entity = testData.relations().get(2L).get(0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
@@ -162,7 +162,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testBoundingGetGeometry() throws ParseException {
+  void testBoundingGetGeometry() throws ParseException {
     Polygon clipPoly =
         OSHDBGeometryBuilder.getGeometry(bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0));
     Geometry expectedPolygon = new WKTReader().read(
@@ -172,13 +172,13 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testBoundingBoxOf() {
+  void testBoundingBoxOf() {
     OSHDBBoundingBox bbox = OSHDBGeometryBuilder.boundingBoxOf(new Envelope(-180, 180, -90, 90));
     assertEquals("(-180.0000000,-90.0000000,180.0000000,90.0000000)", bbox.toString());
   }
 
   @Test
-  public void testBoundingBoxGetGeometry() {
+  void testBoundingBoxGetGeometry() {
     // regular bbox
     OSHDBBoundingBox bbox = bboxWgs84Coordinates(0.0, 0.0, 1.0, 1.0);
     Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbox);

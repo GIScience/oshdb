@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test flat map method of the MapReducer class of the OSHDB API.
  */
-public class TestFlatMapReduce {
+class TestFlatMapReduce {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -44,7 +44,7 @@ public class TestFlatMapReduce {
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     Set<Entry<Integer, Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(contribution -> {
@@ -74,7 +74,7 @@ public class TestFlatMapReduce {
   }
 
   @Test
-  public void testSet() throws Exception {
+  void testSet() throws Exception {
     Set<Integer> input = new TreeSet<>();
     input.add(1);
     input.add(2);
@@ -88,7 +88,7 @@ public class TestFlatMapReduce {
   }
 
   @Test
-  public void testIterable() throws Exception {
+  void testIterable() throws Exception {
     Set<Integer> input = new TreeSet<>();
     input.add(1);
     input.add(2);

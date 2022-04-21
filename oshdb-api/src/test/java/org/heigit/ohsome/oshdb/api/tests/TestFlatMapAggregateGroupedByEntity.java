@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test flat map method with groupByEntity of the MapAggregator class of the OSHDB API.
  */
-public class TestFlatMapAggregateGroupedByEntity {
+class TestFlatMapAggregateGroupedByEntity {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -44,7 +44,7 @@ public class TestFlatMapAggregateGroupedByEntity {
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .groupByEntity()

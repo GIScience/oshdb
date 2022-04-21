@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests lambda functions as filters.
  */
-public class TestLambdaFilter {
+class TestLambdaFilter {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -41,7 +41,7 @@ public class TestLambdaFilter {
   }
 
   @Test
-  public void testFilter() throws Exception {
+  void testFilter() throws Exception {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .osmEntityFilter(entity -> entity.getId() == 617308093)
@@ -57,7 +57,7 @@ public class TestLambdaFilter {
   }
 
   @Test
-  public void testAggregateFilter() throws Exception {
+  void testAggregateFilter() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .osmEntityFilter(entity -> entity.getId() == 617308093)

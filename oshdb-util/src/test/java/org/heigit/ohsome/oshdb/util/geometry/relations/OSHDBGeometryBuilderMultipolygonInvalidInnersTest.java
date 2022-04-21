@@ -17,7 +17,7 @@ import org.locationtech.jts.geom.Polygon;
  * Tests the {@link OSHDBGeometryBuilder} class for the special case of multipolygons with
  * invalid inner rings.
  */
-public class OSHDBGeometryBuilderMultipolygonInvalidInnersTest {
+class OSHDBGeometryBuilderMultipolygonInvalidInnersTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private final TagInterpreter tagInterpreter;
   private final OSHDBTimestamp timestamp =
@@ -29,7 +29,7 @@ public class OSHDBGeometryBuilderMultipolygonInvalidInnersTest {
   }
 
   @Test
-  public void testDuplicateInnerRings() {
+  void testDuplicateInnerRings() {
     // data has invalid (duplicate) inner rings
     OSMEntity entity = testData.relations().get(1L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);
@@ -37,7 +37,7 @@ public class OSHDBGeometryBuilderMultipolygonInvalidInnersTest {
   }
 
   @Test
-  public void testTouchingIncompleteInnerRings() {
+  void testTouchingIncompleteInnerRings() {
     // data has invalid (duplicate) inner rings
     OSMEntity entity = testData.relations().get(2L).get(0);
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, tagInterpreter);

@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test special reducers of the OSHDB API when using the contribution view.
  */
-public class TestHelpersOSMEntitySnapshotView {
+class TestHelpersOSMEntitySnapshotView {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -43,7 +43,7 @@ public class TestHelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testSum() throws Exception {
+  void testSum() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Number> result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -87,7 +87,7 @@ public class TestHelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testCount() throws Exception {
+  void testCount() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -133,7 +133,7 @@ public class TestHelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testAverage() throws Exception {
+  void testAverage() throws Exception {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -170,7 +170,7 @@ public class TestHelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testWeightedAverage() throws Exception {
+  void testWeightedAverage() throws Exception {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps1)
@@ -214,7 +214,7 @@ public class TestHelpersOSMEntitySnapshotView {
   }
 
   @Test
-  public void testUniq() throws Exception {
+  void testUniq() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps1)

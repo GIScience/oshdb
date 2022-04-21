@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
  */
 public class ParseTest extends FilterTest {
   @Test
-  public void testTagFilterEquals() {
+  void testTagFilterEquals() {
     FilterExpression expression = parser.parse("highway=residential");
     assertTrue(expression instanceof TagFilterEquals);
     OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
@@ -29,7 +29,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterStrings() {
+  void testTagFilterStrings() {
     // tag key with colon; quoted string as value
     assertTrue(parser.parse("addr:street=\"Hauptstraße\"") instanceof TagFilter);
     // whitespace (in string; between key and value, single quotes
@@ -40,7 +40,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterEqualsAny() {
+  void testTagFilterEqualsAny() {
     FilterExpression expression = parser.parse("highway=*");
     assertTrue(expression instanceof TagFilterEqualsAny);
     OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
@@ -49,7 +49,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEquals() {
+  void testTagFilterNotEquals() {
     FilterExpression expression = parser.parse("highway!=residential");
     assertTrue(expression instanceof TagFilterNotEquals);
     OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
@@ -58,7 +58,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEqualsAny() {
+  void testTagFilterNotEqualsAny() {
     FilterExpression expression = parser.parse("highway!=*");
     assertTrue(expression instanceof TagFilterNotEqualsAny);
     OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
@@ -68,7 +68,7 @@ public class ParseTest extends FilterTest {
 
   @SuppressWarnings("RegExpDuplicateAlternationBranch") // false positive by intellij
   @Test
-  public void testTagFilterEqualsAnyOf() {
+  void testTagFilterEqualsAnyOf() {
     FilterExpression expression = parser.parse("highway in (residential, track)");
     assertTrue(expression instanceof TagFilterEqualsAnyOf);
     OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
@@ -81,7 +81,7 @@ public class ParseTest extends FilterTest {
 
   @SuppressWarnings("RegExpDuplicateAlternationBranch") // false positive by intellij
   @Test
-  public void testTagFilterNotEqualsAnyOf() {
+  void testTagFilterNotEqualsAnyOf() {
     FilterExpression expression = parser.parse("not highway in (residential, track)");
     assertTrue(expression instanceof TagFilterNotEqualsAnyOf);
     OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
@@ -93,21 +93,21 @@ public class ParseTest extends FilterTest {
   }
 
   @Test()
-  public void testTagFilterEqualsAnyOfCheckEmpty() {
+  void testTagFilterEqualsAnyOfCheckEmpty() {
     assertThrows(IllegalStateException.class, () -> {
       new TagFilterEqualsAnyOf(Collections.emptyList());
     });
   }
 
   @Test()
-  public void testTagFilterNotEqualsAnyOfCheckEmpty() {
+  void testTagFilterNotEqualsAnyOfCheckEmpty() {
     assertThrows(IllegalStateException.class, () -> {
       new TagFilterNotEqualsAnyOf(Collections.emptyList());
     });
   }
 
   @Test()
-  public void testTagFilterEqualsAnyOfCheckMixed() {
+  void testTagFilterEqualsAnyOfCheckMixed() {
     assertThrows(IllegalStateException.class, () -> {
       new TagFilterEqualsAnyOf(Arrays.asList(
           tagTranslator.getOSHDBTagOf("highway", "residential"),
@@ -117,7 +117,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test()
-  public void testTagFilterNotEqualsAnyOfCheckMixed() {
+  void testTagFilterNotEqualsAnyOfCheckMixed() {
     assertThrows(IllegalStateException.class, () -> {
       new TagFilterNotEqualsAnyOf(Arrays.asList(
           tagTranslator.getOSHDBTagOf("highway", "residential"),
@@ -127,7 +127,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterEquals() {
+  void testIdFilterEquals() {
     FilterExpression expression = parser.parse("id:123");
     assertTrue(expression instanceof IdFilterEquals);
     assertEquals(123, ((IdFilterEquals) expression).getId());
@@ -135,7 +135,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testIdTypeFilterEquals() {
+  void testIdTypeFilterEquals() {
     FilterExpression expression = parser.parse("id:node/123");
     assertTrue(expression instanceof AndOperator);
     assertTrue(((AndOperator) expression).op1 instanceof TypeFilter
@@ -145,7 +145,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterNotEquals() {
+  void testIdFilterNotEquals() {
     FilterExpression expression = parser.parse("not id:123");
     assertTrue(expression instanceof IdFilterNotEquals);
     assertEquals(123, ((IdFilterNotEquals) expression).getId());
@@ -153,14 +153,14 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterEqualsAnyOf() {
+  void testIdFilterEqualsAnyOf() {
     FilterExpression expression = parser.parse("id:(1,2,3)");
     assertTrue(expression instanceof IdFilterEqualsAnyOf);
     assertEquals("id:in1,2,3", expression.toString());
   }
 
   @Test
-  public void testIdTypeFilterEqualsAnyOf() {
+  void testIdTypeFilterEqualsAnyOf() {
     FilterExpression expression = parser.parse("id:(node/1,way/2)");
     assertTrue(expression instanceof OrOperator);
     assertTrue(((OrOperator) expression).op1 instanceof AndOperator);
@@ -169,14 +169,14 @@ public class ParseTest extends FilterTest {
   }
 
   @Test()
-  public void testIdFilterEqualsAnyOfCheckEmpty() {
+  void testIdFilterEqualsAnyOfCheckEmpty() {
     assertThrows(IllegalStateException.class, () -> {
       new IdFilterEqualsAnyOf(Collections.emptyList());
     });
   }
 
   @Test
-  public void testIdFilterInRange() {
+  void testIdFilterInRange() {
     // complete range
     FilterExpression expression = parser.parse("id:(1..3)");
     assertTrue(expression instanceof IdFilterRange);
@@ -196,7 +196,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testTypeFilter() {
+  void testTypeFilter() {
     FilterExpression expression = parser.parse("type:node");
     assertTrue(expression instanceof TypeFilter);
     assertEquals(OSMType.NODE, ((TypeFilter) expression).getType());
@@ -206,7 +206,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterExpression expression = parser.parse("highway=residential and name=*");
     assertTrue(expression instanceof AndOperator);
     assertTrue(((AndOperator) expression).getLeftOperand() instanceof TagFilter);
@@ -215,7 +215,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterExpression expression = parser.parse("highway=residential or name=*");
     assertTrue(expression instanceof OrOperator);
     assertTrue(((OrOperator) expression).getLeftOperand() instanceof TagFilter);
@@ -224,7 +224,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterPoint() {
+  void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression instanceof GeometryTypeFilter);
     assertEquals(GeometryType.POINT, ((GeometryTypeFilter) expression).getGeometryType());
@@ -236,7 +236,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterLine() {
+  void testGeometryTypeFilterLine() {
     FilterExpression expression = parser.parse("geometry:line");
     assertTrue(expression instanceof GeometryTypeFilter);
     assertEquals(GeometryType.LINE, ((GeometryTypeFilter) expression).getGeometryType());
@@ -248,7 +248,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterPolygon() {
+  void testGeometryTypeFilterPolygon() {
     FilterExpression expression = parser.parse("geometry:polygon");
     assertTrue(expression instanceof GeometryTypeFilter);
     assertEquals(GeometryType.POLYGON, ((GeometryTypeFilter) expression).getGeometryType());
@@ -260,7 +260,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterOther() {
+  void testGeometryTypeFilterOther() {
     FilterExpression expression = parser.parse("geometry:other");
     assertTrue(expression instanceof GeometryTypeFilter);
     assertEquals(GeometryType.OTHER, ((GeometryTypeFilter) expression).getGeometryType());
@@ -272,14 +272,14 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testPaddingWhitespace() {
+  void testPaddingWhitespace() {
     // allow extra whitespace at start/end of filter
     FilterExpression expression = parser.parse(" type:node ");
     assertTrue(expression instanceof TypeFilter);
   }
 
   @Test
-  public void testParentheses() {
+  void testParentheses() {
     FilterExpression expression =
         parser.parse("type:way and (highway=residential or highway=track)");
     assertTrue(expression instanceof AndOperator);
@@ -297,7 +297,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testEmptyFilter() {
+  void testEmptyFilter() {
     forEmptyFilter("");
     forEmptyFilter(" ");
   }
@@ -310,7 +310,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterArea() {
+  void testGeometryFilterArea() {
     FilterExpression expression = parser.parse("area:(1..10)");
     assertTrue(expression instanceof GeometryFilterArea);
     assertEquals(1.0, ((GeometryFilterArea) expression).getRange().getFromValue(), 1E-10);
@@ -333,13 +333,13 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterLength() {
+  void testGeometryFilterLength() {
     FilterExpression expression = parser.parse("length:(1..10)");
     assertTrue(expression instanceof GeometryFilterLength);
   }
 
   @Test
-  public void testChangesetIdFilter() {
+  void testChangesetIdFilter() {
     FilterExpression expression = parser.parse("changeset:42");
     assertTrue(expression instanceof ChangesetIdFilterEquals);
     assertEquals(42, ((ChangesetIdFilterEquals) expression).getChangesetId());
@@ -347,7 +347,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testChangesetIdListFilter() {
+  void testChangesetIdListFilter() {
     FilterExpression expression = parser.parse("changeset:(1,2,3)");
     assertTrue(expression instanceof ChangesetIdFilterEqualsAnyOf);
     assertEquals(List.of(1L, 2L, 3L), new ArrayList<>(
@@ -356,14 +356,14 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testChangesetIdRangeFilter() {
+  void testChangesetIdRangeFilter() {
     FilterExpression expression = parser.parse("changeset:(10..12)");
     assertTrue(expression instanceof ChangesetIdFilterRange);
     assertEquals("changeset:in-range10..12", expression.toString());
   }
 
   @Test
-  public void testContributorIdFilterEnabled() {
+  void testContributorIdFilterEnabled() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:1" /* Steve <3 */);
     assertTrue(expression instanceof ContributorUserIdFilterEquals);
@@ -372,7 +372,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testContributorUserIdListFilter() {
+  void testContributorUserIdListFilter() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:(1,2,3)");
     assertTrue(expression instanceof ContributorUserIdFilterEqualsAnyOf);
@@ -382,7 +382,7 @@ public class ParseTest extends FilterTest {
   }
 
   @Test
-  public void testContributorUserIdRangeFilter() {
+  void testContributorUserIdRangeFilter() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     FilterExpression expression = parser.parse("contributor:(10..12)");
     assertTrue(expression instanceof ContributorUserIdFilterRange);
@@ -391,7 +391,7 @@ public class ParseTest extends FilterTest {
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test()
-  public void testContributorIdFilterNotEnabled() {
+  void testContributorIdFilterNotEnabled() {
     assertThrows(ParserException.class, () -> {
       parser.parse("contributor:0");
     });

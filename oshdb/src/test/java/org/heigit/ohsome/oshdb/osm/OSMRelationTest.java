@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.junit.jupiter.api.Test;
 
-public class OSMRelationTest {
+class OSMRelationTest {
 
   public OSMRelationTest() {
   }
 
   @Test
-  public void testGetMembers() {
+  void testGetMembers() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -23,7 +23,7 @@ public class OSMRelationTest {
 
   // -----------------------
   @Test
-  public void testGetId() {
+  void testGetId() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -33,7 +33,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testGetVersion() {
+  void testGetVersion() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -43,7 +43,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testGetTimestamp() {
+  void testGetTimestamp() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -53,7 +53,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testGetChangeset() {
+  void testGetChangeset() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -63,7 +63,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testGetUserId() {
+  void testGetUserId() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -73,7 +73,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testisVisible() {
+  void testisVisible() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -90,7 +90,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testGetTags() {
+  void testGetTags() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {1, 1, 2, 2}, new OSMMember[] {part, part});
@@ -100,7 +100,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testHasTagKey() {
+  void testHasTagKey() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 2, 1L, 1L, 1, new int[] {}, new OSMMember[] {part, part});
@@ -138,7 +138,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testHasTagValue() {
+  void testHasTagValue() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, new OSMMember[] {part, part});
@@ -148,7 +148,7 @@ public class OSMRelationTest {
   }
 
   @Test
-  public void testHasTagValue2() {
+  void testHasTagValue2() {
     OSMMember part = new OSMMember(1L, OSMType.WAY, 1);
     OSMRelation instance =
         OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 3}, new OSMMember[] {part, part});

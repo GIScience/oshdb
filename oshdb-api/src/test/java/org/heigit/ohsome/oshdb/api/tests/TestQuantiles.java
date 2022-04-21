@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the quantiles reducer of the OSHDB API.
  */
-public class TestQuantiles {
+class TestQuantiles {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -63,7 +63,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testMedian() throws Exception {
+  void testMedian() throws Exception {
     MapReducer<Integer> mr = this.createMapReducer()
         .map(s -> s.getGeometry().getCoordinates().length);
     List<Integer> fullResult = mr.collect();
@@ -73,7 +73,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testQuantile() throws Exception {
+  void testQuantile() throws Exception {
     MapReducer<Integer> mr = this.createMapReducer()
         .map(s -> s.getGeometry().getCoordinates().length);
     List<Integer> fullResult = mr.collect();
@@ -83,7 +83,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testQuantiles() throws Exception {
+  void testQuantiles() throws Exception {
     MapReducer<Integer> mr = this.createMapReducer()
         .map(s -> s.getGeometry().getCoordinates().length);
     List<Integer> fullResult = mr.collect();
@@ -98,7 +98,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testQuantilesFunction() throws Exception {
+  void testQuantilesFunction() throws Exception {
     MapReducer<Integer> mr = this.createMapReducer()
         .map(s -> s.getGeometry().getCoordinates().length);
     List<Integer> fullResult = mr.collect();
@@ -124,7 +124,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testMedianMapAggregator() throws Exception {
+  void testMedianMapAggregator() throws Exception {
     MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
@@ -138,7 +138,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testQuantileMapAggregator() throws Exception {
+  void testQuantileMapAggregator() throws Exception {
     MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
@@ -152,7 +152,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testQuantilesMapAggregator() throws Exception {
+  void testQuantilesMapAggregator() throws Exception {
     MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
@@ -173,7 +173,7 @@ public class TestQuantiles {
   }
 
   @Test
-  public void testQuantilesFunctionMapAggregator() throws Exception {
+  void testQuantilesFunctionMapAggregator() throws Exception {
     MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();

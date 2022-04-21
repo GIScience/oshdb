@@ -6,13 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.junit.jupiter.api.Test;
 
-public class OSHDBBoundingBoxTest {
-
-  public OSHDBBoundingBoxTest() {
-  }
+class OSHDBBoundingBoxTest {
 
   @Test
-  public void testToString() {
+  void testToString() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 1.0, 89.0, 90.0);
     String expResult = "(0.0000000,1.0000000,89.0000000,90.0000000)";
     String result = instance.toString();
@@ -20,7 +17,7 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testIntersect() {
+  void testIntersect() {
     OSHDBBoundingBox first = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0);
     OSHDBBoundingBox second = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.9, 2.0, 90.0);
     OSHDBBoundingBox expResult = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.9, 1.0, 90.0);
@@ -29,7 +26,7 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testGetMinLon() {
+  void testGetMinLon() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0);
     int expResult = 0;
     int result = instance.getMinLongitude();
@@ -37,7 +34,7 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testGetMaxLon() {
+  void testGetMaxLon() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0);
     int expResult = 1_0000000;
     int result = instance.getMaxLongitude();
@@ -45,7 +42,7 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testGetMinLat() {
+  void testGetMinLat() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0);
     int expResult = 89_0000000;
     int result = instance.getMinLatitude();
@@ -53,7 +50,7 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testGetMaxLat() {
+  void testGetMaxLat() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0);
     int expResult = 90_0000000;
     int result = instance.getMaxLatitude();
@@ -61,7 +58,7 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testHashCode() {
+  void testHashCode() {
     OSHDBBoundingBox instance = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0);
     int expResult = 1260356225;
     int result = instance.hashCode();
@@ -69,12 +66,11 @@ public class OSHDBBoundingBoxTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Object obj = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0);
     assertEquals(obj, obj);
     assertNotEquals("", obj);
     assertEquals(obj, OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 89.0, 1.0, 90.0));
     assertNotEquals(obj, OSHDBBoundingBox.bboxWgs84Coordinates(0.1, 89.0, 1.0, 90.0));
   }
-
 }

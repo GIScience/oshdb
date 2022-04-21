@@ -18,7 +18,7 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.jupiter.api.Test;
 
-public class GridOSHWaysTest {
+class GridOSHWaysTest {
 
   static OSHNode buildOSHNode(List<OSMNode> versions) {
     return OSHNodeImpl.build(versions);
@@ -32,7 +32,7 @@ public class GridOSHWaysTest {
       Arrays.asList(OSM.node(104L, 1, 1L, 0L, 123, new int[] {2, 4}, 494094984, 86809727)));
 
   @Test
-  public void testGrid() throws IOException {
+  void testGrid() throws IOException {
     List<OSHWay> hosmWays = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMWay> versions = new ArrayList<>();

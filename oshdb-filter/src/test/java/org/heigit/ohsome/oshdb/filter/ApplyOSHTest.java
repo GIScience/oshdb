@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the application of filters to OSH entities.
  */
-public class ApplyOSHTest extends FilterTest {
+class ApplyOSHTest extends FilterTest {
 
   @Test
-  public void testTagFilterEquals() throws IOException {
+  void testTagFilterEquals() throws IOException {
     FilterExpression expression = parser.parse("highway=residential");
     // matching tag (exact match)
     assertTrue(expression.applyOSH(createTestOSHEntityNode(
@@ -38,7 +38,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterEqualsAny() throws IOException {
+  void testTagFilterEqualsAny() throws IOException {
     FilterExpression expression = parser.parse("highway=*");
     // matching tag
     assertTrue(expression.applyOSH(createTestOSHEntityNode(
@@ -56,7 +56,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEquals() throws IOException {
+  void testTagFilterNotEquals() throws IOException {
     FilterExpression expression = parser.parse("highway!=residential");
     // matching tag
     assertFalse(expression.applyOSH(createTestOSHEntityNode(
@@ -74,7 +74,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterNotEqualsAny() throws IOException {
+  void testTagFilterNotEqualsAny() throws IOException {
     FilterExpression expression = parser.parse("highway!=*");
     // matching tag
     assertFalse(expression.applyOSH(createTestOSHEntityNode(
@@ -92,7 +92,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testTagFilterEqualsAnyOf() throws IOException {
+  void testTagFilterEqualsAnyOf() throws IOException {
     FilterExpression expression = parser.parse("highway in (residential, track)");
     // matching tag
     assertTrue(expression.applyOSH(createTestOSHEntityNode(
@@ -119,7 +119,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterEquals() throws IOException {
+  void testIdFilterEquals() throws IOException {
     assertTrue(parser.parse("id:1").applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode())));
     assertFalse(parser.parse("id:2").applyOSH(createTestOSHEntityNode(
@@ -127,7 +127,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterNotEquals() throws IOException {
+  void testIdFilterNotEquals() throws IOException {
     assertFalse(parser.parse("id:1").negate().applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode())));
     assertTrue(parser.parse("id:2").negate().applyOSH(createTestOSHEntityNode(
@@ -135,7 +135,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterEqualsAnyOf() throws IOException {
+  void testIdFilterEqualsAnyOf() throws IOException {
     assertTrue(parser.parse("id:(1,2,3)").applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode())));
     assertFalse(parser.parse("id:(2,3)").applyOSH(createTestOSHEntityNode(
@@ -143,7 +143,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterNotEqualsAnyOf() throws IOException {
+  void testIdFilterNotEqualsAnyOf() throws IOException {
     assertFalse(parser.parse("id:(1,2,3)").negate().applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode())));
     assertTrue(parser.parse("id:(2,3)").negate().applyOSH(createTestOSHEntityNode(
@@ -151,7 +151,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterInRange() throws IOException {
+  void testIdFilterInRange() throws IOException {
     assertTrue(parser.parse("id:(1..3)").applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode())));
     assertFalse(parser.parse("id:(2..3)").applyOSH(createTestOSHEntityNode(
@@ -167,7 +167,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testIdFilterNotInRange() throws IOException {
+  void testIdFilterNotInRange() throws IOException {
     assertFalse(parser.parse("id:(1..3)").negate().applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode())));
     assertTrue(parser.parse("id:(2..3)").negate().applyOSH(createTestOSHEntityNode(
@@ -183,7 +183,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testTypeFilter() throws IOException {
+  void testTypeFilter() throws IOException {
     assertTrue(parser.parse("type:node").applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode()
     )));
@@ -193,7 +193,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testAndOperator() throws IOException {
+  void testAndOperator() throws IOException {
     FilterExpression expression = parser.parse("highway=* and name=*");
     // exact match
     assertTrue(expression.applyOSH(createTestOSHEntityNode(
@@ -238,7 +238,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testOrOperator() throws IOException {
+  void testOrOperator() throws IOException {
     FilterExpression expression = parser.parse("highway=* or name=*");
     // exact match
     assertTrue(expression.applyOSH(createTestOSHEntityNode(
@@ -258,7 +258,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterPoint() throws IOException {
+  void testGeometryTypeFilterPoint() throws IOException {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression.applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode()
@@ -272,7 +272,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterLine() throws IOException {
+  void testGeometryTypeFilterLine() throws IOException {
     FilterExpression expression = parser.parse("geometry:line");
     assertTrue(expression.applyOSH(createTestOSHEntityWay(
         createTestOSMEntityWay(new long[] {})
@@ -289,7 +289,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterPolygon() throws IOException {
+  void testGeometryTypeFilterPolygon() throws IOException {
     FilterExpression expression = parser.parse("geometry:polygon");
     assertTrue(expression.applyOSH(createTestOSHEntityWay(
         createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1})
@@ -303,7 +303,7 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterOther() throws IOException {
+  void testGeometryTypeFilterOther() throws IOException {
     FilterExpression expression = parser.parse("geometry:other");
     assertFalse(expression.applyOSH(createTestOSHEntityNode(
         createTestOSMEntityNode()
@@ -317,19 +317,19 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testConstant() throws IOException {
+  void testConstant() throws IOException {
     FilterExpression expression = parser.parse("");
     assertTrue(expression.applyOSH(createTestOSHEntityNode(createTestOSMEntityNode())));
   }
 
   @Test
-  public void testGeometryFilterArea() throws IOException {
+  void testGeometryFilterArea() throws IOException {
     FilterExpression expression = parser.parse("area:(1..2)");
     assertTrue(expression.applyOSH(createTestOSHEntityWay(createTestOSMEntityWay(new long[] {}))));
   }
 
   @Test
-  public void testGeometryFilterLength() throws IOException {
+  void testGeometryFilterLength() throws IOException {
     FilterExpression expression = parser.parse("length:(1..2)");
     assertTrue(expression.applyOSH(createTestOSHEntityWay(createTestOSMEntityWay(new long[] {}))));
   }
@@ -378,34 +378,34 @@ public class ApplyOSHTest extends FilterTest {
   }
 
   @Test
-  public void testChangesetId() throws IOException {
+  void testChangesetId() throws IOException {
     testOSHEntityWithMetadata(parser.parse("changeset:42"));
   }
 
   @Test
-  public void testChangesetIdList() throws IOException {
+  void testChangesetIdList() throws IOException {
     testOSHEntityWithMetadata(parser.parse("changeset:(41,42,43)"));
   }
 
   @Test
-  public void testChangesetIdRange() throws IOException {
+  void testChangesetIdRange() throws IOException {
     testOSHEntityWithMetadata(parser.parse("changeset:(41..43)"));
   }
 
   @Test
-  public void testContributorUserId() throws IOException {
+  void testContributorUserId() throws IOException {
     var parser = new FilterParser(tagTranslator, true);
     testOSHEntityWithMetadata(parser.parse("contributor:4"));
   }
 
   @Test
-  public void testContributorUserIdList() throws IOException {
+  void testContributorUserIdList() throws IOException {
     var parser = new FilterParser(tagTranslator, true);
     testOSHEntityWithMetadata(parser.parse("contributor:(3,4,5)"));
   }
 
   @Test
-  public void testContributorUserIdRange() throws IOException {
+  void testContributorUserIdRange() throws IOException {
     var parser = new FilterParser(tagTranslator, true);
     testOSHEntityWithMetadata(parser.parse("contributor:(3..5)"));
   }

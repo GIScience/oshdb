@@ -50,7 +50,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
   }
 
   @Test
-  public void testOSMContributionView() throws Exception {
+  void testOSMContributionView() throws Exception {
     Number result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .groupByEntity()
@@ -77,7 +77,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
   }
 
   @Test
-  public void testOSMEntitySnapshotView() throws Exception {
+  void testOSMEntitySnapshotView() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .groupByEntity()

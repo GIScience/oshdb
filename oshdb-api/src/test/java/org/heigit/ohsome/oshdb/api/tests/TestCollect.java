@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the collect method of the OSHDB API.
  */
-public class TestCollect {
+class TestCollect {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -42,7 +42,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testCollect() throws Exception {
+  void testCollect() throws Exception {
     List<OSMContribution> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .collect();
@@ -53,7 +53,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testMapCollect() throws Exception {
+  void testMapCollect() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .map(contribution -> contribution.getEntityAfter().getId())
@@ -64,7 +64,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testFlatMapCollect() throws Exception {
+  void testFlatMapCollect() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(contribution -> Collections
@@ -76,7 +76,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testFlatMapCollectGroupedById() throws Exception {
+  void testFlatMapCollectGroupedById() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .groupByEntity()
@@ -89,7 +89,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testAggregatedByTimestamp() throws Exception {
+  void testAggregatedByTimestamp() throws Exception {
     SortedMap<OSHDBTimestamp, List<Long>> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .aggregateByTimestamp()
