@@ -14,7 +14,7 @@ import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for each method of the OSHDB API.
+ * Test forEach method of the OSHDB API.
  */
 class TestForEach {
   private final OSHDBDatabase oshdb;
