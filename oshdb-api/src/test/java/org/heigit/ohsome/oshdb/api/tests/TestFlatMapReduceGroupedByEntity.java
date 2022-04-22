@@ -18,7 +18,7 @@ import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test flat map method with groupByEntity of the MapReducer class of the OSHDB API.
+ * Test flatMap method with groupByEntity of the MapReducer class of the OSHDB API.
  */
 abstract class TestFlatMapReduceGroupedByEntity {
   private final OSHDBDatabase oshdb;
