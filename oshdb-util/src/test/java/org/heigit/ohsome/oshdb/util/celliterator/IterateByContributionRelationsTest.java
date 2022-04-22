@@ -29,7 +29,6 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on relations.
  */
-@SuppressWarnings("javadoc")
 class IterateByContributionRelationsTest {
   private GridOSHRelations oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
