@@ -40,7 +40,7 @@ class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
   @Test()
   void testOSMContributionViewStream() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMEntitySnapshotView();
+      super.testOSMContributionViewStream();
     });
   }
 
@@ -48,7 +48,7 @@ class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
   @Test()
   void testOSMEntitySnapshotViewStream() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMEntitySnapshotView();
+      super.testOSMEntitySnapshotViewStream();
     });
   }
 
