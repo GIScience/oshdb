@@ -20,10 +20,6 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.junit.jupiter.api.Test;
 
-/**
- * General {@link GridOSHRelations} tests case.
- *
- */
 class GridOSHRelationsTest {
 
   @Test
