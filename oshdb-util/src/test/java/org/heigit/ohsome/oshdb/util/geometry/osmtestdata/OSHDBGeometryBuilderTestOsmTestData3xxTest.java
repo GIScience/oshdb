@@ -59,7 +59,7 @@ class OSHDBGeometryBuilderTestOsmTestData3xxTest extends OSHDBGeometryTest {
   @Test
   void test303() {
     // uid 0 is the anonymous user
-    int entityUid = testData.nodes().get(203000L).get(0).getUserId();
+    int entityUid = nodes(203000L, 0).getUserId();
     assertEquals(0, entityUid);
   }
 
