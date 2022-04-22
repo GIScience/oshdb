@@ -36,7 +36,7 @@ class OSHDBGeometryBuilderTestOsmTestData3xxTest extends OSHDBGeometryTest {
     // Normal node with uid (and user name)
     Geometry result = buildEntityGeometry(200000L);
     assertTrue(result instanceof Point);
-    int entityUid = testData.nodes().get(200000L).get(0).getUserId();
+    int entityUid = nodes(200000L, 0).getUserId();
     assertEquals(1, entityUid);
   }
 
